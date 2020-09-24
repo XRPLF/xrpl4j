@@ -48,4 +48,16 @@ public class Wrappers {
 
   }
 
+  @Value.Immutable(intern = true)
+  @Wrapped
+  @JsonSerialize(as = XrpCurrencyAmount.class)
+  @JsonDeserialize(as = XrpCurrencyAmount.class)
+  static abstract class _XrpCurrencyAmount extends Wrapper<String> implements Serializable, CurrencyAmount {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+  }
+
 }

@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.transactions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -19,16 +20,16 @@ public interface Transaction {
   String fee();
 
   @JsonProperty("Sequence")
-  Integer sequence();
+  UnsignedInteger sequence();
 
   @JsonProperty("AccountTxnID")
   Optional<Hash256> accountTransactionId();
 
   @JsonProperty("Flags")
-  Optional<Integer> flags();
+  Optional<UnsignedInteger> flags();
 
   @JsonProperty("LastLedgerSequence")
-  Optional<Integer> lastLedgerSequence();
+  Optional<UnsignedInteger> lastLedgerSequence();
 
   @JsonProperty("Memos")
   List<MemoWrapper> memos();
@@ -37,7 +38,7 @@ public interface Transaction {
   List<SignerWrapper> signers();
 
   @JsonProperty("SourceTag")
-  Optional<Integer> sourceTag();
+  Optional<UnsignedInteger> sourceTag();
 
   @JsonProperty("SigningPubKey")
   Optional<String> signingPublicKey();

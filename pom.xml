@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.ripple</groupId>
+  <artifactId>xrpl4j-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>HEAD-SNAPSHOT</version>
+
+  <name>xrpl4j parent</name>
+  <description>Parent project for xrpl4j modules.</description>
+  <url>https://github.com/ripple/xrpl4j</url>
+  <inceptionYear>2020</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>Ripple and its contributors</name>
+  </organization>
+
+  <profiles>
+    <!-- Specify android-compatible dependencies -->
+    <profile>
+      <id>android</id>
+      <properties>
+        <guava.version>28.1-android</guava.version>
+      </properties>
+    </profile>
+    <!-- Signing profile for signed distributions -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <developers>
+    <developer>
+      <name>David Fuelling</name>
+      <organizationUrl>https://github.com/sappenin</organizationUrl>
+    </developer>
+    <developer>
+      <name>Neil Hartner</name>
+      <organizationUrl>https://github.com/nhartner</organizationUrl>
+    </developer>
+    <developer>
+      <name>Noah Kramer</name>
+      <organizationUrl>https://github.com/nkramer44</organizationUrl>
+    </developer>
+    <developer>
+      <name>Ian Simpson</name>
+      <organizationUrl>https://github.com/theotherian</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/ripple/xrpl4j.git</connection>
+    <url>scm:git:git@github.com:ripple/xrpl4j.git</url>
+    <developerConnection>scm:git:git@github.com:ripple/xrpl4j.git</developerConnection>
+  </scm>
+
+  <properties>
+
+    <!-- org.apache.maven.plugins:maven-compiler-plugin -->
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.resources.sourceEncoding>UTF-8</project.resources.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- org.jacoco:jacoco-maven-plugin -->
+    <jacoco.propertyName>argLine</jacoco.propertyName>
+
+    <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
+    <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+    <checkstyle.violationSeverity>error</checkstyle.violationSeverity>
+
+    <skipITs>false</skipITs>
+  </properties>
+
+  <build>
+
+    <!-- All plugin versions and default config is defined in the pluginManagement section. -->
+
+    <pluginManagement>
+      <plugins>
+
+        <!-- org.codehaus.mojo:maven-compiler-plugin -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.1</version>
+        </plugin>
+
+        <!-- org.apache.maven.plugins:maven-compiler-plugin -->
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.22.2</version>
+          <configuration>
+            <skipITs>${skipITs}</skipITs>
+            <argLine>${failsafe.argLine}</argLine>
+          </configuration>
+          <executions>
+            <execution>
+              <id>integration-tests</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- org.apache.maven.plugins:maven-source-plugin -->
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- org.apache.maven.plugins:maven-javadoc-plugin -->
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <excludes>
+              <exclude>**/generated-sources/**/*</exclude>
+            </excludes>
+            <source>8</source>
+          </configuration>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>3.1.1</version>
+          <inherited>true</inherited>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <consoleOutput>true</consoleOutput>
+            <linkXRef>false</linkXRef>
+            <failOnViolation>true</failOnViolation>
+            <excludes>**/generated-sources/**/*,**/generated-test-sources/**/*</excludes>
+            <sourceDirectories>
+              <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+            </sourceDirectories>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>8.36.1</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- org.jacoco:jacoc-maven-plugin -->
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <version>0.8.4</version>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>report</id>
+              <phase>test</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>pre-integration-test</id>
+              <phase>pre-integration-test</phase>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+              <configuration>
+                <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                <propertyName>failsafe.argLine</propertyName>
+              </configuration>
+            </execution>
+            <execution>
+              <id>integration test report</id>
+              <phase>post-integration-test</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+              <configuration>
+                <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- org.apache.maven.plugins:maven-surefire-plugin -->
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.2</version>
+          <configuration>
+            <!-- CircleCI build workaround -->
+            <argLine>@{argLine} -Xms1024m -Xmx2048m</argLine>
+            <reuseForks>true</reuseForks>
+            <useSystemClassLoader>false</useSystemClassLoader>
+          </configuration>
+        </plugin>
+
+        <!-- org.sonatype.plugins:nexus-staging-maven-plugin -->
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.8</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh-snapshots-interledger</serverId>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          </configuration>
+        </plugin>
+
+        <!-- org.codehaus.mojo:license-maven-plugin -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>1.20</version>
+          <configuration>
+            <!--license to use for the project-->
+            <licenseName>apache_v2</licenseName>
+            <processStartTag>========================LICENSE_START=================================
+            </processStartTag>
+            <processEndTag>=========================LICENSE_END==================================
+            </processEndTag>
+
+            <!--generate license file even if it exists-->
+            <force>true</force>
+
+            <licenseMerges>
+              <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0|Apache
+                2|Apache License 2.0|AL 2.0
+              </licenseMerge>
+            </licenseMerges>
+
+            <!--exclude test-scoped dependencies from the 3rd party license-list-->
+            <excludedScopes>test</excludedScopes>
+
+            <excludes>
+              <exclude>**/*.json</exclude>
+            </excludes>
+
+          </configuration>
+          <executions>
+            <execution>
+              <id>license-management</id>
+              <goals>
+                <!--updates the source's headers according to the specified license-->
+                <goal>update-file-header</goal>
+
+                <!--Adds the full-blown license file to the final product-->
+                <goal>update-project-license</goal>
+
+                <!--generate and add a list of third-party licenses-->
+                <goal>add-third-party</goal>
+              </goals>
+              <phase>process-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
+
+    <!-- All plugins in the plugins section will be run for all sub-modules
+      unless <inherited>false</inherited> is specified. -->
+
+    <plugins>
+
+      <!-- org.apache.maven.plugins:maven-compiler-plugin -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+
+      <!-- org.apache.maven.plugins:maven-source-plugin -->
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <!-- org.apache.maven.plugins:maven-javadoc-plugin -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+
+      <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+
+      <!-- org.jacoco:jacoco-maven-plugin -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- org.apache.maven.plugins:maven-surefire-plugin -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+
+      <!-- org.sonatype.plugins:nexus-staging-maven-plugin -->
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <useReleaseProfile>false</useReleaseProfile>
+          <releaseProfiles>release</releaseProfiles>
+          <goals>deploy</goals>
+        </configuration>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+  <reporting>
+    <plugins>
+
+      <!-- org.jacoco:jacoc-maven-plugin -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <inherited>false</inherited>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+
+      <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <consoleOutput>true</consoleOutput>
+          <linkXRef>false</linkXRef>
+          <excludes>**/generated-sources/**/*,**/generated-test-sources/**/*</excludes>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>checkstyle</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+
+      <!-- org.apache.maven.plugins:maven-javadoc-plugin -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/generated-sources/**/*,**/generated-test-sources/**/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </reporting>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh-snapshots-interledger</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh-snapshots-interledger</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+  </distributionManagement>
+
+</project>

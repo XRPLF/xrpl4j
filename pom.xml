@@ -102,6 +102,10 @@
     <skipITs>false</skipITs>
   </properties>
 
+  <modules>
+    <module>xrpl4j-binary-codec</module>
+  </modules>
+
   <build>
 
     <!-- All plugin versions and default config is defined in the pluginManagement section. -->

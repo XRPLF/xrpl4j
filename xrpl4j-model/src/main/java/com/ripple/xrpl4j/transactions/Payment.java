@@ -81,12 +81,10 @@ public interface Payment extends Transaction {
      */
     @Value.Check
     public void validateSendMax() {
-      if (IssuedCurrencyAmount.class.isAssignableFrom(amount().getClass())) {
-        Preconditions.checkArgument(sendMax().isPresent(), "SendMax must be set for an issued currency or cross-currency payment");
-      }
-
-      if (XrpCurrencyAmount.class.isAssignableFrom(amount().getClass())) {
+      if (isXrpToXrpPayment()) {
         Preconditions.checkArgument(!sendMax().isPresent(), "SendMax cannot be set for an XRP-to-XRP payment.");
+      } else {
+        Preconditions.checkArgument(sendMax().isPresent(), "SendMax must be set for an issued currency or cross-currency payment");
       }
     }
 
@@ -97,12 +95,25 @@ public interface Payment extends Transaction {
      */
     @Value.Check
     public void validateDeliverMinOnlyForPartialPayment() {
-
+      if (deliverMin().isPresent()) {
+        Preconditions.checkArgument(tfPartialPayment(), "DeliverMin is only valid for partial payments.");
+      }
     }
 
     @Value.Check
     public void validateAccountAndDestinationAreDifferent() {
       Preconditions.checkArgument(account() != destination(), "Sender and receiver addresses cannot be the same.");
+    }
+
+    @Value.Check
+    public void validateNoPathsForXrpToXrp() {
+      if (isXrpToXrpPayment()) {
+        Preconditions.checkArgument(paths().size() == 0, "Cannot specify paths for XRP to XRP payments.");
+      }
+    }
+
+    private boolean isXrpToXrpPayment() {
+      return XrpCurrencyAmount.class.isAssignableFrom(amount().getClass());
     }
   }
 

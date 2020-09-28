@@ -60,4 +60,20 @@ public class Wrappers {
     }
   }
 
+  @Value.Immutable(intern = true)
+  @Wrapped
+  @JsonSerialize(as = TransactionType.class)
+  @JsonDeserialize(as = TransactionType.class)
+  static abstract class _TransactionType extends Wrapper<String> implements Serializable, CurrencyAmount {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    public static final String PAYMENT_VALUE = "Payment";
+    public static final TransactionType PAYMENT = TransactionType.of(PAYMENT_VALUE);
+
+  }
+
 }

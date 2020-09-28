@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.transactions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
@@ -21,7 +22,7 @@ public interface Transaction {
   String fee();
 
   @JsonProperty("Sequence")
-  UnsignedInteger sequence();
+  Optional<UnsignedInteger> sequence();
 
   @JsonProperty("AccountTxnID")
   Optional<Hash256> accountTransactionId();

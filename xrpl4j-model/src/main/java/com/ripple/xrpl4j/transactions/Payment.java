@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.transactions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -14,11 +15,18 @@ import java.util.Optional;
 
 @JsonSerialize(as = ImmutablePayment.class)
 @JsonDeserialize(as = ImmutablePayment.class)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public interface Payment extends Transaction {
 
   static ImmutablePayment.Builder builder() {
     return ImmutablePayment.builder();
   }
+
+  @Override
+  @Value.Derived
+  default TransactionType type() {
+    return TransactionType.PAYMENT;
+  };
 
   @JsonProperty("Amount")
   CurrencyAmount amount();
@@ -113,7 +121,7 @@ public interface Payment extends Transaction {
     }
 
     private boolean isXrpToXrpPayment() {
-      return XrpCurrencyAmount.class.isAssignableFrom(amount().getClass());
+      return XrpCurrencyAmount.class.isAssignableFrom(amount().getClass()) ;
     }
   }
 

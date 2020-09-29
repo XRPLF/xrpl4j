@@ -64,7 +64,7 @@ public class Wrappers {
   @Wrapped
   @JsonSerialize(as = TransactionType.class)
   @JsonDeserialize(as = TransactionType.class)
-  static abstract class _TransactionType extends Wrapper<String> implements Serializable, CurrencyAmount {
+  static abstract class _TransactionType extends Wrapper<String> implements Serializable {
 
     @Override
     public String toString() {

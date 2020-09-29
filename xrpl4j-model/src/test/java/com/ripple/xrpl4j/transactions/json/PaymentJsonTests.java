@@ -32,20 +32,9 @@ public class PaymentJsonTests {
       .sequence(UnsignedInteger.valueOf(2))
       .build();
 
-    String json = "{" +
-        "\"Account\":\"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\"," +
-        "\"Destination\":\"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\"," +
-        "\"TransactionType\":\"Payment\"," +
-        "\"Amount\":\"25000000\"," +
-        "\"Fee\":\"10\"," +
-        "\"Flags\":0," +
-        "\"Sequence\":2" +
-      "}";
-
     String serialized = objectMapper.writeValueAsString(payment);
-    assertThat(serialized).isEqualTo(json);
-
     Payment deserialized = objectMapper.readValue(serialized, Payment.class);
     assertThat(deserialized).isEqualTo(payment);
   }
+
 }

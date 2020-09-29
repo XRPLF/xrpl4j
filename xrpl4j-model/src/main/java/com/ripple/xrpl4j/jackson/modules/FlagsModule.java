@@ -3,7 +3,6 @@ package com.ripple.xrpl4j.jackson.modules;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.ripple.xrpl4j.transactions.Flags;
-import com.ripple.xrpl4j.transactions.Hash256;
 
 public class FlagsModule extends SimpleModule {
 

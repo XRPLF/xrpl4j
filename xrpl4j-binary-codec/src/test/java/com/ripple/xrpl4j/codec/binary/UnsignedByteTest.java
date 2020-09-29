@@ -9,6 +9,7 @@ class UnsignedByteTest {
 
   @Test
   void hexValue() {
+    assertThat(UnsignedByte.of(0).hexValue()).isEqualTo("00");
     assertThat(UnsignedByte.of(127).hexValue()).isEqualTo("7F");
     assertThat(UnsignedByte.of(128).hexValue()).isEqualTo("80");
     assertThat(UnsignedByte.of(255).hexValue()).isEqualTo("FF");

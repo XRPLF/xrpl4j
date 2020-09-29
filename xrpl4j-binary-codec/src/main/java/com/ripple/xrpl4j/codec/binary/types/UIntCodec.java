@@ -1,12 +1,16 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedLong;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 
+/**
+ * Codec for UInt8, UInt16, etc. Converts between binary hex value and raw value.
+ */
 public class UIntCodec implements TypeCodec {
 
   private final int bitCount;
@@ -20,7 +24,7 @@ public class UIntCodec implements TypeCodec {
   }
 
   @Override
-  public String getName() {
+  public String typeName() {
     return "UInt" + bitCount;
   }
 
@@ -36,10 +40,8 @@ public class UIntCodec implements TypeCodec {
   }
 
   private String padded(String hex) {
-    if (hex.length() % 2 == 0) {
-      return hex;
-    }
-    return "0" + hex;
+    int padding = byteSize * 2 - hex.length();
+    return Strings.repeat("0", padding) + hex;
   }
 
   private BigInteger checkSize(BigInteger value) {

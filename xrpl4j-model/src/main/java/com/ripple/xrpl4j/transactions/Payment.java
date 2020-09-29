@@ -11,6 +11,12 @@ import org.immutables.value.Value;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A Payment transaction represents a transfer of value from one account to another. (Depending on the path taken,
+ * this can involve additional exchanges of value, which occur atomically.) This transaction type can be used for
+ * several types of payments, including direct XRP-to-XRP payments, creating or redeeming issued currency, cross-currency
+ * payments, partial payments, and currency conversions on the XRPL Decentralized Exchange.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePayment.class)
 @JsonDeserialize(as = ImmutablePayment.class)
@@ -21,17 +27,24 @@ public interface Payment {
     return ImmutablePayment.builder();
   }
 
+  /**
+   * The unique {@link Address} of the account that initiated the transaction.
+   */
   @JsonProperty("Account")
   Address account();
 
+  /**
+   * The type of transaction. For the Payment transaction type, this will always be "Payment"
+   */
   @Value.Derived
   @JsonProperty("TransactionType")
   default TransactionType type() {
     return TransactionType.PAYMENT;
-  };
+  }
+
 
   @JsonProperty("Fee")
-  String fee();
+  Optional<String> fee();
 
   @JsonProperty("Sequence")
   Optional<UnsignedInteger> sequence();

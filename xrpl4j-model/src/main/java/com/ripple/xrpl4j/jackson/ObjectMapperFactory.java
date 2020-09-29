@@ -1,5 +1,6 @@
 package com.ripple.xrpl4j.jackson;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -31,6 +32,7 @@ public class ObjectMapperFactory {
       .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
       .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      .serializationInclusion(JsonInclude.Include.NON_EMPTY)
       .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
       .build();
   }

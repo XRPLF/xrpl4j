@@ -15,6 +15,6 @@ public class FlagsSerializer extends StdScalarSerializer<Flags> {
 
   @Override
   public void serialize(Flags flags, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(String.valueOf(flags.getValue()));
+    gen.writeNumber(flags.getValue());
   }
 }

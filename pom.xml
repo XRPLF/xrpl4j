@@ -65,6 +65,12 @@
         <artifactId>jackson-datatype-jdk8</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.skyscreamer</groupId>
+        <artifactId>jsonassert</artifactId>
+        <version>1.5.0</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

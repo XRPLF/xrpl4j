@@ -26,21 +26,4 @@ public interface Memo {
   @JsonProperty("MemoType")
   Optional<String> memoType();
 
-  @Value.Check
-  default void oneOrMoreFieldsPopulated() {
-    int numFields = 0;
-    if (memoData().isPresent()) {
-      numFields++;
-    }
-
-    if (memoFormat().isPresent()) {
-      numFields++;
-    }
-
-    if (memoType().isPresent()) {
-      numFields++;
-    }
-
-    Preconditions.checkArgument(numFields != 0, "Memo must have one or more fields populated.");
-  }
 }

@@ -37,9 +37,7 @@ public class Flags {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+
     Flags flags = (Flags) o;
     return getValue() == flags.getValue();
   }

@@ -30,6 +30,9 @@ public class Wrappers {
 
   }
 
+  /**
+   * A wrapped {@link String} containing the Hex representation of a 256-bit Hash.
+   */
   @Value.Immutable(intern = true)
   @Wrapped
   @JsonSerialize(as = Hash256.class)
@@ -48,6 +51,10 @@ public class Wrappers {
 
   }
 
+  /**
+   * A {@link CurrencyAmount} for the XRP currency (non-issued). {@link XrpCurrencyAmount}s are a {@link String}
+   * representation of an unsigned integer representing the amount in XRP drops.
+   */
   @Value.Immutable(intern = true)
   @Wrapped
   @JsonSerialize(as = XrpCurrencyAmount.class)
@@ -60,6 +67,9 @@ public class Wrappers {
     }
   }
 
+  /**
+   * A wrapped {@link String} representing different types of XRPL transactions.
+   */
   @Value.Immutable(intern = true)
   @Wrapped
   @JsonSerialize(as = TransactionType.class)

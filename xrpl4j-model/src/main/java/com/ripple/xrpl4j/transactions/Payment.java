@@ -50,7 +50,7 @@ public interface Payment {
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
-  String fee();
+  XrpCurrencyAmount fee();
 
   /**
    * The sequence number of the account sending the {@link Payment}. A {@link Payment} is only valid if the Sequence
@@ -156,7 +156,7 @@ public interface Payment {
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Paths")
-  List<List<Path>> paths();
+  List<List<PathStep>> paths();
 
   /**
    * Highest amount of source currency this transaction is allowed to cost, including transfer fees,

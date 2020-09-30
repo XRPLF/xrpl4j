@@ -61,7 +61,7 @@ public class PaymentFlagsTests {
       .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
-      .fee("10")
+      .fee(XrpCurrencyAmount.of("10"))
       .tfFullyCanonicalSig(tfFullyCanonicalSig)
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
@@ -89,7 +89,7 @@ public class PaymentFlagsTests {
       .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
-      .fee("10")
+      .fee(XrpCurrencyAmount.of("10"))
       .flags(Flags.of(expectedFlags))
       .sequence(UnsignedInteger.ONE)
       .build();

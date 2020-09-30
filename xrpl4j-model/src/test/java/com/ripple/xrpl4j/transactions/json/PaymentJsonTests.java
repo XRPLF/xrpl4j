@@ -45,7 +45,7 @@ public class PaymentJsonTests {
       "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
       "                \"TransactionType\": \"Payment\",\n" +
       "                \"Amount\": \"25000000\",\n" +
-//      "                \"Fee\": \"10\",\n" +
+      "                \"Fee\": \"10\",\n" +
       "                \"Flags\": 0,\n" +
       "                \"Sequence\": 2\n" +
       "            }";

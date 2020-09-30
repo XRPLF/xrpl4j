@@ -2,6 +2,7 @@ package com.ripple.xrpl4j.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.primitives.UnsignedInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -55,7 +56,7 @@ public class PaymentFlagsTests {
   }
 
   @Test
-  public void testFlagsConstructionWithDefaultFlags() {
+  public void testFlagsConstructionWithIndividualFlags() {
     Payment payment = Payment.builder()
       .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
@@ -65,6 +66,7 @@ public class PaymentFlagsTests {
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
       .tfLimitQuality(tfLimitQuality)
+      .sequence(UnsignedInteger.ONE)
       .build();
 
     long expectedFlags = (tfFullyCanonicalSig ? 0x80000000L : 0L) |
@@ -74,5 +76,29 @@ public class PaymentFlagsTests {
 
     assertThat(payment.flags()).isNotEmpty();
     assertThat(payment.flags().get().getValue()).isEqualTo(expectedFlags);
+  }
+
+  @Test
+  public void testDeriveIndividualFlagsFromFlags() {
+    long expectedFlags = (tfFullyCanonicalSig ? 0x80000000L : 0L) |
+      (tfNoDirectRipple ? 0x00010000L : 0L) |
+      (tfPartialPayment ? 0x00020000L : 0L) |
+      (tfLimitQuality ? 0x00040000L : 0L);
+
+    Payment payment = Payment.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
+      .amount(XrpCurrencyAmount.of("25000000"))
+      .fee("10")
+      .flags(Flags.of(expectedFlags))
+      .sequence(UnsignedInteger.ONE)
+      .build();
+
+    assertThat(payment.flags()).isNotEmpty();
+    assertThat(payment.flags().get().getValue()).isEqualTo(expectedFlags);
+    assertThat(payment.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(payment.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
+    assertThat(payment.tfPartialPayment()).isEqualTo(tfPartialPayment);
+    assertThat(payment.tfLimitQuality()).isEqualTo(tfLimitQuality);
   }
 }

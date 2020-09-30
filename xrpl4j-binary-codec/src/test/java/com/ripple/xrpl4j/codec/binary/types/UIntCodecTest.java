@@ -2,17 +2,8 @@ package com.ripple.xrpl4j.codec.binary.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ripple.xrpl4j.codec.fixtures.FixtureUtils;
-import com.ripple.xrpl4j.codec.fixtures.data.ValueTest;
-import org.junit.Before;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 class UIntCodecTest {
 

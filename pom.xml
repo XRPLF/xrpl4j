@@ -25,6 +25,55 @@
     <name>Ripple and its contributors</name>
   </organization>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.14.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>value</artifactId>
+        <version>2.8.3</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-guava</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jdk8</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.skyscreamer</groupId>
+        <artifactId>jsonassert</artifactId>
+        <version>1.5.0</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <profiles>
     <!-- Specify android-compatible dependencies -->
     <profile>
@@ -100,10 +149,13 @@
     <checkstyle.violationSeverity>error</checkstyle.violationSeverity>
 
     <skipITs>false</skipITs>
+
+    <jackson.version>2.11.2</jackson.version>
   </properties>
 
   <modules>
     <module>xrpl4j-binary-codec</module>
+    <module>xrpl4j-model</module>
   </modules>
 
   <build>
@@ -362,9 +414,10 @@
       </plugin>
 
       <!-- org.apache.maven.plugins:maven-javadoc-plugin -->
-      <plugin>
+      <!-- FIXME: Fix javadocs and enable -->
+      <!--<plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
+      </plugin>-->
 
       <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
       <plugin>

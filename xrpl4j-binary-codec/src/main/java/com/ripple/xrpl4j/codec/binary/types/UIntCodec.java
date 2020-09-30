@@ -2,11 +2,8 @@ package com.ripple.xrpl4j.codec.binary.types;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.io.BaseEncoding;
-import com.google.common.primitives.UnsignedLong;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * Codec for UInt8, UInt16, etc. Converts between binary hex value and raw value.

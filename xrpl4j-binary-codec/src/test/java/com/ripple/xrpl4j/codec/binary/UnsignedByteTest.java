@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
+
 class UnsignedByteTest {
 
   @Test
@@ -14,4 +16,35 @@ class UnsignedByteTest {
     assertThat(UnsignedByte.of(255).hexValue()).isEqualTo("FF");
     assertThat(UnsignedByte.of((byte) 15, (byte) 15).hexValue()).isEqualTo("FF");
   }
+
+  @Test
+  void isNthBitSetAllZero() {
+    UnsignedByte value = UnsignedByte.of(0);
+    for (int i = 1; i <= 8; i++) {
+      assertThat(value.isNthBitSet(i)).isFalse();
+    }
+  }
+
+  @Test
+  void isNthBitSetAllSet() {
+    UnsignedByte value = UnsignedByte.of(new BigInteger("11111111", 2).intValue());
+    for (int i = 1; i <= 8; i++) {
+      assertThat(value.isNthBitSet(i)).isTrue();
+    }
+  }
+
+  @Test
+  void isNthBitSetEveryOther() {
+    UnsignedByte value = UnsignedByte.of(new BigInteger("10101010", 2).intValue());
+    assertThat(value.isNthBitSet(1)).isTrue();
+    assertThat(value.isNthBitSet(2)).isFalse();
+    assertThat(value.isNthBitSet(3)).isTrue();
+    assertThat(value.isNthBitSet(4)).isFalse();
+    assertThat(value.isNthBitSet(5)).isTrue();
+    assertThat(value.isNthBitSet(6)).isFalse();
+    assertThat(value.isNthBitSet(7)).isTrue();
+    assertThat(value.isNthBitSet(8)).isFalse();
+  }
+
 }
+

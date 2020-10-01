@@ -1,7 +1,7 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
@@ -9,11 +9,11 @@ import java.util.OptionalInt;
 public class UInt16 extends UInt<UInt16> {
 
   public UInt16() {
-    super(UnsignedInteger.ZERO);
+    this(UnsignedLong.ZERO);
   }
 
-  public UInt16(UnsignedInteger value) {
-    super(value);
+  public UInt16(UnsignedLong value) {
+    super(value, 16);
   }
 
   @Override
@@ -22,7 +22,7 @@ public class UInt16 extends UInt<UInt16> {
   }
   @Override
   public UInt16 fromJSON(JsonNode value) {
-    return new UInt16(UnsignedInteger.valueOf(value.asText()));
+    return new UInt16(UnsignedLong.valueOf(value.asText()));
   }
 
 }

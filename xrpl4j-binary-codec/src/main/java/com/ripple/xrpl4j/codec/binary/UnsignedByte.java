@@ -17,6 +17,10 @@ public class UnsignedByte {
     return new UnsignedByte(value);
   }
 
+  public static UnsignedByte of(byte value) {
+    return new UnsignedByte(value & 0xff);
+  }
+
   public static UnsignedByte of(byte highBits, byte lowBits) {
     return new UnsignedByte((highBits << 4) + lowBits);
   }
@@ -43,6 +47,12 @@ public class UnsignedByte {
 
   public int getLowBits() {
     return value & 0x0F;
+  }
+
+  public boolean isNthBitSet(int nth)
+  {
+    Preconditions.checkArgument(nth >= 1 && nth <= 8);
+    return ((value >> (8 - nth)) & 1) == 1;
   }
 
 

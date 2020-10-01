@@ -29,7 +29,7 @@ public class XrplBinaryCodec {
    * @return
    * @throws JsonProcessingException
    */
-  public String decode(String hex) throws JsonProcessingException {
+  public String decode(String hex) {
     return new BinaryParser(hex).readType(STObject.class)
         .toJSON()
         .toString();

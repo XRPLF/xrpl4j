@@ -1,6 +1,6 @@
 package com.ripple.xrpl4j.codec.binary.serdes;
 
-import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.binary.ByteUtils;
 import com.ripple.xrpl4j.codec.binary.FieldHeader;
 import com.ripple.xrpl4j.codec.binary.UnsignedByte;
@@ -47,16 +47,20 @@ public class BinaryParser {
     return result;
   }
 
-  public UnsignedInteger readUInt8() {
+  public UnsignedLong readUInt8() {
     return readUInt(1);
   }
 
-  public UnsignedInteger readUInt16() {
+  public UnsignedLong readUInt16() {
     return readUInt(2);
   }
 
-  public UnsignedInteger readUInt32() {
+  public UnsignedLong readUInt32() {
     return readUInt(4);
+  }
+
+  public UnsignedLong readUInt64() {
+    return readUInt(8);
   }
 
   public int size() {
@@ -186,8 +190,8 @@ public class BinaryParser {
                 .build());
   }
 
-  private UnsignedInteger readUInt(int bytes) {
-    return ByteUtils.coalesceToInt(read(bytes));
+  private UnsignedLong readUInt(int bytes) {
+    return ByteUtils.coalesceToUnsignedLong(read(bytes));
   }
 
 

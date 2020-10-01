@@ -13,15 +13,26 @@ public class UnsignedByteList {
   private final List<UnsignedByte> values;
 
   public UnsignedByteList() {
-    this.values = new ArrayList<>();
+    this(new ArrayList<>());
   }
 
   public UnsignedByteList(String hex) {
-    this.values = ByteUtils.parse(hex);
+    this(ByteUtils.parse(hex));
   }
 
   public UnsignedByteList(UnsignedByte... values) {
-    this.values = Lists.newArrayList(values);
+    this(Lists.newArrayList(values));
+  }
+
+  public UnsignedByteList(List<UnsignedByte> values) {
+    this.values = values;
+  }
+
+  public UnsignedByteList(byte[] rawBytes) {
+    values = new ArrayList<>();
+    for(byte rawByte : rawBytes) {
+      values.add(UnsignedByte.of(rawByte));
+    }
   }
 
   public int getLength() {

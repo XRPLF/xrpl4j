@@ -1,24 +1,24 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
-import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
+import com.ripple.xrpl4j.codec.binary.ByteUtils;
 import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 abstract class UInt<T extends UInt<T>> extends SerializedType<T> {
 
-  private final UnsignedInteger value;
+  private final UnsignedLong value;
 
-  public UInt(UnsignedInteger value) {
-    super(new UnsignedByteList(value.toString(16)));
+  public UInt(UnsignedLong value, int bitSize) {
+    super(new UnsignedByteList(ByteUtils.padded(value.toString(16), bitSizeToHexLength(bitSize))));
     this.value = value;
   }
 
-  UnsignedInteger valueOf() {
+  UnsignedLong valueOf() {
     return value;
   }
 
-  @Override
-  public int compareTo(T o) {
-    return this.value.compareTo(o.valueOf());
+  private static int bitSizeToHexLength(int bitSize) {
+    return bitSize / 4;
   }
 
 }

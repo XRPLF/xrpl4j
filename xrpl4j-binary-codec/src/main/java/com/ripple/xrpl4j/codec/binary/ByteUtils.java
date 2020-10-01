@@ -2,7 +2,8 @@ package com.ripple.xrpl4j.codec.binary;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.UnsignedInteger;
+import com.google.common.base.Strings;
+import com.google.common.primitives.UnsignedLong;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -35,15 +36,16 @@ public class ByteUtils {
     return Joiner.on("").join(segments.stream().map(UnsignedByte::hexValue).collect(Collectors.toList()));
   }
 
-  public static UnsignedInteger coalesceToInt(List<UnsignedByte> segments) {
-    return UnsignedInteger.valueOf(new BigInteger(coalesce(segments), 16));
+  public static UnsignedLong coalesceToUnsignedLong(List<UnsignedByte> segments) {
+    return UnsignedLong.valueOf(coalesce(segments), 16);
   }
 
-  private static String padded(String hex) {
-    if (hex.length() % 2 == 0) {
-      return hex;
-    }
-    return "0" + hex;
+  public static String padded(String hex) {
+    return hex.length() % 2 == 0 ? hex : "0" + hex;
+  }
+
+  public static String padded(String hex, int size) {
+    return Strings.repeat("0", size - hex.length()) + hex;
   }
 
 }

@@ -36,4 +36,12 @@ class BinaryEncoderTest {
     assertThat(encoder.decode(MULTI_LEVEL_OBJECT_HEX)).isEqualTo(MULTI_LEVEL_OBJECT_JSON);
   }
 
+  @Test
+  void encodeDecodeAmount() throws JsonProcessingException {
+    String json = "{\"Fee\":\"100\"}";
+    String hex = "684000000000000064";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
 }

@@ -98,4 +98,22 @@ public class AddressCodecTest {
       UnsignedInteger.valueOf(10)
     );
   }
+
+  @Test
+  public void decodeEd25519Seed() {
+    String seed = "sEdTM1uX8pu2do5XvTnutH6HsouMaM2";
+    Decoded decoded = addressCodec.decodeSeed(seed);
+    assertThat(decoded.bytes().hexValue()).isEqualTo("4C3A1D213FBDFB14C7C28D609469B341");
+    assertThat(decoded.type()).isNotEmpty().get().isEqualTo(VersionType.ED25519);
+    assertThat(decoded.version()).isEqualTo(Version.ED25519_SEED);
+  }
+
+  @Test
+  public void decodeSecp256k1Seed() {
+    String seed = "sn259rEFXrQrWyx3Q7XneWcwV6dfL";
+    Decoded decoded = addressCodec.decodeSeed(seed);
+    assertThat(decoded.bytes().hexValue()).isEqualTo("CF2DE378FBDD7E2EE87D486DFB5A7BFF");
+    assertThat(decoded.type()).isNotEmpty().get().isEqualTo(VersionType.SECP256K1);
+    assertThat(decoded.version()).isEqualTo(Version.FAMILY_SEED);
+  }
 }

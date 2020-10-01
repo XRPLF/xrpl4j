@@ -25,6 +25,13 @@ public class UnsignedByteArray {
     return unsignedBytes;
   }
 
+  public String hexValue() {
+    return unsignedBytes.stream()
+      .map(UnsignedByte::hexValue)
+      .reduce((hex1, hex2) -> hex1 + hex2)
+      .orElseThrow(() -> new RuntimeException("Unable to construct Base16 representation of UnsignedByteArray."));
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

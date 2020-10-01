@@ -18,6 +18,10 @@ public class UnsignedByte {
     return new UnsignedByte(value);
   }
 
+  public static UnsignedByte of(byte value) {
+    return new UnsignedByte(value & 0xff);
+  }
+
   public static UnsignedByte of(byte highBits, byte lowBits) {
     return new UnsignedByte((highBits << 4) + lowBits);
   }

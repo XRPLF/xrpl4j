@@ -11,7 +11,7 @@ import java.util.List;
 public class Base58 {
   public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz".toCharArray();
 
-  private static final int[] INDEXES = new int[128];
+  private static final int[] INDEXES = new int[255];
   static {
     for (int i = 0; i < INDEXES.length; i++) {
       INDEXES[i] = -1;
@@ -72,7 +72,7 @@ public class Base58 {
       char c = input.charAt(i);
 
       int digit58 = -1;
-      if (c >= 0 && c < 128) {
+      if (c < INDEXES.length) {
         digit58 = INDEXES[c];
       }
       if (digit58 < 0) {

@@ -12,10 +12,6 @@ import java.util.Optional;
 
 public class AddressCodec {
 
-  public String encodeSeed(List<UnsignedByte> entropy, VersionType type) {
-    return null;
-  }
-
   protected Decoded decode(
     String base58String,
     List<Version> versions
@@ -26,12 +22,20 @@ public class AddressCodec {
   protected Decoded decode(
     String base58String,
     List<Version> versions,
+    List<VersionType> versionTypes
+  ) {
+    return decode(base58String, versionTypes, versions, Optional.empty());
+  }
+
+  protected Decoded decode(
+    String base58String,
+    List<Version> versions,
     UnsignedInteger expectedLength
   ) {
     return decode(base58String, new ArrayList<>(), versions, Optional.of(expectedLength));
   }
 
-  protected Decoded decode(
+  private Decoded decode(
     String base58String,
     List<VersionType> versionTypes,
     List<Version> versions,
@@ -92,12 +96,16 @@ public class AddressCodec {
     return decodeSeed(seed, versionTypes, Lists.newArrayList(version), expectedLength);
   }
 
-  public Decoded decodedSeed(String seed) throws EncodingFormatException {
+  public Decoded decodeSeed(String seed) throws EncodingFormatException {
     return decodeSeed(
       seed,
       Lists.newArrayList(VersionType.ED25519, VersionType.SECP256K1),
       Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
       Optional.of(UnsignedInteger.valueOf(16))
     );
+  }
+
+  public String encodeSeed(UnsignedByteArray entropy, VersionType type) {
+    return null;
   }
 }

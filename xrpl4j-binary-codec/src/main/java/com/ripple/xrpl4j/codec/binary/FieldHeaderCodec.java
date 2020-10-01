@@ -4,24 +4,33 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.codec.binary.definitions.Definitions;
-import com.ripple.xrpl4j.codec.binary.definitions.FieldMetadata;
+import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsProvider;
+import com.ripple.xrpl4j.codec.binary.enums.FieldInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FieldIdCodec {
+public class FieldHeaderCodec {
+
+  private static final FieldHeaderCodec INSTANCE = new FieldHeaderCodec(DefinitionsProvider.getInstance().get(),
+      ObjectMapperFactory.getObjectMapper());
 
   private final Definitions definitions;
 
-  private final Map<String, FieldMetadata> fieldMetadataMap;
+  private final Map<String, FieldInfo> fieldMetadataMap;
 
-  private final Map<FieldId, String> fieldIdNameMap;
+  private final Map<FieldHeader, String> fieldIdNameMap;
 
   private final Map<String, Integer> typeOrdinalMap;
 
-  public FieldIdCodec(Definitions definitions, ObjectMapper mapper) {
+
+  public static FieldHeaderCodec getInstance() {
+    return INSTANCE;
+  }
+
+  public FieldHeaderCodec(Definitions definitions, ObjectMapper mapper) {
     this.definitions = definitions;
     this.fieldMetadataMap = new HashMap<>();
     this.fieldIdNameMap = new HashMap<>();
@@ -29,12 +38,12 @@ public class FieldIdCodec {
     this.definitions.fields().forEach(field -> {
       try {
         String fieldName = field.get(0).textValue();
-        FieldMetadata metadata = mapper.readValue(field.get(1).toString(), FieldMetadata.class);
-        FieldId fieldId = FieldId.builder().fieldCode(metadata.nth())
+        FieldInfo metadata = mapper.readValue(field.get(1).toString(), FieldInfo.class);
+        FieldHeader fieldHeader = FieldHeader.builder().fieldCode(metadata.nth())
             .typeCode(typeOrdinalMap.get(metadata.type()))
             .build();
         fieldMetadataMap.put(fieldName, metadata);
-        fieldIdNameMap.put(fieldId, fieldName);
+        fieldIdNameMap.put(fieldHeader, fieldName);
       } catch (JsonProcessingException e) {
         // FIXME logging
         throw new RuntimeException(e);
@@ -47,18 +56,18 @@ public class FieldIdCodec {
   }
 
   public String decode(String hex) {
-    FieldId fieldId = decodeFieldId(hex);
-    return fieldIdNameMap.get(fieldId);
+    FieldHeader fieldHeader = decodeFieldId(hex);
+    return fieldIdNameMap.get(fieldHeader);
   }
 
-  protected FieldId decodeFieldId(String hex) {
+  protected FieldHeader decodeFieldId(String hex) {
     Preconditions.checkNotNull(hex, "hex cannot be null");
     Preconditions.checkArgument(hex.length() >= 2, "hex must be at least 2 characters");
     List<UnsignedByte> segments = ByteUtils.parse(hex);
     Preconditions.checkArgument(segments.size() <= 3, "hex value is too large");
     if (segments.size() == 1) {
       UnsignedByte first = segments.get(0);
-      return FieldId.builder()
+      return FieldHeader.builder()
           .typeCode(first.getHighBits())
           .fieldCode(first.getLowBits())
           .build();
@@ -67,36 +76,36 @@ public class FieldIdCodec {
       UnsignedByte first = segments.get(0);
       UnsignedByte second = segments.get(1);
       if (first.getHighBits() == 0) {
-        return FieldId.builder()
+        return FieldHeader.builder()
             .fieldCode(first.getLowBits())
             .typeCode(second.asInt())
             .build();
       }
       else {
-        return FieldId.builder()
+        return FieldHeader.builder()
             .typeCode(first.getHighBits())
             .fieldCode(second.asInt())
             .build();
       }
     }
-    return FieldId.builder()
+    return FieldHeader.builder()
         .typeCode(segments.get(1).asInt())
         .fieldCode(segments.get(2).asInt())
         .build();
   }
 
-  protected FieldId getFieldId(String fieldName) {
-    FieldMetadata metadata = fieldMetadataMap.get(fieldName);
+  protected FieldHeader getFieldId(String fieldName) {
+    FieldInfo metadata = fieldMetadataMap.get(fieldName);
     Preconditions.checkNotNull(metadata, fieldName + " is not a valid field name");
     Integer typeCode = typeOrdinalMap.get(metadata.type());
     Preconditions.checkNotNull(typeCode, typeCode + " is not a valid type");
-    return FieldId.builder().typeCode(typeCode).fieldCode(metadata.nth()).build();
+    return FieldHeader.builder().typeCode(typeCode).fieldCode(metadata.nth()).build();
   }
 
-  protected String encode(FieldId fieldId) {
+  protected String encode(FieldHeader fieldHeader) {
     List<UnsignedByte> segments = new ArrayList<>();
-    int typeCode = fieldId.typeCode();
-    int fieldCode = fieldId.fieldCode();
+    int typeCode = fieldHeader.typeCode();
+    int fieldCode = fieldHeader.fieldCode();
     if (typeCode < 16) {
       if (fieldCode < 16) {
         // single byte case where high bits contain type code, low bits contain field code

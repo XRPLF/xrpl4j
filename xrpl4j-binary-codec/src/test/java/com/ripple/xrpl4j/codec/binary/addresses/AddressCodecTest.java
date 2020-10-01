@@ -11,8 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.ArrayList;
-
 public class AddressCodecTest {
 
   @Rule
@@ -85,18 +83,19 @@ public class AddressCodecTest {
 
   @Test
   public void decodedDatatWithWrongExpectedLength() {
-    Decoded expected = Decoded.builder()
-      .version(Version.ACCOUNT_ID)
-      .bytes(UnsignedByteArray.of("123456789".getBytes()))
-      .build();
-
     expectedException.expect(DecodeException.class);
     expectedException.expectMessage("Version is invalid. Version bytes do not match any of the provided versions.");
+
+    addressCodec.decode(
+      "rnaC7gW34M77Kneb78s",
+      Lists.newArrayList(Version.ACCOUNT_ID),
+      UnsignedInteger.valueOf(8)
+    );
 
     Decoded decoded = addressCodec.decode(
       "rnaC7gW34M77Kneb78s",
       Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(8)
+      UnsignedInteger.valueOf(10)
     );
   }
 }

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 /**
  * Unsigned byte where value can be 0 to 255.
@@ -50,4 +51,20 @@ public class UnsignedByte {
     return BaseEncoding.base16().encode(new byte[] { (byte) asInt() });
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof UnsignedByte)) {
+      return false;
+    }
+    UnsignedByte that = (UnsignedByte) o;
+    return value == that.value;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value);
+  }
 }

@@ -46,5 +46,16 @@ class UnsignedByteTest {
     assertThat(value.isNthBitSet(8)).isFalse();
   }
 
+  @Test
+  void intValue() {
+    assertThat(UnsignedByte.of(0x00).asInt()).isEqualTo(0);
+    assertThat(UnsignedByte.of(0x0F).asInt()).isEqualTo(15);
+    assertThat(UnsignedByte.of(0xFF).asInt()).isEqualTo(255);
+
+    assertThat(UnsignedByte.of(0).asInt()).isEqualTo(0);
+    assertThat(UnsignedByte.of(15).asInt()).isEqualTo(15);
+    assertThat(UnsignedByte.of(255).asInt()).isEqualTo(255);
+  }
+
 }
 

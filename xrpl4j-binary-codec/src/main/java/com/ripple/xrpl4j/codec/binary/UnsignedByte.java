@@ -38,7 +38,7 @@ public class UnsignedByte {
   }
 
   public int asInt() {
-    return value;
+    return value; // & 0xff;
   }
 
   public int getHighBits() {

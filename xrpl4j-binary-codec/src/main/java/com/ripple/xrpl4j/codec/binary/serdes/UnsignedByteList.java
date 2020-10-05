@@ -48,7 +48,7 @@ public class UnsignedByteList {
   }
 
   public String toHex() {
-    return ByteUtils.coalesce(values);
+    return ByteUtils.toHex(values);
   }
 
   public byte[] toBytes() {

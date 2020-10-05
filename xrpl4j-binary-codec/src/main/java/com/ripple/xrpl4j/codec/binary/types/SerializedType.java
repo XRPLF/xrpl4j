@@ -13,6 +13,7 @@ import java.util.OptionalInt;
 
 abstract public class SerializedType<T extends SerializedType<T>> implements SerializedComparable<T> {
 
+  // FIXME could be more effecient and simpler to keep everything as hex strings
   private final UnsignedByteList bytes;
 
   private static Map<String, Class<SerializedType>> typeMap =
@@ -38,7 +39,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
 
   public abstract T fromParser(BinaryParser parser, OptionalInt lengthHint);
 
-  public abstract T fromJSON(JsonNode node);
+  public abstract T fromJSON(JsonNode node) throws JsonProcessingException;
 
   public T fromHex(String hex) {
     return fromParser(new BinaryParser(hex), OptionalInt.empty());
@@ -79,6 +80,10 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
   @Override
   public int compareTo(T o) {
     return this.toHex().compareTo(o.toHex());
+  }
+
+  protected UnsignedByteList value() {
+    return bytes;
   }
 
 }

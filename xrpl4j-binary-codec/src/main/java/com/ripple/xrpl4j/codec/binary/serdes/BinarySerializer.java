@@ -1,5 +1,6 @@
 package com.ripple.xrpl4j.codec.binary.serdes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ripple.xrpl4j.codec.binary.FieldHeaderCodec;
 import com.ripple.xrpl4j.codec.binary.UnsignedByte;
@@ -77,7 +78,7 @@ public class BinarySerializer {
    * @param field field to write to BinarySerializer
    * @param value value to write to BinarySerializer
    */
-  public void writeFieldAndValue(FieldInstance field, JsonNode value) {
+  public void writeFieldAndValue(FieldInstance field, JsonNode value) throws JsonProcessingException {
     SerializedType typedValue = SerializedType.getTypeByName(field.type()).fromJSON(value);
     writeFieldAndValue(field, typedValue);
   }

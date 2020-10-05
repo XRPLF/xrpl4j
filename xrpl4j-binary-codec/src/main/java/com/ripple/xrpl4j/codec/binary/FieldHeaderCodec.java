@@ -130,7 +130,7 @@ public class FieldHeaderCodec {
         segments.add(UnsignedByte.of(fieldCode));
       }
     }
-    return ByteUtils.coalesce(segments);
+    return ByteUtils.toHex(segments);
   }
 
 }

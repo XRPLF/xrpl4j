@@ -35,6 +35,7 @@ public class BinaryParser {
     cursor += bytesToSkip * BYTE_HEX_LENGTH;
   }
 
+  // FIXME should this use UnsignedByteList
   public List<UnsignedByte> read(int bytesToRead) {
     if (cursor >= hex.length()) {
       throw new IndexOutOfBoundsException("cursor moved past end of buffer");
@@ -191,7 +192,7 @@ public class BinaryParser {
   }
 
   private UnsignedLong readUInt(int bytes) {
-    return ByteUtils.coalesceToUnsignedLong(read(bytes));
+    return ByteUtils.toUnsignedLong(read(bytes));
   }
 
 

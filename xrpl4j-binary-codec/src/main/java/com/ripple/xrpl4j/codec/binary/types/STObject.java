@@ -1,5 +1,6 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
@@ -74,7 +75,11 @@ public class STObject extends SerializedType<STObject> {
     fields.stream()
         .sorted()
         .forEach(value -> {
-          serializer.writeFieldAndValue(value.field(), value.value());
+          try {
+            serializer.writeFieldAndValue(value.field(), value.value());
+          } catch (JsonProcessingException e) {
+            e.printStackTrace(); // FIXME
+          }
           if (value.field().type().equals(ST_OBJECT)) {
             serializer.put(OBJECT_END_MARKER_BYTES);
           }

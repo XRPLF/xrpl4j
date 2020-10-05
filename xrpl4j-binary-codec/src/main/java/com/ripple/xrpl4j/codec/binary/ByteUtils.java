@@ -7,7 +7,6 @@ import com.google.common.primitives.UnsignedLong;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,21 @@ public class ByteUtils {
 
   public static byte[] toByteArray(int value, int byteSize) {
     BigInteger bigInteger = checkSize(byteSize * Byte.SIZE, BigInteger.valueOf(value));
-    return Arrays.copyOfRange(bigInteger.toByteArray(), 0, byteSize);
+    return copyToEnd(byteSize, bigInteger);
+  }
+
+  public static byte[] toByteArray(BigInteger value, int byteSize) {
+    BigInteger bigInteger = checkSize(byteSize * Byte.SIZE, value);
+    return copyToEnd(byteSize, bigInteger);
+  }
+
+  private static byte[] copyToEnd(int byteSize, BigInteger bigInteger) {
+    byte[] target = new byte[byteSize];
+    byte[] source = bigInteger.toByteArray();
+    for (int i = 0; i < source.length; i++) {
+      target[byteSize - i - 1] = source[source.length - i - 1];
+    }
+    return target;
   }
 
   public static List<UnsignedByte> parse(String hex) {
@@ -32,20 +45,20 @@ public class ByteUtils {
     return value;
   }
 
-  public static String coalesce(List<UnsignedByte> segments) {
+  public static String toHex(List<UnsignedByte> segments) {
     return Joiner.on("").join(segments.stream().map(UnsignedByte::hexValue).collect(Collectors.toList()));
   }
 
-  public static UnsignedLong coalesceToUnsignedLong(List<UnsignedByte> segments) {
-    return UnsignedLong.valueOf(coalesce(segments), 16);
+  public static UnsignedLong toUnsignedLong(List<UnsignedByte> segments) {
+    return UnsignedLong.valueOf(toHex(segments), 16);
   }
 
   public static String padded(String hex) {
     return hex.length() % 2 == 0 ? hex : "0" + hex;
   }
 
-  public static String padded(String hex, int size) {
-    return Strings.repeat("0", size - hex.length()) + hex;
+  public static String padded(String hex, int hexLength) {
+    return Strings.repeat("0", hexLength - hex.length()) + hex;
   }
 
 }

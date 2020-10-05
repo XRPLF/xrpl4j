@@ -15,6 +15,11 @@ class ByteUtilsTest {
   }
 
   @Test
+  void toByteArrayPadded() {
+    assertThat(ByteUtils.toByteArray(1, 2)).isEqualTo(new byte[]{ 0, 1 });
+  }
+
+  @Test
   void toByteArraySingleByteMaxValue() {
     assertThat(ByteUtils.toByteArray(15, 1)[0]).isEqualTo((byte) 15);
   }

@@ -2,7 +2,6 @@ package com.ripple.xrpl4j.codec.binary.addresses;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.codec.binary.UnsignedByte;
 import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
 
 import java.util.ArrayList;
@@ -11,6 +10,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class AddressCodec {
+
+  protected String encode(UnsignedByteArray bytes, List<Version> versions, UnsignedInteger expectedLength) {
+    if (expectedLength.intValue() != bytes.getUnsignedBytes().size()) {
+      throw new EncodeException("Length of bytes does not match expectedLength.");
+    }
+
+    return Base58.encodeChecked(bytes.toByteArray(), versions);
+  }
 
   protected Decoded decode(
     String base58String,
@@ -35,7 +42,7 @@ public class AddressCodec {
     return decode(base58String, new ArrayList<>(), versions, Optional.of(expectedLength));
   }
 
-  private Decoded decode(
+  protected Decoded decode(
     String base58String,
     List<VersionType> versionTypes,
     List<Version> versions,
@@ -78,7 +85,7 @@ public class AddressCodec {
     throw new DecodeException("Version is invalid. Version bytes do not match any of the provided versions.");
   }
 
-  public Decoded decodeSeed(
+  protected Decoded decodeSeed(
     String seed,
     List<VersionType> versionTypes,
     List<Version> versions,
@@ -90,10 +97,9 @@ public class AddressCodec {
   public Decoded decodeSeed(
     String seed,
     List<VersionType> versionTypes,
-    Version version,
-    Optional<UnsignedInteger> expectedLength
+    Version version
   ) throws EncodingFormatException {
-    return decodeSeed(seed, versionTypes, Lists.newArrayList(version), expectedLength);
+    return decodeSeed(seed, versionTypes, Lists.newArrayList(version), Optional.empty());
   }
 
   public Decoded decodeSeed(String seed) throws EncodingFormatException {
@@ -106,6 +112,11 @@ public class AddressCodec {
   }
 
   public String encodeSeed(UnsignedByteArray entropy, VersionType type) {
-    return null;
+    if (entropy.getUnsignedBytes().size() != 16) {
+      throw new EncodeException("entropy must have length 16.");
+    }
+
+    Version version = type.equals(VersionType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
+    return encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
   }
 }

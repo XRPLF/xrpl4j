@@ -25,6 +25,16 @@ public class UnsignedByteArray {
     return unsignedBytes;
   }
 
+  public byte[] toByteArray() {
+    byte[] bytes = new byte[unsignedBytes.size()];
+
+    for (int i = 0; i < unsignedBytes.size(); i++) {
+      bytes[i] = unsignedBytes.get(i).asByte();
+    }
+
+    return bytes;
+  }
+
   public String hexValue() {
     return unsignedBytes.stream()
       .map(UnsignedByte::hexValue)

@@ -42,6 +42,8 @@ public class UnsignedByte {
     return value;
   }
 
+  public byte asByte() { return (byte) value; }
+
   public int getHighBits() {
     return value >> 4;
   }

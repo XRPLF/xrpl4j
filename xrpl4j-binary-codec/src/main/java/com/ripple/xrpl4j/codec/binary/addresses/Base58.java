@@ -1,10 +1,7 @@
 package com.ripple.xrpl4j.codec.binary.addresses;
 
-import com.ripple.xrpl4j.codec.binary.UnsignedByte;
-
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -111,6 +108,30 @@ public class Base58 {
     return new BigInteger(1, decode(input));
   }
 
+  public static String encodeChecked(byte[] bytes, List<Version> versions) {
+    int versionsLength = 0;
+    for (Version version : versions) {
+      versionsLength += version.getValues().length;
+    }
+    byte[] versionsBytes = new byte[versionsLength];
+    for (int i = 0; i < versions.size(); i++) {
+      for (int j = 0; j < versions.get(i).getValues().length; j++) {
+        versionsBytes[i + j] = (byte) versions.get(i).getValues()[j];
+      }
+    }
+
+    byte[] bytesAndVersions = new byte[bytes.length + versionsLength];
+    System.arraycopy(versionsBytes, 0, bytesAndVersions, 0, versionsLength);
+    System.arraycopy(bytes, 0, bytesAndVersions, versionsLength, bytes.length);
+
+    byte[] checkSum = copyOfRange(Utils.doubleDigest(bytesAndVersions), 0, 4);
+    byte[] output = new byte[bytesAndVersions.length + checkSum.length];
+    System.arraycopy(bytesAndVersions, 0, output, 0, bytesAndVersions.length);
+    System.arraycopy(checkSum, 0, output, bytesAndVersions.length, checkSum.length);
+
+    return encode(output);
+  }
+
   /**
    * Uses the checksum in the last 4 bytes of the decoded data to verify the rest are correct. The checksum is
    * removed from the returned data.
@@ -131,10 +152,10 @@ public class Base58 {
 
     return bytes;
   }
-
   //
   // number -> number / 58, returns number % 58
   //
+
   private static byte divmod58(byte[] number, int startAt) {
     int remainder = 0;
     for (int i = startAt; i < number.length; i++) {
@@ -148,10 +169,10 @@ public class Base58 {
 
     return (byte) remainder;
   }
-
   //
   // number -> number / 256, returns number % 256
   //
+
   private static byte divmod256(byte[] number58, int startAt) {
     int remainder = 0;
     for (int i = startAt; i < number58.length; i++) {

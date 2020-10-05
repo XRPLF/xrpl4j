@@ -3,8 +3,11 @@ package com.ripple.xrpl4j.codec.binary.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 public class Base58Test {
 
@@ -38,6 +41,18 @@ public class Base58Test {
     String encoded = "rrrrrrr";
     assertThat(Base58.encode(decoded)).isEqualTo(encoded);
     assertThat(Base58.decode(encoded)).isEqualTo(decoded);
+  }
+
+  @Test
+  void testEncodeDecodeChecked() {
+    byte[] input = "123456789".getBytes();
+    String encoded = Base58.encodeChecked(input, Lists.newArrayList(Version.ACCOUNT_ID));
+    assertThat(encoded).isEqualTo("rnaC7gW34M77Kneb78s");
+
+    byte[] decoded = Base58.decodeChecked(encoded);
+    // Base58Check decode adds a leading 0.
+    assertThat(decoded[0]).isZero();
+    assertThat(Arrays.copyOfRange(decoded, 1, decoded.length)).isEqualTo(input);
   }
 
   @Test

@@ -120,11 +120,27 @@ public class AddressCodec {
     return encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
   }
 
-  public String encodeAccountId(UnsignedByteArray accountId) {
-    return encode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
+  public String encodeAccountId(UnsignedByteArray bytes) {
+    return encode(bytes, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
   }
 
   public UnsignedByteArray decodeAccountId(String accountId) {
     return decode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20)).bytes();
+  }
+
+  public String encodeNodePublic(UnsignedByteArray bytes) {
+    return encode(bytes, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33));
+  }
+
+  public UnsignedByteArray decodeNodePublic(String node) {
+    return decode(node, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33)).bytes();
+  }
+
+  public String encodeAccountPublic(UnsignedByteArray bytes) {
+    return encode(bytes, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
+  }
+
+  public UnsignedByteArray decodeAccountPublic(String publicKey) {
+    return decode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33)).bytes();
   }
 }

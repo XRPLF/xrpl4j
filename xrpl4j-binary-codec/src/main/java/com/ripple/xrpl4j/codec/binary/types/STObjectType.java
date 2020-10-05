@@ -17,27 +17,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 
-public class STObject extends SerializedType<STObject> {
+public class STObjectType extends SerializedType<STObjectType> {
 
   private static final String OBJECT_END_MARKER = "ObjectEndMarker";
   private static final String OBJECT_END_MARKER_BYTES = "E1";
   private static final String ST_OBJECT = "STObject";
 
-  public STObject() {
+  public STObjectType() {
     this(new UnsignedByteList());
   }
 
-  public STObject(UnsignedByteList list) {
+  public STObjectType(UnsignedByteList list) {
     super(list);
   }
 
   @Override
-  public int compareTo(STObject o) {
+  public int compareTo(STObjectType o) {
     return 0; // FIXME how to sort?
   }
 
   @Override
-  public STObject fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public STObjectType fromParser(BinaryParser parser, OptionalInt lengthHint) {
     UnsignedByteList list = new UnsignedByteList();
     BinarySerializer serializer = new BinarySerializer(list);
 
@@ -53,11 +53,11 @@ public class STObject extends SerializedType<STObject> {
         serializer.put(OBJECT_END_MARKER_BYTES);
       }
     }
-    return new STObject(list);
+    return new STObjectType(list);
   }
 
   @Override
-  public STObject fromJSON(JsonNode node) {
+  public STObjectType fromJSON(JsonNode node) {
     UnsignedByteList byteList = new UnsignedByteList();
     BinarySerializer serializer = new BinarySerializer(byteList);
 
@@ -85,7 +85,7 @@ public class STObject extends SerializedType<STObject> {
           }
         });
 
-    return new STObject(byteList);
+    return new STObjectType(byteList);
   }
 
   public JsonNode toJSON() {

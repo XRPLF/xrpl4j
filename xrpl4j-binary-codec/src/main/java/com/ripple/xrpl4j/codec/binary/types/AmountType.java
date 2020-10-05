@@ -54,7 +54,7 @@ class AmountType extends SerializedType<AmountType> {
   public AmountType fromJSON(JsonNode value) throws JsonProcessingException {
     if (value.isValueNode()) {
       assertXrpIsValid(value.asText());
-      UInt64 number = new UInt64().fromJSON(value.asText());
+      UInt64Type number = new UInt64Type().fromJSON(value.asText());
       byte[] rawBytes = number.toBytes();
       rawBytes[0] |= 0x40;
       return new AmountType(new UnsignedByteList(rawBytes), 8);

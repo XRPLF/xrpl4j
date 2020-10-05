@@ -7,9 +7,9 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class UIntTest {
+class UIntTypeTest {
 
-  private final UInt16 codec = new UInt16();
+  private final UInt16Type codec = new UInt16Type();
 
   @Test
   void decode() {

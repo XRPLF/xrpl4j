@@ -1,0 +1,29 @@
+package com.ripple.xrpl4j.codec.binary.types;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.primitives.UnsignedLong;
+import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
+
+import java.util.OptionalInt;
+
+public class UInt8Type extends UIntType<UInt8Type> {
+
+  @Override
+  public UInt8Type fromParser(BinaryParser parser, OptionalInt lengthHint) {
+    return new UInt8Type(parser.readUInt8());
+  }
+
+  @Override
+  public UInt8Type fromJSON(JsonNode value) {
+    return new UInt8Type(UnsignedLong.valueOf(value.asText()));
+  }
+
+  public UInt8Type() {
+    this(UnsignedLong.ZERO);
+  }
+
+  public UInt8Type(UnsignedLong value) {
+    super(value, 8);
+  }
+
+}

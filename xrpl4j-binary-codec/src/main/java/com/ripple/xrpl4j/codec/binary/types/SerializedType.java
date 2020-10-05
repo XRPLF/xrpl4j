@@ -18,10 +18,10 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
 
   private static Map<String, Class<SerializedType>> typeMap =
       new ImmutableMap.Builder()
-          .put("UInt8", UInt8.class)
-          .put("UInt16", UInt16.class)
-          .put("UInt32", UInt32.class)
-          .put("STObject", STObject.class)
+          .put("UInt8", UInt8Type.class)
+          .put("UInt16", UInt16Type.class)
+          .put("UInt32", UInt32Type.class)
+          .put("STObject", STObjectType.class)
           .put("Amount", AmountType.class)
           .build();
 

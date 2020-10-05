@@ -1,5 +1,7 @@
 package com.ripple.xrpl4j.codec.binary.addresses;
 
+import static java.util.Arrays.copyOfRange;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -10,9 +12,7 @@ public class Base58 {
 
   private static final int[] INDEXES = new int[255];
   static {
-    for (int i = 0; i < INDEXES.length; i++) {
-      INDEXES[i] = -1;
-    }
+    Arrays.fill(INDEXES, -1);
     for (int i = 0; i < ALPHABET.length; i++) {
       INDEXES[ALPHABET[i]] = i;
     }
@@ -108,6 +108,16 @@ public class Base58 {
     return new BigInteger(1, decode(input));
   }
 
+  public static String encodeChecked(byte[] bytes) {
+
+    byte[] checkSum = copyOfRange(Utils.doubleDigest(bytes), 0, 4);
+    byte[] output = new byte[bytes.length + checkSum.length];
+    System.arraycopy(bytes, 0, output, 0, bytes.length);
+    System.arraycopy(checkSum, 0, output, bytes.length, checkSum.length);
+
+    return encode(output);
+  }
+
   public static String encodeChecked(byte[] bytes, List<Version> versions) {
     int versionsLength = 0;
     for (Version version : versions) {
@@ -124,12 +134,7 @@ public class Base58 {
     System.arraycopy(versionsBytes, 0, bytesAndVersions, 0, versionsLength);
     System.arraycopy(bytes, 0, bytesAndVersions, versionsLength, bytes.length);
 
-    byte[] checkSum = copyOfRange(Utils.doubleDigest(bytesAndVersions), 0, 4);
-    byte[] output = new byte[bytesAndVersions.length + checkSum.length];
-    System.arraycopy(bytesAndVersions, 0, output, 0, bytesAndVersions.length);
-    System.arraycopy(checkSum, 0, output, bytesAndVersions.length, checkSum.length);
-
-    return encode(output);
+    return encodeChecked(bytesAndVersions);
   }
 
   /**
@@ -185,12 +190,5 @@ public class Base58 {
     }
 
     return (byte) remainder;
-  }
-
-  private static byte[] copyOfRange(byte[] source, int from, int to) {
-    byte[] range = new byte[to - from];
-    System.arraycopy(source, from, range, 0, range.length);
-
-    return range;
   }
 }

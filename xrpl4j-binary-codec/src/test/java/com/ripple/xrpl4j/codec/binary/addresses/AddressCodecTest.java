@@ -3,7 +3,6 @@ package com.ripple.xrpl4j.codec.binary.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
@@ -24,82 +23,6 @@ public class AddressCodecTest {
   @Before
   public void setUp() {
     addressCodec = new AddressCodec();
-  }
-
-  @Test
-  public void decodeMultipleVersionsWithNoExpectedLength() {
-    expectedException.expect(DecodeException.class);
-    expectedException.expectMessage("expectedLength is required because there are >= 2 possible versions");
-    addressCodec.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED)
-    );
-  }
-
-  @Test
-  public void decodeDataWithLengthLessThanFour() {
-    expectedException.expect(EncodingFormatException.class);
-    expectedException.expectMessage("Input must be longer than 3 characters.");
-    addressCodec.decode("1234", Lists.newArrayList(Version.ACCOUNT_ID));
-  }
-
-  @Test
-  public void decodeDataWithIncorrectVersion() {
-    expectedException.expect(DecodeException.class);
-    expectedException.expectMessage("Version is invalid. Version bytes do not match any of the provided versions.");
-    addressCodec.decode("rnaC7gW34M77Kneb78s", Lists.newArrayList(Version.ED25519_SEED));
-  }
-
-
-  @Test
-  public void decodeDataWithInvalidChecksum() {
-    expectedException.expect(EncodingFormatException.class);
-    expectedException.expectMessage("Checksum does not validate");
-    addressCodec.decode("123456789", Lists.newArrayList(Version.ACCOUNT_ID));
-  }
-
-  @Test
-  public void decodeDataWithoutExpectedLength() {
-    Decoded expected = Decoded.builder()
-      .version(Version.ACCOUNT_ID)
-      .bytes(UnsignedByteArray.of("123456789".getBytes()))
-      .build();
-
-    Decoded decoded = addressCodec.decode("rnaC7gW34M77Kneb78s", Lists.newArrayList(Version.ACCOUNT_ID));
-    assertThat(decoded).isEqualTo(expected);
-  }
-
-  @Test
-  public void decodeDataWithExpectedLength() {
-    Decoded expected = Decoded.builder()
-      .version(Version.ACCOUNT_ID)
-      .bytes(UnsignedByteArray.of("123456789".getBytes()))
-      .build();
-
-    Decoded decoded = addressCodec.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(9)
-    );
-    assertThat(decoded).isEqualTo(expected);
-  }
-
-  @Test
-  public void decodedDatatWithWrongExpectedLength() {
-    expectedException.expect(DecodeException.class);
-    expectedException.expectMessage("Version is invalid. Version bytes do not match any of the provided versions.");
-
-    addressCodec.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(8)
-    );
-
-    Decoded decoded = addressCodec.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(10)
-    );
   }
 
   @Test
@@ -217,8 +140,8 @@ public class AddressCodecTest {
   @Test
   public void encodeDecodeAccountPublicKey() {
     testEncodeDecode(
-      publicKey -> addressCodec.encodeAccountPublic(publicKey),
-      publicKey -> addressCodec.decodeAccountPublic(publicKey),
+      publicKey -> addressCodec.encodeAccountPublicKey(publicKey),
+      publicKey -> addressCodec.decodeAccountPublicKey(publicKey),
       unsignedByteArrayFromHex("023693F15967AE357D0327974AD46FE3C127113B1110D6044FD41E723689F81CC6"),
       "aB44YfzW24VDEJQ2UuLPV2PvqcPCSoLnL7y5M1EzhdW4LnK5xMS3"
     );

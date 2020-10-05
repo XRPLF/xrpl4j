@@ -1,5 +1,7 @@
 package com.ripple.xrpl4j.codec.binary;
 
+import com.google.common.io.BaseEncoding;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,10 +38,16 @@ public class UnsignedByteArray {
   }
 
   public String hexValue() {
-    return unsignedBytes.stream()
+    return BaseEncoding.base16().encode(toByteArray());
+    /*return unsignedBytes.stream()
       .map(UnsignedByte::hexValue)
       .reduce((hex1, hex2) -> hex1 + hex2)
-      .orElseThrow(() -> new RuntimeException("Unable to construct Base16 representation of UnsignedByteArray."));
+      .orElseThrow(() -> new RuntimeException("Unable to construct Base16 representation of UnsignedByteArray."));*/
+  }
+
+  public UnsignedByteArray concat(UnsignedByteArray bytes) {
+    unsignedBytes.addAll(bytes.getUnsignedBytes());
+    return this;
   }
 
   @Override

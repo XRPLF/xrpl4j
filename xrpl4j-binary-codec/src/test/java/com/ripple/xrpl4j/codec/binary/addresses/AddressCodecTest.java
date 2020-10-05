@@ -12,6 +12,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.function.Function;
+
 public class AddressCodecTest {
 
   @Rule
@@ -190,6 +192,29 @@ public class AddressCodecTest {
     expectedException.expect(EncodeException.class);
     expectedException.expectMessage("entropy must have length 16.");
     addressCodec.encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), VersionType.SECP256K1);
+  }
+
+  @Test
+  public void encodeDecodeAccountId() {
+    testEncodeDecode(
+      accountId -> addressCodec.encodeAccountId(accountId),
+      accountId -> addressCodec.decodeAccountId(accountId),
+      unsignedByteArrayFromHex("BA8E78626EE42C41B46D46C3048DF3A1C3C87072"),
+      "rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN"
+    );
+  }
+
+  private void testEncodeDecode(
+    Function<UnsignedByteArray, String> encoder,
+    Function<String, UnsignedByteArray> decoder,
+    UnsignedByteArray bytes,
+    String base58
+  ) {
+    String encoded = encoder.apply(bytes);
+    assertThat(encoded).isEqualTo(base58);
+
+    UnsignedByteArray decoded = decoder.apply(base58);
+    assertThat(decoded).isEqualTo(bytes);
   }
 
   private static UnsignedByteArray unsignedByteArrayFromHex(String hexValue) {

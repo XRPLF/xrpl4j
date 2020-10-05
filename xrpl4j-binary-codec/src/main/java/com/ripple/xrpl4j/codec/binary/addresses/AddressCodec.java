@@ -119,4 +119,12 @@ public class AddressCodec {
     Version version = type.equals(VersionType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
     return encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
   }
+
+  public String encodeAccountId(UnsignedByteArray accountId) {
+    return encode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
+  }
+
+  public UnsignedByteArray decodeAccountId(String accountId) {
+    return decode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20)).bytes();
+  }
 }

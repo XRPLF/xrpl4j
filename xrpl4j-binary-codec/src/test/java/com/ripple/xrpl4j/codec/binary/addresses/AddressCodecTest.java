@@ -22,7 +22,7 @@ public class AddressCodecTest {
   AddressCodec addressCodec;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     addressCodec = new AddressCodec();
   }
 

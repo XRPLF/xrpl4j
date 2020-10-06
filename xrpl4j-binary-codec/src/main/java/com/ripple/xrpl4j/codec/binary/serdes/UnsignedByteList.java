@@ -16,6 +16,11 @@ public class UnsignedByteList {
     this(new ArrayList<>());
   }
 
+  public UnsignedByteList(int size) {
+    this();
+    fill(size);
+  }
+
   public UnsignedByteList(String hex) {
     this(ByteUtils.parse(hex));
   }
@@ -39,8 +44,22 @@ public class UnsignedByteList {
     return values.size();
   }
 
+  public UnsignedByte get(int index) {
+    return values.get(index);
+  }
+
   public void put(UnsignedByteList list) {
     values.addAll(list.values);
+  }
+
+  public void set(int i, UnsignedByte of) {
+    values.set(i, of);
+  }
+
+  private void fill(int amount) {
+    for (int i = 0; i < amount; i++) {
+      values.add(i, UnsignedByte.of(0));
+    }
   }
 
   public void toByteSink(UnsignedByteList bytes) {

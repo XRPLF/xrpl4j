@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
+import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -49,8 +50,8 @@ public class ByteUtils {
     return Joiner.on("").join(segments.stream().map(UnsignedByte::hexValue).collect(Collectors.toList()));
   }
 
-  public static UnsignedLong toUnsignedLong(List<UnsignedByte> segments) {
-    return UnsignedLong.valueOf(toHex(segments), 16);
+  public static UnsignedLong toUnsignedLong(UnsignedByteList segments) {
+    return UnsignedLong.valueOf(segments.toHex(), 16);
   }
 
   public static String padded(String hex) {

@@ -11,24 +11,15 @@ public class BinarySerializer {
 
   private final UnsignedByteList sink;
 
-  public BinarySerializer() {
-    this(new UnsignedByteList());
-  }
-
   public BinarySerializer(UnsignedByteList sink) {
     this.sink = sink;
-  }
-
-
-  public void write(SerializedType value) {
-    value.toBytesSink(this.sink);
   }
 
   public void put(String hexBytes) {
     sink.put(new UnsignedByteList(hexBytes));
   }
 
-  public void writeBytesList(UnsignedByteList list) {
+  public void write(UnsignedByteList list) {
     list.toByteSink(this.sink);
   }
 
@@ -92,7 +83,7 @@ public class BinarySerializer {
     UnsignedByteList bytes = new UnsignedByteList();
     value.toBytesSink(bytes);
     this.put(this.encodeVariableLength(bytes.getLength()).toHex());
-    this.writeBytesList(bytes);
+    this.write(bytes);
   }
 
 }

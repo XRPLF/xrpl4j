@@ -44,4 +44,28 @@ class BinaryEncoderTest {
     assertThat(encoder.decode(hex)).isEqualTo(json);
   }
 
+  @Test
+  void encodeDecodeHash128() throws JsonProcessingException {
+    String json = "{\"EmailHash\":\"11223344556677889900AABBCCDDEEFF\"}";
+    String hex = "4111223344556677889900AABBCCDDEEFF";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeHash160() throws JsonProcessingException {
+    String json = "{\"TakerPaysCurrency\":\"11223344556677889900AABBCCDDEEFF11223344\"}";
+    String hex = "011111223344556677889900AABBCCDDEEFF11223344";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeHash256() throws JsonProcessingException {
+    String json = "{\"LedgerHash\":\"11223344556677889900AABBCCDDEEFF11223344556677889900AABBCCDDEEFF\"}";
+    String hex = "5111223344556677889900AABBCCDDEEFF11223344556677889900AABBCCDDEEFF";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
 }

@@ -14,7 +14,6 @@ import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
 import java.util.OptionalInt;
 
 class AmountType extends SerializedType<AmountType> {
@@ -30,24 +29,21 @@ class AmountType extends SerializedType<AmountType> {
   private static final int MIN_IOU_EXPONENT = -96;
   private static final int MAX_IOU_EXPONENT = 80;
 
-  private final int byteLength; // FIXME is this needed?
-
   private ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 
   public AmountType() {
-    this(new UnsignedByteList(DEFAULT_AMOUNT_HEX), 8);
+    this(new UnsignedByteList(DEFAULT_AMOUNT_HEX));
   }
 
-  public AmountType(UnsignedByteList byteList, int byteLength) {
+  public AmountType(UnsignedByteList byteList) {
     super(byteList);
-    this.byteLength = byteLength;
   }
 
   @Override
   public AmountType fromParser(BinaryParser parser, OptionalInt lengthHint) {
     boolean isXRP = !parser.peek().isNthBitSet(1);
     int numBytes = isXRP ? NATIVE_AMOUNT_BYTE_LENGTH : CURRENCY_AMOUNT_BYTE_LENGTH;
-    return new AmountType(new UnsignedByteList(parser.read(numBytes)), numBytes);
+    return new AmountType(parser.read(numBytes));
   }
 
   @Override
@@ -57,7 +53,7 @@ class AmountType extends SerializedType<AmountType> {
       UInt64Type number = new UInt64Type().fromJSON(value.asText());
       byte[] rawBytes = number.toBytes();
       rawBytes[0] |= 0x40;
-      return new AmountType(new UnsignedByteList(rawBytes), 8);
+      return new AmountType(new UnsignedByteList(rawBytes));
     }
 
     Amount amount = objectMapper.treeToValue(value, Amount.class);
@@ -73,7 +69,7 @@ class AmountType extends SerializedType<AmountType> {
     result.put(currency);
     result.put(issuer);
 
-    return new AmountType(result, CURRENCY_AMOUNT_BYTE_LENGTH);
+    return new AmountType(result);
   }
 
   private UnsignedByteList getAmountBytes(BigDecimal number) {
@@ -105,7 +101,7 @@ class AmountType extends SerializedType<AmountType> {
       return new TextNode(value.toString());
     } else {
       BinaryParser parser = new BinaryParser(this.toHex());
-      List<UnsignedByte> mantissa = parser.read(8);
+      UnsignedByteList mantissa = parser.read(8);
       // FIXME parse currency and issuer
       String currency = "";
       String issuer = "";
@@ -120,7 +116,7 @@ class AmountType extends SerializedType<AmountType> {
       mantissa.set(0, UnsignedByte.of(0));
       mantissa.set(1, UnsignedByte.of(b2.asInt() & 0x3f));
 
-      BigDecimal value = new BigDecimal(new BigInteger(sign + ByteUtils.toHex(mantissa), 16))
+      BigDecimal value = new BigDecimal(new BigInteger(sign + mantissa.toHex(), 16))
           .multiply(new BigDecimal("1e" + exponent))
           .stripTrailingZeros();
 

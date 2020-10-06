@@ -10,27 +10,26 @@ import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 abstract public class SerializedType<T extends SerializedType<T>> implements SerializedComparable<T> {
 
-  // FIXME could be more effecient and simpler to keep everything as hex strings
   private final UnsignedByteList bytes;
 
-  private static Map<String, Class<SerializedType>> typeMap =
-      new ImmutableMap.Builder()
-          .put("UInt8", UInt8Type.class)
-          .put("UInt16", UInt16Type.class)
-          .put("UInt32", UInt32Type.class)
-          .put("STObject", STObjectType.class)
-          .put("Amount", AmountType.class)
+  private static Map<String, Supplier<SerializedType>> typeMap =
+      new ImmutableMap.Builder<String, Supplier<SerializedType>>()
+          .put("UInt8", () -> new UInt8Type())
+          .put("UInt16", () -> new UInt16Type())
+          .put("UInt32", () -> new UInt32Type())
+          .put("STObject", () -> new STObjectType())
+          .put("Amount", () -> new AmountType())
+          .put("Hash128", () -> new Hash128Type())
+          .put("Hash160", () -> new Hash160Type())
+          .put("Hash256", () -> new Hash256Type())
           .build();
 
   public static SerializedType getTypeByName(String name) {
-    try {
-      return typeMap.get(name).getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
-      throw new RuntimeException("Could not create serialized type for " + name, e);
-    }
+    return typeMap.get(name).get();
   }
 
   public SerializedType(UnsignedByteList bytes) {

@@ -63,7 +63,7 @@ class AmountType extends SerializedType<AmountType> {
         new UnsignedByteList(ZERO_CURRENCY_AMOUNT_HEX) :
         getAmountBytes(number);
 
-    UnsignedByteList currency = new UnsignedByteList(Strings.repeat("0", 40));
+    UnsignedByteList currency = new CurrencyType().fromJSON(value.get("currency")).value();
     UnsignedByteList issuer = new UnsignedByteList(Strings.repeat("0", 40));
 
     result.put(currency);
@@ -102,8 +102,8 @@ class AmountType extends SerializedType<AmountType> {
     } else {
       BinaryParser parser = new BinaryParser(this.toHex());
       UnsignedByteList mantissa = parser.read(8);
-      // FIXME parse currency and issuer
-      String currency = "";
+      // FIXME parse issuer
+      SerializedType currency = getTypeByName("Currency").fromParser(parser, OptionalInt.empty());
       String issuer = "";
 
       UnsignedByte b1 = mantissa.get(0);
@@ -123,7 +123,7 @@ class AmountType extends SerializedType<AmountType> {
       assertIouIsValid(value);
 
       Amount amount = Amount.builder()
-          .currency(currency)
+          .currency(currency.toJSON().asText())
           .issuer(issuer)
           .value(value.toPlainString())
           .build();

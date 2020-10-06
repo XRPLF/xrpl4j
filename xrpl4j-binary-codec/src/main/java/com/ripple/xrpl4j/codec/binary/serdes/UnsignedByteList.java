@@ -56,6 +56,10 @@ public class UnsignedByteList {
     values.set(i, of);
   }
 
+  public UnsignedByteList slice(int startIndex, int endIndex) {
+    return new UnsignedByteList(values.subList(startIndex, endIndex));
+  }
+
   private void fill(int amount) {
     for (int i = 0; i < amount; i++) {
       values.add(i, UnsignedByte.of(0));

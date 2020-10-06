@@ -19,6 +19,15 @@ public abstract class HashType<T extends HashType<T>> extends SerializedType<T> 
     return this.toHex();
   }
 
+  @Override
+  public T fromHex(String hex) {
+    return super.fromHex(hex, width);
+  }
+
+  public int getWidth() {
+    return width;
+  }
+
   /**
    * Returns four bits at the specified depth within a hash
    *

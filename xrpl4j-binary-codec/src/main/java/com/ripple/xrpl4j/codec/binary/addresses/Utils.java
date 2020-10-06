@@ -23,7 +23,7 @@ public class Utils {
 
   /**
    * Calculates the SHA-256 hash of the given byte range, and then hashes the resulting hash again. This is
-   * standard procedure in Bitcoin. The resulting hash is in big endian form.
+   * standard procedure in XRPL. The resulting hash is in big endian form.
    */
   public static byte[] doubleDigest(byte[] input, int offset, int length) {
     synchronized (digest) {

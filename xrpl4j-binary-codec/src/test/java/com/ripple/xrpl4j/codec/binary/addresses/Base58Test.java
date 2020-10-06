@@ -46,7 +46,7 @@ public class Base58Test {
   @Test
   void testEncodeDecodeChecked() {
     byte[] input = "123456789".getBytes();
-    String encoded = Base58.encodeChecked(input, Lists.newArrayList(Version.ACCOUNT_ID));
+    String encoded = AddressBase58.encodeChecked(input, Lists.newArrayList(Version.ACCOUNT_ID));
     assertThat(encoded).isEqualTo("rnaC7gW34M77Kneb78s");
 
     byte[] decoded = Base58.decodeChecked(encoded);

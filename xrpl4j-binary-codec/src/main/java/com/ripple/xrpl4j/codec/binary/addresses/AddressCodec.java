@@ -9,7 +9,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class AddressCodec {
@@ -19,17 +18,15 @@ public class AddressCodec {
     static byte[] TEST = new byte[] { 0x04, (byte) 0x93};
   }
 
-  protected Decoded decodeSeed(
-    String seed,
-    List<VersionType> versionTypes,
-    List<Version> versions,
-    Optional<UnsignedInteger> expectedLength
-  ) throws EncodingFormatException {
-    return decode(seed, versionTypes, versions, expectedLength);
-  }
-
+  /**
+   * Decodes a Base58Check encoded XRPL secret key seed value. Works for ed25519 and secp256k1 seeds.
+   *
+   * @see "https://xrpl.org/cryptographic-keys.html#seed"
+   * @param seed A Base58Check encoded XRPL keypair seed.
+   * @return The decoded seed, seed type, and algorithm used to encode the seed.
+   */
   public Decoded decodeSeed(String seed) throws EncodingFormatException {
-    return decodeSeed(
+    return decode(
       seed,
       Lists.newArrayList(VersionType.ED25519, VersionType.SECP256K1),
       Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
@@ -37,6 +34,13 @@ public class AddressCodec {
     );
   }
 
+  /**
+   * Encodes a byte array to a Base58Check {@link String} using the given {@link VersionType}.
+   *
+   * @param entropy An {@link UnsignedByteArray} containing the seed entropy to encode.
+   * @param type The cryptographic algorithm type to be encoded in the resulting seed.
+   * @return A Base58Check encoded XRPL keypair seed.
+   */
   public String encodeSeed(UnsignedByteArray entropy, VersionType type) {
     if (entropy.getUnsignedBytes().size() != 16) {
       throw new EncodeException("entropy must have length 16.");
@@ -46,43 +50,113 @@ public class AddressCodec {
     return encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
   }
 
-  public String encodeAccountId(UnsignedByteArray bytes) {
-    return encode(bytes, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
+  /**
+   * Encode an XRPL AccountID to a Base58Check encoded {@link String}.
+   *
+   * @param accountId An {@link UnsignedByteArray} containing the AccountID to be encoded.
+   * @return The Base58 representation of accountId.
+   */
+  public String encodeAccountId(UnsignedByteArray accountId) {
+    return encode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
   }
 
+  /**
+   * Decode a Base58Check encoded XRPL AccountID.
+   *
+   * @see "https://xrpl.org/base58-encodings.html"
+   * @param accountId The Base58 encoded AccountID to be decoded.
+   * @return An {@link UnsignedByteArray} containing the decoded AccountID.
+   */
   public UnsignedByteArray decodeAccountId(String accountId) {
     return decode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20)).bytes();
   }
 
-  public String encodeNodePublic(UnsignedByteArray bytes) {
-    return encode(bytes, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33));
+  /**
+   * Encode an XRPL Node Public Key to a Base58Check encoded {@link String}.
+   *
+   * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
+   * @return The Base58 representation of publicKey.
+   */
+  public String encodeNodePublicKey(UnsignedByteArray publicKey) {
+    return encode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33));
   }
 
-  public UnsignedByteArray decodeNodePublic(String node) {
-    return decode(node, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33)).bytes();
+  /**
+   * Decode a Base58Check encoded XRPL Node Public Key.
+   *
+   * @see "https://xrpl.org/base58-encodings.html"
+   * @param publicKey The Base58 encoded public key to be decoded.
+   * @return An {@link UnsignedByteArray} containing the decoded public key.
+   */
+  public UnsignedByteArray decodeNodePublicKey(String publicKey) {
+    return decode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33)).bytes();
   }
 
-  public String encodeAccountPublicKey(UnsignedByteArray bytes) {
-    return encode(bytes, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
+  /**
+   * Encode an XRPL Account Public Key to a Base58Check encoded {@link String}.
+   *
+   * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
+   * @return The Base58 representation of publicKey.
+   */
+  public String encodeAccountPublicKey(UnsignedByteArray publicKey) {
+    return encode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
   }
 
+  /**
+   * Decode a Base58Check encoded XRPL Account Public Key.
+   *
+   * @see "https://xrpl.org/base58-encodings.html"
+   * @param publicKey The Base58 encoded public key to be decoded.
+   * @return An {@link UnsignedByteArray} containing the decoded public key.
+   */
   public UnsignedByteArray decodeAccountPublicKey(String publicKey) {
     return decode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33)).bytes();
   }
 
+  /**
+   * Converts an XRPL Classic Address and Destination Tag to an X-Address.
+   *
+   * @param classicAddress A {@link String} containing the classic address.
+   * @param tag The destination tag of the address.
+   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @return The X-Address representation of the classic address and destination tag.
+   */
   public String classicAddressToXAddress(String classicAddress, UnsignedInteger tag, boolean test) {
     return classicAddressToXAddress(classicAddress, Optional.of(tag), test);
   }
 
+  /**
+   * Converts an XRPL Classic Address with no Destination Tag to an X-Address.
+   *
+   * @param classicAddress A {@link String} containing the classic address.
+   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @return The X-Address representation of the classic address.
+   */
   public String classicAddressToXAddress(String classicAddress, boolean test) {
     return classicAddressToXAddress(classicAddress, Optional.empty(), test);
   }
 
+  /**
+   * Converts an XRPL Classic Address and and optional Destination Tag to an X-Address.
+   *
+   * @param classicAddress A {@link String} containing the classic address.
+   * @param tag The destination tag of the address.
+   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @return The X-Address representation of the classic address and destination tag.
+   */
   public String classicAddressToXAddress(String classicAddress, Optional<UnsignedInteger> tag, boolean test) {
     UnsignedByteArray accountId = decodeAccountId(classicAddress);
     return encodeXAddress(accountId, tag, test);
   }
 
+  /**
+   * Encodes and AccountID, destination tag, and the XRPL network into an X-Address.
+   *
+   * @param accountId An {@link UnsignedByteArray} containing an XRPL AccountID.
+   * @param tag (Optional) The destination tag of the account.
+   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @return The X-Address representation of the AccountID and destination tag.
+   */
   private String encodeXAddress(UnsignedByteArray accountId, Optional<UnsignedInteger> tag, boolean test) {
     if (accountId.getUnsignedBytes().size() != 20) {
       throw new EncodeException("AccountID must be 20 bytes.");
@@ -110,6 +184,12 @@ public class AddressCodec {
     return Base58.encodeChecked(bytes.toByteArray());
   }
 
+  /**
+   * Decodes an X-Address to a Classic Address and Destination Tag.
+   *
+   * @param xAddress The X-Address to be decoded.
+   * @return The {@link ClassicAddress} decoded from xAddress.
+   */
   public ClassicAddress xAddressToClassicAddress(String xAddress) {
     DecodedXAddress decodedXAddress = decodeXAddress(xAddress);
     String classicAddress = encodeAccountId(decodedXAddress.accountId());
@@ -121,6 +201,12 @@ public class AddressCodec {
       .build();
   }
 
+  /**
+   * Decodes an X-Address to an AccountID, destination tag, and a boolean for XRPL-testnet or XRPL-mainnet.
+   *
+   * @param xAddress The X-Address to be decoded.
+   * @return The {@link DecodedXAddress} decoded from xAddress.
+   */
   private DecodedXAddress decodeXAddress(String xAddress) {
     byte[] decoded = Base58.decodeChecked(xAddress);
     boolean test = isTestAddress(decoded);

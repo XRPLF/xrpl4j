@@ -5,6 +5,9 @@ import org.immutables.value.Value;
 
 import java.util.Optional;
 
+/**
+ * Represents a decoded Base58 {@link String}.
+ */
 @Value.Immutable
 public interface Decoded {
 

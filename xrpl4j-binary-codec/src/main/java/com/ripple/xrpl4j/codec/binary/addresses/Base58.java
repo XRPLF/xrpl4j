@@ -2,11 +2,14 @@ package com.ripple.xrpl4j.codec.binary.addresses;
 
 import static java.util.Arrays.copyOfRange;
 
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Utility class for encoding and decoding in Base58.  Includes methods for encoding and decoding with a 4 byte
+ * checksum, which is necessary for XRPL Address encoding.
+ */
 public class Base58 {
   public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz".toCharArray();
 
@@ -18,7 +21,12 @@ public class Base58 {
     }
   }
 
-  /** Encodes the given bytes in base58. No checksum is appended. */
+  /**
+   * Encodes the given bytes to a Base58 {@link String}
+   *
+   * @param input A byte array to encode.
+   * @return The bytes encoded to a Base58 {@link String}
+   */
   public static String encode(byte[] input) {
     if (input.length == 0) {
       return "";
@@ -52,13 +60,15 @@ public class Base58 {
     }
 
     byte[] output = copyOfRange(temp, j, temp.length);
-    try {
-      return new String(output, "US-ASCII");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);  // Cannot happen.
-    }
+    return new String(output, StandardCharsets.US_ASCII);
   }
 
+  /**
+   * Decodes a Base58 encoded {@link String} to a byte array.
+   *
+   * @param input The Base58 {@link String}.
+   * @return A byte array containing the decoded Base58 {@link String}.
+   */
   public static byte[] decode(String input) {
     if (input.length() == 0) {
       return new byte[0];
@@ -104,10 +114,12 @@ public class Base58 {
     return copyOfRange(temp, j - zeroCount, temp.length);
   }
 
-  public static BigInteger decodeToBigInteger(String input) throws EncodingFormatException {
-    return new BigInteger(1, decode(input));
-  }
-
+  /**
+   * Encodes the given byte array to a Base58 {@link String} with a 4 byte checksum appended.
+   *
+   * @param bytes The byte array to encode.
+   * @return A {@link String} containing the Base58Check encoded bytes.
+   */
   public static String encodeChecked(byte[] bytes) {
 
     byte[] checkSum = copyOfRange(Utils.doubleDigest(bytes), 0, 4);
@@ -118,33 +130,15 @@ public class Base58 {
     return encode(output);
   }
 
-  public static String encodeChecked(byte[] bytes, List<Version> versions) {
-    int versionsLength = 0;
-    for (Version version : versions) {
-      versionsLength += version.getValues().length;
-    }
-    byte[] versionsBytes = new byte[versionsLength];
-    for (int i = 0; i < versions.size(); i++) {
-      for (int j = 0; j < versions.get(i).getValues().length; j++) {
-        versionsBytes[i + j] = (byte) versions.get(i).getValues()[j];
-      }
-    }
-
-    byte[] bytesAndVersions = new byte[bytes.length + versionsLength];
-    System.arraycopy(versionsBytes, 0, bytesAndVersions, 0, versionsLength);
-    System.arraycopy(bytes, 0, bytesAndVersions, versionsLength, bytes.length);
-
-    return encodeChecked(bytesAndVersions);
-  }
-
   /**
-   * Uses the checksum in the last 4 bytes of the decoded data to verify the rest are correct. The checksum is
-   * removed from the returned data.
+   * Decodes the given Base58Check encoded {@link String} to a byte array, and validates the checksum.
    *
-   * @throws EncodingFormatException if the input is not base 58 or the checksum does not validate.
+   * @param input A Base58Check encoded {@link String}.
+   * @return A byte array containing the decoded value.
+   * @throws EncodingFormatException If the input is not Base58 encoded or the checksum does not validate.
    */
   public static byte[] decodeChecked(String input) throws EncodingFormatException {
-    byte tmp [] = decode(input);
+    byte[] tmp = decode(input);
     if (tmp.length < 4)
       throw new EncodingFormatException("Input must be longer than 3 characters.");
     byte[] bytes = copyOfRange(tmp, 0, tmp.length - 4);
@@ -157,9 +151,6 @@ public class Base58 {
 
     return bytes;
   }
-  //
-  // number -> number / 58, returns number % 58
-  //
 
   private static byte divmod58(byte[] number, int startAt) {
     int remainder = 0;
@@ -174,9 +165,6 @@ public class Base58 {
 
     return (byte) remainder;
   }
-  //
-  // number -> number / 256, returns number % 256
-  //
 
   private static byte divmod256(byte[] number58, int startAt) {
     int remainder = 0;

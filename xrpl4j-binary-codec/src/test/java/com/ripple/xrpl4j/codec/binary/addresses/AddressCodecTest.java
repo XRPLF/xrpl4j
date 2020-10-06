@@ -4,7 +4,6 @@ package com.ripple.xrpl4j.codec.binary.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.io.BaseEncoding;
-import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
 import org.junit.Before;
 import org.junit.Rule;
@@ -130,8 +129,8 @@ public class AddressCodecTest {
   @Test
   public void encodeDecodeNodePublic() {
     testEncodeDecode(
-      nodePublic -> addressCodec.encodeNodePublic(nodePublic),
-      nodePublic -> addressCodec.decodeNodePublic(nodePublic),
+      nodePublic -> addressCodec.encodeNodePublicKey(nodePublic),
+      nodePublic -> addressCodec.decodeNodePublicKey(nodePublic),
       unsignedByteArrayFromHex("0388E5BA87A000CB807240DF8C848EB0B5FFA5C8E5A521BC8E105C0F0A44217828"),
       "n9MXXueo837zYH36DvMc13BwHcqtfAWNJY5czWVbp7uYTj7x17TH"
     );

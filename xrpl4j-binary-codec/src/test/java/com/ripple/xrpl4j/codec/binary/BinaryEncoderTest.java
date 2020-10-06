@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
 import com.ripple.xrpl4j.codec.fixtures.FixtureUtils;
 import com.ripple.xrpl4j.codec.fixtures.data.WholeObject;
 import org.junit.jupiter.api.Test;
@@ -88,6 +89,16 @@ class BinaryEncoderTest {
   void encodeDecodeIssuedCurrency() throws JsonProcessingException {
     String json = "{\"Fee\":{\"currency\":\"USD\",\"value\":\"123\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"}}";
     String hex = "68D5045EADB112E00000000000000000000000000055534400000000005E7B112523F68D2F5E879DB4EAC51C6698A69304";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeAmendments() throws JsonProcessingException {
+    String amendmentHex1 = Strings.repeat("1", 64);
+    String amendmentHex2 = Strings.repeat("2", 64);
+    String json = "{\"Amendments\":[\"" + amendmentHex1 + "\",\"" + amendmentHex2 + "\"]}";
+    String hex = "031340" + amendmentHex1 + amendmentHex2;
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
   }

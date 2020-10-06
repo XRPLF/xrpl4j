@@ -25,10 +25,12 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
           .put("Hash128", () -> new Hash128Type())
           .put("Hash160", () -> new Hash160Type())
           .put("Hash256", () -> new Hash256Type())
+          .put("STArray", () -> new STArrayType())
           .put("STObject", () -> new STObjectType())
           .put("UInt8", () -> new UInt8Type())
           .put("UInt16", () -> new UInt16Type())
           .put("UInt32", () -> new UInt32Type())
+          .put("Vector256", () -> new Vector256Type())
           .build();
 
   public static SerializedType getTypeByName(String name) {

@@ -20,8 +20,8 @@ import java.util.OptionalInt;
 
 public class STObjectType extends SerializedType<STObjectType> {
 
+  public static final String OBJECT_END_MARKER_HEX = "E1";
   private static final String OBJECT_END_MARKER = "ObjectEndMarker";
-  private static final String OBJECT_END_MARKER_BYTES = "E1";
   private static final String ST_OBJECT = "STObject";
 
   private DefinitionsService definitionsService = DefinitionsService.getInstance();
@@ -35,14 +35,9 @@ public class STObjectType extends SerializedType<STObjectType> {
   }
 
   @Override
-  public int compareTo(STObjectType o) {
-    return 0; // FIXME how to sort?
-  }
-
-  @Override
   public STObjectType fromParser(BinaryParser parser, OptionalInt lengthHint) {
-    UnsignedByteArray list = UnsignedByteArray.empty();
-    BinarySerializer serializer = new BinarySerializer(list);
+    UnsignedByteArray byteArray = UnsignedByteArray.empty();
+    BinarySerializer serializer = new BinarySerializer(byteArray);
 
     while(!parser.end()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
@@ -53,10 +48,10 @@ public class STObjectType extends SerializedType<STObjectType> {
       SerializedType associatedValue = parser.readFieldValue(field);
       serializer.writeFieldAndValue(field, associatedValue);
       if (field.type().equals(ST_OBJECT)) {
-        serializer.put(OBJECT_END_MARKER_BYTES);
+        serializer.put(OBJECT_END_MARKER_HEX);
       }
     }
-    return new STObjectType(list);
+    return new STObjectType(byteArray);
   }
 
   @Override
@@ -64,7 +59,6 @@ public class STObjectType extends SerializedType<STObjectType> {
     UnsignedByteArray byteList = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteList);
 
-    // TODO handle xADDRESS to classic address / tag mapping
     List<FieldWithValue<JsonNode>> fields = new ArrayList<>();
     for(String fieldName : Lists.newArrayList(node.fieldNames())) {
       JsonNode fieldNode = node.get(fieldName);
@@ -84,10 +78,10 @@ public class STObjectType extends SerializedType<STObjectType> {
           try {
             serializer.writeFieldAndValue(value.field(), value.value());
           } catch (JsonProcessingException e) {
-            e.printStackTrace(); // FIXME
+            throw new IllegalArgumentException("invalid json", e);
           }
           if (value.field().type().equals(ST_OBJECT)) {
-            serializer.put(OBJECT_END_MARKER_BYTES);
+            serializer.put(OBJECT_END_MARKER_HEX);
           }
         });
 

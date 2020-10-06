@@ -1,4 +1,4 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
 public class DecodeException extends RuntimeException {
   public DecodeException(String message) {

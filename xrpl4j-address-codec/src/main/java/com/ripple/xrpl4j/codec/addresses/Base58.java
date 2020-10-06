@@ -1,10 +1,9 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
 import static java.util.Arrays.copyOfRange;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Utility class for encoding and decoding in Base58.  Includes methods for encoding and decoding with a 4 byte

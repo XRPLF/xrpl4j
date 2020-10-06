@@ -156,6 +156,7 @@
   <modules>
     <module>xrpl4j-binary-codec</module>
     <module>xrpl4j-model</module>
+    <module>xrpl4j-address-codec</module>
   </modules>
 
   <build>

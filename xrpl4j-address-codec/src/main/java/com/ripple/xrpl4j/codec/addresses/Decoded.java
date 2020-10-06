@@ -1,6 +1,5 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
-import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
 import org.immutables.value.Value;
 
 import java.util.Optional;

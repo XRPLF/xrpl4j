@@ -1,4 +1,4 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;

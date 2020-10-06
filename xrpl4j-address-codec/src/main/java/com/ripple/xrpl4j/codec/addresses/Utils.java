@@ -1,4 +1,4 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

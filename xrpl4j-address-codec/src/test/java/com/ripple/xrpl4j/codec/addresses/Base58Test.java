@@ -1,11 +1,11 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.Arrays;
 
@@ -20,7 +20,7 @@ public class Base58Test {
   }
 
   @Test
-  void testEncodeUnsignedInteger() throws EncodingFormatException {
+  public void testEncodeUnsignedInteger() throws EncodingFormatException {
     UnsignedLong decoded = UnsignedLong.valueOf(3471844090L);
     String encoded = "raHofH1";
     assertThat(Base58.encode(decoded.bigIntegerValue().toByteArray())).isEqualTo(encoded);
@@ -28,7 +28,7 @@ public class Base58Test {
   }
 
   @Test
-  void testEncodeDecodeZeroByte() throws EncodingFormatException {
+  public void testEncodeDecodeZeroByte() throws EncodingFormatException {
     byte[] decoded = new byte[1];
     String encoded = "r";
     assertThat(Base58.encode(decoded)).isEqualTo(encoded);
@@ -36,7 +36,7 @@ public class Base58Test {
   }
 
   @Test
-  void testEncodeDecodeZeroBytes() throws EncodingFormatException {
+  public void testEncodeDecodeZeroBytes() throws EncodingFormatException {
     byte[] decoded = new byte[7];
     String encoded = "rrrrrrr";
     assertThat(Base58.encode(decoded)).isEqualTo(encoded);
@@ -44,7 +44,7 @@ public class Base58Test {
   }
 
   @Test
-  void testEncodeDecodeChecked() {
+  public void testEncodeDecodeChecked() {
     byte[] input = "123456789".getBytes();
     String encoded = AddressBase58.encodeChecked(input, Lists.newArrayList(Version.ACCOUNT_ID));
     assertThat(encoded).isEqualTo("rnaC7gW34M77Kneb78s");
@@ -56,7 +56,7 @@ public class Base58Test {
   }
 
   @Test
-  void testDecodeInvalidBase58() {
+  public void testDecodeInvalidBase58() {
     try {
       Base58.decode("This isn't valid base58");
       fail();

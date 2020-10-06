@@ -1,10 +1,9 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

@@ -1,12 +1,11 @@
-package com.ripple.xrpl4j.codec.binary.addresses;
+package com.ripple.xrpl4j.codec.addresses;
 
-import static com.ripple.xrpl4j.codec.binary.addresses.AddressBase58.decode;
-import static com.ripple.xrpl4j.codec.binary.addresses.AddressBase58.encode;
+import static com.ripple.xrpl4j.codec.addresses.AddressBase58.decode;
+import static com.ripple.xrpl4j.codec.addresses.AddressBase58.encode;
 import static java.util.Arrays.copyOfRange;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.codec.binary.UnsignedByteArray;
 
 import java.util.Arrays;
 import java.util.Optional;

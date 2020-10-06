@@ -2,6 +2,8 @@ package com.ripple.xrpl4j.codec.addresses;
 
 import static java.util.Arrays.copyOfRange;
 
+import com.ripple.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 

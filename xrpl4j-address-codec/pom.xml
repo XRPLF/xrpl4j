@@ -10,17 +10,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>xrpl4j-address-codec</artifactId>
+
+  <name>xrpl4j :: address codec</name>
+  <description>
+    Classes for encoding and decoding XRPL Addresses.
+  </description>
+
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>29.0-jre</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.immutables</groupId>
       <artifactId>value</artifactId>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>

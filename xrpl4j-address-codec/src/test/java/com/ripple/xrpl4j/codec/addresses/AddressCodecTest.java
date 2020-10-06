@@ -4,6 +4,7 @@ package com.ripple.xrpl4j.codec.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.io.BaseEncoding;
+import com.ripple.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

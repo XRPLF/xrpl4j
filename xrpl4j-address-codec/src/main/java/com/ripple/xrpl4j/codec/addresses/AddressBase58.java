@@ -1,6 +1,9 @@
 package com.ripple.xrpl4j.codec.addresses;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.codec.addresses.exceptions.DecodeException;
+import com.ripple.xrpl4j.codec.addresses.exceptions.EncodeException;
+import com.ripple.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

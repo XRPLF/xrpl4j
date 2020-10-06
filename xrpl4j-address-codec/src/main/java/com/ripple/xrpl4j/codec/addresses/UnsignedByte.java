@@ -1,4 +1,4 @@
-package com.ripple.xrpl4j.codec.binary;
+package com.ripple.xrpl4j.codec.addresses;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;

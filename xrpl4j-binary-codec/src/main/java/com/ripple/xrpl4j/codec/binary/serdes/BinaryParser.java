@@ -1,9 +1,10 @@
 package com.ripple.xrpl4j.codec.binary.serdes;
 
 import com.google.common.primitives.UnsignedLong;
-import com.ripple.xrpl4j.codec.binary.ByteUtils;
+import com.ripple.xrpl4j.codec.addresses.ByteUtils;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.FieldHeader;
-import com.ripple.xrpl4j.codec.binary.UnsignedByte;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsService;
 import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.types.FieldWithValue;
@@ -35,7 +36,7 @@ public class BinaryParser {
     cursor += bytesToSkip * BYTE_HEX_LENGTH;
   }
 
-  public UnsignedByteList read(int bytesToRead) {
+  public UnsignedByteArray read(int bytesToRead) {
     if (cursor >= hex.length()) {
       throw new IndexOutOfBoundsException("cursor moved past end of buffer");
     }
@@ -44,7 +45,7 @@ public class BinaryParser {
       result.add(peek());
       skip(1);
     }
-    return new UnsignedByteList(result);
+    return new UnsignedByteArray(result);
   }
 
   public UnsignedLong readUInt8() {
@@ -137,7 +138,7 @@ public class BinaryParser {
    */
   public <T extends SerializedType<T>> T readType(Class<T> type) {
     try {
-      return type.getDeclaredConstructor().newInstance().fromParser(this, OptionalInt.empty());
+      return type.getDeclaredConstructor().newInstance().fromParser(this);
     } catch (Exception e) {
       throw new RuntimeException("could not instantiate field of type " + type.getName(), e);
     }

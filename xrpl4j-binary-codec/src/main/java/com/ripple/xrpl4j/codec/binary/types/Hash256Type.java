@@ -1,8 +1,8 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.OptionalInt;
 
@@ -11,10 +11,10 @@ public class Hash256Type extends HashType<Hash256Type> {
   public static final int WIDTH = 32;
 
   public Hash256Type() {
-    this(new UnsignedByteList(WIDTH));
+    this(UnsignedByteArray.ofSize(WIDTH));
   }
 
-  public Hash256Type(UnsignedByteList list) {
+  public Hash256Type(UnsignedByteArray list) {
     super(list, WIDTH);
   }
 
@@ -25,6 +25,6 @@ public class Hash256Type extends HashType<Hash256Type> {
 
   @Override
   public Hash256Type fromJSON(JsonNode node) {
-    return new Hash256Type(new UnsignedByteList(node.asText()));
+    return new Hash256Type(UnsignedByteArray.fromHex(node.asText()));
   }
 }

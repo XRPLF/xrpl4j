@@ -2,24 +2,25 @@ package com.ripple.xrpl4j.codec.binary.serdes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.FieldHeaderCodec;
-import com.ripple.xrpl4j.codec.binary.UnsignedByte;
 import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.types.SerializedType;
 
 public class BinarySerializer {
 
-  private final UnsignedByteList sink;
+  private final UnsignedByteArray sink;
 
-  public BinarySerializer(UnsignedByteList sink) {
+  public BinarySerializer(UnsignedByteArray sink) {
     this.sink = sink;
   }
 
   public void put(String hexBytes) {
-    sink.put(new UnsignedByteList(hexBytes));
+    sink.add(UnsignedByteArray.fromHex(hexBytes));
   }
 
-  public void write(UnsignedByteList list) {
+  public void write(UnsignedByteArray list) {
     list.toByteSink(this.sink);
   }
 
@@ -28,20 +29,20 @@ public class BinarySerializer {
    *
    * @param length the length of the bytes
    */
-  private UnsignedByteList encodeVariableLength(int length) {
+  private UnsignedByteArray encodeVariableLength(int length) {
     if (length <= 192) {
-      return new UnsignedByteList(UnsignedByte.of(length));
+      return UnsignedByteArray.of(UnsignedByte.of(length));
     } else if (length <= 12480) {
       length -= 193;
       int byte1 = 193 + (length >>> 8);
       int byte2 = length & 0xff;
-      return new UnsignedByteList(UnsignedByte.of(byte1), UnsignedByte.of(byte2));
+      return UnsignedByteArray.of(UnsignedByte.of(byte1), UnsignedByte.of(byte2));
     } else if (length <= 918744) {
       length -= 12481;
       int byte1 = 241 + (length >>> 16);
       int byte2 = (length >> 8) & 0xff;
       int byte3 = length & 0xff;
-      return new UnsignedByteList(UnsignedByte.of(byte1), UnsignedByte.of(byte2), UnsignedByte.of(byte3));
+      return UnsignedByteArray.of(UnsignedByte.of(byte1), UnsignedByte.of(byte2), UnsignedByte.of(byte3));
     }
     throw new Error("Overflow error");
   }
@@ -54,7 +55,7 @@ public class BinarySerializer {
    */
   public void writeFieldAndValue(FieldInstance field, SerializedType value) {
     String fieldHeaderHex = FieldHeaderCodec.getInstance().encode(field.name());
-    this.sink.put(new UnsignedByteList(fieldHeaderHex));
+    this.sink.add(UnsignedByteArray.fromHex(fieldHeaderHex));
 
     if (field.isVariableLengthEncoded()) {
       this.writeLengthEncoded(value);
@@ -80,9 +81,9 @@ public class BinarySerializer {
    * @param value length encoded value to write to BytesList
    */
   public void writeLengthEncoded(SerializedType value) {
-    UnsignedByteList bytes = new UnsignedByteList();
+    UnsignedByteArray bytes = UnsignedByteArray.empty();
     value.toBytesSink(bytes);
-    this.put(this.encodeVariableLength(bytes.getLength()).toHex());
+    this.put(this.encodeVariableLength(bytes.length()).hexValue());
     this.write(bytes);
   }
 

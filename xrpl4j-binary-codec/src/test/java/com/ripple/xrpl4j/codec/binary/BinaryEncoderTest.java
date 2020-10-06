@@ -3,7 +3,6 @@ package com.ripple.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 class BinaryEncoderTest {
@@ -78,19 +77,11 @@ class BinaryEncoderTest {
   }
 
   @Test
-  void encodeDecodeIssuedCurrencyWithIssuer() throws JsonProcessingException {
-    String json = "{\"Fee\":{\"value\":\"123\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\"currency\":\"USD\"}}";
+  void encodeDecodeIssuedCurrency() throws JsonProcessingException {
+    String json = "{\"Fee\":{\"value\":\"123\",\"currency\":\"USD\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"}}";
     String hex = "68D5045EADB112E00000000000000000000000000055534400000000005E7B112523F68D2F5E879DB4EAC51C6698A69304";
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
   }
 
-  @Ignore // FIXME implement issuer
-  @Test
-  void encodeDecodeIssuedCurrencyNoIssuer() throws JsonProcessingException {
-    String json = "{\"Fee\":{\"value\":\"123\",\"currency\":\"USD\",\"issuer\":\"\"}}";
-    String hex = "68D5045EADB112E00000000000000000000000000055534400000000000000000000000000000000000000000000000000";
-    assertThat(encoder.encode(json)).isEqualTo(hex);
-    assertThat(encoder.decode(hex)).isEqualTo(json);
-  }
 }

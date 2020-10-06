@@ -1,17 +1,18 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.OptionalInt;
 
 public class BlobType extends SerializedType<BlobType> {
+
   public BlobType() {
-    this(new UnsignedByteList());
+    this(UnsignedByteArray.empty());
   }
 
-  public BlobType(UnsignedByteList list) {
+  public BlobType(UnsignedByteArray list) {
     super(list);
   }
 
@@ -22,7 +23,7 @@ public class BlobType extends SerializedType<BlobType> {
 
   @Override
   public BlobType fromJSON(JsonNode node) {
-    return new BlobType(new UnsignedByteList(node.asText()));
+    return new BlobType(UnsignedByteArray.fromHex(node.asText()));
   }
 
 }

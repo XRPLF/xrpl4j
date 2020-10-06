@@ -2,8 +2,8 @@ package com.ripple.xrpl4j.codec.binary;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 import com.ripple.xrpl4j.codec.binary.types.STObjectType;
 
 public class XrplBinaryCodec {
@@ -17,9 +17,9 @@ public class XrplBinaryCodec {
    */
   public String encode(String json) throws JsonProcessingException {
     JsonNode node = ObjectMapperFactory.getObjectMapper().readTree(json);
-    UnsignedByteList byteList = new UnsignedByteList();
+    UnsignedByteArray byteList = UnsignedByteArray.empty();
     new STObjectType().fromJSON(node).toBytesSink(byteList);
-    return byteList.toHex();
+    return byteList.hexValue();
   }
 
   /**

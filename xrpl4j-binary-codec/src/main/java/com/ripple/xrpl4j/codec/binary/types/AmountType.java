@@ -4,13 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.base.Strings;
-import com.ripple.xrpl4j.codec.binary.ByteUtils;
+import com.ripple.xrpl4j.codec.addresses.ByteUtils;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
-import com.ripple.xrpl4j.codec.binary.UnsignedByte;
 import com.ripple.xrpl4j.codec.binary.math.MathUtils;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -32,10 +31,10 @@ class AmountType extends SerializedType<AmountType> {
   private ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 
   public AmountType() {
-    this(new UnsignedByteList(DEFAULT_AMOUNT_HEX));
+    this(UnsignedByteArray.fromHex(DEFAULT_AMOUNT_HEX));
   }
 
-  public AmountType(UnsignedByteList byteList) {
+  public AmountType(UnsignedByteArray byteList) {
     super(byteList);
   }
 
@@ -53,26 +52,26 @@ class AmountType extends SerializedType<AmountType> {
       UInt64Type number = new UInt64Type().fromJSON(value.asText());
       byte[] rawBytes = number.toBytes();
       rawBytes[0] |= 0x40;
-      return new AmountType(new UnsignedByteList(rawBytes));
+      return new AmountType(UnsignedByteArray.of(rawBytes));
     }
 
     Amount amount = objectMapper.treeToValue(value, Amount.class);
     BigDecimal number = new BigDecimal(amount.value());
 
-    UnsignedByteList result = number.equals(BigDecimal.ZERO) ?
-        new UnsignedByteList(ZERO_CURRENCY_AMOUNT_HEX) :
+    UnsignedByteArray result = number.equals(BigDecimal.ZERO) ?
+        UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
         getAmountBytes(number);
 
-    UnsignedByteList currency = new CurrencyType().fromJSON(value.get("currency")).value();
-    UnsignedByteList issuer = new UnsignedByteList(Strings.repeat("0", 40));
+    UnsignedByteArray currency = new CurrencyType().fromJSON(value.get("currency")).value();
+    UnsignedByteArray issuer = new AccountIdType().fromJSON(value.get("issuer")).value();
 
-    result.put(currency);
-    result.put(issuer);
+    result.add(currency);
+    result.add(issuer);
 
     return new AmountType(result);
   }
 
-  private UnsignedByteList getAmountBytes(BigDecimal number) {
+  private UnsignedByteArray getAmountBytes(BigDecimal number) {
     BigInteger paddedNumber = MathUtils.toPaddedBigInteger(number, 16);
     byte[] amountBytes = ByteUtils.toByteArray(paddedNumber, 8);
     amountBytes[0] |= 0x80;
@@ -85,7 +84,7 @@ class AmountType extends SerializedType<AmountType> {
     amountBytes[0] |= exponentByte.asInt() >>> 2;
     amountBytes[1] |= (exponentByte.asInt() & 0x03) << 6;
 
-    UnsignedByteList result = new UnsignedByteList(amountBytes);
+    UnsignedByteArray result = UnsignedByteArray.of(amountBytes);
     return result;
   }
 
@@ -101,10 +100,9 @@ class AmountType extends SerializedType<AmountType> {
       return new TextNode(value.toString());
     } else {
       BinaryParser parser = new BinaryParser(this.toHex());
-      UnsignedByteList mantissa = parser.read(8);
-      // FIXME parse issuer
-      SerializedType currency = getTypeByName("Currency").fromParser(parser, OptionalInt.empty());
-      String issuer = "";
+      UnsignedByteArray mantissa = parser.read(8);
+      SerializedType currency = new CurrencyType().fromParser(parser);
+      SerializedType issuer = new AccountIdType().fromParser(parser);
 
       UnsignedByte b1 = mantissa.get(0);
       UnsignedByte b2 = mantissa.get(1);
@@ -116,7 +114,7 @@ class AmountType extends SerializedType<AmountType> {
       mantissa.set(0, UnsignedByte.of(0));
       mantissa.set(1, UnsignedByte.of(b2.asInt() & 0x3f));
 
-      BigDecimal value = new BigDecimal(new BigInteger(sign + mantissa.toHex(), 16))
+      BigDecimal value = new BigDecimal(new BigInteger(sign + mantissa.hexValue(), 16))
           .multiply(new BigDecimal("1e" + exponent))
           .stripTrailingZeros();
 
@@ -124,7 +122,7 @@ class AmountType extends SerializedType<AmountType> {
 
       Amount amount = Amount.builder()
           .currency(currency.toJSON().asText())
-          .issuer(issuer)
+          .issuer(issuer.toJSON().asText())
           .value(value.toPlainString())
           .build();
 

@@ -1,16 +1,15 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.google.common.base.Preconditions;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 
 public abstract class HashType<T extends HashType<T>> extends SerializedType<T> {
   
   private final int width;
 
-
-  public HashType(UnsignedByteList bytes, int width) {
+  public HashType(UnsignedByteArray bytes, int width) {
     super(bytes);
-    Preconditions.checkArgument(bytes.getLength() == width, "Invalid hash length " + bytes.getLength());
+    Preconditions.checkArgument(bytes.length() == width, "Invalid hash length " + bytes.length());
     this.width = width;
   }
 

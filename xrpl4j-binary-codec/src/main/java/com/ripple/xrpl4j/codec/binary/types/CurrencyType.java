@@ -2,9 +2,9 @@ package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.ripple.xrpl4j.codec.binary.UnsignedByte;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -14,16 +14,14 @@ public class CurrencyType extends Hash160Type {
 
   private static final Pattern ISO_REGEX = Pattern.compile("^[A-Z0-9]{3}$");
 
-  private static final Pattern HEX_REGEX = Pattern.compile("^[A-Z0-9]{40}$");
-
   private final Optional<String> iso;
   private final boolean isNative;
 
   public CurrencyType() {
-    this(new UnsignedByteList(20));
+    this(UnsignedByteArray.ofSize(20));
   }
 
-  public CurrencyType(UnsignedByteList list) {
+  public CurrencyType(UnsignedByteArray list) {
     super(list);
     String rawISO = rawISO(list);
     this.isNative = isNative(list);
@@ -42,7 +40,7 @@ public class CurrencyType extends Hash160Type {
     if (!isValidRepresentation(textValue)) {
       throw new IllegalArgumentException("Unsupported Currency representation: " + textValue);
     }
-    UnsignedByteList bytes = textValue.length() == 3 ? isoToBytes(textValue) : new UnsignedByteList(textValue);
+    UnsignedByteArray bytes = textValue.length() == 3 ? isoToBytes(textValue) : UnsignedByteArray.fromHex(textValue);
     return new CurrencyType(bytes);
   }
 
@@ -55,13 +53,13 @@ public class CurrencyType extends Hash160Type {
     return isNative;
   }
 
-  private boolean isNative(UnsignedByteList byteList) {
-    String iso = byteList.slice(12, 15).toHex();
+  private boolean isNative(UnsignedByteArray byteList) {
+    String iso = byteList.slice(12, 15).hexValue();
     return onlyIso(byteList) && iso.equals("000000");
   }
 
-  private boolean onlyIso(UnsignedByteList byteList) {
-    for (int i = byteList.getLength() - 1; i >= 0; i--) {
+  private boolean onlyIso(UnsignedByteArray byteList) {
+    for (int i = byteList.length() - 1; i >= 0; i--) {
       if (byteList.get(i).asInt() != 0 && !(i == 12 || i == 13 || i == 14)) {
         return false;
       }
@@ -69,8 +67,8 @@ public class CurrencyType extends Hash160Type {
     return true;
   }
 
-  private String rawISO(UnsignedByteList list) {
-    return new String(list.slice(12, 15).toBytes());
+  private String rawISO(UnsignedByteArray list) {
+    return new String(list.slice(12, 15).toByteArray());
   }
 
   /**
@@ -104,8 +102,8 @@ public class CurrencyType extends Hash160Type {
   /**
    * Convert an ISO code to a currency bytes representation
    */
-  private UnsignedByteList isoToBytes(String iso) {
-    UnsignedByteList bytes = new UnsignedByteList(20);
+  private UnsignedByteArray isoToBytes(String iso) {
+    UnsignedByteArray bytes = UnsignedByteArray.ofSize(20);
     if (!iso.equals("XRP")) {
       for (int i = 0; i < iso.length(); i++) {
         bytes.set(12 + i, UnsignedByte.of(iso.charAt(i)));

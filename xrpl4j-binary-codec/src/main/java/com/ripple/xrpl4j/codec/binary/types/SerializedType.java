@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableMap;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.Map;
 import java.util.OptionalInt;
@@ -14,27 +14,33 @@ import java.util.function.Supplier;
 
 abstract public class SerializedType<T extends SerializedType<T>> implements SerializedComparable<T> {
 
-  private final UnsignedByteList bytes;
+  private final UnsignedByteArray bytes;
 
   private static Map<String, Supplier<SerializedType>> typeMap =
       new ImmutableMap.Builder<String, Supplier<SerializedType>>()
-          .put("UInt8", () -> new UInt8Type())
-          .put("UInt16", () -> new UInt16Type())
-          .put("UInt32", () -> new UInt32Type())
-          .put("STObject", () -> new STObjectType())
+          .put("AccountID", () -> new AccountIdType())
           .put("Amount", () -> new AmountType())
+          .put("Blob", () -> new BlobType())
+          .put("Currency", () -> new CurrencyType())
           .put("Hash128", () -> new Hash128Type())
           .put("Hash160", () -> new Hash160Type())
           .put("Hash256", () -> new Hash256Type())
-          .put("Blob", () -> new BlobType())
+          .put("STObject", () -> new STObjectType())
+          .put("UInt8", () -> new UInt8Type())
+          .put("UInt16", () -> new UInt16Type())
+          .put("UInt32", () -> new UInt32Type())
           .build();
 
   public static SerializedType getTypeByName(String name) {
     return typeMap.get(name).get();
   }
 
-  public SerializedType(UnsignedByteList bytes) {
+  public SerializedType(UnsignedByteArray bytes) {
     this.bytes = bytes;
+  }
+
+  public T fromParser(BinaryParser parser) {
+    return fromParser(parser, OptionalInt.empty());
   }
 
   public abstract T fromParser(BinaryParser parser, OptionalInt lengthHint);
@@ -42,7 +48,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
   public abstract T fromJSON(JsonNode node) throws JsonProcessingException;
 
   public T fromHex(String hex) {
-    return fromParser(new BinaryParser(hex), OptionalInt.empty());
+    return fromParser(new BinaryParser(hex));
   }
 
   public T fromHex(String hex, int hint) {
@@ -52,7 +58,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
   public T fromJSON(String json) {
     try {
       JsonNode node = ObjectMapperFactory.getObjectMapper().readTree(json);
-      UnsignedByteList byteList = new UnsignedByteList();
+      UnsignedByteArray byteList = UnsignedByteArray.empty();
       T newValue = fromJSON(node);
       newValue.toBytesSink(byteList);
       return newValue;
@@ -61,12 +67,12 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
     }
   }
 
-  public void toBytesSink(UnsignedByteList list) {
-    list.put(this.bytes);
+  public void toBytesSink(UnsignedByteArray list) {
+    list.add(this.bytes);
   }
 
   public byte[] toBytes() {
-    return bytes.toBytes();
+    return bytes.toByteArray();
   }
 
   public JsonNode toJSON() {
@@ -78,7 +84,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
   }
 
   public final String toHex() {
-    return bytes.toHex();
+    return bytes.hexValue();
   }
 
   @Override
@@ -86,7 +92,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
     return this.toHex().compareTo(o.toHex());
   }
 
-  protected UnsignedByteList value() {
+  protected UnsignedByteArray value() {
     return bytes;
   }
 

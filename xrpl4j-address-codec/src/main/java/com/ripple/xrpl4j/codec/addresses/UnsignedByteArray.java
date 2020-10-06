@@ -1,7 +1,5 @@
 package com.ripple.xrpl4j.codec.addresses;
 
-import com.google.common.io.BaseEncoding;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,9 +18,30 @@ public class UnsignedByteArray {
     return new UnsignedByteArray(unsignedBytes);
   }
 
-  public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
-    Objects.requireNonNull(unsignedBytes);
+  public static UnsignedByteArray of(UnsignedByte first, UnsignedByte... rest) {
+    List<UnsignedByte> unsignedBytes = new ArrayList<>();
+    unsignedBytes.add(first);
+    for (int i = 0; i < rest.length; i++) {
+      unsignedBytes.add(i, rest[i]);
+    }
+    return new UnsignedByteArray(unsignedBytes);
+  }
 
+  public static UnsignedByteArray empty() {
+    return new UnsignedByteArray(new ArrayList<>());
+  }
+
+  public static UnsignedByteArray ofSize(int size) {
+    return new UnsignedByteArray(fill(size));
+  }
+
+  public static UnsignedByteArray fromHex(String hex) {
+    Objects.requireNonNull(hex);
+    List<UnsignedByte> unsignedBytes = ByteUtils.parse(hex);
+    return new UnsignedByteArray(unsignedBytes);
+  }
+
+  public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
     Objects.requireNonNull(unsignedBytes);
     this.unsignedBytes = unsignedBytes;
   }
@@ -42,7 +61,7 @@ public class UnsignedByteArray {
   }
 
   public String hexValue() {
-    return BaseEncoding.base16().encode(toByteArray());
+    return ByteUtils.toHex(unsignedBytes);
   }
 
   public UnsignedByteArray concat(final UnsignedByteArray bytes) {
@@ -50,6 +69,38 @@ public class UnsignedByteArray {
 
     unsignedBytes.addAll(bytes.getUnsignedBytes());
     return this;
+  }
+
+  public int length() {
+    return unsignedBytes.size();
+  }
+
+  public UnsignedByte get(int index) {
+    return unsignedBytes.get(index);
+  }
+
+  public void add(UnsignedByteArray list) {
+    unsignedBytes.addAll(list.getUnsignedBytes());
+  }
+
+  public void set(int i, UnsignedByte of) {
+    unsignedBytes.set(i, of);
+  }
+
+  public UnsignedByteArray slice(int startIndex, int endIndex) {
+    return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));
+  }
+
+  private static List<UnsignedByte> fill(int amount) {
+    List<UnsignedByte> unsignedBytes = new ArrayList<>();
+    for (int i = 0; i < amount; i++) {
+      unsignedBytes.add(i, UnsignedByte.of(0));
+    }
+    return unsignedBytes;
+  }
+
+  public void toByteSink(UnsignedByteArray bytes) {
+    bytes.unsignedBytes.addAll(unsignedBytes);
   }
 
   @Override

@@ -3,6 +3,8 @@ package com.ripple.xrpl4j.codec.binary;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.ripple.xrpl4j.codec.addresses.ByteUtils;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.binary.definitions.Definitions;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsProvider;
 import com.ripple.xrpl4j.codec.binary.enums.FieldInfo;

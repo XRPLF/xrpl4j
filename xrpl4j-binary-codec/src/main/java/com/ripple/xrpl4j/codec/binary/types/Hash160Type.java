@@ -1,20 +1,23 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.OptionalInt;
+import java.util.regex.Pattern;
 
 public class Hash160Type extends HashType<Hash160Type> {
+
+  protected static final Pattern HEX_REGEX = Pattern.compile("^[A-Z0-9]{40}$");
 
   public static final int WIDTH = 20;
 
   public Hash160Type() {
-    this(new UnsignedByteList(WIDTH));
+    this(UnsignedByteArray.ofSize(WIDTH));
   }
 
-  public Hash160Type(UnsignedByteList list) {
+  public Hash160Type(UnsignedByteArray list) {
     super(list, WIDTH);
   }
 
@@ -25,6 +28,6 @@ public class Hash160Type extends HashType<Hash160Type> {
 
   @Override
   public Hash160Type fromJSON(JsonNode node) {
-    return new Hash160Type(new UnsignedByteList(node.asText()));
+    return new Hash160Type(UnsignedByteArray.fromHex(node.asText()));
   }
 }

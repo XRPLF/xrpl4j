@@ -1,15 +1,15 @@
-package com.ripple.xrpl4j.codec.binary;
+package com.ripple.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.math.BigInteger;
 
-class UnsignedByteTest {
+public class UnsignedByteTest {
 
   @Test
-  void hexValue() {
+  public void hexValue() {
     assertThat(UnsignedByte.of(0).hexValue()).isEqualTo("00");
     assertThat(UnsignedByte.of(127).hexValue()).isEqualTo("7F");
     assertThat(UnsignedByte.of(128).hexValue()).isEqualTo("80");
@@ -18,7 +18,7 @@ class UnsignedByteTest {
   }
 
   @Test
-  void isNthBitSetAllZero() {
+  public void isNthBitSetAllZero() {
     UnsignedByte value = UnsignedByte.of(0);
     for (int i = 1; i <= 8; i++) {
       assertThat(value.isNthBitSet(i)).isFalse();
@@ -26,7 +26,7 @@ class UnsignedByteTest {
   }
 
   @Test
-  void isNthBitSetAllSet() {
+  public void isNthBitSetAllSet() {
     UnsignedByte value = UnsignedByte.of(new BigInteger("11111111", 2).intValue());
     for (int i = 1; i <= 8; i++) {
       assertThat(value.isNthBitSet(i)).isTrue();
@@ -34,7 +34,7 @@ class UnsignedByteTest {
   }
 
   @Test
-  void isNthBitSetEveryOther() {
+  public void isNthBitSetEveryOther() {
     UnsignedByte value = UnsignedByte.of(new BigInteger("10101010", 2).intValue());
     assertThat(value.isNthBitSet(1)).isTrue();
     assertThat(value.isNthBitSet(2)).isFalse();
@@ -47,7 +47,7 @@ class UnsignedByteTest {
   }
 
   @Test
-  void intValue() {
+  public void intValue() {
     assertThat(UnsignedByte.of(0x00).asInt()).isEqualTo(0);
     assertThat(UnsignedByte.of(0x0F).asInt()).isEqualTo(15);
     assertThat(UnsignedByte.of(0xFF).asInt()).isEqualTo(255);

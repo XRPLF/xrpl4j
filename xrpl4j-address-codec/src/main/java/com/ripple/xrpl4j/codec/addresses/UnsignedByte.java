@@ -52,6 +52,12 @@ public class UnsignedByte {
     return value & 0x0F;
   }
 
+  public boolean isNthBitSet(int nth)
+  {
+    Preconditions.checkArgument(nth >= 1 && nth <= 8);
+    return ((value >> (8 - nth)) & 1) == 1;
+  }
+
 
   public String hexValue() {
     return BaseEncoding.base16().encode(new byte[] { (byte) asInt() });

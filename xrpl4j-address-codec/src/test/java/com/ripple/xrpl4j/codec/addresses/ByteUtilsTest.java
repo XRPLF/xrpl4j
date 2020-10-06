@@ -1,42 +1,40 @@
-package com.ripple.xrpl4j.codec.binary;
+package com.ripple.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.math.BigInteger;
 
-class ByteUtilsTest {
+public class ByteUtilsTest {
 
   @Test
-  void toByteArraySingleByteMinValue() {
+  public void toByteArraySingleByteMinValue() {
     assertThat(ByteUtils.toByteArray(0, 1)).isEqualTo(new byte[]{ 0 });
   }
 
   @Test
-  void toByteArrayPadded() {
+  public void toByteArrayPadded() {
     assertThat(ByteUtils.toByteArray(1, 2)).isEqualTo(new byte[]{ 0, 1 });
   }
 
   @Test
-  void toByteArraySingleByteMaxValue() {
+  public void toByteArraySingleByteMaxValue() {
     assertThat(ByteUtils.toByteArray(15, 1)[0]).isEqualTo((byte) 15);
   }
 
   @Test
-  void checkSizeMaxValue() {
+  public void checkSizeMaxValue() {
     ByteUtils.checkSize(4, BigInteger.valueOf(15));
   }
 
-  @Test
-  void checkSizeExceedMaxValue() {
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> ByteUtils.checkSize(4, BigInteger.valueOf(17)));
+  @Test(expected = IllegalArgumentException.class)
+  public void checkSizeExceedMaxValue() {
+    ByteUtils.checkSize(4, BigInteger.valueOf(17));
   }
 
   @Test
-  void checkSizeMinValue() {
+  public void checkSizeMinValue() {
     ByteUtils.checkSize(4, BigInteger.valueOf(0));
   }
 

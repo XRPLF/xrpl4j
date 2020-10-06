@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsService;
 import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 import com.ripple.xrpl4j.codec.binary.serdes.BinarySerializer;
-import com.ripple.xrpl4j.codec.binary.serdes.UnsignedByteList;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,10 +24,10 @@ public class STObjectType extends SerializedType<STObjectType> {
   private static final String ST_OBJECT = "STObject";
 
   public STObjectType() {
-    this(new UnsignedByteList());
+    this(UnsignedByteArray.empty());
   }
 
-  public STObjectType(UnsignedByteList list) {
+  public STObjectType(UnsignedByteArray list) {
     super(list);
   }
 
@@ -38,7 +38,7 @@ public class STObjectType extends SerializedType<STObjectType> {
 
   @Override
   public STObjectType fromParser(BinaryParser parser, OptionalInt lengthHint) {
-    UnsignedByteList list = new UnsignedByteList();
+    UnsignedByteArray list = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(list);
 
     while(!parser.end()) {
@@ -58,7 +58,7 @@ public class STObjectType extends SerializedType<STObjectType> {
 
   @Override
   public STObjectType fromJSON(JsonNode node) {
-    UnsignedByteList byteList = new UnsignedByteList();
+    UnsignedByteArray byteList = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteList);
 
     // TODO handle xADDRESS to classic address / tag mapping

@@ -26,6 +26,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
           .put("Hash128", () -> new Hash128Type())
           .put("Hash160", () -> new Hash160Type())
           .put("Hash256", () -> new Hash256Type())
+          .put("Blob", () -> new BlobType())
           .build();
 
   public static SerializedType getTypeByName(String name) {
@@ -42,6 +43,10 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
 
   public T fromHex(String hex) {
     return fromParser(new BinaryParser(hex), OptionalInt.empty());
+  }
+
+  public T fromHex(String hex, int hint) {
+    return fromParser(new BinaryParser(hex), OptionalInt.of(hint));
   }
 
   public T fromJSON(String json) {

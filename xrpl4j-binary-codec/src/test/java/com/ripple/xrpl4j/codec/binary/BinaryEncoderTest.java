@@ -68,4 +68,12 @@ class BinaryEncoderTest {
     assertThat(encoder.decode(hex)).isEqualTo(json);
   }
 
+  @Test
+  void encodeDecodeBlob() throws JsonProcessingException {
+    String json = "{\"Domain\":\"1234\"}";
+    String hex = "77021234";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
 }

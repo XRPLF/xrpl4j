@@ -15,13 +15,23 @@
     <dependency>
       <groupId>org.immutables</groupId>
       <artifactId>value</artifactId>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.ripple</groupId>
       <artifactId>xrpl4j-address-codec</artifactId>
       <version>HEAD-SNAPSHOT</version>
-      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15to18</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
     </dependency>
   </dependencies>
 

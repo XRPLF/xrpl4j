@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.codec.binary.types;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
@@ -22,6 +23,8 @@ public class STObjectType extends SerializedType<STObjectType> {
   private static final String OBJECT_END_MARKER = "ObjectEndMarker";
   private static final String OBJECT_END_MARKER_BYTES = "E1";
   private static final String ST_OBJECT = "STObject";
+
+  private DefinitionsService definitionsService = DefinitionsService.getInstance();
 
   public STObjectType() {
     this(UnsignedByteArray.empty());
@@ -65,11 +68,14 @@ public class STObjectType extends SerializedType<STObjectType> {
     List<FieldWithValue<JsonNode>> fields = new ArrayList<>();
     for(String fieldName : Lists.newArrayList(node.fieldNames())) {
       JsonNode fieldNode = node.get(fieldName);
-      DefinitionsService.getInstance().getFieldInstance(fieldName)
+      definitionsService.getFieldInstance(fieldName)
           .filter(FieldInstance::isSerialized)
           .ifPresent(fieldInstance -> fields.add(FieldWithValue.builder()
               .field(fieldInstance)
-              .value(fieldNode)
+              .value(definitionsService.mapFieldSpecialization(fieldName, fieldNode.asText())
+                  .map(value -> new TextNode("" + value))
+                  .map(JsonNode.class::cast)
+                  .orElse(fieldNode))
               .build()));
     }
     fields.stream()

@@ -89,4 +89,16 @@ public class DefinitionsService {
                     .build()));
   }
 
+  public Optional<Integer> mapFieldSpecialization(String fieldName, String value) {
+    if (fieldName == null) {
+      return Optional.empty();
+    }
+    switch (fieldName) {
+      case "LedgerEntryType": return Optional.ofNullable(definitions.ledgerEntryTypes().get(value));
+      case "TransactionResult": return Optional.ofNullable(definitions.transactionResults().get(value));
+      case "TransactionType": return Optional.ofNullable(definitions.transactionTypes().get(value));
+      default: return Optional.empty();
+    }
+  }
+
 }

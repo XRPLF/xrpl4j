@@ -3,7 +3,15 @@ package com.ripple.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ripple.xrpl4j.codec.fixtures.FixtureUtils;
+import com.ripple.xrpl4j.codec.fixtures.data.WholeObject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.IOException;
+import java.util.stream.Stream;
 
 class BinaryEncoderTest {
 
@@ -78,10 +86,21 @@ class BinaryEncoderTest {
 
   @Test
   void encodeDecodeIssuedCurrency() throws JsonProcessingException {
-    String json = "{\"Fee\":{\"value\":\"123\",\"currency\":\"USD\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"}}";
+    String json = "{\"Fee\":{\"currency\":\"USD\",\"value\":\"123\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"}}";
     String hex = "68D5045EADB112E00000000000000000000000000055534400000000005E7B112523F68D2F5E879DB4EAC51C6698A69304";
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @ParameterizedTest
+  @MethodSource("dataDrivenFixtures")
+  void dataDriven(WholeObject wholeObject) throws IOException {
+    assertThat(encoder.encode(wholeObject.txJson().toString())).isEqualTo(wholeObject.expectedHex());
+  }
+
+  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+    return FixtureUtils.getDataDrivenFixtures().wholeObjectTests().stream()
+        .map(Arguments::of);
   }
 
 }

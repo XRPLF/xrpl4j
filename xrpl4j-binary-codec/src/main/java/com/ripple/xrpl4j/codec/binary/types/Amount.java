@@ -13,9 +13,9 @@ interface Amount {
     return ImmutableAmount.builder();
   }
 
-  String value();
-
   String currency();
+
+  String value();
 
   String issuer();
 

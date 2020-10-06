@@ -29,5 +29,7 @@ class MathUtilsTest {
     assertThat(MathUtils.toPaddedBigInteger(new BigDecimal("1.0"), 2)).isEqualTo(BigInteger.valueOf(10));
     assertThat(MathUtils.toPaddedBigInteger(new BigDecimal("1.1"), 2)).isEqualTo(BigInteger.valueOf(11));
     assertThat(MathUtils.toPaddedBigInteger(new BigDecimal("1.1"), 3)).isEqualTo(BigInteger.valueOf(110));
+    assertThat(MathUtils.toPaddedBigInteger(new BigDecimal("1111111111111111.0"), 16))
+        .isEqualTo(new BigInteger("1111111111111111"));
   }
 }

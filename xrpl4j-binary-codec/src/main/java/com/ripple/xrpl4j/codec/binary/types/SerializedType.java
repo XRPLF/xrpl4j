@@ -35,6 +35,15 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
     return typeMap.get(name).get();
   }
 
+  public static String getNameByType(SerializedType type) {
+    return typeMap.entrySet()
+        .stream()
+        .filter(entry -> entry.getValue().get().getClass().equals(type.getClass()))
+        .map(Map.Entry::getKey)
+        .findAny()
+        .orElse(null);
+  }
+
   public SerializedType(UnsignedByteArray bytes) {
     this.bytes = bytes;
   }

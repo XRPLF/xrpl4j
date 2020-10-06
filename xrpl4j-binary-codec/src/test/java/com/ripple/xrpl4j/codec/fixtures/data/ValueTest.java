@@ -42,4 +42,7 @@ public interface ValueTest {
   @JsonProperty("type_specialisation_field")
   String typeSpecializationField();
 
+  @Nullable
+  String error();
+
 }

@@ -4,10 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
 
-class AmountTypeTest {
+import java.io.IOException;
+import java.util.stream.Stream;
 
-  private final AmountType codec = new AmountType();
+class AmountTypeTest extends BaseSerializerTypeTest {
+
+  private final static AmountType codec = new AmountType();
+
+  @Override
+  SerializedType getType() {
+    return codec;
+  }
 
   @Test
   void decodeXrpAmount() {
@@ -49,7 +58,33 @@ class AmountTypeTest {
     assertThat(
         codec.fromHex("D48775F05A07400000000000000000000000000000000000000000000000000000000000000000000000000000000000")
         .toJSON().toString())
-        .isEqualTo("{\"value\":\"2.1\",\"currency\":\"XRP\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"}");
+        .isEqualTo("{\"currency\":\"XRP\",\"value\":\"2.1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"}");
+  }
+
+  @Test
+  void decodeNegativeCurrencyAmount() {
+    assertThat(
+        codec.fromHex("94838D7EA4C6800000000000000000000000000055534400000000000000000000000000000000000000000000000001")
+            .toJSON().toString())
+        .isEqualTo("{\"currency\":\"USD\",\"value\":\"-1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\"}");
+  }
+
+  @Test
+  void encodeZeroCurrencyAmount() {
+    String json = "{\"currency\":\"USD\",\"value\":\"0.0\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\"}";
+    String hex = "800000000000000000000000000000000000000055534400000000000000000000000000000000000000000000000001";
+    assertThat(codec.fromJSON(json).toHex()).isEqualTo(hex);
+  }
+
+  @Test
+  void encodeLargeCurrencyAmount() {
+    String json = "{\"currency\":\"USD\",\"value\":\"1111111111111111.0\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\"}";
+    String hex = "D843F28CB71571C700000000000000000000000055534400000000000000000000000000000000000000000000000001";
+    assertThat(codec.fromJSON(json).toHex()).isEqualTo(hex);
+  }
+
+  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+    return dataDrivenFixturesForType(codec);
   }
 
 }

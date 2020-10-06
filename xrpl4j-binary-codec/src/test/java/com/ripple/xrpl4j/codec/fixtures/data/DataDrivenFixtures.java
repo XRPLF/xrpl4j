@@ -15,8 +15,10 @@ public interface DataDrivenFixtures {
   @JsonProperty("fields_tests")
   List<FieldTest> fieldTests();
 
-
   @JsonProperty("values_tests")
   List<ValueTest> valuesTests();
-  
+
+  @JsonProperty("whole_objects")
+  List<WholeObject> wholeObjectTests();
+
 }

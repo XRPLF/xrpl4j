@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class AccountIdTypeTest {
 
   public static final char DOUBLE_QUOTE = '"';
-  private final AccountIdType codec = new AccountIdType();
+  private static final AccountIdType codec = new AccountIdType();
 
   @Test
   void decode() {

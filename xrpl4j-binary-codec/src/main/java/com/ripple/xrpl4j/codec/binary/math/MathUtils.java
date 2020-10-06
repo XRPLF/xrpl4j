@@ -12,7 +12,10 @@ public class MathUtils {
   }
 
   public static BigInteger toPaddedBigInteger(BigDecimal number, int expectedDigits) {
-    String unscaled = number.abs().unscaledValue().toString();
+    String unscaled = number.abs().stripTrailingZeros().unscaledValue().toString();
+    if (unscaled.length() > expectedDigits) {
+      throw new IllegalArgumentException(number + " has more than " + expectedDigits + " digits");
+    }
     return new BigInteger(Strings.padEnd(unscaled, expectedDigits, '0'));
   }
 

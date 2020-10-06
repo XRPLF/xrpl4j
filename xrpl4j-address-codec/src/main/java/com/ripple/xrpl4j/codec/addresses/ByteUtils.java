@@ -25,7 +25,7 @@ public class ByteUtils {
   private static byte[] copyToEnd(int byteSize, BigInteger bigInteger) {
     byte[] target = new byte[byteSize];
     byte[] source = bigInteger.toByteArray();
-    for (int i = 0; i < source.length; i++) {
+    for (int i = 0; i < source.length && i < target.length; i++) {
       target[byteSize - i - 1] = source[source.length - i - 1];
     }
     return target;
@@ -41,7 +41,8 @@ public class ByteUtils {
   }
 
   public static BigInteger checkSize(int expectedBits, BigInteger value) {
-    Preconditions.checkArgument(value.bitLength() <= expectedBits);
+    Preconditions.checkArgument(value.bitLength() <= expectedBits,
+        "value has " + value.bitLength() + " bits but should be <= " + expectedBits);
     return value;
   }
 

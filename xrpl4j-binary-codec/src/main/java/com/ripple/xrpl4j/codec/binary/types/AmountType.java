@@ -58,7 +58,7 @@ class AmountType extends SerializedType<AmountType> {
     Amount amount = objectMapper.treeToValue(value, Amount.class);
     BigDecimal number = new BigDecimal(amount.value());
 
-    UnsignedByteArray result = number.equals(BigDecimal.ZERO) ?
+    UnsignedByteArray result = number.unscaledValue().equals(BigInteger.ZERO) ?
         UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
         getAmountBytes(number);
 
@@ -79,8 +79,11 @@ class AmountType extends SerializedType<AmountType> {
       amountBytes[0] |= 0x40;
     }
 
-    int exponent = MathUtils.getExponent(number) - 15;
-    UnsignedByte exponentByte = UnsignedByte.of(97 + exponent);
+    int exponent = MathUtils.getExponent(number);
+    if (exponent > 80 || exponent < -96) {
+      throw new IllegalArgumentException("exponent out of range");
+    }
+    UnsignedByte exponentByte = UnsignedByte.of(97 + exponent - 15);
     amountBytes[0] |= exponentByte.asInt() >>> 2;
     amountBytes[1] |= (exponentByte.asInt() & 0x03) << 6;
 
@@ -107,7 +110,7 @@ class AmountType extends SerializedType<AmountType> {
       UnsignedByte b1 = mantissa.get(0);
       UnsignedByte b2 = mantissa.get(1);
 
-      boolean isPositive = b1.isNthBitSet(1);
+      boolean isPositive = b1.isNthBitSet(2);
       String sign = isPositive ? "" : "-";
 
       int exponent = ((b1.asInt() & 0x3f) << 2) + ((b2.asInt() & 0xff) >> 6) - 97;
@@ -156,7 +159,7 @@ class AmountType extends SerializedType<AmountType> {
       throw new IllegalArgumentException(amount + " is an illegal amount");
     }
     BigDecimal value = new BigDecimal(amount);
-    if (!value.equals(BigInteger.ZERO)) {
+    if (!value.equals(BigDecimal.ZERO)) {
       if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
         throw new IllegalArgumentException(amount + " is an illegal amount");
       }

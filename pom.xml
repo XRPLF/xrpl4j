@@ -162,6 +162,7 @@
     <module>xrpl4j-binary-codec</module>
     <module>xrpl4j-model</module>
     <module>xrpl4j-address-codec</module>
+    <module>xrpl4j-keypairs</module>
   </modules>
 
   <build>

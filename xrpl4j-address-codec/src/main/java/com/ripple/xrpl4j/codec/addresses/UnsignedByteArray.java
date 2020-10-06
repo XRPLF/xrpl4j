@@ -20,10 +20,14 @@ public class UnsignedByteArray {
     return new UnsignedByteArray(unsignedBytes);
   }
 
+  public static UnsignedByteArray of(final List<UnsignedByte> unsignedBytes) {
+    Objects.requireNonNull(unsignedBytes);
+    return new UnsignedByteArray(unsignedBytes);
+  }
+
   public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
     Objects.requireNonNull(unsignedBytes);
 
-    Objects.requireNonNull(unsignedBytes);
     this.unsignedBytes = unsignedBytes;
   }
 

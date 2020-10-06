@@ -1,4 +1,4 @@
-package com.ripple.xrpl4j.codec.binary;
+package com.ripple.xrpl4j.codec.addresses;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -39,7 +39,7 @@ public class UnsignedByte {
   }
 
   public int asInt() {
-    return value; // & 0xff;
+    return value;
   }
 
   public byte asByte() { return (byte) value; }
@@ -50,12 +50,6 @@ public class UnsignedByte {
 
   public int getLowBits() {
     return value & 0x0F;
-  }
-
-  public boolean isNthBitSet(int nth)
-  {
-    Preconditions.checkArgument(nth >= 1 && nth <= 8);
-    return ((value >> (8 - nth)) & 1) == 1;
   }
 
 

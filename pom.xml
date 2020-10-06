@@ -61,6 +61,11 @@
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>29.0-jre</version>
+      </dependency>
+      <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-jdk8</artifactId>
         <version>${jackson.version}</version>
@@ -156,6 +161,7 @@
   <modules>
     <module>xrpl4j-binary-codec</module>
     <module>xrpl4j-model</module>
+    <module>xrpl4j-address-codec</module>
   </modules>
 
   <build>

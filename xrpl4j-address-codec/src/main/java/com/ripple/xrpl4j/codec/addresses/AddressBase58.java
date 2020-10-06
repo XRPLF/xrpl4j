@@ -1,5 +1,6 @@
 package com.ripple.xrpl4j.codec.addresses;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.addresses.exceptions.DecodeException;
 import com.ripple.xrpl4j.codec.addresses.exceptions.EncodeException;
@@ -8,6 +9,7 @@ import com.ripple.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -23,7 +25,15 @@ public class AddressBase58 extends Base58 {
    * @param expectedLength The expected length of the result.
    * @return The Base58Check encoded {@link String} of the given parameters.
    */
-  public static String encode(UnsignedByteArray bytes, List<Version> versions, UnsignedInteger expectedLength) {
+  public static String encode(
+    final UnsignedByteArray bytes,
+    final List<Version> versions,
+    final UnsignedInteger expectedLength
+  ) {
+    Objects.requireNonNull(bytes);
+    Objects.requireNonNull(versions);
+    Objects.requireNonNull(expectedLength);
+
     if (expectedLength.intValue() != bytes.getUnsignedBytes().size()) {
       throw new EncodeException("Length of bytes does not match expectedLength.");
     }
@@ -32,13 +42,16 @@ public class AddressBase58 extends Base58 {
   }
 
   /**
-   * Concatenates the given {@link Version} bytes with the given input bytes, and encodes the result as Base58Check.
+   * Concatenates the given {@link Version} bytes with the given input bytes, and Base58Check encodes the result.
    *
    * @param bytes The bytes to encode.
    * @param versions The {@link Version} to encode with.
    * @return A {@link String} containing the Base58Check encoded bytes.
    */
-  public static String encodeChecked(byte[] bytes, List<Version> versions) {
+  public static String encodeChecked(final byte[] bytes, final List<Version> versions) {
+    Objects.requireNonNull(bytes);
+    Objects.requireNonNull(versions);
+
     int versionsLength = 0;
     for (Version version : versions) {
       versionsLength += version.getValues().length;
@@ -58,24 +71,40 @@ public class AddressBase58 extends Base58 {
   }
 
   /**
-   * Decode a Base58Check {@link String}.
+   * Decode a Base58Check {@link String} with no specified {@link VersionType}s or expected length.
    *
-   * @param base58Value
-   * @param versions
-   * @return
+   * @param base58Value The Base58Check encoded {@link String} to be decoded.
+   * @param version The {@link Version} to try decoding with.
+   * @return A {@link Decoded} containing the decoded value and version.
+   * @throws EncodingFormatException If the version bytes of the Base58 value are invalid.
    */
   public static Decoded decode(
-    String base58Value,
-    List<Version> versions
+    final String base58Value,
+    final Version version
   ) {
-    return decode(base58Value, new ArrayList<>(), versions, Optional.empty());
+    Objects.requireNonNull(base58Value);
+    Objects.requireNonNull(version);
+
+    return decode(base58Value, new ArrayList<>(), Lists.newArrayList(version), Optional.empty());
   }
 
+  /**
+   * Decode a Base58Check {@link String} with no specified {@link VersionType}s.
+   *
+   * @param base58Value The Base58Check encoded {@link String} to be decoded.
+   * @param versions A {@link List} of {@link Version}s to try decoding with.
+   * @param expectedLength The expected length of the decoded value.
+   * @return A {@link Decoded} containing the decoded value and version.
+   */
   public static Decoded decode(
-    String base58Value,
-    List<Version> versions,
-    UnsignedInteger expectedLength
+    final String base58Value,
+    final List<Version> versions,
+    final UnsignedInteger expectedLength
   ) {
+    Objects.requireNonNull(base58Value);
+    Objects.requireNonNull(versions);
+    Objects.requireNonNull(expectedLength);
+
     return decode(base58Value, new ArrayList<>(), versions, Optional.of(expectedLength));
   }
 
@@ -91,11 +120,16 @@ public class AddressBase58 extends Base58 {
    *  or if the version bytes of the Base58 value are invalid.
    */
   public static Decoded decode(
-    String base58Value,
-    List<VersionType> versionTypes,
-    List<Version> versions,
-    Optional<UnsignedInteger> expectedLength
+    final String base58Value,
+    final List<VersionType> versionTypes,
+    final List<Version> versions,
+    final Optional<UnsignedInteger> expectedLength
   ) throws EncodingFormatException {
+    Objects.requireNonNull(base58Value);
+    Objects.requireNonNull(versionTypes);
+    Objects.requireNonNull(versions);
+    Objects.requireNonNull(expectedLength);
+
     byte[] withoutSum = Base58.decodeChecked(base58Value);
 
     if (versions.size() > 1 && !expectedLength.isPresent()) {

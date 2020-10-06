@@ -11,6 +11,7 @@ import com.ripple.xrpl4j.codec.addresses.exceptions.EncodeException;
 import com.ripple.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 public class AddressCodec {
@@ -27,7 +28,9 @@ public class AddressCodec {
    * @param seed A Base58Check encoded XRPL keypair seed.
    * @return The decoded seed, seed type, and algorithm used to encode the seed.
    */
-  public Decoded decodeSeed(String seed) throws EncodingFormatException {
+  public Decoded decodeSeed(final String seed) throws EncodingFormatException {
+    Objects.requireNonNull(seed);
+
     return decode(
       seed,
       Lists.newArrayList(VersionType.ED25519, VersionType.SECP256K1),
@@ -43,7 +46,10 @@ public class AddressCodec {
    * @param type The cryptographic algorithm type to be encoded in the resulting seed.
    * @return A Base58Check encoded XRPL keypair seed.
    */
-  public String encodeSeed(UnsignedByteArray entropy, VersionType type) {
+  public String encodeSeed(final UnsignedByteArray entropy, final VersionType type) {
+    Objects.requireNonNull(entropy);
+    Objects.requireNonNull(type);
+
     if (entropy.getUnsignedBytes().size() != 16) {
       throw new EncodeException("entropy must have length 16.");
     }
@@ -58,7 +64,9 @@ public class AddressCodec {
    * @param accountId An {@link UnsignedByteArray} containing the AccountID to be encoded.
    * @return The Base58 representation of accountId.
    */
-  public String encodeAccountId(UnsignedByteArray accountId) {
+  public String encodeAccountId(final UnsignedByteArray accountId) {
+    Objects.requireNonNull(accountId);
+
     return encode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
   }
 
@@ -69,7 +77,9 @@ public class AddressCodec {
    * @param accountId The Base58 encoded AccountID to be decoded.
    * @return An {@link UnsignedByteArray} containing the decoded AccountID.
    */
-  public UnsignedByteArray decodeAccountId(String accountId) {
+  public UnsignedByteArray decodeAccountId(final String accountId) {
+    Objects.requireNonNull(accountId);
+
     return decode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20)).bytes();
   }
 
@@ -79,7 +89,9 @@ public class AddressCodec {
    * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
    * @return The Base58 representation of publicKey.
    */
-  public String encodeNodePublicKey(UnsignedByteArray publicKey) {
+  public String encodeNodePublicKey(final UnsignedByteArray publicKey) {
+    Objects.requireNonNull(publicKey);
+
     return encode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33));
   }
 
@@ -90,7 +102,9 @@ public class AddressCodec {
    * @param publicKey The Base58 encoded public key to be decoded.
    * @return An {@link UnsignedByteArray} containing the decoded public key.
    */
-  public UnsignedByteArray decodeNodePublicKey(String publicKey) {
+  public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
+    Objects.requireNonNull(publicKey);
+
     return decode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33)).bytes();
   }
 
@@ -100,7 +114,9 @@ public class AddressCodec {
    * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
    * @return The Base58 representation of publicKey.
    */
-  public String encodeAccountPublicKey(UnsignedByteArray publicKey) {
+  public String encodeAccountPublicKey(final UnsignedByteArray publicKey) {
+    Objects.requireNonNull(publicKey);
+
     return encode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
   }
 
@@ -111,7 +127,9 @@ public class AddressCodec {
    * @param publicKey The Base58 encoded public key to be decoded.
    * @return An {@link UnsignedByteArray} containing the decoded public key.
    */
-  public UnsignedByteArray decodeAccountPublicKey(String publicKey) {
+  public UnsignedByteArray decodeAccountPublicKey(final String publicKey) {
+    Objects.requireNonNull(publicKey);
+
     return decode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33)).bytes();
   }
 
@@ -123,7 +141,10 @@ public class AddressCodec {
    * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
-  public String classicAddressToXAddress(String classicAddress, UnsignedInteger tag, boolean test) {
+  public String classicAddressToXAddress(final String classicAddress, final UnsignedInteger tag, final boolean test) {
+    Objects.requireNonNull(classicAddress);
+    Objects.requireNonNull(tag);
+
     return classicAddressToXAddress(classicAddress, Optional.of(tag), test);
   }
 
@@ -134,7 +155,9 @@ public class AddressCodec {
    * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the classic address.
    */
-  public String classicAddressToXAddress(String classicAddress, boolean test) {
+  public String classicAddressToXAddress(final String classicAddress, final boolean test) {
+    Objects.requireNonNull(classicAddress);
+
     return classicAddressToXAddress(classicAddress, Optional.empty(), test);
   }
 
@@ -146,7 +169,10 @@ public class AddressCodec {
    * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
-  public String classicAddressToXAddress(String classicAddress, Optional<UnsignedInteger> tag, boolean test) {
+  public String classicAddressToXAddress(final String classicAddress, final Optional<UnsignedInteger> tag, final boolean test) {
+    Objects.requireNonNull(classicAddress);
+    Objects.requireNonNull(tag);
+
     UnsignedByteArray accountId = decodeAccountId(classicAddress);
     return encodeXAddress(accountId, tag, test);
   }
@@ -159,27 +185,32 @@ public class AddressCodec {
    * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the AccountID and destination tag.
    */
-  private String encodeXAddress(UnsignedByteArray accountId, Optional<UnsignedInteger> tag, boolean test) {
+  private String encodeXAddress(final UnsignedByteArray accountId, final Optional<UnsignedInteger> tag, final boolean test) {
+    Objects.requireNonNull(accountId);
+    Objects.requireNonNull(tag);
+
     if (accountId.getUnsignedBytes().size() != 20) {
       throw new EncodeException("AccountID must be 20 bytes.");
     }
 
     int flag;
+    UnsignedInteger normalizedTag;
     if (tag.isPresent()) {
       flag = 1;
+      normalizedTag = tag.get();
     } else {
       flag = 0;
-      tag = Optional.of(UnsignedInteger.ZERO);
+      normalizedTag = UnsignedInteger.ZERO;
     }
 
     UnsignedByteArray bytes = UnsignedByteArray.of(test ? PrefixBytes.TEST : PrefixBytes.MAIN)
       .concat(accountId)
       .concat(UnsignedByteArray.of(new byte[] {
         (byte) flag,
-        (byte) (tag.get().intValue() & 0xff),
-        (byte) ((tag.get().intValue() >>> 8) & 0xff),
-        (byte) ((tag.get().intValue() >>> 16) & 0xff),
-        (byte) ((tag.get().intValue() >>> 24) & 0xff),
+        (byte) (normalizedTag.intValue() & 0xff),
+        (byte) ((normalizedTag.intValue() >>> 8) & 0xff),
+        (byte) ((normalizedTag.intValue() >>> 16) & 0xff),
+        (byte) ((normalizedTag.intValue() >>> 24) & 0xff),
         0, 0, 0, 0 // Four zero bytes reserved for 64-bit tags
       }));
 
@@ -192,7 +223,9 @@ public class AddressCodec {
    * @param xAddress The X-Address to be decoded.
    * @return The {@link ClassicAddress} decoded from xAddress.
    */
-  public ClassicAddress xAddressToClassicAddress(String xAddress) {
+  public ClassicAddress xAddressToClassicAddress(final String xAddress) {
+    Objects.requireNonNull(xAddress);
+
     DecodedXAddress decodedXAddress = decodeXAddress(xAddress);
     String classicAddress = encodeAccountId(decodedXAddress.accountId());
 
@@ -209,7 +242,9 @@ public class AddressCodec {
    * @param xAddress The X-Address to be decoded.
    * @return The {@link DecodedXAddress} decoded from xAddress.
    */
-  private DecodedXAddress decodeXAddress(String xAddress) {
+  private DecodedXAddress decodeXAddress(final String xAddress) {
+    Objects.requireNonNull(xAddress);
+
     byte[] decoded = Base58.decodeChecked(xAddress);
     boolean test = isTestAddress(decoded);
     byte[] accountId = copyOfRange(decoded, 2, 22);
@@ -222,7 +257,9 @@ public class AddressCodec {
       .build();
   }
 
-  private UnsignedInteger tagFromDecodedXAddress(byte[] decoded) {
+  private UnsignedInteger tagFromDecodedXAddress(final byte[] decoded) {
+    Objects.requireNonNull(decoded);
+
     byte flag = decoded[22];
     if (flag >= 2) {
       throw new DecodeException("Unsupported X-Address: 64-bit tags are not supported");
@@ -247,7 +284,9 @@ public class AddressCodec {
     }
   }
 
-  private boolean isTestAddress(byte[] decoded) {
+  private boolean isTestAddress(final byte[] decoded) {
+    Objects.requireNonNull(decoded);
+
     byte[] prefix = copyOfRange(decoded, 0, 2);
     if (Arrays.equals(PrefixBytes.MAIN, prefix)) {
       return false;
@@ -259,7 +298,7 @@ public class AddressCodec {
   }
 
 
-  public boolean isValidXAddress(String xAddress) {
+  public boolean isValidXAddress(final String xAddress) {
     try {
       decodeXAddress(xAddress);
     } catch (Exception e) {
@@ -269,7 +308,7 @@ public class AddressCodec {
     return true;
   }
 
-  public boolean isValidClassicAddress(String address) {
+  public boolean isValidClassicAddress(final String address) {
     try {
       decodeAccountId(address);
     } catch (Exception e) {

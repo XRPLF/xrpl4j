@@ -10,7 +10,9 @@ public class UnsignedByteArray {
 
   private final List<UnsignedByte> unsignedBytes;
 
-  public static UnsignedByteArray of(byte[] bytes) {
+  public static UnsignedByteArray of(final byte[] bytes) {
+    Objects.requireNonNull(bytes);
+
     List<UnsignedByte> unsignedBytes = new ArrayList<>(bytes.length);
     for (int i = 0; i < bytes.length; i++) {
       unsignedBytes.add(i, UnsignedByte.of(bytes[i]));
@@ -18,7 +20,9 @@ public class UnsignedByteArray {
     return new UnsignedByteArray(unsignedBytes);
   }
 
-  public UnsignedByteArray(List<UnsignedByte> unsignedBytes) {
+  public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
+    Objects.requireNonNull(unsignedBytes);
+
     Objects.requireNonNull(unsignedBytes);
     this.unsignedBytes = unsignedBytes;
   }
@@ -39,13 +43,11 @@ public class UnsignedByteArray {
 
   public String hexValue() {
     return BaseEncoding.base16().encode(toByteArray());
-    /*return unsignedBytes.stream()
-      .map(UnsignedByte::hexValue)
-      .reduce((hex1, hex2) -> hex1 + hex2)
-      .orElseThrow(() -> new RuntimeException("Unable to construct Base16 representation of UnsignedByteArray."));*/
   }
 
-  public UnsignedByteArray concat(UnsignedByteArray bytes) {
+  public UnsignedByteArray concat(final UnsignedByteArray bytes) {
+    Objects.requireNonNull(bytes);
+
     unsignedBytes.addAll(bytes.getUnsignedBytes());
     return this;
   }

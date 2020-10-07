@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsService;
 import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
@@ -119,7 +119,7 @@ public class STObjectType extends SerializedType<STObjectType> {
           .orElse(value);
       objectMap.put(field.name(), mapped);
     }
-    return new ObjectNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(), objectMap);
+    return new ObjectNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), objectMap);
   }
 
 }

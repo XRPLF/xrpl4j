@@ -20,7 +20,7 @@ class FieldHeaderCodecTest {
 
   @BeforeEach
   public void loadFixtures() throws IOException {
-    ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
+    ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
     fieldHeaderCodec = new FieldHeaderCodec(new DefaultDefinitionsProvider(objectMapper).get(), objectMapper);
     fieldTests = FixtureUtils.getDataDrivenFixtures().fieldTests();
     assertThat(fieldTests).hasSize(125);

@@ -17,7 +17,7 @@ import java.util.Map;
 public class FieldHeaderCodec {
 
   private static final FieldHeaderCodec INSTANCE = new FieldHeaderCodec(DefinitionsProvider.getInstance().get(),
-      ObjectMapperFactory.getObjectMapper());
+      BinaryCodecObjectMapperFactory.getObjectMapper());
 
   private final Definitions definitions;
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableMap;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Map;
@@ -69,7 +69,7 @@ abstract public class SerializedType<T extends SerializedType<T>> {
 
   public T fromJSON(String json) {
     try {
-      JsonNode node = ObjectMapperFactory.getObjectMapper().readTree(json);
+      JsonNode node = BinaryCodecObjectMapperFactory.getObjectMapper().readTree(json);
       UnsignedByteArray byteList = UnsignedByteArray.empty();
       T newValue = fromJSON(node);
       newValue.toBytesSink(byteList);

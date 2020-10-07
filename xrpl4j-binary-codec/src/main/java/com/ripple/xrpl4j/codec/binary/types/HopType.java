@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
@@ -22,7 +22,7 @@ public class HopType extends SerializedType<HopType> {
   public static final byte TYPE_CURRENCY = 0x10;
   public static final byte TYPE_ISSUER = 0x20;
 
-  private ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
+  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public HopType() {
     this(UnsignedByteArray.empty());

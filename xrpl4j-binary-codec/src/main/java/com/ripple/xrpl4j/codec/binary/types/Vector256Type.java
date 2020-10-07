@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.ArrayList;
@@ -63,6 +63,6 @@ public class Vector256Type extends SerializedType<Vector256Type> {
       UnsignedByteArray bytes = parser.read(32);
       values.add(new TextNode(bytes.hexValue()));
     }
-    return new ArrayNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
+    return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
   }
 }

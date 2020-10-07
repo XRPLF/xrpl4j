@@ -9,7 +9,7 @@
     <version>HEAD-SNAPSHOT</version>
   </parent>
 
-  <artifactId>xrpl-binary-codec</artifactId>
+  <artifactId>xrpl4j-binary-codec</artifactId>
   <name>xrpl4j :: binary codec</name>
   <description>
     Classes for converting to XRPL binary format

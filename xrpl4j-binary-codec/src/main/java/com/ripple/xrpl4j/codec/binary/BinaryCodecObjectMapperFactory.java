@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
-public class ObjectMapperFactory {
+public class BinaryCodecObjectMapperFactory {
 
   private static ObjectMapper objectMapper = JsonMapper.builder()
       .addModule(new Jdk8Module())

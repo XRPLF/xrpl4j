@@ -16,7 +16,7 @@ public class XrplBinaryCodec {
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encode(String json) throws JsonProcessingException {
-    JsonNode node = ObjectMapperFactory.getObjectMapper().readTree(json);
+    JsonNode node = BinaryCodecObjectMapperFactory.getObjectMapper().readTree(json);
     UnsignedByteArray byteList = UnsignedByteArray.empty();
     new STObjectType().fromJSON(node).toBytesSink(byteList);
     return byteList.hexValue();

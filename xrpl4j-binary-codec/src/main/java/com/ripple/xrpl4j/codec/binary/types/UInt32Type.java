@@ -6,6 +6,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL UInt32 type.
+ */
 public class UInt32Type extends UIntType<UInt32Type> {
 
   public UInt32Type() {

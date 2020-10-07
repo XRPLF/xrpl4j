@@ -10,6 +10,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Hop object inside a Path object.
+ */
 public class HopType extends SerializedType<HopType> {
 
   /**
@@ -35,15 +38,15 @@ public class HopType extends SerializedType<HopType> {
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(type));
 
     if ((type & TYPE_ACCOUNT) > 0) {
-      byteArray.add(parser.read(AccountIdType.WIDTH));
+      byteArray.append(parser.read(AccountIdType.WIDTH));
     }
 
     if ((type & TYPE_CURRENCY) > 0) {
-      byteArray.add(parser.read(CurrencyType.WIDTH));
+      byteArray.append(parser.read(CurrencyType.WIDTH));
     }
 
     if ((type & TYPE_ISSUER) > 0) {
-      byteArray.add(parser.read(AccountIdType.WIDTH));
+      byteArray.append(parser.read(AccountIdType.WIDTH));
     }
 
     return new HopType(byteArray);
@@ -60,17 +63,17 @@ public class HopType extends SerializedType<HopType> {
     Hop hop = objectMapper.treeToValue(node, Hop.class);
 
     hop.account().ifPresent(account -> {
-      byteArray.add(new AccountIdType().fromJSON(account).value());
+      byteArray.append(new AccountIdType().fromJSON(account).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ACCOUNT)));
     });
 
     hop.currency().ifPresent(currency -> {
-      byteArray.add(new CurrencyType().fromJSON(currency).value());
+      byteArray.append(new CurrencyType().fromJSON(currency).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_CURRENCY)));
     });
 
     hop.issuer().ifPresent(issuer -> {
-      byteArray.add(new AccountIdType().fromJSON(issuer).value());
+      byteArray.append(new AccountIdType().fromJSON(issuer).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ISSUER)));
     });
 

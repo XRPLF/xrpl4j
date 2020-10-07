@@ -3,6 +3,9 @@ package com.ripple.xrpl4j.codec.binary.types;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 
+/**
+ * Base class for XRPL Hash types.
+ */
 public abstract class HashType<T extends HashType<T>> extends SerializedType<T> {
   
   private final int width;

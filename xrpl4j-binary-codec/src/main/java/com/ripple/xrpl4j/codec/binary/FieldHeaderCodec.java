@@ -7,7 +7,7 @@ import com.ripple.xrpl4j.codec.addresses.ByteUtils;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.binary.definitions.Definitions;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsProvider;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInfo;
+import com.ripple.xrpl4j.codec.binary.definitions.FieldInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,8 +47,7 @@ public class FieldHeaderCodec {
         fieldMetadataMap.put(fieldName, metadata);
         fieldIdNameMap.put(fieldHeader, fieldName);
       } catch (JsonProcessingException e) {
-        // FIXME logging
-        throw new RuntimeException(e);
+        throw new IllegalArgumentException("invalid json", e);
       }
     });
   }

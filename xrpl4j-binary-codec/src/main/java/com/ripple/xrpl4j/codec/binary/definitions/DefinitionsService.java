@@ -6,14 +6,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.ripple.xrpl4j.codec.binary.FieldHeader;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInfo;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service for accessing XRPL type and field metadata from definitions.json.
+ */
 public class DefinitionsService {
 
   private static final DefinitionsService INSTANCE = new DefinitionsService(DefinitionsProvider.getInstance(),
@@ -53,8 +54,7 @@ public class DefinitionsService {
         tempFieldInfoMap.put(fieldName, metadata);
         tempFieldIdNameMap.put(fieldHeader, fieldName);
       } catch (JsonProcessingException e) {
-        // FIXME logging
-        throw new RuntimeException(e);
+        throw new IllegalArgumentException("invalid json", e);
       }
     });
     this.fieldInfoMap = ImmutableMap.copyOf(tempFieldInfoMap);

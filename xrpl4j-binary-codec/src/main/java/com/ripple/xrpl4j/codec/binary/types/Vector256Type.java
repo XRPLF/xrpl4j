@@ -12,6 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Vector256 type.
+ */
 public class Vector256Type extends SerializedType<Vector256Type> {
 
   public static final int WIDTH = 32;

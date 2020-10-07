@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.FieldHeaderCodec;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
+import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.types.SerializedType;
 
+/**
+ * Serializes JSON to XRPL binary format.
+ */
 public class BinarySerializer {
 
   private final UnsignedByteArray sink;
@@ -17,11 +20,11 @@ public class BinarySerializer {
   }
 
   public void put(String hexBytes) {
-    sink.add(UnsignedByteArray.fromHex(hexBytes));
+    sink.append(UnsignedByteArray.fromHex(hexBytes));
   }
 
   public void write(UnsignedByteArray list) {
-    list.toByteSink(this.sink);
+    this.sink.append(list);
   }
 
   /**
@@ -55,7 +58,7 @@ public class BinarySerializer {
    */
   public void writeFieldAndValue(FieldInstance field, SerializedType value) {
     String fieldHeaderHex = FieldHeaderCodec.getInstance().encode(field.name());
-    this.sink.add(UnsignedByteArray.fromHex(fieldHeaderHex));
+    this.sink.append(UnsignedByteArray.fromHex(fieldHeaderHex));
 
     if (field.isVariableLengthEncoded()) {
       this.writeLengthEncoded(value);

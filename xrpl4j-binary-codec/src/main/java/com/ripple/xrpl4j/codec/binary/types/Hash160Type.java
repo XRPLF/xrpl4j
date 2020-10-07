@@ -7,6 +7,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 import java.util.OptionalInt;
 import java.util.regex.Pattern;
 
+/**
+ * Codec for XRPL Hash160 type.
+ */
 public class Hash160Type extends HashType<Hash160Type> {
 
   protected static final Pattern HEX_REGEX = Pattern.compile("^[A-Z0-9]{40}$");

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
+import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 import com.ripple.xrpl4j.codec.binary.serdes.BinarySerializer;
 
@@ -17,6 +17,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL STArray type.
+ */
 public class STArrayType extends SerializedType<STArrayType> {
 
   public static final String ARRAY_END_MARKER_HEX = "F1";

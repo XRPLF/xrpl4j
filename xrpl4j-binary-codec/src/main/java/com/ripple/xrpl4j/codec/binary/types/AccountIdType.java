@@ -8,6 +8,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL AccountID type.
+ */
 public class AccountIdType extends Hash160Type {
 
   private static final AddressCodec addressCodec = new AddressCodec();

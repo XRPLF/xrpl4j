@@ -10,6 +10,9 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.regex.Pattern;
 
+/**
+ * Codec for currency property inside an XRPL issued currency amount json.
+ */
 public class CurrencyType extends Hash160Type {
 
   private static final Pattern ISO_REGEX = Pattern.compile("^[A-Z0-9]{3}$");

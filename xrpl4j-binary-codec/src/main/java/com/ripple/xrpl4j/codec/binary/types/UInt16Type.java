@@ -7,6 +7,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL UInt16 type.
+ */
 public class UInt16Type extends UIntType<UInt16Type> {
 
   public UInt16Type() {

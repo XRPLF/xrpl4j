@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsService;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
+import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 import com.ripple.xrpl4j.codec.binary.serdes.BinarySerializer;
 
@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL STObject type.
+ */
 public class STObjectType extends SerializedType<STObjectType> {
 
   public static final String OBJECT_END_MARKER_HEX = "E1";
@@ -66,10 +69,7 @@ public class STObjectType extends SerializedType<STObjectType> {
           .filter(FieldInstance::isSerialized)
           .ifPresent(fieldInstance -> fields.add(FieldWithValue.builder()
               .field(fieldInstance)
-              .value(definitionsService.mapFieldSpecialization(fieldName, fieldNode.asText())
-                  .map(value -> new TextNode("" + value))
-                  .map(JsonNode.class::cast)
-                  .orElse(fieldNode))
+              .value(mapSpecializedValues(fieldName, fieldNode))
               .build()));
     }
     fields.stream()
@@ -86,6 +86,22 @@ public class STObjectType extends SerializedType<STObjectType> {
         });
 
     return new STObjectType(byteList);
+  }
+
+  /**
+   * Maps (if necessar) a JSON node for the given fieldName to it's canonical value.
+   * Some fields (e.g. TransactionType) can be specified in JSON as an ordinal value or an enum (e.g. OfferCreate).
+   * Enum values need to be converted to the ordinal value for binary serialization.
+   *
+   * @param fieldName name of the JSON field.
+   * @param fieldNode JSON value for the field.
+   * @return either the original fieldNode or a remapped node if it's one of these special cases.
+   */
+  private JsonNode mapSpecializedValues(String fieldName, JsonNode fieldNode) {
+    return definitionsService.mapFieldSpecialization(fieldName, fieldNode.asText())
+        .map(value -> new TextNode("" + value))
+        .map(JsonNode.class::cast)
+        .orElse(fieldNode);
   }
 
   public JsonNode toJSON() {

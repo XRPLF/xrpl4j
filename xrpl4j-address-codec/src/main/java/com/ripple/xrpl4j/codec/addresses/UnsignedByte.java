@@ -38,26 +38,62 @@ public class UnsignedByte {
     this.value = value;
   }
 
+  /**
+   * Converts the unsigned byte to a signed int. Necessary if the unsigned byte has a value > 127 and the result
+   * needs to be used for numeric purposes.
+   *
+   * @return
+   */
   public int asInt() {
     return value;
   }
 
-  public byte asByte() { return (byte) value; }
+  /**
+   * Converts the unsigned byte to a signed byte. Not that this can be unsafe to do if the underlying value
+   * is greater than 127 which is the max value for signed byte in Java AND the byte is being used for
+   * numerical purposes.
+   *
+   * @return
+   */
+  public byte asByte() {
+    return (byte) value;
+  }
 
+  /**
+   * Gets the 4 high order bits of the underlying unsigned byte.
+   *
+   * @return
+   */
   public int getHighBits() {
     return value >> 4;
   }
 
+  /**
+   * Gets the 4 high order bits of the underlying unsigned byte.
+   *
+   * @return
+   */
   public int getLowBits() {
     return value & 0x0F;
   }
 
+  /**
+   * Checks if the nth bit (1-based index from left to right) is set.
+   * @param nth
+   * @return
+   */
   public boolean isNthBitSet(int nth)
   {
     Preconditions.checkArgument(nth >= 1 && nth <= 8);
     return ((value >> (8 - nth)) & 1) == 1;
   }
 
+  /**
+   * Does a bitwise OR on this byte and the given value, and returns a new unsigned byte as the result.
+   *
+   * @param arg
+   * @return
+   */
   public UnsignedByte or(UnsignedByte arg)
   {
     return UnsignedByte.of(value | arg.value);

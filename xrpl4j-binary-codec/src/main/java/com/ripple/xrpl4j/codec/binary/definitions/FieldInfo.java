@@ -1,9 +1,13 @@
-package com.ripple.xrpl4j.codec.binary.enums;
+package com.ripple.xrpl4j.codec.binary.definitions;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ripple.xrpl4j.codec.binary.enums.ImmutableFieldInfo;
 import org.immutables.value.Value.Immutable;
 
+/**
+ * Model object for Field info medata from the "fields" section of defintions.json.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableFieldInfo.class)
 @JsonDeserialize(as = ImmutableFieldInfo.class)

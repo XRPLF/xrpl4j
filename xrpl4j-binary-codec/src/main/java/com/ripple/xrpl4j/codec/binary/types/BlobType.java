@@ -6,6 +6,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Blob type.
+ */
 public class BlobType extends SerializedType<BlobType> {
 
   public BlobType() {

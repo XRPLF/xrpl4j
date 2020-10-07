@@ -1,8 +1,13 @@
-package com.ripple.xrpl4j.codec.binary.enums;
+package com.ripple.xrpl4j.codec.binary.definitions;
 
 import com.ripple.xrpl4j.codec.binary.FieldHeader;
+import com.ripple.xrpl4j.codec.binary.enums.ImmutableFieldInstance;
 import org.immutables.value.Value.Immutable;
 
+/**
+ * Holder of {@link FieldHeader} and {@link com.ripple.xrpl4j.codec.binary.definitions.FieldInfo} data.
+ * Provided by {@link DefinitionsService} for looking up fields and their related type data.
+ */
 @Immutable
 public interface FieldInstance extends Comparable {
 

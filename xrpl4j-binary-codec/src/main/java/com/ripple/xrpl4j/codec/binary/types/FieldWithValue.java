@@ -1,6 +1,6 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
-import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
+import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import org.immutables.value.Value.Immutable;
 
 @Immutable

@@ -6,6 +6,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Hash128 type.
+ */
 public class Hash128Type extends HashType<Hash128Type> {
 
   public static final int WIDTH = 16;

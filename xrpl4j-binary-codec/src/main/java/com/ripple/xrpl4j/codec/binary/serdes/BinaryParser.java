@@ -6,7 +6,7 @@ import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.FieldHeader;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsService;
-import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
+import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.types.FieldWithValue;
 import com.ripple.xrpl4j.codec.binary.types.SerializedType;
 
@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+/**
+ * Parser for XRPL binary hex values.
+ */
 public class BinaryParser {
 
   // 1 byte encodes to 2 characters in hex

@@ -14,6 +14,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL PathSet type.
+ */
 public class PathSetType extends SerializedType<PathSetType> {
   /**
    * Constants for separating Paths in a PathSet
@@ -35,9 +38,9 @@ public class PathSetType extends SerializedType<PathSetType> {
   public PathSetType fromParser(BinaryParser parser, OptionalInt lengthHint) {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
     while (!parser.end()) {
-      byteArray.add(new PathType().fromParser(parser).value());
+      byteArray.append(new PathType().fromParser(parser).value());
       UnsignedByteArray nextByte = parser.read(1);
-      byteArray.add(nextByte);
+      byteArray.append(nextByte);
       if (nextByte.hexValue().equals(PATHSET_END_HEX)) {
         break;
       }
@@ -56,8 +59,8 @@ public class PathSetType extends SerializedType<PathSetType> {
     Iterator<JsonNode> nodeIterator = node.elements();
     while (nodeIterator.hasNext()) {
       JsonNode child = nodeIterator.next();
-      byteArray.add(new PathType().fromJSON(child).value());
-      byteArray.add(UnsignedByteArray.fromHex(PATH_SEPARATOR_HEX));
+      byteArray.append(new PathType().fromJSON(child).value());
+      byteArray.append(UnsignedByteArray.fromHex(PATH_SEPARATOR_HEX));
     }
 
     byteArray.set(byteArray.length() - 1, UnsignedByte.of(PATHSET_END_HEX));

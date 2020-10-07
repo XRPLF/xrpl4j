@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-abstract public class SerializedType<T extends SerializedType<T>> implements SerializedComparable<T> {
+abstract public class SerializedType<T extends SerializedType<T>> {
 
   private final UnsignedByteArray bytes;
 
@@ -80,7 +80,7 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
   }
 
   public void toBytesSink(UnsignedByteArray list) {
-    list.add(this.bytes);
+    list.append(this.bytes);
   }
 
   public byte[] toBytes() {
@@ -97,11 +97,6 @@ abstract public class SerializedType<T extends SerializedType<T>> implements Ser
 
   public final String toHex() {
     return bytes.hexValue();
-  }
-
-  @Override
-  public int compareTo(T o) {
-    return this.toHex().compareTo(o.toHex());
   }
 
   protected UnsignedByteArray value() {

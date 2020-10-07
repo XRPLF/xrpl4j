@@ -7,6 +7,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL UInt8 type.
+ */
 public class UInt8Type extends UIntType<UInt8Type> {
 
   @Override

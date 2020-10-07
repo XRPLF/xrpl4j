@@ -6,6 +6,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Hash256 type.
+ */
 public class Hash256Type extends HashType<Hash256Type> {
 
   public static final int WIDTH = 32;

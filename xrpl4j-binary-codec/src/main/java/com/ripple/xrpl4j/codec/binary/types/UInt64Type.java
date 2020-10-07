@@ -6,6 +6,9 @@ import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL UInt64 type.
+ */
 public class UInt64Type extends UIntType<UInt64Type> {
 
   public UInt64Type() {

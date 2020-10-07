@@ -7,6 +7,9 @@ import org.immutables.value.Value.Immutable;
 
 import java.util.Optional;
 
+/**
+ * Model object a Hop object inside a XRPL {@link PathType} object.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableHop.class)
 @JsonDeserialize(as = ImmutableHop.class)

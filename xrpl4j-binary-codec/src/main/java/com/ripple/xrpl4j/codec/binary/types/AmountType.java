@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Amount type.
+ */
 class AmountType extends SerializedType<AmountType> {
 
   public static final BigDecimal MAX_DROPS = new BigDecimal("1e17");
@@ -65,8 +68,8 @@ class AmountType extends SerializedType<AmountType> {
     UnsignedByteArray currency = new CurrencyType().fromJSON(value.get("currency")).value();
     UnsignedByteArray issuer = new AccountIdType().fromJSON(value.get("issuer")).value();
 
-    result.add(currency);
-    result.add(issuer);
+    result.append(currency);
+    result.append(issuer);
 
     return new AmountType(result);
   }

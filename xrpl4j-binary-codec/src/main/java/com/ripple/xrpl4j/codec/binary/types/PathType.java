@@ -12,6 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
+/**
+ * Codec for XRPL Path type inside a PathSet.
+ */
 public class PathType extends SerializedType<PathType> {
 
   /**
@@ -33,7 +36,7 @@ public class PathType extends SerializedType<PathType> {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
 
     while(!parser.end()) {
-      byteArray.add(new HopType().fromParser(parser).value());
+      byteArray.append(new HopType().fromParser(parser).value());
       String nextByte = parser.peek().hexValue();
       if (nextByte.equals(PATH_SEPARATOR_HEX) || nextByte.equals(PATHSET_END_HEX)) {
         break;
@@ -51,7 +54,7 @@ public class PathType extends SerializedType<PathType> {
     Iterator<JsonNode> nodeIterator = node.elements();
     while (nodeIterator.hasNext()) {
       JsonNode child = nodeIterator.next();
-      byteArray.add(new HopType().fromJSON(child).value());
+      byteArray.append(new HopType().fromJSON(child).value());
     }
     return new PathType(byteArray);
   }

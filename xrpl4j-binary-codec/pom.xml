@@ -15,6 +15,7 @@
     Classes for converting to XRPL binary format
   </description>
 
+  <!-- FIXME: Remove after travis starts working -->
   <dependencies>
     <dependency>
       <groupId>org.assertj</groupId>

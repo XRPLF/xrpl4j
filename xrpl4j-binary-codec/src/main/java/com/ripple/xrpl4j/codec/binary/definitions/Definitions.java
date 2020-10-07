@@ -34,7 +34,15 @@ public interface Definitions {
   List<List<JsonNode>> fields();
 
   /**
-   * Transaction types mappings (transaction type -> orginal value)
+   * Ledger types mappings (transaction type -> ordinal value)
+   *
+   * @return
+   */
+  @JsonProperty("LEDGER_ENTRY_TYPES")
+  Map<String, Integer> ledgerEntryTypes();
+
+  /**
+   * Transaction types mappings (transaction type -> ordinal value)
    *
    * @return
    */
@@ -42,7 +50,7 @@ public interface Definitions {
   Map<String, Integer> transactionTypes();
 
   /**
-   * Transaction results mappings (transaction result -> orginal value)
+   * Transaction results mappings (transaction result -> ordinal value)
    *
    * @return
    */

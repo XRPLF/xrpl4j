@@ -2509,14 +2509,6 @@
             "is_negative": false
         },
         {
-            "test_json": "-1",
-            "type_id": 6,
-            "is_native": true,
-            "type": "Amount",
-            "expected_hex": "0000000000000001",
-            "is_negative": true
-        },
-        {
             "test_json": {
                 "currency": "USD",
                 "value": "-1",
@@ -3253,7 +3245,7 @@
             "expected_hex": "0068"
         },
         {
-            "test_json": "EnabledAmendments",
+            "test_json": "Amendments",
             "type_id": 1,
             "type_specialisation_field": "LedgerEntryType",
             "type": "UInt16",
@@ -3261,7 +3253,7 @@
         },
         {
             "test_json": 102,
-            "canonical_json": "EnabledAmendments",
+            "canonical_json": "Amendments",
             "type_id": 1,
             "type_specialisation_field": "LedgerEntryType",
             "type": "UInt16",
@@ -3538,7 +3530,7 @@
             "expected_hex": "81"
         },
         {
-            "test_json": "tecMASTER_DISABLED",
+            "test_json": "tecNO_ALTERNATIVE_KEY",
             "type_id": 16,
             "type_specialisation_field": "TransactionResult",
             "type": "UInt8",
@@ -3546,7 +3538,7 @@
         },
         {
             "test_json": 130,
-            "canonical_json": "tecMASTER_DISABLED",
+            "canonical_json": "tecNO_ALTERNATIVE_KEY",
             "type_id": 16,
             "type_specialisation_field": "TransactionResult",
             "type": "UInt8",

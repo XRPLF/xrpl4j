@@ -8,12 +8,12 @@ import org.immutables.value.Value.Immutable;
  * Represents a Field ID used to encode an XRPL field name to its binary form.
  */
 @Immutable
-@JsonSerialize(as = ImmutableFieldId.class)
-@JsonDeserialize(as = ImmutableFieldId.class)
-public interface FieldId {
+@JsonSerialize(as = ImmutableFieldHeader.class)
+@JsonDeserialize(as = ImmutableFieldHeader.class)
+public interface FieldHeader {
 
-  static ImmutableFieldId.Builder builder() {
-    return ImmutableFieldId.builder();
+  static ImmutableFieldHeader.Builder builder() {
+    return ImmutableFieldHeader.builder();
   }
 
   int fieldCode();

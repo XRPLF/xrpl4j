@@ -13,8 +13,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 abstract class BaseSerializerTypeTest {
@@ -23,19 +21,13 @@ abstract class BaseSerializerTypeTest {
 
   @ParameterizedTest
   @MethodSource("dataDrivenFixtures")
-  void fixtureTests() throws IOException {
+  void fixtureTests(ValueTest fixture) throws IOException {
     SerializedType serializedType = getType();
-    List<ValueTest> fixtures = FixtureUtils.getDataDrivenFixtures().valuesTests()
-        .stream()
-        .filter(fixture -> fixture.type().equals(SerializedType.getNameByType(serializedType)))
-        .collect(Collectors.toList());
-    for (ValueTest fixture : fixtures) {
-      JsonNode value = getValue(fixture);
-      if (fixture.error() != null) {
-        Assertions.assertThrows(Exception.class, () -> serializedType.fromJSON(value));
-      } else {
-        assertThat(serializedType.fromJSON(value).toHex()).isEqualTo(fixture.expectedHex());
-      }
+    JsonNode value = getValue(fixture);
+    if (fixture.error() != null) {
+      Assertions.assertThrows(Exception.class, () -> serializedType.fromJSON(value));
+    } else {
+      assertThat(serializedType.fromJSON(value).toHex()).isEqualTo(fixture.expectedHex());
     }
   }
 

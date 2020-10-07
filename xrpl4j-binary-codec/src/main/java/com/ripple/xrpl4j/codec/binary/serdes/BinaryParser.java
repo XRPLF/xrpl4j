@@ -23,6 +23,21 @@ public class BinaryParser {
   // 1 byte encodes to 2 characters in hex
   private static final int BYTE_HEX_LENGTH = 2;
 
+  // max length that can be represented in a single byte per XRPL serialization restrictions
+  public static final int MAX_SINGLE_BYTE_LENGTH = 192;
+
+  // max length that can be represented in 2 bytes per XRPL serialization restrictions
+  public static final int MAX_DOUBLE_BYTE_LENGTH = 12481;
+
+  // max value that can be used in the second byte of a length field
+  public static final int MAX_SECOND_BYTE_VALUE = 240;
+
+  // max value that can be represented using one 8-bit byte
+  public static final int MAX_BYTE_VALUE = 256;
+
+  // max value that can be represented in using two 8-bit bytes
+  public static final int MAX_DOUBLE_BYTE_VALUE = 65536;
+
   private final String hex;
 
   private int cursor = 0;
@@ -82,15 +97,15 @@ public class BinaryParser {
    */
   public int readVariableLengthLength() {
     int b1 = this.readUInt8().intValue();
-    if (b1 <= 192) {
+    if (b1 <= MAX_SINGLE_BYTE_LENGTH) {
       return b1;
-    } else if (b1 <= 240) {
+    } else if (b1 <= MAX_SECOND_BYTE_VALUE) {
       int b2 = this.readUInt8().intValue();
-      return 193 + (b1 - 193) * 256 + b2;
+      return MAX_SECOND_BYTE_VALUE - 1 + (b1 - MAX_SECOND_BYTE_VALUE - 1) * MAX_BYTE_VALUE + b2;
     } else if (b1 <= 254) {
       int b2 = this.readUInt8().intValue();
       int b3 = this.readUInt8().intValue();
-      return 12481 + (b1 - 241) * 65536 + b2 * 256 + b3;
+      return MAX_DOUBLE_BYTE_LENGTH + (b1 - MAX_SECOND_BYTE_VALUE - 1) * MAX_DOUBLE_BYTE_VALUE + b2 * MAX_BYTE_VALUE + b3;
     }
     throw new Error("Invalid variable length indicator");
   }

@@ -27,6 +27,12 @@ public class Ed25519KeyPairService implements KeyPairService {
     this.addressCodec = addressCodec;
   }
 
+  /**
+   * Derive an ED25519 private/public key pair from a seed.
+   *
+   * @param seed An {@link UnsignedByteArray} containing the seed.
+   * @return The {@link KeyPair} containing an ED25519 public and private key that was derived from the seed.
+   */
   @Override
   public KeyPair deriveKeyPair(UnsignedByteArray seed) {
     UnsignedByteArray rawPrivateKey = HashUtils.sha512Half(seed);
@@ -48,15 +54,28 @@ public class Ed25519KeyPairService implements KeyPairService {
       .build();
   }
 
+  /**
+   * Derive an ED25519 private/public key pair from a Base58Check encoded seed.
+   *
+   * @param seed A Base58Check encoded {@link String} containing the seed.
+   * @return The {@link KeyPair} containing an ED25519 public and private key that was derived from the seed.
+   */
   @Override
   public KeyPair deriveKeyPair(String seed) {
     return deriveKeyPair(addressCodec.decodeSeed(seed).bytes());
   }
 
+  /**
+   * Sign a message using the Ed25519 algorithm.
+   *
+   * @param message A {@link String} containing the hex encoded message to sign.
+   * @param privateKey A {@link String} containing the hex encoded private key to sign with.
+   * @return The hex encoded ED25519 signature of the message, using the privateKey.
+   */
   @Override
   public String sign(String message, String privateKey) {
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(privateKey.substring(2)),
+      BaseEncoding.base16().decode(privateKey.substring(2)), // Remove ED prefix byte
       0
     );
 
@@ -73,10 +92,19 @@ public class Ed25519KeyPairService implements KeyPairService {
     }
   }
 
+  /**
+   * Verify an ED25519 signature of a message with the given public key.
+   *
+   * @param message A {@link String} containing the hex encoded message that was signed.
+   * @param signature A {@link String} containing the hex encoded signature.
+   * @param publicKey A {@link String} containing the hex encoded public key corresponding to the private key
+   *                  that was used to generate the signature.
+   * @return true if the signature was valid, false if not.
+   */
   @Override
   public boolean verify(String message, String signature, String publicKey) {
     Ed25519PublicKeyParameters publicKeyParameters = new Ed25519PublicKeyParameters(
-      BaseEncoding.base16().decode(publicKey.substring(2)),
+      BaseEncoding.base16().decode(publicKey.substring(2)), // Remove ED prefix byte
       0
     );
 

@@ -1,12 +1,31 @@
 package com.ripple.xrpl4j.keypairs;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.BaseEncoding;
+import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
+import org.bouncycastle.crypto.signers.Ed25519Signer;
+
+import java.util.Objects;
 
 public class Ed25519KeyPairService implements KeyPairService {
+
+  private AddressCodec addressCodec;
+
+  public Ed25519KeyPairService() {
+    this.addressCodec = new AddressCodec();
+  }
+
+  public Ed25519KeyPairService(final AddressCodec addressCodec) {
+    Objects.requireNonNull(addressCodec);
+
+    this.addressCodec = addressCodec;
+  }
 
   @Override
   public KeyPair deriveKeyPair(UnsignedByteArray seed) {
@@ -30,12 +49,41 @@ public class Ed25519KeyPairService implements KeyPairService {
   }
 
   @Override
+  public KeyPair deriveKeyPair(String seed) {
+    return deriveKeyPair(addressCodec.decodeSeed(seed).bytes());
+  }
+
+  @Override
   public String sign(String message, String privateKey) {
-    return null;
+    Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
+      BaseEncoding.base16().decode(privateKey.substring(2)),
+      0
+    );
+
+    Signer signer = new Ed25519Signer();
+    signer.init(true, privateKeyParameters);
+    byte[] messageBytes = BaseEncoding.base16().decode(message);
+    signer.update(messageBytes, 0, messageBytes.length);
+
+    try {
+      byte[] signature = signer.generateSignature();
+      return BaseEncoding.base16().encode(signature);
+    } catch (CryptoException e) {
+      throw new RuntimeException(e); // TODO: custom exception
+    }
   }
 
   @Override
   public boolean verify(String message, String signature, String publicKey) {
-    return false;
+    Ed25519PublicKeyParameters publicKeyParameters = new Ed25519PublicKeyParameters(
+      BaseEncoding.base16().decode(publicKey.substring(2)),
+      0
+    );
+
+    Signer verifier = new Ed25519Signer();
+    verifier.init(false, publicKeyParameters);
+    byte[] messageBytes = BaseEncoding.base16().decode(message);
+    verifier.update(messageBytes, 0, messageBytes.length);
+    return verifier.verifySignature(BaseEncoding.base16().decode(signature));
   }
 }

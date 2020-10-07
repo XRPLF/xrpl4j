@@ -6,6 +6,8 @@ public interface KeyPairService {
 
   KeyPair deriveKeyPair(UnsignedByteArray seed);
 
+  KeyPair deriveKeyPair(String seed);
+
   String sign(String message, String privateKey);
 
   boolean verify(String message, String signature, String publicKey);

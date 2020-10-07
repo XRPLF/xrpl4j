@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
@@ -23,6 +24,11 @@ public class UInt16Type extends UIntType<UInt16Type> {
   @Override
   public UInt16Type fromJSON(JsonNode value) {
     return new UInt16Type(UnsignedLong.valueOf(value.asText()));
+  }
+
+  @Override
+  public JsonNode toJSON() {
+    return new IntNode(UnsignedLong.valueOf(toHex(), 16).intValue());
   }
 
 }

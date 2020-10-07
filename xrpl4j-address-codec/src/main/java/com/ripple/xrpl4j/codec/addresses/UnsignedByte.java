@@ -58,6 +58,10 @@ public class UnsignedByte {
     return ((value >> (8 - nth)) & 1) == 1;
   }
 
+  public UnsignedByte or(UnsignedByte arg)
+  {
+    return UnsignedByte.of(value | arg.value);
+  }
 
   public String hexValue() {
     return BaseEncoding.base16().encode(new byte[] { (byte) asInt() });

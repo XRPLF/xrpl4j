@@ -96,7 +96,12 @@ public class STObjectType extends SerializedType<STObjectType> {
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
       }
-      objectMap.put(field.name(), parser.readFieldValue(field).toJSON());
+      JsonNode value = parser.readFieldValue(field).toJSON();
+      JsonNode mapped = definitionsService.mapFieldRawValueToSpecialization(field.name(), value.asText())
+          .map(TextNode::new)
+          .map(JsonNode.class::cast)
+          .orElse(value);
+      objectMap.put(field.name(), mapped);
     }
     return new ObjectNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(), objectMap);
   }

@@ -16,10 +16,10 @@ import java.util.stream.Stream;
 
 class BinaryEncoderTest {
 
-  public static final String SIMPLE_JSON = "{\"CloseResolution\":\"01\",\"Method\":\"02\"}";
-  public static final String SINGLE_LEVEL_OBJECT_JSON = "{\"Memo\":{\"Memo\":{\"Method\":\"02\"}}}";
+  public static final String SIMPLE_JSON = "{\"CloseResolution\":1,\"Method\":2}";
+  public static final String SINGLE_LEVEL_OBJECT_JSON = "{\"Memo\":{\"Memo\":{\"Method\":2}}}";
   public static final String MULTI_LEVEL_OBJECT_JSON =
-      "{\"Memo\":{\"Memo\":{\"CloseResolution\":\"01\",\"Method\":\"02\"}}}";
+      "{\"Memo\":{\"Memo\":{\"CloseResolution\":1,\"Method\":2}}}";
 
   public static final String SIMPLE_HEX = "011001021002";
   public static final String SINGLE_OBJECT_HEX = "EAEA021002E1E1";

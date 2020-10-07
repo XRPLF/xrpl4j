@@ -12,6 +12,7 @@ import com.ripple.xrpl4j.codec.binary.enums.FieldInstance;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DefinitionsService {
 
@@ -25,6 +26,12 @@ public class DefinitionsService {
   private final Map<FieldHeader, String> fieldIdNameMap;
 
   private final Map<String, Integer> typeOrdinalMap;
+
+  private final Map<Integer, String> transactionTypeReverseLookupMap;
+
+  private final Map<Integer, String> transactionResultReverseLookupNap;
+
+  private final Map<Integer, String> ledgerEntryTypeReverseLookupMap;
 
   public static DefinitionsService getInstance() {
     return INSTANCE;
@@ -52,6 +59,9 @@ public class DefinitionsService {
     });
     this.fieldInfoMap = ImmutableMap.copyOf(tempFieldInfoMap);
     this.fieldIdNameMap = ImmutableMap.copyOf(tempFieldIdNameMap);
+    this.transactionTypeReverseLookupMap = inverse(definitions.transactionTypes());
+    this.transactionResultReverseLookupNap = inverse(definitions.transactionResults());
+    this.ledgerEntryTypeReverseLookupMap = inverse(definitions.ledgerEntryTypes());
   }
 
   public String getFieldName(FieldHeader fieldHeader) {
@@ -94,11 +104,37 @@ public class DefinitionsService {
       return Optional.empty();
     }
     switch (fieldName) {
-      case "LedgerEntryType": return Optional.ofNullable(definitions.ledgerEntryTypes().get(value));
-      case "TransactionResult": return Optional.ofNullable(definitions.transactionResults().get(value));
-      case "TransactionType": return Optional.ofNullable(definitions.transactionTypes().get(value));
-      default: return Optional.empty();
+      case "LedgerEntryType":
+        return Optional.ofNullable(definitions.ledgerEntryTypes().get(value));
+      case "TransactionResult":
+        return Optional.ofNullable(definitions.transactionResults().get(value));
+      case "TransactionType":
+        return Optional.ofNullable(definitions.transactionTypes().get(value));
+      default:
+        return Optional.empty();
     }
+  }
+
+  public Optional<String> mapFieldRawValueToSpecialization(String fieldName, String value) {
+    if (fieldName == null) {
+      return Optional.empty();
+    }
+    switch (fieldName) {
+      case "LedgerEntryType":
+        return Optional.ofNullable(ledgerEntryTypeReverseLookupMap.get(Integer.valueOf(value)));
+      case "TransactionResult":
+        return Optional.ofNullable(transactionResultReverseLookupNap.get(Integer.valueOf(value)));
+      case "TransactionType":
+        return Optional.ofNullable(transactionTypeReverseLookupMap.get(Integer.valueOf(value)));
+      default:
+        return Optional.empty();
+    }
+  }
+
+  private Map<Integer, String> inverse(Map<String, Integer> map) {
+    return map.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
   }
 
 }

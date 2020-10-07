@@ -1,5 +1,7 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.addresses.ByteUtils;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -21,4 +23,8 @@ abstract class UIntType<T extends UIntType<T>> extends SerializedType<T> {
     return bitSize / 4;
   }
 
+  @Override
+  public JsonNode toJSON() {
+    return new TextNode(UnsignedLong.valueOf(toHex(), 16).toString());
+  }
 }

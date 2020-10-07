@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.ripple.xrpl4j.codec.addresses.ByteUtils;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.math.MathUtils;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
@@ -31,7 +31,7 @@ class AmountType extends SerializedType<AmountType> {
   private static final int MIN_IOU_EXPONENT = -96;
   private static final int MAX_IOU_EXPONENT = 80;
 
-  private ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
+  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public AmountType() {
     this(UnsignedByteArray.fromHex(DEFAULT_AMOUNT_HEX));

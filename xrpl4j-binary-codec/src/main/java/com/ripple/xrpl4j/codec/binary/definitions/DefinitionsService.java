@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.FieldHeader;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class DefinitionsService {
 
   private static final DefinitionsService INSTANCE = new DefinitionsService(DefinitionsProvider.getInstance(),
-      ObjectMapperFactory.getObjectMapper());
+      BinaryCodecObjectMapperFactory.getObjectMapper());
 
   private final Definitions definitions;
 

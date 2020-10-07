@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.ArrayList;
@@ -66,6 +66,6 @@ public class PathType extends SerializedType<PathType> {
     while (!parser.end()) {
       values.add(new HopType().fromParser(parser).toJSON());
     }
-    return new ArrayNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
+    return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
   }
 }

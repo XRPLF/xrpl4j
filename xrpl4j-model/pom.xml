@@ -9,7 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>xrpl-model</artifactId>
+  <artifactId>xrpl4j-model</artifactId>
 
   <name>xrpl4j :: model</name>
   <description>

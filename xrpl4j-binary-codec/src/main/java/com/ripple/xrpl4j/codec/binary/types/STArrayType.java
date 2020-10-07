@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 import com.ripple.xrpl4j.codec.binary.serdes.BinarySerializer;
@@ -79,10 +79,10 @@ public class STArrayType extends SerializedType<STArrayType> {
         break;
       }
       STObjectType objectType = new STObjectType().fromParser(parser);
-      ObjectNode child = new ObjectNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(),
+      ObjectNode child = new ObjectNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(),
           ImmutableMap.of(field.name(), objectType.toJSON()));
       values.add(child);
     }
-    return new ArrayNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
+    return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
   }
 }

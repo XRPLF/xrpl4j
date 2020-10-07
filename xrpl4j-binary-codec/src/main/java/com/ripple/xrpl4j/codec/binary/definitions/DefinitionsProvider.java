@@ -1,6 +1,6 @@
 package com.ripple.xrpl4j.codec.binary.definitions;
 
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 
 import java.util.function.Supplier;
 
@@ -9,7 +9,7 @@ import java.util.function.Supplier;
  */
 public interface DefinitionsProvider extends Supplier<Definitions> {
 
-  DefinitionsProvider INSTANCE = new DefaultDefinitionsProvider(ObjectMapperFactory.getObjectMapper());
+  DefinitionsProvider INSTANCE = new DefaultDefinitionsProvider(BinaryCodecObjectMapperFactory.getObjectMapper());
 
   static DefinitionsProvider getInstance() {
     return INSTANCE;

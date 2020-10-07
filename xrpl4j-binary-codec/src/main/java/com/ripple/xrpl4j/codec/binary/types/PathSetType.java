@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
-import com.ripple.xrpl4j.codec.binary.ObjectMapperFactory;
+import com.ripple.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class PathSetType extends SerializedType<PathSetType> {
   public static final String PATHSET_END_HEX = "00";
   public static final String PATH_SEPARATOR_HEX = "FF";
 
-  private ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
+  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public PathSetType() {
     this(UnsignedByteArray.empty());
@@ -76,6 +76,6 @@ public class PathSetType extends SerializedType<PathSetType> {
       values.add(new PathType().fromParser(parser).toJSON());
       parser.skip(1);
     }
-    return new ArrayNode(ObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
+    return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
   }
 }

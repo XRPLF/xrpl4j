@@ -92,7 +92,7 @@ public class DefinitionsService {
                     .header(header)
                     .isSerialized(info.isSerialized())
                     .isSigningField(info.isSigningField())
-                    .isVariableLengthEncoded(info.isVLEncoded())
+                    .isVariableLengthEncoded(info.isVariableLengthEncoded())
                     .nth(info.nth())
                     .name(fieldName)
                     .type(info.type())

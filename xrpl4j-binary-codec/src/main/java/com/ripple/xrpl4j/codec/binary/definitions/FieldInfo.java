@@ -1,8 +1,8 @@
 package com.ripple.xrpl4j.codec.binary.definitions;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ripple.xrpl4j.codec.binary.enums.ImmutableFieldInfo;
 import org.immutables.value.Value.Immutable;
 
 /**
@@ -42,6 +42,7 @@ public interface FieldInfo {
    */
   String type();
 
-  boolean isVLEncoded();
+  @JsonProperty("isVLEncoded")
+  boolean isVariableLengthEncoded();
   
 }

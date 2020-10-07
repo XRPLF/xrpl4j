@@ -3,8 +3,6 @@ package com.ripple.xrpl4j.keypairs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.io.BaseEncoding;
-import com.ripple.xrpl4j.codec.addresses.AddressCodec;
-import com.ripple.xrpl4j.codec.addresses.Decoded;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,5 +43,13 @@ public class Ed25519KeyPairServiceTest {
     String publicKey = "ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63";
     String message = BaseEncoding.base16().encode("test message".getBytes());
     assertThat(keyPairService.verify(message, signature, publicKey)).isTrue();
+  }
+
+  @Test
+  public void deriveAddressFromEd25519PublicKey() {
+    String publicKey = "ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63";
+    String expectedAddress = "rLUEXYuLiQptky37CqLcm9USQpPiz5rkpD";
+    String address = keyPairService.deriveAddress(publicKey);
+    assertThat(address).isEqualTo(expectedAddress);
   }
 }

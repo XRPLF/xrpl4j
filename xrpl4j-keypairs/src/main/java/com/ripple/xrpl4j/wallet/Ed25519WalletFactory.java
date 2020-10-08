@@ -1,17 +1,15 @@
 package com.ripple.xrpl4j.wallet;
 
+import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.keypairs.Ed25519KeyPairService;
-import com.ripple.xrpl4j.keypairs.KeyPair;
 
 import java.util.Objects;
 
-public class Ed25519WalletFactory implements WalletFactory {
-
-  private Ed25519KeyPairService keyPairService;
-  private boolean isTest;
+public class Ed25519WalletFactory extends AbstractWalletFactory {
 
   public Ed25519WalletFactory(boolean isTest) {
-    this.keyPairService = new Ed25519KeyPairService();
+    this.addressCodec = new AddressCodec();
+    this.keyPairService = new Ed25519KeyPairService(addressCodec);
     this.isTest = isTest;
   }
 
@@ -20,29 +18,4 @@ public class Ed25519WalletFactory implements WalletFactory {
     this.isTest = isTest;
   }
 
-  @Override
-  public SeedWalletGenerationResult generateRandomWallet() {
-    String seed = keyPairService.generateSeed();
-    Wallet wallet = this.fromSeed(seed);
-
-    return SeedWalletGenerationResult.builder()
-      .seed(seed)
-      .wallet(wallet)
-      .build();
-  }
-
-  @Override
-  public Wallet fromSeed(String seed) {
-    KeyPair keyPair = keyPairService.deriveKeyPair(seed);
-    return this.fromKeyPair(keyPair);
-  }
-
-  @Override
-  public Wallet fromKeyPair(KeyPair keyPair) {
-    return Wallet.builder()
-      .publicKey(keyPair.publicKey())
-      .privateKey(keyPair.privateKey())
-      .test(isTest)
-      .build();
-  }
 }

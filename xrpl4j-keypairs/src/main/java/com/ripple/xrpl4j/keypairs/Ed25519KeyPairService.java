@@ -118,7 +118,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
    */
   @Override
   public String sign(String message, String privateKey) {
-    UnsignedByteArray messageBytes = UnsignedByteArray.of(BaseEncoding.base16().decode(message));
+    UnsignedByteArray messageBytes = UnsignedByteArray.fromHex(message);
     return this.sign(messageBytes, privateKey);
   }
 
@@ -146,7 +146,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
    */
   @Override
   public boolean verify(String message, String signature, String publicKey) {
-    UnsignedByteArray messageBytes = UnsignedByteArray.of(BaseEncoding.base16().decode(message));
+    UnsignedByteArray messageBytes = UnsignedByteArray.fromHex(message);
     return this.verify(messageBytes, signature, publicKey);
   }
 }

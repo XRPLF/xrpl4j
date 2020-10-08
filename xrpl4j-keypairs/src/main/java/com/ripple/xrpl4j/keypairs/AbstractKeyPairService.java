@@ -19,4 +19,7 @@ public abstract class AbstractKeyPairService implements KeyPairService {
     return addressCodec.encodeAccountId(HashUtils.computePublicKeyHash(publicKey));
   }
 
+  public AddressCodec getAddressCodec() {
+    return addressCodec;
+  }
 }

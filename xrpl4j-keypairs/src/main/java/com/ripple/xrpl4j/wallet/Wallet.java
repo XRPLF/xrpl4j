@@ -1,6 +1,12 @@
 package com.ripple.xrpl4j.wallet;
 
+import com.ripple.xrpl4j.codec.addresses.AddressCodec;
+import com.ripple.xrpl4j.codec.addresses.ClassicAddress;
+import com.ripple.xrpl4j.keypairs.KeyPair;
+import com.ripple.xrpl4j.keypairs.KeyPairService;
 import org.immutables.value.Value;
+
+import java.util.Optional;
 
 @Value.Immutable
 public interface Wallet {
@@ -9,14 +15,14 @@ public interface Wallet {
     return ImmutableWallet.builder();
   }
 
-  String privateKey();
+  Optional<String> privateKey();
 
   String publicKey();
 
-  String address();
+  String classicAddress();
 
+  boolean isTest();
 
-
-  boolean test();
+  String xAddress();
 
 }

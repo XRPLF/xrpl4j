@@ -1,24 +1,20 @@
 package com.ripple.xrpl4j.wallet;
 
-import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.keypairs.Ed25519KeyPairService;
-
-import java.util.Objects;
+import com.ripple.xrpl4j.keypairs.KeyPairService;
 
 /**
  * A {@link WalletFactory} which uses the ED25519 algorithm to generate {@link Wallet}s.
  */
 public class Ed25519WalletFactory extends AbstractWalletFactory {
 
-  public Ed25519WalletFactory(boolean isTest) {
-    this.addressCodec = new AddressCodec();
-    this.keyPairService = new Ed25519KeyPairService(addressCodec);
-    this.isTest = isTest;
+  public static final Ed25519WalletFactory INSTANCE = new Ed25519WalletFactory(Ed25519KeyPairService.getInstance());
+
+  public static Ed25519WalletFactory getInstance() {
+    return INSTANCE;
   }
 
-  public Ed25519WalletFactory(final Ed25519KeyPairService keyPairService, boolean isTest) {
-    this.keyPairService = Objects.requireNonNull(keyPairService);
-    this.isTest = isTest;
+  Ed25519WalletFactory(KeyPairService keyPairService) {
+    this.keyPairService = keyPairService;
   }
-
 }

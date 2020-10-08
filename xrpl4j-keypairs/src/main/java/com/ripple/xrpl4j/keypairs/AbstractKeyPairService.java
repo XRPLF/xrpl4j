@@ -10,7 +10,7 @@ import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 public abstract class AbstractKeyPairService implements KeyPairService {
 
   protected Signer signer;
-  protected AddressCodec addressCodec;
+  protected AddressCodec addressCodec = AddressCodec.getInstance();
 
   @Override
   public String sign(String message, String privateKey) {

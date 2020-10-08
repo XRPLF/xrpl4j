@@ -7,13 +7,11 @@ import org.junit.Test;
 
 public class Ed25519WalletFactoryTest {
 
-  Ed25519WalletFactory testnetWalletFactory;
-  Ed25519WalletFactory mainnetWalletFactory;
+  WalletFactory walletFactory;
 
   @Before
   public void setUp() {
-    this.testnetWalletFactory = new Ed25519WalletFactory(true);
-    this.mainnetWalletFactory = new Ed25519WalletFactory(false);
+    this.walletFactory = Ed25519WalletFactory.getInstance();
   }
 
   @Test
@@ -24,7 +22,7 @@ public class Ed25519WalletFactoryTest {
     String classicAddress = "rLUEXYuLiQptky37CqLcm9USQpPiz5rkpD";
     String xAddress = "XVYaPuwjbmRPA9pdyiXAGXsw8NhgJqESZxvSGuTLKhngUD4";
 
-    Wallet wallet = mainnetWalletFactory.fromSeed(seed);
+    Wallet wallet = walletFactory.fromSeed(seed, false);
     assertThat(wallet.privateKey()).isNotEmpty().get().isEqualTo(privateKey);
     assertThat(wallet.publicKey()).isEqualTo(publicKey);
     assertThat(wallet.classicAddress()).isEqualTo(classicAddress);
@@ -33,15 +31,15 @@ public class Ed25519WalletFactoryTest {
 
   @Test
   public void randomMainnetWalletCanBeRegenerated() {
-    SeedWalletGenerationResult randomWallet = mainnetWalletFactory.randomWallet();
-    Wallet restoredWallet = mainnetWalletFactory.fromSeed(randomWallet.seed());
+    SeedWalletGenerationResult randomWallet = walletFactory.randomWallet(false);
+    Wallet restoredWallet = walletFactory.fromSeed(randomWallet.seed(), false);
     assertThat(randomWallet.wallet()).isEqualTo(restoredWallet);
   }
 
   @Test
   public void randomTestnetWalletCanBeRegenerated() {
-    SeedWalletGenerationResult randomWallet = testnetWalletFactory.randomWallet();
-    Wallet restoredWallet = testnetWalletFactory.fromSeed(randomWallet.seed());
+    SeedWalletGenerationResult randomWallet = walletFactory.randomWallet(true);
+    Wallet restoredWallet = walletFactory.fromSeed(randomWallet.seed(), true);
     assertThat(randomWallet.wallet()).isEqualTo(restoredWallet);
   }
 }

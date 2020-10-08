@@ -7,13 +7,12 @@ import com.ripple.xrpl4j.keypairs.KeyPairService;
 public abstract class AbstractWalletFactory implements WalletFactory {
 
   protected KeyPairService keyPairService;
-  protected AddressCodec addressCodec;
-  protected boolean isTest;
+  private AddressCodec addressCodec = AddressCodec.getInstance();
 
   @Override
-  public SeedWalletGenerationResult randomWallet() {
+  public SeedWalletGenerationResult randomWallet(boolean isTest) {
     String seed = keyPairService.generateSeed();
-    Wallet wallet = this.fromSeed(seed);
+    Wallet wallet = this.fromSeed(seed, isTest);
 
     return SeedWalletGenerationResult.builder()
       .seed(seed)
@@ -22,13 +21,13 @@ public abstract class AbstractWalletFactory implements WalletFactory {
   }
 
   @Override
-  public Wallet fromSeed(String seed) {
+  public Wallet fromSeed(String seed, boolean isTest) {
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
-    return this.fromKeyPair(keyPair);
+    return this.fromKeyPair(keyPair, isTest);
   }
 
   @Override
-  public Wallet fromKeyPair(KeyPair keyPair) {
+  public Wallet fromKeyPair(KeyPair keyPair, boolean isTest) {
     String classicAddress = keyPairService.deriveAddress(keyPair.publicKey());
     return Wallet.builder()
       .privateKey(keyPair.privateKey())

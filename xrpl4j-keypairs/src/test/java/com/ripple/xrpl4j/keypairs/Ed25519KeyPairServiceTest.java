@@ -12,7 +12,7 @@ public class Ed25519KeyPairServiceTest {
 
   @Before
   public void setUp() {
-    keyPairService = new Ed25519KeyPairService();
+    keyPairService = Ed25519KeyPairService.getInstance();
   }
 
   @Test

@@ -23,12 +23,13 @@ import java.util.Objects;
  */
 public class Ed25519KeyPairService extends AbstractKeyPairService {
 
-  public Ed25519KeyPairService() {
-    this.addressCodec = new AddressCodec();
-    this.signer = new Ed25519Signer();
+  private static final Ed25519KeyPairService INSTANCE = new Ed25519KeyPairService(AddressCodec.getInstance());
+
+  public static Ed25519KeyPairService getInstance() {
+    return INSTANCE;
   }
 
-  public Ed25519KeyPairService(final AddressCodec addressCodec) {
+  Ed25519KeyPairService(final AddressCodec addressCodec) {
     Objects.requireNonNull(addressCodec);
     this.addressCodec = addressCodec;
     this.signer = new Ed25519Signer();

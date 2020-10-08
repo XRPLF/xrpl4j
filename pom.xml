@@ -44,7 +44,7 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-client</artifactId>
+        <artifactId>xrpl4j-model</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -120,6 +120,11 @@
         <version>${feign.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15to18</artifactId>
+        <version>1.66</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -207,6 +212,7 @@
     <module>xrpl4j-binary-codec</module>
     <module>xrpl4j-model</module>
     <module>xrpl4j-address-codec</module>
+    <module>xrpl4j-keypairs</module>
     <module>xrpl4j-integration-tests</module>
     <module>xrpl4j-client</module>
   </modules>

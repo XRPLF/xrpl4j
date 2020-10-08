@@ -178,6 +178,13 @@ public interface Payment {
   Optional<CurrencyAmount> deliverMin();
 
   /**
+   * Unique transaction hash/id. Set by rippled. Only present on payments that have been applied to the ledger.
+   * @return
+   */
+  @JsonProperty("hash")
+  Optional<Hash256> hash();
+
+  /**
    * Flags indicating that a fully-canonical signature is required.
    * This flag is highly recommended.
    *

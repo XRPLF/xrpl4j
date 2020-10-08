@@ -16,6 +16,12 @@ import java.util.Optional;
 
 public class AddressCodec {
 
+  private static final AddressCodec INSTANCE = new AddressCodec();
+
+  public static AddressCodec getInstance() {
+    return INSTANCE;
+  }
+
   private static final class PrefixBytes {
     static byte[] MAIN = new byte[] { 0x05, 0x44 };
     static byte[] TEST = new byte[] { 0x04, (byte) 0x93};

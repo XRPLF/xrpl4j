@@ -4,6 +4,10 @@ import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 
 public interface KeyPairService {
 
+  String generateSeed();
+
+  String generateSeed(UnsignedByteArray entropy);
+
   KeyPair deriveKeyPair(UnsignedByteArray seed);
 
   KeyPair deriveKeyPair(String seed);

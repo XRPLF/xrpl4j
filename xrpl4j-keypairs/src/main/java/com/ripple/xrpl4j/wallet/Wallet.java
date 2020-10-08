@@ -1,4 +1,4 @@
-package com.ripple.xrpl4j.keypairs;
+package com.ripple.xrpl4j.wallet;
 
 import org.immutables.value.Value;
 
@@ -12,6 +12,10 @@ public interface Wallet {
   String privateKey();
 
   String publicKey();
+
+  String address();
+
+
 
   boolean test();
 

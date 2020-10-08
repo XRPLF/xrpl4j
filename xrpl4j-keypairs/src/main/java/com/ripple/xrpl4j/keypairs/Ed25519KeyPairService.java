@@ -7,12 +7,14 @@ import com.ripple.xrpl4j.codec.addresses.Decoded;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.Version;
+import com.ripple.xrpl4j.codec.addresses.VersionType;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 
+import java.security.SecureRandom;
 import java.util.Objects;
 
 public class Ed25519KeyPairService extends AbstractKeyPairService {
@@ -25,6 +27,16 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     Objects.requireNonNull(addressCodec);
 
     this.addressCodec = addressCodec;
+  }
+
+  @Override
+  public String generateSeed() {
+    return generateSeed(UnsignedByteArray.of(SecureRandom.getSeed(16)));
+  }
+
+  @Override
+  public String generateSeed(UnsignedByteArray entropy) {
+    return addressCodec.encodeSeed(entropy, VersionType.ED25519);
   }
 
   /**

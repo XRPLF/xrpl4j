@@ -5,6 +5,9 @@ import com.ripple.xrpl4j.keypairs.Ed25519KeyPairService;
 
 import java.util.Objects;
 
+/**
+ * A {@link WalletFactory} which uses the ED25519 algorithm to generate {@link Wallet}s.
+ */
 public class Ed25519WalletFactory extends AbstractWalletFactory {
 
   public Ed25519WalletFactory(boolean isTest) {

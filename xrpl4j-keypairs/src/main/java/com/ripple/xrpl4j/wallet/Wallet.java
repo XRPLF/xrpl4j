@@ -1,13 +1,12 @@
 package com.ripple.xrpl4j.wallet;
 
-import com.ripple.xrpl4j.codec.addresses.AddressCodec;
-import com.ripple.xrpl4j.codec.addresses.ClassicAddress;
-import com.ripple.xrpl4j.keypairs.KeyPair;
-import com.ripple.xrpl4j.keypairs.KeyPairService;
 import org.immutables.value.Value;
 
 import java.util.Optional;
 
+/**
+ * Represents an Account on the XRP Ledger, otherwise known as a Wallet.
+ */
 @Value.Immutable
 public interface Wallet {
 
@@ -15,14 +14,30 @@ public interface Wallet {
     return ImmutableWallet.builder();
   }
 
+  /**
+   * The private key of the wallet, encoded in hexadecimal.
+   */
   Optional<String> privateKey();
 
+  /**
+   * The public key of the wallet, encoded in hexadecimal.
+   */
   String publicKey();
 
+  /**
+   * The XRPL address of this wallet, in the Classic Address form.
+   */
   String classicAddress();
 
-  boolean isTest();
-
+  /**
+   * The XRPL address of this wallet, in the X-Address form.
+   * @return
+   */
   String xAddress();
+
+  /**
+   * Whether or not this wallet is on XRPL testnet or mainnet.
+   */
+  boolean isTest();
 
 }

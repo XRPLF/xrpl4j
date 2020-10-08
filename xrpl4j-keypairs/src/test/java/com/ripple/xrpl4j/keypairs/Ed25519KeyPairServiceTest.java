@@ -11,7 +11,7 @@ public class Ed25519KeyPairServiceTest {
   private Ed25519KeyPairService keyPairService;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     keyPairService = new Ed25519KeyPairService();
   }
 

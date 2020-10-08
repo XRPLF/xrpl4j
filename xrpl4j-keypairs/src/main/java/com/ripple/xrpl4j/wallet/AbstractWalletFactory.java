@@ -11,7 +11,7 @@ public abstract class AbstractWalletFactory implements WalletFactory {
   protected boolean isTest;
 
   @Override
-  public SeedWalletGenerationResult generateRandomWallet() {
+  public SeedWalletGenerationResult randomWallet() {
     String seed = keyPairService.generateSeed();
     Wallet wallet = this.fromSeed(seed);
 

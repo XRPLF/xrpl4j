@@ -1,6 +1,5 @@
 package com.ripple.xrpl4j.keypairs;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.codec.addresses.Decoded;
@@ -9,7 +8,6 @@ import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.Version;
 import com.ripple.xrpl4j.codec.addresses.VersionType;
 import org.bouncycastle.crypto.CryptoException;
-import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
@@ -17,16 +15,21 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import java.security.SecureRandom;
 import java.util.Objects;
 
+/**
+ * Implementation of {@link KeyPairService} which uses the ED25519 algorithm to derive keys and sign/verify
+ * signatures.
+ */
 public class Ed25519KeyPairService extends AbstractKeyPairService {
 
   public Ed25519KeyPairService() {
     this.addressCodec = new AddressCodec();
+    this.signer = new Ed25519Signer();
   }
 
   public Ed25519KeyPairService(final AddressCodec addressCodec) {
     Objects.requireNonNull(addressCodec);
-
     this.addressCodec = addressCodec;
+    this.signer = new Ed25519Signer();
   }
 
   @Override
@@ -66,12 +69,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
       .build();
   }
 
-  /**
-   * Derive an ED25519 private/public key pair from a Base58Check encoded seed.
-   *
-   * @param seed A Base58Check encoded {@link String} containing the seed.
-   * @return The {@link KeyPair} containing an ED25519 public and private key that was derived from the seed.
-   */
   @Override
   public KeyPair deriveKeyPair(String seed) {
     Decoded decoded = addressCodec.decodeSeed(seed);
@@ -83,13 +80,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     return deriveKeyPair(decoded.bytes());
   }
 
-  /**
-   * Sign a message using the Ed25519 algorithm.
-   *
-   * @param message An {@link UnsignedByteArray} containing the hex encoded message to sign.
-   * @param privateKey A {@link String} containing the hex encoded private key to sign with.
-   * @return The hex encoded ED25519 signature of the message, using the privateKey.
-   */
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
@@ -97,7 +87,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
       0
     );
 
-    Signer signer = new Ed25519Signer();
+    signer.reset();
     signer.init(true, privateKeyParameters);
     signer.update(message.toByteArray(), 0, message.getUnsignedBytes().size());
 
@@ -109,19 +99,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     }
   }
 
-  /**
-   * Sign a message using the Ed25519 algorithm.
-   *
-   * @param message A {@link String} containing the hex encoded message to sign.
-   * @param privateKey A {@link String} containing the hex encoded private key to sign with.
-   * @return The hex encoded ED25519 signature of the message, using the privateKey.
-   */
-  @Override
-  public String sign(String message, String privateKey) {
-    UnsignedByteArray messageBytes = UnsignedByteArray.fromHex(message);
-    return this.sign(messageBytes, privateKey);
-  }
-
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     Ed25519PublicKeyParameters publicKeyParameters = new Ed25519PublicKeyParameters(
@@ -129,24 +106,9 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
       0
     );
 
-    Signer verifier = new Ed25519Signer();
-    verifier.init(false, publicKeyParameters);
-    verifier.update(message.toByteArray(), 0, message.getUnsignedBytes().size());
-    return verifier.verifySignature(BaseEncoding.base16().decode(signature));
-  }
-
-  /**
-   * Verify an ED25519 signature of a message with the given public key.
-   *
-   * @param message A {@link String} containing the hex encoded message that was signed.
-   * @param signature A {@link String} containing the hex encoded signature.
-   * @param publicKey A {@link String} containing the hex encoded public key corresponding to the private key
-   *                  that was used to generate the signature.
-   * @return true if the signature was valid, false if not.
-   */
-  @Override
-  public boolean verify(String message, String signature, String publicKey) {
-    UnsignedByteArray messageBytes = UnsignedByteArray.fromHex(message);
-    return this.verify(messageBytes, signature, publicKey);
+    signer.reset();
+    signer.init(false, publicKeyParameters);
+    signer.update(message.toByteArray(), 0, message.getUnsignedBytes().size());
+    return signer.verifySignature(BaseEncoding.base16().decode(signature));
   }
 }

@@ -33,14 +33,14 @@ public class Ed25519WalletFactoryTest {
 
   @Test
   public void randomMainnetWalletCanBeRegenerated() {
-    SeedWalletGenerationResult randomWallet = mainnetWalletFactory.generateRandomWallet();
+    SeedWalletGenerationResult randomWallet = mainnetWalletFactory.randomWallet();
     Wallet restoredWallet = mainnetWalletFactory.fromSeed(randomWallet.seed());
     assertThat(randomWallet.wallet()).isEqualTo(restoredWallet);
   }
 
   @Test
   public void randomTestnetWalletCanBeRegenerated() {
-    SeedWalletGenerationResult randomWallet = testnetWalletFactory.generateRandomWallet();
+    SeedWalletGenerationResult randomWallet = testnetWalletFactory.randomWallet();
     Wallet restoredWallet = testnetWalletFactory.fromSeed(randomWallet.seed());
     assertThat(randomWallet.wallet()).isEqualTo(restoredWallet);
   }

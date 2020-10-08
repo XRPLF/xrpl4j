@@ -11,15 +11,7 @@ public class Ed25519WalletFactoryTest {
   @Before
   public void setUp() throws Exception {
     this.testnetWalletFactory = new Ed25519WalletFactory(true);
-    this.testnetWalletFactory = new Ed25519WalletFactory(false);
+    this.mainnetWalletFactory = new Ed25519WalletFactory(false);
   }
 
-  @Test
-  public void constructWalletFromSeed() {
-    String seed = "snYP7oArxKepd3GPDcrjMsJYiJeJB";
-
-    Wallet wallet = mainnetWalletFactory.fromSeed(seed);
-
-
-  }
 }

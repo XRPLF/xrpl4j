@@ -1,15 +1,25 @@
 package com.ripple.xrpl4j.codec.addresses;
 
-import com.google.common.io.BaseEncoding;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Wrapper for holding unsigned bytes since unsigned bytes are hard in Java and XRPL ledger does many operations
+ * on arrays on unsigned bytes.
+ *
+ * Note: several of the methods in this class mutate the underlying value.
+ */
 public class UnsignedByteArray {
 
   private final List<UnsignedByte> unsignedBytes;
 
+  /**
+   * Creates an UnsignedByteArray from a byte array.
+   *
+   * @param bytes
+   * @return
+   */
   public static UnsignedByteArray of(final byte[] bytes) {
     Objects.requireNonNull(bytes);
 
@@ -20,14 +30,51 @@ public class UnsignedByteArray {
     return new UnsignedByteArray(unsignedBytes);
   }
 
-  public static UnsignedByteArray of(final List<UnsignedByte> unsignedBytes) {
-    Objects.requireNonNull(unsignedBytes);
+  /**
+   * Creates an UnsignedByteArray from one or more UnsignedByte values.
+   *
+   * @param first
+   * @param rest
+   * @return
+   */
+  public static UnsignedByteArray of(UnsignedByte first, UnsignedByte... rest) {
+    List<UnsignedByte> unsignedBytes = new ArrayList<>();
+    unsignedBytes.add(first);
+    for (int i = 0; i < rest.length; i++) {
+      unsignedBytes.add(i, rest[i]);
+    }
+    return new UnsignedByteArray(unsignedBytes);
+  }
+
+  /**
+   * Creates an empty UnsignedByteArray.
+   * @return
+   */
+  public static UnsignedByteArray empty() {
+    return new UnsignedByteArray(new ArrayList<>());
+  }
+
+  /**
+   * Creates an UnsignedByteArray with a given number of bytes (where each byte has the value 0)
+   * @return
+   */
+  public static UnsignedByteArray ofSize(int size) {
+    return new UnsignedByteArray(fill(size));
+  }
+
+  /**
+   * Converts a hex string to an UnsignedByteArray.
+   * @param hex
+   * @return
+   */
+  public static UnsignedByteArray fromHex(String hex) {
+    Objects.requireNonNull(hex);
+    List<UnsignedByte> unsignedBytes = ByteUtils.parse(hex);
     return new UnsignedByteArray(unsignedBytes);
   }
 
   public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
     Objects.requireNonNull(unsignedBytes);
-
     this.unsignedBytes = unsignedBytes;
   }
 
@@ -46,14 +93,60 @@ public class UnsignedByteArray {
   }
 
   public String hexValue() {
-    return BaseEncoding.base16().encode(toByteArray());
+    return ByteUtils.toHex(unsignedBytes);
   }
 
-  public UnsignedByteArray concat(final UnsignedByteArray bytes) {
-    Objects.requireNonNull(bytes);
+  public int length() {
+    return unsignedBytes.size();
+  }
 
-    unsignedBytes.addAll(bytes.getUnsignedBytes());
+  /**
+   * Gets the unsigned byte at a given index.
+   *
+   * @param index
+   * @return
+   */
+  public UnsignedByte get(int index) {
+    return unsignedBytes.get(index);
+  }
+
+  /**
+   * Appends the given bytes to the end of this array.
+   * Note: this method mutates the instance and returns the same instance (mainly for call chaining convenience).
+   *
+   * @param array
+   * @return the same instance
+   */
+  public UnsignedByteArray append(UnsignedByteArray array) {
+    unsignedBytes.addAll(array.getUnsignedBytes());
     return this;
+  }
+
+  /**
+   * Sets the value value an unsigned byte at the given index.
+   * @param index
+   * @param value
+   */
+  public void set(int index, UnsignedByte value) {
+    unsignedBytes.set(index, value);
+  }
+
+  /**
+   * Returns a slice of the underlying byte array from the given start to the end index (exclusive).
+   * @param startIndex start index (inclusive)
+   * @param endIndex end index (exclusive)
+   * @return
+   */
+  public UnsignedByteArray slice(int startIndex, int endIndex) {
+    return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));
+  }
+
+  private static List<UnsignedByte> fill(int amount) {
+    List<UnsignedByte> unsignedBytes = new ArrayList<>();
+    for (int i = 0; i < amount; i++) {
+      unsignedBytes.add(i, UnsignedByte.of(0));
+    }
+    return unsignedBytes;
   }
 
   @Override

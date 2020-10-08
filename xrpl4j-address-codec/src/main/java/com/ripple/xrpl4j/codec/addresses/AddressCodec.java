@@ -204,8 +204,8 @@ public class AddressCodec {
     }
 
     UnsignedByteArray bytes = UnsignedByteArray.of(test ? PrefixBytes.TEST : PrefixBytes.MAIN)
-      .concat(accountId)
-      .concat(UnsignedByteArray.of(new byte[] {
+      .append(accountId)
+      .append(UnsignedByteArray.of(new byte[] {
         (byte) flag,
         (byte) (normalizedTag.intValue() & 0xff),
         (byte) ((normalizedTag.intValue() >>> 8) & 0xff),

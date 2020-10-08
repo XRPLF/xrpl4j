@@ -55,10 +55,10 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of sekp256k1 keys.
     // Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
     UnsignedByte prefix = UnsignedByte.of(0xED);
-    UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(Lists.newArrayList(prefix))
-      .concat(UnsignedByteArray.of(privateKey.getEncoded()));
-    UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(Lists.newArrayList(prefix))
-      .concat(UnsignedByteArray.of(publicKey.getEncoded()));
+    UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(prefix)
+      .append(UnsignedByteArray.of(privateKey.getEncoded()));
+    UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(prefix)
+      .append(UnsignedByteArray.of(publicKey.getEncoded()));
 
     return KeyPair.builder()
       .privateKey(prefixedPrivateKey.hexValue())

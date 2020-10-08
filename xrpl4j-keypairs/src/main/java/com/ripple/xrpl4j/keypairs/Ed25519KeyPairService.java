@@ -7,6 +7,8 @@ import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.Version;
 import com.ripple.xrpl4j.codec.addresses.VersionType;
+import com.ripple.xrpl4j.codec.addresses.exceptions.DecodeException;
+import com.ripple.xrpl4j.keypairs.exceptions.SigningException;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
@@ -42,12 +44,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     return addressCodec.encodeSeed(entropy, VersionType.ED25519);
   }
 
-  /**
-   * Derive an ED25519 private/public key pair from a seed.
-   *
-   * @param seed An {@link UnsignedByteArray} containing the seed.
-   * @return The {@link KeyPair} containing an ED25519 public and private key that was derived from the seed.
-   */
   @Override
   public KeyPair deriveKeyPair(UnsignedByteArray seed) {
     UnsignedByteArray rawPrivateKey = HashUtils.sha512Half(seed);
@@ -74,7 +70,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     Decoded decoded = addressCodec.decodeSeed(seed);
 
     if (!decoded.version().equals(Version.ED25519_SEED)) {
-      throw new RuntimeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
+      throw new DecodeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
     }
 
     return deriveKeyPair(decoded.bytes());
@@ -95,7 +91,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
       byte[] signature = signer.generateSignature();
       return BaseEncoding.base16().encode(signature);
     } catch (CryptoException e) {
-      throw new RuntimeException(e); // TODO: custom exception
+      throw new SigningException(e);
     }
   }
 

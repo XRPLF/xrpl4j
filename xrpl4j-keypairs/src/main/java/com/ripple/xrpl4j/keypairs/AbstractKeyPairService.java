@@ -5,6 +5,7 @@ import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.bouncycastle.crypto.Signer;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 public abstract class AbstractKeyPairService implements KeyPairService {
 
@@ -42,7 +43,11 @@ public abstract class AbstractKeyPairService implements KeyPairService {
    */
   private UnsignedByteArray computePublicKeyHash(UnsignedByteArray publicKey) {
     byte[] sha256 = Hashing.sha256().hashBytes(publicKey.toByteArray()).asBytes();
-    return UnsignedByteArray.of(Ripemd160.getHash(sha256));
+    RIPEMD160Digest digest = new RIPEMD160Digest();
+    digest.update(sha256, 0, sha256.length);
+    byte[] ripemdSha256 = new byte[digest.getDigestSize()];
+    digest.doFinal(ripemdSha256, 0);
+    return UnsignedByteArray.of(ripemdSha256);
   }
 
 }

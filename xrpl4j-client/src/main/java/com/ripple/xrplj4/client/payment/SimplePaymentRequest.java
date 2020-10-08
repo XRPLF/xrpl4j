@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ripple.xrpl4j.transactions.Address;
 import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
+import com.ripple.xrpl4j.wallet.Wallet;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 
@@ -16,9 +17,9 @@ public interface SimplePaymentRequest {
     return ImmutableSimplePaymentRequest.builder();
   }
 
-  XrpCurrencyAmount amount();
+  Wallet wallet();
 
-  Address sourceAddress();
+  XrpCurrencyAmount amount();
 
   Address destinationAddress();
 

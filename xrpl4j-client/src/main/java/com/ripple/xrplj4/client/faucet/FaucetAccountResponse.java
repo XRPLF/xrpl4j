@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
 
+import java.util.OptionalLong;
+
 /**
  * Response to a POST request to the /accounts API.
  */
@@ -27,10 +29,10 @@ public interface FaucetAccountResponse {
   long amount();
 
   /**
-   * Current balance of the account.
+   * Current balance of the account. Only sent back
    *
    * @return
    */
-  long balance();
+  OptionalLong balance();
 
 }

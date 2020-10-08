@@ -182,7 +182,7 @@ public interface Payment {
    * @return
    */
   @JsonProperty("hash")
-  Optional<Hash256> hash();
+  Optional<String> hash();
 
   /**
    * Flags indicating that a fully-canonical signature is required.

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 /**
  * Faucet account details returned as part of a request to the /accounts API.
  */
@@ -39,6 +41,6 @@ public interface FaucetAccount {
    *
    * @return
    */
-  String secret();
+  Optional<String> secret();
 
 }

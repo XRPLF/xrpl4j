@@ -2,7 +2,6 @@ package com.ripple.xrplj4.client.payment;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ripple.xrpl4j.transactions.Hash256;
 import org.immutables.value.Value.Immutable;
 
 import java.util.Optional;
@@ -18,7 +17,7 @@ public interface SimplePaymentResponse {
 
   Optional<String> engineResult();
 
-  Optional<Hash256> transactionHash();
+  Optional<String> transactionHash();
 
   Optional<String> error();
 

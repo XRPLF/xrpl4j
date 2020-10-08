@@ -36,6 +36,10 @@
       <groupId>com.ripple</groupId>
       <artifactId>xrpl4j-binary-codec</artifactId>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>xrpl4j-keypairs</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

@@ -49,4 +49,16 @@ public interface FaucetClient {
   })
   ImmutableFaucetAccountResponse generateFaucetAccount();
 
+  /**
+   * Request a new account to be created and funded by the test faucet.
+   *
+   * @return
+   */
+  @RequestLine("POST /accounts")
+  @Headers( {
+      HEADER_ACCEPT + ": " + APPLICATION_JSON,
+      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+  })
+  ImmutableFaucetAccountResponse fundAccount(FundAccountRequest request);
+
 }

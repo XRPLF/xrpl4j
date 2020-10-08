@@ -26,6 +26,10 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>xrpl4j-keypairs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>xrpl4j-client</artifactId>
     </dependency>
     <dependency>

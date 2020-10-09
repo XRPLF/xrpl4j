@@ -52,7 +52,7 @@ public interface SimplePaymentClient {
             .build();
 
         SubmitTransactionResponse response = rippledClient.sendRequest(submitRequest, SubmitTransactionResponse.class);
-        if (response.accepted()) {
+        if (response.accepted() && response.engineResult().equals("tesSUCCESS")) {
           return SimplePaymentResponse.builder()
               .engineResult(response.engineResult())
               .transactionHash(response.txJson().hash().get())

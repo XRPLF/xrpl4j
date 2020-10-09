@@ -27,15 +27,20 @@ public class SubmitPaymentIT {
 
   @Test
   public void sendPayment() {
-
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
+    System.out.println("Generated source testnet wallet with address " + seedResult.wallet().xAddress());
 
     SeedWalletGenerationResult destinationResult = walletFactory.randomWallet(true);
+    System.out.println("Generated destination testnet wallet with address " + seedResult.wallet().xAddress());
 
     FaucetAccountResponse fundResponse =
         faucetClient.fundAccount(FundAccountRequest.of(seedResult.wallet().classicAddress()));
 
+    System.out.println("Source account has been funded");
+
     assertThat(fundResponse.amount()).isGreaterThan(0);
+
+    System.out.println("Destination account has been funded");
 
     FaucetAccountResponse fundDestinationResponse =
         faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress()));
@@ -49,7 +54,8 @@ public class SubmitPaymentIT {
         .build();
 
     SimplePaymentResponse response = paymentClient.submit(request);
-    System.out.println(response);
+    System.out.println("Payment successful: https://testnet.xrpl.org/transactions/" + response.transactionHash().get());
+
     assertThat(response.engineResult()).isNotEmpty();
   }
 

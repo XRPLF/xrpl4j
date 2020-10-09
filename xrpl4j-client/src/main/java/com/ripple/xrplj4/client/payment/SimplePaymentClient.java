@@ -7,8 +7,8 @@ import com.ripple.xrpl4j.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.keypairs.Ed25519KeyPairService;
 import com.ripple.xrpl4j.keypairs.KeyPairService;
 import com.ripple.xrpl4j.transactions.Address;
+import com.ripple.xrpl4j.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.transactions.Payment;
-import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.fees.FeeInfoResponse;
 import com.ripple.xrplj4.client.model.transactions.SubmitTransactionResponse;
@@ -20,6 +20,9 @@ import com.ripple.xrplj4.client.rippled.TransactionBlobWrapper;
 import com.ripple.xrplj4.client.rippled.XrplMethods;
 import okhttp3.HttpUrl;
 
+/**
+ * Client to execute a {@link SimplePaymentRequest}.
+ */
 public interface SimplePaymentClient {
 
   SimplePaymentResponse submit(SimplePaymentRequest request);
@@ -71,7 +74,7 @@ public interface SimplePaymentClient {
     }
 
 
-    private String paymentRequest(Wallet wallet, Address destination, XrpCurrencyAmount amount)
+    private String paymentRequest(Wallet wallet, Address destination, CurrencyAmount amount)
         throws JsonProcessingException, RippledClientErrorException {
       FeeInfoResponse feeInfo = getFeeInfo();
 
@@ -85,6 +88,10 @@ public interface SimplePaymentClient {
           .signingPublicKey(wallet.publicKey())
           .build();
 
+      return signNewPayment(wallet, unsignedPayment);
+    }
+
+    private String signNewPayment(Wallet wallet, Payment unsignedPayment) throws JsonProcessingException {
       String unsignedPaymentJson = objectMapper.writeValueAsString(unsignedPayment);
 
       String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedPaymentJson);

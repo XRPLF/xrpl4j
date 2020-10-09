@@ -40,6 +40,8 @@ public class SubmitPaymentIT {
     FaucetAccountResponse fundDestinationResponse =
         faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress()));
 
+    assertThat(fundDestinationResponse.amount()).isGreaterThan(0);
+
     SimplePaymentRequest request = SimplePaymentRequest.builder()
         .amount(XrpCurrencyAmount.of("12345"))
         .wallet(seedResult.wallet())

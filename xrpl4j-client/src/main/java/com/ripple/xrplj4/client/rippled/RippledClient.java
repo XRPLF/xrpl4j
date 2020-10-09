@@ -13,7 +13,7 @@ import okhttp3.HttpUrl;
 import java.util.Objects;
 
 /**
- * A feign HTTP client for interacting with the Testnet Faucet REST API.
+ * A feign HTTP client for interacting with the rippled JSON RPC API.
  */
 public interface RippledClient {
 
@@ -21,7 +21,7 @@ public interface RippledClient {
   String HEADER_CONTENT_TYPE = "Content-Type";
   String APPLICATION_JSON = "application/json";
 
-  static final ObjectMapper objectMapper = ObjectMapperFactory.create();
+  ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   /**
    * Constructs a new client for the given url.

@@ -6,6 +6,9 @@ import org.immutables.value.Value.Immutable;
 
 import java.util.List;
 
+/**
+ * Generic JSON RPC request object.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableJsonRpcRequest.class)
 @JsonDeserialize(as = ImmutableJsonRpcRequest.class)

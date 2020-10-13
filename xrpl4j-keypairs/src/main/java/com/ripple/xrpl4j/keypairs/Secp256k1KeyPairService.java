@@ -15,6 +15,10 @@ import org.bouncycastle.math.ec.ECPoint;
 import java.math.BigInteger;
 import java.util.Optional;
 
+/**
+ * Implementation of {@link KeyPairService} which uses the ECDSA algorithm with the secp256k1 curve to derive keys
+ * and sign/verify signatures.
+ */
 public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   private static final Secp256k1KeyPairService INSTANCE = new Secp256k1KeyPairService();

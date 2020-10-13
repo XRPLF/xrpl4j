@@ -1,10 +1,19 @@
 package com.ripple.xrpl4j.keypairs;
 
+import static com.ripple.xrpl4j.keypairs.Secp256k1.ecDomainParameters;
+
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.VersionType;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.crypto.Signer;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 
 import java.math.BigInteger;
 import java.util.Optional;
@@ -12,20 +21,9 @@ import java.util.Optional;
 public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   private static final Secp256k1KeyPairService INSTANCE = new Secp256k1KeyPairService();
-  private ECDomainParameters ecDomainParameters;
 
   public static Secp256k1KeyPairService getInstance() {
     return INSTANCE;
-  }
-
-  public Secp256k1KeyPairService() {
-    X9ECParameters x9ECParameters = SECNamedCurves.getByName("secp256k1");
-    this.ecDomainParameters = new ECDomainParameters(
-      x9ECParameters.getCurve(),
-      x9ECParameters.getG(),
-      x9ECParameters.getN(),
-      x9ECParameters.getH()
-    );
   }
 
   @Override
@@ -107,7 +105,27 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
-    return null;
+    UnsignedByteArray messageHash = HashUtils.sha512Half(message);
+    ECDSASignature signature = createEcdsaSignature(messageHash, new BigInteger(privateKey, 16));
+    return signature.der().hexValue();
+  }
+
+  private ECDSASignature createEcdsaSignature(UnsignedByteArray messageHash, BigInteger privateKey) {
+    ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
+    ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKey, ecDomainParameters);
+    signer.init(true, parameters);
+    BigInteger[] sigs = signer.generateSignature(messageHash.toByteArray());
+    BigInteger r = sigs[0];
+    BigInteger s = sigs[1];
+    BigInteger otherS = ecDomainParameters.getN().subtract(s);
+    if (s.compareTo(otherS) > 0) {
+      s = otherS;
+    }
+
+    return ECDSASignature.builder()
+      .r(r)
+      .s(s)
+      .build();
   }
 
   @Override

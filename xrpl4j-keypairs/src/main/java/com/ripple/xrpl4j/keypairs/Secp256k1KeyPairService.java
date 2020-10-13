@@ -2,6 +2,7 @@ package com.ripple.xrpl4j.keypairs;
 
 import static com.ripple.xrpl4j.keypairs.Secp256k1.ecDomainParameters;
 
+import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.VersionType;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
@@ -14,6 +15,7 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
 import java.util.Optional;
@@ -130,6 +132,16 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
-    return false;
+    UnsignedByteArray messageHash = HashUtils.sha512Half(message);
+    ECDSASignature sig = ECDSASignature.fromDer(BaseEncoding.base16().decode(signature));
+    if (sig == null) {
+      return false;
+    }
+
+    ECDSASigner signer = new ECDSASigner();
+    ECPoint publicKeyPoint = ecDomainParameters.getCurve().decodePoint(BaseEncoding.base16().decode(publicKey));
+    ECPublicKeyParameters params = new ECPublicKeyParameters(publicKeyPoint, ecDomainParameters);
+    signer.init(false, params);
+    return signer.verifySignature(messageHash.toByteArray(), sig.r(), sig.s());
   }
 }

@@ -38,9 +38,9 @@ public interface ECDSASignature {
     }
   }
 
-  static ECDSASignature fromDer(UnsignedByteArray bytes) {
+  static ECDSASignature fromDer(byte[] bytes) {
     try {
-      ASN1InputStream decoder = new ASN1InputStream(bytes.toByteArray());
+      ASN1InputStream decoder = new ASN1InputStream(bytes);
       DLSequence seq = (DLSequence) decoder.readObject();
       ASN1Integer r, s;
       try {

@@ -1,7 +1,5 @@
 package com.ripple.xrpl4j.keypairs;
 
-import com.google.common.io.BaseEncoding;
-import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.VersionType;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
@@ -16,7 +14,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   private static final Secp256k1KeyPairService INSTANCE = new Secp256k1KeyPairService();
   private ECDomainParameters ecDomainParameters;
 
-  public static Secp256k1KeyPairService getINSTANCE() {
+  public static Secp256k1KeyPairService getInstance() {
     return INSTANCE;
   }
 
@@ -57,35 +55,30 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   }
 
   private KeyPair deriveKeyPair(UnsignedByteArray seed, int accountNumber) {
-    BigInteger privateGen = deriveScalar(seed);
-    UnsignedByteArray publicGen = computePublicGenerator(privateGen);
+    // private key needs to be a BigInteger so we can derive the public key by multiplying G by the private key.
+    BigInteger privateKey = derivePrivateKey(seed, accountNumber);
+    UnsignedByteArray publicKey = derivePublicKey(privateKey);
 
+    return KeyPair.builder()
+      .privateKey(UnsignedByteArray.of(privateKey.toByteArray()).hexValue())
+      .publicKey(UnsignedByteArray.of(publicKey.toByteArray()).hexValue())
+      .build();
+  }
+
+  private UnsignedByteArray derivePublicKey(BigInteger privateKey) {
+    return UnsignedByteArray.of(ecDomainParameters.getG().multiply(privateKey).getEncoded(true));
+  }
+
+  private BigInteger derivePrivateKey(UnsignedByteArray seed, int accountNumber) {
+    BigInteger privateGen = deriveScalar(seed);
     if (accountNumber == -1) {
-      return KeyPair.builder()
-        .privateKey(BaseEncoding.base16().encode(privateGen.toByteArray()))
-        .publicKey(publicGen.hexValue())
-        .build();
-    } else {
-      BigInteger privateKey = computePrivateKey(privateGen, publicGen, accountNumber);
-      BigInteger publicKey = computePublicKey(privateKey);
-      return KeyPair.builder()
-        .privateKey(BaseEncoding.base16().encode(privateKey.toByteArray()))
-        .publicKey(BaseEncoding.base16().encode(publicKey.toByteArray()))
-        .build();
+      return privateGen;
     }
 
-  }
-
-  private BigInteger computePublicKey(BigInteger privateKey) {
-    return new BigInteger(1, computePublicGenerator(privateKey).toByteArray());
-  }
-
-  private BigInteger computePrivateKey(BigInteger privateGen, UnsignedByteArray publicGen, int accountNumber) {
-    return deriveScalar(publicGen, accountNumber).add(privateGen).mod(ecDomainParameters.getN());
-  }
-
-  private UnsignedByteArray computePublicGenerator(BigInteger privateGen) {
-    return UnsignedByteArray.of(ecDomainParameters.getG().multiply(privateGen).getEncoded(true));
+    UnsignedByteArray publicGen = UnsignedByteArray.of(ecDomainParameters.getG().multiply(privateGen).getEncoded(true));
+    return deriveScalar(publicGen, accountNumber)
+      .add(privateGen)
+      .mod(ecDomainParameters.getN());
   }
 
   private BigInteger deriveScalar(UnsignedByteArray seed) {
@@ -98,10 +91,11 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   private BigInteger deriveScalar(UnsignedByteArray seed, Optional<Integer> discriminator) {
     BigInteger key = null;
+    UnsignedByteArray seedCopy = UnsignedByteArray.of(seed.toByteArray());
     for (long i = 0; i <= 0xFFFFFFFFL; i++) {
-      discriminator.map(d -> seed.append(UnsignedByte.of(d)));
-      seed.append(UnsignedByte.of((int) i));
-      UnsignedByteArray hash = HashUtils.sha512Half(seed);
+      discriminator.map(d -> HashUtils.addUInt32(seedCopy, d));
+      HashUtils.addUInt32(seedCopy, (int) i);
+      UnsignedByteArray hash = HashUtils.sha512Half(seedCopy);
       key = new BigInteger(1, hash.toByteArray());
       if (key.compareTo(BigInteger.ZERO) > 0 && key.compareTo(ecDomainParameters.getN()) < 0) {
         break;

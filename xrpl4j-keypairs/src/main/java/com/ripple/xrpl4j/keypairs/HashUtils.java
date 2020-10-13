@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.keypairs;
 
 import com.google.common.hash.Hashing;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
@@ -32,4 +33,11 @@ public class HashUtils {
     return UnsignedByteArray.of(Hashing.sha512().hashBytes(bytes).asBytes());
   }
 
+  public static UnsignedByteArray addUInt32(UnsignedByteArray bytes, Integer i) {
+    bytes.append(UnsignedByte.of((byte) ((i >>> 24)) & 0xFF));
+    bytes.append(UnsignedByte.of((byte) ((i >>> 16)) & 0xFF));
+    bytes.append(UnsignedByte.of((byte) ((i >>> 8)) & 0xFF));
+    bytes.append(UnsignedByte.of((byte) ((i) & 0xFF)));
+    return bytes;
+  }
 }

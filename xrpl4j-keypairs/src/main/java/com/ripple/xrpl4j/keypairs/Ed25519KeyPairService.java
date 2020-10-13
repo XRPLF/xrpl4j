@@ -14,7 +14,6 @@ import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 
-import java.security.SecureRandom;
 import java.util.Objects;
 
 /**
@@ -33,11 +32,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     Objects.requireNonNull(addressCodec);
     this.addressCodec = addressCodec;
     this.signer = new Ed25519Signer();
-  }
-
-  @Override
-  public String generateSeed() {
-    return generateSeed(UnsignedByteArray.of(SecureRandom.getSeed(16)));
   }
 
   @Override

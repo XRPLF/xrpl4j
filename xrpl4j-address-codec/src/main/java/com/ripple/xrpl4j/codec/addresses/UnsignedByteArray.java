@@ -110,6 +110,11 @@ public class UnsignedByteArray {
     return unsignedBytes.get(index);
   }
 
+  public UnsignedByteArray append(UnsignedByte unsignedByte) {
+    unsignedBytes.add(unsignedByte);
+    return this;
+  }
+
   /**
    * Appends the given bytes to the end of this array.
    * Note: this method mutates the instance and returns the same instance (mainly for call chaining convenience).

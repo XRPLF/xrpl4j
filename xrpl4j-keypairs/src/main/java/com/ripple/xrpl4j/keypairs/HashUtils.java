@@ -1,7 +1,5 @@
 package com.ripple.xrpl4j.keypairs;
 
-import static java.util.Arrays.copyOfRange;
-
 import com.google.common.hash.Hashing;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 
@@ -27,7 +25,11 @@ public class HashUtils {
    * @return An {@link UnsignedByteArray} containing the first half of the SHA-512 hash of bytes.
    */
   static UnsignedByteArray sha512Half(byte[] bytes) {
-    return UnsignedByteArray.of(copyOfRange(Hashing.sha512().hashBytes(bytes).asBytes(), 0, 32));
+    return sha512(bytes).slice(0, 32);
+  }
+
+  static UnsignedByteArray sha512(byte[] bytes) {
+    return UnsignedByteArray.of(Hashing.sha512().hashBytes(bytes).asBytes());
   }
 
 }

@@ -29,7 +29,7 @@ public interface FaucetAccountResponse {
   long amount();
 
   /**
-   * Current balance of the account. Only sent back
+   * Current balance of the account. Only sent back for newly generated accounts.
    *
    * @return
    */

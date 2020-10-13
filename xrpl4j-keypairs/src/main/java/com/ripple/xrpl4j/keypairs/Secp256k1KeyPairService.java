@@ -5,16 +5,11 @@ import static com.ripple.xrpl4j.keypairs.Secp256k1.ecDomainParameters;
 import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.addresses.VersionType;
-import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;

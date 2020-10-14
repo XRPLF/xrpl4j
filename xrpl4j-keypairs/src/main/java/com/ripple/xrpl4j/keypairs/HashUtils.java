@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.keypairs;
 import static java.util.Arrays.copyOfRange;
 
 import com.google.common.hash.Hashing;
+import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
@@ -30,4 +31,18 @@ public class HashUtils {
     return UnsignedByteArray.of(copyOfRange(Hashing.sha512().hashBytes(bytes).asBytes(), 0, 32));
   }
 
+  /**
+   * Add an Unsigned 32 bit integer to an {@link UnsignedByteArray}.
+   *
+   * @param bytes An {@link UnsignedByteArray} to append to.
+   * @param i An {@link Integer} with 4 signed bytes to add to bytes.
+   * @return The resulting {@link UnsignedByteArray}.
+   */
+  public static UnsignedByteArray addUInt32(UnsignedByteArray bytes, Integer i) {
+    bytes.append(UnsignedByte.of((byte) ((i >>> 24)) & 0xFF));
+    bytes.append(UnsignedByte.of((byte) ((i >>> 16)) & 0xFF));
+    bytes.append(UnsignedByte.of((byte) ((i >>> 8)) & 0xFF));
+    bytes.append(UnsignedByte.of((byte) ((i) & 0xFF)));
+    return bytes;
+  }
 }

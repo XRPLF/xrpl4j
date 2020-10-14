@@ -7,10 +7,17 @@ import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
+import java.security.SecureRandom;
+
 public abstract class AbstractKeyPairService implements KeyPairService {
 
   protected Signer signer;
   protected AddressCodec addressCodec = AddressCodec.getInstance();
+
+  @Override
+  public String generateSeed() {
+    return generateSeed(UnsignedByteArray.of(SecureRandom.getSeed(16)));
+  }
 
   @Override
   public String sign(String message, String privateKey) {

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ripple.xrpl4j.transactions.Address;
 import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
-import com.ripple.xrpl4j.wallet.Ed25519WalletFactory;
+import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.WalletFactory;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
@@ -23,7 +23,7 @@ public class SubmitPaymentIT {
 
   public static final SimplePaymentClient paymentClient = new SimplePaymentClient.Impl();
 
-  public static final WalletFactory walletFactory = Ed25519WalletFactory.getInstance();
+  public static final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   @Test
   public void sendPayment() {

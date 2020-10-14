@@ -14,7 +14,6 @@ import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 
-import java.security.SecureRandom;
 import java.util.Objects;
 
 /**
@@ -36,17 +35,22 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   }
 
   @Override
-  public String generateSeed() {
-    return generateSeed(UnsignedByteArray.of(SecureRandom.getSeed(16)));
-  }
-
-  @Override
   public String generateSeed(UnsignedByteArray entropy) {
     return addressCodec.encodeSeed(entropy, VersionType.ED25519);
   }
 
   @Override
-  public KeyPair deriveKeyPair(UnsignedByteArray seed) {
+  public KeyPair deriveKeyPair(String seed) {
+    Decoded decoded = addressCodec.decodeSeed(seed);
+
+    if (!decoded.version().equals(Version.ED25519_SEED)) {
+      throw new DecodeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
+    }
+
+    return deriveKeyPair(decoded.bytes());
+  }
+
+  private KeyPair deriveKeyPair(UnsignedByteArray seed) {
     UnsignedByteArray rawPrivateKey = HashUtils.sha512Half(seed);
     Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(rawPrivateKey.toByteArray(), 0);
 
@@ -64,17 +68,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
       .privateKey(prefixedPrivateKey.hexValue())
       .publicKey(prefixedPublicKey.hexValue())
       .build();
-  }
-
-  @Override
-  public KeyPair deriveKeyPair(String seed) {
-    Decoded decoded = addressCodec.decodeSeed(seed);
-
-    if (!decoded.version().equals(Version.ED25519_SEED)) {
-      throw new DecodeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
-    }
-
-    return deriveKeyPair(decoded.bytes());
   }
 
   @Override

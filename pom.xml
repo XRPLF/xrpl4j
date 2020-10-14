@@ -44,7 +44,12 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-model</artifactId>
+        <artifactId>xrpl4j-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-keypairs</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -102,6 +107,24 @@
         <version>1.5.0</version>
         <scope>test</scope>
       </dependency>
+
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>4.8.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-core</artifactId>
+        <version>${feign.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-jackson</artifactId>
+        <version>${feign.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk15to18</artifactId>
@@ -187,6 +210,7 @@
     <skipITs>false</skipITs>
 
     <jackson.version>2.11.2</jackson.version>
+    <feign.version>11.0</feign.version>
   </properties>
 
   <modules>
@@ -195,6 +219,7 @@
     <module>xrpl4j-address-codec</module>
     <module>xrpl4j-keypairs</module>
     <module>xrpl4j-integration-tests</module>
+    <module>xrpl4j-client</module>
   </modules>
 
   <build>

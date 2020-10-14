@@ -2,9 +2,10 @@ package com.ripple.xrplj4.client.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.jackson.ObjectMapperFactory;
-import com.ripple.xrpl4j.keypairs.Ed25519KeyPairService;
+import com.ripple.xrpl4j.keypairs.DefaultKeyPairService;
 import com.ripple.xrpl4j.keypairs.KeyPairService;
 import com.ripple.xrpl4j.transactions.Address;
 import com.ripple.xrpl4j.transactions.CurrencyAmount;
@@ -12,6 +13,8 @@ import com.ripple.xrpl4j.transactions.Payment;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.fees.FeeInfoResponse;
 import com.ripple.xrplj4.client.model.transactions.SubmitTransactionResponse;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParam;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoResponse;
 import com.ripple.xrplj4.client.rippled.ImmutableJsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.RippledClient;
@@ -35,28 +38,28 @@ public interface SimplePaymentClient {
     private XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
 
     private RippledClient rippledClient =
-        RippledClient.construct(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
+      RippledClient.construct(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
 
-    private KeyPairService keyPairService = Ed25519KeyPairService.getInstance();
+    private KeyPairService keyPairService = DefaultKeyPairService.getInstance();
 
     @Override
     public SimplePaymentResponse submit(SimplePaymentRequest request) {
       try {
         String trx = paymentRequest(request.wallet(),
-            request.destinationAddress(),
-            request.amount());
+          request.destinationAddress(),
+          request.amount());
 
         JsonRpcRequest submitRequest = JsonRpcRequest.builder()
-            .method(XrplMethods.SUBMIT)
-            .addParams(TransactionBlobWrapper.of(trx))
-            .build();
+          .method(XrplMethods.SUBMIT)
+          .addParams(TransactionBlobWrapper.of(trx))
+          .build();
 
         SubmitTransactionResponse response = rippledClient.sendRequest(submitRequest, SubmitTransactionResponse.class);
         if (response.accepted() && response.engineResult().equals("tesSUCCESS")) {
           return SimplePaymentResponse.builder()
-              .engineResult(response.engineResult())
-              .transactionHash(response.txJson().hash().get())
-              .build();
+            .engineResult(response.engineResult())
+            .transactionHash(response.txJson().hash().get())
+            .build();
         }
         return SimplePaymentResponse.builder().engineResult(response.engineResult()).build();
       } catch (JsonProcessingException e) {
@@ -68,26 +71,35 @@ public interface SimplePaymentClient {
 
     private FeeInfoResponse getFeeInfo() throws RippledClientErrorException {
       ImmutableJsonRpcRequest request = JsonRpcRequest.builder()
-          .method(XrplMethods.FEE)
-          .build();
+        .method(XrplMethods.FEE)
+        .build();
       return rippledClient.sendRequest(request, FeeInfoResponse.class);
     }
 
+    private UnsignedInteger getAccountSequence(String account) throws RippledClientErrorException {
+      JsonRpcRequest request = JsonRpcRequest.builder()
+        .method(XrplMethods.ACCOUNT_INFO)
+        .addParams(AccountInfoRequestParam.of(account))
+        .build();
+      return rippledClient.sendRequest(request, AccountInfoResponse.class).accountData().sequence();
+    }
 
     private String paymentRequest(Wallet wallet, Address destination, CurrencyAmount amount)
-        throws JsonProcessingException, RippledClientErrorException {
+      throws JsonProcessingException, RippledClientErrorException {
       FeeInfoResponse feeInfo = getFeeInfo();
+      UnsignedInteger accountSequence = getAccountSequence(wallet.classicAddress());
 
       Payment unsignedPayment = Payment.builder()
-          .tfFullyCanonicalSig(true)
-          .account(Address.of(wallet.classicAddress()))
-          .sequence(feeInfo.currentLedgerIndex())
-          .destination(destination)
-          .amount(amount)
-          .fee(feeInfo.drops().minimumFee())
-          .signingPublicKey(wallet.publicKey())
-          .build();
+        .tfFullyCanonicalSig(true)
+        .account(Address.of(wallet.classicAddress()))
+        .sequence(accountSequence)
+        .destination(destination)
+        .amount(amount)
+        .fee(feeInfo.drops().minimumFee())
+        .signingPublicKey(wallet.publicKey())
+        .build();
 
+      System.out.println("Address: " + wallet.classicAddress());
       return signNewPayment(wallet, unsignedPayment);
     }
 
@@ -99,8 +111,8 @@ public interface SimplePaymentClient {
       String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey().get());
 
       Payment signed = Payment.builder().from(unsignedPayment)
-          .transactionSignature(signature)
-          .build();
+        .transactionSignature(signature)
+        .build();
 
       String signedPaymentJson = objectMapper.writeValueAsString(signed);
 

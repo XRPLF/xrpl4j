@@ -76,38 +76,38 @@ public interface ECDSASignature {
 
     int sigLen = der().length();
 
-    Preconditions.checkArgument(!((sigLen < 8) || (sigLen > 72)));
-    Preconditions.checkArgument(!((der().get(0).asInt() != 0x30) || (der().get(1).asInt() != (sigLen - 2))));
+    Preconditions.checkArgument(sigLen >= 8 && sigLen <= 72);
+    Preconditions.checkArgument((der().get(0).asInt() == 0x30) && (der().get(1).asInt() == (sigLen - 2)));
 
     // Find R and check its length
     int rPos = 4;
     int rLen = der().get(rPos - 1).asInt();
 
-    Preconditions.checkArgument(!((rLen < 1) || (rLen > 33) || ((rLen + 7) > sigLen)),
+    Preconditions.checkArgument(rLen >= 1 && rLen <= 33 && (rLen + 7) <= sigLen,
       "r is the wrong length.");
 
     // Find S and check its length
     int sPos = rLen + 6;
     int sLen = der().get(sPos - 1).asInt();
-    Preconditions.checkArgument(!((sLen < 1) || (sLen > 33) || ((rLen + sLen + 6) != sigLen)),
+    Preconditions.checkArgument(sLen >= 1 && sLen <= 33 && (rLen + sLen + 6) == sigLen,
       "s is the wrong length.");
 
-    Preconditions.checkArgument(!((der().get(rPos - 2).asInt() != 0x02) || (der().get(sPos - 2).asInt() != 0x02)),
+    Preconditions.checkArgument(der().get(rPos - 2).asInt() == 0x02 && der().get(sPos - 2).asInt() == 0x02,
       "r or s have the wrong type.");
 
     Preconditions.checkArgument((der().get(rPos).asInt() & 0x80) == 0, "r cannot be negative.");
 
-    Preconditions.checkArgument(!((der().get(rPos).asInt() == 0) && rLen == 1), "r cannot be 0.");
+    Preconditions.checkArgument(der().get(rPos).asInt() != 0 || rLen != 1, "r cannot be 0.");
 
-    Preconditions.checkArgument(!((der().get(rPos).asInt() == 0) && ((der().get(rPos + 1).asInt() & 0x80) == 0)),
+    Preconditions.checkArgument(der().get(rPos).asInt() != 0 || (der().get(rPos + 1).asInt() & 0x80) != 0,
       "r cannot be padded.");
 
     Preconditions.checkArgument((der().get(sPos).asInt() & 0x80) == 0,
       "s cannot be negative.");
 
-    Preconditions.checkArgument(!((der().get(sPos).asInt() == 0) && sLen == 1), "s cannot be 0.");
+    Preconditions.checkArgument(der().get(sPos).asInt() != 0 || sLen != 1, "s cannot be 0.");
 
-    Preconditions.checkArgument(!((der().get(sPos).asInt() == 0) && ((der().get(sPos + 1).asInt() & 0x80) == 0)),
+    Preconditions.checkArgument(der().get(sPos).asInt() != 0 || (der().get(sPos + 1).asInt() & 0x80) != 0,
       "s cannot be padded");
 
     byte[] rBytes = new byte[rLen];
@@ -121,7 +121,7 @@ public interface ECDSASignature {
 
     BigInteger order = Secp256k1.ecDomainParameters.getN();
 
-    Preconditions.checkArgument(!(r.compareTo(order) > -1 || s.compareTo(order) > -1), "r or s greater than modulus");
+    Preconditions.checkArgument(r.compareTo(order) <= -1 && s.compareTo(order) <= -1, "r or s greater than modulus");
     Preconditions.checkArgument(order.subtract(s).compareTo(s) > -1);
 
   }

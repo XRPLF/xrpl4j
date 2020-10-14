@@ -40,7 +40,17 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   }
 
   @Override
-  public KeyPair deriveKeyPair(UnsignedByteArray seed) {
+  public KeyPair deriveKeyPair(String seed) {
+    Decoded decoded = addressCodec.decodeSeed(seed);
+
+    if (!decoded.version().equals(Version.ED25519_SEED)) {
+      throw new DecodeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
+    }
+
+    return deriveKeyPair(decoded.bytes());
+  }
+
+  private KeyPair deriveKeyPair(UnsignedByteArray seed) {
     UnsignedByteArray rawPrivateKey = HashUtils.sha512Half(seed);
     Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(rawPrivateKey.toByteArray(), 0);
 
@@ -58,17 +68,6 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
       .privateKey(prefixedPrivateKey.hexValue())
       .publicKey(prefixedPublicKey.hexValue())
       .build();
-  }
-
-  @Override
-  public KeyPair deriveKeyPair(String seed) {
-    Decoded decoded = addressCodec.decodeSeed(seed);
-
-    if (!decoded.version().equals(Version.ED25519_SEED)) {
-      throw new DecodeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
-    }
-
-    return deriveKeyPair(decoded.bytes());
   }
 
   @Override

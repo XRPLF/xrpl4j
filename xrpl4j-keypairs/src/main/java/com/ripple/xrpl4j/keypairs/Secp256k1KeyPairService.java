@@ -32,6 +32,12 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
     return addressCodec.encodeSeed(entropy, VersionType.SECP256K1);
   }
 
+
+  @Override
+  public KeyPair deriveKeyPair(String seed) {
+    return deriveKeyPair(addressCodec.decodeSeed(seed).bytes(), 0);
+  }
+
   /**
    * Note that multiple keypairs can be derived from the same seed using the secp2551k algorithm by
    * deriving the keys from a seed and an account index UInt32. However, this use case is incredibly uncommon,
@@ -41,16 +47,9 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
    * @param seed An {@link UnsignedByteArray} of length 16 containing a seed.
    * @return A {@link KeyPair} containing a public/private keypair derived from seed using the secp2561k algorithm.
    */
-  @Override
-  public KeyPair deriveKeyPair(UnsignedByteArray seed) {
+  private KeyPair deriveKeyPair(UnsignedByteArray seed) {
     int accountNumber = 0;
     return deriveKeyPair(seed, accountNumber);
-  }
-
-
-  @Override
-  public KeyPair deriveKeyPair(String seed) {
-    return deriveKeyPair(addressCodec.decodeSeed(seed).bytes(), 0);
   }
 
   private KeyPair deriveKeyPair(UnsignedByteArray seed, int accountNumber) {

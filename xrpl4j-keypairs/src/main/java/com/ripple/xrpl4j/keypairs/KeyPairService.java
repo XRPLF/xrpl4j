@@ -23,14 +23,6 @@ public interface KeyPairService {
   String generateSeed(UnsignedByteArray entropy);
 
   /**
-   * Derive a public/private keypair from a 16 byte seed.
-   *
-   * @param seed An {@link UnsignedByteArray} of length 16 containing a seed.
-   * @return The {@link KeyPair} derived from the seed.
-   */
-  KeyPair deriveKeyPair(UnsignedByteArray seed);
-
-  /**
    * Derive a public/private keypair from a Base58Check encoded 16 byte seed.
    *
    * @param seed A Base58Check encoded {@link String} containing the seed.

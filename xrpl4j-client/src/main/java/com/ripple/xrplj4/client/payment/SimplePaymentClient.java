@@ -99,7 +99,6 @@ public interface SimplePaymentClient {
         .signingPublicKey(wallet.publicKey())
         .build();
 
-      System.out.println("Address: " + wallet.classicAddress());
       return signNewPayment(wallet, unsignedPayment);
     }
 

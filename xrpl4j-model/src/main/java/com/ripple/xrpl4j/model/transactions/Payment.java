@@ -21,106 +21,18 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutablePayment.class)
 @JsonDeserialize(as = ImmutablePayment.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public interface Payment {
+public interface Payment extends Transaction {
 
   static ImmutablePayment.Builder builder() {
     return ImmutablePayment.builder();
   }
 
-  /**
-   * The unique {@link Address} of the account that initiated the transaction.
-   */
-  @JsonProperty("Account")
-  Address account();
-
-  /**
-   * The type of transaction. For the Payment transaction type, this will always be "Payment"
-   */
+  @Override
   @Value.Derived
   @JsonProperty("TransactionType")
   default TransactionType type() {
     return TransactionType.PAYMENT;
   }
-
-  /**
-   * The {@link String} representation of an integer amount of XRP, in drops, to be destroyed as a cost for
-   * distributing this Payment transaction to the network.
-   *
-   * This field is auto-fillable
-   * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
-   */
-  @JsonProperty("Fee")
-  XrpCurrencyAmount fee();
-
-  /**
-   * The sequence number of the account sending the {@link Payment}. A {@link Payment} is only valid if the Sequence
-   * number is exactly 1 greater than the previous transaction from the same account.
-   *
-   * This field is auto-fillable
-   * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
-   */
-  @JsonProperty("Sequence")
-  UnsignedInteger sequence();
-
-  /**
-   * Hash value identifying another transaction. If provided, this {@link Payment} is only valid if the sending
-   * account's previously-sent transaction matches the provided hash.
-   */
-  @JsonProperty("AccountTxnID")
-  Optional<Hash256> accountTransactionId();
-
-  /**
-   * Set of {@link Flags} for this {@link Payment}, which have been properly combined to yield a {@link Flags} object
-   * containing the {@link Long} representation of the set bits.
-   *
-   * This field can either be set manually, or can be derived by setting {@link Payment#tfFullyCanonicalSig()},
-   * {@link Payment#tfNoDirectRipple()}, {@link Payment#tfPartialPayment()}, and {@link Payment#tfLimitQuality()}
-   */
-  @JsonProperty("Flags")
-  Optional<Flags> flags();
-
-  /**
-   * Highest ledger index this transaction can appear in. Specifying this field places a strict upper limit
-   * on how long the transaction can wait to be validated or rejected.
-   */
-  @JsonProperty("LastLedgerSequence")
-  Optional<UnsignedInteger> lastLedgerSequence();
-
-  /**
-   * Additional arbitrary information used to identify this {@link Payment}.
-   */
-  @JsonProperty("Memos")
-  List<MemoWrapper> memos();
-
-  /**
-   * Array of {@link SignerWrapper}s that represent a multi-signature which authorizes this {@link Payment}.
-   */
-  @JsonProperty("Signers")
-  List<SignerWrapper> signers();
-
-  /**
-   * Arbitrary {@link UnsignedInteger} used to identify the reason for this {@link Payment}, or a sender on whose
-   * behalf this {@link Payment} is made.
-   */
-  @JsonProperty("SourceTag")
-  Optional<UnsignedInteger> sourceTag();
-
-  /**
-   * Hex representation of the public key that corresponds to the private key used to sign this transaction.
-   * If an empty string, indicates a multi-signature is present in the {@link Payment#signers()} field instead.
-   *
-   * This field is automatically added when signing this {@link Payment}.
-   */
-  @JsonProperty("SigningPubKey")
-  Optional<String> signingPublicKey();
-
-  /**
-   * The signature that verifies this transaction as originating from the account it says it is from.
-   *
-   * This field is automatically added when signing this {@link Payment}.
-   */
-  @JsonProperty("TxnSignature")
-  Optional<String> transactionSignature();
 
   /**
    * The amount of currency to deliver. If the {@link Payment#tfPartialPayment()} flag is set, deliver up to
@@ -183,18 +95,6 @@ public interface Payment {
    */
   @JsonProperty("hash")
   Optional<String> hash();
-
-  /**
-   * Flags indicating that a fully-canonical signature is required.
-   * This flag is highly recommended.
-   *
-   * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
-   */
-  @JsonIgnore
-  @Value.Default
-  default boolean tfFullyCanonicalSig() {
-    return true;
-  }
 
   /**
    * Flag indicated to only use paths included in the {@link Payment#paths()} field.

@@ -2,8 +2,8 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ripple.xrpl4j.transactions.Address;
-import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;

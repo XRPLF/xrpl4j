@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.Flags;
 import org.immutables.value.Value;
 
 @Value.Immutable

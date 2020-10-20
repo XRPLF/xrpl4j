@@ -6,12 +6,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
-import com.ripple.xrpl4j.jackson.ObjectMapperFactory;
-import com.ripple.xrpl4j.transactions.Address;
-import com.ripple.xrpl4j.transactions.CurrencyAmount;
-import com.ripple.xrpl4j.transactions.IssuedCurrencyAmount;
-import com.ripple.xrpl4j.transactions.Payment;
-import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
+import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
+import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.junit.jupiter.api.Test;
 
 public class PaymentSerializationTest {

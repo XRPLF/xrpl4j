@@ -1,7 +1,7 @@
 package com.ripple.xrplj4.client.rippled;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ripple.xrpl4j.jackson.ObjectMapperFactory;
+import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;

@@ -3,7 +3,7 @@ package com.ripple.xrplj4.client.model.fees;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.immutables.value.Value.Immutable;
 
 @Immutable

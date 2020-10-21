@@ -91,7 +91,6 @@ public interface Payment extends Transaction {
 
   /**
    * Unique transaction hash/id. Set by rippled. Only present on payments that have been applied to the ledger.
-   * @return
    */
   @JsonProperty("hash")
   Optional<String> hash();
@@ -101,9 +100,9 @@ public interface Payment extends Transaction {
    * This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
    */
   @JsonIgnore
-  @Value.Default
+  @Value.Derived
   default boolean tfNoDirectRipple() {
-    return false;
+    return flags().isSet(Flags.Payment.NO_DIRECT_RIPPLE);
   }
 
   /**
@@ -113,9 +112,9 @@ public interface Payment extends Transaction {
    * @see "https://xrpl.org/partial-payments.html"
    */
   @JsonIgnore
-  @Value.Default
+  @Value.Derived
   default boolean tfPartialPayment() {
-    return false;
+    return flags().isSet(Flags.Payment.PARTIAL_PAYMENT);
   }
 
   /**
@@ -124,9 +123,9 @@ public interface Payment extends Transaction {
    * @return
    */
   @JsonIgnore
-  @Value.Default
+  @Value.Derived
   default boolean tfLimitQuality() {
-    return false;
+    return flags().isSet(Flags.Payment.LIMIT_QUALITY);
   }
 
   /**
@@ -138,18 +137,18 @@ public interface Payment extends Transaction {
    * after it has been initially constructed.  Without this flag, there would be no way to determine if
    * this normalization has already occurred, and an infinite recursive loop would occur during normalization.
    */
-  @JsonIgnore
+  /*@JsonIgnore
   @Value.Default
   default boolean flagsConstructed() {
     return false;
-  }
+  }*/
 
   /**
    * Constructs {@link Payment#flags()} from {@link Payment#tfFullyCanonicalSig()}, {@link Payment#tfNoDirectRipple()},
    * {@link Payment#tfPartialPayment()}, and {@link Payment#tfLimitQuality()} if {@link Payment#flags()} is empty.
    * Otherwise, the individual boolean flags are derived from {@link Payment#flags()}
    */
-  @Value.Check
+  /*@Value.Check
   default Payment constructFlags() {
     // Avoid infinite recursion by tagging that the object has gone through this transformation
     if (flagsConstructed()) {
@@ -184,5 +183,5 @@ public interface Payment extends Transaction {
         .flagsConstructed(true)
         .build();
     }
-  }
+  }*/
 }

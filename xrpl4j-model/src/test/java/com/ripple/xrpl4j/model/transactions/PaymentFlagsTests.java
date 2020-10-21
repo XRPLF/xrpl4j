@@ -62,10 +62,7 @@ public class PaymentFlagsTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .tfFullyCanonicalSig(tfFullyCanonicalSig)
-      .tfNoDirectRipple(tfNoDirectRipple)
-      .tfPartialPayment(tfPartialPayment)
-      .tfLimitQuality(tfLimitQuality)
+      .flags(Flags.Payment.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality))
       .sequence(UnsignedInteger.ONE)
       .build();
 
@@ -74,8 +71,7 @@ public class PaymentFlagsTests {
       (tfPartialPayment ? 0x00020000L : 0L) |
       (tfLimitQuality ? 0x00040000L : 0L);
 
-    assertThat(payment.flags()).isNotEmpty();
-    assertThat(payment.flags().get().getValue()).isEqualTo(expectedFlags);
+    assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
   }
 
   @Test
@@ -94,8 +90,7 @@ public class PaymentFlagsTests {
       .sequence(UnsignedInteger.ONE)
       .build();
 
-    assertThat(payment.flags()).isNotEmpty();
-    assertThat(payment.flags().get().getValue()).isEqualTo(expectedFlags);
+    assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
     assertThat(payment.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
     assertThat(payment.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
     assertThat(payment.tfPartialPayment()).isEqualTo(tfPartialPayment);

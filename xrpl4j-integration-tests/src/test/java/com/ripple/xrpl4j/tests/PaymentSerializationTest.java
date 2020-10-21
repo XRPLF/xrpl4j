@@ -9,6 +9,7 @@ import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -31,7 +32,6 @@ public class PaymentSerializationTest {
         .build();
 
     Payment payment = Payment.builder()
-        .tfFullyCanonicalSig(true)
         .account(source)
         .destination(destination)
         .sourceTag(UnsignedInteger.valueOf(1))
@@ -71,7 +71,7 @@ public class PaymentSerializationTest {
         .build();
 
     Payment payment = Payment.builder()
-        .tfPartialPayment(true)
+      .flags(Flags.of(Flags.Universal.FULLY_CANONICAL_SIG, Flags.Payment.PARTIAL_PAYMENT))
         .account(source)
         .destination(destination)
         .sourceTag(UnsignedInteger.valueOf(1))

@@ -57,7 +57,10 @@ public interface Transaction {
    * implementations.
    */
   @JsonProperty("Flags")
-  Optional<Flags> flags();
+  @Value.Default
+  default Flags flags() {
+    return Flags.Universal.FULLY_CANONICAL_SIG;
+  };
 
   /**
    * Highest ledger index this transaction can appear in. Specifying this field places a strict upper limit
@@ -109,8 +112,8 @@ public interface Transaction {
    * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
    */
   @JsonIgnore
-  @Value.Default
+  @Value.Derived
   default boolean tfFullyCanonicalSig() {
-    return true;
+    return flags().isSet(Flags.Universal.FULLY_CANONICAL_SIG);
   }
 }

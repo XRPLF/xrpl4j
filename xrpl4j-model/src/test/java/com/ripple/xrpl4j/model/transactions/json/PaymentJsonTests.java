@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.PathStep;
 import com.ripple.xrpl4j.model.transactions.Payment;
@@ -36,7 +37,7 @@ public class PaymentJsonTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .tfFullyCanonicalSig(false)
+      .flags(Flags.UNSET)
       .sequence(UnsignedInteger.valueOf(2))
       .build();
 
@@ -65,9 +66,7 @@ public class PaymentJsonTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .tfFullyCanonicalSig(true)
       .sequence(UnsignedInteger.valueOf(2))
-
       .build();
 
     String json = "{\n" +
@@ -106,7 +105,7 @@ public class PaymentJsonTests {
         .issuer(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
         .build()
       )
-      .tfFullyCanonicalSig(false)
+      .flags(Flags.UNSET)
       .sequence(UnsignedInteger.valueOf(6))
       .addPaths(Lists.newArrayList(
         PathStep.builder()

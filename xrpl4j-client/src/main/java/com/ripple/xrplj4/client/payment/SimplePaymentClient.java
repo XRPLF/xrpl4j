@@ -90,7 +90,7 @@ public interface SimplePaymentClient {
       UnsignedInteger accountSequence = getAccountSequence(wallet.classicAddress());
 
       Payment unsignedPayment = Payment.builder()
-        .tfFullyCanonicalSig(true)
+//        .tfFullyCanonicalSig(true)
         .account(Address.of(wallet.classicAddress()))
         .sequence(accountSequence)
         .destination(destination)

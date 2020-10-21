@@ -50,19 +50,6 @@ public interface Transaction {
   Optional<Hash256> accountTransactionId();
 
   /**
-   * Set of {@link Flags} for this {@link Transaction}, which have been properly combined to yield a {@link Flags} object
-   * containing the {@link Long} representation of the set bits.
-   *
-   * This field can either be set manually, or can be derived by setting various boolean flags in {@link Transaction}
-   * implementations.
-   */
-  @JsonProperty("Flags")
-  @Value.Default
-  default Flags flags() {
-    return Flags.Universal.FULLY_CANONICAL_SIG;
-  };
-
-  /**
    * Highest ledger index this transaction can appear in. Specifying this field places a strict upper limit
    * on how long the transaction can wait to be validated or rejected.
    */
@@ -104,16 +91,4 @@ public interface Transaction {
    */
   @JsonProperty("TxnSignature")
   Optional<String> transactionSignature();
-
-  /**
-   * Flags indicating that a fully-canonical signature is required.
-   * This flag is highly recommended.
-   *
-   * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
-   */
-  @JsonIgnore
-  @Value.Derived
-  default boolean tfFullyCanonicalSig() {
-    return flags().isSet(Flags.Universal.FULLY_CANONICAL_SIG);
-  }
 }

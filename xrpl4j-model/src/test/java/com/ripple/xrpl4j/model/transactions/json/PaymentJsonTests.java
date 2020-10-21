@@ -37,7 +37,7 @@ public class PaymentJsonTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.UNSET)
+      .flags(Flags.Payment.builder().fullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(2))
       .build();
 
@@ -105,7 +105,7 @@ public class PaymentJsonTests {
         .issuer(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
         .build()
       )
-      .flags(Flags.UNSET)
+      .flags(Flags.Payment.builder().fullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(6))
       .addPaths(Lists.newArrayList(
         PathStep.builder()

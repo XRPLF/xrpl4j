@@ -62,7 +62,12 @@ public class PaymentFlagsTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.Payment.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality))
+      .flags(Flags.Payment.builder()
+        .fullyCanonicalSig(tfFullyCanonicalSig)
+        .noDirectRipple(tfNoDirectRipple)
+        .partialPayment(tfPartialPayment)
+        .limitQuality(tfLimitQuality)
+        .build())
       .sequence(UnsignedInteger.ONE)
       .build();
 
@@ -86,7 +91,7 @@ public class PaymentFlagsTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.of(expectedFlags))
+      .flags(Flags.Payment.of(expectedFlags))
       .sequence(UnsignedInteger.ONE)
       .build();
 

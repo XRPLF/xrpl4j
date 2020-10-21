@@ -88,8 +88,6 @@ public class Flags {
 
     public static final Universal FULLY_CANONICAL_SIG = new Universal(0x80000000L);
 
-    public static final Universal BITMASK = new Universal(0xff000000L);
-
     private Universal(long value) {
       super(value);
     }
@@ -98,20 +96,58 @@ public class Flags {
   /**
    * A set of static {@link Flags} which can be set on {@link com.ripple.xrpl4j.model.transactions.Payment} transactions.
    */
-  public static class Payment extends Flags {
+  public static class Payment extends Universal {
 
     public static final Payment NO_DIRECT_RIPPLE = new Payment(0x00010000L);
     public static final Payment PARTIAL_PAYMENT = new Payment(0x00020000L);
     public static final Payment LIMIT_QUALITY = new Payment(0x00040000L);
-    public static final Payment BITMASK = new Payment(0x00ff0000);
 
-    public static Payment of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment, boolean tfLimitQuality) {
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static Payment of(long value) {
+      return new Payment(value);
+    }
+
+    private static Payment of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment, boolean tfLimitQuality) {
       return new Payment(of(
         tfFullyCanonicalSig ? Universal.FULLY_CANONICAL_SIG : UNSET,
         tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
         tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
         tfLimitQuality ? LIMIT_QUALITY : UNSET
       ).getValue());
+    }
+
+    public static class Builder {
+      private boolean tfFullyCanonicalSig = true;
+      private boolean tfNoDirectRipple = false;
+      private boolean tfPartialPayment = false;
+      private boolean tfLimitQuality = false;
+
+      public Builder fullyCanonicalSig(boolean value) {
+        this.tfFullyCanonicalSig = value;
+        return this;
+      }
+
+      public Builder noDirectRipple(boolean value) {
+        this.tfNoDirectRipple = value;
+        return this;
+      }
+
+      public Builder partialPayment(boolean value) {
+        this.tfPartialPayment = value;
+        return this;
+      }
+
+      public Builder limitQuality(boolean value) {
+        this.tfLimitQuality = value;
+        return this;
+      }
+
+      public Payment build() {
+        return Payment.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
+      }
     }
 
     private Payment(long value) {

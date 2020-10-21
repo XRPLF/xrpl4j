@@ -12,7 +12,7 @@ public class Flags {
 
   public static final Flags UNSET = new Flags(0);
 
-  private long value;
+  private final long value;
 
   private Flags(long value) {
     this.value = value;

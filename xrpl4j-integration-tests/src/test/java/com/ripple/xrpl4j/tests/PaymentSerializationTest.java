@@ -71,7 +71,9 @@ public class PaymentSerializationTest {
       .build();
 
     Payment payment = Payment.builder()
-      .flags(Flags.Payment.builder().partialPayment(true).build())
+      .flags(Flags.Payment.builder()
+        .partialPayment(true)
+        .build())
       .account(source)
       .destination(destination)
       .sourceTag(UnsignedInteger.valueOf(1))

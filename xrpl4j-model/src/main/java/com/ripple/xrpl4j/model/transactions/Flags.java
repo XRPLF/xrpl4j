@@ -1,5 +1,8 @@
 package com.ripple.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.immutables.value.Value;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -91,6 +94,16 @@ public class Flags {
     private Universal(long value) {
       super(value);
     }
+
+    /**
+     * Flags indicating that a fully-canonical signature is required.
+     * This flag is highly recommended.
+     *
+     * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
+     */
+    public boolean tfFullyCanonicalSig() {
+      return this.isSet(Flags.Universal.FULLY_CANONICAL_SIG);
+    }
   }
 
   /**
@@ -101,6 +114,33 @@ public class Flags {
     public static final Payment NO_DIRECT_RIPPLE = new Payment(0x00010000L);
     public static final Payment PARTIAL_PAYMENT = new Payment(0x00020000L);
     public static final Payment LIMIT_QUALITY = new Payment(0x00040000L);
+
+    /**
+     * Flag indicated to only use paths included in the {@link com.ripple.xrpl4j.model.transactions.Payment#paths()} field.
+     * This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     */
+    public boolean tfNoDirectRipple() {
+      return this.isSet(Flags.Payment.NO_DIRECT_RIPPLE);
+    }
+
+    /**
+     * If the specified {@link com.ripple.xrpl4j.model.transactions.Payment#amount()} cannot be sent without spending more than {@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()},
+     * reduce the received amount instead of failing outright.
+     *
+     * @see "https://xrpl.org/partial-payments.html"
+     */
+    public boolean tfPartialPayment() {
+      return this.isSet(Flags.Payment.PARTIAL_PAYMENT);
+    }
+
+    /**
+     * Only take paths where all the conversions have an input:output ratio that is equal or better than the ratio of
+     * {@link com.ripple.xrpl4j.model.transactions.Payment#amount()}:{@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()}.
+     * @return
+     */
+    public boolean tfLimitQuality() {
+      return this.isSet(Flags.Payment.LIMIT_QUALITY);
+    }
 
     public static Builder builder() {
       return new Builder();
@@ -119,6 +159,9 @@ public class Flags {
       ).getValue());
     }
 
+    /**
+     * A builder class for {@link Payment} flags.
+     */
     public static class Builder {
       private boolean tfFullyCanonicalSig = true;
       private boolean tfNoDirectRipple = false;

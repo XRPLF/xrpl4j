@@ -96,9 +96,9 @@ public class PaymentFlagsTests {
       .build();
 
     assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
-    assertThat(payment.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
-    assertThat(payment.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
-    assertThat(payment.tfPartialPayment()).isEqualTo(tfPartialPayment);
-    assertThat(payment.tfLimitQuality()).isEqualTo(tfLimitQuality);
+    assertThat(payment.flags().tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(payment.flags().tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
+    assertThat(payment.flags().tfPartialPayment()).isEqualTo(tfPartialPayment);
+    assertThat(payment.flags().tfLimitQuality()).isEqualTo(tfLimitQuality);
   }
 }

@@ -1,7 +1,5 @@
 package com.ripple.xrpl4j.model.transactions;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -27,17 +25,16 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * Set of {@link Flags} for this {@link Transaction}, which have been properly combined to yield a {@link Flags} object
+   * Set of {@link Flags.Payment}s for this {@link Payment}, which have been properly combined to yield a {@link Flags} object
    * containing the {@link Long} representation of the set bits.
    *
-   * This field can either be set manually, or can be derived by setting various boolean flags in {@link Transaction}
-   * implementations.
+   * The value of the flags can either be set manually, or constructed using {@link Flags.Payment.Builder}.
    */
   @JsonProperty("Flags")
   @Value.Default
   default Flags.Payment flags() {
     return Flags.Payment.builder().fullyCanonicalSig(true).build();
-  };
+  }
 
   @Override
   @Value.Derived
@@ -47,7 +44,7 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * The amount of currency to deliver. If the {@link Payment#tfPartialPayment()} flag is set, deliver up to
+   * The amount of currency to deliver. If the {@link Flags.Payment#tfPartialPayment()} flag is set, deliver up to
    * this amount instead.
    */
   @JsonProperty("Amount")
@@ -96,7 +93,7 @@ public interface Payment extends Transaction {
 
   /**
    * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the
-   * {@link Payment#tfPartialPayment()} flag is set.
+   * {@link Flags.Payment#tfPartialPayment()} flag is set.
    */
   @JsonProperty("DeliverMin")
   Optional<CurrencyAmount> deliverMin();
@@ -106,50 +103,5 @@ public interface Payment extends Transaction {
    */
   @JsonProperty("hash")
   Optional<String> hash();
-
-  /**
-   * Flags indicating that a fully-canonical signature is required.
-   * This flag is highly recommended.
-   *
-   * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
-   */
-  @JsonIgnore
-  @Value.Derived
-  default boolean tfFullyCanonicalSig() {
-    return flags().isSet(Flags.Universal.FULLY_CANONICAL_SIG);
-  }
-
-  /**
-   * Flag indicated to only use paths included in the {@link Payment#paths()} field.
-   * This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
-   */
-  @JsonIgnore
-  @Value.Derived
-  default boolean tfNoDirectRipple() {
-    return flags().isSet(Flags.Payment.NO_DIRECT_RIPPLE);
-  }
-
-  /**
-   * If the specified {@link Payment#amount()} cannot be sent without spending more than {@link Payment#sendMax()},
-   * reduce the received amount instead of failing outright.
-   *
-   * @see "https://xrpl.org/partial-payments.html"
-   */
-  @JsonIgnore
-  @Value.Derived
-  default boolean tfPartialPayment() {
-    return flags().isSet(Flags.Payment.PARTIAL_PAYMENT);
-  }
-
-  /**
-   * Only take paths where all the conversions have an input:output ratio that is equal or better than the ratio of
-   * {@link Payment#amount()}:{@link Payment#sendMax()}.
-   * @return
-   */
-  @JsonIgnore
-  @Value.Derived
-  default boolean tfLimitQuality() {
-    return flags().isSet(Flags.Payment.LIMIT_QUALITY);
-  }
 
 }

@@ -46,7 +46,7 @@ public interface AccountSet extends Transaction {
 
   /**
    * Hash of an email address to be used for generating an avatar image. Conventionally,
-   * clients use <a href="http://en.gravatar.com/site/implement/hash/">Gravatar</a><a href=">Gravatar</a>
+   * clients use <a href="http://en.gravatar.com/site/implement/hash/">Gravatar</a>
    * to display this image.
    */
   @JsonProperty("EmailHash")

@@ -30,6 +30,9 @@ public interface AccountSet extends Transaction {
 
   /**
    * Unique identifier of a flag to disable for this account.
+   *
+   * Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be
+   * set in conjunction with the {@link AccountSet#flags()} field.
    */
   @JsonProperty("ClearFlag")
   Optional<AccountSetFlag> clearFlag();
@@ -60,6 +63,9 @@ public interface AccountSet extends Transaction {
 
   /**
    * Unique identifier of a flag to enable for this account.
+   *
+   * Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be
+   * set in conjunction with the {@link AccountSet#flags()} field.
    */
   @JsonProperty("SetFlag")
   Optional<AccountSetFlag> setFlag();

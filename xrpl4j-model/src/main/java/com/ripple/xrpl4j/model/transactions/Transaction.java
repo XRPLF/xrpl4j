@@ -1,6 +1,5 @@
 package com.ripple.xrpl4j.model.transactions;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
@@ -21,6 +20,12 @@ public interface Transaction {
    */
   @JsonProperty("TransactionType")
   TransactionType type();
+
+  @JsonProperty("Flags")
+  @Value.Default
+  default Flags flags() {
+    return Flags.Payment.builder().fullyCanonicalSig(true).build();
+  }
 
   /**
    * The {@link String} representation of an integer amount of XRP, in drops, to be destroyed as a cost for

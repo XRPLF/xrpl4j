@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
-import com.ripple.xrpl4j.jackson.ObjectMapperFactory;
+import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.keypairs.DefaultKeyPairService;
 import com.ripple.xrpl4j.keypairs.KeyPairService;
-import com.ripple.xrpl4j.transactions.Address;
-import com.ripple.xrpl4j.transactions.CurrencyAmount;
-import com.ripple.xrpl4j.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.fees.FeeInfoResponse;
 import com.ripple.xrplj4.client.model.transactions.SubmitTransactionResponse;
@@ -90,7 +90,7 @@ public interface SimplePaymentClient {
       UnsignedInteger accountSequence = getAccountSequence(wallet.classicAddress());
 
       Payment unsignedPayment = Payment.builder()
-        .tfFullyCanonicalSig(true)
+//        .tfFullyCanonicalSig(true)
         .account(Address.of(wallet.classicAddress()))
         .sequence(accountSequence)
         .destination(destination)

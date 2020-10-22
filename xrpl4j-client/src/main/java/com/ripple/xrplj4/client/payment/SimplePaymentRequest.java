@@ -2,9 +2,9 @@ package com.ripple.xrplj4.client.payment;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ripple.xrpl4j.transactions.Address;
-import com.ripple.xrpl4j.transactions.CurrencyAmount;
-import com.ripple.xrpl4j.transactions.XrpCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;

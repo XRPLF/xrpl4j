@@ -2,6 +2,9 @@ package com.ripple.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+/**
+ * Enumeration of the types of Transactions on the XRP Ledger.
+ */
 public enum TransactionType {
 
   ACCOUNT_SET("AccountSet"),

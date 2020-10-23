@@ -19,7 +19,7 @@ public interface Transaction {
    * The type of transaction.
    */
   @JsonProperty("TransactionType")
-  TransactionType type();
+  TransactionType transactionType();
 
   @JsonProperty("Flags")
   @Value.Default

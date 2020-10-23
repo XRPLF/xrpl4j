@@ -39,7 +39,7 @@ public interface Payment extends Transaction {
   @Override
   @Value.Derived
   @JsonProperty("TransactionType")
-  default TransactionType type() {
+  default TransactionType transactionType() {
     return TransactionType.PAYMENT;
   }
 

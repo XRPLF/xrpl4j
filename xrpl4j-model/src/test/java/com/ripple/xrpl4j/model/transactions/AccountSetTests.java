@@ -25,7 +25,7 @@ public class AccountSetTests {
       .tickSize(UnsignedInteger.valueOf(15))
       .build();
 
-    assertThat(accountSet.type()).isEqualTo(TransactionType.ACCOUNT_SET);
+    assertThat(accountSet.transactionType()).isEqualTo(TransactionType.ACCOUNT_SET);
     assertThat(accountSet.account()).isEqualTo(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"));
     assertThat(accountSet.fee().value()).isEqualTo("12");
     assertThat(accountSet.sequence()).isEqualTo(UnsignedInteger.valueOf(5));

@@ -66,24 +66,4 @@ public class Wrappers {
       return this.value();
     }
   }
-
-  /**
-   * A wrapped {@link String} representing different types of XRPL transactions.
-   */
-  @Value.Immutable(intern = true)
-  @Wrapped
-  @JsonSerialize(as = TransactionType.class)
-  @JsonDeserialize(as = TransactionType.class)
-  static abstract class _TransactionType extends Wrapper<String> implements Serializable {
-
-    @Override
-    public String toString() {
-      return this.value();
-    }
-
-    public static final String PAYMENT_VALUE = "Payment";
-    public static final TransactionType PAYMENT = TransactionType.of(PAYMENT_VALUE);
-
-  }
-
 }

@@ -50,10 +50,6 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
       "}";
 
-    String serialized = objectMapper.writeValueAsString(accountSet);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    AccountSet deserialized = objectMapper.readValue(serialized, AccountSet.class);
-    assertThat(deserialized).isEqualTo(accountSet);
+    assertCanSerializeAndDeserialize(accountSet, json);
   }
 }

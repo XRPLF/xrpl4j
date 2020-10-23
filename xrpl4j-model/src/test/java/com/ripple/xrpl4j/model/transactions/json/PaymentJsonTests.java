@@ -11,6 +11,7 @@ import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.PathStep;
 import com.ripple.xrpl4j.model.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.assertj.core.util.Lists;
 import org.json.JSONException;
@@ -44,11 +45,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                \"Sequence\": 2\n" +
       "            }";
 
-    String serialized = objectMapper.writeValueAsString(payment);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    Payment deserialized = objectMapper.readValue(serialized, Payment.class);
-    assertThat(deserialized).isEqualTo(payment);
+    assertCanSerializeAndDeserialize(payment, json);
   }
 
   @Test
@@ -73,11 +70,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "            }";
 
 
-    String serialized = objectMapper.writeValueAsString(payment);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    Payment deserialized = objectMapper.readValue(serialized, Payment.class);
-    assertThat(deserialized).isEqualTo(payment);
+    assertCanSerializeAndDeserialize(payment, json);
   }
 
   @Test
@@ -131,10 +124,6 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                \"DestinationTag\": 736049272\n" +
       "            }";
 
-    String serialized = objectMapper.writeValueAsString(payment);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    Payment deserialized = objectMapper.readValue(serialized, Payment.class);
-    assertThat(deserialized).isEqualTo(payment);
+    assertCanSerializeAndDeserialize(payment, json);
   }
 }

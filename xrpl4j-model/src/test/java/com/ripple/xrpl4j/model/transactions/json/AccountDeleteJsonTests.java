@@ -36,10 +36,6 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       "    \"Flags\": 2147483648\n" +
       "}";
 
-    String serialized = objectMapper.writeValueAsString(accountDelete);
-    JSONAssert.assertEquals(serialized, json, JSONCompareMode.STRICT);
-
-    AccountDelete deserialized = objectMapper.readValue(serialized, AccountDelete.class);
-    assertThat(deserialized).isEqualTo(accountDelete);
+    assertCanSerializeAndDeserialize(accountDelete, json);
   }
 }

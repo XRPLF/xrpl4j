@@ -17,14 +17,7 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-public class AccountSetJsonTests {
-
-  private ObjectMapper objectMapper;
-
-  @Before
-  public void setUp() throws Exception {
-    objectMapper = ObjectMapperFactory.create();
-  }
+public class AccountSetJsonTests extends AbstractJsonTest {
 
   @Test
   public void fullyPopulatedAccountSet() throws JSONException, JsonProcessingException {

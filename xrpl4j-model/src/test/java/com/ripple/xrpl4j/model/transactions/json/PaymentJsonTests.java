@@ -21,14 +21,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 // FIXME: These tests should probably be replaced with a parameterized test that loads in payment json examples from
 //  a file.  Will do this after merging with Neil's initial codec pass.
-public class PaymentJsonTests {
-
-  ObjectMapper objectMapper;
-
-  @Before
-  public void setUp() {
-    objectMapper = ObjectMapperFactory.create();
-  }
+public class PaymentJsonTests extends AbstractJsonTest {
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {

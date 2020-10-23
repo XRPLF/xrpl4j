@@ -23,7 +23,7 @@ public interface AccountSet extends Transaction {
 
   @Override
   @JsonProperty("TransactionType")
-  @Value.Default
+  @Value.Derived
   default TransactionType transactionType() {
     return TransactionType.ACCOUNT_SET;
   };

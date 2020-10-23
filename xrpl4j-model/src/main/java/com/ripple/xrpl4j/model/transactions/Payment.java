@@ -36,13 +36,6 @@ public interface Payment extends Transaction {
     return Flags.Payment.builder().fullyCanonicalSig(true).build();
   }
 
-  @Override
-  @JsonProperty("TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.PAYMENT;
-  }
-
   /**
    * The amount of currency to deliver. If the {@link Flags.Payment#tfPartialPayment()} flag is set, deliver up to
    * this amount instead.

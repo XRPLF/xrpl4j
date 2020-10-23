@@ -19,13 +19,6 @@ public interface CheckCancel extends Transaction {
     return ImmutableCheckCancel.builder();
   }
 
-  @Override
-  @JsonProperty("TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.CHECK_CANCEL;
-  }
-
   /**
    * The ID of the Check ledger object to cancel, as a 64-character hexadecimal string.
    * @return A {@link Hash256} containing the ID of the Check ledger object in hexadecimal form.

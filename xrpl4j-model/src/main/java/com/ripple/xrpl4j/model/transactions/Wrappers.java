@@ -46,7 +46,7 @@ public class Wrappers {
 
     @Value.Check
     public void validateLength() {
-      Preconditions.checkArgument(this.value().length() == 32, "Hash256 Strings must be 32 bytes long.");
+      Preconditions.checkArgument(this.value().length() == 64, "Hash256 Strings must be 64 characters long.");
     }
 
   }

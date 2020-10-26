@@ -1,13 +1,25 @@
 package com.ripple.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface Transaction {
+
+  Map<Class<? extends Transaction>, TransactionType> typeMap =
+    new ImmutableMap.Builder<Class<? extends Transaction>, TransactionType>()
+      .put(ImmutablePayment.class, TransactionType.PAYMENT)
+      .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
+      .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
+      .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
+      .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
+      .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
+      .build();
 
   /**
    * The unique {@link Address} of the account that initiated the transaction.
@@ -19,7 +31,10 @@ public interface Transaction {
    * The type of transaction.
    */
   @JsonProperty("TransactionType")
-  TransactionType transactionType();
+  @Value.Derived
+  default TransactionType transactionType() {
+    return typeMap.get(this.getClass());
+  }
 
   @JsonProperty("Flags")
   @Value.Default

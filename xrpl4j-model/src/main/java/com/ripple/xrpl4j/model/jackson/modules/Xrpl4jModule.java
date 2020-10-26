@@ -2,12 +2,9 @@ package com.ripple.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.ripple.xrpl4j.model.transactions.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
-import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
-import com.ripple.xrpl4j.model.transactions.TransactionType;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class Xrpl4jModule extends SimpleModule {

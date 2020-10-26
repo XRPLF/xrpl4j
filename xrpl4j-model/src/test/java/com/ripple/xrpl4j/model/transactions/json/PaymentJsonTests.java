@@ -1,11 +1,7 @@
 package com.ripple.xrpl4j.model.transactions.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -14,10 +10,7 @@ import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.assertj.core.util.Lists;
 import org.json.JSONException;
-import org.junit.Before;
 import org.junit.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 // FIXME: These tests should probably be replaced with a parameterized test that loads in payment json examples from
 //  a file.  Will do this after merging with Neil's initial codec pass.
@@ -44,11 +37,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                \"Sequence\": 2\n" +
       "            }";
 
-    String serialized = objectMapper.writeValueAsString(payment);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    Payment deserialized = objectMapper.readValue(serialized, Payment.class);
-    assertThat(deserialized).isEqualTo(payment);
+    assertCanSerializeAndDeserialize(payment, json);
   }
 
   @Test
@@ -73,11 +62,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "            }";
 
 
-    String serialized = objectMapper.writeValueAsString(payment);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    Payment deserialized = objectMapper.readValue(serialized, Payment.class);
-    assertThat(deserialized).isEqualTo(payment);
+    assertCanSerializeAndDeserialize(payment, json);
   }
 
   @Test
@@ -131,10 +116,6 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                \"DestinationTag\": 736049272\n" +
       "            }";
 
-    String serialized = objectMapper.writeValueAsString(payment);
-    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
-
-    Payment deserialized = objectMapper.readValue(serialized, Payment.class);
-    assertThat(deserialized).isEqualTo(payment);
+    assertCanSerializeAndDeserialize(payment, json);
   }
 }

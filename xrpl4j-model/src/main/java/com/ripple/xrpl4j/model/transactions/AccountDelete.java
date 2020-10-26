@@ -21,13 +21,6 @@ public interface AccountDelete extends Transaction {
     return ImmutableAccountDelete.builder();
   }
 
-  @Override
-  @JsonProperty("TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.ACCOUNT_DELETE;
-  }
-
   /**
    * The {@link Address} of an account to receive any leftover XRP after deleting the sending account.
    * Must be a funded account in the ledger, and must not be the sending account.

@@ -21,13 +21,6 @@ public interface AccountSet extends Transaction {
     return ImmutableAccountSet.builder();
   }
 
-  @Override
-  @JsonProperty("TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.ACCOUNT_SET;
-  };
-
   /**
    * Unique identifier of a flag to disable for this account.
    *

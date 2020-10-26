@@ -1,24 +1,16 @@
 package com.ripple.xrpl4j.model.transactions.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.PathStep;
 import com.ripple.xrpl4j.model.transactions.Payment;
-import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.assertj.core.util.Lists;
 import org.json.JSONException;
-import org.junit.Before;
 import org.junit.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 // FIXME: These tests should probably be replaced with a parameterized test that loads in payment json examples from
 //  a file.  Will do this after merging with Neil's initial codec pass.

@@ -1,8 +1,6 @@
 package com.ripple.xrpl4j.model.transactions;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.immutables.value.Value;
 
 import java.util.Arrays;
 import java.util.Objects;

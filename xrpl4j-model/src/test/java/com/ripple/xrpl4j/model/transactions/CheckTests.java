@@ -47,6 +47,21 @@ public class CheckTests {
   }
 
   @Test
+  public void checkCashWithoutAmountOrDeliverMinThrows() {
+    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expectMessage(
+      "The CheckCash transaction must include either amount or deliverMin, but not both."
+    );
+
+    CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .build();
+  }
+
+  @Test
   public void checkCashWithAmountAndDeliverMinThrows() {
 
     expectedException.expect(IllegalArgumentException.class);

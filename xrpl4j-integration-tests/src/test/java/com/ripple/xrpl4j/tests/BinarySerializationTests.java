@@ -14,6 +14,7 @@ import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -129,6 +130,19 @@ public class BinarySerializationTests {
 
     String expectedBinary = "120010228000000024000000012A21FB3DF12E0000000150116F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B68400000000000000C694000000005F5E10081147990EC5D1D8DF69E070A968D4B186986FDF06ED0831449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
     assertSerializes(checkCreate, expectedBinary);
+  }
+
+  @Test
+  void serializeDepositPreAuth() throws JsonProcessingException {
+    DepositPreAuth preAuth = DepositPreAuth.builder()
+      .account(Address.of("rDd6FpNbeY2CrQajSmP178BmNGusmQiYMM"))
+      .authorize(Address.of("rDJFnv5sEfp42LMFiX3mVQKczpFTdxYDzM"))
+      .fee(XrpCurrencyAmount.of("10"))
+      .sequence(UnsignedInteger.valueOf(65))
+      .build();
+
+    String expectedBinary = "1200132280000000240000004168400000000000000A81148A928D14A643F388AC0D26BAF9755B07EB0A2B44851486FFE2A17E861BA0FE9A3ED8352F895D80E789E0";
+    assertSerializes(preAuth, expectedBinary);
   }
 
   @Test

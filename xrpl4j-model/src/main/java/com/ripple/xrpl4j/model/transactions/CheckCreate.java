@@ -52,6 +52,6 @@ public interface CheckCreate extends Transaction {
    * Arbitrary 256-bit hash representing a specific reason or identifier for this Check.
    */
   @JsonProperty("InvoiceID")
-  Optional<Hash256> invoiceID();
+  Optional<Hash256> invoiceId();
 
 }

@@ -5,6 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
+import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.json.JSONException;
@@ -77,5 +78,57 @@ public class CheckJsonTests extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(checkCash, json);
+  }
+
+  @Test
+  public void testCheckCreateJson() throws JsonProcessingException, JSONException {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destinationTag(UnsignedInteger.ONE)
+      .sendMax(XrpCurrencyAmount.of("100000000"))
+      .expiration(UnsignedInteger.valueOf(570113521))
+      .invoiceID(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
+      .build();
+
+    String json = "{\n" +
+      "  \"TransactionType\": \"CheckCreate\",\n" +
+      "  \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "  \"Destination\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "  \"SendMax\": \"100000000\",\n" +
+      "  \"Expiration\": 570113521,\n" +
+      "  \"InvoiceID\": \"6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B\",\n" +
+      "  \"DestinationTag\": 1,\n" +
+      "  \"Sequence\": 1,\n" +
+      "  \"Flags\": 2147483648,\n" +
+      "  \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCreate, json);
+  }
+
+  @Test
+  public void testMinimalCheckCreateJson() throws JsonProcessingException, JSONException {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sendMax(XrpCurrencyAmount.of("100000000"))
+      .build();
+
+    String json = "{\n" +
+      "  \"TransactionType\": \"CheckCreate\",\n" +
+      "  \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "  \"Destination\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "  \"SendMax\": \"100000000\",\n" +
+      "  \"Sequence\": 1,\n" +
+      "  \"Flags\": 2147483648,\n" +
+      "  \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCreate, json);
   }
 }

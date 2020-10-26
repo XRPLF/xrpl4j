@@ -12,6 +12,7 @@ import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
+import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
@@ -111,6 +112,23 @@ public class BinarySerializationTests {
 
     String expectedBinary = "120011228000000024000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F5733468400000000000000C6AD5038D7EA4C68000000000000000000000000000555344000000000049FF0C73CA6AF9733DA805F76CA2C37776B7C46B811449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
     assertSerializes(checkCash, expectedBinary);
+  }
+
+  @Test
+  void serializeCheckCreate() throws JsonProcessingException {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destinationTag(UnsignedInteger.ONE)
+      .sendMax(XrpCurrencyAmount.of("100000000"))
+      .expiration(UnsignedInteger.valueOf(570113521))
+      .invoiceID(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
+      .build();
+
+    String expectedBinary = "120010228000000024000000012A21FB3DF12E0000000150116F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B68400000000000000C694000000005F5E10081147990EC5D1D8DF69E070A968D4B186986FDF06ED0831449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
+    assertSerializes(checkCreate, expectedBinary);
   }
 
   @Test

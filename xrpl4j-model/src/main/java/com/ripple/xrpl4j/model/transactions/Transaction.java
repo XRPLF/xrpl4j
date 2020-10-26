@@ -13,12 +13,13 @@ public interface Transaction {
 
   Map<Class<? extends Transaction>, TransactionType> typeMap =
     new ImmutableMap.Builder<Class<? extends Transaction>, TransactionType>()
-    .put(ImmutablePayment.class, TransactionType.PAYMENT)
-    .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
-    .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
-    .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
-    .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
-    .build();
+      .put(ImmutablePayment.class, TransactionType.PAYMENT)
+      .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
+      .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
+      .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
+      .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
+      .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
+      .build();
 
   /**
    * The unique {@link Address} of the account that initiated the transaction.

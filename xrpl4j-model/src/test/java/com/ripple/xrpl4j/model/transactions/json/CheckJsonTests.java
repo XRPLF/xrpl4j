@@ -90,7 +90,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .destinationTag(UnsignedInteger.ONE)
       .sendMax(XrpCurrencyAmount.of("100000000"))
       .expiration(UnsignedInteger.valueOf(570113521))
-      .invoiceID(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
+      .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
       .build();
 
     String json = "{\n" +

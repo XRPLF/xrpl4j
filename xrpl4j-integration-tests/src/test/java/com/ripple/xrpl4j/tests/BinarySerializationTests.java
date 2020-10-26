@@ -11,6 +11,7 @@ import com.ripple.xrpl4j.model.transactions.AccountDelete;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
+import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
@@ -64,6 +65,52 @@ public class BinarySerializationTests {
 
     String expectedBinary = "1200122280000000240000000C501849647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB068400000000000000C81147990EC5D1D8DF69E070A968D4B186986FDF06ED0";
     assertSerializes(checkCancel, expectedBinary);
+  }
+
+  @Test
+  public void serializeCheckCashWithXrpAmount() throws JsonProcessingException {
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .amount(XrpCurrencyAmount.of("100"))
+      .build();
+
+    String expectedBinary = "120011228000000024000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F5733461400000000000006468400000000000000C811449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
+    assertSerializes(checkCash, expectedBinary);
+  }
+
+  @Test
+  public void serializeCheckCashWithXrpDeliverMin() throws JsonProcessingException {
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .deliverMin(XrpCurrencyAmount.of("100"))
+      .build();
+
+    String expectedBinary = "120011228000000024000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F5733468400000000000000C6A4000000000000064811449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
+    assertSerializes(checkCash, expectedBinary);
+  }
+
+  @Test
+  public void serializeCheckCashWithIssuedCurrencyDeliverMin() throws JsonProcessingException {
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("12"))
+      .deliverMin(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+        .value("100")
+        .build())
+      .build();
+
+    String expectedBinary = "120011228000000024000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F5733468400000000000000C6AD5038D7EA4C68000000000000000000000000000555344000000000049FF0C73CA6AF9733DA805F76CA2C37776B7C46B811449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
+    assertSerializes(checkCash, expectedBinary);
   }
 
   @Test

@@ -115,52 +115,6 @@ public class AccountSetIT {
     assertClearFlag(wallet, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
     assertClearFlag(wallet, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
     assertClearFlag(wallet, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
-
-//    ///////////////////////
-//    // Enable Global Freeze
-//    ImmutableAccountSet.Builder accountSetBuilder = AccountSet.builder()
-//        .account(Address.of(wallet.classicAddress()))
-//        .setFlag(AccountSetFlag.GLOBAL_FREEZE);
-//    AccountSetResponse response = client.submit(wallet, accountSetBuilder);
-//    logger.info(
-//        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionHash()
-//            .orElse("n/a")
-//    );
-//    assertThat(response.engineResult()).isNotEmpty();
-//    assertThat(response.engineResult().get()).isEqualTo("tesSUCCESS")
-//        .withFailMessage("EngineResult was not as expected.");
-//
-//    /////////////////////////
-//    // Validate Account State
-//    ///////////////////////
-//    // Returns true, or else throws...
-//    boolean result = scanLedgerFor30Seconds(
-//        () -> validatedAccountHasFlags(wallet, AccountRootFlags.GLOBAL_FREEZE)
-//    );
-//    assertThat(result).isTrue();
-//
-//    ///////////////////////
-//    // Disable Global Freeze
-//    accountSetBuilder = AccountSet.builder()
-//        .account(Address.of(wallet.classicAddress()));
-//    //.clearFlag(AccountSetFlag.GLOBAL_FREEZE);
-//
-//    response = client.submit(wallet, accountSetBuilder);
-//    logger.info(
-//        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionHash().get()
-//    );
-//    assertThat(response.engineResult()).isNotEmpty();
-//    assertThat(response.engineResult().get()).isEqualTo("tesSUCCESS")
-//        .withFailMessage("EngineResult was not as expected.");
-//
-//    /////////////////////////
-//    // Validate Account State
-//    // Returns true, or else throws...
-//    result = scanLedgerFor30Seconds(
-//        () -> validatedAccountHasFlags(wallet, AccountRootFlags.UNSET)
-//    );
-//    assertThat(result).isTrue();
-
   }
 
   //////////////////////

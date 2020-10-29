@@ -16,7 +16,6 @@ import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
 import com.ripple.xrpl4j.model.transactions.ImmutableAccountSet;
-import com.ripple.xrpl4j.tests.ImmutableAccountSetResponse.Builder;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
@@ -34,16 +33,16 @@ import com.ripple.xrplj4.client.rippled.RippledClient;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
 import com.ripple.xrplj4.client.rippled.TransactionBlobWrapper;
 import com.ripple.xrplj4.client.rippled.XrplMethods;
+import okhttp3.HttpUrl;
+import org.immutables.value.Value;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import okhttp3.HttpUrl;
-import org.immutables.value.Value.Immutable;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An integration test that submits an AccountSet transaction for each AccountSet flag for an account, validates each
@@ -387,12 +386,12 @@ public class AccountSetIT {
     }
   }
 
-  @Immutable
+  @Value.Immutable
   @JsonSerialize(as = ImmutableAccountSetResponse.class)
   @JsonDeserialize(as = ImmutableAccountSetResponse.class)
   public interface AccountSetResponse {
 
-    static Builder builder() {
+    static ImmutableAccountSetResponse.Builder builder() {
       return ImmutableAccountSetResponse.builder();
     }
 

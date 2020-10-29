@@ -17,22 +17,26 @@ public interface Wallet {
   /**
    * The private key of the wallet, encoded in hexadecimal.
    */
+  // TODO: Use wrapper type from Ed25519 lib?
   Optional<String> privateKey();
 
   /**
    * The public key of the wallet, encoded in hexadecimal.
    */
+  // TODO: Use wrapper type from Ed25519 lib?
   String publicKey();
 
   /**
    * The XRPL address of this wallet, in the Classic Address form.
    */
+  // TODO: Create wrapper type.
   String classicAddress();
 
   /**
    * The XRPL address of this wallet, in the X-Address form.
    * @return
    */
+  // TODO: Create wrapper type.
   String xAddress();
 
   /**

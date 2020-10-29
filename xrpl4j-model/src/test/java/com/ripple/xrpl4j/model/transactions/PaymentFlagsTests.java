@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,7 +14,6 @@ import java.util.List;
 
 @RunWith(Parameterized.class)
 public class PaymentFlagsTests {
-
 
   boolean tfFullyCanonicalSig;
   boolean tfNoDirectRipple;
@@ -62,7 +62,7 @@ public class PaymentFlagsTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.Payment.builder()
+      .flags(PaymentFlags.builder()
         .fullyCanonicalSig(tfFullyCanonicalSig)
         .noDirectRipple(tfNoDirectRipple)
         .partialPayment(tfPartialPayment)
@@ -91,7 +91,7 @@ public class PaymentFlagsTests {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.Payment.of(expectedFlags))
+      .flags(PaymentFlags.of(expectedFlags))
       .sequence(UnsignedInteger.ONE)
       .build();
 

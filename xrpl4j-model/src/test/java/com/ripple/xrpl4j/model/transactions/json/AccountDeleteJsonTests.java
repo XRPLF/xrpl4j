@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.AccountDelete;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.json.JSONException;
 import org.junit.Test;
@@ -17,7 +16,6 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
       .fee(XrpCurrencyAmount.of("5000000"))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .flags(Flags.of(2147483648L))
       .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
       .destinationTag(UnsignedInteger.valueOf(13))
       .build();

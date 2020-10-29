@@ -1,7 +1,6 @@
 package com.ripple.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -26,7 +25,7 @@ public class Flags {
 
   public static Flags of(Flags flag, Flags... others) {
     return flag.bitwiseOr(
-      Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
+        Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
     );
   }
 
@@ -37,31 +36,34 @@ public class Flags {
 
   /**
    * Performs a bitwise OR on this {@link Flags} and another {@link Flags}
+   *
    * @param other The {@link Flags} to perform the OR with.
    * @return The {@link Flags} resulting from the OR operation.
    */
-  public Flags bitwiseOr(Flags other) {
+  Flags bitwiseOr(Flags other) {
     return Flags.of(this.value | other.value);
   }
 
   /**
    * Performs a bitwise AND on this {@link Flags} and another {@link Flags}
+   *
    * @param other The {@link Flags} to perform the AND with.
    * @return The {@link Flags} resulting from the AND operation.
    */
-  public Flags bitwiseAnd(Flags other) {
+  Flags bitwiseAnd(Flags other) {
     return Flags.of(this.value & other.value);
   }
 
   /**
-   * Determines if a specific transaction flag is set by performing a bitwise AND on this {@link Flags} and the
-   * {@link Flags} in question, and checking if the result of that operation is equal to the given flag.
+   * Determines if a specific transaction flag is set by performing a bitwise AND on this {@link Flags} and the {@link
+   * Flags} in question, and checking if the result of that operation is equal to the given flag.
    *
    * @param flag The {@link Flags} that this method determines is set or not.
    * @return true if the flag is set, false if not.
    */
+  // TODO: Unit test.
   public boolean isSet(Flags flag) {
-    return this.bitwiseAnd(flag).equals(flag);
+    return !flag.equals(Flags.UNSET) && this.bitwiseAnd(flag).equals(flag);
   }
 
   @Override
@@ -87,82 +89,110 @@ public class Flags {
   /**
    * A set of static Universal {@link Flags} which could apply to any transaction.
    */
-  public static class Universal extends Flags {
+  public static class TransactionFlags extends Flags {
 
-    public static final Universal FULLY_CANONICAL_SIG = new Universal(0x80000000L);
+    private static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
 
-    private Universal(long value) {
+    private TransactionFlags(long value) {
       super(value);
     }
 
     /**
-     * Flags indicating that a fully-canonical signature is required.
-     * This flag is highly recommended.
+     * Flags indicating that a fully-canonical signature is required. This flag is highly recommended.
      *
      * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
      */
     public boolean tfFullyCanonicalSig() {
-      return this.isSet(Flags.Universal.FULLY_CANONICAL_SIG);
+      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
+    }
+
+    /**
+     * A builder class for {@link TransactionFlags} flags.
+     */
+    public static class Builder {
+
+      private boolean tfFullyCanonicalSig = true;
+
+      public TransactionFlags.Builder fullyCanonicalSig(boolean value) {
+        this.tfFullyCanonicalSig = value;
+        return this;
+      }
+
+      public TransactionFlags build() {
+        return new TransactionFlags(
+            tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
+        );
+      }
     }
   }
 
   /**
-   * A set of static {@link Flags} which can be set on {@link com.ripple.xrpl4j.model.transactions.Payment} transactions.
+   * A set of static {@link Flags} which can be set on {@link Payment} transactions.
    */
-  public static class Payment extends Universal {
+  public static class PaymentFlags extends TransactionFlags {
 
-    public static final Payment NO_DIRECT_RIPPLE = new Payment(0x00010000L);
-    public static final Payment PARTIAL_PAYMENT = new Payment(0x00020000L);
-    public static final Payment LIMIT_QUALITY = new Payment(0x00040000L);
+    public static final PaymentFlags UNSET = new PaymentFlags(0);
+
+    // TODO: Consider making these private so that the only way to create flags is to use the builder. This way a
+    //  developer won't accidentally set a single flag in the builder (e.g., AccountSet) that accidentally deletes other
+    // flags that exist in the server. This is especially accute for AccountSet and other transaction object that have
+    // pre-existing state on the ledger.
+    public static final PaymentFlags NO_DIRECT_RIPPLE = new PaymentFlags(0x00010000L);
+    public static final PaymentFlags PARTIAL_PAYMENT_FLAGS = new PaymentFlags(0x00020000L);
+    public static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
     /**
-     * Flag indicated to only use paths included in the {@link com.ripple.xrpl4j.model.transactions.Payment#paths()} field.
-     * This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     * Flag indicated to only use paths included in the {@link com.ripple.xrpl4j.model.transactions.Payment#paths()}
+     * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
      */
     public boolean tfNoDirectRipple() {
-      return this.isSet(Flags.Payment.NO_DIRECT_RIPPLE);
+      return this.isSet(PaymentFlags.NO_DIRECT_RIPPLE);
     }
 
     /**
-     * If the specified {@link com.ripple.xrpl4j.model.transactions.Payment#amount()} cannot be sent without spending more than {@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()},
-     * reduce the received amount instead of failing outright.
+     * If the specified {@link com.ripple.xrpl4j.model.transactions.Payment#amount()} cannot be sent without spending
+     * more than {@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()}, reduce the received amount instead of
+     * failing outright.
      *
      * @see "https://xrpl.org/partial-payments.html"
      */
     public boolean tfPartialPayment() {
-      return this.isSet(Flags.Payment.PARTIAL_PAYMENT);
+      return this.isSet(PaymentFlags.PARTIAL_PAYMENT_FLAGS);
     }
 
     /**
      * Only take paths where all the conversions have an input:output ratio that is equal or better than the ratio of
      * {@link com.ripple.xrpl4j.model.transactions.Payment#amount()}:{@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()}.
+     *
      * @return
      */
     public boolean tfLimitQuality() {
-      return this.isSet(Flags.Payment.LIMIT_QUALITY);
+      return this.isSet(PaymentFlags.LIMIT_QUALITY);
     }
 
-    public static Builder builder() {
-      return new Builder();
+    public static PaymentFlags.Builder builder() {
+      return new PaymentFlags.Builder();
     }
 
-    public static Payment of(long value) {
-      return new Payment(value);
+    public static PaymentFlags of(long value) {
+      return new PaymentFlags(value);
     }
 
-    private static Payment of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment, boolean tfLimitQuality) {
-      return new Payment(of(
-        tfFullyCanonicalSig ? Universal.FULLY_CANONICAL_SIG : UNSET,
-        tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
-        tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
-        tfLimitQuality ? LIMIT_QUALITY : UNSET
+    private static PaymentFlags of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment,
+        boolean tfLimitQuality) {
+      return new PaymentFlags(of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
+          tfPartialPayment ? PARTIAL_PAYMENT_FLAGS : UNSET,
+          tfLimitQuality ? LIMIT_QUALITY : UNSET
       ).getValue());
     }
 
     /**
-     * A builder class for {@link Payment} flags.
+     * A builder class for {@link PaymentFlags} flags.
      */
     public static class Builder {
+
       private boolean tfFullyCanonicalSig = true;
       private boolean tfNoDirectRipple = false;
       private boolean tfPartialPayment = false;
@@ -188,13 +218,252 @@ public class Flags {
         return this;
       }
 
-      public Payment build() {
-        return Payment.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
+      public PaymentFlags build() {
+        return PaymentFlags.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
       }
     }
 
-    private Payment(long value) {
+    private PaymentFlags(long value) {
       super(value);
+    }
+  }
+
+  /**
+   * A set of static {@link Flags} which can be set on {@link AccountSet} transactions.
+   */
+  public static class AccountRootFlags extends Flags {
+
+    public static final AccountRootFlags UNSET = new AccountRootFlags(0);
+
+    /**
+     * Enable rippling on this addresses's trust lines by default. Required for issuing addresses; discouraged for
+     * others.
+     */
+    public static final AccountRootFlags DEFAULT_RIPPLE = new AccountRootFlags(0x00800000L);
+
+    /**
+     * This account can only receive funds from transactions it sends, and from preauthorized accounts. (It has
+     * DepositAuth enabled.)
+     */
+    public static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
+
+    /**
+     * Disallows use of the master key to sign transactions for this account.
+     */
+    public static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
+
+    /**
+     * Client applications should not send XRP to this account. Not enforced by rippled.
+     */
+    public static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
+
+    /**
+     * All assets issued by this address are frozen.
+     */
+    public static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
+
+    /**
+     * This address cannot freeze trust lines connected to it. Once enabled, cannot be disabled.
+     */
+    public static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
+
+    /**
+     * The account has used its free SetRegularKey transaction.
+     */
+    public static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
+
+    /**
+     * This account must individually approve other users for those users to hold this account's issued currencies.
+     */
+    public static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
+
+    /**
+     * Requires incoming payments to specify a Destination Tag.
+     */
+    public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
+
+    /**
+     * Required-args Constructor.
+     *
+     * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
+     */
+    private AccountRootFlags(final long value) {
+      super(value);
+    }
+
+    /**
+     * Flag indicated to only use paths included in the {@link com.ripple.xrpl4j.model.transactions.Payment#paths()}
+     * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     */
+    public boolean lsfDefaultRipple() {
+      return this.isSet(AccountRootFlags.DEFAULT_RIPPLE);
+    }
+
+    /**
+     * This account can only receive funds from transactions it sends, and from preauthorized accounts. (It has
+     * DepositAuth enabled.)
+     */
+    public boolean lsfDepositAuth() {
+      return this.isSet(AccountRootFlags.DEPOSIT_AUTH);
+    }
+
+    /**
+     * Disallows use of the master key to sign transactions for this account.
+     */
+    public boolean lsfDisableMaster() {
+      return this.isSet(AccountRootFlags.DISABLE_MASTER);
+    }
+
+    /**
+     * Client applications should not send XRP to this account. Not enforced by rippled.
+     */
+    public boolean lsfDisallowXRP() {
+      return this.isSet(AccountRootFlags.DISALLOW_XRP);
+    }
+
+    /**
+     * All assets issued by this address are frozen.
+     */
+    public boolean lsfGlobalFreeze() {
+      return this.isSet(AccountRootFlags.GLOBAL_FREEZE);
+    }
+
+    /**
+     * This address cannot freeze trust lines connected to it. Once enabled, cannot be disabled.
+     */
+    public boolean lsfNoFreeze() {
+      return this.isSet(AccountRootFlags.NO_FREEZE);
+    }
+
+    /**
+     * The account has used its free SetRegularKey transaction.
+     */
+    public boolean lsfPasswordSpent() {
+      return this.isSet(AccountRootFlags.PASSWORD_SPENT);
+    }
+
+    /**
+     * This account must individually approve other users for those users to hold this account's issued currencies.
+     */
+    public boolean lsfRequireAuth() {
+      return this.isSet(AccountRootFlags.REQUIRE_AUTH);
+    }
+
+    /**
+     * Requires incoming payments to specify a Destination Tag.
+     */
+    public boolean lsfRequireDestTag() {
+      return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static AccountRootFlags of(long value) {
+      return new AccountRootFlags(value);
+    }
+
+    public static AccountRootFlags of(
+        boolean tfFullyCanonicalSig,
+        boolean lsfDefaultRipple,
+        boolean lsfDepositAuth,
+        boolean lsfDisableMaster,
+        boolean lsfDisallowXRP,
+        boolean lsfGlobalFreeze,
+        boolean lsfNoFreeze,
+        boolean lsfPasswordSpent,
+        boolean lsfRequireAuth,
+        boolean lsfRequireDestTag
+    ) {
+      return new AccountRootFlags(
+          Flags.of(
+              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+              lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : UNSET,
+              lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : UNSET,
+              lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : UNSET,
+              lsfDisallowXRP ? AccountRootFlags.DISALLOW_XRP : UNSET,
+              lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE : UNSET,
+              lsfNoFreeze ? AccountRootFlags.NO_FREEZE : UNSET,
+              lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT : UNSET,
+              lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH : UNSET,
+              lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG : UNSET
+          ).getValue());
+    }
+
+    /**
+     * A builder class for {@link PaymentFlags} flags.
+     */
+    public static class Builder {
+
+      private boolean tfFullyCanonicalSig = true;
+      private boolean lsfDefaultRipple = false;
+      private boolean lsfDepositAuth = false;
+      private boolean lsfDisableMaster = false;
+      private boolean lsfDisallowXRP = false;
+      private boolean lsfGlobalFreeze = false;
+      private boolean lsfNoFreeze = false;
+      private boolean lsfPasswordSpent = false;
+      private boolean lsfRequireAuth = false;
+      private boolean lsfRequireDestTag = false;
+
+      public AccountRootFlags.Builder fullyCanonicalSig(boolean value) {
+        this.tfFullyCanonicalSig = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder defaultRipple(boolean value) {
+        this.lsfDefaultRipple = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder depositAuth(boolean value) {
+        this.lsfDepositAuth = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder disableMaster(boolean value) {
+        this.lsfDisableMaster = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder disallowXRP(boolean value) {
+        this.lsfDisallowXRP = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder globalFreeze(boolean value) {
+        this.lsfGlobalFreeze = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder noFreeze(boolean value) {
+        this.lsfNoFreeze = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder passwordSpent(boolean value) {
+        this.lsfPasswordSpent = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder requireAuth(boolean value) {
+        this.lsfRequireAuth = value;
+        return this;
+      }
+
+      public AccountRootFlags.Builder requireDestTag(boolean value) {
+        this.lsfRequireDestTag = value;
+        return this;
+      }
+
+      public AccountRootFlags build() {
+        return AccountRootFlags.of(
+            tfFullyCanonicalSig,
+            lsfDefaultRipple, lsfDepositAuth, lsfDisableMaster, lsfDisallowXRP, lsfGlobalFreeze, lsfNoFreeze,
+            lsfPasswordSpent, lsfRequireAuth, lsfRequireDestTag
+        );
+      }
     }
   }
 }

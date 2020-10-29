@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,7 +31,7 @@ public class AccountSetTests {
     assertThat(accountSet.fee().value()).isEqualTo("12");
     assertThat(accountSet.sequence()).isEqualTo(UnsignedInteger.valueOf(5));
     assertThat(accountSet.domain()).isNotEmpty().get().isEqualTo("6578616D706C652E636F6D");
-    assertThat(accountSet.setFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.ACCOUNT_TXN_ID);
+    assertThat(accountSet.setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID);
     assertThat(accountSet.messageKey()).isNotEmpty().get().isEqualTo("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB");
     assertThat(accountSet.transferRate()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(1000000001));
   }

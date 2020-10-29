@@ -1,5 +1,6 @@
 package com.ripple.xrplj4.client.rippled;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import feign.Feign;
@@ -8,6 +9,7 @@ import feign.RequestLine;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.optionals.OptionalDecoder;
+import java.util.Optional;
 import okhttp3.HttpUrl;
 
 import java.util.Objects;
@@ -45,7 +47,7 @@ public interface RippledClient {
    * @return
    */
   @RequestLine("POST /")
-  @Headers( {
+  @Headers({
       HEADER_ACCEPT + ": " + APPLICATION_JSON,
       HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
@@ -54,7 +56,11 @@ public interface RippledClient {
   default <T> T sendRequest(JsonRpcRequest request, Class<T> responseClass) throws RippledClientErrorException {
     JsonRpcResponse response = postRpcRequest(request);
     if (response.result().has("error")) {
-      throw new RippledClientErrorException(response.result().get("error_exception").asText());
+
+      String errorMessage = Optional.ofNullable(response.result().get("error_exception"))
+          .map(JsonNode::asText)
+          .orElseGet(() -> response.result().get("error_message").asText());
+      throw new RippledClientErrorException(errorMessage);
     }
     return objectMapper.convertValue(response.result(), responseClass);
   }

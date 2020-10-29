@@ -15,7 +15,8 @@ import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
-import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
+import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Payment;
@@ -33,11 +34,10 @@ public class BinarySerializationTests {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.UNSET)
       .sequence(UnsignedInteger.valueOf(10598))
       .build();
 
-    String expectedBinary = "1200032200000000240000296668400000000000000A81140F3D0C7D2CFAB2EC8295451F0B3CA038E8E9CDCD";
+    String expectedBinary = "1200032280000000240000296668400000000000000A81140F3D0C7D2CFAB2EC8295451F0B3CA038E8E9CDCD";
     assertSerializes(accountSet, expectedBinary);
   }
 
@@ -47,7 +47,6 @@ public class BinarySerializationTests {
       .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
       .fee(XrpCurrencyAmount.of("5000000"))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .flags(Flags.of(2147483648L))
       .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
       .destinationTag(UnsignedInteger.valueOf(13))
       .build();
@@ -191,7 +190,7 @@ public class BinarySerializationTests {
       .build();
 
     Payment payment = Payment.builder()
-      .flags(Flags.Payment.builder()
+      .flags(PaymentFlags.builder()
         .partialPayment(true)
         .build())
       .account(source)

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
 
 import java.util.Optional;
+import org.immutables.value.Value.Derived;
 
 /**
  * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of
@@ -19,10 +21,22 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableDepositPreAuth.class)
 @JsonDeserialize(as = ImmutableDepositPreAuth.class)
-public interface DepositPreAuth extends Transaction {
+public interface DepositPreAuth extends Transaction<TransactionFlags> {
 
   static ImmutableDepositPreAuth.Builder builder() {
     return ImmutableDepositPreAuth.builder();
+  }
+
+  /**
+   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * <p>
+   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   */
+  @JsonProperty("Flags")
+  @Derived
+  default TransactionFlags flags() {
+    return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
   }
 
   /**

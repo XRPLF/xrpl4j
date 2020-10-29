@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,7 +20,7 @@ public class AccountSetTests {
       .fee(XrpCurrencyAmount.of("12"))
       .sequence(UnsignedInteger.valueOf(5))
       .domain("6578616D706C652E636F6D")
-      .setFlag(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID)
+      .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
       .transferRate(UnsignedInteger.valueOf(1000000001))
       .tickSize(UnsignedInteger.valueOf(15))

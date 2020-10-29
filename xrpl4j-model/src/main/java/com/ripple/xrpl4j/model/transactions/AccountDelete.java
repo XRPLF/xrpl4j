@@ -4,9 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
+import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
+import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
 
 import java.util.Optional;
+import org.immutables.value.Value.Default;
+import org.immutables.value.Value.Derived;
 
 /**
  * An {@link AccountDelete} transaction deletes an account and any objects it owns in the XRP Ledger, if possible,
@@ -15,22 +20,34 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountDelete.class)
 @JsonDeserialize(as = ImmutableAccountDelete.class)
-public interface AccountDelete extends Transaction {
+public interface AccountDelete extends Transaction<TransactionFlags> {
 
   static ImmutableAccountDelete.Builder builder() {
     return ImmutableAccountDelete.builder();
   }
 
   /**
-   * The {@link Address} of an account to receive any leftover XRP after deleting the sending account.
-   * Must be a funded account in the ledger, and must not be the sending account.
+   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * <p>
+   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   */
+  @JsonProperty("Flags")
+  @Derived
+  default TransactionFlags flags() {
+    return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
+  }
+
+  /**
+   * The {@link Address} of an account to receive any leftover XRP after deleting the sending account. Must be a funded
+   * account in the ledger, and must not be the sending account.
    */
   @JsonProperty("Destination")
   Address destination();
 
   /**
-   * Arbitrary destination tag that identifies a hosted recipient or other information for the recipient of
-   * the deleted account's leftover XRP.
+   * Arbitrary destination tag that identifies a hosted recipient or other information for the recipient of the deleted
+   * account's leftover XRP.
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();

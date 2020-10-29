@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
 
 import java.util.Optional;
+import org.immutables.value.Value.Derived;
 
 /**
  * Create a Check object in the ledger, which is a deferred payment that can be cashed by its intended destination.
@@ -15,10 +17,22 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableCheckCreate.class)
 @JsonDeserialize(as = ImmutableCheckCreate.class)
-public interface CheckCreate extends Transaction {
+public interface CheckCreate extends Transaction<TransactionFlags> {
 
   static ImmutableCheckCreate.Builder builder() {
     return ImmutableCheckCreate.builder();
+  }
+
+  /**
+   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * <p>
+   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   */
+  @JsonProperty("Flags")
+  @Derived
+  default TransactionFlags flags() {
+    return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
   }
 
   /**

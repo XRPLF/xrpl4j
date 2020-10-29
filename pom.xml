@@ -25,6 +25,15 @@
     <name>Ripple and its contributors</name>
   </organization>
 
+  <dependencies>
+    <!-- Enable concrete logging in all tests -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -75,6 +84,17 @@
         <artifactId>value</artifactId>
         <version>2.8.3</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -211,6 +231,7 @@
 
     <jackson.version>2.11.2</jackson.version>
     <feign.version>11.0</feign.version>
+    <slf4j.version>1.7.30</slf4j.version>
   </properties>
 
   <modules>

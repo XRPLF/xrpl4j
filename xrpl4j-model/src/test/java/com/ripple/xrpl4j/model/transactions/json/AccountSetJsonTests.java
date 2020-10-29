@@ -3,9 +3,10 @@ package com.ripple.xrpl4j.model.transactions.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
-import com.ripple.xrpl4j.model.transactions.AccountSetFlag;
+import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.json.JSONException;
 import org.junit.Test;
@@ -19,7 +20,6 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.of("12"))
       .sequence(UnsignedInteger.valueOf(5))
       .domain("6578616D706C652E636F6D")
-      .flags(Flags.UNSET)
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
       .transferRate(UnsignedInteger.valueOf(1000000001))
@@ -33,7 +33,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       "    \"Account\":\"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\":\"12\",\n" +
       "    \"Sequence\":5,\n" +
-      "    \"Flags\":0,\n" +
+      "    \"Flags\":2147483648,\n" +
       "    \"Domain\":\"6578616D706C652E636F6D\",\n" +
       "    \"SetFlag\":5,\n" +
       "    \"MessageKey\":\"03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB\",\n" +

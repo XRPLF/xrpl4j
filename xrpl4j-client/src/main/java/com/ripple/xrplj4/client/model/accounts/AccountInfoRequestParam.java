@@ -2,6 +2,7 @@ package com.ripple.xrplj4.client.model.accounts;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ripple.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequestParam;
 import org.immutables.value.Value;
 
@@ -16,8 +17,8 @@ public interface AccountInfoRequestParam extends JsonRpcRequestParam<AccountInfo
 
   static AccountInfoRequestParam of(String account) {
     return builder()
-      .account(account)
-      .build();
+        .account(account)
+        .build();
   }
 
   String account();
@@ -28,8 +29,9 @@ public interface AccountInfoRequestParam extends JsonRpcRequestParam<AccountInfo
   }
 
   @Value.Default
+  @JsonSerialize(using = LedgerIndexSerializer.class)
   default String ledger_index() {
-   return "current";
+    return "current";
   }
 
   @Value.Default

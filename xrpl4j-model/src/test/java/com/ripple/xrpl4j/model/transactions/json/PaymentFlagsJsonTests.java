@@ -3,7 +3,7 @@ package com.ripple.xrpl4j.model.transactions.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.PathStep;
 import com.ripple.xrpl4j.model.transactions.Payment;
@@ -14,7 +14,7 @@ import org.junit.Test;
 
 // FIXME: These tests should probably be replaced with a parameterized test that loads in payment json examples from
 //  a file.  Will do this after merging with Neil's initial codec pass.
-public class PaymentJsonTests extends AbstractJsonTest {
+public class PaymentFlagsJsonTests extends AbstractJsonTest {
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
@@ -23,7 +23,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.of("25000000"))
       .fee(XrpCurrencyAmount.of("10"))
-      .flags(Flags.Payment.builder().fullyCanonicalSig(false).build())
+      .flags(PaymentFlags.builder().fullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(2))
       .build();
 
@@ -83,7 +83,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
         .issuer(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
         .build()
       )
-      .flags(Flags.Payment.builder().fullyCanonicalSig(false).build())
+      .flags(PaymentFlags.builder().fullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(6))
       .addPaths(Lists.newArrayList(
         PathStep.builder()

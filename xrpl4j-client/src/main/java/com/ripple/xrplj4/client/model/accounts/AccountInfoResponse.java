@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -15,7 +16,7 @@ public interface AccountInfoResponse {
   AccountInfoData accountData();
 
   @JsonProperty("ledger_current_index")
-  UnsignedInteger ledgerCurrentIndex();
+  Optional<UnsignedInteger> ledgerCurrentIndex();
 
   String status();
 

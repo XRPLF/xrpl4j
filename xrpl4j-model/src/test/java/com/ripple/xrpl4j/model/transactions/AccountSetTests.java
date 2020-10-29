@@ -19,7 +19,7 @@ public class AccountSetTests {
       .fee(XrpCurrencyAmount.of("12"))
       .sequence(UnsignedInteger.valueOf(5))
       .domain("6578616D706C652E636F6D")
-      .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+      .setFlag(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID)
       .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
       .transferRate(UnsignedInteger.valueOf(1000000001))
       .tickSize(UnsignedInteger.valueOf(15))
@@ -30,7 +30,7 @@ public class AccountSetTests {
     assertThat(accountSet.fee().value()).isEqualTo("12");
     assertThat(accountSet.sequence()).isEqualTo(UnsignedInteger.valueOf(5));
     assertThat(accountSet.domain()).isNotEmpty().get().isEqualTo("6578616D706C652E636F6D");
-    assertThat(accountSet.setFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.ACCOUNT_TXN_ID);
+    assertThat(accountSet.setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID);
     assertThat(accountSet.messageKey()).isNotEmpty().get().isEqualTo("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB");
     assertThat(accountSet.transferRate()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(1000000001));
   }

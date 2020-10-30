@@ -3,11 +3,18 @@ package com.ripple.xrplj4.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.keypairs.DefaultKeyPairService;
 import com.ripple.xrpl4j.keypairs.KeyPairService;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
+import com.ripple.xrpl4j.model.transactions.AccountDelete;
+import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.CheckCancel;
+import com.ripple.xrpl4j.model.transactions.CheckCash;
+import com.ripple.xrpl4j.model.transactions.CheckCreate;
+import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.Transaction;
@@ -43,6 +50,11 @@ public class XrplClient {
     Class<TxnType> transactionType
   ) throws RippledClientErrorException {
     try {
+      Preconditions.checkArgument(
+        unsignedTransaction.signingPublicKey().isPresent(),
+        "Transaction.signingPublicKey() must be set."
+      );
+
       String signedTransaction = serializeAndSignTransaction(wallet, unsignedTransaction);
       JsonRpcRequest request = JsonRpcRequest.builder()
         .method(XrplMethods.SUBMIT)
@@ -67,10 +79,10 @@ public class XrplClient {
     return accountInfo(AccountInfoRequestParams.of(classicAddress));
   }
 
-  public AccountInfoResult accountInfo(Address classicAddress, String ledgerHash) throws RippledClientErrorException {
+  public AccountInfoResult accountInfo(Address classicAddress, String ledgerIndex) throws RippledClientErrorException {
     return accountInfo(AccountInfoRequestParams.builder()
       .account(classicAddress)
-      .ledgerHash(ledgerHash)
+      .ledgerIndex(ledgerIndex)
       .build()
     );
   }
@@ -99,9 +111,39 @@ public class XrplClient {
     return binaryCodec.encode(signedJson);
   }
 
-  private Transaction addSigningFields(Transaction transaction, String signature, String publicKey) {
+  private Transaction<? extends Flags.TransactionFlags> addSigningFields(Transaction<? extends Flags.TransactionFlags> transaction, String signature, String publicKey) {
     if (Payment.class.isAssignableFrom(transaction.getClass())) {
       return Payment.builder().from((Payment) transaction)
+        .transactionSignature(signature)
+        .signingPublicKey(publicKey)
+        .build();
+    } else if (AccountSet.class.isAssignableFrom(transaction.getClass())) {
+      return AccountSet.builder().from((AccountSet) transaction)
+        .transactionSignature(signature)
+        .signingPublicKey(publicKey)
+        .build();
+    } else if (AccountDelete.class.isAssignableFrom(transaction.getClass())) {
+      return AccountDelete.builder().from((AccountDelete) transaction)
+        .transactionSignature(signature)
+        .signingPublicKey(publicKey)
+        .build();
+    }  else if (CheckCancel.class.isAssignableFrom(transaction.getClass())) {
+      return CheckCancel.builder().from((CheckCancel) transaction)
+        .transactionSignature(signature)
+        .signingPublicKey(publicKey)
+        .build();
+    } else if (CheckCash.class.isAssignableFrom(transaction.getClass())) {
+      return CheckCash.builder().from((CheckCash) transaction)
+        .transactionSignature(signature)
+        .signingPublicKey(publicKey)
+        .build();
+    } else if (CheckCreate.class.isAssignableFrom(transaction.getClass())) {
+      return CheckCreate.builder().from((CheckCreate) transaction)
+        .transactionSignature(signature)
+        .signingPublicKey(publicKey)
+        .build();
+    } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {
+      return DepositPreAuth.builder().from((DepositPreAuth) transaction)
         .transactionSignature(signature)
         .signingPublicKey(publicKey)
         .build();

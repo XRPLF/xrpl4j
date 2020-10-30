@@ -2,20 +2,9 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
-import com.ripple.xrpl4j.keypairs.DefaultKeyPairService;
-import com.ripple.xrpl4j.keypairs.KeyPairService;
-import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
-import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
-import com.ripple.xrpl4j.model.transactions.ImmutableAccountSet;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
@@ -24,19 +13,11 @@ import com.ripple.xrplj4.client.XrplClient;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.model.transactions.SubmitAccountSetResponse;
-import com.ripple.xrplj4.client.rippled.ImmutableJsonRpcRequest;
-import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
-import com.ripple.xrplj4.client.rippled.RippledClient;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
-import com.ripple.xrplj4.client.rippled.TransactionBlobWrapper;
-import com.ripple.xrplj4.client.rippled.XrplMethods;
 import okhttp3.HttpUrl;
-import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +75,7 @@ public class AccountSetIT {
         .fee(feeResult.drops().minimumFee())
         .sequence(accountInfo.accountData().sequence())
         .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+        .signingPublicKey(wallet.publicKey())
         .build();
 
     SubmissionResult<AccountSet> response = xrplClient.submit(wallet, accountSet, AccountSet.class);
@@ -240,7 +222,8 @@ public class AccountSetIT {
         .fee(feeResult.drops().minimumFee())
         .sequence(accountInfo.accountData().sequence())
         .setFlag(accountSetFlag)
-      .build();
+        .signingPublicKey(wallet.publicKey())
+        .build();
 
     SubmissionResult<AccountSet> response = xrplClient.submit(wallet, accountSet, AccountSet.class);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
@@ -271,6 +254,7 @@ public class AccountSetIT {
       .fee(feeResult.drops().minimumFee())
       .sequence(accountInfo.accountData().sequence())
       .clearFlag(accountSetFlag)
+      .signingPublicKey(wallet.publicKey())
       .build();
     SubmissionResult<AccountSet> response = xrplClient.submit(wallet, accountSet, AccountSet.class);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");

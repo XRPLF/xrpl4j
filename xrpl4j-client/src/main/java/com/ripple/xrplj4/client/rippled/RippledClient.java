@@ -72,7 +72,7 @@ public interface RippledClient {
     JsonNode result = response.get("result");
     checkForError(response);
     try {
-      return objectMapper.readValue(result.asText(), resultType);
+      return objectMapper.readValue(result.toString(), resultType);
     } catch (JsonProcessingException e) {
       throw new RippledClientErrorException(e);
     }

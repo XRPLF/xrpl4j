@@ -64,6 +64,7 @@ public class SubmitPaymentIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationResult.wallet().classicAddress())
       .amount(XrpCurrencyAmount.of("12345"))
+      .signingPublicKey(seedResult.wallet().publicKey())
       .build();
 
     SubmissionResult<Payment> result = xrplClient.submit(seedResult.wallet(), payment, Payment.class);
@@ -101,6 +102,7 @@ public class SubmitPaymentIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationResult.wallet().classicAddress())
       .amount(XrpCurrencyAmount.of("12345"))
+      .signingPublicKey(senderWallet.publicKey())
       .build();
 
     SubmissionResult<Payment> result = xrplClient.submit(senderWallet, payment, Payment.class);

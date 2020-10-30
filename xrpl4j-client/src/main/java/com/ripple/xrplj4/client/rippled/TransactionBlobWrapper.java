@@ -8,7 +8,7 @@ import org.immutables.value.Value.Immutable;
 @Immutable
 @JsonSerialize(as = ImmutableTransactionBlobWrapper.class)
 @JsonDeserialize(as = ImmutableTransactionBlobWrapper.class)
-public interface TransactionBlobWrapper extends JsonRpcRequestParam<TransactionBlobWrapper> {
+public interface TransactionBlobWrapper extends JsonRpcRequestParam {
 
   static TransactionBlobWrapper of(String blobHex) {
     return ImmutableTransactionBlobWrapper.builder().txBlob(blobHex).build();

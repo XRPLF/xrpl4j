@@ -1,8 +1,11 @@
 package com.ripple.xrplj4.client.rippled;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
+import com.ripple.xrplj4.client.model.JsonRpcResult;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
@@ -51,18 +54,36 @@ public interface RippledClient {
       HEADER_ACCEPT + ": " + APPLICATION_JSON,
       HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
-  JsonRpcResponse postRpcRequest(JsonRpcRequest rpcRequest);
+  JsonNode postRpcRequest(JsonRpcRequest rpcRequest);
 
-  default <T> T sendRequest(JsonRpcRequest request, Class<T> responseClass) throws RippledClientErrorException {
-    JsonRpcResponse response = postRpcRequest(request);
-    if (response.result().has("error")) {
+  default <ResultType extends JsonRpcResult> ResultType send(
+    JsonRpcRequest request,
+    Class<ResultType> resultType
+  ) throws RippledClientErrorException, JsonProcessingException {
+    JavaType javaType = objectMapper.constructType(resultType);
+    return send(request, javaType);
+  }
 
-      String errorMessage = Optional.ofNullable(response.result().get("error_exception"))
+  default <ResultType extends JsonRpcResult> ResultType send(
+    JsonRpcRequest request,
+    JavaType resultType
+  ) throws RippledClientErrorException, JsonProcessingException {
+    JsonNode response = postRpcRequest(request);
+    JsonNode result = response.get("result");
+    checkForError(response);
+    return objectMapper.readValue(result.asText(), resultType);
+  }
+
+  default void checkForError(JsonNode response) throws RippledClientErrorException {
+    if (response.has("result")) {
+      JsonNode result = response.get("result");
+      if (result.has("error")) {
+        String errorMessage = Optional.ofNullable(result.get("error_exception"))
           .map(JsonNode::asText)
-          .orElseGet(() -> response.result().get("error_message").asText());
-      throw new RippledClientErrorException(errorMessage);
+          .orElseGet(() -> result.get("error_message").asText());
+        throw new RippledClientErrorException(errorMessage);
+      }
     }
-    return objectMapper.convertValue(response.result(), responseClass);
   }
 
 }

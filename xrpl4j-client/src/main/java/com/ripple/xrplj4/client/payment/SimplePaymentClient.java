@@ -11,10 +11,10 @@ import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParam;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoResponse;
-import com.ripple.xrplj4.client.model.fees.FeeInfoResponse;
-import com.ripple.xrplj4.client.model.transactions.SubmitTransactionResponse;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrplj4.client.model.fees.FeeResult;
+import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.rippled.ImmutableJsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.RippledClient;
@@ -54,11 +54,11 @@ public interface SimplePaymentClient {
           .addParams(TransactionBlobWrapper.of(trx))
           .build();
 
-        SubmitTransactionResponse response = rippledClient.sendRequest(submitRequest, SubmitTransactionResponse.class);
+        SubmissionResult response = rippledClient.sendRequest(submitRequest, SubmissionResult.class);
         if (response.accepted() && response.engineResult().equals("tesSUCCESS")) {
           return SimplePaymentResponse.builder()
             .engineResult(response.engineResult())
-            .transactionHash(response.txJson().hash().get())
+            .transactionHash(response.transaction().hash())
             .build();
         }
         return SimplePaymentResponse.builder().engineResult(response.engineResult()).build();
@@ -69,24 +69,24 @@ public interface SimplePaymentClient {
       }
     }
 
-    private FeeInfoResponse getFeeInfo() throws RippledClientErrorException {
+    private FeeResult getFeeInfo() throws RippledClientErrorException {
       ImmutableJsonRpcRequest request = JsonRpcRequest.builder()
         .method(XrplMethods.FEE)
         .build();
-      return rippledClient.sendRequest(request, FeeInfoResponse.class);
+      return rippledClient.sendRequest(request, FeeResult.class);
     }
 
     private UnsignedInteger getAccountSequence(String account) throws RippledClientErrorException {
       JsonRpcRequest request = JsonRpcRequest.builder()
         .method(XrplMethods.ACCOUNT_INFO)
-        .addParams(AccountInfoRequestParam.of(account))
+        .addParams(AccountInfoRequestParams.of(account))
         .build();
-      return rippledClient.sendRequest(request, AccountInfoResponse.class).accountData().sequence();
+      return rippledClient.sendRequest(request, AccountInfoResult.class).accountData().sequence();
     }
 
     private String paymentRequest(Wallet wallet, Address destination, CurrencyAmount amount)
       throws JsonProcessingException, RippledClientErrorException {
-      FeeInfoResponse feeInfo = getFeeInfo();
+      FeeResult feeInfo = getFeeInfo();
       UnsignedInteger accountSequence = getAccountSequence(wallet.classicAddress());
 
       Payment unsignedPayment = Payment.builder()

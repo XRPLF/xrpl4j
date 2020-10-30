@@ -23,9 +23,9 @@ import com.ripple.xrpl4j.wallet.WalletFactory;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParam;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoResponse;
-import com.ripple.xrplj4.client.model.fees.FeeInfoResponse;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmitAccountSetResponse;
 import com.ripple.xrplj4.client.rippled.ImmutableJsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
@@ -81,7 +81,7 @@ public class AccountSetIT {
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResponse accountInfo = scanLedgerFor30Seconds(() -> this.getValidatedAccountInfo(wallet));
+    AccountInfoResult accountInfo = scanLedgerFor30Seconds(() -> this.getValidatedAccountInfo(wallet));
     assertThat(accountInfo.status()).isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -134,12 +134,12 @@ public class AccountSetIT {
     Optional<Boolean> hasAllRequiredFlags = this.scanLedgerFor30Seconds(() -> {
       // If the accountInfo has all the requested flags, return true. Otherwise return false.
       return this.getValidatedAccountInfo(wallet)
-          .filter(accountInfoResponse -> accountInfoResponse.validated())
-          .map(accountInfoResponse -> {
-            logger.info("AccountInfoResponse Flags: {}", accountInfoResponse.accountData().flags());
+          .filter(accountInfoResult -> accountInfoResult.validated())
+          .map(accountInfoResult -> {
+            logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
             // If the accountInfo has all the requested flags, return true. Otherwise return false.
             boolean allFlagsPresent = Arrays.stream(flags)
-                .allMatch(flag -> accountInfoResponse.accountData().flags().isSet(flag));
+                .allMatch(flag -> accountInfoResult.accountData().flags().isSet(flag));
             return allFlagsPresent ? Optional.of(true) : Optional.empty();
           });
     });
@@ -160,12 +160,12 @@ public class AccountSetIT {
     Optional<Boolean> hasAllRequiredFlags = this.scanLedgerFor30Seconds(() -> {
       // If the accountInfo has all the requested flags, return true. Otherwise return false.
       return this.getValidatedAccountInfo(wallet)
-          .filter(accountInfoResponse -> accountInfoResponse.validated())
-          .map(accountInfoResponse -> {
-            logger.info("AccountInfoResponse Flags: {}", accountInfoResponse.accountData().flags());
+          .filter(accountInfoResult -> accountInfoResult.validated())
+          .map(accountInfoResult -> {
+            logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
             // If the accountInfo has all the requested flags, return true. Otherwise return false.
             boolean noFlagsPresent = Arrays.stream(flags)
-                .allMatch(flag -> !accountInfoResponse.accountData().flags().isSet(flag));
+                .allMatch(flag -> !accountInfoResult.accountData().flags().isSet(flag));
             return noFlagsPresent ? Optional.of(true) : Optional.empty();
           });
     });
@@ -179,11 +179,11 @@ public class AccountSetIT {
   /**
    * Get the requested account from the most recently validated ledger, if the account exists.
    */
-  private Optional<AccountInfoResponse> getValidatedAccountInfo(final Wallet wallet) {
+  private Optional<AccountInfoResult> getValidatedAccountInfo(final Wallet wallet) {
     Objects.requireNonNull(wallet);
     try {
       return Optional.ofNullable(client.getAccountInfo(wallet.classicAddress(), "validated"))
-          .filter(accountInfoResponse -> accountInfoResponse.validated());
+          .filter(accountInfoResult -> accountInfoResult.validated());
     } catch (Exception | RippledClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -323,28 +323,28 @@ public class AccountSetIT {
       }
     }
 
-    private FeeInfoResponse getFeeInfo() throws RippledClientErrorException {
+    private FeeResult getFeeInfo() throws RippledClientErrorException {
       ImmutableJsonRpcRequest request = JsonRpcRequest.builder()
           .method(XrplMethods.FEE)
           .build();
-      return rippledClient.sendRequest(request, FeeInfoResponse.class);
+      return rippledClient.sendRequest(request, FeeResult.class);
     }
 
     private UnsignedInteger getAccountSequence(String account) throws RippledClientErrorException {
       JsonRpcRequest request = JsonRpcRequest.builder()
           .method(XrplMethods.ACCOUNT_INFO)
-          .addParams(AccountInfoRequestParam.of(account))
+          .addParams(AccountInfoRequestParams.of(account))
           .build();
-      return rippledClient.sendRequest(request, AccountInfoResponse.class).accountData().sequence();
+      return rippledClient.sendRequest(request, AccountInfoResult.class).accountData().sequence();
     }
 
-    private AccountInfoResponse getAccountInfo(String account, String ledger_index)
+    private AccountInfoResult getAccountInfo(String account, String ledger_index)
         throws RippledClientErrorException {
       JsonRpcRequest request = JsonRpcRequest.builder()
           .method(XrplMethods.ACCOUNT_INFO)
-          .addParams(AccountInfoRequestParam.builder().account(account).ledger_index(ledger_index).build())
+          .addParams(AccountInfoRequestParams.builder().account(account).ledger_index(ledger_index).build())
           .build();
-      return rippledClient.sendRequest(request, AccountInfoResponse.class);
+      return rippledClient.sendRequest(request, AccountInfoResult.class);
     }
 
     private String accountSetRequest(Wallet wallet, ImmutableAccountSet.Builder unsignedAccountSetRequestBuilder)
@@ -352,7 +352,7 @@ public class AccountSetIT {
       Objects.requireNonNull(wallet);
       Objects.requireNonNull(unsignedAccountSetRequestBuilder);
 
-      FeeInfoResponse feeInfo = getFeeInfo();
+      FeeResult feeInfo = getFeeInfo();
       UnsignedInteger accountSequence = getAccountSequence(wallet.classicAddress());
 
       AccountSet unsignedAccountSet = unsignedAccountSetRequestBuilder

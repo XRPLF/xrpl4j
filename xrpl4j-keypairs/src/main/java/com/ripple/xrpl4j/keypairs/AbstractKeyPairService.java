@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
+import com.ripple.xrpl4j.model.transactions.Address;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
@@ -32,14 +33,14 @@ public abstract class AbstractKeyPairService implements KeyPairService {
   }
 
   @Override
-  public String deriveAddress(String publicKey) {
+  public Address deriveAddress(String publicKey) {
     UnsignedByteArray publicKeyBytes = UnsignedByteArray.of(BaseEncoding.base16().decode(publicKey));
     return this.deriveAddress(publicKeyBytes);
   }
 
   @Override
-  public String deriveAddress(UnsignedByteArray publicKey) {
-    return addressCodec.encodeAccountId(computePublicKeyHash(publicKey));
+  public Address deriveAddress(UnsignedByteArray publicKey) {
+    return Address.of(addressCodec.encodeAccountId(computePublicKeyHash(publicKey)));
   }
 
   /**

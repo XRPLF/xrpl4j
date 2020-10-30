@@ -59,7 +59,7 @@ public interface RippledClient {
   default <ResultType extends JsonRpcResult> ResultType send(
     JsonRpcRequest request,
     Class<ResultType> resultType
-  ) throws RippledClientErrorException, JsonProcessingException {
+  ) throws RippledClientErrorException {
     JavaType javaType = objectMapper.constructType(resultType);
     return send(request, javaType);
   }
@@ -67,11 +67,15 @@ public interface RippledClient {
   default <ResultType extends JsonRpcResult> ResultType send(
     JsonRpcRequest request,
     JavaType resultType
-  ) throws RippledClientErrorException, JsonProcessingException {
+  ) throws RippledClientErrorException {
     JsonNode response = postRpcRequest(request);
     JsonNode result = response.get("result");
     checkForError(response);
-    return objectMapper.readValue(result.asText(), resultType);
+    try {
+      return objectMapper.readValue(result.asText(), resultType);
+    } catch (JsonProcessingException e) {
+      throw new RippledClientErrorException(e);
+    }
   }
 
   default void checkForError(JsonNode response) throws RippledClientErrorException {

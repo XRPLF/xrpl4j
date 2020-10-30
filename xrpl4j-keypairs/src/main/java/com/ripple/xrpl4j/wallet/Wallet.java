@@ -1,5 +1,6 @@
 package com.ripple.xrpl4j.wallet;
 
+import com.ripple.xrpl4j.model.transactions.Address;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -30,7 +31,7 @@ public interface Wallet {
    * The XRPL address of this wallet, in the Classic Address form.
    */
   // TODO: Create wrapper type.
-  String classicAddress();
+  Address classicAddress();
 
   /**
    * The XRPL address of this wallet, in the X-Address form.

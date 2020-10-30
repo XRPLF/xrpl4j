@@ -30,10 +30,10 @@ public class XrplClient {
   private final RippledClient rippledClient;
   private final KeyPairService keyPairService;
 
-  public XrplClient() {
+  public XrplClient(HttpUrl rippledUrl) {
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = new XrplBinaryCodec();
-    this.rippledClient = RippledClient.construct(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
+    this.rippledClient = RippledClient.construct(rippledUrl);
     this.keyPairService = DefaultKeyPairService.getInstance();
   }
 
@@ -41,17 +41,21 @@ public class XrplClient {
     Wallet wallet,
     TxnType unsignedTransaction,
     Class<TxnType> transactionType
-  ) throws JsonProcessingException, RippledClientErrorException {
-    String signedTransaction = serializeAndSignTransaction(wallet, unsignedTransaction);
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SUBMIT)
-      .addParams(SubmissionRequestParams.of(signedTransaction))
-      .build();
-    JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmissionResult.class, transactionType);
-    return rippledClient.send(request, resultType);
+  ) throws RippledClientErrorException {
+    try {
+      String signedTransaction = serializeAndSignTransaction(wallet, unsignedTransaction);
+      JsonRpcRequest request = JsonRpcRequest.builder()
+        .method(XrplMethods.SUBMIT)
+        .addParams(SubmissionRequestParams.of(signedTransaction))
+        .build();
+      JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmissionResult.class, transactionType);
+      return rippledClient.send(request, resultType);
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
-  public FeeResult fee() throws RippledClientErrorException, JsonProcessingException {
+  public FeeResult fee() throws RippledClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.FEE)
       .build();
@@ -59,21 +63,22 @@ public class XrplClient {
     return rippledClient.send(request, FeeResult.class);
   }
 
-  public AccountInfoResult accountInfo(Address classicAddress, boolean strict, boolean queue, boolean signerLists) throws RippledClientErrorException, JsonProcessingException {
-    return accountInfo(classicAddress, null, strict, queue, signerLists);
+  public AccountInfoResult accountInfo(Address classicAddress) throws RippledClientErrorException {
+    return accountInfo(AccountInfoRequestParams.of(classicAddress));
   }
 
-  public AccountInfoResult accountInfo(Address classicAddress, String ledgerHash, boolean strict, boolean queue, boolean signerLists) throws RippledClientErrorException, JsonProcessingException {
+  public AccountInfoResult accountInfo(Address classicAddress, String ledgerHash) throws RippledClientErrorException {
+    return accountInfo(AccountInfoRequestParams.builder()
+      .account(classicAddress)
+      .ledgerHash(ledgerHash)
+      .build()
+    );
+  }
+
+  private AccountInfoResult accountInfo(AccountInfoRequestParams params) throws RippledClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_INFO)
-      .addParams(AccountInfoRequestParams.builder()
-        .account(classicAddress)
-        .ledgerHash(ledgerHash)
-        .strict(strict)
-        .queue(queue)
-        .signerLists(signerLists)
-        .build()
-      )
+      .addParams(params)
       .build();
 
     return rippledClient.send(request, AccountInfoResult.class);

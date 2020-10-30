@@ -3,6 +3,7 @@ package com.ripple.xrpl4j.wallet;
 import com.ripple.xrpl4j.codec.addresses.AddressCodec;
 import com.ripple.xrpl4j.keypairs.KeyPair;
 import com.ripple.xrpl4j.keypairs.KeyPairService;
+import com.ripple.xrpl4j.model.transactions.Address;
 
 public abstract class AbstractWalletFactory implements WalletFactory {
 
@@ -28,13 +29,13 @@ public abstract class AbstractWalletFactory implements WalletFactory {
 
   @Override
   public Wallet fromKeyPair(KeyPair keyPair, boolean isTest) {
-    String classicAddress = keyPairService.deriveAddress(keyPair.publicKey());
+    Address classicAddress = keyPairService.deriveAddress(keyPair.publicKey());
     return Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
       .isTest(isTest)
       .classicAddress(classicAddress)
-      .xAddress(addressCodec.classicAddressToXAddress(classicAddress, isTest))
+      .xAddress(addressCodec.classicAddressToXAddress(classicAddress.value(), isTest))
       .build();
   }
 

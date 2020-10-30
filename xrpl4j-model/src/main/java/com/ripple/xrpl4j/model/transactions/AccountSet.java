@@ -35,7 +35,7 @@ public interface AccountSet extends Transaction<TransactionFlags> {
   default TransactionFlags flags() {
     return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
   }
-  
+
   /**
    * Unique identifier of a flag to disable for this account.
    * <p>
@@ -90,13 +90,6 @@ public interface AccountSet extends Transaction<TransactionFlags> {
    */
   @JsonProperty("TickSize")
   Optional<UnsignedInteger> tickSize();
-
-  /**
-   * Unique transaction hash/id. Set by rippled. Only present on payments that have been applied to the ledger.
-   */
-  // TODO: Push up to Transaction.
-  @JsonProperty("hash")
-  Optional<String> hash();
 
   @Value.Check
   default void checkEmailHashLength() {

@@ -33,6 +33,10 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ripple</groupId>
+      <artifactId>xrpl4j-model</artifactId>
+    </dependency>
   </dependencies>
 
 

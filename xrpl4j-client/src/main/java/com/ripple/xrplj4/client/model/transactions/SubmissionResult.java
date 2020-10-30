@@ -10,6 +10,8 @@ import com.ripple.xrplj4.client.model.JsonRpcResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcResponse;
 import org.immutables.value.Value.Immutable;
 
+import java.util.Optional;
+
 @Immutable
 @JsonSerialize(as = ImmutableSubmissionResult.class)
 @JsonDeserialize(as = ImmutableSubmissionResult.class)
@@ -20,10 +22,10 @@ public interface SubmissionResult<T extends Transaction<? extends Flags.Transact
   }
 
   @JsonProperty("engine_result")
-  String engineResult();
+  Optional<String> engineResult();
 
   @JsonProperty("engine_result_message")
-  String engineResultMessage();
+  Optional<String> engineResultMessage();
 
   @JsonProperty("tx_blob")
   String transactionBlob();
@@ -53,5 +55,6 @@ public interface SubmissionResult<T extends Transaction<? extends Flags.Transact
   @JsonProperty("validated_ledger_index")
   UnsignedInteger validatedLedgerIndex();
 
+  Optional<String> error();
 
 }

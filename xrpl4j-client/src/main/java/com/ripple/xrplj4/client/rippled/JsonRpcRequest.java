@@ -7,7 +7,7 @@ import org.immutables.value.Value.Immutable;
 import java.util.List;
 
 /**
- * Generic JSON RPC request object.
+ * Generic rippld JSON RPC request object.
  */
 @Immutable
 @JsonSerialize(as = ImmutableJsonRpcRequest.class)
@@ -18,8 +18,15 @@ public interface JsonRpcRequest {
     return ImmutableJsonRpcRequest.builder();
   }
 
+  /**
+   * The name of the <a href="https://xrpl.org/public-rippled-methods.html">API method</a>.
+   */
   String method();
 
-  List<JsonRpcRequestParam> params();
+  /**
+   * A one-item {@link List} containing a {@link JsonRpcRequestParams} with the parameters to this method.
+   * You may omit this field if the method does not require any parameters.
+   */
+  List<JsonRpcRequestParams> params();
 
 }

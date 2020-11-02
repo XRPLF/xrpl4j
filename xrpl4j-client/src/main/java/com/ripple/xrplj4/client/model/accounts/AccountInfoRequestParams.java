@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ripple.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrplj4.client.rippled.JsonRpcRequestParam;
+import com.ripple.xrplj4.client.rippled.JsonRpcRequestParams;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountInfoRequestParams.class)
 @JsonDeserialize(as = ImmutableAccountInfoRequestParams.class)
-public interface AccountInfoRequestParams extends JsonRpcRequestParam {
+public interface AccountInfoRequestParams extends JsonRpcRequestParams {
 
   static ImmutableAccountInfoRequestParams.Builder builder() {
     return ImmutableAccountInfoRequestParams.builder();

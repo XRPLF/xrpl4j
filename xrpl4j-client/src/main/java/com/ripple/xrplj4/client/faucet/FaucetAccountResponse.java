@@ -16,22 +16,16 @@ public interface FaucetAccountResponse {
 
   /**
    * XRPL account that was created on testnet.
-   *
-   * @return
    */
   FaucetAccount account();
 
   /**
    * Amount the faucet sent to the account.
-   *
-   * @return
    */
   long amount();
 
   /**
    * Current balance of the account. Only sent back for newly generated accounts.
-   *
-   * @return
    */
   OptionalLong balance();
 

@@ -32,7 +32,7 @@ public interface RippledClient {
    * Constructs a new client for the given url.
    *
    * @param rippledUrl url for the faucet server.
-   * @return
+   * @return A {@link RippledClient} that can make request to {@code rippledUrl}
    */
   static RippledClient construct(final HttpUrl rippledUrl) {
     Objects.requireNonNull(rippledUrl);
@@ -45,9 +45,9 @@ public interface RippledClient {
   }
 
   /**
-   * Request a new account to be created and funded by the test faucet.
-   *
-   * @return
+   * Send a POST request to the rippled server with {@code rpcRequest} in the request body.
+   * @param rpcRequest
+   * @return A {@link JsonNode} which can be manually parsed containing the response.
    */
   @RequestLine("POST /")
   @Headers({
@@ -56,6 +56,16 @@ public interface RippledClient {
   })
   JsonNode postRpcRequest(JsonRpcRequest rpcRequest);
 
+  /**
+   * Send a given request to rippled.
+   *
+   * @param request The {@link JsonRpcRequest} to send to the server.
+   * @param resultType The type of {@link JsonRpcResult} that should be returned.
+   * @param <ResultType> The extension of {@link JsonRpcResult} corresponding to the request method.
+   * @return The {@link ResultType} representing the result of the request.
+   * @throws RippledClientErrorException If rippled returns an error message, or if the response could not be
+   *                                     deserialized to the provided {@link JsonRpcRequest} type.
+   */
   default <ResultType extends JsonRpcResult> ResultType send(
     JsonRpcRequest request,
     Class<ResultType> resultType
@@ -64,6 +74,19 @@ public interface RippledClient {
     return send(request, javaType);
   }
 
+  /**
+   * Send a given request to rippled. Unlike {@link RippledClient#send(JsonRpcRequest, Class)}, this
+   * override requires a {@link JavaType} as the resultType, which can be useful when expecting a {@link JsonRpcResult}
+   * with type parameters. In this case, you can use an {@link ObjectMapper}'s {@link com.fasterxml.jackson.databind.type.TypeFactory}
+   * to construct parameterized types.
+   *
+   * @param request The {@link JsonRpcRequest} to send to the server.
+   * @param resultType The type of {@link JsonRpcResult} that should be returned, converted to a {@link JavaType}.
+   * @param <ResultType> The extension of {@link JsonRpcResult} corresponding to the request method.
+   * @return The {@link ResultType} representing the result of the request.
+   * @throws RippledClientErrorException If rippled returns an error message, or if the response could not be
+   *                                     deserialized to the provided {@link JsonRpcRequest} type.
+   */
   default <ResultType extends JsonRpcResult> ResultType send(
     JsonRpcRequest request,
     JavaType resultType
@@ -78,6 +101,12 @@ public interface RippledClient {
     }
   }
 
+  /**
+   * Parse the response JSON to detect a possible error response message.
+   *
+   * @param response The {@link JsonNode} containing the JSON response from rippled.
+   * @throws RippledClientErrorException If rippled returns an error message.
+   */
   default void checkForError(JsonNode response) throws RippledClientErrorException {
     if (response.has("result")) {
       JsonNode result = response.get("result");

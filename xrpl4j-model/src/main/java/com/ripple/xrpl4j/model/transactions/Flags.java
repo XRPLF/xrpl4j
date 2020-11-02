@@ -466,4 +466,41 @@ public class Flags {
       }
     }
   }
+
+  public static class SignerListFlags extends Flags {
+
+    public static final SignerListFlags UNSET = new SignerListFlags(0);
+
+    /**
+     * If this flag is enabled, this SignerList counts as one item for purposes of the owner reserve.
+     * Otherwise, this list counts as N+2 items, where N is the number of signers it contains. This flag is
+     * automatically enabled if you add or update a signer list after the MultiSignReserve amendment is enabled.
+     */
+    public static final SignerListFlags ONE_OWNER_COUNT = new SignerListFlags(0x00010000);
+
+    private SignerListFlags(long value) {
+      super(value);
+    }
+
+    private static SignerListFlags of(boolean lsfOneOwnerCount) {
+      return new SignerListFlags(Flags.of(lsfOneOwnerCount ? SignerListFlags.ONE_OWNER_COUNT : UNSET).getValue());
+    }
+
+    public boolean lsfOneOwnerCount() {
+      return this.isSet(SignerListFlags.ONE_OWNER_COUNT);
+    }
+    public static class Builder {
+
+      boolean lsfOneOwnerCount = false;
+
+      public SignerListFlags.Builder lsfOneOwnerCount(boolean value) {
+        this.lsfOneOwnerCount = value;
+        return this;
+      }
+      public SignerListFlags build() {
+        return SignerListFlags.of(lsfOneOwnerCount);
+      }
+
+    }
+  }
 }

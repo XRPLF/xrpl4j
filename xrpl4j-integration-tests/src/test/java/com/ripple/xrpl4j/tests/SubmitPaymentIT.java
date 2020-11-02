@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
-import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
@@ -32,7 +31,6 @@ public class SubmitPaymentIT {
 
   public static final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
   public static final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
-  ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
   public void sendPayment() throws RippledClientErrorException {

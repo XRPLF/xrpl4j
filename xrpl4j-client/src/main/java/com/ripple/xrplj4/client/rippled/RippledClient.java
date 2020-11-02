@@ -46,7 +46,7 @@ public interface RippledClient {
 
   /**
    * Send a POST request to the rippled server with {@code rpcRequest} in the request body.
-   * @param rpcRequest
+   * @param rpcRequest A rippled JSON RPC API request object.
    * @return A {@link JsonNode} which can be manually parsed containing the response.
    */
   @RequestLine("POST /")

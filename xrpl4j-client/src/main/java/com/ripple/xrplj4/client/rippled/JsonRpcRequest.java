@@ -7,7 +7,7 @@ import org.immutables.value.Value.Immutable;
 import java.util.List;
 
 /**
- * Generic rippld JSON RPC request object.
+ * Generic rippled JSON RPC request object.
  */
 @Immutable
 @JsonSerialize(as = ImmutableJsonRpcRequest.class)

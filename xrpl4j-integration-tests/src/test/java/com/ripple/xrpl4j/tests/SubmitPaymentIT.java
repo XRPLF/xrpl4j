@@ -75,19 +75,19 @@ public class SubmitPaymentIT {
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws RippledClientErrorException {
     Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
-    System.out.println("Generated source testnet wallet with address " + senderWallet.xAddress());
+    logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
 
     SeedWalletGenerationResult destinationResult = walletFactory.randomWallet(true);
-    System.out.println("Generated destination testnet wallet with address " + destinationResult.wallet().xAddress());
+    logger.info("Generated destination testnet wallet with address " + destinationResult.wallet().xAddress());
 
     FaucetAccountResponse fundResponse =
       faucetClient.fundAccount(FundAccountRequest.of(senderWallet.classicAddress().value()));
 
-    System.out.println("Source account has been funded");
+    logger.info("Source account has been funded");
 
     assertThat(fundResponse.amount()).isGreaterThan(0);
 
-    System.out.println("Destination account has been funded");
+    logger.info("Destination account has been funded");
 
     FaucetAccountResponse fundDestinationResponse =
       faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress().value()));

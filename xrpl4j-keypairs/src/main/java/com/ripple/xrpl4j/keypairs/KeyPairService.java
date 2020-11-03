@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.keypairs;
 
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
+import com.ripple.xrpl4j.model.transactions.Address;
 
 /**
  * Interface of a service that can perform the crypto operations necessary to create a wallet,
@@ -74,7 +75,7 @@ public interface KeyPairService {
    * @param publicKey The hexadecimal encoded public key of the account.
    * @return A Base58Check encoded XRPL address in Classic Address form.
    */
-  String deriveAddress(String publicKey);
+  Address deriveAddress(String publicKey);
 
   /**
    * Derive an XRPL address from a public key.
@@ -82,6 +83,6 @@ public interface KeyPairService {
    * @param publicKey The public key of the account.
    * @return A Base58Check encoded XRPL address in Classic Address form.
    */
-  String deriveAddress(UnsignedByteArray publicKey);
+  Address deriveAddress(UnsignedByteArray publicKey);
 
 }

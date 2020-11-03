@@ -2,96 +2,110 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ripple.xrpl4j.model.transactions.Address;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
+import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrpl4j.wallet.WalletFactory;
+import com.ripple.xrplj4.client.XrplClient;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
-import com.ripple.xrplj4.client.payment.SimplePaymentClient;
-import com.ripple.xrplj4.client.payment.SimplePaymentRequest;
-import com.ripple.xrplj4.client.payment.SimplePaymentResponse;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrplj4.client.model.fees.FeeResult;
+import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
+import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SubmitPaymentIT {
 
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
   public static final FaucetClient faucetClient =
       FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
 
-  public static final SimplePaymentClient paymentClient = new SimplePaymentClient.Impl();
-
+  public static final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
   public static final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   @Test
-  public void sendPayment() {
+  public void sendPayment() throws RippledClientErrorException {
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    System.out.println("Generated source testnet wallet with address " + seedResult.wallet().xAddress());
+    logger.info("Generated source testnet wallet with address " + seedResult.wallet().xAddress());
 
     SeedWalletGenerationResult destinationResult = walletFactory.randomWallet(true);
-    System.out.println("Generated destination testnet wallet with address " + seedResult.wallet().xAddress());
+    logger.info("Generated destination testnet wallet with address " + seedResult.wallet().xAddress());
 
     FaucetAccountResponse fundResponse =
-        faucetClient.fundAccount(FundAccountRequest.of(seedResult.wallet().classicAddress()));
+        faucetClient.fundAccount(FundAccountRequest.of(seedResult.wallet().classicAddress().value()));
 
-    System.out.println("Source account has been funded");
+    logger.info("Source account has been funded");
 
     assertThat(fundResponse.amount()).isGreaterThan(0);
 
-    System.out.println("Destination account has been funded");
+    logger.info("Destination account has been funded");
 
     FaucetAccountResponse fundDestinationResponse =
-        faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress()));
+        faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress().value()));
 
     assertThat(fundDestinationResponse.amount()).isGreaterThan(0);
 
-    SimplePaymentRequest request = SimplePaymentRequest.builder()
-        .amount(XrpCurrencyAmount.of("12345"))
-        .wallet(seedResult.wallet())
-        .destinationAddress(Address.of(destinationResult.wallet().classicAddress()))
-        .build();
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult accountInfo = xrplClient.accountInfo(seedResult.wallet().classicAddress());
+    Payment payment = Payment.builder()
+      .account(seedResult.wallet().classicAddress())
+      .fee(feeResult.drops().minimumFee())
+      .sequence(accountInfo.accountData().sequence())
+      .destination(destinationResult.wallet().classicAddress())
+      .amount(XrpCurrencyAmount.of("12345"))
+      .signingPublicKey(seedResult.wallet().publicKey())
+      .build();
 
-    SimplePaymentResponse response = paymentClient.submit(request);
-    System.out.println("Payment successful: https://testnet.xrpl.org/transactions/" + response.transactionHash().get());
-
-    assertThat(response.engineResult()).isNotEmpty();
+    SubmissionResult<Payment> result = xrplClient.submit(seedResult.wallet(), payment, Payment.class);
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
   }
 
   @Test
-  public void sendPaymentFromSecp256k1Wallet() {
+  public void sendPaymentFromSecp256k1Wallet() throws RippledClientErrorException {
     Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
-    System.out.println("Generated source testnet wallet with address " + senderWallet.xAddress());
+    logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
 
     SeedWalletGenerationResult destinationResult = walletFactory.randomWallet(true);
-    System.out.println("Generated destination testnet wallet with address " + destinationResult.wallet().xAddress());
+    logger.info("Generated destination testnet wallet with address " + destinationResult.wallet().xAddress());
 
     FaucetAccountResponse fundResponse =
-      faucetClient.fundAccount(FundAccountRequest.of(senderWallet.classicAddress()));
+      faucetClient.fundAccount(FundAccountRequest.of(senderWallet.classicAddress().value()));
 
-    System.out.println("Source account has been funded");
+    logger.info("Source account has been funded");
 
     assertThat(fundResponse.amount()).isGreaterThan(0);
 
-    System.out.println("Destination account has been funded");
+    logger.info("Destination account has been funded");
 
     FaucetAccountResponse fundDestinationResponse =
-      faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress()));
+      faucetClient.fundAccount(FundAccountRequest.of(destinationResult.wallet().classicAddress().value()));
 
     assertThat(fundDestinationResponse.amount()).isGreaterThan(0);
 
-    SimplePaymentRequest request = SimplePaymentRequest.builder()
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult accountInfo = xrplClient.accountInfo(senderWallet.classicAddress());
+    Payment payment = Payment.builder()
+      .account(senderWallet.classicAddress())
+      .fee(feeResult.drops().minimumFee())
+      .sequence(accountInfo.accountData().sequence())
+      .destination(destinationResult.wallet().classicAddress())
       .amount(XrpCurrencyAmount.of("12345"))
-      .wallet(senderWallet)
-      .destinationAddress(Address.of(destinationResult.wallet().classicAddress()))
+      .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SimplePaymentResponse response = paymentClient.submit(request);
-    System.out.println("Payment successful: https://testnet.xrpl.org/transactions/" + response.transactionHash().get());
-
-    assertThat(response.engineResult()).isNotEmpty();
+    SubmissionResult<Payment> result = xrplClient.submit(senderWallet, payment, Payment.class);
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
   }
 
 }

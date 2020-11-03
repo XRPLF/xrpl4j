@@ -1,18 +1,22 @@
 package com.ripple.xrplj4.client.rippled;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ripple.xrplj4.client.model.JsonRpcResult;
 import org.immutables.value.Value.Immutable;
 
 /**
  * Generic JSON RPC response object.
+ * @param <ResultType> The type of {@link JsonRpcResponse#result()}, which varies based on API method.
  */
 @Immutable
 @JsonSerialize(as = ImmutableJsonRpcResponse.class)
 @JsonDeserialize(as = ImmutableJsonRpcResponse.class)
-public interface JsonRpcResponse {
+public interface JsonRpcResponse<ResultType extends JsonRpcResult> {
 
-  JsonNode result();
+  /**
+   * The result of a request to the rippled JSON RPC API. Contents vary depending on the API method.
+   */
+  ResultType result();
 
 }

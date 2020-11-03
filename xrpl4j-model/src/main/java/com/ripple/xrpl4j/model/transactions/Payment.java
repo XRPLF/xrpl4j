@@ -93,10 +93,4 @@ public interface Payment extends Transaction<PaymentFlags> {
   @JsonProperty("DeliverMin")
   Optional<CurrencyAmount> deliverMin();
 
-  /**
-   * Unique transaction hash/id. Set by rippled. Only present on payments that have been applied to the ledger.
-   */
-  @JsonProperty("hash")
-  Optional<String> hash();
-
 }

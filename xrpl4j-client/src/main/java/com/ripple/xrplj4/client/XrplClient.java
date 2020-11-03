@@ -25,20 +25,22 @@ import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
-import com.ripple.xrplj4.client.rippled.RippledClient;
+import com.ripple.xrplj4.client.rippled.JsonRpcClient;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
 import com.ripple.xrplj4.client.rippled.XrplMethods;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
 
 /**
- * A rippled client which communicates via the rippled JSON RPC API.
+ * A client which wraps a rippled network client and is responsible for higher order functionality such as signing
+ * and serializing transactions, as well as hiding certain implementation details from the public API such as JSON
+ * RPC request object creation.
  */
 public class XrplClient {
 
   private final ObjectMapper objectMapper;
   private final XrplBinaryCodec binaryCodec;
-  private final RippledClient rippledClient;
+  private final JsonRpcClient jsonRpcClient;
   private final KeyPairService keyPairService;
 
   /**
@@ -49,7 +51,7 @@ public class XrplClient {
   public XrplClient(HttpUrl rippledUrl) {
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = new XrplBinaryCodec();
-    this.rippledClient = RippledClient.construct(rippledUrl);
+    this.jsonRpcClient = JsonRpcClient.construct(rippledUrl);
     this.keyPairService = DefaultKeyPairService.getInstance();
   }
 
@@ -82,7 +84,7 @@ public class XrplClient {
         .addParams(SubmissionRequestParams.of(signedTransaction))
         .build();
       JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmissionResult.class, transactionType);
-      return rippledClient.send(request, resultType);
+      return jsonRpcClient.send(request, resultType);
     } catch (JsonProcessingException e) {
       throw new IllegalStateException(e);
     }
@@ -100,7 +102,7 @@ public class XrplClient {
       .method(XrplMethods.FEE)
       .build();
 
-    return rippledClient.send(request, FeeResult.class);
+    return jsonRpcClient.send(request, FeeResult.class);
   }
 
   /**
@@ -141,7 +143,7 @@ public class XrplClient {
       .addParams(params)
       .build();
 
-    return rippledClient.send(request, AccountInfoResult.class);
+    return jsonRpcClient.send(request, AccountInfoResult.class);
   }
 
   /**

@@ -18,9 +18,11 @@ import okhttp3.HttpUrl;
 import java.util.Objects;
 
 /**
- * A feign HTTP client for interacting with the rippled JSON RPC API.
+ * A feign HTTP client for interacting with the rippled JSON RPC API. This client is strictly responsible for
+ * making network calls and deserializing responses. All higher order functionality such as signing and serialization
+ * should be implemented in a wrapper class.
  */
-public interface RippledClient {
+public interface JsonRpcClient {
 
   String HEADER_ACCEPT = "Accept";
   String HEADER_CONTENT_TYPE = "Content-Type";
@@ -32,16 +34,16 @@ public interface RippledClient {
    * Constructs a new client for the given url.
    *
    * @param rippledUrl url for the faucet server.
-   * @return A {@link RippledClient} that can make request to {@code rippledUrl}
+   * @return A {@link JsonRpcClient} that can make request to {@code rippledUrl}
    */
-  static RippledClient construct(final HttpUrl rippledUrl) {
+  static JsonRpcClient construct(final HttpUrl rippledUrl) {
     Objects.requireNonNull(rippledUrl);
 
     return Feign.builder()
         .encoder(new JacksonEncoder(objectMapper))
         .decode404()
         .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-        .target(RippledClient.class, rippledUrl.toString());
+        .target(JsonRpcClient.class, rippledUrl.toString());
   }
 
   /**
@@ -75,7 +77,7 @@ public interface RippledClient {
   }
 
   /**
-   * Send a given request to rippled. Unlike {@link RippledClient#send(JsonRpcRequest, Class)}, this
+   * Send a given request to rippled. Unlike {@link JsonRpcClient#send(JsonRpcRequest, Class)}, this
    * override requires a {@link JavaType} as the resultType, which can be useful when expecting a {@link JsonRpcResult}
    * with type parameters. In this case, you can use an {@link ObjectMapper}'s {@link com.fasterxml.jackson.databind.type.TypeFactory}
    * to construct parameterized types.

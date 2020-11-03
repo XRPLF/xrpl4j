@@ -1,19 +1,24 @@
 package com.ripple.xrpl4j.tests;
 
+import static org.awaitility.Awaitility.given;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+
+import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
-import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrpl4j.wallet.WalletFactory;
 import com.ripple.xrplj4.client.XrplClient;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
 import okhttp3.HttpUrl;
+import org.awaitility.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 
 public abstract class AbstractIT {
 
@@ -30,15 +35,37 @@ public abstract class AbstractIT {
   //////////////////////
 
   /**
-   * Get the requested account from the most recently validated ledger, if the account exists.
+   * Poll the ledger for the account until the given {@link Predicate} on the resulting {@link AccountInfoResult}
+   * is true. This can be useful for validating account changes that may not take effect immediately.
+   *
+   * @param classicAddress The classic XRP address of the account to scan.
+   * @param condition
+   * @return
    */
-  protected Optional<AccountInfoResult> getValidatedAccountInfo(final Wallet wallet) {
-    Objects.requireNonNull(wallet);
-    try {
-      return Optional.ofNullable(xrplClient.accountInfo(wallet.classicAddress(), "validated"));
-    } catch (Exception | RippledClientErrorException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
+  protected boolean scanAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
+    return given().atMost(Duration.ONE_MINUTE.divide(2)).await().until(() -> {
+      AccountInfoResult validatedAccountInfo = getValidatedAccountInfo(classicAddress);
+      return condition.test(validatedAccountInfo);
+    }, is(true));
+  }
+
+  /**
+   * Poll the ledger for the account using an {@link org.awaitility.Awaitility} for 30 seconds, until the account
+   * exists.
+   * @param classicAddress
+   */
+  protected AccountInfoResult getValidatedAccountInfo(final Address classicAddress) {
+    Objects.requireNonNull(classicAddress);
+    return given().atMost(Duration.ONE_MINUTE.divide(2))
+      .ignoreException(RuntimeException.class)
+      .await().until(() -> {
+      try {
+        return xrplClient.accountInfo(classicAddress, "validated");
+      } catch (Exception | RippledClientErrorException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+    }, is(notNullValue()));
+
   }
 
 }

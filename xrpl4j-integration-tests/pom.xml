@@ -57,6 +57,10 @@
       <artifactId>awaitility-proxy</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>java-hamcrest</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

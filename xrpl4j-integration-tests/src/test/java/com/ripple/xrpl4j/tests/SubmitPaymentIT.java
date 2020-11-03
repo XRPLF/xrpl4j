@@ -23,14 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubmitPaymentIT {
-
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  public static final FaucetClient faucetClient =
-      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  public static final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
-  public static final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPayment() throws RippledClientErrorException {

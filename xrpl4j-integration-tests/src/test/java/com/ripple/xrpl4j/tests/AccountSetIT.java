@@ -1,6 +1,10 @@
 package com.ripple.xrpl4j.tests;
 
+import static com.ripple.xrpl4j.tests.OptionalMatchers.isPresent;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.given;
+import static org.awaitility.Awaitility.with;
 
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
@@ -18,6 +22,7 @@ import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
 import okhttp3.HttpUrl;
+import org.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +38,7 @@ import java.util.function.Supplier;
  *
  * @see "https://xrpl.org/accountset.html"
  */
-public class AccountSetIT {
-
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  public final FaucetClient faucetClient =
-      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  public final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
-  public final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+public class AccountSetIT extends AbstractIT {
 
   // TODO: Make an IT that sets all flags, and unsets only 1, and validate that only that 1 single flag was cleared.
 
@@ -63,7 +60,12 @@ public class AccountSetIT {
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = scanLedgerFor30Seconds(() -> this.getValidatedAccountInfo(wallet));
+
+    AccountInfoResult accountInfo = given()
+      .ignoreException(RuntimeException.class)
+      .await().until(() -> this.getValidatedAccountInfo(wallet), isPresent())
+      .get();
+
     assertThat(accountInfo.status()).isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -117,96 +119,35 @@ public class AccountSetIT {
     Objects.requireNonNull(flags);
 
     // If all flags are not present, return Optional.empty so the scanner will keep trying.
-    return this.scanLedgerFor30Seconds(() -> {
-      // If the accountInfo has all the requested flags, return true. Otherwise return false.
-      return this.getValidatedAccountInfo(wallet)
-          .filter(AccountInfoResult::validated)
-          .map(accountInfoResult -> {
-            logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-            // If the accountInfo has all the requested flags, return true. Otherwise return false.
-            boolean allFlagsPresent = Arrays.stream(flags)
-                .allMatch(flag -> accountInfoResult.accountData().flags().isSet(flag));
-            return allFlagsPresent ? Optional.of(true) : Optional.empty();
-          });
-    });
+    // If the accountInfo has all the requested flags, return true. Otherwise return false.
+    return this.getValidatedAccountInfo(wallet)
+      .map(accountInfoResult -> {
+        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+        // If the accountInfo has all the requested flags, return true. Otherwise return false.
+        boolean allFlagsPresent = Arrays.stream(flags)
+          .allMatch(flag -> accountInfoResult.accountData().flags().isSet(flag));
+        return allFlagsPresent ? Optional.of(true) : Optional.<Boolean>empty();
+      }).orElse(Optional.empty());
   }
 
   /**
    * Scan the ledger for the requested account until the requested flags show up in a validated version of the account.
    * If the requested form of the account doesn't show up after 30 seconds, throw an exception.
-   *
-   * @return
    */
   private Optional<Boolean> validatedAccountHasNotFlags(final Wallet wallet, final AccountRootFlags... flags) {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(flags);
 
     // If all flags are not present, return Optional.empty so the scanner will keep trying.
-    return this.scanLedgerFor30Seconds(() -> {
-      // If the accountInfo has all the requested flags, return true. Otherwise return false.
-      return this.getValidatedAccountInfo(wallet)
-          .filter(AccountInfoResult::validated)
-          .map(accountInfoResult -> {
-            logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-            // If the accountInfo has all the requested flags, return true. Otherwise return false.
-            boolean noFlagsPresent = Arrays.stream(flags)
-                .noneMatch(flag -> accountInfoResult.accountData().flags().isSet(flag));
-            return noFlagsPresent ? Optional.of(true) : Optional.empty();
-          });
-    });
-  }
-
-  //////////////////////
-  // Ledger Helpers
-  //////////////////////
-
-  /**
-   * Get the requested account from the most recently validated ledger, if the account exists.
-   */
-  private Optional<AccountInfoResult> getValidatedAccountInfo(final Wallet wallet) {
-    Objects.requireNonNull(wallet);
-    try {
-      return Optional.ofNullable(xrplClient.accountInfo(wallet.classicAddress(), "validated"))
-          .filter(AccountInfoResult::validated);
-    } catch (Exception | RippledClientErrorException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-  }
-
-  /**
-   * Scan the ledger by calling the {@code supplier} until a value becomes present. If a value never becomes present
-   * after 30 seconds, then throw an exception.
-   *
-   * @param supplier
-   * @param <T>
-   * @return
-   */
-  private <T> T scanLedgerFor30Seconds(final Supplier<Optional<T>> supplier) {
-    Objects.requireNonNull(supplier);
-    for (int i = 0; i < 30; i++) {
-      try {
-        Optional<T> value = supplier.get();
-        if (value.isPresent()) {
-          return value.get();
-        } else {
-          try {
-            Thread.sleep(1000);
-          } catch (InterruptedException e1) {
-            throw new RuntimeException(e1.getMessage(), e1);
-          }
-        }
-      } catch (Exception e) {
-        // The rippleclient throws an exception if an account is not found.
-        logger.warn(e.getMessage());
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e1) {
-          throw new RuntimeException(e1.getMessage(), e1);
-        }
-      }
-    }
-
-    throw new RuntimeException("Unable to obtain value from XRPL before 30s timeout.");
+    // If the accountInfo has all the requested flags, return true. Otherwise return false.
+    return this.getValidatedAccountInfo(wallet)
+      .map(accountInfoResult -> {
+        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+        // If the accountInfo has all the requested flags, return true. Otherwise return false.
+        boolean noFlagsPresent = Arrays.stream(flags)
+          .noneMatch(flag -> accountInfoResult.accountData().flags().isSet(flag));
+        return noFlagsPresent ? Optional.of(true) : Optional.<Boolean>empty();
+      }).orElse(Optional.empty());
   }
 
   private void assertSetFlag(
@@ -235,9 +176,13 @@ public class AccountSetIT {
     /////////////////////////
     // Validate Account State
     // Returns true, or else throws...
-    boolean result = scanLedgerFor30Seconds(
-        () -> validatedAccountHasFlags(wallet, accountRootFlag)
-    );
+    boolean result = given().ignoreException(RuntimeException.class)
+      .await()
+      .atMost(Duration.ONE_MINUTE)
+      .until(
+        () -> validatedAccountHasFlags(wallet, accountRootFlag),
+        isPresent()
+    ).get();
     assertThat(result).isTrue();
   }
 
@@ -266,9 +211,13 @@ public class AccountSetIT {
     /////////////////////////
     // Validate Account State
     // Returns true, or else throws...
-    boolean result = scanLedgerFor30Seconds(
-        () -> validatedAccountHasNotFlags(wallet, accountRootFlag)
-    );
+    boolean result = given().ignoreException(RuntimeException.class)
+      .await()
+      .atMost(Duration.ONE_MINUTE)
+      .until(
+        () -> validatedAccountHasNotFlags(wallet, accountRootFlag),
+        isPresent()
+    ).get();
     assertThat(result).isTrue();
   }
 }

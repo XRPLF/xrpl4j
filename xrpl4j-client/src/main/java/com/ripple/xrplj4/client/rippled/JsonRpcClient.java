@@ -12,10 +12,10 @@ import feign.RequestLine;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.optionals.OptionalDecoder;
-import java.util.Optional;
 import okhttp3.HttpUrl;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A feign HTTP client for interacting with the rippled JSON RPC API. This client is strictly responsible for

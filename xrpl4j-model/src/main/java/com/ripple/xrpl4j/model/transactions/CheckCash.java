@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 
 import java.util.Optional;
-import org.immutables.value.Value.Derived;
 
 /**
  * The {@link CheckCash} transaction attempts to redeem a Check object in the ledger to receive up to the amount

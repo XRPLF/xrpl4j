@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Arrays;
 import java.util.Objects;
 

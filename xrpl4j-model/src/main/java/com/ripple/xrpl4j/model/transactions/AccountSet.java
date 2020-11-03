@@ -8,9 +8,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
-import java.util.Optional;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+
+import java.util.Optional;
 
 /**
  * An {@link AccountSet} transaction modifies the properties of an account in the XRP Ledger.

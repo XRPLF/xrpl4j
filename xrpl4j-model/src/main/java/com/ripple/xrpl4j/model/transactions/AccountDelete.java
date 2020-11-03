@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
-import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 
 import java.util.Optional;
-import org.immutables.value.Value.Default;
-import org.immutables.value.Value.Derived;
 
 /**
  * An {@link AccountDelete} transaction deletes an account and any objects it owns in the XRP Ledger, if possible,

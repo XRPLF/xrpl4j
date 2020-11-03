@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

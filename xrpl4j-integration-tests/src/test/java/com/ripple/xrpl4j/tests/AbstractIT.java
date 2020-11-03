@@ -2,7 +2,6 @@ package com.ripple.xrpl4j.tests;
 
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.ripple.xrpl4j.model.transactions.Address;
@@ -43,8 +42,15 @@ public abstract class AbstractIT {
    * @return
    */
   protected boolean scanAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
-    return given().atMost(Duration.ONE_MINUTE.divide(2)).await().until(() -> {
-      AccountInfoResult validatedAccountInfo = getValidatedAccountInfo(classicAddress);
+    return given()
+      .pollDelay(Duration.TWO_SECONDS)
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .await()
+      .until(() -> {
+      AccountInfoResult validatedAccountInfo = getAccountInfoResult(classicAddress);
+      if (validatedAccountInfo == null) {
+        return false;
+      }
       return condition.test(validatedAccountInfo);
     }, is(true));
   }
@@ -54,18 +60,19 @@ public abstract class AbstractIT {
    * exists.
    * @param classicAddress
    */
-  protected AccountInfoResult getValidatedAccountInfo(final Address classicAddress) {
+  protected AccountInfoResult scanForAccountInfo(final Address classicAddress) {
     Objects.requireNonNull(classicAddress);
-    return given().atMost(Duration.ONE_MINUTE.divide(2))
+    return given().pollDelay(Duration.TWO_SECONDS).atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
-      .await().until(() -> {
-      try {
-        return xrplClient.accountInfo(classicAddress, "validated");
-      } catch (Exception | RippledClientErrorException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
-    }, is(notNullValue()));
+      .await().until(() -> getAccountInfoResult(classicAddress), is(notNullValue()));
+  }
 
+  private AccountInfoResult getAccountInfoResult(Address classicAddress) {
+    try {
+      return xrplClient.accountInfo(classicAddress, "validated");
+    } catch (Exception | RippledClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 
 }

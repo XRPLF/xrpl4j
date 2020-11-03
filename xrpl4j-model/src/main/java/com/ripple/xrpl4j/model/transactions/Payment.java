@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
+import org.immutables.value.Value;
+
 import java.util.List;
 import java.util.Optional;
-import org.immutables.value.Value;
 
 /**
  * A Payment transaction represents a transfer of value from one account to another. (Depending on the path taken, this

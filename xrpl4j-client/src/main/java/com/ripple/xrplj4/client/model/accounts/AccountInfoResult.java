@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrplj4.client.model.JsonRpcResult;
+import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Optional;
-
-import com.ripple.xrplj4.client.model.JsonRpcResult;
-import org.immutables.value.Value;
 
 /**
  * The result of an account_info rippled API call, containing information about a given account on the XRP Ledger.

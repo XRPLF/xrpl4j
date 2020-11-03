@@ -115,7 +115,6 @@ public class AccountSetIT extends AbstractIT {
     // Validate Account State
     scanAccountInfoForCondition(wallet.classicAddress(), (accountInfoResult) -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-        // If the accountInfo has all the requested flags, return true. Otherwise return false.
         return accountInfoResult.accountData().flags().isSet(accountRootFlag);
       });
 
@@ -147,7 +146,6 @@ public class AccountSetIT extends AbstractIT {
     // Validate Account State
     scanAccountInfoForCondition(wallet.classicAddress(), accountInfoResult -> {
       logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-      // If the accountInfo has all the requested flags, return true. Otherwise return false.
       return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
     });
   }

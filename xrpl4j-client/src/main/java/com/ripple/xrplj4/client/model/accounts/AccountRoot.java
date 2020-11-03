@@ -15,7 +15,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 /**
- * Represents the AccountRoot ledger object, which describes a single account, its setting, and XRP balance.
+ * Represents the AccountRoot ledger object, which describes a single account, its settings, and XRP balance.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountRoot.class)

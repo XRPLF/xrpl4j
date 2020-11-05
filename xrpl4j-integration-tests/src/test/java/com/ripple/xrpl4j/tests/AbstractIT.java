@@ -38,10 +38,13 @@ public abstract class AbstractIT {
    * is true. This can be useful for validating account changes that may not take effect immediately.
    *
    * @param classicAddress The classic XRP address of the account to scan.
-   * @param condition
-   * @return
+   * @param condition A {@link Predicate} which will be checked against each polling of {@link AccountInfoResult},
+   *                  and will cause this method to return once true.
+   * @return The {@link AccountInfoResult} that satisfied the {@code condition}.
+   * @throws org.awaitility.core.ConditionTimeoutException If no {@link AccountInfoResult} matching the {@link Predicate}
+   *          exists after 30 seconds.
    */
-  protected boolean scanAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
+  protected AccountInfoResult scanAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
     return given()
       .pollDelay(Duration.TWO_SECONDS)
       .atMost(Duration.ONE_MINUTE.divide(2))
@@ -49,16 +52,19 @@ public abstract class AbstractIT {
       .until(() -> {
       AccountInfoResult validatedAccountInfo = getAccountInfoResult(classicAddress);
       if (validatedAccountInfo == null) {
-        return false;
+        return null;
       }
-      return condition.test(validatedAccountInfo);
-    }, is(true));
+      return condition.test(validatedAccountInfo) ? validatedAccountInfo : null;
+    }, is(notNullValue()));
   }
 
   /**
    * Poll the ledger for the account using an {@link org.awaitility.Awaitility} for 30 seconds, until the account
    * exists.
-   * @param classicAddress
+   * @param classicAddress The classic XRPL {@link Address} of the account to scan for.
+   * @return The {@link AccountInfoResult} associated with {@code classicAddress}.
+   * @throws org.awaitility.core.ConditionTimeoutException If no {@link AccountInfoResult} for the given address
+   *  exists after 30 seconds.
    */
   protected AccountInfoResult scanForAccountInfo(final Address classicAddress) {
     Objects.requireNonNull(classicAddress);

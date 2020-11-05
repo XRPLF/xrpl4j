@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 
 import java.util.Optional;
-import org.immutables.value.Value.Derived;
 
 /**
  * Create a Check object in the ledger, which is a deferred payment that can be cashed by its intended destination.

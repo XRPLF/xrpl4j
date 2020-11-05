@@ -2,35 +2,19 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
-import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrpl4j.wallet.WalletFactory;
-import com.ripple.xrplj4.client.XrplClient;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
-import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
-import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class SubmitPaymentIT {
-
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  public static final FaucetClient faucetClient =
-      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  public static final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
-  public static final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPayment() throws RippledClientErrorException {

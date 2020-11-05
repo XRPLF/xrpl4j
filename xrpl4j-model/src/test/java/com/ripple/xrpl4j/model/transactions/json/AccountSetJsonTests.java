@@ -5,8 +5,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrpl4j.model.transactions.Flags;
-import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.json.JSONException;
 import org.junit.Test;

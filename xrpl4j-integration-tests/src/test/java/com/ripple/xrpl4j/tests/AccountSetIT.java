@@ -31,17 +31,7 @@ public class AccountSetIT extends AbstractIT {
   @Test
   public void disableAndEnableAllFlags() throws RippledClientErrorException {
 
-    ///////////////////////
-    // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    final Wallet wallet = seedResult.wallet();
-    logger.info("Generated source testnet wallet with address {}", wallet.xAddress());
-
-    ///////////////////////
-    // Fund the account
-    FaucetAccountResponse fundResponse = faucetClient.fundAccount(FundAccountRequest.of(wallet.classicAddress().value()));
-    logger.info("Source account has been funded: {}", fundResponse);
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    Wallet wallet = createRandomAccount();
 
     ///////////////////////
     // Get validated account info and validate account state

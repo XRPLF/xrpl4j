@@ -21,6 +21,8 @@ import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
+import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
@@ -144,6 +146,14 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, AccountInfoResult.class);
+  }
+
+  public AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws RippledClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_OBJECTS)
+      .addParams(params)
+      .build();
+    return jsonRpcClient.send(request, AccountObjectsResult.class);
   }
 
   /**

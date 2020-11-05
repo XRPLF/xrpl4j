@@ -33,7 +33,7 @@ public class Wrappers {
   /**
    * A wrapped {@link String} containing the Hex representation of a 256-bit Hash.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable
   @Wrapped
   @JsonSerialize(as = Hash256.class)
   @JsonDeserialize(as = Hash256.class)
@@ -49,6 +49,14 @@ public class Wrappers {
       Preconditions.checkArgument(this.value().length() == 64, "Hash256 Strings must be 64 characters long.");
     }
 
+    @Override
+    public boolean equals(Object obj) {
+      if (!Hash256.class.isAssignableFrom(obj.getClass())) {
+        return false;
+      }
+
+      return this.value().toUpperCase().equals(((Hash256) obj).value().toUpperCase());
+    }
   }
 
   /**

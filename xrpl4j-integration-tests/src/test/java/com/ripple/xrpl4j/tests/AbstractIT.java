@@ -1,15 +1,23 @@
 package com.ripple.xrpl4j.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
+import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
+import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrpl4j.wallet.WalletFactory;
 import com.ripple.xrplj4.client.XrplClient;
+import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
+import com.ripple.xrplj4.client.faucet.FundAccountRequest;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
+import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
 import okhttp3.HttpUrl;
 import org.awaitility.Duration;
@@ -29,9 +37,65 @@ public abstract class AbstractIT {
   protected final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
+  protected Wallet createRandomAccount() {
+    ///////////////////////
+    // Create the account
+    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
+    final Wallet wallet = seedResult.wallet();
+    logger.info("Generated testnet wallet with address {}", wallet.xAddress());
+
+    ///////////////////////
+    // Fund the account
+    FaucetAccountResponse fundResponse = faucetClient.fundAccount(FundAccountRequest.of(wallet.classicAddress().value()));
+    logger.info("Account has been funded: {}", fundResponse);
+    assertThat(fundResponse.amount()).isGreaterThan(0);
+    return wallet;
+  }
+
   //////////////////////
   // Ledger Helpers
   //////////////////////
+
+  protected AccountObjectsResult scanAccountObjectsForCondition(
+    final Address classicAddress,
+    final Predicate<AccountObjectsResult> condition
+  ) {
+    return given()
+      .pollDelay(Duration.TWO_SECONDS)
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .await()
+      .until(() -> {
+        AccountObjectsResult validatedAccountObjects = getAccountObjects(classicAddress);
+        if (validatedAccountObjects == null) {
+          return null;
+        }
+        return condition.test(validatedAccountObjects) ? validatedAccountObjects : null;
+      }, is(notNullValue()));
+  }
+
+  protected AccountObjectsResult scanForAccountObjects(final Address classicAddress) {
+    return given()
+      .pollDelay(Duration.TWO_SECONDS)
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .ignoreException(RuntimeException.class)
+      .await()
+      .until(
+        () -> getAccountObjects(classicAddress),
+        is(notNullValue())
+      );
+  }
+
+  protected AccountObjectsResult getAccountObjects(Address classicAddress) {
+    try {
+      return xrplClient.accountObjects(
+        AccountObjectsRequestParams.builder()
+        .account(classicAddress)
+        .build()
+      );
+    } catch (RippledClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
 
   /**
    * Poll the ledger for the account until the given {@link Predicate} on the resulting {@link AccountInfoResult}
@@ -50,12 +114,12 @@ public abstract class AbstractIT {
       .atMost(Duration.ONE_MINUTE.divide(2))
       .await()
       .until(() -> {
-      AccountInfoResult validatedAccountInfo = getAccountInfoResult(classicAddress);
-      if (validatedAccountInfo == null) {
-        return null;
-      }
-      return condition.test(validatedAccountInfo) ? validatedAccountInfo : null;
-    }, is(notNullValue()));
+        AccountInfoResult validatedAccountInfo = getAccountInfoResult(classicAddress);
+        if (validatedAccountInfo == null) {
+          return null;
+        }
+        return condition.test(validatedAccountInfo) ? validatedAccountInfo : null;
+      }, is(notNullValue()));
   }
 
   /**
@@ -68,7 +132,9 @@ public abstract class AbstractIT {
    */
   protected AccountInfoResult scanForAccountInfo(final Address classicAddress) {
     Objects.requireNonNull(classicAddress);
-    return given().pollDelay(Duration.TWO_SECONDS).atMost(Duration.ONE_MINUTE.divide(2))
+    return given()
+      .pollDelay(Duration.TWO_SECONDS)
+      .atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
       .await().until(() -> getAccountInfoResult(classicAddress), is(notNullValue()));
   }

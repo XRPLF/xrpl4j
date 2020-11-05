@@ -11,12 +11,11 @@ import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
-import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.ledger.Check;
 import com.ripple.xrplj4.client.model.ledger.LedgerObject;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Predicate;
@@ -24,14 +23,18 @@ import java.util.function.Predicate;
 public class CheckIT extends AbstractIT {
 
   @Test
-  public void createXrpCheckAndCash() throws RippledClientErrorException {
+  public void createXrpCheckAndCash() throws JsonRpcClientErrorException {
 
+    //////////////////////
+    // Generate and fund source and destination accounts
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForAccountInfo(sourceWallet.classicAddress());
 
+    //////////////////////
+    // Create a Check with an InvoiceID for easy identification
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
@@ -50,6 +53,9 @@ public class CheckIT extends AbstractIT {
       response.transaction().hash().orElse("n/a")
     );
 
+    //////////////////////
+    // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
+    // it into the ledger
     Check check = (Check) scanAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
       logger.info("AccountObjectsResult objects: {}", result.accountObjects());
       return result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId));
@@ -58,6 +64,8 @@ public class CheckIT extends AbstractIT {
       .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
       .findFirst().get();
 
+    //////////////////////
+    // Destination wallet cashes the Check
     feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForAccountInfo(destinationWallet.classicAddress());
     CheckCash checkCash = CheckCash.builder()
@@ -75,6 +83,8 @@ public class CheckIT extends AbstractIT {
       cashResponse.transaction().hash().orElse("n/a")
     );
 
+    //////////////////////
+    // Validate that the destination account balance increases by the check amount minus fees
     scanAccountInfoForCondition(destinationWallet.classicAddress(), result -> {
       logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance());
       return result.accountData().balance().equals(
@@ -83,17 +93,23 @@ public class CheckIT extends AbstractIT {
           .minus(UnsignedInteger.valueOf(checkCash.fee().value())).toString());
     });
 
-    AccountObjectsResult accountObjectsResult = scanForAccountObjects(sourceWallet.classicAddress());
-    assertThat(accountObjectsResult.accountObjects()).matches(objects ->
-      objects.stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+    //////////////////////
+    // Validate that the Check object was deleted
+    scanAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
+      result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
     );
   }
 
   @Test
-  public void createCheckAndSourceCancels() throws RippledClientErrorException {
+  public void createCheckAndSourceCancels() throws JsonRpcClientErrorException {
+
+    //////////////////////
+    // Generate and fund source and destination accounts
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
+    //////////////////////
+    // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForAccountInfo(sourceWallet.classicAddress());
 
@@ -115,6 +131,9 @@ public class CheckIT extends AbstractIT {
       response.transaction().hash().orElse("n/a")
     );
 
+    //////////////////////
+    // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
+    // it into the ledger
     Check check = (Check) scanAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
       logger.info("AccountObjectsResult objects: {}", result.accountObjects());
       return result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId));
@@ -123,6 +142,8 @@ public class CheckIT extends AbstractIT {
       .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
       .findFirst().get();
 
+    //////////////////////
+    // Source account cancels the Check
     feeResult = xrplClient.fee();
     CheckCancel checkCancel = CheckCancel.builder()
       .account(sourceWallet.classicAddress())
@@ -139,17 +160,23 @@ public class CheckIT extends AbstractIT {
       cancelResult.transaction().hash().orElse("n/a")
     );
 
-    AccountObjectsResult accountObjectsResult = scanForAccountObjects(sourceWallet.classicAddress());
-    assertThat(accountObjectsResult.accountObjects()).matches(objects ->
-      objects.stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+    //////////////////////
+    // Validate that the Check does not exist after cancelling
+    scanAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
+      result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
     );
   }
 
   @Test
-  public void createCheckAndDestinationCancels() throws RippledClientErrorException {
+  public void createCheckAndDestinationCancels() throws JsonRpcClientErrorException {
+
+    //////////////////////
+    // Generate and fund source and destination accounts
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
+    //////////////////////
+    // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForAccountInfo(sourceWallet.classicAddress());
 
@@ -164,6 +191,9 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
+    //////////////////////
+    // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
+    // it into the ledger
     SubmissionResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate, CheckCreate.class);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
@@ -179,6 +209,8 @@ public class CheckIT extends AbstractIT {
       .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
       .findFirst().get();
 
+    //////////////////////
+    // Destination account cancels the Check
     feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForAccountInfo(destinationWallet.classicAddress());
     CheckCancel checkCancel = CheckCancel.builder()
@@ -196,9 +228,10 @@ public class CheckIT extends AbstractIT {
       cancelResult.transaction().hash().orElse("n/a")
     );
 
-    AccountObjectsResult accountObjectsResult = scanForAccountObjects(sourceWallet.classicAddress());
-    assertThat(accountObjectsResult.accountObjects()).matches(objects ->
-      objects.stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+    //////////////////////
+    // Validate that the Check does not exist after cancelling
+    scanAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
+      result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
     );
   }
 

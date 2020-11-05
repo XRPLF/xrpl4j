@@ -5,14 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
-import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
-import com.ripple.xrplj4.client.faucet.FundAccountRequest;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
@@ -29,7 +26,7 @@ public class AccountSetIT extends AbstractIT {
 
 
   @Test
-  public void disableAndEnableAllFlags() throws RippledClientErrorException {
+  public void disableAndEnableAllFlags() throws JsonRpcClientErrorException {
 
     Wallet wallet = createRandomAccount();
 
@@ -80,7 +77,7 @@ public class AccountSetIT extends AbstractIT {
 
   private void assertSetFlag(
       final Wallet wallet, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
@@ -112,7 +109,7 @@ public class AccountSetIT extends AbstractIT {
 
   private void assertClearFlag(
       final Wallet wallet, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 

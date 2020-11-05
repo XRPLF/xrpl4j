@@ -14,11 +14,9 @@ import com.ripple.xrplj4.client.XrplClient;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
-import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
-import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import okhttp3.HttpUrl;
 import org.awaitility.Duration;
 import org.slf4j.Logger;
@@ -87,12 +85,8 @@ public abstract class AbstractIT {
 
   protected AccountObjectsResult getAccountObjects(Address classicAddress) {
     try {
-      return xrplClient.accountObjects(
-        AccountObjectsRequestParams.builder()
-        .account(classicAddress)
-        .build()
-      );
-    } catch (RippledClientErrorException e) {
+      return xrplClient.accountObjects(classicAddress, "validated");
+    } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
@@ -142,7 +136,7 @@ public abstract class AbstractIT {
   private AccountInfoResult getAccountInfoResult(Address classicAddress) {
     try {
       return xrplClient.accountInfo(classicAddress, "validated");
-    } catch (Exception | RippledClientErrorException e) {
+    } catch (Exception | JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

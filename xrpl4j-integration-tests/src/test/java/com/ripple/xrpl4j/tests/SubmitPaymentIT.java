@@ -4,20 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
-import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 public class SubmitPaymentIT extends AbstractIT {
 
   @Test
-  public void sendPayment() throws RippledClientErrorException {
+  public void sendPayment() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
@@ -43,7 +42,7 @@ public class SubmitPaymentIT extends AbstractIT {
   }
 
   @Test
-  public void sendPaymentFromSecp256k1Wallet() throws RippledClientErrorException {
+  public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException {
     Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
     logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
 

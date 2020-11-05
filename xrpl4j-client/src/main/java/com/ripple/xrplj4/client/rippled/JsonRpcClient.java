@@ -65,13 +65,13 @@ public interface JsonRpcClient {
    * @param resultType The type of {@link JsonRpcResult} that should be returned.
    * @param <ResultType> The extension of {@link JsonRpcResult} corresponding to the request method.
    * @return The {@link ResultType} representing the result of the request.
-   * @throws RippledClientErrorException If rippled returns an error message, or if the response could not be
+   * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
   default <ResultType extends JsonRpcResult> ResultType send(
     JsonRpcRequest request,
     Class<ResultType> resultType
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     JavaType javaType = objectMapper.constructType(resultType);
     return send(request, javaType);
   }
@@ -86,20 +86,20 @@ public interface JsonRpcClient {
    * @param resultType The type of {@link JsonRpcResult} that should be returned, converted to a {@link JavaType}.
    * @param <ResultType> The extension of {@link JsonRpcResult} corresponding to the request method.
    * @return The {@link ResultType} representing the result of the request.
-   * @throws RippledClientErrorException If rippled returns an error message, or if the response could not be
+   * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
   default <ResultType extends JsonRpcResult> ResultType send(
     JsonRpcRequest request,
     JavaType resultType
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     JsonNode response = postRpcRequest(request);
     JsonNode result = response.get("result");
     checkForError(response);
     try {
       return objectMapper.readValue(result.toString(), resultType);
     } catch (JsonProcessingException e) {
-      throw new RippledClientErrorException(e);
+      throw new JsonRpcClientErrorException(e);
     }
   }
 
@@ -107,16 +107,16 @@ public interface JsonRpcClient {
    * Parse the response JSON to detect a possible error response message.
    *
    * @param response The {@link JsonNode} containing the JSON response from rippled.
-   * @throws RippledClientErrorException If rippled returns an error message.
+   * @throws JsonRpcClientErrorException If rippled returns an error message.
    */
-  default void checkForError(JsonNode response) throws RippledClientErrorException {
+  default void checkForError(JsonNode response) throws JsonRpcClientErrorException {
     if (response.has("result")) {
       JsonNode result = response.get("result");
       if (result.has("error")) {
         String errorMessage = Optional.ofNullable(result.get("error_exception"))
           .map(JsonNode::asText)
           .orElseGet(() -> result.get("error_message").asText());
-        throw new RippledClientErrorException(errorMessage);
+        throw new JsonRpcClientErrorException(errorMessage);
       }
     }
   }

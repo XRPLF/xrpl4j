@@ -12,6 +12,10 @@ import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Custom deserializer for {@link LedgerObject}s. Because {@link LedgerObject} is a marker interface, we need
+ * this deserializer to deserialize JSON ledger objects to the correct extension of {@link LedgerObject}.
+ */
 public class LedgerObjectDeserializer extends JsonDeserializer<LedgerObject> {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
@@ -22,7 +26,7 @@ public class LedgerObjectDeserializer extends JsonDeserializer<LedgerObject> {
     .build();
 
   @Override
-  public LedgerObject deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+  public LedgerObject deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
     return objectMapper.readValue(node.toString(), objectTypeMap.get(node.get("LedgerEntryType").asText()));

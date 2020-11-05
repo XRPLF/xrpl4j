@@ -24,11 +24,12 @@ import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
+import com.ripple.xrplj4.client.model.ledger.LedgerObject;
 import com.ripple.xrplj4.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClient;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
-import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import com.ripple.xrplj4.client.rippled.XrplMethods;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -67,13 +68,13 @@ public class XrplClient {
    * @param transactionType The {@link Class} of the specific {@link Transaction} that is being submitted.
    * @param <TxnType> The type of {@link Transaction} that is being submitted.
    * @return The {@link SubmissionResult} resulting from the submission request.
-   * @throws RippledClientErrorException If {@code rippledClient} throws an error.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <TxnType extends Transaction<? extends Flags.TransactionFlags>> SubmissionResult<TxnType> submit(
     Wallet wallet,
     TxnType unsignedTransaction,
     Class<TxnType> transactionType
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     try {
       Preconditions.checkArgument(
         unsignedTransaction.signingPublicKey().isPresent(),
@@ -97,9 +98,9 @@ public class XrplClient {
    *
    * @see "https://xrpl.org/fee.html"
    * @return A {@link FeeResult} containing information about current transaction costs.
-   * @throws RippledClientErrorException If {@code rippledClient} throws an error.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public FeeResult fee() throws RippledClientErrorException {
+  public FeeResult fee() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.FEE)
       .build();
@@ -114,9 +115,9 @@ public class XrplClient {
    * @see "https://xrpl.org/account_info.html"
    * @param classicAddress The XRPL {@link Address} in classic form of the account to retrieve info for.
    * @return An {@link AccountInfoResult} containing the account information.
-   * @throws RippledClientErrorException If {@code rippledClient} throws an error.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountInfoResult accountInfo(Address classicAddress) throws RippledClientErrorException {
+  public AccountInfoResult accountInfo(Address classicAddress) throws JsonRpcClientErrorException {
     return accountInfo(AccountInfoRequestParams.of(classicAddress));
   }
 
@@ -129,9 +130,9 @@ public class XrplClient {
    * @param classicAddress The XRPL {@link Address} in classic form of the account to retrieve info for.
    * @param ledgerIndex The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
    * @return An {@link AccountInfoResult} containing the account information.
-   * @throws RippledClientErrorException If {@code rippledClient} throws an error.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountInfoResult accountInfo(Address classicAddress, String ledgerIndex) throws RippledClientErrorException {
+  public AccountInfoResult accountInfo(Address classicAddress, String ledgerIndex) throws JsonRpcClientErrorException {
     return accountInfo(AccountInfoRequestParams.builder()
       .account(classicAddress)
       .ledgerIndex(ledgerIndex)
@@ -139,7 +140,7 @@ public class XrplClient {
     );
   }
 
-  private AccountInfoResult accountInfo(AccountInfoRequestParams params) throws RippledClientErrorException {
+  private AccountInfoResult accountInfo(AccountInfoRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_INFO)
       .addParams(params)
@@ -148,7 +149,35 @@ public class XrplClient {
     return jsonRpcClient.send(request, AccountInfoResult.class);
   }
 
-  public AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws RippledClientErrorException {
+  /**
+   * Send an account_objects request to rippled. The account_objects command returns the raw ledger format for all
+   * {@link LedgerObject}s owned by an account.
+   *
+   * @param classicAddress The classic {@link Address} of the account.
+   * @return An {@link AccountObjectsResult} containing the {@link LedgerObject}s owned by the account.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountObjectsResult accountObjects(Address classicAddress) throws JsonRpcClientErrorException {
+    return accountObjects(AccountObjectsRequestParams.of(classicAddress));
+  }
+
+  /**
+   * Send an account_objects request to rippled with a specified ledger index. The account_objects command returns
+   * the raw ledger format for all {@link LedgerObject}s owned by an account.
+   *
+   * @param classicAddress The classic {@link Address} of the account.
+   * @param ledgerIndex The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
+   * @return An {@link AccountObjectsResult} containing the {@link LedgerObject}s owned by the account.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountObjectsResult accountObjects(Address classicAddress, String ledgerIndex) throws JsonRpcClientErrorException {
+    return accountObjects(AccountObjectsRequestParams.builder()
+      .account(classicAddress)
+      .ledgerIndex(ledgerIndex)
+      .build());
+  }
+
+  private AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_OBJECTS)
       .addParams(params)

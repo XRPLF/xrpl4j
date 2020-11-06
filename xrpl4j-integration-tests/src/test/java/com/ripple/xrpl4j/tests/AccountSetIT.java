@@ -5,14 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
-import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
-import com.ripple.xrplj4.client.faucet.FundAccountRequest;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.rippled.RippledClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
@@ -29,23 +26,13 @@ public class AccountSetIT extends AbstractIT {
 
 
   @Test
-  public void disableAndEnableAllFlags() throws RippledClientErrorException {
+  public void disableAndEnableAllFlags() throws JsonRpcClientErrorException {
 
-    ///////////////////////
-    // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    final Wallet wallet = seedResult.wallet();
-    logger.info("Generated source testnet wallet with address {}", wallet.xAddress());
-
-    ///////////////////////
-    // Fund the account
-    FaucetAccountResponse fundResponse = faucetClient.fundAccount(FundAccountRequest.of(wallet.classicAddress().value()));
-    logger.info("Source account has been funded: {}", fundResponse);
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    Wallet wallet = createRandomAccount();
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForAccountInfo(wallet.classicAddress());
+    AccountInfoResult accountInfo = this.scanForValidatedAccountInfo(wallet.classicAddress());
     assertThat(accountInfo.status()).isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -90,7 +77,7 @@ public class AccountSetIT extends AbstractIT {
 
   private void assertSetFlag(
       final Wallet wallet, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
@@ -113,7 +100,7 @@ public class AccountSetIT extends AbstractIT {
 
     /////////////////////////
     // Validate Account State
-    scanAccountInfoForCondition(wallet.classicAddress(), (accountInfoResult) -> {
+    scanValidatedAccountInfoForCondition(wallet.classicAddress(), (accountInfoResult) -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return accountInfoResult.accountData().flags().isSet(accountRootFlag);
       });
@@ -122,7 +109,7 @@ public class AccountSetIT extends AbstractIT {
 
   private void assertClearFlag(
       final Wallet wallet, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
-  ) throws RippledClientErrorException {
+  ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
@@ -144,7 +131,7 @@ public class AccountSetIT extends AbstractIT {
 
     /////////////////////////
     // Validate Account State
-    scanAccountInfoForCondition(wallet.classicAddress(), accountInfoResult -> {
+    scanValidatedAccountInfoForCondition(wallet.classicAddress(), accountInfoResult -> {
       logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
       return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
     });

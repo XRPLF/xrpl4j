@@ -1,4 +1,4 @@
-package com.ripple.xrplj4.client.model.accounts;
+package com.ripple.xrplj4.client.model.ledger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountRoot.class)
 @JsonDeserialize(as = ImmutableAccountRoot.class)
-public interface AccountRoot {
+public interface AccountRoot extends LedgerObject {
 
   static ImmutableAccountRoot.Builder builder() {
     return ImmutableAccountRoot.builder();
@@ -31,8 +31,8 @@ public interface AccountRoot {
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
-  default String ledgerEntryType() {
-    return "AccountRoot";
+  default LedgerEntryType ledgerEntryType() {
+    return LedgerEntryType.ACCOUNT_ROOT;
   }
 
   /**

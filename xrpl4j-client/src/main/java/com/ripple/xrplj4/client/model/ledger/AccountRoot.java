@@ -31,8 +31,8 @@ public interface AccountRoot extends LedgerObject {
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
-  default String ledgerEntryType() {
-    return "AccountRoot";
+  default LedgerEntryType ledgerEntryType() {
+    return LedgerEntryType.ACCOUNT_ROOT;
   }
 
   /**

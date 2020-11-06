@@ -31,7 +31,7 @@ public class CheckIT extends AbstractIT {
     Wallet destinationWallet = createRandomAccount();
 
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult accountInfoResult = this.scanForAccountInfo(sourceWallet.classicAddress());
+    AccountInfoResult accountInfoResult = this.scanForValidatedAccountInfo(sourceWallet.classicAddress());
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
@@ -56,7 +56,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    Check check = (Check) scanAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
+    Check check = (Check) scanValidatedAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
       logger.info("AccountObjectsResult objects: {}", result.accountObjects());
       return result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId));
     })
@@ -67,7 +67,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Destination wallet cashes the Check
     feeResult = xrplClient.fee();
-    AccountInfoResult destinationAccountInfo = this.scanForAccountInfo(destinationWallet.classicAddress());
+    AccountInfoResult destinationAccountInfo = this.scanForValidatedAccountInfo(destinationWallet.classicAddress());
     CheckCash checkCash = CheckCash.builder()
       .account(destinationWallet.classicAddress())
       .amount(check.sendMax())
@@ -85,7 +85,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Validate that the destination account balance increases by the check amount minus fees
-    scanAccountInfoForCondition(destinationWallet.classicAddress(), result -> {
+    scanValidatedAccountInfoForCondition(destinationWallet.classicAddress(), result -> {
       logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance());
       return result.accountData().balance().equals(
         UnsignedInteger.valueOf(destinationAccountInfo.accountData().balance())
@@ -95,7 +95,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Validate that the Check object was deleted
-    scanAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
+    scanValidatedAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
       result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
     );
   }
@@ -111,7 +111,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult accountInfoResult = this.scanForAccountInfo(sourceWallet.classicAddress());
+    AccountInfoResult accountInfoResult = this.scanForValidatedAccountInfo(sourceWallet.classicAddress());
 
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
@@ -134,7 +134,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    Check check = (Check) scanAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
+    Check check = (Check) scanValidatedAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
       logger.info("AccountObjectsResult objects: {}", result.accountObjects());
       return result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId));
     })
@@ -162,7 +162,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Validate that the Check does not exist after cancelling
-    scanAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
+    scanValidatedAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
       result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
     );
   }
@@ -178,7 +178,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult accountInfoResult = this.scanForAccountInfo(sourceWallet.classicAddress());
+    AccountInfoResult accountInfoResult = this.scanForValidatedAccountInfo(sourceWallet.classicAddress());
 
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
@@ -201,7 +201,7 @@ public class CheckIT extends AbstractIT {
       response.transaction().hash().orElse("n/a")
     );
 
-    Check check = (Check) scanAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
+    Check check = (Check) scanValidatedAccountObjectsForCondition(sourceWallet.classicAddress(), result -> {
       logger.info("AccountObjectsResult objects: {}", result.accountObjects());
       return result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId));
     })
@@ -212,7 +212,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Destination account cancels the Check
     feeResult = xrplClient.fee();
-    AccountInfoResult destinationAccountInfo = this.scanForAccountInfo(destinationWallet.classicAddress());
+    AccountInfoResult destinationAccountInfo = this.scanForValidatedAccountInfo(destinationWallet.classicAddress());
     CheckCancel checkCancel = CheckCancel.builder()
       .account(destinationWallet.classicAddress())
       .sequence(destinationAccountInfo.accountData().sequence())
@@ -230,7 +230,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Validate that the Check does not exist after cancelling
-    scanAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
+    scanValidatedAccountObjectsForCondition(sourceWallet.classicAddress(), result ->
       result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
     );
   }

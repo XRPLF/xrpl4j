@@ -32,7 +32,7 @@ public class AccountSetIT extends AbstractIT {
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForAccountInfo(wallet.classicAddress());
+    AccountInfoResult accountInfo = this.scanForValidatedAccountInfo(wallet.classicAddress());
     assertThat(accountInfo.status()).isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -100,7 +100,7 @@ public class AccountSetIT extends AbstractIT {
 
     /////////////////////////
     // Validate Account State
-    scanAccountInfoForCondition(wallet.classicAddress(), (accountInfoResult) -> {
+    scanValidatedAccountInfoForCondition(wallet.classicAddress(), (accountInfoResult) -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return accountInfoResult.accountData().flags().isSet(accountRootFlag);
       });
@@ -131,7 +131,7 @@ public class AccountSetIT extends AbstractIT {
 
     /////////////////////////
     // Validate Account State
-    scanAccountInfoForCondition(wallet.classicAddress(), accountInfoResult -> {
+    scanValidatedAccountInfoForCondition(wallet.classicAddress(), accountInfoResult -> {
       logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
       return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
     });

@@ -19,6 +19,7 @@ import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import okhttp3.HttpUrl;
 import org.awaitility.Duration;
+import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,17 @@ public abstract class AbstractIT {
   // Ledger Helpers
   //////////////////////
 
-  protected AccountObjectsResult scanAccountObjectsForCondition(
+  /**
+   * Poll validated ledgers for account objects until the given {@link Predicate} on the {@link AccountObjectsResult}
+   * passes.
+   *
+   * @param classicAddress The classic {@link Address} of the account.
+   * @param condition A {@link Predicate} dictating whether or not to continue polling.
+   * @return The first {@link AccountObjectsResult} that satisfies the condition.
+   * @throws ConditionTimeoutException if no {@link AccountObjectsResult} matching the condition is retrieved after
+   *  30 seconds.
+   */
+  protected AccountObjectsResult scanValidatedAccountObjectsForCondition(
     final Address classicAddress,
     final Predicate<AccountObjectsResult> condition
   ) {
@@ -63,7 +74,7 @@ public abstract class AbstractIT {
       .atMost(Duration.ONE_MINUTE.divide(2))
       .await()
       .until(() -> {
-        AccountObjectsResult validatedAccountObjects = getAccountObjects(classicAddress);
+        AccountObjectsResult validatedAccountObjects = getValidatedAccountObjects(classicAddress);
         if (validatedAccountObjects == null) {
           return null;
         }
@@ -71,19 +82,27 @@ public abstract class AbstractIT {
       }, is(notNullValue()));
   }
 
-  protected AccountObjectsResult scanForAccountObjects(final Address classicAddress) {
+  /**
+   * Poll validated ledgers for account objects until a response is returned. This can be useful when
+   * querying account objects immediately after creating an account.
+   *
+   * @param classicAddress The classic {@link Address} of the account.
+   * @return An {@link AccountObjectsResult} containing the account objects.
+   * @throws ConditionTimeoutException if no {@link AccountObjectsResult} is returned within 30 seconds.
+   */
+  protected AccountObjectsResult scanForValidatedAccountObjects(final Address classicAddress) {
     return given()
       .pollDelay(Duration.TWO_SECONDS)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
       .await()
       .until(
-        () -> getAccountObjects(classicAddress),
+        () -> getValidatedAccountObjects(classicAddress),
         is(notNullValue())
       );
   }
 
-  protected AccountObjectsResult getAccountObjects(Address classicAddress) {
+  protected AccountObjectsResult getValidatedAccountObjects(Address classicAddress) {
     try {
       return xrplClient.accountObjects(classicAddress, "validated");
     } catch (JsonRpcClientErrorException e) {
@@ -99,16 +118,16 @@ public abstract class AbstractIT {
    * @param condition A {@link Predicate} which will be checked against each polling of {@link AccountInfoResult},
    *                  and will cause this method to return once true.
    * @return The {@link AccountInfoResult} that satisfied the {@code condition}.
-   * @throws org.awaitility.core.ConditionTimeoutException If no {@link AccountInfoResult} matching the {@link Predicate}
+   * @throws ConditionTimeoutException If no {@link AccountInfoResult} matching the {@link Predicate}
    *          exists after 30 seconds.
    */
-  protected AccountInfoResult scanAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
+  protected AccountInfoResult scanValidatedAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
     return given()
       .pollDelay(Duration.TWO_SECONDS)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .await()
       .until(() -> {
-        AccountInfoResult validatedAccountInfo = getAccountInfoResult(classicAddress);
+        AccountInfoResult validatedAccountInfo = getValidatedAccountInfoResult(classicAddress);
         if (validatedAccountInfo == null) {
           return null;
         }
@@ -121,19 +140,19 @@ public abstract class AbstractIT {
    * exists.
    * @param classicAddress The classic XRPL {@link Address} of the account to scan for.
    * @return The {@link AccountInfoResult} associated with {@code classicAddress}.
-   * @throws org.awaitility.core.ConditionTimeoutException If no {@link AccountInfoResult} for the given address
+   * @throws ConditionTimeoutException If no {@link AccountInfoResult} for the given address
    *  exists after 30 seconds.
    */
-  protected AccountInfoResult scanForAccountInfo(final Address classicAddress) {
+  protected AccountInfoResult scanForValidatedAccountInfo(final Address classicAddress) {
     Objects.requireNonNull(classicAddress);
     return given()
       .pollDelay(Duration.TWO_SECONDS)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
-      .await().until(() -> getAccountInfoResult(classicAddress), is(notNullValue()));
+      .await().until(() -> getValidatedAccountInfoResult(classicAddress), is(notNullValue()));
   }
 
-  private AccountInfoResult getAccountInfoResult(Address classicAddress) {
+  private AccountInfoResult getValidatedAccountInfoResult(Address classicAddress) {
     try {
       return xrplClient.accountInfo(classicAddress, "validated");
     } catch (Exception | JsonRpcClientErrorException e) {

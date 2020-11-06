@@ -34,8 +34,8 @@ public interface Check extends LedgerObject {
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
-  default String ledgerEntryType() {
-    return "Check";
+  default LedgerEntryType ledgerEntryType() {
+    return LedgerEntryType.CHECK;
   }
 
   /**

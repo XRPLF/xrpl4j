@@ -1,6 +1,7 @@
 package com.ripple.xrplj4.client.model.accounts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
@@ -37,11 +38,8 @@ public interface AccountObjectsRequestParams extends JsonRpcRequestParams {
 
   /**
    * If included, filter results to include only this type of ledger object.
-   * The valid types are:
-   * {@code "check"}, {@code "deposit_preauth"}, {@code "escrow"}, {@code "offer"}, {@code "payment_channel"},
-   * {@code "signer_list"}, {@code "ticket"}, and {@code "state"} (trust line).
    */
-  Optional<String> type();
+  Optional<AccountObjectType> type();
 
   /**
    * If true, the response only includes {@link LedgerObject}s that would block this account from being deleted.
@@ -65,6 +63,7 @@ public interface AccountObjectsRequestParams extends JsonRpcRequestParams {
   @JsonSerialize(using = LedgerIndexSerializer.class)
   @JsonProperty("ledger_index")
   @Value.Default
+  // TODO Create enum for ledger index and replace everywhere
   default String ledgerIndex() {
     return "current";
   }
@@ -81,4 +80,25 @@ public interface AccountObjectsRequestParams extends JsonRpcRequestParams {
    */
   Optional<String> marker();
 
+  enum AccountObjectType {
+    CHECK("check"),
+    DESPOSIT_PRE_AUTH("deposit_preauth"),
+    ESCROW("escrow"),
+    OFFER("offer"),
+    PAYMENT_CHANNEL("payment_channel"),
+    SIGNER_LIST("signer_list"),
+    TICKET("ticket"),
+    STATE("state");
+
+    private final String value;
+
+    AccountObjectType(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String value() {
+      return value;
+    }
+  }
 }

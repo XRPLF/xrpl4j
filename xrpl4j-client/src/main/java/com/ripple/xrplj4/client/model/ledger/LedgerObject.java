@@ -1,7 +1,9 @@
 package com.ripple.xrplj4.client.model.ledger;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.ripple.xrpl4j.model.transactions.AccountSet;
 
 /**
  * Market interface for XRP Ledger Objects.
@@ -30,6 +32,17 @@ public interface LedgerObject {
 
     LedgerEntryType(String value) {
       this.value = value;
+    }
+
+    @JsonCreator
+    public static LedgerEntryType forValue(String value) {
+      for (LedgerEntryType type : LedgerEntryType.values()) {
+        if (type.value.equals(value)) {
+          return type;
+        }
+      }
+
+      throw new IllegalArgumentException("No matching LedgerEntryType enum value for String value " + value);
     }
 
     @JsonValue

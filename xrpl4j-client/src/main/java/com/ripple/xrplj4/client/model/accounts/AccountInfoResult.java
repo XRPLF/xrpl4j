@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrplj4.client.model.JsonRpcResult;
-import com.ripple.xrplj4.client.model.ledger.AccountRoot;
+import com.ripple.xrplj4.client.model.ledger.AccountRootObject;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -24,10 +24,10 @@ public interface AccountInfoResult extends JsonRpcResult {
   }
 
   /**
-   * The {@link AccountRoot} ledger object with this account's information, as stored in the ledger.
+   * The {@link AccountRootObject} ledger object with this account's information, as stored in the ledger.
    */
   @JsonProperty("account_data")
-  AccountRoot accountData();
+  AccountRootObject accountData();
 
   /**
    * (Omitted unless the request specified signer_lists and at least one SignerList is associated with the account.)

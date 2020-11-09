@@ -18,12 +18,12 @@ import java.util.Optional;
  * Represents the AccountRoot ledger object, which describes a single account, its settings, and XRP balance.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableAccountRoot.class)
-@JsonDeserialize(as = ImmutableAccountRoot.class)
-public interface AccountRoot extends LedgerObject {
+@JsonSerialize(as = ImmutableAccountRootObject.class)
+@JsonDeserialize(as = ImmutableAccountRootObject.class)
+public interface AccountRootObject extends LedgerObject {
 
-  static ImmutableAccountRoot.Builder builder() {
-    return ImmutableAccountRoot.builder();
+  static ImmutableAccountRootObject.Builder builder() {
+    return ImmutableAccountRootObject.builder();
   }
 
   /**
@@ -125,7 +125,7 @@ public interface AccountRoot extends LedgerObject {
   Optional<UnsignedInteger> transferRate();
 
   /**
-   * The unique ID of this {@link AccountRoot} ledger object.
+   * The unique ID of this {@link AccountRootObject} ledger object.
    *
    * @see "https://xrpl.org/ledger-object-ids.html"
    */

@@ -42,14 +42,14 @@ public interface Payment extends Transaction<PaymentFlags> {
    * amount instead.
    */
   @JsonProperty("Amount")
-  Optional<CurrencyAmount> amount();
+  CurrencyAmount amount();
 
   /**
    * The unique {@link Address} of the account receiving the payment. Maybe be empty for an AccountSet or other
    * transaction that is not a payment.
    */
   @JsonProperty("Destination")
-  Optional<Address> destination();
+  Address destination();
 
   /**
    * Arbitrary {@link UnsignedInteger} tag that identifies the reason for the payment to the destination, or a hosted

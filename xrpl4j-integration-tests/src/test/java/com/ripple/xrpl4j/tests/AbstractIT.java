@@ -6,6 +6,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.ripple.xrpl4j.model.transactions.Address;
+import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
 import com.ripple.xrpl4j.wallet.Wallet;
@@ -14,8 +16,15 @@ import com.ripple.xrplj4.client.XrplClient;
 import com.ripple.xrplj4.client.faucet.FaucetAccountResponse;
 import com.ripple.xrplj4.client.faucet.FaucetClient;
 import com.ripple.xrplj4.client.faucet.FundAccountRequest;
+import com.ripple.xrplj4.client.model.JsonRpcResult;
+import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
+import com.ripple.xrplj4.client.model.accounts.ImmutableAccountInfoRequestParams;
+import com.ripple.xrplj4.client.model.accounts.ImmutableAccountObjectsRequestParams;
+import com.ripple.xrplj4.client.model.transactions.TransactionRequestParams;
+import com.ripple.xrplj4.client.model.transactions.TransactionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import okhttp3.HttpUrl;
 import org.awaitility.Duration;
@@ -25,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class AbstractIT {
 
@@ -55,107 +65,63 @@ public abstract class AbstractIT {
   // Ledger Helpers
   //////////////////////
 
-  /**
-   * Poll validated ledgers for account objects until the given {@link Predicate} on the {@link AccountObjectsResult}
-   * passes.
-   *
-   * @param classicAddress The classic {@link Address} of the account.
-   * @param condition A {@link Predicate} dictating whether or not to continue polling.
-   * @return The first {@link AccountObjectsResult} that satisfies the condition.
-   * @throws ConditionTimeoutException if no {@link AccountObjectsResult} matching the condition is retrieved after
-   *  30 seconds.
-   */
-  protected AccountObjectsResult scanValidatedAccountObjectsForCondition(
-    final Address classicAddress,
-    final Predicate<AccountObjectsResult> condition
-  ) {
+  protected <T extends JsonRpcResult> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .pollDelay(Duration.TWO_SECONDS)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .await()
       .until(() -> {
-        AccountObjectsResult validatedAccountObjects = getValidatedAccountObjects(classicAddress);
-        if (validatedAccountObjects == null) {
+        T result = resultSupplier.get();
+        if (result == null) {
           return null;
         }
-        return condition.test(validatedAccountObjects) ? validatedAccountObjects : null;
+        return condition.test(result) ? result : null;
       }, is(notNullValue()));
   }
 
-  /**
-   * Poll validated ledgers for account objects until a response is returned. This can be useful when
-   * querying account objects immediately after creating an account.
-   *
-   * @param classicAddress The classic {@link Address} of the account.
-   * @return An {@link AccountObjectsResult} containing the account objects.
-   * @throws ConditionTimeoutException if no {@link AccountObjectsResult} is returned within 30 seconds.
-   */
-  protected AccountObjectsResult scanForValidatedAccountObjects(final Address classicAddress) {
+  protected <T extends JsonRpcResult> T scanForResult(Supplier<T> resultSupplier) {
+    Objects.requireNonNull(resultSupplier);
     return given()
-      .pollDelay(Duration.TWO_SECONDS)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
       .await()
-      .until(
-        () -> getValidatedAccountObjects(classicAddress),
-        is(notNullValue())
-      );
+      .until(resultSupplier::get, is(notNullValue()));
   }
 
   protected AccountObjectsResult getValidatedAccountObjects(Address classicAddress) {
     try {
-      return xrplClient.accountObjects(classicAddress, "validated");
+      AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
+        .account(classicAddress)
+        .ledgerIndex("validated")
+        .build();
+      return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
 
-  /**
-   * Poll the ledger for the account until the given {@link Predicate} on the resulting {@link AccountInfoResult}
-   * is true. This can be useful for validating account changes that may not take effect immediately.
-   *
-   * @param classicAddress The classic XRP address of the account to scan.
-   * @param condition A {@link Predicate} which will be checked against each polling of {@link AccountInfoResult},
-   *                  and will cause this method to return once true.
-   * @return The {@link AccountInfoResult} that satisfied the {@code condition}.
-   * @throws ConditionTimeoutException If no {@link AccountInfoResult} matching the {@link Predicate}
-   *          exists after 30 seconds.
-   */
-  protected AccountInfoResult scanValidatedAccountInfoForCondition(final Address classicAddress, Predicate<AccountInfoResult> condition) {
-    return given()
-      .pollDelay(Duration.TWO_SECONDS)
-      .atMost(Duration.ONE_MINUTE.divide(2))
-      .await()
-      .until(() -> {
-        AccountInfoResult validatedAccountInfo = getValidatedAccountInfoResult(classicAddress);
-        if (validatedAccountInfo == null) {
-          return null;
-        }
-        return condition.test(validatedAccountInfo) ? validatedAccountInfo : null;
-      }, is(notNullValue()));
-  }
-
-  /**
-   * Poll the ledger for the account using an {@link org.awaitility.Awaitility} for 30 seconds, until the account
-   * exists.
-   * @param classicAddress The classic XRPL {@link Address} of the account to scan for.
-   * @return The {@link AccountInfoResult} associated with {@code classicAddress}.
-   * @throws ConditionTimeoutException If no {@link AccountInfoResult} for the given address
-   *  exists after 30 seconds.
-   */
-  protected AccountInfoResult scanForValidatedAccountInfo(final Address classicAddress) {
-    Objects.requireNonNull(classicAddress);
-    return given()
-      .pollDelay(Duration.TWO_SECONDS)
-      .atMost(Duration.ONE_MINUTE.divide(2))
-      .ignoreException(RuntimeException.class)
-      .await().until(() -> getValidatedAccountInfoResult(classicAddress), is(notNullValue()));
-  }
-
-  private AccountInfoResult getValidatedAccountInfoResult(Address classicAddress) {
+  protected AccountInfoResult getValidatedAccountInfo(Address classicAddress) {
     try {
-      return xrplClient.accountInfo(classicAddress, "validated");
+      AccountInfoRequestParams params = AccountInfoRequestParams.builder()
+        .account(classicAddress)
+        .ledgerIndex("validated")
+        .build();
+      return xrplClient.accountInfo(params);
     } catch (Exception | JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected  <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> getValidatedTransaction(
+    String transactionHash,
+    Class<TxnType> transactionType
+  ) {
+    try {
+      TransactionResult<TxnType> transaction = xrplClient.transaction(
+        TransactionRequestParams.of(transactionHash),
+        transactionType
+      );
+      return transaction.validated() ? transaction : null;
+    } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

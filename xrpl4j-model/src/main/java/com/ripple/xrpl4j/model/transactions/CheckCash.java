@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 
 import java.util.Optional;
 
@@ -36,7 +35,7 @@ public interface CheckCash extends Transaction<TransactionFlags> {
    * proper signature computation in rippled.
    */
   @JsonProperty("Flags")
-  @Derived
+  @Value.Derived
   default TransactionFlags flags() {
     return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
   }

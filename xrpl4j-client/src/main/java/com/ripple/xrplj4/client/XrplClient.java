@@ -27,6 +27,8 @@ import com.ripple.xrplj4.client.model.fees.FeeResult;
 import com.ripple.xrplj4.client.model.ledger.LedgerObject;
 import com.ripple.xrplj4.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
+import com.ripple.xrplj4.client.model.transactions.TransactionRequestParams;
+import com.ripple.xrplj4.client.model.transactions.TransactionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClient;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
@@ -62,18 +64,16 @@ public class XrplClient {
    * Submit a {@link Transaction} to the XRP Ledger.
    *
    * @see "https://xrpl.org/submit.html"
+   * @param <TxnType> The type of {@link Transaction} that is being submitted.
    * @param wallet The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
    * @param unsignedTransaction An unsigned {@link Transaction} to submit. {@link Transaction#transactionSignature()}
    *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
-   * @param transactionType The {@link Class} of the specific {@link Transaction} that is being submitted.
-   * @param <TxnType> The type of {@link Transaction} that is being submitted.
    * @return The {@link SubmissionResult} resulting from the submission request.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <TxnType extends Transaction<? extends Flags.TransactionFlags>> SubmissionResult<TxnType> submit(
     Wallet wallet,
-    TxnType unsignedTransaction,
-    Class<TxnType> transactionType
+    TxnType unsignedTransaction
   ) throws JsonRpcClientErrorException {
     try {
       Preconditions.checkArgument(
@@ -86,7 +86,7 @@ public class XrplClient {
         .method(XrplMethods.SUBMIT)
         .addParams(SubmissionRequestParams.of(signedTransaction))
         .build();
-      JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmissionResult.class, transactionType);
+      JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmissionResult.class, unsignedTransaction.getClass());
       return jsonRpcClient.send(request, resultType);
     } catch (JsonProcessingException e) {
       throw new IllegalStateException(e);
@@ -109,38 +109,14 @@ public class XrplClient {
   }
 
   /**
-   * Retrieve information about an XRPL account, its activity, and its XRP balance. All
-   * information retrieved is relative to a particular version of the ledger.
+   * Get the {@link AccountInfoResult} for the account specified in {@code params} by making an account_info method
+   * call.
    *
-   * @see "https://xrpl.org/account_info.html"
-   * @param classicAddress The XRPL {@link Address} in classic form of the account to retrieve info for.
-   * @return An {@link AccountInfoResult} containing the account information.
+   * @param params The {@link AccountInfoRequestParams} to send in the request.
+   * @return The {@link AccountInfoResult} returned by the account_info method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountInfoResult accountInfo(Address classicAddress) throws JsonRpcClientErrorException {
-    return accountInfo(AccountInfoRequestParams.of(classicAddress));
-  }
-
-  /**
-   * Retrieve information about an XRPL account, its activity, and its XRP balance. All
-   * information retrieved is relative to a particular version of the ledger, which can be specified by
-   * {@code ledgerIndex}.
-   *
-   * @see "https://xrpl.org/account_info.html"
-   * @param classicAddress The XRPL {@link Address} in classic form of the account to retrieve info for.
-   * @param ledgerIndex The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   * @return An {@link AccountInfoResult} containing the account information.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   */
-  public AccountInfoResult accountInfo(Address classicAddress, String ledgerIndex) throws JsonRpcClientErrorException {
-    return accountInfo(AccountInfoRequestParams.builder()
-      .account(classicAddress)
-      .ledgerIndex(ledgerIndex)
-      .build()
-    );
-  }
-
-  private AccountInfoResult accountInfo(AccountInfoRequestParams params) throws JsonRpcClientErrorException {
+  public AccountInfoResult accountInfo(AccountInfoRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_INFO)
       .addParams(params)
@@ -150,39 +126,42 @@ public class XrplClient {
   }
 
   /**
-   * Send an account_objects request to rippled. The account_objects command returns the raw ledger format for all
-   * {@link LedgerObject}s owned by an account.
+   * Get the {@link AccountObjectsResult} for the account specified in {@code params} by making an account_objects
+   * method call.
    *
-   * @param classicAddress The classic {@link Address} of the account.
-   * @return An {@link AccountObjectsResult} containing the {@link LedgerObject}s owned by the account.
+   * @param params The {@link AccountObjectsRequestParams} to send in the request.
+   * @return The {@link AccountObjectsResult} returned by the account_objects method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountObjectsResult accountObjects(Address classicAddress) throws JsonRpcClientErrorException {
-    return accountObjects(AccountObjectsRequestParams.of(classicAddress));
-  }
-
-  /**
-   * Send an account_objects request to rippled with a specified ledger index. The account_objects command returns
-   * the raw ledger format for all {@link LedgerObject}s owned by an account.
-   *
-   * @param classicAddress The classic {@link Address} of the account.
-   * @param ledgerIndex The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   * @return An {@link AccountObjectsResult} containing the {@link LedgerObject}s owned by the account.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   */
-  public AccountObjectsResult accountObjects(Address classicAddress, String ledgerIndex) throws JsonRpcClientErrorException {
-    return accountObjects(AccountObjectsRequestParams.builder()
-      .account(classicAddress)
-      .ledgerIndex(ledgerIndex)
-      .build());
-  }
-
-  private AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws JsonRpcClientErrorException {
+  public AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_OBJECTS)
       .addParams(params)
       .build();
     return jsonRpcClient.send(request, AccountObjectsResult.class);
+  }
+
+  /**
+   * Get a transaction from the ledger by sending a tx method request.
+   *
+   * @param params The {@link TransactionRequestParams} to send in the request.
+   * @param transactionType The {@link Transaction} type of the transaction with the hash {@code params.transaction()}.
+   * @param <TxnType> Type parameter for the type of {@link Transaction} that the {@link TransactionResult} will
+   *                contain.
+   * @return A {@link TransactionResult} containing the requested transaction and other metadata.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> transaction(
+    TransactionRequestParams params,
+    Class<TxnType> transactionType
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.TX)
+      .addParams(params)
+      .build();
+
+    JavaType resultType = objectMapper.getTypeFactory().constructParametricType(TransactionResult.class, transactionType);
+    return jsonRpcClient.send(request, resultType);
   }
 
   /**
@@ -253,6 +232,8 @@ public class XrplClient {
         .transactionSignature(signature)
         .build();
     }
+
+    // TODO: Add other transactions
 
     throw new IllegalArgumentException("Signing fields could not be added to the unsignedTransaction."); // Never happens
 

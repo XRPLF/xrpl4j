@@ -26,7 +26,7 @@ public class SubmitPaymentIT extends AbstractIT {
     assertThat(fundDestinationResponse.amount()).isGreaterThan(0);
 
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult accountInfo = xrplClient.accountInfo(sourceWallet.classicAddress());
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().minimumFee())
@@ -36,7 +36,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> result = xrplClient.submit(sourceWallet, payment, Payment.class);
+    SubmissionResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
   }
@@ -54,7 +54,8 @@ public class SubmitPaymentIT extends AbstractIT {
     Wallet destinationWallet = createRandomAccount();
 
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult accountInfo = xrplClient.accountInfo(senderWallet.classicAddress());
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
+
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
       .fee(feeResult.drops().minimumFee())
@@ -64,7 +65,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> result = xrplClient.submit(senderWallet, payment, Payment.class);
+    SubmissionResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
   }

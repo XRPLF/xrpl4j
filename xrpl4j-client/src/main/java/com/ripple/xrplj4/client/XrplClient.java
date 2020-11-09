@@ -108,6 +108,14 @@ public class XrplClient {
     return jsonRpcClient.send(request, FeeResult.class);
   }
 
+  /**
+   * Get the {@link AccountInfoResult} for the account specified in {@code params} by making an account_info method
+   * call.
+   *
+   * @param params The {@link AccountInfoRequestParams} to send in the request.
+   * @return The {@link AccountInfoResult} returned by the account_info method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
   public AccountInfoResult accountInfo(AccountInfoRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_INFO)
@@ -117,7 +125,14 @@ public class XrplClient {
     return jsonRpcClient.send(request, AccountInfoResult.class);
   }
 
-
+  /**
+   * Get the {@link AccountObjectsResult} for the account specified in {@code params} by making an account_objects
+   * method call.
+   *
+   * @param params The {@link AccountObjectsRequestParams} to send in the request.
+   * @return The {@link AccountObjectsResult} returned by the account_objects method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
   public AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_OBJECTS)
@@ -126,6 +141,16 @@ public class XrplClient {
     return jsonRpcClient.send(request, AccountObjectsResult.class);
   }
 
+  /**
+   * Get a transaction from the ledger by sending a tx method request.
+   *
+   * @param params The {@link TransactionRequestParams} to send in the request.
+   * @param transactionType The {@link Transaction} type of the transaction with the hash {@code params.transaction()}.
+   * @param <TxnType> Type parameter for the type of {@link Transaction} that the {@link TransactionResult} will
+   *                contain.
+   * @return A {@link TransactionResult} containing the requested transaction and other metadata.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
   public <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> transaction(
     TransactionRequestParams params,
     Class<TxnType> transactionType
@@ -207,6 +232,8 @@ public class XrplClient {
         .transactionSignature(signature)
         .build();
     }
+
+    // TODO: Add other transactions
 
     throw new IllegalArgumentException("Signing fields could not be added to the unsignedTransaction."); // Never happens
 

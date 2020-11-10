@@ -4,18 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.client.model.fees.FeeResult;
+import com.ripple.xrpl4j.client.model.ledger.objects.CheckObject;
+import com.ripple.xrpl4j.client.model.ledger.objects.LedgerObject;
+import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
+import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrpl4j.xrplj4.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.xrplj4.client.model.ledger.objects.CheckObject;
-import com.ripple.xrpl4j.xrplj4.client.model.ledger.objects.LedgerObject;
-import com.ripple.xrpl4j.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrpl4j.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Predicate;

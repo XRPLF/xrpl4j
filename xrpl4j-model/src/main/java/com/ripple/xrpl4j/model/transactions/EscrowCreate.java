@@ -3,8 +3,8 @@ package com.ripple.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
 
@@ -55,7 +55,7 @@ public interface EscrowCreate extends Transaction<TransactionFlags> {
    * This value is immutable - the funds can only be returned to the sender after this time.
    */
   @JsonProperty("CancelAfter")
-  Optional<UnsignedInteger> cancelAfter();
+  Optional<UnsignedLong> cancelAfter();
 
   /**
    * The time, in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
@@ -63,7 +63,7 @@ public interface EscrowCreate extends Transaction<TransactionFlags> {
    * This value is immutable - the funds cannot move until this time is reached.
    */
   @JsonProperty("FinishAfter")
-  Optional<UnsignedInteger> finishAfter();
+  Optional<UnsignedLong> finishAfter();
 
   /**
    * Hex value representing a PREIMAGE-SHA-256 crypto-condition.

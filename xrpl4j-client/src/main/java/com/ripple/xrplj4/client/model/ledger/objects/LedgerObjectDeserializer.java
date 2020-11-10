@@ -1,4 +1,4 @@
-package com.ripple.xrplj4.client.model.ledger;
+package com.ripple.xrplj4.client.model.ledger.objects;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
-import com.ripple.xrplj4.client.model.ledger.LedgerObject.LedgerEntryType;
+import com.ripple.xrplj4.client.model.ledger.objects.LedgerObject.LedgerEntryType;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,6 +24,7 @@ public class LedgerObjectDeserializer extends JsonDeserializer<LedgerObject> {
     .put(LedgerEntryType.CHECK, CheckObject.class)
     .put(LedgerEntryType.DEPOSIT_PRE_AUTH, DepositPreAuthObject.class)
     .put(LedgerEntryType.ACCOUNT_ROOT, AccountRootObject.class)
+    .put(LedgerEntryType.ESCROW, EscrowObject.class)
     // TODO Add other ledger object types
     .build();
 

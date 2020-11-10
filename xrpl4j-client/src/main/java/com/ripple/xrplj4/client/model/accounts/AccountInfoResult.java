@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrplj4.client.model.JsonRpcResult;
-import com.ripple.xrplj4.client.model.ledger.AccountRootObject;
+import com.ripple.xrplj4.client.model.ledger.objects.AccountRootObject;
 import org.immutables.value.Value;
 
 import java.util.List;

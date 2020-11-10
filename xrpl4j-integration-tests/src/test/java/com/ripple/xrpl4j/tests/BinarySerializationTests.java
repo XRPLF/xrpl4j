@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.AccountDelete;
@@ -153,8 +154,8 @@ public class BinarySerializationTests {
       .amount(XrpCurrencyAmount.of("100"))
       .fee(XrpCurrencyAmount.of("12"))
       .sequence(UnsignedInteger.ONE)
-      .cancelAfter(UnsignedInteger.valueOf(630000001))
-      .finishAfter(UnsignedInteger.valueOf(630000000))
+      .cancelAfter(UnsignedLong.valueOf(630000001))
+      .finishAfter(UnsignedLong.valueOf(630000000))
       .destination(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
       .destinationTag(UnsignedInteger.valueOf(23480))
       .condition("A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100")

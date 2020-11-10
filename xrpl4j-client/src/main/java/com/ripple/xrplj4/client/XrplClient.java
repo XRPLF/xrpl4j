@@ -10,11 +10,13 @@ import com.ripple.xrpl4j.keypairs.KeyPairService;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.AccountDelete;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
-import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
+import com.ripple.xrpl4j.model.transactions.EscrowCancel;
+import com.ripple.xrpl4j.model.transactions.EscrowCreate;
+import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.Transaction;
@@ -24,14 +26,15 @@ import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrplj4.client.model.ledger.LedgerObject;
+import com.ripple.xrplj4.client.model.ledger.LedgerRequestParams;
+import com.ripple.xrplj4.client.model.ledger.LedgerResult;
 import com.ripple.xrplj4.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.model.transactions.TransactionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.TransactionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClient;
-import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrplj4.client.rippled.JsonRpcRequest;
 import com.ripple.xrplj4.client.rippled.XrplMethods;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -165,6 +168,22 @@ public class XrplClient {
   }
 
   /**
+   * Get the contents of a ledger by sending a ledger method request.
+   *
+   * @param params The {@link LedgerRequestParams} to send in the request.
+   * @return A {@link LedgerResult} containing the ledger details.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  public LedgerResult ledger(LedgerRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.LEDGER)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, LedgerResult.class);
+  }
+
+  /**
    * Serialize a {@link Transaction} to binary and sign it using {@code wallet.privateKey()}.
    *
    * @param wallet The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
@@ -229,6 +248,18 @@ public class XrplClient {
         .build();
     } else if (DepositPreAuth.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return DepositPreAuth.builder().from((DepositPreAuth) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (EscrowCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return EscrowCreate.builder().from((EscrowCreate) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (EscrowCancel.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return EscrowCancel.builder().from((EscrowCancel) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

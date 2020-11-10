@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrplj4.client.model.ledger.LedgerObject;
+import com.ripple.xrplj4.client.model.ledger.objects.LedgerObject;
 import com.ripple.xrplj4.client.rippled.JsonRpcRequestParams;
 import org.immutables.value.Value;
 

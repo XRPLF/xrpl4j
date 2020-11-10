@@ -11,7 +11,7 @@ import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrplj4.client.model.ledger.DepositPreAuthObject;
+import com.ripple.xrplj4.client.model.ledger.objects.DepositPreAuthObject;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.model.transactions.TransactionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
@@ -91,10 +91,10 @@ public class DepositPreAuthIT extends AbstractIT {
     this.scanForResult(
       () -> this.getValidatedAccountInfo(receiverWallet.classicAddress()),
       info -> {
-        String expectedBalance = UnsignedLong.valueOf(receiverAccountInfo.accountData().balance())
+        String expectedBalance = UnsignedLong.valueOf(receiverAccountInfo.accountData().balance().value())
           .minus(UnsignedLong.valueOf(depositPreAuth.fee().value()))
           .plus(UnsignedLong.valueOf(((XrpCurrencyAmount) validatedPayment.transaction().amount()).value())).toString();
-        return info.accountData().balance().equals(expectedBalance);
+        return info.accountData().balance().value().equals(expectedBalance);
       });
   }
 

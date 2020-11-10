@@ -13,6 +13,8 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.optionals.OptionalDecoder;
 import okhttp3.HttpUrl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -23,6 +25,8 @@ import java.util.Optional;
  * should be implemented in a wrapper class.
  */
 public interface JsonRpcClient {
+
+  Logger logger = LoggerFactory.getLogger(JsonRpcClient.class);
 
   String HEADER_ACCEPT = "Accept";
   String HEADER_CONTENT_TYPE = "Content-Type";

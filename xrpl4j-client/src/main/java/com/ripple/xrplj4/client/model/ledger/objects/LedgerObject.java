@@ -1,9 +1,8 @@
-package com.ripple.xrplj4.client.model.ledger;
+package com.ripple.xrplj4.client.model.ledger.objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.ripple.xrpl4j.model.transactions.AccountSet;
 
 /**
  * Market interface for XRP Ledger Objects.

@@ -1,4 +1,4 @@
-package com.ripple.xrplj4.client.model.ledger;
+package com.ripple.xrplj4.client.model.ledger.objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

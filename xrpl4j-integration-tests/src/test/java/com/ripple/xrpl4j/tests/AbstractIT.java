@@ -5,6 +5,7 @@ import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Transaction;
@@ -21,17 +22,17 @@ import com.ripple.xrplj4.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrplj4.client.model.accounts.AccountObjectsResult;
-import com.ripple.xrplj4.client.model.accounts.ImmutableAccountInfoRequestParams;
-import com.ripple.xrplj4.client.model.accounts.ImmutableAccountObjectsRequestParams;
+import com.ripple.xrplj4.client.model.ledger.LedgerRequestParams;
+import com.ripple.xrplj4.client.model.ledger.LedgerResult;
 import com.ripple.xrplj4.client.model.transactions.TransactionRequestParams;
 import com.ripple.xrplj4.client.model.transactions.TransactionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import okhttp3.HttpUrl;
 import org.awaitility.Duration;
-import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -111,7 +112,7 @@ public abstract class AbstractIT {
     }
   }
 
-  protected  <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> getValidatedTransaction(
+  protected <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> getValidatedTransaction(
     String transactionHash,
     Class<TxnType> transactionType
   ) {
@@ -124,6 +125,25 @@ public abstract class AbstractIT {
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
+  }
+
+  protected LedgerResult getValidatedLedger() {
+    try {
+      LedgerRequestParams params = LedgerRequestParams.builder()
+        .ledgerIndex("validated")
+        .build();
+      return xrplClient.ledger(params);
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected UnsignedLong instantToXrpTimestamp(Instant instant) {
+    return UnsignedLong.valueOf(instant.getEpochSecond() - 0x386d4380);
+  }
+
+  protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
+    return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
   }
 
 }

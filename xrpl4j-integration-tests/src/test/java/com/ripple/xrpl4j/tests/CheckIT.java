@@ -12,15 +12,15 @@ import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
 import com.ripple.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrplj4.client.model.ledger.CheckObject;
-import com.ripple.xrplj4.client.model.ledger.LedgerObject;
+import com.ripple.xrplj4.client.model.ledger.objects.CheckObject;
+import com.ripple.xrplj4.client.model.ledger.objects.LedgerObject;
 import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
 import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Predicate;
 
-public class CheckObjectIT extends AbstractIT {
+public class CheckIT extends AbstractIT {
 
   @Test
   public void createXrpCheckAndCash() throws JsonRpcClientErrorException {
@@ -88,9 +88,9 @@ public class CheckObjectIT extends AbstractIT {
     this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress()),
       result -> {
-        logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance());
-        return result.accountData().balance().equals(
-          UnsignedInteger.valueOf(destinationAccountInfo.accountData().balance())
+        logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance().value());
+        return result.accountData().balance().value().equals(
+          UnsignedInteger.valueOf(destinationAccountInfo.accountData().balance().value())
             .plus(UnsignedInteger.valueOf(((XrpCurrencyAmount) checkObject.sendMax()).value()))
             .minus(UnsignedInteger.valueOf(checkCash.fee().value())).toString());
       });

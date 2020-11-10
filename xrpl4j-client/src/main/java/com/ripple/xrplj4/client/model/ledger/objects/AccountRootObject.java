@@ -1,4 +1,4 @@
-package com.ripple.xrplj4.client.model.ledger;
+package com.ripple.xrplj4.client.model.ledger.objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,6 +10,7 @@ import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.Transaction;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -42,10 +43,10 @@ public interface AccountRootObject extends LedgerObject {
   Address account();
 
   /**
-   * The account's current XRP balance in drops, represented as a {@link String}
+   * The account's current XRP balance in drops, represented as an {@link XrpCurrencyAmount}
    */
   @JsonProperty("Balance")
-  String balance();
+  XrpCurrencyAmount balance();
 
   /**
    * A bit-map of boolean {@link AccountRootFlags} enabled for this account.

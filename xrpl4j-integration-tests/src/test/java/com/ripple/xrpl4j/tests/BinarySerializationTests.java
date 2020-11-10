@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.AccountDelete;
@@ -15,6 +16,9 @@ import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
+import com.ripple.xrpl4j.model.transactions.EscrowCancel;
+import com.ripple.xrpl4j.model.transactions.EscrowCreate;
+import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -141,6 +145,54 @@ public class BinarySerializationTests {
 
     String expectedBinary = "1200132280000000240000004168400000000000000A81148A928D14A643F388AC0D26BAF9755B07EB0A2B44851486FFE2A17E861BA0FE9A3ED8352F895D80E789E0";
     assertSerializes(preAuth, expectedBinary);
+  }
+
+  @Test
+  void serializeEscrowCreate() throws JsonProcessingException {
+    EscrowCreate checkCreate = EscrowCreate.builder()
+      .account(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
+      .amount(XrpCurrencyAmount.of("100"))
+      .fee(XrpCurrencyAmount.of("12"))
+      .sequence(UnsignedInteger.ONE)
+      .cancelAfter(UnsignedLong.valueOf(630000001))
+      .finishAfter(UnsignedLong.valueOf(630000000))
+      .destination(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .destinationTag(UnsignedInteger.valueOf(23480))
+      .condition("A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100")
+      .build();
+
+    String expectedBinary = "120001228000000024000000012E00005BB82024258D09812025258D098061400000000000006468400000000000000C701127A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B8558101008114EE5F7CF61504C7CF7E0C22562EB19CC7ACB0FCBA8314B5F762798A53D543A014CAF8B297CFF8F2F937E8";
+    assertSerializes(checkCreate, expectedBinary);
+  }
+
+  @Test
+  void serializeEscrowCancel() throws JsonProcessingException {
+    EscrowCancel escrowCancel = EscrowCancel.builder()
+      .account(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
+      .fee(XrpCurrencyAmount.of("12"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
+      .offerSequence(UnsignedInteger.valueOf(25))
+      .build();
+
+    String expectedBinary = "1200042280000000240000000120190000001968400000000000000C8114EE5F7CF61504C7CF7E0C22562EB19CC7ACB0FCBA8214EE5F7CF61504C7CF7E0C22562EB19CC7ACB0FCBA";
+    assertSerializes(escrowCancel, expectedBinary);
+  }
+
+  @Test
+  void serializeEscrowFinish() throws JsonProcessingException {
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .account(Address.of("rMYPppnVNQ7crMizv8D6wF45kYuSupygyr"))
+      .fee(XrpCurrencyAmount.of("10"))
+      .sequence(UnsignedInteger.valueOf(3))
+      .owner(Address.of("rMYPppnVNQ7crMizv8D6wF45kYuSupygyr"))
+      .offerSequence(UnsignedInteger.valueOf(25))
+      .condition("A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100")
+      .fulfillment("A0028000")
+      .build();
+
+    String expectedBinary = "1200022280000000240000000320190000001968400000000000000A701004A0028000701127A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B8558101008114E151CA3207BAB5B91D2F0E4D35ECDFD4551C69A18214E151CA3207BAB5B91D2F0E4D35ECDFD4551C69A1";
+    assertSerializes(escrowFinish, expectedBinary);
   }
 
   @Test

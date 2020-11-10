@@ -74,7 +74,7 @@ public class EscrowIT extends AbstractIT {
         return ledgerResult
           .ledger()
           .closeTime()
-          .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) >= 0;
+          .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0;
       }
     );
 
@@ -141,8 +141,8 @@ public class EscrowIT extends AbstractIT {
       .fee(feeResult.drops().minimumFee())
       .amount(XrpCurrencyAmount.of("123456"))
       .destination(receiverWallet.classicAddress())
-      .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(20))))
-      .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+      .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+      .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(1))))
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
@@ -178,7 +178,7 @@ public class EscrowIT extends AbstractIT {
         return ledgerResult
           .ledger()
           .closeTime()
-          .compareTo(createResult.transaction().cancelAfter().orElse(UnsignedLong.MAX_VALUE)) >= 0;
+          .compareTo(createResult.transaction().cancelAfter().orElse(UnsignedLong.MAX_VALUE)) > 0;
       }
     );
 

@@ -2,6 +2,7 @@ package com.ripple.xrpl4j.model.transactions.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.EscrowCancel;
 import com.ripple.xrpl4j.model.transactions.EscrowCreate;
@@ -21,8 +22,8 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.of("10000"))
       .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
       .destinationTag(UnsignedInteger.valueOf(23480))
-      .cancelAfter(UnsignedInteger.valueOf(533257958))
-      .finishAfter(UnsignedInteger.valueOf(533171558))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .finishAfter(UnsignedLong.valueOf(533171558))
       .condition("A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100")
       .sourceTag(UnsignedInteger.valueOf(11747))
       .build();

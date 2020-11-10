@@ -11,7 +11,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 /**
- * Request parameters for the
+ * Request parameters for the ledger JSON RPC API method.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableLedgerRequestParams.class)

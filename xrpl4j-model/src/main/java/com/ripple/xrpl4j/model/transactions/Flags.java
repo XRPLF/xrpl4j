@@ -504,4 +504,116 @@ public class Flags {
 
     }
   }
+
+  public static class TrustSetFlags extends TransactionFlags {
+
+    public static final TrustSetFlags UNSET = new TrustSetFlags(0);
+
+    public static final TrustSetFlags SET_F_AUTH = new TrustSetFlags(0x00010000);
+    public static final TrustSetFlags SET_NO_RIPPLE = new TrustSetFlags(0x00020000);
+    public static final TrustSetFlags CLEAR_NO_RIPPLE = new TrustSetFlags(0x00040000);
+    public static final TrustSetFlags SET_FREEZE = new TrustSetFlags(0x00100000);
+    public static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
+
+    public static TrustSetFlags.Builder builder() {
+      return new TrustSetFlags.Builder();
+    }
+
+    private TrustSetFlags(long value) {
+      super(value);
+    }
+
+    private static TrustSetFlags of(
+      boolean tfFullyCanonicalSig,
+      boolean tfSetfAuth,
+      boolean tfSetNoRipple,
+      boolean tfClearNoRipple,
+      boolean tfSetFreeze,
+      boolean tfClearFreeze
+    ) {
+      return new TrustSetFlags(
+        Flags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfSetfAuth ? SET_F_AUTH : UNSET,
+          tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
+          tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
+          tfSetFreeze ? SET_FREEZE : UNSET,
+          tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
+      );
+    }
+
+    public boolean tfFullyCanonicalSig() {
+      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
+    }
+
+    public boolean tfSetfAuth() {
+      return this.isSet(SET_F_AUTH);
+    }
+
+    public boolean tfSetNoRipple() {
+      return this.isSet(SET_NO_RIPPLE);
+    }
+
+    public boolean tfClearNoRipple() {
+      return this.isSet(CLEAR_NO_RIPPLE);
+    }
+
+    public boolean tfSetFreeze() {
+      return this.isSet(SET_FREEZE);
+    }
+
+    public boolean tfClearFreeze() {
+      return this.isSet(CLEAR_FREEZE);
+    }
+
+    public static class Builder {
+      boolean tfFullyCanonicalSig = true;
+      boolean tfSetfAuth = false;
+      boolean tfSetNoRipple = false;
+      boolean tfClearNoRipple = false;
+      boolean tfSetFreeze = false;
+      boolean tfClearFreeze = false;
+
+      public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfSetfAuth(boolean tfSetfAuth) {
+        this.tfSetfAuth = tfSetfAuth;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfSetNoRipple(boolean tfSetNoRipple) {
+        this.tfSetNoRipple = tfSetNoRipple;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfClearNoRipple(boolean tfClearNoRipple) {
+        this.tfClearNoRipple = tfClearNoRipple;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfSetFreeze(boolean tfSetFreeze) {
+        this.tfSetFreeze = tfSetFreeze;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfClearFreeze(boolean tfClearFreeze) {
+        this.tfClearFreeze = tfClearFreeze;
+        return this;
+      }
+
+      public TrustSetFlags build() {
+        return TrustSetFlags.of(
+          tfFullyCanonicalSig,
+          tfSetfAuth,
+          tfSetNoRipple,
+          tfClearNoRipple,
+          tfSetFreeze,
+          tfClearFreeze
+        );
+      }
+    }
+  }
 }

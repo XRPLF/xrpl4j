@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.LongNode;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.codec.binary.serdes.BinaryParser;
 
@@ -28,4 +29,8 @@ public class UInt32Type extends UIntType<UInt32Type> {
     return new UInt32Type(UnsignedLong.valueOf(value.asText()));
   }
 
+  @Override
+  public JsonNode toJSON() {
+    return new LongNode(UnsignedLong.valueOf(toHex(), 16).longValue());
+  }
 }

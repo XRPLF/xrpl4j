@@ -178,7 +178,7 @@ public class EscrowIT extends AbstractIT {
         return ledgerResult
           .ledger()
           .closeTime()
-          .compareTo(createResult.transaction().cancelAfter().orElse(UnsignedLong.MAX_VALUE)) > 0;
+          .compareTo(createResult.transaction().cancelAfter().orElse(UnsignedLong.MAX_VALUE.plus(UnsignedLong.valueOf(5)))) > 0;
       }
     );
 

@@ -3,18 +3,18 @@ package com.ripple.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedLong;
+import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
+import com.ripple.xrpl4j.client.model.fees.FeeResult;
+import com.ripple.xrpl4j.client.model.ledger.objects.DepositPreAuthObject;
+import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
+import com.ripple.xrpl4j.client.model.transactions.TransactionResult;
+import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrpl4j.xrplj4.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.xrplj4.client.model.accounts.AccountObjectsResult;
-import com.ripple.xrpl4j.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.xrplj4.client.model.ledger.objects.DepositPreAuthObject;
-import com.ripple.xrpl4j.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrpl4j.xrplj4.client.model.transactions.TransactionResult;
-import com.ripple.xrpl4j.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 public class DepositPreAuthIT extends AbstractIT {

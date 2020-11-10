@@ -10,12 +10,12 @@ import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
-import com.ripple.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrplj4.client.model.ledger.objects.CheckObject;
-import com.ripple.xrplj4.client.model.ledger.objects.LedgerObject;
-import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.xrplj4.client.model.fees.FeeResult;
+import com.ripple.xrpl4j.xrplj4.client.model.ledger.objects.CheckObject;
+import com.ripple.xrpl4j.xrplj4.client.model.ledger.objects.LedgerObject;
+import com.ripple.xrpl4j.xrplj4.client.model.transactions.SubmissionResult;
+import com.ripple.xrpl4j.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Predicate;

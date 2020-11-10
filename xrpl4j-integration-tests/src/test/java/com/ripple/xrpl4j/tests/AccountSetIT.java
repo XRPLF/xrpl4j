@@ -7,10 +7,10 @@ import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
 import com.ripple.xrpl4j.wallet.Wallet;
-import com.ripple.xrplj4.client.model.accounts.AccountInfoResult;
-import com.ripple.xrplj4.client.model.fees.FeeResult;
-import com.ripple.xrplj4.client.model.transactions.SubmissionResult;
-import com.ripple.xrplj4.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.xrplj4.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.xrplj4.client.model.fees.FeeResult;
+import com.ripple.xrpl4j.xrplj4.client.model.transactions.SubmissionResult;
+import com.ripple.xrpl4j.xrplj4.client.rippled.JsonRpcClientErrorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;

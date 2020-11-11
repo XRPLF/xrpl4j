@@ -35,6 +35,7 @@ import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.Transaction;
+import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.wallet.Wallet;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -260,6 +261,10 @@ public class XrplClient {
         .build();
     } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return TrustSet.builder().from((TrustSet) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

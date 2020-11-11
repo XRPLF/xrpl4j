@@ -20,6 +20,12 @@ public interface TrustSet extends Transaction<Flags.TrustSetFlags> {
     return ImmutableTrustSet.builder();
   }
 
+  @JsonProperty("Flags")
+  @Value.Default
+  default Flags.TrustSetFlags flags() {
+    return Flags.TrustSetFlags.builder().build();
+  }
+
   /**
    * The {@link IssuedCurrencyAmount} defining the trust line to create or modify.
    */

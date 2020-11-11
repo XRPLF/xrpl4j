@@ -616,4 +616,140 @@ public class Flags {
       }
     }
   }
+
+  public static class RippleStateFlags extends Flags {
+
+    public static final RippleStateFlags LOW_RESERVE = new RippleStateFlags(0x00010000);
+    public static final RippleStateFlags HIGH_RESERVE = new RippleStateFlags(0x00020000);
+    public static final RippleStateFlags LOW_AUTH = new RippleStateFlags(0x00040000);
+    public static final RippleStateFlags HIGH_AUTH = new RippleStateFlags(0x00080000);
+    public static final RippleStateFlags LOW_NO_RIPPLE = new RippleStateFlags(0x00100000);
+    public static final RippleStateFlags HIGH_NO_RIPPLE = new RippleStateFlags(0x00200000);
+    public static final RippleStateFlags LOW_FREEZE = new RippleStateFlags(0x00400000);
+    public static final RippleStateFlags HIGH_FREEZE = new RippleStateFlags(0x00800000);
+
+    private static RippleStateFlags of(
+      boolean lsfLowReserve,
+      boolean lsfHighReserve,
+      boolean lsfLowAuth,
+      boolean lsfHighAuth,
+      boolean lsfLowNoRipple,
+      boolean lsfHighNoRipple,
+      boolean lsfLowFreeze,
+      boolean lsfHighFreeze
+    ) {
+      return new RippleStateFlags(
+        Flags.of(
+          lsfLowReserve ? LOW_RESERVE : UNSET,
+          lsfHighReserve ? HIGH_RESERVE : UNSET,
+          lsfLowAuth ? LOW_AUTH : UNSET,
+          lsfHighAuth ? HIGH_AUTH : UNSET,
+          lsfLowNoRipple ? LOW_NO_RIPPLE : UNSET,
+          lsfHighNoRipple ? HIGH_NO_RIPPLE : UNSET,
+          lsfLowFreeze ? LOW_FREEZE : UNSET,
+          lsfHighFreeze ? HIGH_FREEZE : UNSET
+        ).getValue()
+      );
+    }
+
+    private RippleStateFlags(long value) {
+      super(value);
+    }
+
+    public boolean lsfLowReserve() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighReserve() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfLowAuth() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighAuth() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfLowNoRipple() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighNoRipple() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfLowFreeze() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighFreeze() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public static class Builder {
+      boolean lsfLowReserve = false;
+      boolean lsfHighReserve = false;
+      boolean lsfLowAuth = false;
+      boolean lsfHighAuth = false;
+      boolean lsfLowNoRipple = false;
+      boolean lsfHighNoRipple = false;
+      boolean lsfLowFreeze = false;
+      boolean lsfHighFreeze = false;
+
+      public Builder lsfLowReserve(boolean lsfLowReserve) {
+        this.lsfLowReserve = lsfLowReserve;
+        return this;
+      }
+
+      public Builder lsfHighReserve(boolean lsfHighReserve) {
+        this.lsfHighReserve = lsfHighReserve;
+        return this;
+      }
+
+      public Builder lsfLowAuth(boolean lsfLowAuth) {
+        this.lsfLowAuth = lsfLowAuth;
+        return this;
+      }
+
+      public Builder lsfHighAuth(boolean lsfHighAuth) {
+        this.lsfHighAuth = lsfHighAuth;
+        return this;
+      }
+
+      public Builder lsfLowNoRipple(boolean lsfLowNoRipple) {
+        this.lsfLowNoRipple = lsfLowNoRipple;
+        return this;
+      }
+
+      public Builder lsfHighNoRipple(boolean lsfHighNoRipple) {
+        this.lsfHighNoRipple = lsfHighNoRipple;
+        return this;
+      }
+
+      public Builder lsfLowFreeze(boolean lsfLowFreeze) {
+        this.lsfLowFreeze = lsfLowFreeze;
+        return this;
+      }
+
+      public Builder lsfHighFreeze(boolean lsfHighFreeze) {
+        this.lsfHighFreeze = lsfHighFreeze;
+        return this;
+      }
+
+      public RippleStateFlags build() {
+        return RippleStateFlags.of(
+          lsfLowReserve,
+          lsfHighReserve,
+          lsfLowAuth,
+          lsfHighAuth,
+          lsfLowNoRipple,
+          lsfHighNoRipple,
+          lsfLowFreeze,
+          lsfHighFreeze
+        );
+      }
+    }
+  }
 }

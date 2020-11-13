@@ -37,6 +37,7 @@ import com.ripple.xrpl4j.model.transactions.EscrowCancel;
 import com.ripple.xrpl4j.model.transactions.EscrowCreate;
 import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
@@ -301,6 +302,10 @@ public class XrplClient {
         .build();
     } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return TrustSet.builder().from((TrustSet) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (OfferCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return OfferCreate.builder().from((OfferCreate) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

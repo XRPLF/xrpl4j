@@ -17,9 +17,9 @@ import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountLinesResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
-import com.ripple.xrpl4j.client.model.accounts.ImmutableAccountLinesRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerResult;
+import com.ripple.xrpl4j.client.model.ledger.objects.LedgerObject;
 import com.ripple.xrpl4j.client.model.path.RipplePathFindRequestParams;
 import com.ripple.xrpl4j.client.model.path.RipplePathFindResult;
 import com.ripple.xrpl4j.client.model.transactions.TransactionRequestParams;
@@ -39,9 +39,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public abstract class AbstractIT {
 
@@ -72,7 +74,7 @@ public abstract class AbstractIT {
   // Ledger Helpers
   //////////////////////
 
-  protected <T extends JsonRpcResult> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
+  protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
       .atMost(Duration.ONE_MINUTE.divide(2))
       .await()
@@ -94,6 +96,15 @@ public abstract class AbstractIT {
       .until(resultSupplier::get, is(notNullValue()));
   }
 
+  protected <T extends LedgerObject> T scanForLedgerObject(Supplier<T> ledgerObjectSupplier) {
+    Objects.requireNonNull(ledgerObjectSupplier);
+    return given()
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .ignoreException(RuntimeException.class)
+      .await()
+      .until(ledgerObjectSupplier::get, is(notNullValue()));
+  }
+
   protected AccountObjectsResult getValidatedAccountObjects(Address classicAddress) {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
@@ -101,6 +112,23 @@ public abstract class AbstractIT {
         .ledgerIndex("validated")
         .build();
       return xrplClient.accountObjects(params);
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected <T extends LedgerObject> List<T> getValidatedAccountObjects(Address classicAddress, Class<T> clazz) {
+    try {
+      AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
+        .account(classicAddress)
+        .ledgerIndex("validated")
+        .build();
+      List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
+      return ledgerObjects
+        .stream()
+        .filter(object -> clazz.isAssignableFrom(object.getClass()))
+        .map(object -> (T) object)
+        .collect(Collectors.toList());
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

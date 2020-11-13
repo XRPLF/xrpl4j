@@ -752,4 +752,125 @@ public class Flags {
       }
     }
   }
+
+  /**
+   * {@link Flags} for {@link OfferCreate} transactions.
+   */
+  public static class OfferFlags extends TransactionFlags {
+
+    private static final OfferFlags TF_PASSIVE = new OfferFlags(0x00010000L);
+    private static final OfferFlags TF_IMMEDIATE_OR_CANCEL = new OfferFlags(0x00020000L);
+    private static final OfferFlags TF_FILL_OR_KILL = new OfferFlags(0x00040000L);
+    private static final OfferFlags TF_SELL = new OfferFlags(0x00080000L);
+
+    public static OfferFlags.Builder builder() {
+      return new OfferFlags.Builder();
+    }
+
+    public static OfferFlags of(long value) {
+      return new OfferFlags(value);
+    }
+
+    private static OfferFlags of(boolean tfFullyCanonicalSig, boolean tfPassive, boolean tfImmediateOrCancel,
+                                   boolean tfFillOrKill, boolean tfSell) {
+      long value = Flags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfPassive ? TF_PASSIVE : UNSET,
+          tfImmediateOrCancel ? TF_IMMEDIATE_OR_CANCEL : UNSET,
+          tfFillOrKill ? TF_FILL_OR_KILL : UNSET,
+          tfSell ? TF_SELL : UNSET
+      ).getValue();
+      return new OfferFlags(value);
+    }
+
+    private OfferFlags(long value) {
+      super(value);
+    }
+
+    /**
+     * If enabled, the offer does not consume offers that exactly match it, and instead becomes an
+     * Offer object in the ledger. It still consumes offers that cross it.
+     */
+    public boolean tfPassive() {
+      return this.isSet(OfferFlags.TF_PASSIVE);
+    }
+
+    /**
+     * Treat the offer as an Immediate or Cancel order . If enabled, the offer never becomes a ledger object:
+     * it only tries to match existing offers in the ledger. If the offer cannot match any offers immediately,
+     * it executes "successfully" without trading any currency. In this case, the transaction has the result code
+     * tesSUCCESS, but creates no Offer objects in the ledger.
+     * @return true if enabled
+     */
+    public boolean tfImmediateOrCancel() {
+      return this.isSet(OfferFlags.TF_IMMEDIATE_OR_CANCEL);
+    }
+
+    /**
+     * Treat the offer as a Fill or Kill order . Only try to match existing offers in the ledger, and only do so if
+     * the entire TakerPays quantity can be obtained. If the fix1578 amendment is enabled and the offer cannot be
+     * executed when placed, the transaction has the result code tecKILLED; otherwise, the transaction uses the result
+     * code tesSUCCESS even when it was killed without trading any currency.
+     * @return true if enabled
+     */
+    public boolean tfFillOrKill() {
+      return this.isSet(OfferFlags.TF_FILL_OR_KILL);
+    }
+
+    /**
+     * Exchange the entire TakerGets amount, even if it means obtaining more than the TakerPays amount in exchange.
+     * @return true if enabled
+     */
+    public boolean tfSell() {
+      return this.isSet(OfferFlags.TF_SELL);
+    }
+
+
+    /**
+     * A builder class for {@link OfferFlags} flags.
+     */
+    public static class Builder {
+
+      private boolean fullyCanonicalSig = true;
+      private boolean passive = false;
+      private boolean immediateOrCancel = false;
+      private boolean fillOrKill = false;
+      private boolean sell = false;
+
+      public OfferFlags.Builder fullyCanonicalSig(boolean value) {
+        this.fullyCanonicalSig = value;
+        return this;
+      }
+
+      public OfferFlags.Builder passive(boolean value) {
+        this.passive = value;
+        return this;
+      }
+
+      public OfferFlags.Builder immediateOrCancel(boolean value) {
+        this.immediateOrCancel = value;
+        return this;
+      }
+
+      public OfferFlags.Builder fillOrKill(boolean value) {
+        this.fillOrKill = value;
+        return this;
+      }
+
+      public OfferFlags.Builder sell(boolean value) {
+        this.sell = value;
+        return this;
+      }
+
+      public OfferFlags build() {
+        return OfferFlags.of(
+            fullyCanonicalSig,
+            passive,
+            immediateOrCancel,
+            fillOrKill,
+            sell
+        );
+      }
+    }
+  }
 }

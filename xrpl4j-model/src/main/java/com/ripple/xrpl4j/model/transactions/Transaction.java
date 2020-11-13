@@ -25,7 +25,7 @@ public interface Transaction<T extends TransactionFlags> {
       .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
       .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
 //      .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
-//      .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
+      .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
       .put(ImmutablePayment.class, TransactionType.PAYMENT)
 //      .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
 //      .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)

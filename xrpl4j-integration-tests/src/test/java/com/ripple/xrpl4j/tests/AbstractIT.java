@@ -13,15 +13,21 @@ import com.ripple.xrpl4j.client.faucet.FundAccountRequest;
 import com.ripple.xrpl4j.client.model.JsonRpcResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
+import com.ripple.xrpl4j.client.model.accounts.AccountLinesResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
+import com.ripple.xrpl4j.client.model.accounts.ImmutableAccountLinesRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerResult;
+import com.ripple.xrpl4j.client.model.path.RipplePathFindRequestParams;
+import com.ripple.xrpl4j.client.model.path.RipplePathFindResult;
 import com.ripple.xrpl4j.client.model.transactions.TransactionRequestParams;
 import com.ripple.xrpl4j.client.model.transactions.TransactionResult;
 import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
 import com.ripple.xrpl4j.wallet.SeedWalletGenerationResult;
@@ -133,6 +139,39 @@ public abstract class AbstractIT {
         .ledgerIndex("validated")
         .build();
       return xrplClient.ledger(params);
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected RipplePathFindResult getValidatedRipplePath(
+    Wallet sourceWallet,
+    Wallet destinationWallet,
+    IssuedCurrencyAmount destinationAmount
+  ) {
+    try {
+      RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
+        .sourceAccount(sourceWallet.classicAddress())
+        .destinationAccount(destinationWallet.classicAddress())
+        .destinationAmount(destinationAmount)
+        .ledgerIndex("validated")
+        .build();
+
+      return xrplClient.ripplePathFind(pathFindParams);
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected AccountLinesResult getValidatedAccountLines(Address classicAddress, Address peerAddress) {
+    try {
+      AccountLinesRequestParams params = AccountLinesRequestParams.builder()
+        .account(classicAddress)
+        .peer(peerAddress)
+        .ledgerIndex("validated")
+        .build();
+
+      return xrplClient.accountLines(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

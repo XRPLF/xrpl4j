@@ -504,4 +504,252 @@ public class Flags {
 
     }
   }
+
+  public static class TrustSetFlags extends TransactionFlags {
+
+    public static final TrustSetFlags UNSET = new TrustSetFlags(0);
+
+    public static final TrustSetFlags SET_F_AUTH = new TrustSetFlags(0x00010000);
+    public static final TrustSetFlags SET_NO_RIPPLE = new TrustSetFlags(0x00020000);
+    public static final TrustSetFlags CLEAR_NO_RIPPLE = new TrustSetFlags(0x00040000);
+    public static final TrustSetFlags SET_FREEZE = new TrustSetFlags(0x00100000);
+    public static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
+
+    public static TrustSetFlags.Builder builder() {
+      return new TrustSetFlags.Builder();
+    }
+
+    private TrustSetFlags(long value) {
+      super(value);
+    }
+
+    private static TrustSetFlags of(
+      boolean tfFullyCanonicalSig,
+      boolean tfSetfAuth,
+      boolean tfSetNoRipple,
+      boolean tfClearNoRipple,
+      boolean tfSetFreeze,
+      boolean tfClearFreeze
+    ) {
+      return new TrustSetFlags(
+        Flags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfSetfAuth ? SET_F_AUTH : UNSET,
+          tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
+          tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
+          tfSetFreeze ? SET_FREEZE : UNSET,
+          tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
+      );
+    }
+
+    public boolean tfFullyCanonicalSig() {
+      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
+    }
+
+    public boolean tfSetfAuth() {
+      return this.isSet(SET_F_AUTH);
+    }
+
+    public boolean tfSetNoRipple() {
+      return this.isSet(SET_NO_RIPPLE);
+    }
+
+    public boolean tfClearNoRipple() {
+      return this.isSet(CLEAR_NO_RIPPLE);
+    }
+
+    public boolean tfSetFreeze() {
+      return this.isSet(SET_FREEZE);
+    }
+
+    public boolean tfClearFreeze() {
+      return this.isSet(CLEAR_FREEZE);
+    }
+
+    public static class Builder {
+      boolean tfFullyCanonicalSig = true;
+      boolean tfSetfAuth = false;
+      boolean tfSetNoRipple = false;
+      boolean tfClearNoRipple = false;
+      boolean tfSetFreeze = false;
+      boolean tfClearFreeze = false;
+
+      public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfSetfAuth(boolean tfSetfAuth) {
+        this.tfSetfAuth = tfSetfAuth;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfSetNoRipple() {
+        this.tfSetNoRipple = true;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfClearNoRipple() {
+        this.tfClearNoRipple = true;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfSetFreeze() {
+        this.tfSetFreeze = true;
+        return this;
+      }
+
+      public TrustSetFlags.Builder tfClearFreeze() {
+        this.tfClearFreeze = true;
+        return this;
+      }
+
+      public TrustSetFlags build() {
+        return TrustSetFlags.of(
+          tfFullyCanonicalSig,
+          tfSetfAuth,
+          tfSetNoRipple,
+          tfClearNoRipple,
+          tfSetFreeze,
+          tfClearFreeze
+        );
+      }
+    }
+  }
+
+  public static class RippleStateFlags extends Flags {
+
+    public static final RippleStateFlags LOW_RESERVE = new RippleStateFlags(0x00010000);
+    public static final RippleStateFlags HIGH_RESERVE = new RippleStateFlags(0x00020000);
+    public static final RippleStateFlags LOW_AUTH = new RippleStateFlags(0x00040000);
+    public static final RippleStateFlags HIGH_AUTH = new RippleStateFlags(0x00080000);
+    public static final RippleStateFlags LOW_NO_RIPPLE = new RippleStateFlags(0x00100000);
+    public static final RippleStateFlags HIGH_NO_RIPPLE = new RippleStateFlags(0x00200000);
+    public static final RippleStateFlags LOW_FREEZE = new RippleStateFlags(0x00400000);
+    public static final RippleStateFlags HIGH_FREEZE = new RippleStateFlags(0x00800000);
+
+    private static RippleStateFlags of(
+      boolean lsfLowReserve,
+      boolean lsfHighReserve,
+      boolean lsfLowAuth,
+      boolean lsfHighAuth,
+      boolean lsfLowNoRipple,
+      boolean lsfHighNoRipple,
+      boolean lsfLowFreeze,
+      boolean lsfHighFreeze
+    ) {
+      return new RippleStateFlags(
+        Flags.of(
+          lsfLowReserve ? LOW_RESERVE : UNSET,
+          lsfHighReserve ? HIGH_RESERVE : UNSET,
+          lsfLowAuth ? LOW_AUTH : UNSET,
+          lsfHighAuth ? HIGH_AUTH : UNSET,
+          lsfLowNoRipple ? LOW_NO_RIPPLE : UNSET,
+          lsfHighNoRipple ? HIGH_NO_RIPPLE : UNSET,
+          lsfLowFreeze ? LOW_FREEZE : UNSET,
+          lsfHighFreeze ? HIGH_FREEZE : UNSET
+        ).getValue()
+      );
+    }
+
+    private RippleStateFlags(long value) {
+      super(value);
+    }
+
+    public boolean lsfLowReserve() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighReserve() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfLowAuth() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighAuth() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfLowNoRipple() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighNoRipple() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfLowFreeze() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public boolean lsfHighFreeze() {
+      return this.isSet(LOW_RESERVE);
+    }
+
+    public static class Builder {
+      boolean lsfLowReserve = false;
+      boolean lsfHighReserve = false;
+      boolean lsfLowAuth = false;
+      boolean lsfHighAuth = false;
+      boolean lsfLowNoRipple = false;
+      boolean lsfHighNoRipple = false;
+      boolean lsfLowFreeze = false;
+      boolean lsfHighFreeze = false;
+
+      public Builder lsfLowReserve(boolean lsfLowReserve) {
+        this.lsfLowReserve = lsfLowReserve;
+        return this;
+      }
+
+      public Builder lsfHighReserve(boolean lsfHighReserve) {
+        this.lsfHighReserve = lsfHighReserve;
+        return this;
+      }
+
+      public Builder lsfLowAuth(boolean lsfLowAuth) {
+        this.lsfLowAuth = lsfLowAuth;
+        return this;
+      }
+
+      public Builder lsfHighAuth(boolean lsfHighAuth) {
+        this.lsfHighAuth = lsfHighAuth;
+        return this;
+      }
+
+      public Builder lsfLowNoRipple(boolean lsfLowNoRipple) {
+        this.lsfLowNoRipple = lsfLowNoRipple;
+        return this;
+      }
+
+      public Builder lsfHighNoRipple(boolean lsfHighNoRipple) {
+        this.lsfHighNoRipple = lsfHighNoRipple;
+        return this;
+      }
+
+      public Builder lsfLowFreeze(boolean lsfLowFreeze) {
+        this.lsfLowFreeze = lsfLowFreeze;
+        return this;
+      }
+
+      public Builder lsfHighFreeze(boolean lsfHighFreeze) {
+        this.lsfHighFreeze = lsfHighFreeze;
+        return this;
+      }
+
+      public RippleStateFlags build() {
+        return RippleStateFlags.of(
+          lsfLowReserve,
+          lsfHighReserve,
+          lsfLowAuth,
+          lsfHighAuth,
+          lsfLowNoRipple,
+          lsfHighNoRipple,
+          lsfLowFreeze,
+          lsfHighFreeze
+        );
+      }
+    }
+  }
 }

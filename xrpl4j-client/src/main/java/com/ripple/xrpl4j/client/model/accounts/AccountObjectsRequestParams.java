@@ -59,6 +59,8 @@ public interface AccountObjectsRequestParams extends JsonRpcRequestParams {
 
   /**
    * The ledger index of the ledger to use, or a shortcut {@link String} to choose a ledger automatically.
+   *
+   * Defaults to "current".
    */
   @JsonSerialize(using = LedgerIndexSerializer.class)
   @JsonProperty("ledger_index")

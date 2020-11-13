@@ -30,6 +30,8 @@ public interface LedgerRequestParams extends JsonRpcRequestParams {
 
   /**
    * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
+   *
+   * Defaults to "current".
    */
   @JsonProperty("ledger_index")
   @JsonSerialize(using = LedgerIndexSerializer.class)

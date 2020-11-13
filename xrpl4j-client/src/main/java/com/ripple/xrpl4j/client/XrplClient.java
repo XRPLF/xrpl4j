@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
+import com.ripple.xrpl4j.client.model.accounts.AccountLinesResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrpl4j.client.model.fees.FeeResult;
 import com.ripple.xrpl4j.client.model.ledger.LedgerRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerResult;
+import com.ripple.xrpl4j.client.model.path.RipplePathFindRequestParams;
+import com.ripple.xrpl4j.client.model.path.RipplePathFindResult;
 import com.ripple.xrpl4j.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
 import com.ripple.xrpl4j.client.model.transactions.TransactionRequestParams;
@@ -35,6 +39,7 @@ import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.Transaction;
+import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.wallet.Wallet;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -184,6 +189,38 @@ public class XrplClient {
   }
 
   /**
+   * Try to find a payment path for a rippling payment by sending a ripple_path_find method request.
+   *
+   * @param params The {@link RipplePathFindRequestParams} to send in the request.
+   * @return A {@link RipplePathFindResult} containing possible paths.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  public RipplePathFindResult ripplePathFind(RipplePathFindRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.RIPPLE_PATH_FIND)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, RipplePathFindResult.class);
+  }
+
+  /**
+   * Get the trust lines for a given account by sending an account_lines method request.
+   *
+   * @param params The {@link AccountLinesRequestParams} to send in the request.
+   * @return The {@link AccountLinesResult} containing the requested trust lines.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  public AccountLinesResult accountLines(AccountLinesRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_LINES)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountLinesResult.class);
+  }
+
+  /**
    * Serialize a {@link Transaction} to binary and sign it using {@code wallet.privateKey()}.
    *
    * @param wallet The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
@@ -260,6 +297,10 @@ public class XrplClient {
         .build();
     } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return TrustSet.builder().from((TrustSet) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

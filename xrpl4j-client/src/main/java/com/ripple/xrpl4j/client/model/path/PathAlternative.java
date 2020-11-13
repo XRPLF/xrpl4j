@@ -14,9 +14,16 @@ import java.util.List;
 @JsonDeserialize(as = ImmutablePathAlternative.class)
 public interface PathAlternative {
 
+  /**
+   * A {@link List} of {@link List<PathStep>}s containing the different payment paths available.
+   */
   @JsonProperty("paths_computed")
   List<List<PathStep>> pathsComputed();
 
+  /**
+   * {@link CurrencyAmount} that the source would have to send along this path for the destination to receive the
+   * desired amount.
+   */
   @JsonProperty("source_amount")
   CurrencyAmount sourceAmount();
 

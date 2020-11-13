@@ -188,6 +188,13 @@ public class XrplClient {
     return jsonRpcClient.send(request, LedgerResult.class);
   }
 
+  /**
+   * Try to find a payment path for a rippling payment by sending a ripple_path_find method request.
+   *
+   * @param params The {@link RipplePathFindRequestParams} to send in the request.
+   * @return A {@link RipplePathFindResult} containing possible paths.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
   public RipplePathFindResult ripplePathFind(RipplePathFindRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.RIPPLE_PATH_FIND)
@@ -197,6 +204,13 @@ public class XrplClient {
     return jsonRpcClient.send(request, RipplePathFindResult.class);
   }
 
+  /**
+   * Get the trust lines for a given account by sending an account_lines method request.
+   *
+   * @param params The {@link AccountLinesRequestParams} to send in the request.
+   * @return The {@link AccountLinesResult} containing the requested trust lines.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
   public AccountLinesResult accountLines(AccountLinesRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_LINES)

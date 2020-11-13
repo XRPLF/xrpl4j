@@ -7,6 +7,9 @@ import org.immutables.value.Value;
 
 import java.util.Optional;
 
+/**
+ * Represents a currency that an account holds on the XRPL.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePathCurrency.class)
 @JsonDeserialize(as = ImmutablePathCurrency.class)
@@ -16,8 +19,14 @@ public interface PathCurrency {
     return ImmutablePathCurrency.builder();
   }
 
+  /**
+   * Either a 3 characters currency code, or a 40 character hexadecimal encoded currency code value.
+   */
   String currency();
 
+  /**
+   * The {@link Address} of the issuer of the currency.
+   */
   Optional<Address> issuer();
 
 }

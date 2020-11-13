@@ -2,6 +2,8 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.client.model.accounts.TrustLine;
 import com.ripple.xrpl4j.client.model.fees.FeeResult;
@@ -31,13 +33,19 @@ public class IssuedCurrencyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
 
     ///////////////////////////
-    // Create a Trust Line between issuer and counterparty by submitting a TrustSet transaction
-    TrustLine trustLine = createTrustLine("USD", "10000", issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+    // Create a Trust Line between issuer and counterparty denominated in a custom currency
+    // by submitting a TrustSet transaction
+    String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
-    issueBalance("USD", trustLine.limitPeer(), issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+    TrustLine trustLine = createTrustLine(xrpl4jCoin, "10000", issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
-    // Validate that the TrustLine balance was updated as a result of the Payment
+    // Send some xrpl4jCoin to the counterparty account.
+    issueBalance(xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+
+    ///////////////////////////
+    // Validate that the TrustLine balance was updated as a result of the Payment.
+    // The trust line returned is from the perspective of the issuer, so the balance should be negative.
     this.scanForResult(
       () -> getValidatedAccountLines(issuerWallet.classicAddress(), counterpartyWallet.classicAddress()),
       linesResult -> linesResult.lines().stream()
@@ -90,7 +98,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Try to find a path for this Payment.
     IssuedCurrencyAmount pathDestinationAmount = IssuedCurrencyAmount.builder()
-      .issuer(bobTrustLine.account())
+      .issuer(issuerWallet.classicAddress())
       .currency(bobTrustLine.currency())
       .value("10")
       .build();
@@ -98,7 +106,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Validate that there exists a path such that this Payment can succeed.
     // Note that because this path consists of all implied paths, rippled will not return any path steps
-    RipplePathFindResult ripplePathFindResult = scanForResult(
+    scanForResult(
       () -> getValidatedRipplePath(aliceWallet, bobWallet, pathDestinationAmount),
       path -> path.alternatives().size() > 0 // rippled will return a PathAlternative without any path steps
     );
@@ -126,6 +134,8 @@ public class IssuedCurrencyIT extends AbstractIT {
         .orElse("n/a")
     );
 
+    ///////////////////////////
+    // Validate that bob and alice's trust line balances have been updated appropriately
     scanForResult(
       () -> getValidatedAccountLines(aliceWallet.classicAddress(), issuerWallet.classicAddress()),
       linesResult -> linesResult.lines().stream()
@@ -141,12 +151,16 @@ public class IssuedCurrencyIT extends AbstractIT {
 
   @Test
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException {
+    ///////////////////////////
+    // Create two issuer wallets and three non-issuer wallets
     Wallet issuerAWallet = createRandomAccount();
     Wallet issuerBWallet = createRandomAccount();
     Wallet charlieWallet = createRandomAccount();
     Wallet emilyWallet = createRandomAccount();
     Wallet danielWallet = createRandomAccount();
 
+    ///////////////////////////
+    // Set the lsfDefaultRipple AccountRoot flag so that all trustlines in this topography allow rippling
     FeeResult feeResult = xrplClient.fee();
     setDefaultRipple(issuerAWallet, feeResult);
     setDefaultRipple(issuerBWallet, feeResult);
@@ -154,6 +168,8 @@ public class IssuedCurrencyIT extends AbstractIT {
     setDefaultRipple(emilyWallet, feeResult);
     setDefaultRipple(danielWallet, feeResult);
 
+    ///////////////////////////
+    // Create a Trustline between charlie and issuerA
     TrustLine charlieTrustLineWithIssuerA = createTrustLine(
       "USD",
       "10000",
@@ -161,6 +177,9 @@ public class IssuedCurrencyIT extends AbstractIT {
       charlieWallet,
       feeResult.drops().minimumFee()
     );
+
+    ///////////////////////////
+    // Create a Trustline between emily and issuerA
     TrustLine emilyTrustLineWithIssuerA = createTrustLine(
       "USD",
       "10000",
@@ -168,6 +187,9 @@ public class IssuedCurrencyIT extends AbstractIT {
       emilyWallet,
       feeResult.drops().minimumFee()
     );
+
+    ///////////////////////////
+    // Create a Trustline between emily and issuerB
     TrustLine emilyTrustLineWithIssuerB = createTrustLine(
       "USD",
       "10000",
@@ -175,6 +197,9 @@ public class IssuedCurrencyIT extends AbstractIT {
       emilyWallet,
       feeResult.drops().minimumFee()
     );
+
+    ///////////////////////////
+    // Create a Trustline between daniel and issuerB
     TrustLine danielTrustLineWithIssuerB = createTrustLine(
       "USD",
       "10000",
@@ -183,28 +208,34 @@ public class IssuedCurrencyIT extends AbstractIT {
       feeResult.drops().minimumFee()
     );
 
-
-    // IssuerA now owes Charlie 10 USD
+    ///////////////////////////
+    // Issue 10 USD from issuerA to charlie.
+    // IssuerA now owes Charlie 10 USD.
     issueBalance("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
 
+    ///////////////////////////
+    // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
     issueBalance("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
 
+    ///////////////////////////
+    // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
     issueBalance("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
 
+    ///////////////////////////
+    // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
     issueBalance("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
 
-    IssuedCurrencyAmount pathDestinationAmount = IssuedCurrencyAmount.builder()
-      .issuer(issuerBWallet.classicAddress())
-      .currency(charlieTrustLineWithIssuerA.currency())
-      .value("10")
-      .build();
-
-    // This simple path is all implied, so rippled will not return a path set
+    ///////////////////////////
+    // Look for a payment path from charlie to daniel.
     List<List<PathStep>> pathSteps  = scanForResult(
-      () -> getValidatedRipplePath(charlieWallet, danielWallet, pathDestinationAmount),
+      () -> getValidatedRipplePath(charlieWallet, danielWallet, IssuedCurrencyAmount.builder()
+        .issuer(issuerBWallet.classicAddress())
+        .currency(charlieTrustLineWithIssuerA.currency())
+        .value("10")
+        .build()),
       path -> path.alternatives().size() > 0
     )
       .alternatives().stream()
@@ -212,8 +243,9 @@ public class IssuedCurrencyIT extends AbstractIT {
         !alt.pathsComputed().isEmpty() &&
           alt.sourceAmount().equals(
             IssuedCurrencyAmount.builder()
-              .from(pathDestinationAmount)
               .issuer(charlieWallet.classicAddress())
+              .currency(charlieTrustLineWithIssuerA.currency())
+              .value("10")
               .build()
           )
       )
@@ -221,6 +253,8 @@ public class IssuedCurrencyIT extends AbstractIT {
       .pathsComputed();
 
 
+    ///////////////////////////
+    // Send a Payment from charlie to Daniel using the previously found paths.
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.classicAddress());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.classicAddress())
@@ -242,6 +276,33 @@ public class IssuedCurrencyIT extends AbstractIT {
       "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
         .orElse("n/a")
     );
+
+    ///////////////////////////
+    // Validate that everyone's trust line balances have been updated appropriately
+    scanForResult(
+      () -> getValidatedAccountLines(charlieWallet.classicAddress(), issuerAWallet.classicAddress()),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("0"))
+    );
+
+    scanForResult(
+      () -> getValidatedAccountLines(emilyWallet.classicAddress(), issuerAWallet.classicAddress()),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("11"))
+    );
+
+    scanForResult(
+      () -> getValidatedAccountLines(emilyWallet.classicAddress(), issuerBWallet.classicAddress()),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("90"))
+    );
+
+    scanForResult(
+      () -> getValidatedAccountLines(danielWallet.classicAddress(), issuerBWallet.classicAddress()),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("12"))
+    );
+
   }
 
   public void setDefaultRipple(Wallet issuerWallet, FeeResult feeResult) throws JsonRpcClientErrorException {

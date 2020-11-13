@@ -157,9 +157,7 @@ public abstract class AbstractIT {
         .ledgerIndex("validated")
         .build();
 
-      RipplePathFindResult ripplePathFindResult = xrplClient.ripplePathFind(pathFindParams);
-      logger.info("RipplePathFindResult: {}", ripplePathFindResult);
-      return ripplePathFindResult;
+      return xrplClient.ripplePathFind(pathFindParams);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -173,9 +171,7 @@ public abstract class AbstractIT {
         .ledgerIndex("validated")
         .build();
 
-      AccountLinesResult accountLinesResult = xrplClient.accountLines(params);
-      logger.info("{} to {} trustline: {}", classicAddress, peerAddress, accountLinesResult);
-      return accountLinesResult;
+      return xrplClient.accountLines(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

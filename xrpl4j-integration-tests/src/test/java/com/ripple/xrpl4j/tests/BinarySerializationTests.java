@@ -267,7 +267,7 @@ public class BinarySerializationTests {
       .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
       .fee(XrpCurrencyAmount.of("12"))
       .flags(Flags.TrustSetFlags.builder()
-        .tfSetNoRipple(true)
+        .tfSetNoRipple()
         .tfFullyCanonicalSig(false)
         .build())
       .sequence(UnsignedInteger.valueOf(44))

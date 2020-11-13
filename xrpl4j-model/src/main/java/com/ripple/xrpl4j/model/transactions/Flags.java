@@ -584,23 +584,23 @@ public class Flags {
         return this;
       }
 
-      public TrustSetFlags.Builder tfSetNoRipple(boolean tfSetNoRipple) {
-        this.tfSetNoRipple = tfSetNoRipple;
+      public TrustSetFlags.Builder tfSetNoRipple() {
+        this.tfSetNoRipple = true;
         return this;
       }
 
-      public TrustSetFlags.Builder tfClearNoRipple(boolean tfClearNoRipple) {
-        this.tfClearNoRipple = tfClearNoRipple;
+      public TrustSetFlags.Builder tfClearNoRipple() {
+        this.tfClearNoRipple = true;
         return this;
       }
 
-      public TrustSetFlags.Builder tfSetFreeze(boolean tfSetFreeze) {
-        this.tfSetFreeze = tfSetFreeze;
+      public TrustSetFlags.Builder tfSetFreeze() {
+        this.tfSetFreeze = true;
         return this;
       }
 
-      public TrustSetFlags.Builder tfClearFreeze(boolean tfClearFreeze) {
-        this.tfClearFreeze = tfClearFreeze;
+      public TrustSetFlags.Builder tfClearFreeze() {
+        this.tfClearFreeze = true;
         return this;
       }
 

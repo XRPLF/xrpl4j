@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
+import com.ripple.xrpl4j.client.model.accounts.AccountLinesResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
 import com.ripple.xrpl4j.client.model.fees.FeeResult;
 import com.ripple.xrpl4j.client.model.ledger.LedgerRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerResult;
+import com.ripple.xrpl4j.client.model.path.RipplePathFindRequestParams;
+import com.ripple.xrpl4j.client.model.path.RipplePathFindResult;
 import com.ripple.xrpl4j.client.model.transactions.SubmissionRequestParams;
 import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
 import com.ripple.xrpl4j.client.model.transactions.TransactionRequestParams;
@@ -182,6 +186,24 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, LedgerResult.class);
+  }
+
+  public RipplePathFindResult ripplePathFind(RipplePathFindRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.RIPPLE_PATH_FIND)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, RipplePathFindResult.class);
+  }
+
+  public AccountLinesResult accountLines(AccountLinesRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_LINES)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountLinesResult.class);
   }
 
   /**

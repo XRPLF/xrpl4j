@@ -29,13 +29,13 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, feeResult.drops().minimumFee());
+    AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
 
     /////////////////////////
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(receiverAccountInfo.accountData().sequence())
       .signingPublicKey(receiverWallet.publicKey())
       .authorize(senderWallet.classicAddress())
@@ -63,7 +63,7 @@ public class DepositPreAuthIT extends AbstractIT {
     AccountInfoResult senderAccountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.of("12345"))
@@ -108,7 +108,7 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    enableDepositPreauth(receiverWallet, feeResult.drops().minimumFee());
+    enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
 
     /////////////////////////
     // Validate that the receiver has not given authorization to anyone to send them Payments
@@ -125,7 +125,7 @@ public class DepositPreAuthIT extends AbstractIT {
     AccountInfoResult senderAccountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.of("12345"))

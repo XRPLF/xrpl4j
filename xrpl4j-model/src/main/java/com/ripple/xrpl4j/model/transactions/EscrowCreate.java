@@ -3,12 +3,13 @@ package com.ripple.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import com.ripple.cryptoconditions.Condition;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
-import org.immutables.value.Value;
-
 import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * Sequester XRP until the escrow process either finishes or is canceled.
@@ -30,8 +31,8 @@ public interface EscrowCreate extends Transaction<TransactionFlags> {
 
   /**
    * Amount of XRP, in drops, to deduct from the sender's balance and escrow. Once escrowed, the XRP can either go to
-   * the {@link EscrowCreate#destination()} address (after the {@link EscrowCreate#finishAfter()} time) or returned to the sender
-   * (after the {@link EscrowCreate#cancelAfter()} time).
+   * the {@link EscrowCreate#destination()} address (after the {@link EscrowCreate#finishAfter()} time) or returned to
+   * the sender (after the {@link EscrowCreate#cancelAfter()} time).
    */
   @JsonProperty("Amount")
   XrpCurrencyAmount amount();
@@ -66,10 +67,19 @@ public interface EscrowCreate extends Transaction<TransactionFlags> {
   Optional<UnsignedLong> finishAfter();
 
   /**
-   * Hex value representing a PREIMAGE-SHA-256 crypto-condition.
-   * The funds can only be delivered to the recipient if this condition is fulfilled.
+   * Hex value representing a PREIMAGE-SHA-256 crypto-condition. The funds can only be delivered to the recipient if
+   * this condition is fulfilled.
    */
   @JsonProperty("Condition")
-  Optional<String> condition();
+  Optional<Condition> condition();
 
+  @Value.Check
+  default void check() {
+    if (cancelAfter().isPresent() && finishAfter().isPresent()) {
+      Preconditions.checkState(
+        finishAfter().get().compareTo(cancelAfter().get()) < 0,
+        "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
+      );
+    }
+  }
 }

@@ -38,7 +38,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.of("12345"))
@@ -72,7 +72,7 @@ public class CheckIT extends AbstractIT {
       .account(destinationWallet.classicAddress())
       .amount(checkObject.sendMax())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();
@@ -119,7 +119,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.of("12345"))
@@ -151,7 +151,7 @@ public class CheckIT extends AbstractIT {
     CheckCancel checkCancel = CheckCancel.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .checkId(checkObject.index())
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -187,7 +187,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.of("12345"))
@@ -220,7 +220,7 @@ public class CheckIT extends AbstractIT {
     CheckCancel checkCancel = CheckCancel.builder()
       .account(destinationWallet.classicAddress())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();

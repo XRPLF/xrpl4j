@@ -29,7 +29,7 @@ public class SubmitPaymentIT extends AbstractIT {
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.of("12345"))
@@ -39,6 +39,13 @@ public class SubmitPaymentIT extends AbstractIT {
     SubmissionResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        result.transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+        Payment.class)
+    );
   }
 
   @Test
@@ -58,7 +65,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.of("12345"))
@@ -68,6 +75,13 @@ public class SubmitPaymentIT extends AbstractIT {
     SubmissionResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        result.transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+        Payment.class)
+    );
   }
 
 }

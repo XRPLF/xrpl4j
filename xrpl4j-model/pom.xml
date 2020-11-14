@@ -18,6 +18,14 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.ripple.cryptoconditions</groupId>
+      <artifactId>crypto-conditions</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ripple.cryptoconditions</groupId>
+      <artifactId>jackson-datatype-cryptoconditions</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>

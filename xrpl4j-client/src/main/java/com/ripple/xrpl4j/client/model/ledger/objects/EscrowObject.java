@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import com.ripple.cryptoconditions.Condition;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.EscrowCancel;
 import com.ripple.xrpl4j.model.transactions.EscrowCreate;
@@ -17,12 +18,12 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 /**
- * Represents a held payment of XRP waiting to be executed or canceled. An {@link EscrowCreate} transaction creates
- * an {@link EscrowObject} in the ledger. A successful {@link EscrowFinish} or {@link EscrowCancel} transaction
- * deletes the object. If the {@link EscrowObject} has a crypto-condition, the payment can only succeed if an
- * {@link EscrowFinish} transaction provides the corresponding fulfillment that satisfies the condition.
- * (The only supported crypto-condition type is PREIMAGE-SHA-256.) If the {@link EscrowObject} has a
- * {@link EscrowObject#finishAfter()} time, the held payment can only execute after that time.
+ * Represents a held payment of XRP waiting to be executed or canceled. An {@link EscrowCreate} transaction creates an
+ * {@link EscrowObject} in the ledger. A successful {@link EscrowFinish} or {@link EscrowCancel} transaction deletes the
+ * object. If the {@link EscrowObject} has a crypto-condition, the payment can only succeed if an {@link EscrowFinish}
+ * transaction provides the corresponding fulfillment that satisfies the condition (the only supported crypto-condition
+ * type is PREIMAGE-SHA-256). If the {@link EscrowObject} has a {@link EscrowObject#finishAfter()} time, the held
+ * payment can only execute after that time.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowObject.class)
@@ -58,12 +59,13 @@ public interface EscrowObject extends LedgerObject {
   XrpCurrencyAmount amount();
 
   /**
-   * A <a href="https://tools.ietf.org/html/draft-thomas-crypto-conditions-02#section-8.1">
-   *   PREIMAGE-SHA-256 crypto-condition</a>, as hexadecimal.
-   * If present, the {@link EscrowFinish} transaction must contain a fulfillment that satisfies this condition.
+   * A PREIMAGE-SHA-256 crypto-condition in DER hexadecimal encoding. If present, the {@link EscrowFinish} transaction
+   * must contain a fulfillment that satisfies this condition.
+   *
+   * @see "https://tools.ietf.org/html/draft-thomas-crypto-conditions-04#section-8.1"
    */
   @JsonProperty("Condition")
-  Optional<String> condition();
+  Optional<Condition> condition();
 
   /**
    * The held payment can be canceled if and only if this field is present and the time it specifies has passed.
@@ -92,25 +94,25 @@ public interface EscrowObject extends LedgerObject {
   }
 
   /**
-   * An arbitrary tag to further specify the source for this held payment, such as a hosted recipient
-   * at the owner's address.
+   * An arbitrary tag to further specify the source for this held payment, such as a hosted recipient at the owner's
+   * address.
    */
   @JsonProperty("SourceTag")
   Optional<UnsignedInteger> sourceTag();
 
   /**
-   * An arbitrary tag to further specify the destination for this held payment, such as a hosted recipient
-   * at the destination address.
+   * An arbitrary tag to further specify the destination for this held payment, such as a hosted recipient at the
+   * destination address.
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
 
   /**
-   * A hint indicating which page of the owner directory links to this object, in case the directory
-   * consists of multiple pages.
-   *
-   * Note: The object does not contain a direct link to the owner directory containing it,
-   * since that value can be derived from the Account.
+   * A hint indicating which page of the owner directory links to this object, in case the directory consists of
+   * multiple pages.
+   * <p>
+   * Note: The object does not contain a direct link to the owner directory containing it, since that value can be
+   * derived from the Account.
    */
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();

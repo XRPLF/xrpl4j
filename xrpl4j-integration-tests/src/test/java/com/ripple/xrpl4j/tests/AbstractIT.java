@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractIT {
 
+  public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   protected final FaucetClient faucetClient =
@@ -77,6 +78,7 @@ public abstract class AbstractIT {
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
       .atMost(Duration.ONE_MINUTE.divide(2))
+      .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {
         T result = resultSupplier.get();
@@ -90,6 +92,7 @@ public abstract class AbstractIT {
   protected <T extends JsonRpcResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()
+      .pollInterval(POLL_INTERVAL)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
       .await()
@@ -99,6 +102,7 @@ public abstract class AbstractIT {
   protected <T extends LedgerObject> T scanForLedgerObject(Supplier<T> ledgerObjectSupplier) {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
+      .pollInterval(POLL_INTERVAL)
       .atMost(Duration.ONE_MINUTE.divide(2))
       .ignoreException(RuntimeException.class)
       .await()

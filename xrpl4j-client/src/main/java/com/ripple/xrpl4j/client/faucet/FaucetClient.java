@@ -1,6 +1,7 @@
 package com.ripple.xrpl4j.client.faucet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ripple.xrpl4j.client.rippled.RetryStatusDecoder;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
@@ -9,6 +10,7 @@ import feign.jackson.JacksonEncoder;
 import feign.optionals.OptionalDecoder;
 import okhttp3.HttpUrl;
 
+import java.time.Duration;
 import java.util.Objects;
 
 /**
@@ -19,6 +21,8 @@ public interface FaucetClient {
   String HEADER_ACCEPT = "Accept";
   String HEADER_CONTENT_TYPE = "Content-Type";
   String APPLICATION_JSON = "application/json";
+  int SERVICE_UNAVAILABLE_STATUS = 503;
+  Duration RETRY_INTERVAL = Duration.ofSeconds(1);
 
   /**
    * Constructs a new client for the given url.
@@ -31,10 +35,12 @@ public interface FaucetClient {
 
     final ObjectMapper objectMapper = new ObjectMapper();
     return Feign.builder()
-        .encoder(new JacksonEncoder(objectMapper))
-        .decode404()
-        .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-        .target(FaucetClient.class, faucetUrl.toString());
+      .encoder(new JacksonEncoder(objectMapper))
+      .decode404()
+      // rate limiting will return a 503 status that can be retried
+      .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
+      .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
+      .target(FaucetClient.class, faucetUrl.toString());
   }
 
   /**

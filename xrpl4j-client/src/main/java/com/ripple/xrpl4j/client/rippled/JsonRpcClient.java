@@ -16,6 +16,7 @@ import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -33,6 +34,8 @@ public interface JsonRpcClient {
   String APPLICATION_JSON = "application/json";
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
+  int SERVICE_UNAVAILABLE_STATUS = 503;
+  Duration RETRY_INTERVAL = Duration.ofSeconds(1);
 
   /**
    * Constructs a new client for the given url.
@@ -44,29 +47,32 @@ public interface JsonRpcClient {
     Objects.requireNonNull(rippledUrl);
 
     return Feign.builder()
-        .encoder(new JacksonEncoder(objectMapper))
-        .decode404()
-        .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-        .target(JsonRpcClient.class, rippledUrl.toString());
+      .encoder(new JacksonEncoder(objectMapper))
+      // rate limiting will return a 503 status that can be retried
+      .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
+      .decode404()
+      .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
+      .target(JsonRpcClient.class, rippledUrl.toString());
   }
 
   /**
    * Send a POST request to the rippled server with {@code rpcRequest} in the request body.
+   *
    * @param rpcRequest A rippled JSON RPC API request object.
    * @return A {@link JsonNode} which can be manually parsed containing the response.
    */
   @RequestLine("POST /")
-  @Headers({
-      HEADER_ACCEPT + ": " + APPLICATION_JSON,
-      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+  @Headers( {
+    HEADER_ACCEPT + ": " + APPLICATION_JSON,
+    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
   JsonNode postRpcRequest(JsonRpcRequest rpcRequest);
 
   /**
    * Send a given request to rippled.
    *
-   * @param request The {@link JsonRpcRequest} to send to the server.
-   * @param resultType The type of {@link JsonRpcResult} that should be returned.
+   * @param request      The {@link JsonRpcRequest} to send to the server.
+   * @param resultType   The type of {@link JsonRpcResult} that should be returned.
    * @param <ResultType> The extension of {@link JsonRpcResult} corresponding to the request method.
    * @return The {@link ResultType} representing the result of the request.
    * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
@@ -86,8 +92,8 @@ public interface JsonRpcClient {
    * with type parameters. In this case, you can use an {@link ObjectMapper}'s {@link com.fasterxml.jackson.databind.type.TypeFactory}
    * to construct parameterized types.
    *
-   * @param request The {@link JsonRpcRequest} to send to the server.
-   * @param resultType The type of {@link JsonRpcResult} that should be returned, converted to a {@link JavaType}.
+   * @param request      The {@link JsonRpcRequest} to send to the server.
+   * @param resultType   The type of {@link JsonRpcResult} that should be returned, converted to a {@link JavaType}.
    * @param <ResultType> The extension of {@link JsonRpcResult} corresponding to the request method.
    * @return The {@link ResultType} representing the result of the request.
    * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be

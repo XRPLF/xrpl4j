@@ -13,12 +13,17 @@ import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.OfferCancel;
 import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.wallet.Wallet;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
+import java.util.function.Supplier;
 
 public class OfferIT extends AbstractIT {
 
@@ -26,7 +31,7 @@ public class OfferIT extends AbstractIT {
   public static final String CURRENCY = "USD";
 
   @Test
-  public void createOpenOffer() throws JsonRpcClientErrorException {
+  public void createOpenOfferAndCancel() throws JsonRpcClientErrorException {
     // GIVEN a buy offer that has a really bad exchange rate
     // THEN the OfferCreate should generate an open offer on the order book
 
@@ -73,6 +78,33 @@ public class OfferIT extends AbstractIT {
     OfferObject offerObject = scanForOffer(purchaser, sequence);
     assertThat(offerObject.takerGets()).isEqualTo(offerCreate.takerGets());
     assertThat(offerObject.takerPays()).isEqualTo(offerCreate.takerPays());
+
+    cancelOffer(purchaser, offerObject.sequence());
+  }
+
+  /**
+   * Cancels an offer and verifies the offer no longer exists on ledger for the account.
+   * @param purchaser
+   * @param offerSequence
+   * @throws JsonRpcClientErrorException
+   */
+  private void cancelOffer(Wallet purchaser, UnsignedInteger offerSequence) throws JsonRpcClientErrorException {
+    AccountInfoResult infoResult = this.scanForResult(() -> this.getValidatedAccountInfo(purchaser.classicAddress()));
+    UnsignedInteger nextSequence = infoResult.accountData().sequence();
+
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(purchaser.classicAddress())
+      .fee(xrplClient.fee().drops().minimumFee())
+      .sequence(nextSequence)
+      .offerSequence(offerSequence)
+      .signingPublicKey(purchaser.publicKey())
+      .build();
+
+    SubmissionResult<OfferCancel> cancelResponse = xrplClient.submit(purchaser, offerCancel);
+    assertThat(cancelResponse.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), RippleStateObject.class));
   }
 
   @Test
@@ -116,12 +148,19 @@ public class OfferIT extends AbstractIT {
     );
 
     //////////////////////
-    // Poll the ledger for the source purchaser's offers, and validate the expected offer exists
-    List<OfferObject> accountOffers = this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class);
-    List<RippleStateObject> accountRippleStates =
-      this.getValidatedAccountObjects(purchaser.classicAddress(), RippleStateObject.class);
-    assertThat(accountOffers).isEmpty();
-    assertThat(accountRippleStates).isEmpty();
+    // Poll the ledger for the source purchaser's offers, and validate no offers or balances (ripple states) exist
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), RippleStateObject.class));
+  }
+
+  /**
+   * Asserts the supplier returns empty results, waiting up to 10 seconds for that condition to be true.
+   * @param supplier results supplier.
+   */
+  private void assertEmptyResults(Supplier<Collection<?>> supplier) {
+    Awaitility.await()
+      .atMost(Duration.TEN_SECONDS)
+      .until(() -> supplier.get(), Matchers.empty());
   }
 
   @Test
@@ -174,6 +213,14 @@ public class OfferIT extends AbstractIT {
     } else {
       assertThat(issuedCurrency.balance().value()).isEqualTo(requestCurrencyAmount.value());
     }
+  }
+
+  @Test
+  public void cancelNonExistentOffer() throws JsonRpcClientErrorException {
+    Wallet purchaser = createRandomAccount();
+    UnsignedInteger nonExistentOfferSequence = UnsignedInteger.valueOf(12345);
+    // cancel offer does the assertions
+    cancelOffer(purchaser, nonExistentOfferSequence);
   }
 
   public OfferObject scanForOffer(Wallet purchaser, UnsignedInteger sequence) {

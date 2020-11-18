@@ -26,6 +26,8 @@ import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.OfferCancel;
+import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.Transaction;
@@ -325,6 +327,34 @@ public class BinarySerializationTests {
     assertSerializesAndDeserializes(trustSet, expectedBinary);
   }
 
+  @Test
+  public void serializeOfferCreate() throws JsonProcessingException {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .takerGets(currencyAmount(100))
+      .takerPays(currencyAmount(200))
+      .fee(XrpCurrencyAmount.of(300))
+      .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .sequence(UnsignedInteger.valueOf(11223344))
+      .offerSequence(UnsignedInteger.valueOf(123))
+      .flags(Flags.OfferFlags.builder().fullyCanonicalSig(true).sell(true).build())
+      .expiration(UnsignedInteger.valueOf(456))
+      .build();
+
+    assertSerializesAndDeserializes(offerCreate, "12000722800800002400AB41302A000001C820190000007B64D5071AFD498D00000000000000000000000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE465D5038D7EA4C680000000000000000000000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000012C8114832297BEF589D59F9C03A84F920F8D9128CC1CE4");
+  }
+
+  @Test
+  public void serializeOfferCancel() throws JsonProcessingException {
+    OfferCancel offerCreate = OfferCancel.builder()
+      .fee(XrpCurrencyAmount.of(300))
+      .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .sequence(UnsignedInteger.valueOf(11223344))
+      .offerSequence(UnsignedInteger.valueOf(123))
+      .build();
+
+    assertSerializesAndDeserializes(offerCreate, "12000822800000002400AB413020190000007B68400000000000012C8114832297BEF589D59F9C03A84F920F8D9128CC1CE4");
+  }
+
   private <TxnType extends Transaction> void assertSerializesAndDeserializes(
     TxnType transaction,
     String expectedBinary
@@ -337,4 +367,13 @@ public class BinarySerializationTests {
     TxnType deserialized = objectMapper.readValue(decodedBinary, objectMapper.getTypeFactory().constructType(transaction.getClass()));
     assertThat(deserialized).isEqualTo(transaction);
   }
+
+  private static IssuedCurrencyAmount currencyAmount(int amount) {
+    return IssuedCurrencyAmount.builder()
+      .currency("WCG")
+      .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .value(amount + "")
+      .build();
+  }
+
 }

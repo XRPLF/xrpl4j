@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.ripple.xrpl4j.model.transactions.immutables.Wrapped;
 import com.ripple.xrpl4j.model.transactions.immutables.Wrapper;
-import java.io.Serializable;
-import java.math.BigInteger;
-
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+
+import java.io.Serializable;
+import java.math.BigInteger;
 
 /**
  * Wrapped immutable classes for providing type-safe objects.

@@ -28,7 +28,7 @@ public interface Transaction<T extends TransactionFlags> {
       .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
       .put(ImmutablePayment.class, TransactionType.PAYMENT)
 //      .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
-//      .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
+      .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
 //      .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
 //      .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
 //      .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)

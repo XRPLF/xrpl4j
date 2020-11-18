@@ -7,7 +7,6 @@ import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.client.model.accounts.TrustLine;
 import com.ripple.xrpl4j.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.client.model.path.RipplePathFindResult;
 import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
 import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;

@@ -8,8 +8,9 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
-import java.util.Optional;
 import org.immutables.value.Value;
+
+import java.util.Optional;
 
 /**
  * Sequester XRP until the escrow process either finishes or is canceled.

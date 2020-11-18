@@ -27,6 +27,7 @@ import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -279,6 +280,27 @@ public class BinarySerializationTests {
       "55534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF446840000000000003158114EE39E6D05CFD6A90DAB700A1D7" +
       "0149ECEE29DFEC83140000000000000000000000000000000000000001";
     assertSerializesAndDeserializes(payment, expectedBinary);
+  }
+
+  @Test
+  void serializePaymentChannelCreate() throws JsonProcessingException {
+    PaymentChannelCreate create = PaymentChannelCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .sourceTag(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.of("100"))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.of("10000"))
+      .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .destinationTag(UnsignedInteger.valueOf(2))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .cancelAfter(UnsignedInteger.valueOf(533171558))
+      .build();
+
+    String expectedBinary = "12000D2280000000230000000124000000012E0000000220241FC78D6620270000000161400000000000" +
+      "2710684000000000000064712132D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A81144B4E9C06F" +
+      "24296074F7BC48F92A97916C6DC5EA983144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
+    assertSerializesAndDeserializes(create, expectedBinary);
   }
 
   @Test

@@ -7,12 +7,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.Fulfillment;
-
 import com.ripple.xrpl4j.model.transactions.immutables.FluentCompareTo;
+import org.immutables.value.Value;
+
 import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Optional;
-import org.immutables.value.Value;
 
 /**
  * Deliver XRP from a held payment to the recipient.

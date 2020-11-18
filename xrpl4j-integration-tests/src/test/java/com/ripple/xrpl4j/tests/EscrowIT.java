@@ -2,11 +2,8 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import com.ripple.cryptoconditions.CryptoConditionWriter;
-import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
@@ -186,7 +183,8 @@ public class EscrowIT extends AbstractIT {
           .ledger()
           .closeTime()
           .compareTo(
-            createResult.transaction().cancelAfter().orElse(UnsignedLong.MAX_VALUE.plus(UnsignedLong.valueOf(5)))) > 0;
+            createResult.transaction().cancelAfter()
+              .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5))).orElse(UnsignedLong.MAX_VALUE)) > 0;
       }
     );
 

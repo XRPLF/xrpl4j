@@ -27,6 +27,7 @@ public class LedgerObjectDeserializer extends JsonDeserializer<LedgerObject> {
     .put(LedgerEntryType.ESCROW, EscrowObject.class)
     .put(LedgerEntryType.RIPPLE_STATE, RippleStateObject.class)
     .put(LedgerEntryType.OFFER, OfferObject.class)
+    .put(LedgerEntryType.PAY_CHANNEL, PayChannelObject.class)
     // TODO Add other ledger object types
     .build();
 

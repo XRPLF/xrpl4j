@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.ripple.xrpl4j.client.model.accounts.AccountChannelsRequestParams;
+import com.ripple.xrpl4j.client.model.accounts.AccountChannelsResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
@@ -39,6 +41,7 @@ import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.model.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.wallet.Wallet;
@@ -115,6 +118,23 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, FeeResult.class);
+  }
+
+  /**
+   * Get the {@link AccountChannelsResult} for the account specified in {@code params} by making an account_channels
+   * method call.
+   *
+   * @param params The {@link AccountChannelsRequestParams} to send in the request.
+   * @return The {@link AccountChannelsResult} returned by the account_channels method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountChannelsResult accountChannels(AccountChannelsRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_CHANNELS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountChannelsResult.class);
   }
 
   /**
@@ -306,6 +326,10 @@ public class XrplClient {
         .build();
     } else if (OfferCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return OfferCreate.builder().from((OfferCreate) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (PaymentChannelCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return PaymentChannelCreate.builder().from((PaymentChannelCreate) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

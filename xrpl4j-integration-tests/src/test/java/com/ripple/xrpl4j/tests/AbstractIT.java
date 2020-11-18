@@ -11,6 +11,8 @@ import com.ripple.xrpl4j.client.faucet.FaucetAccountResponse;
 import com.ripple.xrpl4j.client.faucet.FaucetClient;
 import com.ripple.xrpl4j.client.faucet.FundAccountRequest;
 import com.ripple.xrpl4j.client.model.JsonRpcResult;
+import com.ripple.xrpl4j.client.model.accounts.AccountChannelsRequestParams;
+import com.ripple.xrpl4j.client.model.accounts.AccountChannelsResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
@@ -133,6 +135,18 @@ public abstract class AbstractIT {
         .filter(object -> clazz.isAssignableFrom(object.getClass()))
         .map(object -> (T) object)
         .collect(Collectors.toList());
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected AccountChannelsResult getValidatedAccountChannels(Address classicAddress) {
+    try {
+      AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
+        .account(classicAddress)
+        .ledgerIndex("validated")
+        .build();
+      return xrplClient.accountChannels(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

@@ -873,4 +873,65 @@ public class Flags {
       }
     }
   }
+
+  public static class PaymentChannelClaimFlags extends TransactionFlags {
+
+    private static final PaymentChannelClaimFlags RENEW = new PaymentChannelClaimFlags(0x00010000);
+    private static final PaymentChannelClaimFlags CLOSE = new PaymentChannelClaimFlags(0x00020000);
+
+    private PaymentChannelClaimFlags(long value) {
+      super(value);
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    private static PaymentChannelClaimFlags of(boolean tfFullyCanonicalSig, boolean tfRenew, boolean tfClose) {
+      return new PaymentChannelClaimFlags(
+        TransactionFlags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfRenew ? RENEW : UNSET,
+          tfClose ? CLOSE: UNSET
+        ).getValue()
+      );
+    }
+
+    public boolean tfFullyCanonicalSig() {
+      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
+    }
+
+    public boolean tfRenew() {
+      return this.isSet(RENEW);
+    }
+
+    public boolean tfClose() {
+      return this.isSet(CLOSE);
+    }
+
+    public static class Builder {
+      boolean tfFullyCanonicalSig = true;
+      boolean tfRenew = false;
+      boolean tfClose = false;
+
+      public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
+        return this;
+      }
+
+      public Builder tfRenew(boolean tfRenew) {
+        this.tfRenew = tfRenew;
+        return this;
+      }
+
+      public Builder tfClose(boolean tfClose) {
+        this.tfClose = tfClose;
+        return this;
+      }
+
+      public PaymentChannelClaimFlags build() {
+        return PaymentChannelClaimFlags.of(tfFullyCanonicalSig, tfRenew, tfClose);
+      }
+    }
+  }
 }

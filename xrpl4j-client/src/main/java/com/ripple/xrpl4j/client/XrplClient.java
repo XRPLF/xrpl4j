@@ -12,6 +12,8 @@ import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountLinesResult;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsRequestParams;
 import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
+import com.ripple.xrpl4j.client.model.channels.ChannelVerifyRequestParams;
+import com.ripple.xrpl4j.client.model.channels.ChannelVerifyResult;
 import com.ripple.xrpl4j.client.model.fees.FeeResult;
 import com.ripple.xrpl4j.client.model.ledger.LedgerRequestParams;
 import com.ripple.xrpl4j.client.model.ledger.LedgerResult;
@@ -39,12 +41,15 @@ import com.ripple.xrpl4j.model.transactions.EscrowCancel;
 import com.ripple.xrpl4j.model.transactions.EscrowCreate;
 import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.Flags;
+import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.OfferCancel;
 import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.model.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -242,6 +247,29 @@ public class XrplClient {
     return jsonRpcClient.send(request, AccountLinesResult.class);
   }
 
+  public ChannelVerifyResult channelVerify(
+    Hash256 channelId,
+    XrpCurrencyAmount amount,
+    String signature,
+    String publicKey
+  ) throws JsonRpcClientErrorException {
+    return channelVerify(ChannelVerifyRequestParams.builder()
+      .channelId(channelId)
+      .amount(amount)
+      .signature(signature)
+      .publicKey(publicKey)
+      .build());
+  }
+
+  public ChannelVerifyResult channelVerify(ChannelVerifyRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.CHANNEL_VERIFY)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, ChannelVerifyResult.class);
+  }
+
   /**
    * Serialize a {@link Transaction} to binary and sign it using {@code wallet.privateKey()}.
    *
@@ -335,6 +363,10 @@ public class XrplClient {
         .build();
     } else if (PaymentChannelCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return PaymentChannelCreate.builder().from((PaymentChannelCreate) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (PaymentChannelClaim.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return PaymentChannelClaim.builder().from((PaymentChannelClaim) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

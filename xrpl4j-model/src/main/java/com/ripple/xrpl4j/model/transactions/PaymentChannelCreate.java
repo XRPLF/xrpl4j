@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -65,7 +66,7 @@ public interface PaymentChannelCreate extends Transaction<Flags.TransactionFlags
    * cannot remain open after this time.
    */
   @JsonProperty("CancelAfter")
-  Optional<UnsignedInteger> cancelAfter();
+  Optional<UnsignedLong> cancelAfter();
 
   /**
    * Arbitrary tag to further specify the destination for this payment channel, such as a hosted recipient at

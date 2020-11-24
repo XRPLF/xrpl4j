@@ -29,6 +29,7 @@ import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.OfferCancel;
 import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.model.transactions.Payment;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
@@ -296,13 +297,37 @@ public class BinarySerializationTests {
       .destinationTag(UnsignedInteger.valueOf(2))
       .settleDelay(UnsignedInteger.ONE)
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
-      .cancelAfter(UnsignedInteger.valueOf(533171558))
+      .cancelAfter(UnsignedLong.valueOf(533171558))
       .build();
 
     String expectedBinary = "12000D2280000000230000000124000000012E0000000220241FC78D6620270000000161400000000000" +
       "2710684000000000000064712132D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A81144B4E9C06F" +
       "24296074F7BC48F92A97916C6DC5EA983144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
     assertSerializesAndDeserializes(create, expectedBinary);
+  }
+
+  @Test
+  void serializePaymentChannelClaim() throws JsonProcessingException {
+    PaymentChannelClaim claim = PaymentChannelClaim.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.of("10"))
+      .sequence(UnsignedInteger.ONE)
+      .flags(Flags.PaymentChannelClaimFlags.builder().tfClose(true).build())
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .balance(XrpCurrencyAmount.of("1000000"))
+      .amount(XrpCurrencyAmount.of("1000000"))
+      .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
+        "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .build();
+
+    String expectedBinary = "12000F228002000024000000015016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC74" +
+      "9DCDD3B9E5992CA61986140000000000F42406240000000000F424068400000000000000A712132D2471DB72B27E3310F" +
+      "355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A764630440220718D264EF05CAED7C781FF6DE298DCAC68D0025" +
+      "62C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B8114" +
+      "204288D2E47F8EF6C99BCC457966320D12409711";
+
+    assertSerializesAndDeserializes(claim, expectedBinary);
   }
 
   @Test

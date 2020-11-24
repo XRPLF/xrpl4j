@@ -5,4 +5,6 @@ package com.ripple.xrpl4j.client.model;
  */
 public interface JsonRpcResult {
 
+  String status();
+
 }

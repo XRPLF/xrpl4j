@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -83,7 +84,7 @@ public interface PaymentChannelResultObject {
    * If this is before the close time of the most recent validated ledger, the channel is expired.
    */
   @JsonProperty("cancel_after")
-  Optional<UnsignedInteger> cancelAfter();
+  Optional<UnsignedLong> cancelAfter();
 
   /**
    * An {@link UnsignedInteger} to use as a source tag for payments through this payment channel, if one was

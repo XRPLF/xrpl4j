@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.xrpl4j.model.transactions.immutables.FluentCompareTo;
@@ -41,14 +42,11 @@ public interface EscrowFinish extends Transaction<Flags.TransactionFlags> {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(fulfillment);
 
-    BigInteger newFee = (
-      currentLedgerFeeDrops.asBigInteger().add( // <-- usually 10 drops, per the docs.
-        BigInteger.valueOf(320))
-        .add( // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
-          BigInteger.valueOf(
-            10 * (fulfillment.getDerivedCondition().getCost() / 16))) // <-- 10 drops for each additional 16 bytes.
-    );
-    return XrpCurrencyAmount.of(newFee.toString());
+    UnsignedLong newFee =
+      currentLedgerFeeDrops.value() // <-- usually 10 drops, per the docs.
+        .plus(UnsignedLong.valueOf(320)) // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
+        .plus(UnsignedLong.valueOf(10 * (fulfillment.getDerivedCondition().getCost() / 16))); // <-- 10 drops for each additional 16 bytes.
+    return XrpCurrencyAmount.of(newFee);
   }
 
   @JsonProperty("Flags")
@@ -84,10 +82,10 @@ public interface EscrowFinish extends Transaction<Flags.TransactionFlags> {
   @Value.Check
   default void check() {
     fulfillment().ifPresent(f -> {
-        BigInteger feeInDrops = fee().asBigInteger();
+        UnsignedLong feeInDrops = fee().value();
         Preconditions.checkState(condition().isPresent(),
           "If a fulfillment is specified, the corresponding condition must also be specified.");
-        Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(BigInteger.valueOf(330)),
+        Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(UnsignedLong.valueOf(330)),
           "If a fulfillment is specified, the fee must be set to 330 or greater.");
       }
     );

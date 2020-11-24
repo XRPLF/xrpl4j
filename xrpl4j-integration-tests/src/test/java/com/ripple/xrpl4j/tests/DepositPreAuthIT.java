@@ -66,7 +66,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
-      .amount(XrpCurrencyAmount.of("12345"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(receiverWallet.classicAddress())
       .build();
 
@@ -91,10 +91,10 @@ public class DepositPreAuthIT extends AbstractIT {
     this.scanForResult(
       () -> this.getValidatedAccountInfo(receiverWallet.classicAddress()),
       info -> {
-        String expectedBalance = UnsignedLong.valueOf(receiverAccountInfo.accountData().balance().value())
-          .minus(UnsignedLong.valueOf(depositPreAuth.fee().value()))
-          .plus(UnsignedLong.valueOf(((XrpCurrencyAmount) validatedPayment.transaction().amount()).value())).toString();
-        return info.accountData().balance().value().equals(expectedBalance);
+        XrpCurrencyAmount expectedBalance = receiverAccountInfo.accountData().balance()
+          .minus(depositPreAuth.fee())
+          .plus(((XrpCurrencyAmount) validatedPayment.transaction().amount()));
+        return info.accountData().balance().equals(expectedBalance);
       });
   }
 
@@ -128,7 +128,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
-      .amount(XrpCurrencyAmount.of("12345"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(receiverWallet.classicAddress())
       .build();
 

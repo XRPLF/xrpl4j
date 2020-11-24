@@ -14,13 +14,13 @@ public class CheckTests {
 
   @Test
   public void checkCashWithAmount() {
-    XrpCurrencyAmount amount = XrpCurrencyAmount.of("100");
+    XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(100);
     Hash256 checkId = Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334");
     CheckCash checkCash = CheckCash.builder()
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(checkId)
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .amount(amount)
       .build();
 
@@ -31,13 +31,13 @@ public class CheckTests {
 
   @Test
   public void checkCashWithDeliverMin() {
-    XrpCurrencyAmount deliverMin = XrpCurrencyAmount.of("100");
+    XrpCurrencyAmount deliverMin = XrpCurrencyAmount.ofDrops(100);
     Hash256 checkId = Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334");
     CheckCash checkCash = CheckCash.builder()
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(checkId)
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .deliverMin(deliverMin)
       .build();
 
@@ -57,7 +57,7 @@ public class CheckTests {
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .build();
   }
 
@@ -73,9 +73,9 @@ public class CheckTests {
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
-      .amount(XrpCurrencyAmount.of("100"))
-      .deliverMin(XrpCurrencyAmount.of("100"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .deliverMin(XrpCurrencyAmount.ofDrops(100))
       .build();
   }
 }

@@ -15,6 +15,7 @@ import com.ripple.xrpl4j.model.transactions.EscrowCancel;
 import com.ripple.xrpl4j.model.transactions.EscrowCreate;
 import com.ripple.xrpl4j.model.transactions.EscrowFinish;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
+import com.ripple.xrpl4j.model.transactions.immutables.FluentCompareTo;
 import com.ripple.xrpl4j.wallet.Wallet;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +44,7 @@ public class EscrowIT extends AbstractIT {
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
-      .amount(XrpCurrencyAmount.of("123456"))
+      .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(20))))
       .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
@@ -73,14 +74,11 @@ public class EscrowIT extends AbstractIT {
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
-      ledgerResult -> {
-        logger.info("Ledger close: {}. Escrow finishAfter: {}.", ledgerResult.ledger().closeTime(),
-          createResult.transaction().finishAfter().orElse(UnsignedLong.ZERO));
-        return ledgerResult
+      ledgerResult ->
+        ledgerResult
           .ledger()
           .closeTime()
-          .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0;
-      }
+          .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
     );
 
     //////////////////////
@@ -114,17 +112,17 @@ public class EscrowIT extends AbstractIT {
       )
     );
 
-    AccountInfoResult receiverAccountInfoAfterFinish = this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverWallet.classicAddress())
+    /////////////////////
+    // Ensure that the funds were released to the receiver.
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverWallet.classicAddress()),
+      infoResult -> infoResult.accountData().balance().equals(
+        receiverAccountInfo.accountData().balance()
+          .plus(escrowCreate.amount())
+          .minus(feeResult.drops().openLedgerFee())
+      )
     );
 
-    //////////////////////
-    // Ensure that the funds were released to the receiver.
-    assertThat(receiverAccountInfoAfterFinish.accountData().balance().value()).isEqualTo(
-      UnsignedLong.valueOf(receiverAccountInfo.accountData().balance().value())
-        .plus(UnsignedLong.valueOf(escrowCreate.amount().value()))
-        .minus(UnsignedLong.valueOf(feeResult.drops().openLedgerFee().value())).toString()
-    );
   }
 
   @Test
@@ -140,11 +138,13 @@ public class EscrowIT extends AbstractIT {
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
+
+    scanForResult(() -> getValidatedAccountInfo(receiverWallet.classicAddress()));
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
-      .amount(XrpCurrencyAmount.of("123456"))
+      .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
       .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(1))))
@@ -174,18 +174,13 @@ public class EscrowIT extends AbstractIT {
     // Wait until the close time on the current validated ledger is after the cancelAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
-      ledgerResult -> {
-        logger.info("Ledger close: {}. Escrow cancelAfter: {}.",
-          ledgerResult.ledger().closeTime(),
-          createResult.transaction().cancelAfter().orElse(UnsignedLong.ZERO)
-        );
-        return ledgerResult
-          .ledger()
-          .closeTime()
-          .compareTo(
+      ledgerResult ->
+        FluentCompareTo.is(ledgerResult.ledger().closeTime())
+          .greaterThan(
             createResult.transaction().cancelAfter()
-              .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5))).orElse(UnsignedLong.MAX_VALUE)) > 0;
-      }
+              .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(10)))
+              .orElse(UnsignedLong.MAX_VALUE)
+          )
     );
 
     //////////////////////
@@ -216,15 +211,15 @@ public class EscrowIT extends AbstractIT {
       )
     );
 
-    AccountInfoResult senderAccountInfoAfterCancel = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
-    );
-
     //////////////////////
     // Ensure that the funds were released to the sender.
-    assertThat(senderAccountInfoAfterCancel.accountData().balance().value()).isEqualTo(
-      UnsignedLong.valueOf(senderAccountInfo.accountData().balance().value())
-        .minus(UnsignedLong.valueOf(feeResult.drops().openLedgerFee().value()).times(UnsignedLong.valueOf(2))).toString()
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress()),
+      infoResult -> infoResult.accountData().balance().equals(
+        senderAccountInfo.accountData().balance()
+          .minus(feeResult.drops().openLedgerFee()
+          .times(UnsignedLong.valueOf(2)))
+      )
     );
   }
 
@@ -250,7 +245,7 @@ public class EscrowIT extends AbstractIT {
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
-      .amount(XrpCurrencyAmount.of("123456"))
+      .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .signingPublicKey(senderWallet.publicKey())
       // With the fix1571 amendment enabled, you must supply FinishAfter, Condition, or both.
@@ -281,14 +276,10 @@ public class EscrowIT extends AbstractIT {
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
-      ledgerResult -> {
-        logger.info("Ledger close: {}. Escrow finishAfter: {}.", ledgerResult.ledger().closeTime(),
-          createResult.transaction().finishAfter().orElse(UnsignedLong.ZERO));
-        return ledgerResult
-          .ledger()
-          .closeTime()
-          .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0;
-      }
+      ledgerResult -> ledgerResult
+        .ledger()
+        .closeTime()
+        .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
     );
 
     //////////////////////
@@ -328,17 +319,17 @@ public class EscrowIT extends AbstractIT {
       )
     );
 
-    AccountInfoResult receiverAccountInfoAfterFinish = this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverWallet.classicAddress())
-    );
-
     //////////////////////
     // Ensure that the funds were released to the receiver.
-    assertThat(receiverAccountInfoAfterFinish.accountData().balance().value()).isEqualTo(
-      UnsignedLong.valueOf(receiverAccountInfo.accountData().balance().value())
-        .plus(UnsignedLong.valueOf(escrowCreate.amount().value()))
-        .minus(UnsignedLong.valueOf(feeForFulfillment.value())).toString()
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverWallet.classicAddress()),
+      infoResult -> infoResult.accountData().balance().equals(
+        receiverAccountInfo.accountData().balance()
+          .plus(escrowCreate.amount())
+          .minus(feeForFulfillment)
+      )
     );
+
   }
 
   @Test
@@ -363,7 +354,7 @@ public class EscrowIT extends AbstractIT {
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
-      .amount(XrpCurrencyAmount.of("123456"))
+      .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
       .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
@@ -393,20 +384,15 @@ public class EscrowIT extends AbstractIT {
     // Wait until the close time on the current validated ledger is after the cancelAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
-      ledgerResult -> {
-        logger.info("Ledger close: {}. Escrow cancelAfter: {}.",
-          ledgerResult.ledger().closeTime(),
-          createResult.transaction().cancelAfter().orElse(UnsignedLong.ZERO)
-        );
-        return ledgerResult
+      ledgerResult ->
+        ledgerResult
           .ledger()
           .closeTime()
           .compareTo(
             createResult.transaction().cancelAfter()
               .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
               .orElse(UnsignedLong.MAX_VALUE)
-          ) > 0;
-      }
+          ) > 0
     );
 
     //////////////////////
@@ -437,16 +423,16 @@ public class EscrowIT extends AbstractIT {
       )
     );
 
-    AccountInfoResult senderAccountInfoAfterCancel = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
-    );
-
     //////////////////////
     // Ensure that the funds were released to the sender.
-    assertThat(senderAccountInfoAfterCancel.accountData().balance().value()).isEqualTo(
-      UnsignedLong.valueOf(senderAccountInfo.accountData().balance().value())
-        .minus(UnsignedLong.valueOf(feeResult.drops().openLedgerFee().value()).times(UnsignedLong.valueOf(2))).toString()
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress()),
+      infoResult -> infoResult.accountData().balance().equals(
+        senderAccountInfo.accountData().balance()
+          .minus(feeResult.drops().openLedgerFee().times(UnsignedLong.valueOf(2)))
+      )
     );
+
   }
 
 }

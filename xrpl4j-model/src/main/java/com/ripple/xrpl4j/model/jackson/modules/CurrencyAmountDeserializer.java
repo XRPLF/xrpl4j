@@ -33,7 +33,7 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
         .currency(currency)
         .build();
     } else {
-      return XrpCurrencyAmount.of(node.asText());
+      return XrpCurrencyAmount.ofDrops(node.asLong());
     }
   }
 }

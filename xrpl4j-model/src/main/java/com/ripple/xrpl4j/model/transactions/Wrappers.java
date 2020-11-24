@@ -3,12 +3,14 @@ package com.ripple.xrpl4j.model.transactions;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.model.transactions.immutables.Wrapped;
 import com.ripple.xrpl4j.model.transactions.immutables.Wrapper;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
@@ -69,39 +71,50 @@ public class Wrappers {
   @Wrapped
   @JsonSerialize(as = XrpCurrencyAmount.class)
   @JsonDeserialize(as = XrpCurrencyAmount.class)
-  static abstract class _XrpCurrencyAmount extends Wrapper<String> implements Serializable, CurrencyAmount {
-
-    /**
-     * Construct a new immutable {@code XrpCurrencyAmount} instance.
-     *
-     * @param value The value for the {@code value} attribute
-     * @return An immutable XrpCurrencyAmount instance
-     */
-    public static XrpCurrencyAmount of(int value) {
-      return XrpCurrencyAmount.of(value + "");
-    }
+  static abstract class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
 
     @Override
     public String toString() {
-      return this.value();
+      return this.value().toString();
     }
 
-    @Derived
-    public BigInteger asBigInteger() {
-      try {
-        return BigInteger.valueOf(Long.parseLong(this.value()));
-      } catch (NumberFormatException e) {
-        throw new IllegalStateException("XrpCurrencyAmount must be a whole number in drops.");
-      }
+    /**
+     * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     * @param drops
+     * @return
+     */
+    public static XrpCurrencyAmount ofDrops(long drops) {
+      return ofDrops(UnsignedLong.valueOf(drops));
     }
 
-    @Value.Check
-    void check() {
-      try {
-        asBigInteger();
-      } catch (Exception e) {
-        throw new IllegalStateException("Fee must be an integer number in drops.");
-      }
+    /**
+     * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     * @param drops
+     * @return
+     */
+    public static XrpCurrencyAmount ofDrops(UnsignedLong drops) {
+      return XrpCurrencyAmount.of(drops);
+    }
+
+    /**
+     * Constructs an {@link XrpCurrencyAmount} using decimal amount of XRP.
+     * @param amount
+     * @return
+     */
+    public static XrpCurrencyAmount ofXrp(BigDecimal amount) {
+      return ofDrops(amount.scaleByPowerOfTen(6).toBigIntegerExact().longValue());
+    }
+
+    public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
+      return XrpCurrencyAmount.of(this.value().plus(other.value()));
+    }
+
+    public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
+      return XrpCurrencyAmount.of(this.value().minus(other.value()));
+    }
+
+    public XrpCurrencyAmount times(UnsignedLong value) {
+      return XrpCurrencyAmount.of(this.value().times(value));
     }
   }
 }

@@ -15,6 +15,6 @@ public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAm
 
   @Override
   public XrpCurrencyAmount deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    return XrpCurrencyAmount.of(jsonParser.getText());
+    return XrpCurrencyAmount.ofDrops(jsonParser.getValueAsLong());
   }
 }

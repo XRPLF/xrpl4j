@@ -15,6 +15,7 @@ import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.OfferCancel;
 import com.ripple.xrpl4j.model.transactions.OfferCreate;
+import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
@@ -56,7 +57,7 @@ public class OfferIT extends AbstractIT {
         .value("1000")
         .build()
       )
-      .takerGets(CurrencyAmount.ofDrops(1000))
+      .takerGets(XrpCurrencyAmount.ofDrops(1000))
       .flags(Flags.OfferFlags.builder()
         .fullyCanonicalSig(true)
         .sell(true)
@@ -133,7 +134,7 @@ public class OfferIT extends AbstractIT {
         .value("1000")
         .build()
       )
-      .takerGets(CurrencyAmount.ofDrops(1000))
+      .takerGets(XrpCurrencyAmount.ofDrops(1000))
       .flags(Flags.OfferFlags.builder()
         .fullyCanonicalSig(true)
         .immediateOrCancel(true)
@@ -190,7 +191,7 @@ public class OfferIT extends AbstractIT {
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(requestCurrencyAmount)
-      .takerGets(CurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
+      .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
       .build();
 
     SubmissionResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);

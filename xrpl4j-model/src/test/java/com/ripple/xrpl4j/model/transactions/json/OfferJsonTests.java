@@ -17,7 +17,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
       .sequence(UnsignedInteger.valueOf(12))
       .offerSequence(UnsignedInteger.valueOf(13))
-      .fee(XrpCurrencyAmount.of("14"))
+      .fee(XrpCurrencyAmount.ofDrops(14))
       .build();
 
     String json = "{\n" +
@@ -37,10 +37,10 @@ public class OfferJsonTests extends AbstractJsonTest {
     OfferCreate offerCreate = OfferCreate.builder()
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .offerSequence(UnsignedInteger.valueOf(13))
-      .takerPays(XrpCurrencyAmount.of("14"))
-      .takerGets(XrpCurrencyAmount.of("15"))
+      .takerPays(XrpCurrencyAmount.ofDrops(14))
+      .takerGets(XrpCurrencyAmount.ofDrops(15))
       .expiration(UnsignedInteger.valueOf(16))
       .build();
 

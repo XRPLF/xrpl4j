@@ -26,9 +26,9 @@ public class EscrowJsonTests extends AbstractJsonTest {
   public void testEscrowCreateJson() throws JsonProcessingException, JSONException, DerEncodingException {
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
-      .amount(XrpCurrencyAmount.of("10000"))
+      .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
       .destinationTag(UnsignedInteger.valueOf(23480))
       .cancelAfter(UnsignedLong.valueOf(533257958))
@@ -61,7 +61,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
   public void testEscrowCancelJson() throws JsonProcessingException, JSONException {
     EscrowCancel escrowCancel = EscrowCancel.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
       .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .offerSequence(UnsignedInteger.valueOf(7))
@@ -83,7 +83,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
   public void testEscrowFinishJson() throws JsonProcessingException, JSONException, DerEncodingException {
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.of("330"))
+      .fee(XrpCurrencyAmount.ofDrops(330))
       .sequence(UnsignedInteger.ONE)
       .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .offerSequence(UnsignedInteger.valueOf(7))
@@ -116,7 +116,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
 
     EscrowFinish.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.of("3"))
+      .fee(XrpCurrencyAmount.ofDrops(3))
       .sequence(UnsignedInteger.ONE)
       .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .offerSequence(UnsignedInteger.valueOf(7))

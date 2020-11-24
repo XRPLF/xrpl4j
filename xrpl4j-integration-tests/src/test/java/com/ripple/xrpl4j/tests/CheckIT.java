@@ -41,7 +41,7 @@ public class CheckIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
-      .sendMax(XrpCurrencyAmount.of("12345"))
+      .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -89,10 +89,10 @@ public class CheckIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress()),
       result -> {
         logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance().value());
-        return result.accountData().balance().value().equals(
-          UnsignedInteger.valueOf(destinationAccountInfo.accountData().balance().value())
-            .plus(UnsignedInteger.valueOf(((XrpCurrencyAmount) checkObject.sendMax()).value()))
-            .minus(UnsignedInteger.valueOf(checkCash.fee().value())).toString());
+        return result.accountData().balance().equals(
+          destinationAccountInfo.accountData().balance()
+            .plus((XrpCurrencyAmount) checkObject.sendMax())
+            .minus(checkCash.fee()));
       });
 
     //////////////////////
@@ -122,7 +122,7 @@ public class CheckIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
-      .sendMax(XrpCurrencyAmount.of("12345"))
+      .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -190,7 +190,7 @@ public class CheckIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
-      .sendMax(XrpCurrencyAmount.of("12345"))
+      .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
       .signingPublicKey(sourceWallet.publicKey())
       .build();

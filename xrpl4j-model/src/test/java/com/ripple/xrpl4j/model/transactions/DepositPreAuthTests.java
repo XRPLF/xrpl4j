@@ -17,7 +17,7 @@ public class DepositPreAuthTests {
     Address authorize = Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de");
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .authorize(authorize)
       .build();
@@ -31,7 +31,7 @@ public class DepositPreAuthTests {
     Address unauthorize = Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de");
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .unauthorize(unauthorize)
       .build();
@@ -49,7 +49,7 @@ public class DepositPreAuthTests {
 
     DepositPreAuth.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .build();
   }
@@ -63,7 +63,7 @@ public class DepositPreAuthTests {
 
     DepositPreAuth.builder()
       .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
       .unauthorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))

@@ -15,7 +15,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
   public void fullyPopulatedAccountSet() throws JSONException, JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(5))
       .domain("6578616D706C652E636F6D")
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)

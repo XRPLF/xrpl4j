@@ -46,7 +46,7 @@ public class BinarySerializationTests {
   public void serializeAccountSetTransaction() throws JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(10598))
       .build();
 
@@ -58,7 +58,7 @@ public class BinarySerializationTests {
   public void serializeAccountDelete() throws JsonProcessingException {
     AccountDelete accountDelete = AccountDelete.builder()
       .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
-      .fee(XrpCurrencyAmount.of("5000000"))
+      .fee(XrpCurrencyAmount.ofDrops(5000000))
       .sequence(UnsignedInteger.valueOf(2470665))
       .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
       .destinationTag(UnsignedInteger.valueOf(13))
@@ -75,7 +75,7 @@ public class BinarySerializationTests {
       .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
       .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
       .sequence(UnsignedInteger.valueOf(12))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .build();
 
     String expectedBinary = "1200122280000000240000000C501849647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E997"
@@ -89,8 +89,8 @@ public class BinarySerializationTests {
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
-      .amount(XrpCurrencyAmount.of("100"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(XrpCurrencyAmount.ofDrops(100))
       .build();
 
     String expectedBinary = "120011228000000024000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F5"
@@ -104,8 +104,8 @@ public class BinarySerializationTests {
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
-      .deliverMin(XrpCurrencyAmount.of("100"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .deliverMin(XrpCurrencyAmount.ofDrops(100))
       .build();
 
     String expectedBinary = "120011228000000024000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F5"
@@ -119,7 +119,7 @@ public class BinarySerializationTests {
       .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .deliverMin(IssuedCurrencyAmount.builder()
         .currency("USD")
         .issuer(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
@@ -137,10 +137,10 @@ public class BinarySerializationTests {
     CheckCreate checkCreate = CheckCreate.builder()
       .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
       .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .destinationTag(UnsignedInteger.ONE)
-      .sendMax(XrpCurrencyAmount.of("100000000"))
+      .sendMax(XrpCurrencyAmount.ofDrops(100000000))
       .expiration(UnsignedInteger.valueOf(570113521))
       .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
       .build();
@@ -156,7 +156,7 @@ public class BinarySerializationTests {
     DepositPreAuth preAuth = DepositPreAuth.builder()
       .account(Address.of("rDd6FpNbeY2CrQajSmP178BmNGusmQiYMM"))
       .authorize(Address.of("rDJFnv5sEfp42LMFiX3mVQKczpFTdxYDzM"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(65))
       .build();
 
@@ -169,8 +169,8 @@ public class BinarySerializationTests {
   void serializeEscrowCreate() throws JsonProcessingException, DerEncodingException {
     EscrowCreate checkCreate = EscrowCreate.builder()
       .account(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
-      .amount(XrpCurrencyAmount.of("100"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
       .cancelAfter(UnsignedLong.valueOf(630000001))
       .finishAfter(UnsignedLong.valueOf(630000000))
@@ -191,7 +191,7 @@ public class BinarySerializationTests {
   void serializeEscrowCancel() throws JsonProcessingException {
     EscrowCancel escrowCancel = EscrowCancel.builder()
       .account(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
       .owner(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
       .offerSequence(UnsignedInteger.valueOf(25))
@@ -206,7 +206,7 @@ public class BinarySerializationTests {
   void serializeEscrowFinish() throws JsonProcessingException, DerEncodingException {
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(Address.of("rMYPppnVNQ7crMizv8D6wF45kYuSupygyr"))
-      .fee(XrpCurrencyAmount.of("330"))
+      .fee(XrpCurrencyAmount.ofDrops(330))
       .sequence(UnsignedInteger.valueOf(3))
       .owner(Address.of("rMYPppnVNQ7crMizv8D6wF45kYuSupygyr"))
       .offerSequence(UnsignedInteger.valueOf(25))
@@ -237,8 +237,8 @@ public class BinarySerializationTests {
       .destination(destination)
       .sourceTag(UnsignedInteger.valueOf(1))
       .destinationTag(UnsignedInteger.valueOf(2))
-      .amount(XrpCurrencyAmount.of("12345"))
-      .fee(XrpCurrencyAmount.of("789"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .fee(XrpCurrencyAmount.ofDrops(789))
       .sequence(UnsignedInteger.valueOf(56565656))
       .build();
 
@@ -276,7 +276,7 @@ public class BinarySerializationTests {
       .sourceTag(UnsignedInteger.valueOf(1))
       .destinationTag(UnsignedInteger.valueOf(2))
       .amount(amount)
-      .fee(XrpCurrencyAmount.of("789"))
+      .fee(XrpCurrencyAmount.ofDrops(789))
       .sequence(UnsignedInteger.valueOf(1))
       .build();
 
@@ -291,9 +291,9 @@ public class BinarySerializationTests {
     PaymentChannelCreate create = PaymentChannelCreate.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .sourceTag(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.of("100"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
-      .amount(XrpCurrencyAmount.of("10000"))
+      .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .destinationTag(UnsignedInteger.valueOf(2))
       .settleDelay(UnsignedInteger.ONE)
@@ -311,12 +311,12 @@ public class BinarySerializationTests {
   void serializePaymentChannelClaim() throws JsonProcessingException {
     PaymentChannelClaim claim = PaymentChannelClaim.builder()
       .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .flags(Flags.PaymentChannelClaimFlags.builder().tfClose(true).build())
       .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
-      .balance(XrpCurrencyAmount.of("1000000"))
-      .amount(XrpCurrencyAmount.of("1000000"))
+      .balance(XrpCurrencyAmount.ofDrops(1000000))
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
       .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
         "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
@@ -335,10 +335,10 @@ public class BinarySerializationTests {
   void serializePaymentChannelFund() throws JsonProcessingException {
     PaymentChannelFund fund = PaymentChannelFund.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
       .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
-      .amount(XrpCurrencyAmount.of("200000"))
+      .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
       .build();
 
@@ -352,7 +352,7 @@ public class BinarySerializationTests {
   void serializeTrustLine() throws JsonProcessingException {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(Flags.TrustSetFlags.builder()
         .tfSetNoRipple()
         .tfFullyCanonicalSig(false)
@@ -375,7 +375,7 @@ public class BinarySerializationTests {
     OfferCreate offerCreate = OfferCreate.builder()
       .takerGets(currencyAmount(100))
       .takerPays(currencyAmount(200))
-      .fee(XrpCurrencyAmount.of(300))
+      .fee(XrpCurrencyAmount.ofDrops(300))
       .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .sequence(UnsignedInteger.valueOf(11223344))
       .offerSequence(UnsignedInteger.valueOf(123))
@@ -389,7 +389,7 @@ public class BinarySerializationTests {
   @Test
   public void serializeOfferCancel() throws JsonProcessingException {
     OfferCancel offerCreate = OfferCancel.builder()
-      .fee(XrpCurrencyAmount.of(300))
+      .fee(XrpCurrencyAmount.ofDrops(300))
       .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .sequence(UnsignedInteger.valueOf(11223344))
       .offerSequence(UnsignedInteger.valueOf(123))

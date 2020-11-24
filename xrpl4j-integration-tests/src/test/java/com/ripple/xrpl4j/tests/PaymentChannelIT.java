@@ -57,7 +57,7 @@ public class PaymentChannelIT extends AbstractIT {
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
-      .amount(XrpCurrencyAmount.of("10000"))
+      .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceWallet.publicKey())
@@ -114,10 +114,10 @@ public class PaymentChannelIT extends AbstractIT {
           .orElseThrow(() -> new RuntimeException("Ledger index was not present.")).plus(UnsignedInteger.ONE))
     );
 
-    assertThat(senderAccountInfoAfterCreate.accountData().balance().asBigInteger())
-      .isEqualTo(senderAccountInfo.accountData().balance().asBigInteger()
-        .subtract(createPaymentChannel.amount().asBigInteger())
-        .subtract(createPaymentChannel.fee().asBigInteger())
+    assertThat(senderAccountInfoAfterCreate.accountData().balance())
+      .isEqualTo(senderAccountInfo.accountData().balance()
+        .minus(createPaymentChannel.amount())
+        .minus(createPaymentChannel.fee())
       );
   }
 
@@ -138,7 +138,7 @@ public class PaymentChannelIT extends AbstractIT {
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
-      .amount(XrpCurrencyAmount.of("10000000"))
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceWallet.publicKey())
@@ -180,7 +180,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Source account signs a claim
     UnsignedClaim unsignedClaim = UnsignedClaim.builder()
       .channel(paymentChannel.channelId())
-      .amount(XrpCurrencyAmount.of("1000000"))
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
       .build();
 
     String signature = keyPairService.sign(
@@ -210,7 +210,7 @@ public class PaymentChannelIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(destinationAccountInfo.accountData().sequence())
       .channel(paymentChannel.channelId())
-      .balance(XrpCurrencyAmount.of(paymentChannel.balance().asBigInteger().add(unsignedClaim.amount().asBigInteger()).toString()))
+      .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
       .amount(unsignedClaim.amount())
       .signature(signature)
       .publicKey(sourceWallet.publicKey())
@@ -227,10 +227,10 @@ public class PaymentChannelIT extends AbstractIT {
     // Validate that the destination account balance has gone up by the claim amount
     this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress()),
-      infoResult -> infoResult.accountData().balance().asBigInteger().equals(
-        destinationAccountInfo.accountData().balance().asBigInteger()
-          .subtract(signedClaim.fee().asBigInteger())
-          .add(signedClaim.balance().get().asBigInteger())
+      infoResult -> infoResult.accountData().balance().equals(
+        destinationAccountInfo.accountData().balance()
+          .minus(signedClaim.fee())
+          .plus(signedClaim.balance().get())
       )
     );
   }
@@ -252,7 +252,7 @@ public class PaymentChannelIT extends AbstractIT {
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
-      .amount(XrpCurrencyAmount.of("10000000"))
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceWallet.publicKey())
@@ -292,7 +292,7 @@ public class PaymentChannelIT extends AbstractIT {
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
-      .amount(XrpCurrencyAmount.of("10000"))
+      .amount(XrpCurrencyAmount.ofDrops(10000))
       .build();
 
     //////////////////////////
@@ -311,11 +311,8 @@ public class PaymentChannelIT extends AbstractIT {
         .anyMatch(
           channel ->
             channel.channelId().equals(paymentChannel.channelId()) &&
-            channel.amount().equals(XrpCurrencyAmount.of(
-                paymentChannel.amount().asBigInteger()
-                  .add(addFunds.amount().asBigInteger()).toString())
-            )
-          )
+            channel.amount().equals(paymentChannel.amount().plus(addFunds.amount()))
+        )
     );
 
     //////////////////////////
@@ -331,7 +328,7 @@ public class PaymentChannelIT extends AbstractIT {
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
-      .amount(XrpCurrencyAmount.of("1"))
+      .amount(XrpCurrencyAmount.ofDrops(1))
       .expiration(newExpiry)
       .build();
 

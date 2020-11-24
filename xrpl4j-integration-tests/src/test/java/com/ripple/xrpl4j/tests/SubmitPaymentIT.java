@@ -32,7 +32,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
-      .amount(XrpCurrencyAmount.of("12345"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
@@ -68,7 +68,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
-      .amount(XrpCurrencyAmount.of("12345"))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
       .signingPublicKey(senderWallet.publicKey())
       .build();
 

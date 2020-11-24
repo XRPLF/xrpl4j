@@ -11,7 +11,7 @@ public class AccountSetTransactionFlagsTests {
   public void testDeriveIndividualFlagsFromFlags() {
     AccountSet accountSet = AccountSet.builder()
         .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
-        .fee(XrpCurrencyAmount.of("10"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
         .sequence(UnsignedInteger.ONE)
         .build();
 

@@ -16,7 +16,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
   public void testMinimalTrustSetJson() throws JsonProcessingException, JSONException {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(Flags.TrustSetFlags.builder()
         .tfClearNoRipple()
         .tfFullyCanonicalSig(false)
@@ -49,7 +49,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
   public void testTrustSetWithQualityJson() throws JsonProcessingException, JSONException {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(Flags.TrustSetFlags.builder()
         .tfClearNoRipple()
         .tfFullyCanonicalSig(false)

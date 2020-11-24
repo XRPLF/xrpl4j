@@ -21,8 +21,8 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
     Payment payment = Payment.builder()
       .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
-      .amount(XrpCurrencyAmount.of("25000000"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .amount(XrpCurrencyAmount.ofDrops(25000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.builder().fullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(2))
       .build();
@@ -46,8 +46,8 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
     Payment payment = Payment.builder()
       .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
-      .amount(XrpCurrencyAmount.of("25000000"))
-      .fee(XrpCurrencyAmount.of("10"))
+      .amount(XrpCurrencyAmount.ofDrops(25000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .build();
 
@@ -76,7 +76,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
         .issuer(Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK"))
         .build()
       )
-      .fee(XrpCurrencyAmount.of("12"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
       .sendMax(IssuedCurrencyAmount.builder()
         .currency("CNY")
         .value("5050")

@@ -20,11 +20,11 @@ import com.ripple.xrpl4j.keypairs.KeyPairService;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -233,6 +233,127 @@ public class PaymentChannelIT extends AbstractIT {
           .add(signedClaim.balance().get().asBigInteger())
       )
     );
+  }
 
+  @Test
+  void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException {
+    //////////////////////////
+    // Create source and destination accounts on ledger
+    Wallet sourceWallet = createRandomAccount();
+    Wallet destinationWallet = createRandomAccount();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult senderAccountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
+
+    //////////////////////////
+    // Submit a PaymentChannelCreate transaction to create a payment channel between
+    // the source and destination accounts
+    PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(XrpCurrencyAmount.of("10000000"))
+      .destination(destinationWallet.classicAddress())
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey(sourceWallet.publicKey())
+      .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SubmissionResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transaction().hash().orElse("n/a")
+    );
+
+    //////////////////////////
+    // Wait for the payment channel to exist in a validated ledger
+    // and validate its fields
+    PaymentChannelResultObject paymentChannel = scanForResult(
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
+      channels -> channels.channels().stream()
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
+    )
+      .channels().stream()
+      .filter(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("Could not find payment channel for destination address."));
+
+    assertThat(paymentChannel.amount()).isEqualTo(createPaymentChannel.amount());
+    assertThat(paymentChannel.settleDelay()).isEqualTo(createPaymentChannel.settleDelay());
+    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(createPaymentChannel.publicKey());
+    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(createPaymentChannel.cancelAfter().get());
+
+    PaymentChannelFund addFunds = PaymentChannelFund.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+      .signingPublicKey(sourceWallet.publicKey())
+      .channel(paymentChannel.channelId())
+      .amount(XrpCurrencyAmount.of("10000"))
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SubmissionResult<PaymentChannelFund> fundResult = xrplClient.submit(sourceWallet, addFunds);
+    assertThat(fundResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+      fundResult.transaction().hash().orElse("n/a")
+    );
+
+    //////////////////////////
+    // Validate that the amount in the channel increased by the fund amount
+    scanForResult(
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
+      channelsResult -> channelsResult.channels().stream()
+        .anyMatch(
+          channel ->
+            channel.channelId().equals(paymentChannel.channelId()) &&
+            channel.amount().equals(XrpCurrencyAmount.of(
+                paymentChannel.amount().asBigInteger()
+                  .add(addFunds.amount().asBigInteger()).toString())
+            )
+          )
+    );
+
+    //////////////////////////
+    // Then set a new expiry on the channel by submitting a PaymentChannelFund
+    // transaction with an expiration and 1 drop of XRP in the amount field
+    UnsignedLong newExpiry = instantToXrpTimestamp(Instant.now())
+      .plus(UnsignedLong.valueOf(paymentChannel.settleDelay().longValue()))
+      .plus(UnsignedLong.valueOf(30));
+
+    PaymentChannelFund setExpiry = PaymentChannelFund.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
+      .signingPublicKey(sourceWallet.publicKey())
+      .channel(paymentChannel.channelId())
+      .amount(XrpCurrencyAmount.of("1"))
+      .expiration(newExpiry)
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SubmissionResult<PaymentChannelFund> expiryResult = xrplClient.submit(sourceWallet, setExpiry);
+    assertThat(expiryResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+      expiryResult.transaction().hash().orElse("n/a")
+    );
+
+    //////////////////////////
+    // Validate that the expiration was set properly
+    scanForResult(
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
+      channelsResult -> channelsResult.channels().stream()
+        .anyMatch(
+          channel ->
+            channel.channelId().equals(paymentChannel.channelId()) &&
+              channel.expiration().isPresent() &&
+              channel.expiration().get().equals(newExpiry)
+        )
+    );
   }
 }

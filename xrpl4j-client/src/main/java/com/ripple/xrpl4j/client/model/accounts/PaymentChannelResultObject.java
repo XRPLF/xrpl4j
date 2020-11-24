@@ -76,7 +76,7 @@ public interface PaymentChannelResultObject {
    * when this channel is set to expire. This expiration date is mutable.
    * If this is before the close time of the most recent validated ledger, the channel is expired.
    */
-  Optional<UnsignedInteger> expiration();
+  Optional<UnsignedLong> expiration();
 
   /**
    * Time, in <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>,

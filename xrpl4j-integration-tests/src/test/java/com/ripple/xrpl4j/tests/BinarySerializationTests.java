@@ -31,6 +31,7 @@ import com.ripple.xrpl4j.model.transactions.OfferCreate;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -328,6 +329,23 @@ public class BinarySerializationTests {
       "204288D2E47F8EF6C99BCC457966320D12409711";
 
     assertSerializesAndDeserializes(claim, expectedBinary);
+  }
+
+  @Test
+  void serializePaymentChannelFund() throws JsonProcessingException {
+    PaymentChannelFund fund = PaymentChannelFund.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.of("10"))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .amount(XrpCurrencyAmount.of("200000"))
+      .expiration(UnsignedLong.valueOf(543171558))
+      .build();
+
+    String expectedJson = "12000E228000000024000000012A206023E65016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533" +
+      "691DC749DCDD3B9E5992CA6198614000000000030D4068400000000000000A81144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
+
+    assertSerializesAndDeserializes(fund, expectedJson);
   }
 
   @Test

@@ -3,12 +3,12 @@ package com.ripple.xrpl4j.model.transactions.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
+import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.json.JSONException;
 import org.junit.Test;
@@ -75,7 +75,31 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
       "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
       "}";
-    System.out.println(ObjectMapperFactory.create().writerWithDefaultPrettyPrinter().writeValueAsString(claim));
     assertCanSerializeAndDeserialize(claim, json);
+  }
+
+  @Test
+  public void testPaymentChannelFundJson() throws JsonProcessingException, JSONException {
+    PaymentChannelFund fund = PaymentChannelFund.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.of("10"))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .amount(XrpCurrencyAmount.of("200000"))
+      .expiration(UnsignedLong.valueOf(543171558))
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\": \"10\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": 2147483648,\n" +
+      "    \"TransactionType\": \"PaymentChannelFund\",\n" +
+      "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+      "    \"Amount\": \"200000\",\n" +
+      "    \"Expiration\": 543171558\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(fund, json);
   }
 }

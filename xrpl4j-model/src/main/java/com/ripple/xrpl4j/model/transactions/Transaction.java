@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface Transaction<T extends TransactionFlags> {
+public interface Transaction {
 
   // TODO: Uncomment transactions as we write them
   Map<Class<? extends Transaction>, TransactionType> typeMap =
@@ -48,15 +48,6 @@ public interface Transaction<T extends TransactionFlags> {
   default TransactionType transactionType() {
     return typeMap.get(this.getClass());
   }
-
-  /**
-   * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link Flags}
-   * object containing the {@link Long} representation of the set bits.
-   * <p>
-   * The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
-   */
-  @JsonProperty("Flags")
-  T flags();
 
   /**
    * The {@link String} representation of an integer amount of XRP, in drops, to be destroyed as a cost for distributing

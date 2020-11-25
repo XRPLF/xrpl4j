@@ -17,7 +17,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableCheckCreate.class)
 @JsonDeserialize(as = ImmutableCheckCreate.class)
-public interface CheckCreate extends Transaction<TransactionFlags> {
+public interface CheckCreate extends Transaction {
 
   static ImmutableCheckCreate.Builder builder() {
     return ImmutableCheckCreate.builder();

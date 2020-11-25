@@ -17,7 +17,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountDelete.class)
 @JsonDeserialize(as = ImmutableAccountDelete.class)
-public interface AccountDelete extends Transaction<TransactionFlags> {
+public interface AccountDelete extends Transaction {
 
   static ImmutableAccountDelete.Builder builder() {
     return ImmutableAccountDelete.builder();

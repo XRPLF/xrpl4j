@@ -90,7 +90,7 @@ public class XrplClient {
    * @return The {@link SubmissionResult} resulting from the submission request.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public <TxnType extends Transaction<? extends Flags.TransactionFlags>> SubmissionResult<TxnType> submit(
+  public <TxnType extends Transaction> SubmissionResult<TxnType> submit(
     Wallet wallet,
     TxnType unsignedTransaction
   ) throws JsonRpcClientErrorException {
@@ -187,7 +187,7 @@ public class XrplClient {
    * @return A {@link TransactionResult} containing the requested transaction and other metadata.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> transaction(
+  public <TxnType extends Transaction> TransactionResult<TxnType> transaction(
     TransactionRequestParams params,
     Class<TxnType> transactionType
   ) throws JsonRpcClientErrorException {
@@ -282,7 +282,7 @@ public class XrplClient {
    */
   private String serializeAndSignTransaction(
     Wallet wallet,
-    Transaction<? extends Flags.TransactionFlags> unsignedTransaction
+    Transaction unsignedTransaction
   ) throws JsonProcessingException {
     String unsignedJson = objectMapper.writeValueAsString(unsignedTransaction);
     String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
@@ -306,8 +306,8 @@ public class XrplClient {
    * @param signature The hex encoded {@link String} containing the transaction signature.
    * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.
    */
-  private Transaction<? extends Flags.TransactionFlags> addSignature(
-    Transaction<? extends Flags.TransactionFlags> unsignedTransaction,
+  private Transaction addSignature(
+    Transaction unsignedTransaction,
     String signature
   ) {
     if (Payment.class.isAssignableFrom(unsignedTransaction.getClass())) {

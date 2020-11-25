@@ -22,7 +22,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableCheckCash.class)
 @JsonDeserialize(as = ImmutableCheckCash.class)
-public interface CheckCash extends Transaction<TransactionFlags> {
+public interface CheckCash extends Transaction {
 
   static ImmutableCheckCash.Builder builder() {
     return ImmutableCheckCash.builder();

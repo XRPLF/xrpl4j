@@ -16,7 +16,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutablePaymentChannelCreate.class)
 @JsonDeserialize(as = ImmutablePaymentChannelCreate.class)
-public interface PaymentChannelCreate extends Transaction<Flags.TransactionFlags> {
+public interface PaymentChannelCreate extends Transaction {
 
   static ImmutablePaymentChannelCreate.Builder builder() {
     return ImmutablePaymentChannelCreate.builder();
@@ -25,7 +25,6 @@ public interface PaymentChannelCreate extends Transaction<Flags.TransactionFlags
   /**
    * Bit-map of boolean flags for this transaction.
    */
-  @Override
   @JsonProperty("Flags")
   @Value.Default
   default Flags.TransactionFlags flags() {

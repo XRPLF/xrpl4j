@@ -19,7 +19,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutablePayment.class)
 @JsonDeserialize(as = ImmutablePayment.class)
-public interface Payment extends Transaction<PaymentFlags> {
+public interface Payment extends Transaction {
 
   static ImmutablePayment.Builder builder() {
     return ImmutablePayment.builder();

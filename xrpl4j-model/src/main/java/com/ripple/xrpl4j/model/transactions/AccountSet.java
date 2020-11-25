@@ -19,7 +19,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountSet.class)
 @JsonDeserialize(as = ImmutableAccountSet.class)
-public interface AccountSet extends Transaction<TransactionFlags> {
+public interface AccountSet extends Transaction {
 
   static ImmutableAccountSet.Builder builder() {
     return ImmutableAccountSet.builder();

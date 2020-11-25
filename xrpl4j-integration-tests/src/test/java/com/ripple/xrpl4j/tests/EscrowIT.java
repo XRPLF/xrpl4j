@@ -8,6 +8,7 @@ import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.client.model.fees.FeeResult;
+import com.ripple.xrpl4j.client.model.ledger.objects.EscrowObject;
 import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
 import com.ripple.xrpl4j.client.model.transactions.TransactionResult;
 import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
@@ -168,6 +169,15 @@ public class EscrowIT extends AbstractIT {
           .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
         EscrowCreate.class
       )
+    );
+
+    this.scanForResult(
+      () -> this.getValidatedAccountObjects(senderWallet.classicAddress()),
+      objectsResult -> objectsResult.accountObjects().stream()
+      .anyMatch(object ->
+        EscrowObject.class.isAssignableFrom(object.getClass()) &&
+          ((EscrowObject) object).destination().equals(receiverWallet.classicAddress())
+        )
     );
 
     //////////////////////

@@ -15,7 +15,7 @@ import org.immutables.value.Value.Derived;
 @Value.Immutable
 @JsonSerialize(as = ImmutableCheckCancel.class)
 @JsonDeserialize(as = ImmutableCheckCancel.class)
-public interface CheckCancel extends Transaction<TransactionFlags> {
+public interface CheckCancel extends Transaction {
 
   static ImmutableCheckCancel.Builder builder() {
     return ImmutableCheckCancel.builder();

@@ -18,9 +18,9 @@ import java.util.Optional;
 @Immutable
 @JsonSerialize(as = ImmutableSubmissionResult.class)
 @JsonDeserialize(as = ImmutableSubmissionResult.class)
-public interface SubmissionResult<TxnType extends Transaction<? extends Flags.TransactionFlags>> extends JsonRpcResult {
+public interface SubmissionResult<TxnType extends Transaction> extends JsonRpcResult {
 
-  static <T extends Transaction<? extends Flags.TransactionFlags>> ImmutableSubmissionResult.Builder<T> builder() {
+  static <T extends Transaction> ImmutableSubmissionResult.Builder<T> builder() {
     return ImmutableSubmissionResult.builder();
   }
 

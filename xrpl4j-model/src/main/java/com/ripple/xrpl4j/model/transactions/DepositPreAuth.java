@@ -21,7 +21,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableDepositPreAuth.class)
 @JsonDeserialize(as = ImmutableDepositPreAuth.class)
-public interface DepositPreAuth extends Transaction<TransactionFlags> {
+public interface DepositPreAuth extends Transaction {
 
   static ImmutableDepositPreAuth.Builder builder() {
     return ImmutableDepositPreAuth.builder();

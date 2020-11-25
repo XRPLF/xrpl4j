@@ -18,7 +18,7 @@ import java.util.Optional;
 @Immutable
 @JsonSerialize(as = ImmutableOfferCreate.class)
 @JsonDeserialize(as = ImmutableOfferCreate.class)
-public interface OfferCreate extends Transaction<Flags.OfferFlags> {
+public interface OfferCreate extends Transaction {
 
   static ImmutableOfferCreate.Builder builder() {
     return ImmutableOfferCreate.builder();

@@ -164,7 +164,7 @@ public abstract class AbstractIT {
     }
   }
 
-  protected <TxnType extends Transaction<? extends Flags>> TransactionResult<TxnType> getValidatedTransaction(
+  protected <TxnType extends Transaction> TransactionResult<TxnType> getValidatedTransaction(
     String transactionHash,
     Class<TxnType> transactionType
   ) {

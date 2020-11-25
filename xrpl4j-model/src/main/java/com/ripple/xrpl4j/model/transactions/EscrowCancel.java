@@ -12,7 +12,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowCancel.class)
 @JsonDeserialize(as = ImmutableEscrowCancel.class)
-public interface EscrowCancel extends Transaction<Flags.TransactionFlags> {
+public interface EscrowCancel extends Transaction {
 
   static ImmutableEscrowCancel.Builder builder() {
     return ImmutableEscrowCancel.builder();

@@ -37,7 +37,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutablePaymentChannelClaim.class)
 @JsonDeserialize(as = ImmutablePaymentChannelClaim.class)
-public interface PaymentChannelClaim extends Transaction<PaymentChannelClaimFlags> {
+public interface PaymentChannelClaim extends Transaction {
 
   static ImmutablePaymentChannelClaim.Builder builder() {
     return ImmutablePaymentChannelClaim.builder();
@@ -46,7 +46,6 @@ public interface PaymentChannelClaim extends Transaction<PaymentChannelClaimFlag
   /**
    * Bit-map of boolean {@link PaymentChannelClaimFlags} to set for this transaction.
    */
-  @Override
   @JsonProperty("Flags")
   @Value.Default
   default PaymentChannelClaimFlags flags() {

@@ -17,13 +17,12 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutablePaymentChannelFund.class)
 @JsonDeserialize(as = ImmutablePaymentChannelFund.class)
-public interface PaymentChannelFund extends Transaction<Flags.TransactionFlags> {
+public interface PaymentChannelFund extends Transaction {
 
   static ImmutablePaymentChannelFund.Builder builder() {
     return ImmutablePaymentChannelFund.builder();
   }
 
-  @Override
   @JsonProperty("Flags")
   @Value.Default
   default Flags.TransactionFlags flags() {

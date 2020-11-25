@@ -18,7 +18,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowCreate.class)
 @JsonDeserialize(as = ImmutableEscrowCreate.class)
-public interface EscrowCreate extends Transaction<TransactionFlags> {
+public interface EscrowCreate extends Transaction {
 
   static ImmutableEscrowCreate.Builder builder() {
     return ImmutableEscrowCreate.builder();

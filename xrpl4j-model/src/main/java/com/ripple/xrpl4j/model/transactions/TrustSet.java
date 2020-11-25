@@ -14,7 +14,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableTrustSet.class)
 @JsonDeserialize(as = ImmutableTrustSet.class)
-public interface TrustSet extends Transaction<Flags.TrustSetFlags> {
+public interface TrustSet extends Transaction {
 
   static ImmutableTrustSet.Builder builder() {
     return ImmutableTrustSet.builder();

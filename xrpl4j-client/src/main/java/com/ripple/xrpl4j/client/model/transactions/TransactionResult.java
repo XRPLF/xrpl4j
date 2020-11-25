@@ -17,9 +17,9 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonSerialize(as = ImmutableTransactionResult.class)
 @JsonDeserialize(as = ImmutableTransactionResult.class)
-public interface TransactionResult<TxnType extends Transaction<? extends Flags>> extends JsonRpcResult {
+public interface TransactionResult<TxnType extends Transaction> extends JsonRpcResult {
 
-  static <T extends Transaction<? extends Flags>> ImmutableTransactionResult.Builder<T> builder() {
+  static <T extends Transaction> ImmutableTransactionResult.Builder<T> builder() {
     return ImmutableTransactionResult.builder();
   }
 

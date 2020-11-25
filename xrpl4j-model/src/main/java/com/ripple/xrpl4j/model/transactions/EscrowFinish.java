@@ -21,7 +21,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowFinish.class)
 @JsonDeserialize(as = ImmutableEscrowFinish.class)
-public interface EscrowFinish extends Transaction<Flags.TransactionFlags> {
+public interface EscrowFinish extends Transaction {
 
   static ImmutableEscrowFinish.Builder builder() {
     return ImmutableEscrowFinish.builder();

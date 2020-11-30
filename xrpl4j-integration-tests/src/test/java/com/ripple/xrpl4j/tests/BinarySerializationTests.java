@@ -32,6 +32,7 @@ import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
+import com.ripple.xrpl4j.model.transactions.SetRegularKey;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -383,7 +384,11 @@ public class BinarySerializationTests {
       .expiration(UnsignedInteger.valueOf(456))
       .build();
 
-    assertSerializesAndDeserializes(offerCreate, "12000722800800002400AB41302A000001C820190000007B64D5071AFD498D00000000000000000000000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE465D5038D7EA4C680000000000000000000000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000012C8114832297BEF589D59F9C03A84F920F8D9128CC1CE4");
+    String expectedBinary = "12000722800800002400AB41302A000001C820190000007B64D5071AFD498D00000000000000000" +
+      "000000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE465D5038D7EA4C680000000000000000000" +
+      "000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000012C8114832297BEF589D59" +
+      "F9C03A84F920F8D9128CC1CE4";
+    assertSerializesAndDeserializes(offerCreate, expectedBinary);
   }
 
   @Test
@@ -395,7 +400,24 @@ public class BinarySerializationTests {
       .offerSequence(UnsignedInteger.valueOf(123))
       .build();
 
-    assertSerializesAndDeserializes(offerCreate, "12000822800000002400AB413020190000007B68400000000000012C8114832297BEF589D59F9C03A84F920F8D9128CC1CE4");
+    String expectedBinary = "12000822800000002400AB413020190000007B68400000000000012C8114832297BEF589D59F9C0" +
+      "3A84F920F8D9128CC1CE4";
+    assertSerializesAndDeserializes(offerCreate, expectedBinary);
+  }
+
+  @Test
+  public void serializeSetRegularKey() throws JsonProcessingException {
+    SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
+      .build();
+
+    String expectedBinary = "1200052280000000240000000168400000000000000C81144B4E9C06F24296074F7BC48F92A97916C6DC5" +
+      "EA988140A4B24D606281E6E5A78D9F80E039F5E66FA5AC5";
+
+    assertSerializesAndDeserializes(setRegularKey, expectedBinary);
   }
 
   private <TxnType extends Transaction> void assertSerializesAndDeserializes(

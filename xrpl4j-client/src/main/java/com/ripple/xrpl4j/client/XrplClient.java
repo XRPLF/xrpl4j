@@ -48,6 +48,7 @@ import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
+import com.ripple.xrpl4j.model.transactions.SetRegularKey;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -372,6 +373,10 @@ public class XrplClient {
         .build();
     } else if (PaymentChannelFund.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return PaymentChannelFund.builder().from((PaymentChannelFund) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (SetRegularKey.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return SetRegularKey.builder().from((SetRegularKey) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

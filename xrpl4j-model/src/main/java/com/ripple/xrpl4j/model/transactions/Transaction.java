@@ -30,7 +30,7 @@ public interface Transaction {
       .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
-//      .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
+      .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
 //      .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .build();

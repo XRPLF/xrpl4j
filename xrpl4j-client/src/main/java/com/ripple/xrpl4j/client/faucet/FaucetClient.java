@@ -1,7 +1,7 @@
 package com.ripple.xrpl4j.client.faucet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ripple.xrpl4j.client.rippled.RetryStatusDecoder;
+import com.ripple.xrpl4j.client.RetryStatusDecoder;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;

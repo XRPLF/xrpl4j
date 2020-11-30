@@ -10,25 +10,24 @@ import com.ripple.xrpl4j.client.XrplClient;
 import com.ripple.xrpl4j.client.faucet.FaucetAccountResponse;
 import com.ripple.xrpl4j.client.faucet.FaucetClient;
 import com.ripple.xrpl4j.client.faucet.FundAccountRequest;
-import com.ripple.xrpl4j.client.model.JsonRpcResult;
-import com.ripple.xrpl4j.client.model.accounts.AccountChannelsRequestParams;
-import com.ripple.xrpl4j.client.model.accounts.AccountChannelsResult;
-import com.ripple.xrpl4j.client.model.accounts.AccountInfoRequestParams;
-import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.client.model.accounts.AccountLinesRequestParams;
-import com.ripple.xrpl4j.client.model.accounts.AccountLinesResult;
-import com.ripple.xrpl4j.client.model.accounts.AccountObjectsRequestParams;
-import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
-import com.ripple.xrpl4j.client.model.ledger.LedgerRequestParams;
-import com.ripple.xrpl4j.client.model.ledger.LedgerResult;
-import com.ripple.xrpl4j.client.model.ledger.objects.LedgerObject;
-import com.ripple.xrpl4j.client.model.path.RipplePathFindRequestParams;
-import com.ripple.xrpl4j.client.model.path.RipplePathFindResult;
-import com.ripple.xrpl4j.client.model.transactions.TransactionRequestParams;
-import com.ripple.xrpl4j.client.model.transactions.TransactionResult;
-import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.model.client.rippled.XrplResult;
+import com.ripple.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
+import com.ripple.xrpl4j.model.client.accounts.AccountChannelsResult;
+import com.ripple.xrpl4j.model.client.accounts.AccountInfoRequestParams;
+import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.model.client.accounts.AccountLinesRequestParams;
+import com.ripple.xrpl4j.model.client.accounts.AccountLinesResult;
+import com.ripple.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import com.ripple.xrpl4j.model.client.accounts.AccountObjectsResult;
+import com.ripple.xrpl4j.model.client.ledger.LedgerRequestParams;
+import com.ripple.xrpl4j.model.client.ledger.LedgerResult;
+import com.ripple.xrpl4j.model.ledger.LedgerObject;
+import com.ripple.xrpl4j.model.client.path.RipplePathFindRequestParams;
+import com.ripple.xrpl4j.model.client.path.RipplePathFindResult;
+import com.ripple.xrpl4j.model.client.transactions.TransactionRequestParams;
+import com.ripple.xrpl4j.model.client.transactions.TransactionResult;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrpl4j.model.transactions.Flags;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.wallet.DefaultWalletFactory;
@@ -91,7 +90,7 @@ public abstract class AbstractIT {
       }, is(notNullValue()));
   }
 
-  protected <T extends JsonRpcResult> T scanForResult(Supplier<T> resultSupplier) {
+  protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)

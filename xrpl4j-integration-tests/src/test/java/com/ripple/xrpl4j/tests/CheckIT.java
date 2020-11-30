@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.client.model.ledger.objects.CheckObject;
-import com.ripple.xrpl4j.client.model.ledger.objects.LedgerObject;
-import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
-import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.model.client.fees.FeeResult;
+import com.ripple.xrpl4j.model.ledger.CheckObject;
+import com.ripple.xrpl4j.model.ledger.LedgerObject;
+import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;

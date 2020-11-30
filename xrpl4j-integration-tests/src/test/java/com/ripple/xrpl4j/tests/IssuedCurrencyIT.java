@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.client.model.accounts.TrustLine;
-import com.ripple.xrpl4j.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
-import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.model.client.accounts.TrustLine;
+import com.ripple.xrpl4j.model.client.fees.FeeResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.PathStep;

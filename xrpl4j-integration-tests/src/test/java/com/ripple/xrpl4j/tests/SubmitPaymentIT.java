@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ripple.xrpl4j.client.faucet.FaucetAccountResponse;
 import com.ripple.xrpl4j.client.faucet.FundAccountRequest;
-import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
-import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.model.client.fees.FeeResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import com.ripple.xrpl4j.wallet.Wallet;

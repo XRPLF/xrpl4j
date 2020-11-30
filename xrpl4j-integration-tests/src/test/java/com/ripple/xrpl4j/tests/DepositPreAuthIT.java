@@ -2,14 +2,13 @@ package com.ripple.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.primitives.UnsignedLong;
-import com.ripple.xrpl4j.client.model.accounts.AccountInfoResult;
-import com.ripple.xrpl4j.client.model.accounts.AccountObjectsResult;
-import com.ripple.xrpl4j.client.model.fees.FeeResult;
-import com.ripple.xrpl4j.client.model.ledger.objects.DepositPreAuthObject;
-import com.ripple.xrpl4j.client.model.transactions.SubmissionResult;
-import com.ripple.xrpl4j.client.model.transactions.TransactionResult;
-import com.ripple.xrpl4j.client.rippled.JsonRpcClientErrorException;
+import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
+import com.ripple.xrpl4j.model.client.accounts.AccountObjectsResult;
+import com.ripple.xrpl4j.model.client.fees.FeeResult;
+import com.ripple.xrpl4j.model.ledger.DepositPreAuthObject;
+import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.TransactionResult;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.DepositPreAuth;
 import com.ripple.xrpl4j.model.transactions.Payment;

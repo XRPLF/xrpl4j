@@ -50,7 +50,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
   @Value.Default
   @JsonProperty("signer_lists")
   default boolean signerLists() {
-    return false;
+    return true;
   }
 
 }

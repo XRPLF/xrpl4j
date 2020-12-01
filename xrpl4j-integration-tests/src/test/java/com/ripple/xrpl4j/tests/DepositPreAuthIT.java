@@ -6,7 +6,7 @@ import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.accounts.AccountObjectsResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.ledger.DepositPreAuthObject;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.model.client.transactions.TransactionResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
@@ -40,7 +40,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .authorize(senderWallet.classicAddress())
       .build();
 
-    SubmissionResult<DepositPreAuth> result = xrplClient.submit(receiverWallet, depositPreAuth);
+    SubmitResult<DepositPreAuth> result = xrplClient.submit(receiverWallet, depositPreAuth);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
       result.transaction().hash().orElse("n/a")
@@ -69,7 +69,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .destination(receiverWallet.classicAddress())
       .build();
 
-    SubmissionResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
             paymentResult.transaction().hash().orElse("n/a")
@@ -133,7 +133,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // And validate that the transaction failed with a tecNO_PERMISSION error code
-    SubmissionResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tecNO_PERMISSION");
   }
 
@@ -155,7 +155,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
       .build();
 
-    SubmissionResult<AccountSet> accountSetResult = xrplClient.submit(wallet, accountSet);
+    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(wallet, accountSet);
     assertThat(accountSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
       accountSetResult.transaction().hash().orElse("n/a")

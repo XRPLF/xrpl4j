@@ -113,8 +113,8 @@ public class Wrappers {
       return XrpCurrencyAmount.of(this.value().minus(other.value()));
     }
 
-    public XrpCurrencyAmount times(UnsignedLong value) {
-      return XrpCurrencyAmount.of(this.value().times(value));
+    public XrpCurrencyAmount times(XrpCurrencyAmount other) {
+      return XrpCurrencyAmount.of(this.value().times(other.value()));
     }
   }
 }

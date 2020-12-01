@@ -7,7 +7,7 @@ import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.ledger.OfferObject;
 import com.ripple.xrpl4j.model.ledger.RippleStateObject;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
@@ -63,7 +63,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SubmissionResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transaction().flags().tfSell()).isTrue();
 
@@ -100,7 +100,7 @@ public class OfferIT extends AbstractIT {
       .signingPublicKey(purchaser.publicKey())
       .build();
 
-    SubmissionResult<OfferCancel> cancelResponse = xrplClient.submit(purchaser, offerCancel);
+    SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(purchaser, offerCancel);
     assertThat(cancelResponse.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
@@ -140,7 +140,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SubmissionResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -193,7 +193,7 @@ public class OfferIT extends AbstractIT {
       .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
       .build();
 
-    SubmissionResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",

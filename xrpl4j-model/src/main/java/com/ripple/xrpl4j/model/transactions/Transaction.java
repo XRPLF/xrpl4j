@@ -1,18 +1,19 @@
 package com.ripple.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.transactions.Flags.PaymentFlags;
-import com.ripple.xrpl4j.model.transactions.Flags.TransactionFlags;
+import com.google.common.primitives.UnsignedLong;
+import com.ripple.xrpl4j.model.ledger.SignerList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public interface Transaction {
 
-  // TODO: Uncomment transactions as we write them
   Map<Class<? extends Transaction>, TransactionType> typeMap =
     new ImmutableMap.Builder<Class<? extends Transaction>, TransactionType>()
       .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
@@ -31,9 +32,20 @@ public interface Transaction {
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
-//      .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
+      .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .build();
+
+  static XrpCurrencyAmount computeMultiSigFee(
+    final XrpCurrencyAmount currentLedgerFeeDrops,
+    final SignerList signerList
+  ) {
+    Objects.requireNonNull(currentLedgerFeeDrops);
+    Objects.requireNonNull(signerList);
+
+    return currentLedgerFeeDrops
+      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+  }
 
   /**
    * The unique {@link Address} of the account that initiated the transaction.
@@ -110,6 +122,7 @@ public interface Transaction {
    * <p>
    * This field is automatically added when signing this {@link Transaction}.
    */
+  @JsonInclude(JsonInclude.Include.NON_ABSENT)
   @JsonProperty("SigningPubKey")
   Optional<String> signingPublicKey();
 

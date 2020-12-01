@@ -30,14 +30,6 @@ public interface AccountInfoResult extends XrplResult {
   AccountRootObject accountData();
 
   /**
-   * (Omitted unless the request specified signer_lists and at least one SignerList is associated with the account.)
-   * Array of {@link SignerList} ledger objects associated with this account for Multi-Signing. Since an account can own
-   * at most one SignerList, this array must have exactly one member if it is present.
-   */
-  @JsonProperty("signer_lists")
-  List<SignerList> signerLists();
-
-  /**
    * (Omitted if ledger_index is provided instead) The ledger index of the current in-progress ledger,
    * which was used when retrieving this information.
    */

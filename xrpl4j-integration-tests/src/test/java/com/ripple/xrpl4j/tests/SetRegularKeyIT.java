@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.SetRegularKey;
@@ -40,7 +40,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmissionResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
+    SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
       setResult.transaction().hash().orElse("n/a")
@@ -95,7 +95,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmissionResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
+    SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
       setResult.transaction().hash().orElse("n/a")
@@ -130,7 +130,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmissionResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
+    SubmitResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
     assertThat(removeResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
       removeResult.transaction().hash().orElse("n/a")

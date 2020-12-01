@@ -11,6 +11,8 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.model.jackson.ObjectMapperFactory;
+import com.ripple.xrpl4j.model.ledger.SignerEntry;
+import com.ripple.xrpl4j.model.ledger.SignerEntryWrapper;
 import com.ripple.xrpl4j.model.transactions.AccountDelete;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.Address;
@@ -33,6 +35,7 @@ import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
 import com.ripple.xrpl4j.model.transactions.SetRegularKey;
+import com.ripple.xrpl4j.model.transactions.SignerListSet;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -418,6 +421,42 @@ public class BinarySerializationTests {
       "EA988140A4B24D606281E6E5A78D9F80E039F5E66FA5AC5";
 
     assertSerializesAndDeserializes(setRegularKey, expectedBinary);
+  }
+
+  @Test
+  void serializeSignerListSet() throws JsonProcessingException {
+    SignerListSet signerListSet = SignerListSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .signerQuorum(UnsignedInteger.valueOf(3))
+      .addSignerEntries(
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+            .signerWeight(UnsignedInteger.valueOf(2))
+            .build()
+        ),
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"))
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
+        ),
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(Address.of("raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n"))
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
+        )
+      )
+      .build();
+
+    String expectedBinary = "12000C2280000000240000000120230000000368400000000000000C81144B4E9C06F24296074F7BC" +
+      "48F92A97916C6DC5EA9F4EB1300028114204288D2E47F8EF6C99BCC457966320D12409711E1EB13000181147908A7F0EDD48EA8" +
+      "96C3580A399F0EE78611C8E3E1EB13000181143A4C02EA95AD6AC3BED92FA036E0BBFB712C030CE1F1";
+
+    assertSerializesAndDeserializes(signerListSet, expectedBinary);
   }
 
   private <TxnType extends Transaction> void assertSerializesAndDeserializes(

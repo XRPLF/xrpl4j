@@ -14,6 +14,10 @@ public interface SignerWrapper {
     return ImmutableSignerWrapper.builder();
   }
 
+  static SignerWrapper of(Signer signer) {
+    return builder().signer(signer).build();
+  }
+
   @JsonProperty("Signer")
   Signer signer();
 }

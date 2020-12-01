@@ -6,7 +6,7 @@ import com.ripple.xrpl4j.client.faucet.FaucetAccountResponse;
 import com.ripple.xrpl4j.client.faucet.FundAccountRequest;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.Payment;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -36,7 +36,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
 
@@ -72,7 +72,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> result = xrplClient.submit(senderWallet, payment);
+    SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
 

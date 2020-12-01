@@ -8,7 +8,7 @@ import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.ledger.CheckObject;
 import com.ripple.xrpl4j.model.ledger.LedgerObject;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.CheckCancel;
 import com.ripple.xrpl4j.model.transactions.CheckCash;
@@ -46,7 +46,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmissionResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
+    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -76,7 +76,7 @@ public class CheckIT extends AbstractIT {
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();
-    SubmissionResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
+    SubmitResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
     assertThat(cashResponse.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -127,7 +127,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmissionResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
+    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -156,7 +156,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmissionResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
+    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -198,7 +198,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    SubmissionResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
+    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -225,7 +225,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey())
       .build();
 
-    SubmissionResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
+    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",

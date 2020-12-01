@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
@@ -49,7 +49,7 @@ public class AccountSetIT extends AbstractIT {
         .signingPublicKey(wallet.publicKey())
         .build();
 
-    SubmissionResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     logger.info(
         "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transaction().hash()
             .orElse("n/a")
@@ -104,7 +104,7 @@ public class AccountSetIT extends AbstractIT {
         .signingPublicKey(wallet.publicKey())
         .build();
 
-    SubmissionResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
@@ -135,7 +135,7 @@ public class AccountSetIT extends AbstractIT {
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
       .build();
-    SubmissionResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",

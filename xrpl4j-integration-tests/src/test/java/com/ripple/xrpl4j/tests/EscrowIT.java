@@ -9,7 +9,7 @@ import com.ripple.cryptoconditions.der.DerEncodingException;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.ledger.EscrowObject;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.model.client.transactions.TransactionResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.EscrowCancel;
@@ -54,7 +54,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SubmissionResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
@@ -96,7 +96,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(receiverWallet.publicKey())
       .build();
 
-    SubmissionResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
+    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transaction().hash()
@@ -154,7 +154,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SubmissionResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
@@ -204,7 +204,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SubmissionResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
+    SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transaction().hash()
@@ -227,8 +227,7 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         senderAccountInfo.accountData().balance()
-          .minus(feeResult.drops().openLedgerFee()
-          .times(UnsignedLong.valueOf(2)))
+          .minus(feeResult.drops().openLedgerFee().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
       )
     );
   }
@@ -265,7 +264,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SubmissionResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
@@ -312,7 +311,7 @@ public class EscrowIT extends AbstractIT {
       .fulfillment(executeEscrowFulfillment) // <-- condition and fulfillment are required to finish an escrow
       .build();
 
-    SubmissionResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
+    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transaction().hash()
@@ -373,7 +372,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SubmissionResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
@@ -416,7 +415,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SubmissionResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
+    SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transaction().hash()
@@ -439,7 +438,7 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         senderAccountInfo.accountData().balance()
-          .minus(feeResult.drops().openLedgerFee().times(UnsignedLong.valueOf(2)))
+          .minus(feeResult.drops().openLedgerFee().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
       )
     );
 

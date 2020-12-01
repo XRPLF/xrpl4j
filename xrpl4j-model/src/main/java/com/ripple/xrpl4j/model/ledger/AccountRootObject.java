@@ -13,6 +13,7 @@ import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -124,6 +125,14 @@ public interface AccountRootObject extends LedgerObject {
    */
   @JsonProperty("TransferRate")
   Optional<UnsignedInteger> transferRate();
+
+  /**
+   * (Omitted unless the request specified signer_lists and at least one SignerList is associated with the account.)
+   * Array of {@link SignerList} ledger objects associated with this account for Multi-Signing. Since an account can own
+   * at most one SignerList, this array must have exactly one member if it is present.
+   */
+  @JsonProperty("signer_lists")
+  List<SignerList> signerLists();
 
   /**
    * The unique ID of this {@link AccountRootObject} ledger object.

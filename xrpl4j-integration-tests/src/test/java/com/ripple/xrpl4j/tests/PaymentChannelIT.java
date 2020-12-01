@@ -12,7 +12,7 @@ import com.ripple.xrpl4j.model.client.channels.ChannelVerifyResult;
 import com.ripple.xrpl4j.model.client.channels.UnsignedClaim;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.ledger.PayChannelObject;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.codec.binary.XrplBinaryCodec;
 import com.ripple.xrpl4j.keypairs.DefaultKeyPairService;
@@ -67,7 +67,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmissionResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
       createResult.transaction().hash().orElse("n/a")
@@ -148,7 +148,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmissionResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
       createResult.transaction().hash().orElse("n/a")
@@ -217,7 +217,7 @@ public class PaymentChannelIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey())
       .build();
 
-    SubmissionResult<PaymentChannelClaim> claimResult = xrplClient.submit(destinationWallet, signedClaim);
+    SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(destinationWallet, signedClaim);
     assertThat(claimResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
       claimResult.transaction().hash().orElse("n/a")
@@ -262,7 +262,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmissionResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
       createResult.transaction().hash().orElse("n/a")
@@ -297,7 +297,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmissionResult<PaymentChannelFund> fundResult = xrplClient.submit(sourceWallet, addFunds);
+    SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(sourceWallet, addFunds);
     assertThat(fundResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
       fundResult.transaction().hash().orElse("n/a")
@@ -334,7 +334,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmissionResult<PaymentChannelFund> expiryResult = xrplClient.submit(sourceWallet, setExpiry);
+    SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(sourceWallet, setExpiry);
     assertThat(expiryResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
       expiryResult.transaction().hash().orElse("n/a")

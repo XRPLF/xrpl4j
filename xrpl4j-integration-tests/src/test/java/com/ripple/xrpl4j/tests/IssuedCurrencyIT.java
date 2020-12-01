@@ -7,7 +7,7 @@ import com.google.common.io.BaseEncoding;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.accounts.TrustLine;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -126,7 +126,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(aliceWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
@@ -269,7 +269,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(charlieWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
@@ -317,7 +317,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
       .build();
 
-    SubmissionResult<AccountSet> setResult = xrplClient.submit(issuerWallet, setDefaultRipple);
+    SubmitResult<AccountSet> setResult = xrplClient.submit(issuerWallet, setDefaultRipple);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + setResult.transaction().hash()
@@ -356,7 +356,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(issuerWallet.publicKey())
       .build();
 
-    SubmissionResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
@@ -395,7 +395,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(counterpartyWallet.publicKey())
       .build();
 
-    SubmissionResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
     assertThat(trustSetSubmitResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" + trustSetSubmitResult.transaction().hash()

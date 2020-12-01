@@ -19,8 +19,10 @@ import com.ripple.xrpl4j.model.client.ledger.LedgerRequestParams;
 import com.ripple.xrpl4j.model.client.ledger.LedgerResult;
 import com.ripple.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import com.ripple.xrpl4j.model.client.path.RipplePathFindResult;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionRequestParams;
-import com.ripple.xrpl4j.model.client.transactions.SubmissionResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
+import com.ripple.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
+import com.ripple.xrpl4j.model.client.transactions.SubmitRequestParams;
+import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
 import com.ripple.xrpl4j.model.client.transactions.TransactionRequestParams;
 import com.ripple.xrpl4j.model.client.transactions.TransactionResult;
 import com.ripple.xrpl4j.model.client.rippled.XrplMethods;
@@ -45,6 +47,7 @@ import com.ripple.xrpl4j.model.transactions.PaymentChannelClaim;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelCreate;
 import com.ripple.xrpl4j.model.transactions.PaymentChannelFund;
 import com.ripple.xrpl4j.model.transactions.SetRegularKey;
+import com.ripple.xrpl4j.model.transactions.SignerListSet;
 import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.TrustSet;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -84,10 +87,10 @@ public class XrplClient {
    * @param wallet The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
    * @param unsignedTransaction An unsigned {@link Transaction} to submit. {@link Transaction#transactionSignature()}
    *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
-   * @return The {@link SubmissionResult} resulting from the submission request.
+   * @return The {@link SubmitResult} resulting from the submission request.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public <TxnType extends Transaction> SubmissionResult<TxnType> submit(
+  public <TxnType extends Transaction> SubmitResult<TxnType> submit(
     Wallet wallet,
     TxnType unsignedTransaction
   ) throws JsonRpcClientErrorException {
@@ -100,13 +103,26 @@ public class XrplClient {
       String signedTransaction = serializeAndSignTransaction(wallet, unsignedTransaction);
       JsonRpcRequest request = JsonRpcRequest.builder()
         .method(XrplMethods.SUBMIT)
-        .addParams(SubmissionRequestParams.of(signedTransaction))
+        .addParams(SubmitRequestParams.of(signedTransaction))
         .build();
-      JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmissionResult.class, unsignedTransaction.getClass());
+      JavaType resultType = objectMapper.getTypeFactory().constructParametricType(SubmitResult.class, unsignedTransaction.getClass());
       return jsonRpcClient.send(request, resultType);
     } catch (JsonProcessingException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  public <TxnType extends Transaction> SubmitMultiSignedResult<TxnType> submitMultisigned(
+    TxnType transaction
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SUBMIT_MULTISIGNED)
+      .addParams(SubmitMultiSignedRequestParams.of(transaction))
+      .build();
+    JavaType resultType = objectMapper.getTypeFactory().constructParametricType(
+      SubmitMultiSignedResult.class, transaction.getClass()
+    );
+    return jsonRpcClient.send(request, resultType);
   }
 
   /**
@@ -375,9 +391,11 @@ public class XrplClient {
       return SetRegularKey.builder().from((SetRegularKey) unsignedTransaction)
         .transactionSignature(signature)
         .build();
+    } else if (SignerListSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return SignerListSet.builder().from((SignerListSet) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
     }
-
-    // TODO: Add other transactions
 
     throw new IllegalArgumentException("Signing fields could not be added to the unsignedTransaction."); // Never happens
 

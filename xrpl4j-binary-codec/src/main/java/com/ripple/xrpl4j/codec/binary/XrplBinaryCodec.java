@@ -108,7 +108,6 @@ public class XrplBinaryCodec {
    *
    * @param hex value to decode.
    * @return
-   * @throws JsonProcessingException
    */
   public String decode(String hex) {
     return new BinaryParser(hex).readType(STObjectType.class)

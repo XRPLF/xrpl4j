@@ -39,8 +39,8 @@ public class UnsignedByte {
   }
 
   /**
-   * Converts the unsigned byte to a signed int. Necessary if the unsigned byte has a value > 127 and the result
-   * needs to be used for numeric purposes.
+   * Converts the unsigned byte to a signed int. Necessary if the unsigned byte has a value greater than 127 and the
+   * result needs to be used for numeric purposes.
    *
    * @return
    */

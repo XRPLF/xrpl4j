@@ -51,7 +51,8 @@ public interface OfferObject extends LedgerObject {
   Flags.OfferFlags flags();
 
   /**
-   * The sequence number of the {@link OfferCreate} transaction that created this offer.
+   * The sequence number of the {@link com.ripple.xrpl4j.model.transactions.OfferCreate} transaction that
+   * created this offer.
    */
   @JsonProperty("Sequence")
   UnsignedInteger sequence();

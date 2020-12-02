@@ -11,9 +11,9 @@ import java.util.Optional;
  * Contains arbitrary messaging data within an XRPL Transaction.
  *
  * <p>The MemoType and MemoFormat fields should only consist of the following characters:
- * ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%
+ * ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$%26'()*+,;=%</p>
  *
- * <p>The Memos field is limited to no more than 1 KB in size (when serialized in binary format).
+ * <p>The Memos field is limited to no more than 1 KB in size (when serialized in binary format).</p>
  *
  * @see "https://xrpl.org/transaction-common-fields.html#memos-field"
  */

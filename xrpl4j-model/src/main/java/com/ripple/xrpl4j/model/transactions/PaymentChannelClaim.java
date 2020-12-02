@@ -46,7 +46,7 @@ public interface PaymentChannelClaim extends Transaction {
   }
 
   /**
-   * Bit-map of boolean {@link PaymentChannelClaimFlags} to set for this transaction.
+   * Bit-map of boolean {@link Flags.PaymentChannelClaimFlags} to set for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default

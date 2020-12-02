@@ -32,7 +32,7 @@ public interface PayChannelObject extends LedgerObject {
 
   /**
    * The source {@link Address} that owns this payment channel. This comes from the sending {@link Address} of
-   * the {@link PaymentChannelCreate} transaction that created the channel.
+   * the {@link com.ripple.xrpl4j.model.transactions.PaymentChannelCreate} transaction that created the channel.
    */
   @JsonProperty("Account")
   Address account();
@@ -40,15 +40,18 @@ public interface PayChannelObject extends LedgerObject {
   /**
    * The destination {@link Address} for this payment channel. While the payment channel is open, this {@link Address}
    * is the only one that can receive XRP from the channel. This comes from the
-   * {@link PaymentChannelCreate#destination()} field of the transaction that created the channel.
+   * {@link com.ripple.xrpl4j.model.transactions.PaymentChannelCreate#destination()} field of the transaction
+   * that created the channel.
    */
   @JsonProperty("Destination")
   Address destination();
 
   /**
    * Total XRP, in drops, that has been allocated to this channel. This includes XRP that has been paid to the
-   * {@link #destination()} address. This is initially set by the {@link PaymentChannelCreate} transaction that
-   * created the channel and can be increased if the source address sends a {@link PaymentChannelFund} transaction.
+   * {@link #destination()} address. This is initially set by the
+   * {@link com.ripple.xrpl4j.model.transactions.PaymentChannelCreate} transaction that created the channel and can
+   * be increased if the source address sends a {@link com.ripple.xrpl4j.model.transactions.PaymentChannelFund}
+   * transaction.
    */
   @JsonProperty("Amount")
   XrpCurrencyAmount amount();
@@ -56,18 +59,18 @@ public interface PayChannelObject extends LedgerObject {
   /**
    * Total XRP, in drops, already paid out by the channel. The difference between this value and the
    * {@link #amount()} field is how much XRP can still be paid to the {@link #destination()} address with
-   * {@link PaymentChannelClaim} transactions. If the channel closes, the remaining difference is returned to
-   * the {@link #account()} address.
+   * {@link com.ripple.xrpl4j.model.transactions.PaymentChannelClaim} transactions. If the channel closes,
+   * the remaining difference is returned to the {@link #account()} address.
    */
   @JsonProperty("Balance")
   XrpCurrencyAmount balance();
 
   /**
    * Public key, in hexadecimal, of the key pair that can be used to sign claims against this channel.
-   * This can be any valid secp256k1 or Ed25519 public key. This is set by the {@link PaymentChannelCreate}
-   * transaction that created the channel and must match the public key used in claims against the channel.
-   * The channel {@link #account()} can also send XRP from this channel to the {@link #destination()} without
-   * signed claims.
+   * This can be any valid secp256k1 or Ed25519 public key. This is set by the
+   * {@link com.ripple.xrpl4j.model.transactions.PaymentChannelCreate} transaction that created the channel and
+   * must match the public key used in claims against the channel. The channel {@link #account()} can also send
+   * XRP from this channel to the {@link #destination()} without signed claims.
    */
   @JsonProperty("PublicKey")
   String publicKey();

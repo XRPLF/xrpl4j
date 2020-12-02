@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.client.rippled.XrplRequestParams;
 import com.ripple.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
-import com.ripple.xrpl4j.model.ledger.LedgerObject;
 import com.ripple.xrpl4j.model.transactions.Address;
 import org.immutables.value.Value;
 
@@ -42,7 +41,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   Optional<AccountObjectType> type();
 
   /**
-   * If true, the response only includes {@link LedgerObject}s that would block this account from being deleted.
+   * If true, the response only includes {@link com.ripple.xrpl4j.model.ledger.LedgerObject}s that would block this account from being deleted.
    * The default is false.
    */
   @JsonProperty("deletion_blockers_only")
@@ -71,7 +70,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   }
 
   /**
-   * The maximum number of {@link LedgerObject}s to include in the resulting
+   * The maximum number of {@link com.ripple.xrpl4j.model.ledger.LedgerObject}s to include in the resulting
    * {@link AccountObjectsResult#accountObjects()}. Must be within the inclusive range 10 to 400 on non-admin
    * connections. The default is 200.
    */

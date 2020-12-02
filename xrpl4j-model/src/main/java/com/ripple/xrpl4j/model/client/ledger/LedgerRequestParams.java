@@ -85,8 +85,9 @@ public interface LedgerRequestParams extends XrplRequestParams {
   }
 
   /**
-   * If true, include the owner_funds field in the metadata of {@link OfferCreate} transactions in the response.
-   * Defaults to false. Ignored unless {@link #transactions()} and {@link #expand()} are true.
+   * If true, include the owner_funds field in the metadata of {@link com.ripple.xrpl4j.model.transactions.OfferCreate}
+   * transactions in the response. Defaults to false. Ignored unless {@link #transactions()} and {@link #expand()}
+   * are true.
    */
   @JsonProperty("owner_funds")
   @Value.Default

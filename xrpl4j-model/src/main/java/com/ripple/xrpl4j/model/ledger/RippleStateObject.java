@@ -35,7 +35,8 @@ public interface RippleStateObject extends LedgerObject {
   }
 
   /**
-   * A set of boolean {@link RippleStateFlags} containing options enabled for this object.
+   * A set of boolean {@link com.ripple.xrpl4j.model.transactions.Flags.RippleStateFlags} containing options
+   * enabled for this object.
    */
   @JsonProperty("Flags")
   RippleStateFlags flags();

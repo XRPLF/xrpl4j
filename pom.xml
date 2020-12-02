@@ -339,6 +339,8 @@
             <excludes>
               <exclude>**/generated-sources/**/*</exclude>
             </excludes>
+            <!-- FIXME: Remove this once javadocs are fixed -->
+            <failOnWarnings>false</failOnWarnings>
             <source>8</source>
           </configuration>
           <executions>
@@ -525,10 +527,9 @@
       </plugin>
 
       <!-- org.apache.maven.plugins:maven-javadoc-plugin -->
-      <!-- FIXME: Fix javadocs and enable -->
-      <!--<plugin>
+      <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>-->
+      </plugin>
 
       <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
       <plugin>

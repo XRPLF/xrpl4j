@@ -18,7 +18,7 @@ import java.util.Map;
 public interface Definitions {
 
   /**
-   * Type definitions map (type name -> ordinal value)
+   * Type definitions map (type name to ordinal value)
    *
    * @return
    */
@@ -34,7 +34,7 @@ public interface Definitions {
   List<List<JsonNode>> fields();
 
   /**
-   * Ledger types mappings (transaction type -> ordinal value)
+   * Ledger types mappings (transaction type to ordinal value)
    *
    * @return
    */
@@ -42,7 +42,7 @@ public interface Definitions {
   Map<String, Integer> ledgerEntryTypes();
 
   /**
-   * Transaction types mappings (transaction type -> ordinal value)
+   * Transaction types mappings (transaction type to ordinal value)
    *
    * @return
    */
@@ -50,7 +50,7 @@ public interface Definitions {
   Map<String, Integer> transactionTypes();
 
   /**
-   * Transaction results mappings (transaction result -> ordinal value)
+   * Transaction results mappings (transaction result to ordinal value)
    *
    * @return
    */

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Flags;
-import com.ripple.xrpl4j.model.transactions.Flags.SignerListFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
 import com.ripple.xrpl4j.model.transactions.SignerListSet;
 import com.ripple.xrpl4j.model.transactions.Transaction;
@@ -36,7 +35,7 @@ public interface SignerList {
   }
 
   /**
-   * A bit-map of Boolean {@link SignerListFlags} enabled for this signer list.
+   * A bit-map of Boolean {@link com.ripple.xrpl4j.model.transactions.Flags.SignerListFlags} enabled for this signer list.
    */
   @JsonProperty("Flags")
   Flags.SignerListFlags flags();

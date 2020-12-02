@@ -7,7 +7,6 @@ import com.ripple.xrpl4j.model.client.rippled.XrplRequestParams;
 import com.ripple.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
-import com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -43,8 +42,9 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
    * {@link CurrencyAmount} that the destination account would receive in a transaction.
    *
    * <p>Special case: You can specify "-1" (for XRP) or provide "-1" as the contents of
-   * {@link IssuedCurrencyAmount#value()} (for non-XRP currencies). This requests a path to deliver as much as
-   * possible, while spending no more than the amount specified in send_max (if provided).
+   * {@link com.ripple.xrpl4j.model.transactions.IssuedCurrencyAmount#value()} (for non-XRP currencies).
+   * This requests a path to deliver as much as possible, while spending no more than the amount specified in
+   * send_max (if provided).
    */
   @JsonProperty("destination_amount")
   CurrencyAmount destinationAmount();
@@ -56,7 +56,7 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   Optional<CurrencyAmount> sendMax();
 
   /**
-   * A {@link List<PathCurrency>} that the source account might want to spend.
+   * A {@link List} of {@link PathCurrency} that the source account might want to spend.
    *
    * <p>Cannot contain more than 18 source currencies.
    */

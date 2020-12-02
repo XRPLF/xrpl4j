@@ -4,12 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.Address;
 import com.ripple.xrpl4j.model.transactions.Flags;
-import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
 import com.ripple.xrpl4j.model.transactions.Hash256;
-import com.ripple.xrpl4j.model.transactions.Transaction;
 import com.ripple.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.immutables.value.Value;
 
@@ -50,7 +47,7 @@ public interface AccountRootObject extends LedgerObject {
   XrpCurrencyAmount balance();
 
   /**
-   * A bit-map of boolean {@link AccountRootFlags} enabled for this account.
+   * A bit-map of boolean {@link Flags.AccountRootFlags} enabled for this account.
    */
   @JsonProperty("Flags")
   Flags.AccountRootFlags flags();
@@ -82,8 +79,10 @@ public interface AccountRootObject extends LedgerObject {
 
   /**
    * The identifying hash of the transaction most recently sent by this account. This field must be enabled to
-   * use the {@link Transaction#accountTransactionId()} field. To enable it, send an {@link AccountSet} transaction
-   * with {@link AccountSet#setFlag()} equal to {@link AccountSet.AccountSetFlag#ACCOUNT_TXN_ID}.
+   * use the {@link com.ripple.xrpl4j.model.transactions.Transaction#accountTransactionId()} field. To enable it,
+   * send an {@link com.ripple.xrpl4j.model.transactions.AccountSet} transaction with
+   * {@link com.ripple.xrpl4j.model.transactions.AccountSet#setFlag()} equal to
+   * {@link com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag#ACCOUNT_TXN_ID}.
    */
   @JsonProperty("AccountTxnID")
   Optional<Hash256> accountTransactionId();
@@ -108,7 +107,8 @@ public interface AccountRootObject extends LedgerObject {
   Optional<String> messageKey();
 
   /**
-   * The address of a key pair that can be used to sign {@link Transaction}s for this account instead of the master key.
+   * The address of a key pair that can be used to sign {@link com.ripple.xrpl4j.model.transactions.Transaction}s for
+   * this account instead of the master key.
    */
   @JsonProperty("RegularKey")
   Optional<Address> regularKey();

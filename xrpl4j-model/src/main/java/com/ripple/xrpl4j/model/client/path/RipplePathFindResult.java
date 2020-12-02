@@ -19,19 +19,20 @@ import java.util.List;
 public interface RipplePathFindResult extends XrplResult {
 
   /**
-   * A {@link List<PathAlternative>} with possible paths to take. If empty, then are are no paths connecting the
-   * source and destination accounts.
+   * A {@link List} of {@link PathAlternative}s with possible paths to take. If empty, then are are no paths
+   * connecting the source and destination accounts.
    */
   List<PathAlternative> alternatives();
 
   /**
-   * Unique {@link Address} of the account that would receive a {@link Payment} transaction.
+   * Unique {@link com.ripple.xrpl4j.model.transactions.Address} of the account that would receive a
+   * {@link com.ripple.xrpl4j.model.transactions.Payment} transaction.
    */
   @JsonProperty("destination_account")
   Address destinationAccount();
 
   /**
-   * {@link List<String>} representing the currencies that the {@link #destinationAccount()} accepts,
+   * {@link List} of {@link String}s representing the currencies that the {@link #destinationAccount()} accepts,
    * as 3-letter codes like "USD" or as 40-character hex like "015841551A748AD2C1F76FF6ECB0CCCD00000000";
    */
   @JsonProperty("destination_currencies")

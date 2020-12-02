@@ -59,7 +59,8 @@ public interface EscrowObject extends LedgerObject {
   XrpCurrencyAmount amount();
 
   /**
-   * A PREIMAGE-SHA-256 crypto-condition in DER hexadecimal encoding. If present, the {@link EscrowFinish} transaction
+   * A PREIMAGE-SHA-256 crypto-condition in DER hexadecimal encoding. If present, the
+   * {@link com.ripple.xrpl4j.model.transactions.EscrowFinish} transaction
    * must contain a fulfillment that satisfies this condition.
    *
    * @see "https://tools.ietf.org/html/draft-thomas-crypto-conditions-04#section-8.1"
@@ -78,7 +79,8 @@ public interface EscrowObject extends LedgerObject {
 
   /**
    * The time, in <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>,
-   * after which this held payment can be finished. Any {@link EscrowFinish} transaction before this time fails.
+   * after which this held payment can be finished. Any {@link com.ripple.xrpl4j.model.transactions.EscrowFinish}
+   * transaction before this time fails.
    * (Specifically, this is compared with the close time of the previous validated ledger.)
    */
   @JsonProperty("FinishAfter")

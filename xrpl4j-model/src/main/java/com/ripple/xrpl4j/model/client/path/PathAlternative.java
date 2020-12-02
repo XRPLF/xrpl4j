@@ -15,7 +15,7 @@ import java.util.List;
 public interface PathAlternative {
 
   /**
-   * A {@link List} of {@link List<PathStep>}s containing the different payment paths available.
+   * A {@link List} of {@link List}s of {@link PathStep}s containing the different payment paths available.
    */
   @JsonProperty("paths_computed")
   List<List<PathStep>> pathsComputed();

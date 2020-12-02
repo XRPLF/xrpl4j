@@ -77,9 +77,9 @@ public interface LedgerHeader {
 
   /**
    * Transactions applied in this ledger version. By default, members are the transactions' identifying Hash strings.
-   * If the request specified {@link LedgerRequestParams#expand()} as true, members are full representations of
-   * the transactions instead, in either JSON or binary depending on whether the request specified
-   * {@link LedgerRequestParams#binary()} as true.
+   * If the request specified {@link com.ripple.xrpl4j.model.client.ledger.LedgerRequestParams#expand()} as true,
+   * members are full representations of the transactions instead, in either JSON or binary depending on whether
+   * the request specified {@link com.ripple.xrpl4j.model.client.ledger.LedgerRequestParams#binary()} as true.
    */
   // TODO: This can either be a list of hashes or a list of transactions, so we need a custom deserializer
   List<String> transactions();

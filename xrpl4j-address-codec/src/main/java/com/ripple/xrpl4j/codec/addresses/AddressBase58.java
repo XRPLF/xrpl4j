@@ -21,7 +21,7 @@ public class AddressBase58 extends Base58 {
    * Encodes the given {@link UnsignedByteArray} to a Base58Check {@link String}.
    *
    * @param bytes          An {@link UnsignedByteArray} of data to encode.
-   * @param versions       A {@link List<Version>} which should be prepended to bytes.
+   * @param versions       A {@link List} of {@link Version}s which should be prepended to bytes.
    * @param expectedLength The expected length of the result.
    * @return The Base58Check encoded {@link String} of the given parameters.
    */

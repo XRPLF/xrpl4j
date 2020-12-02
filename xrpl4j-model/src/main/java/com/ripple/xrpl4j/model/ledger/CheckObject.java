@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.xrpl4j.model.transactions.Address;
-import com.ripple.xrpl4j.model.transactions.CheckCash;
 import com.ripple.xrpl4j.model.transactions.CheckCreate;
 import com.ripple.xrpl4j.model.transactions.CurrencyAmount;
 import com.ripple.xrpl4j.model.transactions.Flags;
@@ -17,7 +16,7 @@ import java.util.Optional;
 /**
  * A Check object describes a check, similar to a paper personal check, which can be cashed by its destination to
  * get money from its sender. (The potential payment has already been approved by its sender, but no money moves
- * until it is cashed. Unlike an {@link Escrow}, the money for a Check is not set aside, so cashing the Check could
+ * until it is cashed. Unlike an Escrow, the money for a Check is not set aside, so cashing the Check could
  * fail due to lack of funds.)
  */
 @Value.Immutable
@@ -53,7 +52,7 @@ public interface CheckObject extends LedgerObject {
 
   /**
    * The intended recipient of the {@link CheckObject}. Only this address can cash the {@link CheckObject},
-   * using a {@link CheckCash} transaction.
+   * using a {@link com.ripple.xrpl4j.model.transactions.CheckCash} transaction.
    */
   @JsonProperty("Destination")
   Address destination();
@@ -104,7 +103,8 @@ public interface CheckObject extends LedgerObject {
   CurrencyAmount sendMax();
 
   /**
-   * The sequence number of the {@link CheckCreate} transaction that created this check.
+   * The sequence number of the {@link com.ripple.xrpl4j.model.transactions.CheckCreate} transaction that created
+   * this check.
    */
   @JsonProperty("Sequence")
   UnsignedInteger sequence();

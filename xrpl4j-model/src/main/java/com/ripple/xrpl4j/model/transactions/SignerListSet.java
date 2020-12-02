@@ -39,10 +39,10 @@ public interface SignerListSet extends Transaction {
   UnsignedInteger signerQuorum();
 
   /**
-   * (Omitted when deleting) Array of {@link SignerEntry} objects, indicating the addresses and weights of signers
-   * in this list. This signer list must have at least 1 member and no more than 8 members. No {@link Address}
-   * may appear more than once in the list, nor may the {@link #account()} submitting the transaction
-   * appear in the list.
+   * (Omitted when deleting) Array of {@link com.ripple.xrpl4j.model.ledger.SignerEntry} objects, indicating the
+   * addresses and weights of signers in this list. This signer list must have at least 1 member and no more
+   * than 8 members. No {@link Address} may appear more than once in the list, nor may the {@link #account()}
+   * submitting the transaction appear in the list.
    */
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();

@@ -16,9 +16,9 @@ public abstract class AbstractWalletFactory implements WalletFactory {
     Wallet wallet = this.fromSeed(seed, isTest);
 
     return SeedWalletGenerationResult.builder()
-      .seed(seed)
-      .wallet(wallet)
-      .build();
+        .seed(seed)
+        .wallet(wallet)
+        .build();
   }
 
   @Override
@@ -31,12 +31,12 @@ public abstract class AbstractWalletFactory implements WalletFactory {
   public Wallet fromKeyPair(KeyPair keyPair, boolean isTest) {
     Address classicAddress = keyPairService.deriveAddress(keyPair.publicKey());
     return Wallet.builder()
-      .privateKey(keyPair.privateKey())
-      .publicKey(keyPair.publicKey())
-      .isTest(isTest)
-      .classicAddress(classicAddress)
-      .xAddress(addressCodec.classicAddressToXAddress(classicAddress.value(), isTest))
-      .build();
+        .privateKey(keyPair.privateKey())
+        .publicKey(keyPair.publicKey())
+        .isTest(isTest)
+        .classicAddress(classicAddress)
+        .xAddress(addressCodec.classicAddressToXAddress(classicAddress.value(), isTest))
+        .build();
   }
 
 }

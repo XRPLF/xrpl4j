@@ -38,6 +38,7 @@ public interface OfferCreate extends Transaction {
 
   /**
    * The amount and type of currency being requested by the offer creator.
+   *
    * @return amount
    */
   @JsonProperty("TakerPays")
@@ -45,6 +46,7 @@ public interface OfferCreate extends Transaction {
 
   /**
    * The amount and type of currency being provided by the offer creator.
+   *
    * @return amount
    */
   @JsonProperty("TakerGets")

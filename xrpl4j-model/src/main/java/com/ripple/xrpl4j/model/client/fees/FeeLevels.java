@@ -9,7 +9,7 @@ import org.immutables.value.Value;
  * A sub-object of {@link FeeResult} containing various information about the transaction cost in fee levels
  * for the current open ledger.
  *
- * The ratio in fee levels applies to any transaction relative to the minimum cost of that particular transaction.
+ * <p>The ratio in fee levels applies to any transaction relative to the minimum cost of that particular transaction.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableFeeLevels.class)

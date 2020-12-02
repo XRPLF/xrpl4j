@@ -35,7 +35,7 @@ public class PathType extends SerializedType<PathType> {
   public PathType fromParser(BinaryParser parser, OptionalInt lengthHint) {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
 
-    while(!parser.end()) {
+    while (!parser.end()) {
       byteArray.append(new HopType().fromParser(parser).value());
       String nextByte = parser.peek().hexValue();
       if (nextByte.equals(PATH_SEPARATOR_HEX) || nextByte.equals(PATHSET_END_HEX)) {

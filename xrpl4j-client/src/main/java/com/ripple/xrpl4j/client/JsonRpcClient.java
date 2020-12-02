@@ -47,12 +47,12 @@ public interface JsonRpcClient {
     Objects.requireNonNull(rippledUrl);
 
     return Feign.builder()
-      .encoder(new JacksonEncoder(objectMapper))
-      // rate limiting will return a 503 status that can be retried
-      .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
-      .decode404()
-      .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-      .target(JsonRpcClient.class, rippledUrl.toString());
+        .encoder(new JacksonEncoder(objectMapper))
+        // rate limiting will return a 503 status that can be retried
+        .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
+        .decode404()
+        .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
+        .target(JsonRpcClient.class, rippledUrl.toString());
   }
 
   /**
@@ -63,8 +63,8 @@ public interface JsonRpcClient {
    */
   @RequestLine("POST /")
   @Headers( {
-    HEADER_ACCEPT + ": " + APPLICATION_JSON,
-    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+      HEADER_ACCEPT + ": " + APPLICATION_JSON,
+      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
   JsonNode postRpcRequest(JsonRpcRequest rpcRequest);
 
@@ -79,8 +79,8 @@ public interface JsonRpcClient {
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
   default <ResultType extends XrplResult> ResultType send(
-    JsonRpcRequest request,
-    Class<ResultType> resultType
+      JsonRpcRequest request,
+      Class<ResultType> resultType
   ) throws JsonRpcClientErrorException {
     JavaType javaType = objectMapper.constructType(resultType);
     return send(request, javaType);
@@ -100,8 +100,8 @@ public interface JsonRpcClient {
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
   default <ResultType extends XrplResult> ResultType send(
-    JsonRpcRequest request,
-    JavaType resultType
+      JsonRpcRequest request,
+      JavaType resultType
   ) throws JsonRpcClientErrorException {
     JsonNode response = postRpcRequest(request);
     JsonNode result = response.get("result");
@@ -124,8 +124,8 @@ public interface JsonRpcClient {
       JsonNode result = response.get("result");
       if (result.has("error")) {
         String errorMessage = Optional.ofNullable(result.get("error_exception"))
-          .map(JsonNode::asText)
-          .orElseGet(() -> result.get("error_message").asText());
+            .map(JsonNode::asText)
+            .orElseGet(() -> result.get("error_message").asText());
         throw new JsonRpcClientErrorException(errorMessage);
       }
     }

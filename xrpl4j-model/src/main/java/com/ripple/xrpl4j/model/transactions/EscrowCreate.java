@@ -54,7 +54,7 @@ public interface EscrowCreate extends Transaction {
   /**
    * The time, in seconds since the Ripple Epoch, when this escrow expires.
    *
-   * This value is immutable - the funds can only be returned to the sender after this time.
+   * <p>This value is immutable - the funds can only be returned to the sender after this time.
    */
   @JsonProperty("CancelAfter")
   Optional<UnsignedLong> cancelAfter();
@@ -62,7 +62,7 @@ public interface EscrowCreate extends Transaction {
   /**
    * The time, in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
    *
-   * This value is immutable - the funds cannot move until this time is reached.
+   * <p>This value is immutable - the funds cannot move until this time is reached.
    */
   @JsonProperty("FinishAfter")
   Optional<UnsignedLong> finishAfter();
@@ -78,8 +78,8 @@ public interface EscrowCreate extends Transaction {
   default void check() {
     if (cancelAfter().isPresent() && finishAfter().isPresent()) {
       Preconditions.checkState(
-        finishAfter().get().compareTo(cancelAfter().get()) < 0,
-        "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
+          finishAfter().get().compareTo(cancelAfter().get()) < 0,
+          "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
       );
     }
   }

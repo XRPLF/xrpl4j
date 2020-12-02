@@ -1,7 +1,6 @@
 package com.ripple.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -19,7 +18,10 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
   }
 
   @Override
-  public CurrencyAmount deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+  public CurrencyAmount deserialize(
+      JsonParser jsonParser,
+      DeserializationContext deserializationContext
+  ) throws IOException {
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
     if (node.isContainerNode()) {
@@ -28,10 +30,10 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
       String issuer = node.get("issuer").asText();
 
       return IssuedCurrencyAmount.builder()
-        .value(value)
-        .issuer(Address.of(issuer))
-        .currency(currency)
-        .build();
+          .value(value)
+          .issuer(Address.of(issuer))
+          .currency(currency)
+          .build();
     } else {
       return XrpCurrencyAmount.ofDrops(node.asLong());
     }

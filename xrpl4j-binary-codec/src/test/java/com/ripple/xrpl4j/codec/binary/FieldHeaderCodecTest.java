@@ -30,20 +30,20 @@ class FieldHeaderCodecTest {
   @Test
   void getFieldId() {
     fieldTests.forEach(fieldTest ->
-        assertThat(fieldHeaderCodec.getFieldId(fieldTest.name()))
-            .isEqualTo(FieldHeader.builder().typeCode(fieldTest.type()).fieldCode(fieldTest.nthOfType()).build()));
+      assertThat(fieldHeaderCodec.getFieldId(fieldTest.name()))
+        .isEqualTo(FieldHeader.builder().typeCode(fieldTest.type()).fieldCode(fieldTest.nthOfType()).build()));
   }
 
   @Test
   void encode() {
     fieldTests.forEach(fieldTest ->
-        assertThat(fieldHeaderCodec.encode(fieldTest.name())).isEqualTo(fieldTest.expectedHex()));
+      assertThat(fieldHeaderCodec.encode(fieldTest.name())).isEqualTo(fieldTest.expectedHex()));
   }
 
   @Test
   void decode() {
     fieldTests.forEach(fieldTest ->
-        assertThat(fieldHeaderCodec.decode(fieldTest.expectedHex())).isEqualTo(fieldTest.name()));
+      assertThat(fieldHeaderCodec.decode(fieldTest.expectedHex())).isEqualTo(fieldTest.name()));
   }
 
   @Test

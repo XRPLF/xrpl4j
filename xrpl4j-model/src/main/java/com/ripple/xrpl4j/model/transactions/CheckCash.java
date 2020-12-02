@@ -15,7 +15,7 @@ import java.util.Optional;
  * it with a CheckCash transaction. Cashing a check this way is similar to executing a {@link Payment} initiated by
  * the destination.
  *
- * Since the funds for a check are not guaranteed, redeeming a Check can fail because the sender does not have a
+ * <p>Since the funds for a check are not guaranteed, redeeming a Check can fail because the sender does not have a
  * high enough balance or because there is not enough liquidity to deliver the funds. If this happens, the Check
  * remains in the ledger and the destination can try to cash it again later, or for a different amount.
  */
@@ -30,8 +30,8 @@ public interface CheckCash extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
-   * <p>
-   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    */
   @JsonProperty("Flags")
@@ -58,6 +58,7 @@ public interface CheckCash extends Transaction {
    * Redeem the Check for at least this amount and for as much as possible.
    * The currency must match that of the {@link CheckCreate#sendMax()}SendMax of the corresponding {@link CheckCreate}
    * transaction. You must provide either this field or {@link CheckCash#amount()}.
+   *
    * @return
    */
   @JsonProperty("DeliverMin")
@@ -68,8 +69,8 @@ public interface CheckCash extends Transaction {
    */
   @Value.Check
   default void validateOnlyOneAmountSet() {
-    Preconditions.checkArgument((amount().isPresent() || deliverMin().isPresent())
-      && !(amount().isPresent() && deliverMin().isPresent()),
-      "The CheckCash transaction must include either amount or deliverMin, but not both.");
+    Preconditions.checkArgument((amount().isPresent() || deliverMin().isPresent()) &&
+            !(amount().isPresent() && deliverMin().isPresent()),
+        "The CheckCash transaction must include either amount or deliverMin, but not both.");
   }
 }

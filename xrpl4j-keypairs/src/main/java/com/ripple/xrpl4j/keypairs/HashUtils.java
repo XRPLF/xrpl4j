@@ -35,7 +35,7 @@ public class HashUtils {
    * Add an Unsigned 32 bit integer to an {@link UnsignedByteArray}.
    *
    * @param bytes An {@link UnsignedByteArray} to append to.
-   * @param i An {@link Integer} with 4 signed bytes to add to bytes.
+   * @param i     An {@link Integer} with 4 signed bytes to add to bytes.
    * @return The resulting {@link UnsignedByteArray}.
    */
   public static UnsignedByteArray addUInt32(UnsignedByteArray bytes, Integer i) {

@@ -8,11 +8,16 @@ import java.util.Objects;
  * Wrapper for holding unsigned bytes since unsigned bytes are hard in Java and XRPL ledger does many operations
  * on arrays on unsigned bytes.
  *
- * Note: several of the methods in this class mutate the underlying value.
+ * <p>Note: several of the methods in this class mutate the underlying value.
  */
 public class UnsignedByteArray {
 
   private final List<UnsignedByte> unsignedBytes;
+
+  public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
+    Objects.requireNonNull(unsignedBytes);
+    this.unsignedBytes = unsignedBytes;
+  }
 
   /**
    * Creates an UnsignedByteArray from a byte array.
@@ -48,6 +53,7 @@ public class UnsignedByteArray {
 
   /**
    * Creates an empty UnsignedByteArray.
+   *
    * @return
    */
   public static UnsignedByteArray empty() {
@@ -56,6 +62,7 @@ public class UnsignedByteArray {
 
   /**
    * Creates an UnsignedByteArray with a given number of bytes (where each byte has the value 0)
+   *
    * @return
    */
   public static UnsignedByteArray ofSize(int size) {
@@ -64,6 +71,7 @@ public class UnsignedByteArray {
 
   /**
    * Converts a hex string to an UnsignedByteArray.
+   *
    * @param hex
    * @return
    */
@@ -73,9 +81,12 @@ public class UnsignedByteArray {
     return new UnsignedByteArray(unsignedBytes);
   }
 
-  public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
-    Objects.requireNonNull(unsignedBytes);
-    this.unsignedBytes = unsignedBytes;
+  private static List<UnsignedByte> fill(int amount) {
+    List<UnsignedByte> unsignedBytes = new ArrayList<>();
+    for (int i = 0; i < amount; i++) {
+      unsignedBytes.add(i, UnsignedByte.of(0));
+    }
+    return unsignedBytes;
   }
 
   public List<UnsignedByte> getUnsignedBytes() {
@@ -129,6 +140,7 @@ public class UnsignedByteArray {
 
   /**
    * Sets the value value an unsigned byte at the given index.
+   *
    * @param index
    * @param value
    */
@@ -138,20 +150,13 @@ public class UnsignedByteArray {
 
   /**
    * Returns a slice of the underlying byte array from the given start to the end index (exclusive).
+   *
    * @param startIndex start index (inclusive)
-   * @param endIndex end index (exclusive)
+   * @param endIndex   end index (exclusive)
    * @return
    */
   public UnsignedByteArray slice(int startIndex, int endIndex) {
     return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));
-  }
-
-  private static List<UnsignedByte> fill(int amount) {
-    List<UnsignedByte> unsignedBytes = new ArrayList<>();
-    for (int i = 0; i < amount; i++) {
-      unsignedBytes.add(i, UnsignedByte.of(0));
-    }
-    return unsignedBytes;
   }
 
   @Override

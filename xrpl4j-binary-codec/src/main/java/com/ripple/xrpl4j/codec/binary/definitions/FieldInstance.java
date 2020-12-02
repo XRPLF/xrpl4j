@@ -38,6 +38,7 @@ public interface FieldInstance extends Comparable {
 
   /**
    * Field name
+   *
    * @return
    */
   String name();

@@ -7,11 +7,9 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.xrpl4j.model.transactions.immutables.Wrapped;
 import com.ripple.xrpl4j.model.transactions.immutables.Wrapper;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * Wrapped immutable classes for providing type-safe objects.
@@ -25,7 +23,7 @@ public class Wrappers {
   @Wrapped
   @JsonSerialize(as = Address.class)
   @JsonDeserialize(as = Address.class)
-  static abstract class _Address extends Wrapper<String> implements Serializable {
+  abstract static class _Address extends Wrapper<String> implements Serializable {
 
     @Override
     public String toString() {
@@ -41,7 +39,7 @@ public class Wrappers {
   @Wrapped
   @JsonSerialize(as = Hash256.class)
   @JsonDeserialize(as = Hash256.class)
-  static abstract class _Hash256 extends Wrapper<String> implements Serializable {
+  abstract static class _Hash256 extends Wrapper<String> implements Serializable {
 
     @Override
     public String toString() {
@@ -71,15 +69,11 @@ public class Wrappers {
   @Wrapped
   @JsonSerialize(as = XrpCurrencyAmount.class)
   @JsonDeserialize(as = XrpCurrencyAmount.class)
-  static abstract class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
-
-    @Override
-    public String toString() {
-      return this.value().toString();
-    }
+  abstract static class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
 
     /**
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     *
      * @param drops
      * @return
      */
@@ -89,6 +83,7 @@ public class Wrappers {
 
     /**
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     *
      * @param drops
      * @return
      */
@@ -98,11 +93,17 @@ public class Wrappers {
 
     /**
      * Constructs an {@link XrpCurrencyAmount} using decimal amount of XRP.
+     *
      * @param amount
      * @return
      */
     public static XrpCurrencyAmount ofXrp(BigDecimal amount) {
       return ofDrops(amount.scaleByPowerOfTen(6).toBigIntegerExact().longValue());
+    }
+
+    @Override
+    public String toString() {
+      return this.value().toString();
     }
 
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {

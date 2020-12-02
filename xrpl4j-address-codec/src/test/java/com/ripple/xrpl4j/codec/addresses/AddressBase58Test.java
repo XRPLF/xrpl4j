@@ -39,9 +39,9 @@ public class AddressBase58Test {
   @Test
   public void decodeDataWithoutExpectedLength() {
     Decoded expected = Decoded.builder()
-      .version(Version.ACCOUNT_ID)
-      .bytes(UnsignedByteArray.of("123456789".getBytes()))
-      .build();
+        .version(Version.ACCOUNT_ID)
+        .bytes(UnsignedByteArray.of("123456789".getBytes()))
+        .build();
 
     Decoded decoded = AddressBase58.decode("rnaC7gW34M77Kneb78s", Version.ACCOUNT_ID);
     assertThat(decoded).isEqualTo(expected);
@@ -50,14 +50,14 @@ public class AddressBase58Test {
   @Test
   public void decodeDataWithExpectedLength() {
     Decoded expected = Decoded.builder()
-      .version(Version.ACCOUNT_ID)
-      .bytes(UnsignedByteArray.of("123456789".getBytes()))
-      .build();
+        .version(Version.ACCOUNT_ID)
+        .bytes(UnsignedByteArray.of("123456789".getBytes()))
+        .build();
 
     Decoded decoded = AddressBase58.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(9)
+        "rnaC7gW34M77Kneb78s",
+        Lists.newArrayList(Version.ACCOUNT_ID),
+        UnsignedInteger.valueOf(9)
     );
     assertThat(decoded).isEqualTo(expected);
   }
@@ -68,15 +68,15 @@ public class AddressBase58Test {
     expectedException.expectMessage("Version is invalid. Version bytes do not match any of the provided versions.");
 
     AddressBase58.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(8)
+        "rnaC7gW34M77Kneb78s",
+        Lists.newArrayList(Version.ACCOUNT_ID),
+        UnsignedInteger.valueOf(8)
     );
 
     AddressBase58.decode(
-      "rnaC7gW34M77Kneb78s",
-      Lists.newArrayList(Version.ACCOUNT_ID),
-      UnsignedInteger.valueOf(10)
+        "rnaC7gW34M77Kneb78s",
+        Lists.newArrayList(Version.ACCOUNT_ID),
+        UnsignedInteger.valueOf(10)
     );
   }
 

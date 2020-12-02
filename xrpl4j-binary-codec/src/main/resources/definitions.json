@@ -1619,7 +1619,6 @@
     "telCAN_NOT_QUEUE_BLOCKED": -389,
     "telCAN_NOT_QUEUE_FEE": -388,
     "telCAN_NOT_QUEUE_FULL": -387,
-
     "temMALFORMED": -299,
     "temBAD_AMOUNT": -298,
     "temBAD_CURRENCY": -297,
@@ -1655,7 +1654,6 @@
     "temCANNOT_PREAUTH_SELF": -267,
     "temUNCERTAIN": -266,
     "temUNKNOWN": -265,
-
     "tefFAILURE": -199,
     "tefALREADY": -198,
     "tefBAD_ADD_AUTH": -197,
@@ -1675,7 +1673,6 @@
     "tefBAD_AUTH_MASTER": -183,
     "tefINVARIANT_FAILED": -182,
     "tefTOO_BIG": -181,
-
     "terRETRY": -99,
     "terFUNDS_SPENT": -98,
     "terINSUF_FEE_B": -97,
@@ -1687,9 +1684,7 @@
     "terLAST": -91,
     "terNO_RIPPLE": -90,
     "terQUEUED": -89,
-
     "tesSUCCESS": 0,
-
     "tecCLAIM": 100,
     "tecPATH_PARTIAL": 101,
     "tecUNFUNDED_ADD": 102,
@@ -1731,7 +1726,6 @@
   },
   "TRANSACTION_TYPES": {
     "Invalid": -1,
-
     "Payment": 0,
     "EscrowCreate": 1,
     "EscrowFinish": 2,
@@ -1754,7 +1748,6 @@
     "DepositPreauth": 19,
     "TrustSet": 20,
     "AccountDelete": 21,
-
     "EnableAmendment": 100,
     "SetFee": 101,
     "UNLModify": 102

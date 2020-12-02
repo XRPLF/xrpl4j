@@ -42,7 +42,7 @@ public class STObjectType extends SerializedType<STObjectType> {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteArray);
 
-    while(!parser.end()) {
+    while (!parser.end()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
@@ -63,27 +63,27 @@ public class STObjectType extends SerializedType<STObjectType> {
     BinarySerializer serializer = new BinarySerializer(byteList);
 
     List<FieldWithValue<JsonNode>> fields = new ArrayList<>();
-    for(String fieldName : Lists.newArrayList(node.fieldNames())) {
+    for (String fieldName : Lists.newArrayList(node.fieldNames())) {
       JsonNode fieldNode = node.get(fieldName);
       definitionsService.getFieldInstance(fieldName)
-          .filter(FieldInstance::isSerialized)
-          .ifPresent(fieldInstance -> fields.add(FieldWithValue.builder()
-              .field(fieldInstance)
-              .value(mapSpecializedValues(fieldName, fieldNode))
-              .build()));
+        .filter(FieldInstance::isSerialized)
+        .ifPresent(fieldInstance -> fields.add(FieldWithValue.builder()
+          .field(fieldInstance)
+          .value(mapSpecializedValues(fieldName, fieldNode))
+          .build()));
     }
     fields.stream()
-        .sorted()
-        .forEach(value -> {
-          try {
-            serializer.writeFieldAndValue(value.field(), value.value());
-          } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("invalid json", e);
-          }
-          if (value.field().type().equals(ST_OBJECT)) {
-            serializer.put(OBJECT_END_MARKER_HEX);
-          }
-        });
+      .sorted()
+      .forEach(value -> {
+        try {
+          serializer.writeFieldAndValue(value.field(), value.value());
+        } catch (JsonProcessingException e) {
+          throw new IllegalArgumentException("invalid json", e);
+        }
+        if (value.field().type().equals(ST_OBJECT)) {
+          serializer.put(OBJECT_END_MARKER_HEX);
+        }
+      });
 
     return new STObjectType(byteList);
   }
@@ -99,24 +99,24 @@ public class STObjectType extends SerializedType<STObjectType> {
    */
   private JsonNode mapSpecializedValues(String fieldName, JsonNode fieldNode) {
     return definitionsService.mapFieldSpecialization(fieldName, fieldNode.asText())
-        .map(value -> new TextNode("" + value))
-        .map(JsonNode.class::cast)
-        .orElse(fieldNode);
+      .map(value -> new TextNode("" + value))
+      .map(JsonNode.class::cast)
+      .orElse(fieldNode);
   }
 
   public JsonNode toJSON() {
     BinaryParser parser = new BinaryParser(this.toString());
     Map<String, JsonNode> objectMap = new LinkedHashMap<>();
-    while(!parser.end()) {
+    while (!parser.end()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
       }
       JsonNode value = parser.readFieldValue(field).toJSON();
       JsonNode mapped = definitionsService.mapFieldRawValueToSpecialization(field.name(), value.asText())
-          .map(TextNode::new)
-          .map(JsonNode.class::cast)
-          .orElse(value);
+        .map(TextNode::new)
+        .map(JsonNode.class::cast)
+        .orElse(value);
       objectMap.put(field.name(), mapped);
     }
     return new ObjectNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), objectMap);

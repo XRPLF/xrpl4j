@@ -20,24 +20,18 @@ import java.util.OptionalInt;
  */
 public class BinaryParser {
 
-  // 1 byte encodes to 2 characters in hex
-  private static final int BYTE_HEX_LENGTH = 2;
-
   // max length that can be represented in a single byte per XRPL serialization restrictions
   public static final int MAX_SINGLE_BYTE_LENGTH = 192;
-
   // max length that can be represented in 2 bytes per XRPL serialization restrictions
   public static final int MAX_DOUBLE_BYTE_LENGTH = 12481;
-
   // max value that can be used in the second byte of a length field
   public static final int MAX_SECOND_BYTE_VALUE = 240;
-
   // max value that can be represented using one 8-bit byte
   public static final int MAX_BYTE_VALUE = 256;
-
   // max value that can be represented in using two 8-bit bytes
   public static final int MAX_DOUBLE_BYTE_VALUE = 65536;
-
+  // 1 byte encodes to 2 characters in hex
+  private static final int BYTE_HEX_LENGTH = 2;
   private final String hex;
 
   private int cursor = 0;
@@ -185,8 +179,8 @@ public class BinaryParser {
       throw new IllegalArgumentException("unsupported type " + type);
     }
     OptionalInt sizeHint = field.isVariableLengthEncoded()
-        ? OptionalInt.of(this.readVariableLengthLength())
-        : OptionalInt.empty();
+      ? OptionalInt.of(this.readVariableLengthLength())
+      : OptionalInt.empty();
 
     try {
       return type.fromParser(this, sizeHint);
@@ -202,11 +196,11 @@ public class BinaryParser {
    */
   public Optional<FieldWithValue> readFieldAndValue() {
     return this.readField()
-        .map(field ->
-            FieldWithValue.builder()
-                .field(field)
-                .value(this.readFieldValue(field))
-                .build());
+      .map(field ->
+        FieldWithValue.builder()
+          .field(field)
+          .value(this.readFieldValue(field))
+          .build());
   }
 
   private UnsignedLong readUInt(int bytes) {

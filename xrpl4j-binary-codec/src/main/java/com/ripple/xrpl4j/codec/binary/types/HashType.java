@@ -7,7 +7,7 @@ import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
  * Base class for XRPL Hash types.
  */
 public abstract class HashType<T extends HashType<T>> extends SerializedType<T> {
-  
+
   private final int width;
 
   public HashType(UnsignedByteArray bytes, int width) {

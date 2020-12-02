@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.ledger.LedgerObject;
 import com.ripple.xrpl4j.model.client.rippled.XrplRequestParams;
 import com.ripple.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
+import com.ripple.xrpl4j.model.ledger.LedgerObject;
 import com.ripple.xrpl4j.model.transactions.Address;
 import org.immutables.value.Value;
 
@@ -27,8 +27,8 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
 
   static AccountObjectsRequestParams of(Address classicAddress) {
     return builder()
-      .account(classicAddress)
-      .build();
+        .account(classicAddress)
+        .build();
   }
 
   /**
@@ -60,7 +60,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   /**
    * The ledger index of the ledger to use, or a shortcut {@link String} to choose a ledger automatically.
    *
-   * Defaults to "current".
+   * <p>Defaults to "current".
    */
   @JsonSerialize(using = LedgerIndexSerializer.class)
   @JsonProperty("ledger_index")

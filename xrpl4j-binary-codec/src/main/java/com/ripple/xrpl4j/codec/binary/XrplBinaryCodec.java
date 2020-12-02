@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedLong;
-import com.ripple.xrpl4j.codec.addresses.UnsignedByte;
 import com.ripple.xrpl4j.codec.addresses.UnsignedByteArray;
 import com.ripple.xrpl4j.codec.binary.definitions.DefinitionsService;
 import com.ripple.xrpl4j.codec.binary.definitions.FieldInstance;
@@ -18,7 +15,6 @@ import com.ripple.xrpl4j.codec.binary.types.AccountIdType;
 import com.ripple.xrpl4j.codec.binary.types.STObjectType;
 import com.ripple.xrpl4j.codec.binary.types.UInt64Type;
 
-import java.math.BigInteger;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -98,7 +94,7 @@ public class XrplBinaryCodec {
     }
     UnsignedByteArray channel = UnsignedByteArray.fromHex(node.get(CHANNEL_FIELD_NAME).asText());
     UnsignedByteArray amount = UnsignedByteArray.of(
-      new UInt64Type(UnsignedLong.valueOf(node.get(AMOUNT_FIELD_NAME).asText())).toBytes()
+        new UInt64Type(UnsignedLong.valueOf(node.get(AMOUNT_FIELD_NAME).asText())).toBytes()
     );
 
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
@@ -116,8 +112,8 @@ public class XrplBinaryCodec {
    */
   public String decode(String hex) {
     return new BinaryParser(hex).readType(STObjectType.class)
-        .toJSON()
-        .toString();
+      .toJSON()
+      .toString();
   }
 
   private String encode(JsonNode node) {
@@ -142,9 +138,9 @@ public class XrplBinaryCodec {
     }
 
     Map<String, JsonNode> signingFields = Lists.newArrayList(node.fieldNames())
-        .stream()
-        .filter(fieldName -> isSigningField(fieldName))
-        .collect(Collectors.toMap(Function.identity(), node::get));
+      .stream()
+      .filter(fieldName -> isSigningField(fieldName))
+      .collect(Collectors.toMap(Function.identity(), node::get));
 
     return new ObjectNode(objectMapper.getNodeFactory(), signingFields);
   }

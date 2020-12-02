@@ -19,6 +19,11 @@ public class AddressCodecTest {
 
   AddressCodec addressCodec;
 
+  private static UnsignedByteArray unsignedByteArrayFromHex(String hexValue) {
+    byte[] decodedHex = BaseEncoding.base16().decode(hexValue);
+    return UnsignedByteArray.of(decodedHex);
+  }
+
   @Before
   public void setUp() {
     addressCodec = new AddressCodec();
@@ -45,8 +50,8 @@ public class AddressCodecTest {
   @Test
   public void encodeSecp256k1Seed() {
     String encoded = addressCodec.encodeSeed(
-      unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFF"),
-      VersionType.SECP256K1
+        unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFF"),
+        VersionType.SECP256K1
     );
 
     assertThat(encoded).isEqualTo("sn259rEFXrQrWyx3Q7XneWcwV6dfL");
@@ -55,8 +60,8 @@ public class AddressCodecTest {
   @Test
   public void encodeLowSecp256k1Seed() {
     String encoded = addressCodec.encodeSeed(
-      unsignedByteArrayFromHex("00000000000000000000000000000000"),
-      VersionType.SECP256K1
+        unsignedByteArrayFromHex("00000000000000000000000000000000"),
+        VersionType.SECP256K1
     );
 
     assertThat(encoded).isEqualTo("sp6JS7f14BuwFY8Mw6bTtLKWauoUs");
@@ -65,8 +70,8 @@ public class AddressCodecTest {
   @Test
   public void encodeHighSecp256k1Seed() {
     String encoded = addressCodec.encodeSeed(
-      unsignedByteArrayFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
-      VersionType.SECP256K1
+        unsignedByteArrayFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
+        VersionType.SECP256K1
     );
 
     assertThat(encoded).isEqualTo("saGwBRReqUNKuWNLpUAq8i8NkXEPN");
@@ -75,8 +80,8 @@ public class AddressCodecTest {
   @Test
   public void encodeEd25519Seed() {
     String encoded = addressCodec.encodeSeed(
-      unsignedByteArrayFromHex("4C3A1D213FBDFB14C7C28D609469B341"),
-      VersionType.ED25519
+        unsignedByteArrayFromHex("4C3A1D213FBDFB14C7C28D609469B341"),
+        VersionType.ED25519
     );
 
     assertThat(encoded).isEqualTo("sEdTM1uX8pu2do5XvTnutH6HsouMaM2");
@@ -85,8 +90,8 @@ public class AddressCodecTest {
   @Test
   public void encodeLowEd25519Seed() {
     String encoded = addressCodec.encodeSeed(
-      unsignedByteArrayFromHex("00000000000000000000000000000000"),
-      VersionType.ED25519
+        unsignedByteArrayFromHex("00000000000000000000000000000000"),
+        VersionType.ED25519
     );
 
     assertThat(encoded).isEqualTo("sEdSJHS4oiAdz7w2X2ni1gFiqtbJHqE");
@@ -95,8 +100,8 @@ public class AddressCodecTest {
   @Test
   public void encodeHighEd25519Seed() {
     String encoded = addressCodec.encodeSeed(
-      unsignedByteArrayFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
-      VersionType.ED25519
+        unsignedByteArrayFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
+        VersionType.ED25519
     );
 
     assertThat(encoded).isEqualTo("sEdV19BLfeQeKdEXyYA4NhjPJe6XBfG");
@@ -119,48 +124,43 @@ public class AddressCodecTest {
   @Test
   public void encodeDecodeAccountId() {
     testEncodeDecode(
-      accountId -> addressCodec.encodeAccountId(accountId),
-      accountId -> addressCodec.decodeAccountId(accountId),
-      unsignedByteArrayFromHex("BA8E78626EE42C41B46D46C3048DF3A1C3C87072"),
-      "rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN"
+        accountId -> addressCodec.encodeAccountId(accountId),
+        accountId -> addressCodec.decodeAccountId(accountId),
+        unsignedByteArrayFromHex("BA8E78626EE42C41B46D46C3048DF3A1C3C87072"),
+        "rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN"
     );
   }
 
   @Test
   public void encodeDecodeNodePublic() {
     testEncodeDecode(
-      nodePublic -> addressCodec.encodeNodePublicKey(nodePublic),
-      nodePublic -> addressCodec.decodeNodePublicKey(nodePublic),
-      unsignedByteArrayFromHex("0388E5BA87A000CB807240DF8C848EB0B5FFA5C8E5A521BC8E105C0F0A44217828"),
-      "n9MXXueo837zYH36DvMc13BwHcqtfAWNJY5czWVbp7uYTj7x17TH"
+        nodePublic -> addressCodec.encodeNodePublicKey(nodePublic),
+        nodePublic -> addressCodec.decodeNodePublicKey(nodePublic),
+        unsignedByteArrayFromHex("0388E5BA87A000CB807240DF8C848EB0B5FFA5C8E5A521BC8E105C0F0A44217828"),
+        "n9MXXueo837zYH36DvMc13BwHcqtfAWNJY5czWVbp7uYTj7x17TH"
     );
   }
 
   @Test
   public void encodeDecodeAccountPublicKey() {
     testEncodeDecode(
-      publicKey -> addressCodec.encodeAccountPublicKey(publicKey),
-      publicKey -> addressCodec.decodeAccountPublicKey(publicKey),
-      unsignedByteArrayFromHex("023693F15967AE357D0327974AD46FE3C127113B1110D6044FD41E723689F81CC6"),
-      "aB44YfzW24VDEJQ2UuLPV2PvqcPCSoLnL7y5M1EzhdW4LnK5xMS3"
+        publicKey -> addressCodec.encodeAccountPublicKey(publicKey),
+        publicKey -> addressCodec.decodeAccountPublicKey(publicKey),
+        unsignedByteArrayFromHex("023693F15967AE357D0327974AD46FE3C127113B1110D6044FD41E723689F81CC6"),
+        "aB44YfzW24VDEJQ2UuLPV2PvqcPCSoLnL7y5M1EzhdW4LnK5xMS3"
     );
   }
 
   private void testEncodeDecode(
-    Function<UnsignedByteArray, String> encoder,
-    Function<String, UnsignedByteArray> decoder,
-    UnsignedByteArray bytes,
-    String base58
+      Function<UnsignedByteArray, String> encoder,
+      Function<String, UnsignedByteArray> decoder,
+      UnsignedByteArray bytes,
+      String base58
   ) {
     String encoded = encoder.apply(bytes);
     assertThat(encoded).isEqualTo(base58);
 
     UnsignedByteArray decoded = decoder.apply(base58);
     assertThat(decoded).isEqualTo(bytes);
-  }
-
-  private static UnsignedByteArray unsignedByteArrayFromHex(String hexValue) {
-    byte[] decodedHex = BaseEncoding.base16().decode(hexValue);
-    return UnsignedByteArray.of(decodedHex);
   }
 }

@@ -22,26 +22,21 @@ public class AddressCodec {
     return INSTANCE;
   }
 
-  private static final class PrefixBytes {
-    static byte[] MAIN = new byte[] { 0x05, 0x44 };
-    static byte[] TEST = new byte[] { 0x04, (byte) 0x93};
-  }
-
   /**
    * Decodes a Base58Check encoded XRPL secret key seed value. Works for ed25519 and secp256k1 seeds.
    *
-   * @see "https://xrpl.org/cryptographic-keys.html#seed"
    * @param seed A Base58Check encoded XRPL keypair seed.
    * @return The decoded seed, seed type, and algorithm used to encode the seed.
+   * @see "https://xrpl.org/cryptographic-keys.html#seed"
    */
   public Decoded decodeSeed(final String seed) throws EncodingFormatException {
     Objects.requireNonNull(seed);
 
     return decode(
-      seed,
-      Lists.newArrayList(VersionType.ED25519, VersionType.SECP256K1),
-      Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
-      Optional.of(UnsignedInteger.valueOf(16))
+        seed,
+        Lists.newArrayList(VersionType.ED25519, VersionType.SECP256K1),
+        Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
+        Optional.of(UnsignedInteger.valueOf(16))
     );
   }
 
@@ -49,7 +44,7 @@ public class AddressCodec {
    * Encodes a byte array to a Base58Check {@link String} using the given {@link VersionType}.
    *
    * @param entropy An {@link UnsignedByteArray} containing the seed entropy to encode.
-   * @param type The cryptographic algorithm type to be encoded in the resulting seed.
+   * @param type    The cryptographic algorithm type to be encoded in the resulting seed.
    * @return A Base58Check encoded XRPL keypair seed.
    */
   public String encodeSeed(final UnsignedByteArray entropy, final VersionType type) {
@@ -79,9 +74,9 @@ public class AddressCodec {
   /**
    * Decode a Base58Check encoded XRPL AccountID.
    *
-   * @see "https://xrpl.org/base58-encodings.html"
    * @param accountId The Base58 encoded AccountID to be decoded.
    * @return An {@link UnsignedByteArray} containing the decoded AccountID.
+   * @see "https://xrpl.org/base58-encodings.html"
    */
   public UnsignedByteArray decodeAccountId(final String accountId) {
     Objects.requireNonNull(accountId);
@@ -104,9 +99,9 @@ public class AddressCodec {
   /**
    * Decode a Base58Check encoded XRPL Node Public Key.
    *
-   * @see "https://xrpl.org/base58-encodings.html"
    * @param publicKey The Base58 encoded public key to be decoded.
    * @return An {@link UnsignedByteArray} containing the decoded public key.
+   * @see "https://xrpl.org/base58-encodings.html"
    */
   public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
@@ -129,9 +124,9 @@ public class AddressCodec {
   /**
    * Decode a Base58Check encoded XRPL Account Public Key.
    *
-   * @see "https://xrpl.org/base58-encodings.html"
    * @param publicKey The Base58 encoded public key to be decoded.
    * @return An {@link UnsignedByteArray} containing the decoded public key.
+   * @see "https://xrpl.org/base58-encodings.html"
    */
   public UnsignedByteArray decodeAccountPublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
@@ -143,8 +138,8 @@ public class AddressCodec {
    * Converts an XRPL Classic Address and Destination Tag to an X-Address.
    *
    * @param classicAddress A {@link String} containing the classic address.
-   * @param tag The destination tag of the address.
-   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param tag            The destination tag of the address.
+   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
   public String classicAddressToXAddress(final String classicAddress, final UnsignedInteger tag, final boolean test) {
@@ -158,7 +153,7 @@ public class AddressCodec {
    * Converts an XRPL Classic Address with no Destination Tag to an X-Address.
    *
    * @param classicAddress A {@link String} containing the classic address.
-   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the classic address.
    */
   public String classicAddressToXAddress(final String classicAddress, final boolean test) {
@@ -171,8 +166,8 @@ public class AddressCodec {
    * Converts an XRPL Classic Address and and optional Destination Tag to an X-Address.
    *
    * @param classicAddress A {@link String} containing the classic address.
-   * @param tag The destination tag of the address.
-   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param tag            The destination tag of the address.
+   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
   public String classicAddressToXAddress(final String classicAddress, final Optional<UnsignedInteger> tag, final boolean test) {
@@ -187,8 +182,8 @@ public class AddressCodec {
    * Encodes and AccountID, destination tag, and the XRPL network into an X-Address.
    *
    * @param accountId An {@link UnsignedByteArray} containing an XRPL AccountID.
-   * @param tag (Optional) The destination tag of the account.
-   * @param test true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param tag       (Optional) The destination tag of the account.
+   * @param test      true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the AccountID and destination tag.
    */
   private String encodeXAddress(final UnsignedByteArray accountId, final Optional<UnsignedInteger> tag, final boolean test) {
@@ -210,15 +205,15 @@ public class AddressCodec {
     }
 
     UnsignedByteArray bytes = UnsignedByteArray.of(test ? PrefixBytes.TEST : PrefixBytes.MAIN)
-      .append(accountId)
-      .append(UnsignedByteArray.of(new byte[] {
-        (byte) flag,
-        (byte) (normalizedTag.intValue() & 0xff),
-        (byte) ((normalizedTag.intValue() >>> 8) & 0xff),
-        (byte) ((normalizedTag.intValue() >>> 16) & 0xff),
-        (byte) ((normalizedTag.intValue() >>> 24) & 0xff),
-        0, 0, 0, 0 // Four zero bytes reserved for 64-bit tags
-      }));
+        .append(accountId)
+        .append(UnsignedByteArray.of(new byte[] {
+            (byte) flag,
+            (byte) (normalizedTag.intValue() & 0xff),
+            (byte) ((normalizedTag.intValue() >>> 8) & 0xff),
+            (byte) ((normalizedTag.intValue() >>> 16) & 0xff),
+            (byte) ((normalizedTag.intValue() >>> 24) & 0xff),
+            0, 0, 0, 0 // Four zero bytes reserved for 64-bit tags
+        }));
 
     return Base58.encodeChecked(bytes.toByteArray());
   }
@@ -236,10 +231,10 @@ public class AddressCodec {
     String classicAddress = encodeAccountId(decodedXAddress.accountId());
 
     return ClassicAddress.builder()
-      .classicAddress(classicAddress)
-      .tag(decodedXAddress.tag())
-      .test(decodedXAddress.test())
-      .build();
+        .classicAddress(classicAddress)
+        .tag(decodedXAddress.tag())
+        .test(decodedXAddress.test())
+        .build();
   }
 
   /**
@@ -257,10 +252,10 @@ public class AddressCodec {
     UnsignedInteger tag = tagFromDecodedXAddress(decoded);
 
     return DecodedXAddress.builder()
-      .accountId(UnsignedByteArray.of(accountId))
-      .tag(tag)
-      .test(test)
-      .build();
+        .accountId(UnsignedByteArray.of(accountId))
+        .tag(tag)
+        .test(test)
+        .build();
   }
 
   private UnsignedInteger tagFromDecodedXAddress(final byte[] decoded) {
@@ -274,9 +269,9 @@ public class AddressCodec {
     if (flag == 1) {
       // Little-endian to big-endian
       return UnsignedInteger.valueOf(decoded[23] & 0xff)
-        .plus(UnsignedInteger.valueOf((decoded[24] & 0xff) * 0x100))
-        .plus(UnsignedInteger.valueOf((decoded[25]& 0xff) * 0x10000))
-        .plus(UnsignedInteger.valueOf(0x1000000).times(UnsignedInteger.valueOf(decoded[26] & 0xff)));
+          .plus(UnsignedInteger.valueOf((decoded[24] & 0xff) * 0x100))
+          .plus(UnsignedInteger.valueOf((decoded[25] & 0xff) * 0x10000))
+          .plus(UnsignedInteger.valueOf(0x1000000).times(UnsignedInteger.valueOf(decoded[26] & 0xff)));
     } else if (flag == 0) {
       byte[] endBytes = new byte[8];
       Arrays.fill(endBytes, (byte) 0);
@@ -303,7 +298,6 @@ public class AddressCodec {
     }
   }
 
-
   public boolean isValidXAddress(final String xAddress) {
     try {
       decodeXAddress(xAddress);
@@ -322,5 +316,10 @@ public class AddressCodec {
     }
 
     return true;
+  }
+
+  private static final class PrefixBytes {
+    static byte[] MAIN = new byte[] {0x05, 0x44};
+    static byte[] TEST = new byte[] {0x04, (byte) 0x93};
   }
 }

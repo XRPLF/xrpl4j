@@ -20,15 +20,15 @@ public class AddressBase58 extends Base58 {
   /**
    * Encodes the given {@link UnsignedByteArray} to a Base58Check {@link String}.
    *
-   * @param bytes An {@link UnsignedByteArray} of data to encode.
-   * @param versions A {@link List<Version>} which should be prepended to bytes.
+   * @param bytes          An {@link UnsignedByteArray} of data to encode.
+   * @param versions       A {@link List<Version>} which should be prepended to bytes.
    * @param expectedLength The expected length of the result.
    * @return The Base58Check encoded {@link String} of the given parameters.
    */
   public static String encode(
-    final UnsignedByteArray bytes,
-    final List<Version> versions,
-    final UnsignedInteger expectedLength
+      final UnsignedByteArray bytes,
+      final List<Version> versions,
+      final UnsignedInteger expectedLength
   ) {
     Objects.requireNonNull(bytes);
     Objects.requireNonNull(versions);
@@ -44,7 +44,7 @@ public class AddressBase58 extends Base58 {
   /**
    * Concatenates the given {@link Version} bytes with the given input bytes, and Base58Check encodes the result.
    *
-   * @param bytes The bytes to encode.
+   * @param bytes    The bytes to encode.
    * @param versions The {@link Version} to encode with.
    * @return A {@link String} containing the Base58Check encoded bytes.
    */
@@ -74,13 +74,13 @@ public class AddressBase58 extends Base58 {
    * Decode a Base58Check {@link String} with no specified {@link VersionType}s or expected length.
    *
    * @param base58Value The Base58Check encoded {@link String} to be decoded.
-   * @param version The {@link Version} to try decoding with.
+   * @param version     The {@link Version} to try decoding with.
    * @return A {@link Decoded} containing the decoded value and version.
    * @throws EncodingFormatException If the version bytes of the Base58 value are invalid.
    */
   public static Decoded decode(
-    final String base58Value,
-    final Version version
+      final String base58Value,
+      final Version version
   ) {
     Objects.requireNonNull(base58Value);
     Objects.requireNonNull(version);
@@ -91,15 +91,15 @@ public class AddressBase58 extends Base58 {
   /**
    * Decode a Base58Check {@link String} with no specified {@link VersionType}s.
    *
-   * @param base58Value The Base58Check encoded {@link String} to be decoded.
-   * @param versions A {@link List} of {@link Version}s to try decoding with.
+   * @param base58Value    The Base58Check encoded {@link String} to be decoded.
+   * @param versions       A {@link List} of {@link Version}s to try decoding with.
    * @param expectedLength The expected length of the decoded value.
    * @return A {@link Decoded} containing the decoded value and version.
    */
   public static Decoded decode(
-    final String base58Value,
-    final List<Version> versions,
-    final UnsignedInteger expectedLength
+      final String base58Value,
+      final List<Version> versions,
+      final UnsignedInteger expectedLength
   ) {
     Objects.requireNonNull(base58Value);
     Objects.requireNonNull(versions);
@@ -111,19 +111,19 @@ public class AddressBase58 extends Base58 {
   /**
    * Decode a Base58Check {@link String}.
    *
-   * @param base58Value The Base58Check encoded {@link String} to be decoded.
-   * @param versionTypes A {@link List} of {@link VersionType}s which can be associated with the result of this method.
-   * @param versions A {@link List} of {@link Version}s to try decoding with.
+   * @param base58Value    The Base58Check encoded {@link String} to be decoded.
+   * @param versionTypes   A {@link List} of {@link VersionType}s which can be associated with the result of this method.
+   * @param versions       A {@link List} of {@link Version}s to try decoding with.
    * @param expectedLength The expected length of the decoded value.
    * @return A {@link Decoded} containing the decoded value, version, and type.
    * @throws EncodingFormatException If more than one version is supplied without an expectedLength value present,
-   *  or if the version bytes of the Base58 value are invalid.
+   *                                 or if the version bytes of the Base58 value are invalid.
    */
   public static Decoded decode(
-    final String base58Value,
-    final List<VersionType> versionTypes,
-    final List<Version> versions,
-    final Optional<UnsignedInteger> expectedLength
+      final String base58Value,
+      final List<VersionType> versionTypes,
+      final List<Version> versions,
+      final Optional<UnsignedInteger> expectedLength
   ) throws EncodingFormatException {
     Objects.requireNonNull(base58Value);
     Objects.requireNonNull(versionTypes);
@@ -138,29 +138,29 @@ public class AddressBase58 extends Base58 {
 
     int versionLengthGuess = versions.get(0).getValues().length;
     int payloadLength = expectedLength
-      .map(UnsignedInteger::intValue)
-      .orElse(withoutSum.length - versionLengthGuess);
+        .map(UnsignedInteger::intValue)
+        .orElse(withoutSum.length - versionLengthGuess);
 
     byte[] versionBytes = Arrays.copyOfRange(
-      withoutSum,
-      0,
-      withoutSum.length - payloadLength
+        withoutSum,
+        0,
+        withoutSum.length - payloadLength
     );
 
     byte[] payload = Arrays.copyOfRange(
-      withoutSum,
-      withoutSum.length - payloadLength,
-      withoutSum.length
+        withoutSum,
+        withoutSum.length - payloadLength,
+        withoutSum.length
     );
 
     for (int i = 0; i < versions.size(); i++) {
       Version version = versions.get(i);
       if (Arrays.equals(versionBytes, version.getValuesAsBytes())) {
         return Decoded.builder()
-          .version(version)
-          .bytes(UnsignedByteArray.of(payload))
-          .type(i < versionTypes.size() ? Optional.of(versionTypes.get(i)) : Optional.empty())
-          .build();
+            .version(version)
+            .bytes(UnsignedByteArray.of(payload))
+            .type(i < versionTypes.size() ? Optional.of(versionTypes.get(i)) : Optional.empty())
+            .build();
       }
     }
 

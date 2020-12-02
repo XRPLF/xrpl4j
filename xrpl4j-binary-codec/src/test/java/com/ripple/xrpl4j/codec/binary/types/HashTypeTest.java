@@ -30,7 +30,7 @@ class HashTypeTest {
   @Test
   void encodeOutOfBounds() {
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> codec128.fromJSON(bytes(20)));
+      () -> codec128.fromJSON(bytes(20)));
   }
 
   private String bytes(int size) {

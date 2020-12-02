@@ -14,8 +14,6 @@ import java.util.function.Supplier;
 
 abstract public class SerializedType<T extends SerializedType<T>> {
 
-  private final UnsignedByteArray bytes;
-
   private static Map<String, Supplier<SerializedType>> typeMap =
       new ImmutableMap.Builder<String, Supplier<SerializedType>>()
           .put("AccountID", () -> new AccountIdType())
@@ -33,6 +31,11 @@ abstract public class SerializedType<T extends SerializedType<T>> {
           .put("UInt32", () -> new UInt32Type())
           .put("Vector256", () -> new Vector256Type())
           .build();
+  private final UnsignedByteArray bytes;
+
+  public SerializedType(UnsignedByteArray bytes) {
+    this.bytes = bytes;
+  }
 
   public static SerializedType getTypeByName(String name) {
     return typeMap.get(name).get();
@@ -45,10 +48,6 @@ abstract public class SerializedType<T extends SerializedType<T>> {
         .map(Map.Entry::getKey)
         .findAny()
         .orElse(null);
-  }
-
-  public SerializedType(UnsignedByteArray bytes) {
-    this.bytes = bytes;
   }
 
   public T fromParser(BinaryParser parser) {

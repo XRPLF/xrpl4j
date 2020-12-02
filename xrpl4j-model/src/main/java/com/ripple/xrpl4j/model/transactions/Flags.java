@@ -36,7 +36,7 @@ public class Flags {
   }
 
   /**
-   * Performs a bitwise OR on this {@link Flags} and another {@link Flags}
+   * Performs a bitwise OR on this {@link Flags} and another {@link Flags}.
    *
    * @param other The {@link Flags} to perform the OR with.
    * @return The {@link Flags} resulting from the OR operation.
@@ -46,7 +46,7 @@ public class Flags {
   }
 
   /**
-   * Performs a bitwise AND on this {@link Flags} and another {@link Flags}
+   * Performs a bitwise AND on this {@link Flags} and another {@link Flags}.
    *
    * @param other The {@link Flags} to perform the AND with.
    * @return The {@link Flags} resulting from the AND operation.
@@ -68,12 +68,12 @@ public class Flags {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
     }
 
-    Flags flags = (Flags) o;
+    Flags flags = (Flags) obj;
     return getValue() == flags.getValue();
   }
 
@@ -142,33 +142,8 @@ public class Flags {
     public static final PaymentFlags PARTIAL_PAYMENT_FLAGS = new PaymentFlags(0x00020000L);
     public static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
-    /**
-     * Flag indicated to only use paths included in the {@link com.ripple.xrpl4j.model.transactions.Payment#paths()}
-     * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
-     */
-    public boolean tfNoDirectRipple() {
-      return this.isSet(PaymentFlags.NO_DIRECT_RIPPLE);
-    }
-
-    /**
-     * If the specified {@link com.ripple.xrpl4j.model.transactions.Payment#amount()} cannot be sent without spending
-     * more than {@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()}, reduce the received amount instead of
-     * failing outright.
-     *
-     * @see "https://xrpl.org/partial-payments.html"
-     */
-    public boolean tfPartialPayment() {
-      return this.isSet(PaymentFlags.PARTIAL_PAYMENT_FLAGS);
-    }
-
-    /**
-     * Only take paths where all the conversions have an input:output ratio that is equal or better than the ratio of
-     * {@link com.ripple.xrpl4j.model.transactions.Payment#amount()}:{@link com.ripple.xrpl4j.model.transactions.Payment#sendMax()}.
-     *
-     * @return
-     */
-    public boolean tfLimitQuality() {
-      return this.isSet(PaymentFlags.LIMIT_QUALITY);
+    private PaymentFlags(long value) {
+      super(value);
     }
 
     public static PaymentFlags.Builder builder() {
@@ -180,13 +155,42 @@ public class Flags {
     }
 
     private static PaymentFlags of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment,
-        boolean tfLimitQuality) {
+                                   boolean tfLimitQuality) {
       return new PaymentFlags(of(
           tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
           tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
           tfPartialPayment ? PARTIAL_PAYMENT_FLAGS : UNSET,
           tfLimitQuality ? LIMIT_QUALITY : UNSET
       ).getValue());
+    }
+
+    /**
+     * Flag indicated to only use paths included in the {@link Payment#paths()}
+     * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     */
+    public boolean tfNoDirectRipple() {
+      return this.isSet(PaymentFlags.NO_DIRECT_RIPPLE);
+    }
+
+    /**
+     * If the specified {@link Payment#amount()} cannot be sent without spending
+     * more than {@link Payment#sendMax()}, reduce the received amount instead of
+     * failing outright.
+     *
+     * @see "https://xrpl.org/partial-payments.html"
+     */
+    public boolean tfPartialPayment() {
+      return this.isSet(PaymentFlags.PARTIAL_PAYMENT_FLAGS);
+    }
+
+    /**
+     * Only take paths where all the conversions have an input:output ratio that is equal or better than the ratio of
+     * {@link Payment#amount()}:{@link Payment#sendMax()}.
+     *
+     * @return
+     */
+    public boolean tfLimitQuality() {
+      return this.isSet(PaymentFlags.LIMIT_QUALITY);
     }
 
     /**
@@ -222,10 +226,6 @@ public class Flags {
       public PaymentFlags build() {
         return PaymentFlags.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
       }
-    }
-
-    private PaymentFlags(long value) {
-      super(value);
     }
   }
 
@@ -292,8 +292,43 @@ public class Flags {
       super(value);
     }
 
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static AccountRootFlags of(long value) {
+      return new AccountRootFlags(value);
+    }
+
+    public static AccountRootFlags of(
+        boolean tfFullyCanonicalSig,
+        boolean lsfDefaultRipple,
+        boolean lsfDepositAuth,
+        boolean lsfDisableMaster,
+        boolean lsfDisallowXrp,
+        boolean lsfGlobalFreeze,
+        boolean lsfNoFreeze,
+        boolean lsfPasswordSpent,
+        boolean lsfRequireAuth,
+        boolean lsfRequireDestTag
+    ) {
+      return new AccountRootFlags(
+          Flags.of(
+              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+              lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : UNSET,
+              lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : UNSET,
+              lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : UNSET,
+              lsfDisallowXrp ? AccountRootFlags.DISALLOW_XRP : UNSET,
+              lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE : UNSET,
+              lsfNoFreeze ? AccountRootFlags.NO_FREEZE : UNSET,
+              lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT : UNSET,
+              lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH : UNSET,
+              lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG : UNSET
+          ).getValue());
+    }
+
     /**
-     * Flag indicated to only use paths included in the {@link com.ripple.xrpl4j.model.transactions.Payment#paths()}
+     * Flag indicated to only use paths included in the {@link Payment#paths()}
      * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
      */
     public boolean lsfDefaultRipple() {
@@ -318,7 +353,7 @@ public class Flags {
     /**
      * Client applications should not send XRP to this account. Not enforced by rippled.
      */
-    public boolean lsfDisallowXRP() {
+    public boolean lsfDisallowXrp() {
       return this.isSet(AccountRootFlags.DISALLOW_XRP);
     }
 
@@ -357,41 +392,6 @@ public class Flags {
       return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
     }
 
-    public static Builder builder() {
-      return new Builder();
-    }
-
-    public static AccountRootFlags of(long value) {
-      return new AccountRootFlags(value);
-    }
-
-    public static AccountRootFlags of(
-        boolean tfFullyCanonicalSig,
-        boolean lsfDefaultRipple,
-        boolean lsfDepositAuth,
-        boolean lsfDisableMaster,
-        boolean lsfDisallowXRP,
-        boolean lsfGlobalFreeze,
-        boolean lsfNoFreeze,
-        boolean lsfPasswordSpent,
-        boolean lsfRequireAuth,
-        boolean lsfRequireDestTag
-    ) {
-      return new AccountRootFlags(
-          Flags.of(
-              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-              lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : UNSET,
-              lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : UNSET,
-              lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : UNSET,
-              lsfDisallowXRP ? AccountRootFlags.DISALLOW_XRP : UNSET,
-              lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE : UNSET,
-              lsfNoFreeze ? AccountRootFlags.NO_FREEZE : UNSET,
-              lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT : UNSET,
-              lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH : UNSET,
-              lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG : UNSET
-          ).getValue());
-    }
-
     /**
      * A builder class for {@link PaymentFlags} flags.
      */
@@ -401,7 +401,7 @@ public class Flags {
       private boolean lsfDefaultRipple = false;
       private boolean lsfDepositAuth = false;
       private boolean lsfDisableMaster = false;
-      private boolean lsfDisallowXRP = false;
+      private boolean lsfDisallowXrp = false;
       private boolean lsfGlobalFreeze = false;
       private boolean lsfNoFreeze = false;
       private boolean lsfPasswordSpent = false;
@@ -428,8 +428,8 @@ public class Flags {
         return this;
       }
 
-      public AccountRootFlags.Builder disallowXRP(boolean value) {
-        this.lsfDisallowXRP = value;
+      public AccountRootFlags.Builder disallowXrp(boolean value) {
+        this.lsfDisallowXrp = value;
         return this;
       }
 
@@ -461,7 +461,7 @@ public class Flags {
       public AccountRootFlags build() {
         return AccountRootFlags.of(
             tfFullyCanonicalSig,
-            lsfDefaultRipple, lsfDepositAuth, lsfDisableMaster, lsfDisallowXRP, lsfGlobalFreeze, lsfNoFreeze,
+            lsfDefaultRipple, lsfDepositAuth, lsfDisableMaster, lsfDisallowXrp, lsfGlobalFreeze, lsfNoFreeze,
             lsfPasswordSpent, lsfRequireAuth, lsfRequireDestTag
         );
       }
@@ -490,6 +490,7 @@ public class Flags {
     public boolean lsfOneOwnerCount() {
       return this.isSet(SignerListFlags.ONE_OWNER_COUNT);
     }
+
     public static class Builder {
 
       boolean lsfOneOwnerCount = false;
@@ -498,6 +499,7 @@ public class Flags {
         this.lsfOneOwnerCount = value;
         return this;
       }
+
       public SignerListFlags build() {
         return SignerListFlags.of(lsfOneOwnerCount);
       }
@@ -515,30 +517,30 @@ public class Flags {
     public static final TrustSetFlags SET_FREEZE = new TrustSetFlags(0x00100000);
     public static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
 
-    public static TrustSetFlags.Builder builder() {
-      return new TrustSetFlags.Builder();
-    }
-
     private TrustSetFlags(long value) {
       super(value);
     }
 
+    public static TrustSetFlags.Builder builder() {
+      return new TrustSetFlags.Builder();
+    }
+
     private static TrustSetFlags of(
-      boolean tfFullyCanonicalSig,
-      boolean tfSetfAuth,
-      boolean tfSetNoRipple,
-      boolean tfClearNoRipple,
-      boolean tfSetFreeze,
-      boolean tfClearFreeze
+        boolean tfFullyCanonicalSig,
+        boolean tfSetfAuth,
+        boolean tfSetNoRipple,
+        boolean tfClearNoRipple,
+        boolean tfSetFreeze,
+        boolean tfClearFreeze
     ) {
       return new TrustSetFlags(
-        Flags.of(
-          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfSetfAuth ? SET_F_AUTH : UNSET,
-          tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
-          tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
-          tfSetFreeze ? SET_FREEZE : UNSET,
-          tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
+          Flags.of(
+              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+              tfSetfAuth ? SET_F_AUTH : UNSET,
+              tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
+              tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
+              tfSetFreeze ? SET_FREEZE : UNSET,
+              tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
       );
     }
 
@@ -606,12 +608,12 @@ public class Flags {
 
       public TrustSetFlags build() {
         return TrustSetFlags.of(
-          tfFullyCanonicalSig,
-          tfSetfAuth,
-          tfSetNoRipple,
-          tfClearNoRipple,
-          tfSetFreeze,
-          tfClearFreeze
+            tfFullyCanonicalSig,
+            tfSetfAuth,
+            tfSetNoRipple,
+            tfClearNoRipple,
+            tfSetFreeze,
+            tfClearFreeze
         );
       }
     }
@@ -628,32 +630,32 @@ public class Flags {
     public static final RippleStateFlags LOW_FREEZE = new RippleStateFlags(0x00400000);
     public static final RippleStateFlags HIGH_FREEZE = new RippleStateFlags(0x00800000);
 
-    private static RippleStateFlags of(
-      boolean lsfLowReserve,
-      boolean lsfHighReserve,
-      boolean lsfLowAuth,
-      boolean lsfHighAuth,
-      boolean lsfLowNoRipple,
-      boolean lsfHighNoRipple,
-      boolean lsfLowFreeze,
-      boolean lsfHighFreeze
-    ) {
-      return new RippleStateFlags(
-        Flags.of(
-          lsfLowReserve ? LOW_RESERVE : UNSET,
-          lsfHighReserve ? HIGH_RESERVE : UNSET,
-          lsfLowAuth ? LOW_AUTH : UNSET,
-          lsfHighAuth ? HIGH_AUTH : UNSET,
-          lsfLowNoRipple ? LOW_NO_RIPPLE : UNSET,
-          lsfHighNoRipple ? HIGH_NO_RIPPLE : UNSET,
-          lsfLowFreeze ? LOW_FREEZE : UNSET,
-          lsfHighFreeze ? HIGH_FREEZE : UNSET
-        ).getValue()
-      );
-    }
-
     private RippleStateFlags(long value) {
       super(value);
+    }
+
+    private static RippleStateFlags of(
+        boolean lsfLowReserve,
+        boolean lsfHighReserve,
+        boolean lsfLowAuth,
+        boolean lsfHighAuth,
+        boolean lsfLowNoRipple,
+        boolean lsfHighNoRipple,
+        boolean lsfLowFreeze,
+        boolean lsfHighFreeze
+    ) {
+      return new RippleStateFlags(
+          Flags.of(
+              lsfLowReserve ? LOW_RESERVE : UNSET,
+              lsfHighReserve ? HIGH_RESERVE : UNSET,
+              lsfLowAuth ? LOW_AUTH : UNSET,
+              lsfHighAuth ? HIGH_AUTH : UNSET,
+              lsfLowNoRipple ? LOW_NO_RIPPLE : UNSET,
+              lsfHighNoRipple ? HIGH_NO_RIPPLE : UNSET,
+              lsfLowFreeze ? LOW_FREEZE : UNSET,
+              lsfHighFreeze ? HIGH_FREEZE : UNSET
+          ).getValue()
+      );
     }
 
     public boolean lsfLowReserve() {
@@ -740,14 +742,14 @@ public class Flags {
 
       public RippleStateFlags build() {
         return RippleStateFlags.of(
-          lsfLowReserve,
-          lsfHighReserve,
-          lsfLowAuth,
-          lsfHighAuth,
-          lsfLowNoRipple,
-          lsfHighNoRipple,
-          lsfLowFreeze,
-          lsfHighFreeze
+            lsfLowReserve,
+            lsfHighReserve,
+            lsfLowAuth,
+            lsfHighAuth,
+            lsfLowNoRipple,
+            lsfHighNoRipple,
+            lsfLowFreeze,
+            lsfHighFreeze
         );
       }
     }
@@ -763,6 +765,10 @@ public class Flags {
     private static final OfferFlags TF_FILL_OR_KILL = new OfferFlags(0x00040000L);
     private static final OfferFlags TF_SELL = new OfferFlags(0x00080000L);
 
+    private OfferFlags(long value) {
+      super(value);
+    }
+
     public static OfferFlags.Builder builder() {
       return new OfferFlags.Builder();
     }
@@ -772,7 +778,7 @@ public class Flags {
     }
 
     private static OfferFlags of(boolean tfFullyCanonicalSig, boolean tfPassive, boolean tfImmediateOrCancel,
-                                   boolean tfFillOrKill, boolean tfSell) {
+                                 boolean tfFillOrKill, boolean tfSell) {
       long value = Flags.of(
           tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
           tfPassive ? TF_PASSIVE : UNSET,
@@ -781,10 +787,6 @@ public class Flags {
           tfSell ? TF_SELL : UNSET
       ).getValue();
       return new OfferFlags(value);
-    }
-
-    private OfferFlags(long value) {
-      super(value);
     }
 
     /**
@@ -800,6 +802,7 @@ public class Flags {
      * it only tries to match existing offers in the ledger. If the offer cannot match any offers immediately,
      * it executes "successfully" without trading any currency. In this case, the transaction has the result code
      * tesSUCCESS, but creates no Offer objects in the ledger.
+     *
      * @return true if enabled
      */
     public boolean tfImmediateOrCancel() {
@@ -811,6 +814,7 @@ public class Flags {
      * the entire TakerPays quantity can be obtained. If the fix1578 amendment is enabled and the offer cannot be
      * executed when placed, the transaction has the result code tecKILLED; otherwise, the transaction uses the result
      * code tesSUCCESS even when it was killed without trading any currency.
+     *
      * @return true if enabled
      */
     public boolean tfFillOrKill() {
@@ -819,6 +823,7 @@ public class Flags {
 
     /**
      * Exchange the entire TakerGets amount, even if it means obtaining more than the TakerPays amount in exchange.
+     *
      * @return true if enabled
      */
     public boolean tfSell() {
@@ -889,11 +894,11 @@ public class Flags {
 
     private static PaymentChannelClaimFlags of(boolean tfFullyCanonicalSig, boolean tfRenew, boolean tfClose) {
       return new PaymentChannelClaimFlags(
-        TransactionFlags.of(
-          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfRenew ? RENEW : UNSET,
-          tfClose ? CLOSE: UNSET
-        ).getValue()
+          TransactionFlags.of(
+              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+              tfRenew ? RENEW : UNSET,
+              tfClose ? CLOSE : UNSET
+          ).getValue()
       );
     }
 

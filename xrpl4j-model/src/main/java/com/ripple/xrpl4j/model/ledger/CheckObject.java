@@ -96,8 +96,9 @@ public interface CheckObject extends LedgerObject {
   UnsignedInteger previousTransactionLedgerSequence();
 
   /**
-   * The maximum amount of currency this {@link CheckObject} can debit the {@link CheckObject#account()}. If the {@link CheckObject}
-   * is successfully cashed, the {@link CheckObject#destination()} is credited in the same currency for up to this amount.
+   * The maximum amount of currency this {@link CheckObject} can debit the {@link CheckObject#account()}.
+   * If the {@link CheckObject} is successfully cashed, the {@link CheckObject#destination()} is credited
+   * in the same currency for up to this amount.
    */
   @JsonProperty("SendMax")
   CurrencyAmount sendMax();

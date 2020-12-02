@@ -35,8 +35,8 @@ public class AccountIdType extends Hash160Type {
       return new AccountIdType();
     }
     return HEX_REGEX.matcher(textValue).matches()
-        ? new AccountIdType(UnsignedByteArray.fromHex(textValue))
-        : new AccountIdType(addressCodec.decodeAccountId(textValue));
+      ? new AccountIdType(UnsignedByteArray.fromHex(textValue))
+      : new AccountIdType(addressCodec.decodeAccountId(textValue));
   }
 
   @Override

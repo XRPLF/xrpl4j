@@ -72,7 +72,7 @@ public class PathSetType extends SerializedType<PathSetType> {
     BinaryParser parser = new BinaryParser(this.toString());
     List<JsonNode> values = new ArrayList<>();
 
-    while(!parser.end()) {
+    while (!parser.end()) {
       values.add(new PathType().fromParser(parser).toJSON());
       parser.skip(1);
     }

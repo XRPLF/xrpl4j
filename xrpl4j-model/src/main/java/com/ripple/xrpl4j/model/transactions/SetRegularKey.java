@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * A SetRegularKey transaction assigns, changes, or removes the regular key pair associated with an account.
  *
- * You can protect your account by assigning a regular key pair to it and using it instead of the master key
+ * <p>You can protect your account by assigning a regular key pair to it and using it instead of the master key
  * pair to sign transactions whenever possible. If your regular key pair is compromised, but your master key
  * pair is not, you can use a SetRegularKey transaction to regain control of your account.
  */

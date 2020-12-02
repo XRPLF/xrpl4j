@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Request parameters for a ripple_path_find rippled method call.
  *
- * This method is only enabled in the JSON RPC API.
+ * <p>This method is only enabled in the JSON RPC API.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableRipplePathFindRequestParams.class)
@@ -42,7 +42,7 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   /**
    * {@link CurrencyAmount} that the destination account would receive in a transaction.
    *
-   * Special case: You can specify "-1" (for XRP) or provide "-1" as the contents of
+   * <p>Special case: You can specify "-1" (for XRP) or provide "-1" as the contents of
    * {@link IssuedCurrencyAmount#value()} (for non-XRP currencies). This requests a path to deliver as much as
    * possible, while spending no more than the amount specified in send_max (if provided).
    */
@@ -58,7 +58,7 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   /**
    * A {@link List<PathCurrency>} that the source account might want to spend.
    *
-   * Cannot contain more than 18 source currencies.
+   * <p>Cannot contain more than 18 source currencies.
    */
   @JsonProperty("source_currencies")
   List<PathCurrency> sourceCurrencies();
@@ -72,7 +72,7 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   /**
    * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
    *
-   * Defaults to "current".
+   * <p>Defaults to "current".
    */
   @JsonProperty("ledger_index")
   @JsonSerialize(using = LedgerIndexSerializer.class)

@@ -31,7 +31,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
   /**
    * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
    *
-   * Defaults to "current".
+   * <p>Defaults to "current".
    */
   @JsonProperty("ledger_index")
   @JsonSerialize(using = LedgerIndexSerializer.class)
@@ -44,9 +44,9 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * If true, return full information on the entire ledger. Ignored if you did not specify {@link #ledgerHash()}.
    * Defaults to false. (Equivalent to enabling transactions, accounts, and expand.)
    *
-   * Caution: This is a very large amount of data -- on the order of several hundred megabytes!
+   * <p>Caution: This is a very large amount of data -- on the order of several hundred megabytes!
    *
-   * Note: You must be a rippled Admin to set to true.
+   * <p>Note: You must be a rippled Admin to set to true.
    */
   @Value.Default
   default boolean full() {
@@ -57,9 +57,9 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * If true, return information on accounts in the ledger. Ignored if you did not specify {@link #ledgerHash()}.
    * Defaults to false.
    *
-   * Caution: This returns a very large amount of data!
+   * <p>Caution: This returns a very large amount of data!
    *
-   * Note: You must be a rippled Admin to set to true.
+   * <p>Note: You must be a rippled Admin to set to true.
    */
   @Value.Default
   default boolean accounts() {

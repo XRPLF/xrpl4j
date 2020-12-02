@@ -35,12 +35,12 @@ public interface FaucetClient {
 
     final ObjectMapper objectMapper = new ObjectMapper();
     return Feign.builder()
-      .encoder(new JacksonEncoder(objectMapper))
-      .decode404()
-      // rate limiting will return a 503 status that can be retried
-      .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
-      .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-      .target(FaucetClient.class, faucetUrl.toString());
+        .encoder(new JacksonEncoder(objectMapper))
+        .decode404()
+        // rate limiting will return a 503 status that can be retried
+        .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
+        .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
+        .target(FaucetClient.class, faucetUrl.toString());
   }
 
   /**
@@ -50,8 +50,8 @@ public interface FaucetClient {
    */
   @RequestLine("POST /accounts")
   @Headers( {
-      HEADER_ACCEPT + ": " + APPLICATION_JSON,
-      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+    HEADER_ACCEPT + ": " + APPLICATION_JSON,
+    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
   ImmutableFaucetAccountResponse generateFaucetAccount();
 
@@ -62,8 +62,8 @@ public interface FaucetClient {
    */
   @RequestLine("POST /accounts")
   @Headers( {
-      HEADER_ACCEPT + ": " + APPLICATION_JSON,
-      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+    HEADER_ACCEPT + ": " + APPLICATION_JSON,
+    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
   ImmutableFaucetAccountResponse fundAccount(FundAccountRequest request);
 

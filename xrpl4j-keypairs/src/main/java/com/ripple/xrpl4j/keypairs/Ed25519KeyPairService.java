@@ -24,14 +24,14 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
 
   private static final Ed25519KeyPairService INSTANCE = new Ed25519KeyPairService(AddressCodec.getInstance());
 
-  public static Ed25519KeyPairService getInstance() {
-    return INSTANCE;
-  }
-
   Ed25519KeyPairService(final AddressCodec addressCodec) {
     Objects.requireNonNull(addressCodec);
     this.addressCodec = addressCodec;
     this.signer = new Ed25519Signer();
+  }
+
+  public static Ed25519KeyPairService getInstance() {
+    return INSTANCE;
   }
 
   @Override
@@ -60,21 +60,21 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
     // Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
     UnsignedByte prefix = UnsignedByte.of(0xED);
     UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(prefix)
-      .append(UnsignedByteArray.of(privateKey.getEncoded()));
+        .append(UnsignedByteArray.of(privateKey.getEncoded()));
     UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(prefix)
-      .append(UnsignedByteArray.of(publicKey.getEncoded()));
+        .append(UnsignedByteArray.of(publicKey.getEncoded()));
 
     return KeyPair.builder()
-      .privateKey(prefixedPrivateKey.hexValue())
-      .publicKey(prefixedPublicKey.hexValue())
-      .build();
+        .privateKey(prefixedPrivateKey.hexValue())
+        .publicKey(prefixedPublicKey.hexValue())
+        .build();
   }
 
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(privateKey.substring(2)), // Remove ED prefix byte
-      0
+        BaseEncoding.base16().decode(privateKey.substring(2)), // Remove ED prefix byte
+        0
     );
 
     signer.reset();
@@ -92,8 +92,8 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     Ed25519PublicKeyParameters publicKeyParameters = new Ed25519PublicKeyParameters(
-      BaseEncoding.base16().decode(publicKey.substring(2)), // Remove ED prefix byte
-      0
+        BaseEncoding.base16().decode(publicKey.substring(2)), // Remove ED prefix byte
+        0
     );
 
     signer.reset();

@@ -27,8 +27,8 @@ public interface AccountSet extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
-   * <p>
-   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    */
   @JsonProperty("Flags")
@@ -39,18 +39,18 @@ public interface AccountSet extends Transaction {
 
   /**
    * Unique identifier of a flag to disable for this account.
-   * <p>
-   * Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be set in
-   * conjunction with the {@link AccountSet#flags()} field.
+   *
+   * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should
+   * not be set in conjunction with the {@link AccountSet#flags()} field.
    */
   @JsonProperty("ClearFlag")
   Optional<AccountSetFlag> clearFlag();
 
   /**
    * Unique identifier of a flag to enable for this account.
-   * <p>
-   * Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be set in
-   * conjunction with the {@link AccountSet#flags()} field.
+   *
+   * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be set
+   * in conjunction with the {@link AccountSet#flags()} field.
    */
   @JsonProperty("SetFlag")
   Optional<AccountSetFlag> setFlag();
@@ -58,9 +58,9 @@ public interface AccountSet extends Transaction {
   /**
    * The hex string of the lowercase ASCII of the domain for the account. For example, the domain example.com would be
    * represented as "6578616D706C652E636F6D".
-   * <p>
-   * To remove the Domain field from an account, send an {@link AccountSet} with the {@link AccountSet#domain()} set to
-   * an empty string.
+   *
+   * <p>To remove the Domain field from an account, send an {@link AccountSet} with the {@link AccountSet#domain()}
+   * set to an empty string.
    */
   @JsonProperty("Domain")
   Optional<String> domain();
@@ -119,8 +119,8 @@ public interface AccountSet extends Transaction {
     tickSize()
         .ifPresent(tickSize ->
             Preconditions.checkArgument(tickSize.equals(UnsignedInteger.ZERO) ||
-                    (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0
-                        && tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
+                    (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
+                        tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
                 "tickSize must be between 3 and 15 inclusive or be equal to 0.")
         );
 

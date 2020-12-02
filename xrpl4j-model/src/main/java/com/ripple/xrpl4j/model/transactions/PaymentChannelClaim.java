@@ -12,7 +12,7 @@ import java.util.Optional;
  * Claim XRP from a payment channel, adjust the payment channel's expiration, or both. This transaction can be
  * used differently depending on the transaction sender's role in the specified channel:
  *
- * The source address of a channel can:
+ * <p>The source address of a channel can:
  * <ul>
  *  <li>Send XRP from the channel to the destination with or without a signed Claim.</li>
  *  <li>Set the channel to expire as soon as the channel's SettleDelay has passed.</li>
@@ -21,13 +21,15 @@ import java.util.Optional;
  *   close the channel immediately if the channel has XRP remaining.</li>
  * </ul>
  *
- * The destination address of a channel can:
+ * <p>The destination address of a channel can:
  * <ul>
  *  <li>Receive XRP from the channel using a signed Claim.</li>
- *  <li>Close the channel immediately after processing a Claim, refunding any unclaimed XRP to the channel's source.</li>
+ *  <li>
+ *    Close the channel immediately after processing a Claim, refunding any unclaimed XRP to the channel's source.
+ *  </li>
  * </ul>
  *
- * Any address sending this transaction can:
+ * <p>Any address sending this transaction can:
  * <ul>
  * <li>Cause a channel to be closed if its Expiration or CancelAfter time is older than the previous ledger's
  *  close time. Any validly-formed PaymentChannelClaim transaction has this effect regardless of the contents

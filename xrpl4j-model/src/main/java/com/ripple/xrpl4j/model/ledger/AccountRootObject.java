@@ -44,7 +44,7 @@ public interface AccountRootObject extends LedgerObject {
   Address account();
 
   /**
-   * The account's current XRP balance in drops, represented as an {@link XrpCurrencyAmount}
+   * The account's current XRP balance in drops, represented as an {@link XrpCurrencyAmount}.
    */
   @JsonProperty("Balance")
   XrpCurrencyAmount balance();

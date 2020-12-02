@@ -3,10 +3,10 @@ package com.ripple.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
-import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import com.ripple.xrpl4j.model.transactions.Flags.AccountRootFlags;
@@ -90,7 +90,7 @@ public class AccountSetIT extends AbstractIT {
   //////////////////////
 
   private void assertSetFlag(
-    final Wallet wallet, UnsignedInteger sequence, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
+      final Wallet wallet, UnsignedInteger sequence, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
   ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
@@ -107,34 +107,34 @@ public class AccountSetIT extends AbstractIT {
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-      "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transaction().hash().orElse("n/a")
+        "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
+        accountSetFlag, accountRootFlag, response.transaction().hash().orElse("n/a")
     );
 
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
-      accountInfoResult -> {
-        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-        return accountInfoResult.accountData().flags().isSet(accountRootFlag);
-      });
+        () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+        accountInfoResult -> {
+          logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+          return accountInfoResult.accountData().flags().isSet(accountRootFlag);
+        });
   }
 
   private void assertClearFlag(
-    final Wallet wallet, UnsignedInteger sequence, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
+      final Wallet wallet, UnsignedInteger sequence, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
   ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
-      .sequence(sequence)
-      .clearFlag(accountSetFlag)
-      .signingPublicKey(wallet.publicKey())
-      .build();
+        .account(wallet.classicAddress())
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(sequence)
+        .clearFlag(accountSetFlag)
+        .signingPublicKey(wallet.publicKey())
+        .build();
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
@@ -145,10 +145,10 @@ public class AccountSetIT extends AbstractIT {
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
-      accountInfoResult -> {
-        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-        return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
-      });
+        () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+        accountInfoResult -> {
+          logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+          return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
+        });
   }
 }

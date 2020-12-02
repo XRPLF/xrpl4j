@@ -15,6 +15,7 @@ public class Base58 {
   public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz".toCharArray();
 
   private static final int[] INDEXES = new int[255];
+
   static {
     Arrays.fill(INDEXES, -1);
     for (int i = 0; i < ALPHABET.length; i++) {
@@ -140,15 +141,17 @@ public class Base58 {
    */
   public static byte[] decodeChecked(String input) throws EncodingFormatException {
     byte[] tmp = decode(input);
-    if (tmp.length < 4)
+    if (tmp.length < 4) {
       throw new EncodingFormatException("Input must be longer than 3 characters.");
+    }
     byte[] bytes = copyOfRange(tmp, 0, tmp.length - 4);
     byte[] checksum = copyOfRange(tmp, tmp.length - 4, tmp.length);
 
     tmp = Utils.doubleDigest(bytes);
     byte[] hash = copyOfRange(tmp, 0, 4);
-    if (!Arrays.equals(checksum, hash))
+    if (!Arrays.equals(checksum, hash)) {
       throw new EncodingFormatException("Checksum does not validate");
+    }
 
     return bytes;
   }

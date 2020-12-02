@@ -110,9 +110,10 @@ public interface EscrowObject extends LedgerObject {
   /**
    * A hint indicating which page of the owner directory links to this object, in case the directory consists of
    * multiple pages.
-   * <p>
-   * Note: The object does not contain a direct link to the owner directory containing it, since that value can be
-   * derived from the Account.
+   *
+   *
+   * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
+   * derived from the Account.</p>
    */
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();

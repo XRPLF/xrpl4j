@@ -32,6 +32,7 @@ public interface QueueData {
   /**
    * Whether a transaction in the queue changes this address's ways of authorizing transactions. If true,
    * this address can queue no further transactions until that transaction has been executed or dropped from the queue.
+   *
    * @return
    */
   @JsonProperty("auth_change_queued")

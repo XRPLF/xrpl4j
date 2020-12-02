@@ -59,7 +59,7 @@ public class Vector256Type extends SerializedType<Vector256Type> {
   public JsonNode toJSON() {
     BinaryParser parser = new BinaryParser(this.toString());
     List<JsonNode> values = new ArrayList<>();
-    while(!parser.end()) {
+    while (!parser.end()) {
       UnsignedByteArray bytes = parser.read(32);
       values.add(new TextNode(bytes.hexValue()));
     }

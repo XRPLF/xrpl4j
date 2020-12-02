@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * Market interface for XRP Ledger Objects.
- *
  * TODO: pull common fields up.
  */
 @JsonDeserialize(using = LedgerObjectDeserializer.class)

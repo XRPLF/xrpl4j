@@ -21,8 +21,8 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
 
   static AccountInfoRequestParams of(Address account) {
     return builder()
-        .account(account)
-        .build();
+      .account(account)
+      .build();
   }
 
   Address account();
@@ -35,7 +35,9 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
   @Value.Default
   default String ledgerIndex() {
     return "current";
-  };
+  }
+
+  ;
 
   @Value.Default
   default boolean strict() {

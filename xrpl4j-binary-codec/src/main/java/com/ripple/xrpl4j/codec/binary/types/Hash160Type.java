@@ -12,9 +12,8 @@ import java.util.regex.Pattern;
  */
 public class Hash160Type extends HashType<Hash160Type> {
 
-  protected static final Pattern HEX_REGEX = Pattern.compile("^[A-Z0-9]{40}$");
-
   public static final int WIDTH = 20;
+  protected static final Pattern HEX_REGEX = Pattern.compile("^[A-Z0-9]{40}$");
 
   public Hash160Type() {
     this(UnsignedByteArray.ofSize(WIDTH));

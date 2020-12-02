@@ -17,6 +17,13 @@ import java.util.stream.Stream;
 
 abstract class BaseSerializerTypeTest {
 
+  protected static Stream<Arguments> dataDrivenFixturesForType(SerializedType serializedType) throws IOException {
+    return FixtureUtils.getDataDrivenFixtures().valuesTests()
+        .stream()
+        .filter(fixture -> fixture.type().equals(SerializedType.getNameByType(serializedType)))
+        .map(Arguments::of);
+  }
+
   abstract SerializedType getType();
 
   @ParameterizedTest
@@ -29,13 +36,6 @@ abstract class BaseSerializerTypeTest {
     } else {
       assertThat(serializedType.fromJSON(value).toHex()).isEqualTo(fixture.expectedHex());
     }
-  }
-
-  protected static Stream<Arguments> dataDrivenFixturesForType(SerializedType serializedType) throws IOException {
-    return FixtureUtils.getDataDrivenFixtures().valuesTests()
-        .stream()
-        .filter(fixture -> fixture.type().equals(SerializedType.getNameByType(serializedType)))
-        .map(Arguments::of);
   }
 
   private JsonNode getValue(ValueTest test) {

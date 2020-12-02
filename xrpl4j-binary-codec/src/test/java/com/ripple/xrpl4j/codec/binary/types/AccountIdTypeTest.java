@@ -12,13 +12,13 @@ class AccountIdTypeTest {
   @Test
   void decode() {
     assertThat(codec.fromHex("5E7B112523F68D2F5E879DB4EAC51C6698A69304").toJSON().asText())
-        .isEqualTo("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+      .isEqualTo("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
   }
 
   @Test
   void encode() {
     assertThat(codec.fromJSON(DOUBLE_QUOTE + "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59" + DOUBLE_QUOTE).toHex())
-        .isEqualTo("5E7B112523F68D2F5E879DB4EAC51C6698A69304");
+      .isEqualTo("5E7B112523F68D2F5E879DB4EAC51C6698A69304");
   }
 
 }

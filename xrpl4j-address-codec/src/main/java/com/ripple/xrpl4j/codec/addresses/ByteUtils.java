@@ -14,6 +14,7 @@ public class ByteUtils {
 
   /**
    * Converts an int to a byte array of the expected size, left padded with 0 bytes.
+   *
    * @param value
    * @param byteSize
    * @return
@@ -25,6 +26,7 @@ public class ByteUtils {
 
   /**
    * Converts a BigInteger to a byte array of the expected size, left padded with 0 bytes.
+   *
    * @param value
    * @param byteSize
    * @return
@@ -54,7 +56,7 @@ public class ByteUtils {
   public static List<UnsignedByte> parse(String hex) {
     String padded = padded(hex);
     List<UnsignedByte> result = new ArrayList<>();
-    for(int i = 0; i < padded.length(); i+=2) {
+    for (int i = 0; i < padded.length(); i += 2) {
       result.add(UnsignedByte.of(padded.substring(i, i + 2)));
     }
     return result;
@@ -70,7 +72,7 @@ public class ByteUtils {
    */
   public static BigInteger checkSize(int expectedBits, BigInteger value) {
     Preconditions.checkArgument(value.bitLength() <= expectedBits,
-        "value has " + value.bitLength() + " bits but should be <= " + expectedBits);
+      "value has " + value.bitLength() + " bits but should be <= " + expectedBits);
     return value;
   }
 

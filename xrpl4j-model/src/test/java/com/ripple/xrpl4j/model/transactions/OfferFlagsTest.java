@@ -19,11 +19,11 @@ public class OfferFlagsTest {
   @Test
   public void allFlagsSet() {
     Flags.OfferFlags flags = Flags.OfferFlags.builder()
-      .fillOrKill(true)
-      .immediateOrCancel(true)
-      .passive(true)
-      .sell(true)
-      .build();
+        .fillOrKill(true)
+        .immediateOrCancel(true)
+        .passive(true)
+        .sell(true)
+        .build();
     assertThat(flags.tfFullyCanonicalSig()).isTrue();
     assertThat(flags.tfFillOrKill()).isTrue();
     assertThat(flags.tfImmediateOrCancel()).isTrue();
@@ -34,11 +34,11 @@ public class OfferFlagsTest {
   @Test
   public void partialFlagsSet() {
     Flags.OfferFlags flags = Flags.OfferFlags.builder()
-      .fillOrKill(true)
-      .immediateOrCancel(false)
-      .passive(true)
-      .sell(false)
-      .build();
+        .fillOrKill(true)
+        .immediateOrCancel(false)
+        .passive(true)
+        .sell(false)
+        .build();
     assertThat(flags.tfFullyCanonicalSig()).isTrue();
     assertThat(flags.tfFillOrKill()).isTrue();
     assertThat(flags.tfImmediateOrCancel()).isFalse();

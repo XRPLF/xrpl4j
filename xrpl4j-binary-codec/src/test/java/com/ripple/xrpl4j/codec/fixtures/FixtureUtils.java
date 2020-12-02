@@ -12,18 +12,18 @@ import java.io.IOException;
 public class FixtureUtils {
 
   private static ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new GuavaModule())
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    .registerModule(new GuavaModule())
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public static CodecFixtures getCodecFixtures() throws IOException {
     return objectMapper.readerFor(CodecFixtures.class)
-        .readValue(new File("src/test/resources/codec-fixtures.json"));
+      .readValue(new File("src/test/resources/codec-fixtures.json"));
   }
 
 
   public static DataDrivenFixtures getDataDrivenFixtures() throws IOException {
     return objectMapper.readerFor(DataDrivenFixtures.class)
-        .readValue(new File("src/test/resources/data-driven-tests.json"));
+      .readValue(new File("src/test/resources/data-driven-tests.json"));
   }
 
 }

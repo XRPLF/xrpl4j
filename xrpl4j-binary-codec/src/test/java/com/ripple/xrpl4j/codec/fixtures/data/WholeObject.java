@@ -17,5 +17,5 @@ public interface WholeObject {
 
   @JsonProperty("blob_with_no_signing")
   String expectedHex();
-  
+
 }

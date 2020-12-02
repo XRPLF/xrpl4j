@@ -73,14 +73,14 @@ public class STArrayType extends SerializedType<STArrayType> {
   public JsonNode toJSON() {
     BinaryParser parser = new BinaryParser(this.toString());
     List<JsonNode> values = new ArrayList<>();
-    while(!parser.end()) {
+    while (!parser.end()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(ARRAY_END_MARKER_NAME)) {
         break;
       }
       STObjectType objectType = new STObjectType().fromParser(parser);
       ObjectNode child = new ObjectNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(),
-          ImmutableMap.of(field.name(), objectType.toJSON()));
+        ImmutableMap.of(field.name(), objectType.toJSON()));
       values.add(child);
     }
     return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);

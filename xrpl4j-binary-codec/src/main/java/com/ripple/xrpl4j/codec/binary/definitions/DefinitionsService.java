@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class DefinitionsService {
 
   private static final DefinitionsService INSTANCE = new DefinitionsService(DefinitionsProvider.getInstance(),
-      BinaryCodecObjectMapperFactory.getObjectMapper());
+    BinaryCodecObjectMapperFactory.getObjectMapper());
 
   private final Definitions definitions;
 
@@ -34,10 +34,6 @@ public class DefinitionsService {
 
   private final Map<Integer, String> ledgerEntryTypeReverseLookupMap;
 
-  public static DefinitionsService getInstance() {
-    return INSTANCE;
-  }
-
   DefinitionsService(DefinitionsProvider definitionsProvider, ObjectMapper mapper) {
     this.definitions = definitionsProvider.get();
     this.typeOrdinalMap = ImmutableMap.copyOf(definitions.types());
@@ -49,8 +45,8 @@ public class DefinitionsService {
         String fieldName = field.get(0).textValue();
         FieldInfo metadata = mapper.readValue(field.get(1).toString(), FieldInfo.class);
         FieldHeader fieldHeader = FieldHeader.builder().fieldCode(metadata.nth())
-            .typeCode(typeOrdinalMap.get(metadata.type()))
-            .build();
+          .typeCode(typeOrdinalMap.get(metadata.type()))
+          .build();
         tempFieldInfoMap.put(fieldName, metadata);
         tempFieldIdNameMap.put(fieldHeader, fieldName);
       } catch (JsonProcessingException e) {
@@ -62,6 +58,10 @@ public class DefinitionsService {
     this.transactionTypeReverseLookupMap = inverse(definitions.transactionTypes());
     this.transactionResultReverseLookupNap = inverse(definitions.transactionResults());
     this.ledgerEntryTypeReverseLookupMap = inverse(definitions.ledgerEntryTypes());
+  }
+
+  public static DefinitionsService getInstance() {
+    return INSTANCE;
   }
 
   public String getFieldName(FieldHeader fieldHeader) {
@@ -86,17 +86,17 @@ public class DefinitionsService {
 
   public Optional<FieldInstance> getFieldInstance(String fieldName) {
     return DefinitionsService.getInstance().getFieldInfo(fieldName)
-        .flatMap(info -> getFieldHeader(fieldName)
-            .map(header ->
-                FieldInstance.builder()
-                    .header(header)
-                    .isSerialized(info.isSerialized())
-                    .isSigningField(info.isSigningField())
-                    .isVariableLengthEncoded(info.isVariableLengthEncoded())
-                    .nth(info.nth())
-                    .name(fieldName)
-                    .type(info.type())
-                    .build()));
+      .flatMap(info -> getFieldHeader(fieldName)
+        .map(header ->
+          FieldInstance.builder()
+            .header(header)
+            .isSerialized(info.isSerialized())
+            .isSigningField(info.isSigningField())
+            .isVariableLengthEncoded(info.isVariableLengthEncoded())
+            .nth(info.nth())
+            .name(fieldName)
+            .type(info.type())
+            .build()));
   }
 
   public Optional<Integer> mapFieldSpecialization(String fieldName, String value) {
@@ -133,8 +133,8 @@ public class DefinitionsService {
 
   private Map<Integer, String> inverse(Map<String, Integer> map) {
     return map.entrySet()
-        .stream()
-        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+      .stream()
+      .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
   }
 
 }

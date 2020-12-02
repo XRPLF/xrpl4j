@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 public class Utils {
 
   private static final MessageDigest digest;
+
   static {
     try {
       digest = MessageDigest.getInstance("SHA-256");

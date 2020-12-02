@@ -44,5 +44,5 @@ public interface FieldInfo {
 
   @JsonProperty("isVLEncoded")
   boolean isVariableLengthEncoded();
-  
+
 }

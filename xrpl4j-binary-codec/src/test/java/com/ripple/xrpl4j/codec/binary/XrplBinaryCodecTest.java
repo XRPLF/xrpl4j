@@ -27,6 +27,11 @@ class XrplBinaryCodecTest {
 
   private XrplBinaryCodec encoder = new XrplBinaryCodec();
 
+  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+    return FixtureUtils.getDataDrivenFixtures().wholeObjectTests().stream()
+        .map(Arguments::of);
+  }
+
   @Test
   void encodeDecodeSimple() throws JsonProcessingException {
     assertThat(encoder.encode(SIMPLE_JSON)).isEqualTo(SIMPLE_HEX);
@@ -145,11 +150,6 @@ class XrplBinaryCodecTest {
   @MethodSource("dataDrivenFixtures")
   void dataDriven(WholeObject wholeObject) throws IOException {
     assertThat(encoder.encode(wholeObject.txJson().toString())).isEqualTo(wholeObject.expectedHex());
-  }
-
-  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
-    return FixtureUtils.getDataDrivenFixtures().wholeObjectTests().stream()
-        .map(Arguments::of);
   }
 
 }

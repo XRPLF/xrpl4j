@@ -12,6 +12,7 @@ import java.util.Optional;
 
 /**
  * The result of a submit rippled API call.
+ *
  * @param <TxnType> The type of {@link Transaction} that was submitted.
  */
 @Immutable
@@ -56,6 +57,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
 
   /**
    * The next Sequence number available for the sending account after all pending and queued transactions.
+   *
    * @return
    */
   @JsonProperty("account_sequence_available")

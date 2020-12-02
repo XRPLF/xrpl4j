@@ -18,12 +18,12 @@ abstract class UIntType<T extends UIntType<T>> extends SerializedType<T> {
     this.value = value;
   }
 
-  UnsignedLong valueOf() {
-    return value;
-  }
-
   private static int bitSizeToHexLength(int bitSize) {
     return bitSize / 4;
+  }
+
+  UnsignedLong valueOf() {
+    return value;
   }
 
   @Override

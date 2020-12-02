@@ -11,7 +11,6 @@ import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.xrpl4j.model.transactions.immutables.FluentCompareTo;
 import org.immutables.value.Value;
 
-import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -43,9 +42,11 @@ public interface EscrowFinish extends Transaction {
     Objects.requireNonNull(fulfillment);
 
     UnsignedLong newFee =
-      currentLedgerFeeDrops.value() // <-- usually 10 drops, per the docs.
-        .plus(UnsignedLong.valueOf(320)) // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
-        .plus(UnsignedLong.valueOf(10 * (fulfillment.getDerivedCondition().getCost() / 16))); // <-- 10 drops for each additional 16 bytes.
+        currentLedgerFeeDrops.value() // <-- usually 10 drops, per the docs.
+            // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
+            .plus(UnsignedLong.valueOf(320))
+            // <-- 10 drops for each additional 16 bytes.
+            .plus(UnsignedLong.valueOf(10 * (fulfillment.getDerivedCondition().getCost() / 16)));
     return XrpCurrencyAmount.of(newFee);
   }
 
@@ -82,15 +83,15 @@ public interface EscrowFinish extends Transaction {
   @Value.Check
   default void check() {
     fulfillment().ifPresent(f -> {
-        UnsignedLong feeInDrops = fee().value();
-        Preconditions.checkState(condition().isPresent(),
-          "If a fulfillment is specified, the corresponding condition must also be specified.");
-        Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(UnsignedLong.valueOf(330)),
-          "If a fulfillment is specified, the fee must be set to 330 or greater.");
-      }
+          UnsignedLong feeInDrops = fee().value();
+          Preconditions.checkState(condition().isPresent(),
+              "If a fulfillment is specified, the corresponding condition must also be specified.");
+          Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(UnsignedLong.valueOf(330)),
+              "If a fulfillment is specified, the fee must be set to 330 or greater.");
+        }
     );
     condition().ifPresent($ -> Preconditions.checkState(fulfillment().isPresent(),
-      "If a condition is specified, the corresponding fulfillment must also be specified."));
+        "If a condition is specified, the corresponding fulfillment must also be specified."));
   }
 
 }

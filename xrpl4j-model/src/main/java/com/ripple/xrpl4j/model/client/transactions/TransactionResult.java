@@ -11,6 +11,7 @@ import org.immutables.value.Value;
 
 /**
  * The result of a tx rippled API method call.
+ *
  * @param <TxnType> The type of {@link Transaction} that was requested.
  */
 @Value.Immutable
@@ -25,7 +26,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   /**
    * The {@link Transaction} that was returned as a result of the tx call.
    *
-   * In JSON form, the {@link Transaction} fields are included as root object fields, and thus this field
+   * <p>In JSON form, the {@link Transaction} fields are included as root object fields, and thus this field
    * needs the {@link JsonUnwrapped} annotation.
    */
   @JsonUnwrapped

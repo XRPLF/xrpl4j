@@ -28,10 +28,6 @@ public class FieldHeaderCodec {
   private final Map<String, Integer> typeOrdinalMap;
 
 
-  public static FieldHeaderCodec getInstance() {
-    return INSTANCE;
-  }
-
   public FieldHeaderCodec(Definitions definitions, ObjectMapper mapper) {
     this.definitions = definitions;
     this.fieldMetadataMap = new HashMap<>();
@@ -50,6 +46,10 @@ public class FieldHeaderCodec {
         throw new IllegalArgumentException("invalid json", e);
       }
     });
+  }
+
+  public static FieldHeaderCodec getInstance() {
+    return INSTANCE;
   }
 
   public String encode(String fieldName) {
@@ -81,8 +81,7 @@ public class FieldHeaderCodec {
             .fieldCode(first.getLowBits())
             .typeCode(second.asInt())
             .build();
-      }
-      else {
+      } else {
         return FieldHeader.builder()
             .typeCode(first.getHighBits())
             .fieldCode(second.asInt())
@@ -111,20 +110,17 @@ public class FieldHeaderCodec {
       if (fieldCode < 16) {
         // single byte case where high bits contain type code, low bits contain field code
         segments.add(UnsignedByte.of((byte) typeCode, (byte) fieldCode));
-      }
-      else {
+      } else {
         // 2 byte case where first byte contains type code + filler, second byte contains field code
         segments.add(UnsignedByte.of((byte) typeCode, (byte) 0));
         segments.add(UnsignedByte.of(fieldCode));
       }
-    }
-    else {
+    } else {
       if (fieldCode < 16) {
         // 2 byte case where first byte contains filler+field code, second byte contains typeCode
         segments.add(UnsignedByte.of((byte) 0, (byte) fieldCode));
         segments.add(UnsignedByte.of(typeCode));
-      }
-      else {
+      } else {
         // 3 byte case where first byte is filler, 2nd byte is type code, third byte is field code
         segments.add(UnsignedByte.of((byte) 0));
         segments.add(UnsignedByte.of(typeCode));

@@ -12,7 +12,7 @@ import java.util.Optional;
 /**
  * Request parameters for the tx rippled API method.
  *
- * The tx method may successfully find the {@link TransactionRequestParams#transaction()} even if it is included in
+ * <p>The tx method may successfully find the {@link TransactionRequestParams#transaction()} even if it is included in
  * a ledger outside the range of {@link TransactionRequestParams#minLedger()} to
  * {@link TransactionRequestParams#maxLedger()}.
  */
@@ -27,9 +27,10 @@ public interface TransactionRequestParams extends XrplRequestParams {
 
   /**
    * Convenience constructor for creating {@link TransactionRequestParams} with only a transaction hash.
+   *
    * @param transactionHash A {@link String} containing the transaction hash of the transaction to look up.
    * @return {@link TransactionRequestParams} with {@link TransactionRequestParams#transaction()} set to
-   *  {@code transactionHash}
+   * {@code transactionHash}
    */
   static TransactionRequestParams of(String transactionHash) {
     return builder().transaction(transactionHash).build();
@@ -53,7 +54,7 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * Use this with {@link TransactionRequestParams#maxLedger()} to specify a range of up to 1000 ledger indexes,
    * starting with this ledger (inclusive).
    *
-   * If the server cannot find the transaction, it confirms whether it was able to search all the
+   * <p>If the server cannot find the transaction, it confirms whether it was able to search all the
    * ledgers in this range.
    */
   Optional<UnsignedInteger> minLedger();
@@ -62,7 +63,7 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * Use this with {@link TransactionRequestParams#minLedger()} to specify a range of up to 1000 ledger indexes,
    * ending with this ledger (inclusive).
    *
-   * If the server cannot find the transaction, it confirms whether it was able to search all the ledgers in the
+   * <p>If the server cannot find the transaction, it confirms whether it was able to search all the ledgers in the
    * requested range.
    */
   Optional<UnsignedInteger> maxLedger();

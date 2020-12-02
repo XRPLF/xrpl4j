@@ -58,6 +58,7 @@ public interface OfferObject extends LedgerObject {
 
   /**
    * The remaining amount and type of currency requested by the offer creator.
+   *
    * @return amount.
    */
   @JsonProperty("TakerPays")
@@ -66,6 +67,7 @@ public interface OfferObject extends LedgerObject {
 
   /**
    * The remaining amount and type of currency being provided by the offer creator.
+   *
    * @return amount.
    */
   @JsonProperty("TakerGets")
@@ -74,6 +76,7 @@ public interface OfferObject extends LedgerObject {
 
   /**
    * The ID of the Offer Directory that links to this offer.
+   *
    * @return ID hash.
    */
   @JsonProperty("BookDirectory")
@@ -82,6 +85,7 @@ public interface OfferObject extends LedgerObject {
   /**
    * A hint indicating which page of the offer directory links to this object, in case the directory consists of
    * multiple pages.
+   *
    * @return page number.
    */
   @JsonProperty("BookNode")

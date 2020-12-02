@@ -3,10 +3,10 @@ package com.ripple.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.client.accounts.AccountInfoResult;
 import com.ripple.xrpl4j.model.client.fees.FeeResult;
 import com.ripple.xrpl4j.model.client.transactions.SubmitResult;
-import com.ripple.xrpl4j.client.JsonRpcClientErrorException;
 import com.ripple.xrpl4j.model.transactions.AccountSet;
 import com.ripple.xrpl4j.model.transactions.SetRegularKey;
 import com.ripple.xrpl4j.wallet.Wallet;
@@ -33,17 +33,17 @@ public class SetRegularKeyIT extends AbstractIT {
     // can sign future transactions with the new wallet's keypair
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
-      .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
-      .sequence(accountInfo.accountData().sequence())
-      .regularKey(newWallet.classicAddress())
-      .signingPublicKey(wallet.publicKey())
-      .build();
+        .account(wallet.classicAddress())
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(accountInfo.accountData().sequence())
+        .regularKey(newWallet.classicAddress())
+        .signingPublicKey(wallet.publicKey())
+        .build();
 
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      setResult.transaction().hash().orElse("n/a")
+        setResult.transaction().hash().orElse("n/a")
     );
 
     //////////////////////////
@@ -51,20 +51,20 @@ public class SetRegularKeyIT extends AbstractIT {
     // AccountSet transactions, signed with the new wallet key pair, until
     // we get a successful response.
     scanForResult(
-      () -> {
-        AccountSet accountSet = AccountSet.builder()
-          .account(wallet.classicAddress())
-          .fee(feeResult.drops().openLedgerFee())
-          .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-          .signingPublicKey(newWallet.publicKey())
-          .build();
+        () -> {
+          AccountSet accountSet = AccountSet.builder()
+              .account(wallet.classicAddress())
+              .fee(feeResult.drops().openLedgerFee())
+              .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+              .signingPublicKey(newWallet.publicKey())
+              .build();
 
-        try {
-          return xrplClient.submit(newWallet, accountSet);
-        } catch (JsonRpcClientErrorException e) {
-          throw new RuntimeException(e.getMessage(), e);
+          try {
+            return xrplClient.submit(newWallet, accountSet);
+          } catch (JsonRpcClientErrorException e) {
+            throw new RuntimeException(e.getMessage(), e);
+          }
         }
-      }
     );
 
   }
@@ -88,17 +88,17 @@ public class SetRegularKeyIT extends AbstractIT {
     // can sign future transactions with the new wallet's keypair
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
-      .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
-      .sequence(accountInfo.accountData().sequence())
-      .regularKey(newWallet.classicAddress())
-      .signingPublicKey(wallet.publicKey())
-      .build();
+        .account(wallet.classicAddress())
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(accountInfo.accountData().sequence())
+        .regularKey(newWallet.classicAddress())
+        .signingPublicKey(wallet.publicKey())
+        .build();
 
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      setResult.transaction().hash().orElse("n/a")
+        setResult.transaction().hash().orElse("n/a")
     );
 
     //////////////////////////
@@ -106,39 +106,39 @@ public class SetRegularKeyIT extends AbstractIT {
     // AccountSet transactions, signed with the new wallet key pair, until
     // we get a successful response.
     scanForResult(
-      () -> {
-        AccountSet accountSet = AccountSet.builder()
-          .account(wallet.classicAddress())
-          .fee(feeResult.drops().openLedgerFee())
-          .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-          .signingPublicKey(newWallet.publicKey())
-          .build();
+        () -> {
+          AccountSet accountSet = AccountSet.builder()
+              .account(wallet.classicAddress())
+              .fee(feeResult.drops().openLedgerFee())
+              .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+              .signingPublicKey(newWallet.publicKey())
+              .build();
 
-        try {
-          return xrplClient.submit(newWallet, accountSet);
-        } catch (JsonRpcClientErrorException e) {
-          throw new RuntimeException(e.getMessage(), e);
+          try {
+            return xrplClient.submit(newWallet, accountSet);
+          } catch (JsonRpcClientErrorException e) {
+            throw new RuntimeException(e.getMessage(), e);
+          }
         }
-      }
     );
 
 
     SetRegularKey removeRegularKey = SetRegularKey.builder()
-      .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
-      .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
-      .signingPublicKey(wallet.publicKey())
-      .build();
+        .account(wallet.classicAddress())
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
+        .signingPublicKey(wallet.publicKey())
+        .build();
 
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
     assertThat(removeResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      removeResult.transaction().hash().orElse("n/a")
+        removeResult.transaction().hash().orElse("n/a")
     );
 
     scanForResult(
-      () -> getValidatedAccountInfo(wallet.classicAddress()),
-      infoResult -> !infoResult.accountData().regularKey().isPresent()
+        () -> getValidatedAccountInfo(wallet.classicAddress()),
+        infoResult -> !infoResult.accountData().regularKey().isPresent()
     );
   }
 }

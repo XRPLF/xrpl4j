@@ -14,9 +14,9 @@ public class Secp256k1KeyPairServiceTest {
   public void generateSecp2561kKeyPairFromSeed() {
     String seed = "sp5fghtJtpUorTwvof1NpDXAzNwf5";
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23")
-      .publicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
-      .build();
+        .privateKey("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23")
+        .publicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+        .build();
 
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
     assertThat(keyPair).isEqualTo(expectedKeyPair);

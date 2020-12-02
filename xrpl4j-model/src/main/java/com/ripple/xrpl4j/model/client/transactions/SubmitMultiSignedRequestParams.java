@@ -9,6 +9,7 @@ import org.immutables.value.Value;
 
 /**
  * Request parameters for the submit_multisigned API method.
+ *
  * @param <TxnType> The type of {@link Transaction} to submit.
  */
 @Value.Immutable

@@ -15,7 +15,7 @@ import java.util.Optional;
  * this transaction. This is only useful if the sender of this transaction is using (or plans to use)
  * <a href="https://xrpl.org/depositauth.html">Deposit Authorization</a>.
  *
- * You can use this transaction to preauthorize certain counterparties before you enable Deposit Authorization.
+ * <p>You can use this transaction to preauthorize certain counterparties before you enable Deposit Authorization.
  * This may be useful to ensure a smooth transition from not requiring deposit authorization to requiring it.
  */
 @Value.Immutable
@@ -29,8 +29,8 @@ public interface DepositPreAuth extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
-   * <p>
-   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    */
   @JsonProperty("Flags")
@@ -57,8 +57,8 @@ public interface DepositPreAuth extends Transaction {
    */
   @Value.Check
   default void validateFieldPresence() {
-    Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent())
-        && !(authorize().isPresent() && unauthorize().isPresent()),
-      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
+    Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent()) &&
+            !(authorize().isPresent() && unauthorize().isPresent()),
+        "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
 }

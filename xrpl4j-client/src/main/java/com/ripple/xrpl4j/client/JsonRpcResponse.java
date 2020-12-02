@@ -7,6 +7,7 @@ import org.immutables.value.Value.Immutable;
 
 /**
  * Generic JSON RPC response object.
+ *
  * @param <ResultType> The type of {@link JsonRpcResponse#result()}, which varies based on API method.
  */
 @Immutable

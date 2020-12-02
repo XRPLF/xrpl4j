@@ -21,7 +21,7 @@ public class MathUtils {
    * {@code toPaddedBigInteger(0.1234, 4)} yields 1234
    * {@code toPaddedBigInteger(0.1234, 3)} throws an IllegalArgumentException as the number cannot fit in 3 digits.
    *
-   * @param number number to pad.
+   * @param number         number to pad.
    * @param expectedDigits how many total digits the padded number should have.
    * @return
    */

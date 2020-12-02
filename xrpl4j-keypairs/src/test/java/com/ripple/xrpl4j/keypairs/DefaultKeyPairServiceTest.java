@@ -14,9 +14,9 @@ public class DefaultKeyPairServiceTest {
   public void deriveKeyPairFromEd25519Seed() {
     String seed = "sEdSKaCy2JT7JaM7v95H9SxkhP9wS2r";
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")
-      .publicKey("ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63")
-      .build();
+        .privateKey("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")
+        .publicKey("ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63")
+        .build();
 
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
     assertThat(keyPair).isEqualTo(expectedKeyPair);
@@ -26,9 +26,9 @@ public class DefaultKeyPairServiceTest {
   public void deriveKeyPairFromSecp256k1Seed() {
     String seed = "sp5fghtJtpUorTwvof1NpDXAzNwf5";
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23")
-      .publicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
-      .build();
+        .privateKey("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23")
+        .publicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+        .build();
 
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
     assertThat(keyPair).isEqualTo(expectedKeyPair);

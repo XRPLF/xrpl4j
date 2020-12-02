@@ -13,6 +13,10 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   private final static AmountType codec = new AmountType();
 
+  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+    return dataDrivenFixturesForType(codec);
+  }
+
   @Override
   SerializedType getType() {
     return codec;
@@ -57,7 +61,7 @@ class AmountTypeTest extends BaseSerializerTypeTest {
   void decodeCurrencyAmount() {
     assertThat(
         codec.fromHex("D48775F05A07400000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-        .toJSON().toString())
+            .toJSON().toString())
         .isEqualTo("{\"currency\":\"XRP\",\"value\":\"2.1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"}");
   }
 
@@ -81,10 +85,6 @@ class AmountTypeTest extends BaseSerializerTypeTest {
     String json = "{\"currency\":\"USD\",\"value\":\"1111111111111111.0\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\"}";
     String hex = "D843F28CB71571C700000000000000000000000055534400000000000000000000000000000000000000000000000001";
     assertThat(codec.fromJSON(json).toHex()).isEqualTo(hex);
-  }
-
-  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
-    return dataDrivenFixturesForType(codec);
   }
 
 }

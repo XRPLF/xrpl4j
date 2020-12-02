@@ -24,6 +24,7 @@ public interface UnsignedClaim {
 
   /**
    * The Channel ID of the channel that provides the XRP.
+   *
    * @return
    */
   @JsonProperty("Channel")

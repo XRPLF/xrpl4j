@@ -12,8 +12,8 @@ public interface SignerEntryWrapper {
 
   static SignerEntryWrapper of(SignerEntry entry) {
     return ImmutableSignerEntryWrapper.builder()
-      .signerEntry(entry)
-      .build();
+        .signerEntry(entry)
+        .build();
   }
 
   @JsonProperty("SignerEntry")

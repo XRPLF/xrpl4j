@@ -9,13 +9,13 @@ class UInt16TypeTest extends BaseSerializerTypeTest {
 
   private final static UInt16Type codec = new UInt16Type();
 
+  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+    return dataDrivenFixturesForType(codec);
+  }
+
   @Override
   SerializedType getType() {
     return codec;
-  }
-
-  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
-    return dataDrivenFixturesForType(codec);
   }
 
 }

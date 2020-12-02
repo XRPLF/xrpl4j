@@ -19,25 +19,6 @@ public interface ECDSASignature {
     return ImmutableECDSASignature.builder();
   }
 
-  BigInteger r();
-
-  BigInteger s();
-
-  @Value.Derived
-  default UnsignedByteArray der() {
-    // Usually 70-72 bytes.
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(72);
-    try {
-      DERSequenceGenerator seq = new DERSequenceGenerator(bos);
-      seq.addObject(new ASN1Integer(r()));
-      seq.addObject(new ASN1Integer(s()));
-      seq.close();
-      return UnsignedByteArray.of(bos.toByteArray());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   static ECDSASignature fromDer(byte[] bytes) {
     try {
       ASN1InputStream decoder = new ASN1InputStream(bytes);
@@ -54,9 +35,28 @@ public interface ECDSASignature {
       // OpenSSL deviates from the DER spec by interpreting these values as unsigned, though they should not be
       // Thus, we always use the positive versions. See: http://r6.ca/blog/20111119T211504Z.html
       return ECDSASignature.builder()
-        .r(r.getPositiveValue())
-        .s(s.getPositiveValue())
-        .build();
+          .r(r.getPositiveValue())
+          .s(s.getPositiveValue())
+          .build();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  BigInteger r();
+
+  BigInteger s();
+
+  @Value.Derived
+  default UnsignedByteArray der() {
+    // Usually 70-72 bytes.
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(72);
+    try {
+      DERSequenceGenerator seq = new DERSequenceGenerator(bos);
+      seq.addObject(new ASN1Integer(r()));
+      seq.addObject(new ASN1Integer(s()));
+      seq.close();
+      return UnsignedByteArray.of(bos.toByteArray());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -84,31 +84,31 @@ public interface ECDSASignature {
     int rLen = der().get(rPos - 1).asInt();
 
     Preconditions.checkArgument(rLen >= 1 && rLen <= 33 && (rLen + 7) <= sigLen,
-      "r is the wrong length.");
+        "r is the wrong length.");
 
     // Find S and check its length
     int sPos = rLen + 6;
     int sLen = der().get(sPos - 1).asInt();
     Preconditions.checkArgument(sLen >= 1 && sLen <= 33 && (rLen + sLen + 6) == sigLen,
-      "s is the wrong length.");
+        "s is the wrong length.");
 
     Preconditions.checkArgument(der().get(rPos - 2).asInt() == 0x02 && der().get(sPos - 2).asInt() == 0x02,
-      "r or s have the wrong type.");
+        "r or s have the wrong type.");
 
     Preconditions.checkArgument((der().get(rPos).asInt() & 0x80) == 0, "r cannot be negative.");
 
     Preconditions.checkArgument(der().get(rPos).asInt() != 0 || rLen != 1, "r cannot be 0.");
 
     Preconditions.checkArgument(der().get(rPos).asInt() != 0 || (der().get(rPos + 1).asInt() & 0x80) != 0,
-      "r cannot be padded.");
+        "r cannot be padded.");
 
     Preconditions.checkArgument((der().get(sPos).asInt() & 0x80) == 0,
-      "s cannot be negative.");
+        "s cannot be negative.");
 
     Preconditions.checkArgument(der().get(sPos).asInt() != 0 || sLen != 1, "s cannot be 0.");
 
     Preconditions.checkArgument(der().get(sPos).asInt() != 0 || (der().get(sPos + 1).asInt() & 0x80) != 0,
-      "s cannot be padded");
+        "s cannot be padded");
 
     byte[] rBytes = new byte[rLen];
     byte[] sBytes = new byte[sLen];

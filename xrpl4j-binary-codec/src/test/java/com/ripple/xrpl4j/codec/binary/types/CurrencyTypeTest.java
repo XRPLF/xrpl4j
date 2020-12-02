@@ -19,9 +19,9 @@ class CurrencyTypeTest {
   @Test
   void encodeISO3() {
     assertThat(codec.fromJSON(DOUBLE_QUOTE + "XRP" + DOUBLE_QUOTE).toHex())
-        .isEqualTo("0000000000000000000000000000000000000000");
+      .isEqualTo("0000000000000000000000000000000000000000");
     assertThat(codec.fromJSON(DOUBLE_QUOTE + "USD" + DOUBLE_QUOTE).toHex())
-        .isEqualTo("0000000000000000000000005553440000000000");
+      .isEqualTo("0000000000000000000000005553440000000000");
   }
 
   @Test
@@ -34,7 +34,7 @@ class CurrencyTypeTest {
   void encodeCustom() {
     String customCode = Strings.repeat("11", 20);
     assertThat(codec.fromJSON(DOUBLE_QUOTE + customCode + DOUBLE_QUOTE).toHex())
-        .isEqualTo(customCode);
+      .isEqualTo(customCode);
   }
 
 }

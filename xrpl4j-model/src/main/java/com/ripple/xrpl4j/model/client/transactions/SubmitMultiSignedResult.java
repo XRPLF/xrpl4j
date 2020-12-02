@@ -11,6 +11,7 @@ import java.util.Optional;
 
 /**
  * The result of a submit_multisigned rippled API call.
+ *
  * @param <TxnType> The type of {@link Transaction} that was submitted.
  */
 @Value.Immutable

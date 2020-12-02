@@ -14,6 +14,12 @@ public class UnsignedByte {
   // since Java byte is signed need to use int to handle max value 255
   private final int value;
 
+  private UnsignedByte(int value) {
+    Preconditions.checkArgument(value >= 0);
+    Preconditions.checkArgument(value <= 255);
+    this.value = value;
+  }
+
   public static UnsignedByte of(int value) {
     return new UnsignedByte(value);
   }
@@ -30,12 +36,6 @@ public class UnsignedByte {
     byte highBits = new BigInteger(hex.substring(0, 1), 16).byteValue();
     byte lowBits = new BigInteger(hex.substring(1, 2), 16).byteValue();
     return UnsignedByte.of(highBits, lowBits);
-  }
-
-  private UnsignedByte(int value) {
-    Preconditions.checkArgument(value >= 0);
-    Preconditions.checkArgument(value <= 255);
-    this.value = value;
   }
 
   /**
@@ -79,11 +79,11 @@ public class UnsignedByte {
 
   /**
    * Checks if the nth bit (1-based index from left to right) is set.
+   *
    * @param nth
    * @return
    */
-  public boolean isNthBitSet(int nth)
-  {
+  public boolean isNthBitSet(int nth) {
     Preconditions.checkArgument(nth >= 1 && nth <= 8);
     return ((value >> (8 - nth)) & 1) == 1;
   }
@@ -94,13 +94,12 @@ public class UnsignedByte {
    * @param arg
    * @return
    */
-  public UnsignedByte or(UnsignedByte arg)
-  {
+  public UnsignedByte or(UnsignedByte arg) {
     return UnsignedByte.of(value | arg.value);
   }
 
   public String hexValue() {
-    return BaseEncoding.base16().encode(new byte[] { (byte) asInt() });
+    return BaseEncoding.base16().encode(new byte[] {(byte) asInt()});
   }
 
   @Override

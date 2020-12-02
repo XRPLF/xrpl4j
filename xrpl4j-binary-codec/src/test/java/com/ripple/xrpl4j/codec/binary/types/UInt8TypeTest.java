@@ -9,13 +9,13 @@ class UInt8TypeTest extends BaseSerializerTypeTest {
 
   private final static UInt8Type codec = new UInt8Type();
 
+  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+    return dataDrivenFixturesForType(codec);
+  }
+
   @Override
   SerializedType getType() {
     return codec;
-  }
-
-  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
-    return dataDrivenFixturesForType(codec);
   }
 
 }

@@ -11,6 +11,7 @@ public interface KeyPairService {
 
   /**
    * Generate a random 16 byte seed to be used to derive a private key.
+   *
    * @return A {@link String} containing a randomly generated Base58Check encoded seed value.
    */
   String generateSeed();
@@ -34,7 +35,7 @@ public interface KeyPairService {
   /**
    * Sign a message using the given private key.
    *
-   * @param message An {@link UnsignedByteArray} with an arbitrary message.
+   * @param message    An {@link UnsignedByteArray} with an arbitrary message.
    * @param privateKey The hexadecimal encoded private key used to sign the transaction.
    * @return The signed message, in hexadecimal form.
    */
@@ -43,7 +44,7 @@ public interface KeyPairService {
   /**
    * Sign a message using the given private key.
    *
-   * @param message A hexadecimal encoded {@link String} containing an arbitrary message.
+   * @param message    A hexadecimal encoded {@link String} containing an arbitrary message.
    * @param privateKey The hexadecimal encoded private key used to sign the transaction.
    * @return The signed message, in hexadecimal form.
    */
@@ -52,7 +53,7 @@ public interface KeyPairService {
   /**
    * Verify that the signature is valid, based on the message that was signed and the public key.
    *
-   * @param message The arbitrary message that was signed with a private key.
+   * @param message   The arbitrary message that was signed with a private key.
    * @param signature The hexadecimal encoded {@link String} containing the signature to verify.
    * @param publicKey The hexadecimal encoded public key derived from the private key that was used to sign the message.
    * @return true if the signature is valid, false if not.
@@ -62,7 +63,7 @@ public interface KeyPairService {
   /**
    * Verify that the signature is valid, based on the message that was signed and the public key.
    *
-   * @param message The hexadecimal encoded arbitrary message that was signed with a private key.
+   * @param message   The hexadecimal encoded arbitrary message that was signed with a private key.
    * @param signature The hexadecimal encoded {@link String} containing the signature to verify.
    * @param publicKey The hexadecimal encoded public key derived from the private key that was used to sign the message.
    * @return true if the signature is valid, false if not.

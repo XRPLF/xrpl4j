@@ -23,8 +23,8 @@ public interface CheckCancel extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
-   * <p>
-   * The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    */
   @JsonProperty("Flags")
@@ -35,6 +35,7 @@ public interface CheckCancel extends Transaction {
 
   /**
    * The ID of the Check ledger object to cancel, as a 64-character hexadecimal string.
+   *
    * @return A {@link Hash256} containing the ID of the Check ledger object in hexadecimal form.
    */
   @JsonProperty("CheckID")

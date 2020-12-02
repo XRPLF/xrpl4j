@@ -12,6 +12,14 @@ import java.util.OptionalInt;
  */
 public class UInt8Type extends UIntType<UInt8Type> {
 
+  public UInt8Type() {
+    this(UnsignedLong.ZERO);
+  }
+
+  public UInt8Type(UnsignedLong value) {
+    super(value, 8);
+  }
+
   @Override
   public UInt8Type fromParser(BinaryParser parser, OptionalInt lengthHint) {
     return new UInt8Type(parser.readUInt8());
@@ -20,14 +28,6 @@ public class UInt8Type extends UIntType<UInt8Type> {
   @Override
   public UInt8Type fromJSON(JsonNode value) {
     return new UInt8Type(UnsignedLong.valueOf(value.asText()));
-  }
-
-  public UInt8Type() {
-    this(UnsignedLong.ZERO);
-  }
-
-  public UInt8Type(UnsignedLong value) {
-    super(value, 8);
   }
 
   @Override

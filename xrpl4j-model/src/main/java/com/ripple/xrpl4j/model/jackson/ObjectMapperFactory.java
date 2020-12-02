@@ -27,16 +27,16 @@ public class ObjectMapperFactory {
   public static ObjectMapper create() {
 
     return JsonMapper.builder()
-      .addModule(new Jdk8Module())
-      .addModule(new GuavaModule())
-      .addModule(new Xrpl4jModule())
-      .addModule(new CryptoConditionsModule(Encoding.HEX))
-      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-      .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
-      .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .serializationInclusion(JsonInclude.Include.NON_EMPTY)
-      .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
-      .build();
+        .addModule(new Jdk8Module())
+        .addModule(new GuavaModule())
+        .addModule(new Xrpl4jModule())
+        .addModule(new CryptoConditionsModule(Encoding.HEX))
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+        .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+        .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+        .build();
   }
 }

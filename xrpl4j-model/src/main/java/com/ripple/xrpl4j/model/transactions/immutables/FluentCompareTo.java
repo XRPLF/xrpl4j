@@ -7,6 +7,12 @@ package com.ripple.xrpl4j.model.transactions.immutables;
  */
 public class FluentCompareTo<T extends Comparable<? super T>> {
 
+  private final T value;
+
+  private FluentCompareTo(T value) {
+    this.value = value;
+  }
+
   /**
    * Create a {@link FluentCompareTo} for the given value.
    *
@@ -27,12 +33,6 @@ public class FluentCompareTo<T extends Comparable<? super T>> {
    */
   public static <T extends Comparable<? super T>> FluentCompareTo<T> isNot(T value) {
     return new FluentCompareTo<>(value);
-  }
-
-  private final T value;
-
-  private FluentCompareTo(T value) {
-    this.value = value;
   }
 
   /**
@@ -95,7 +95,7 @@ public class FluentCompareTo<T extends Comparable<? super T>> {
     return !lessThanOrEqualTo(other);
   }
 
-// TODO: Check with coverage and add more unit tests.
+  // TODO: Check with coverage and add more unit tests.
 
   /**
    * Checks if wrapped value is greater than than the given one.

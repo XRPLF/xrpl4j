@@ -10,12 +10,12 @@ public class ByteUtilsTest {
 
   @Test
   public void toByteArraySingleByteMinValue() {
-    assertThat(ByteUtils.toByteArray(0, 1)).isEqualTo(new byte[]{ 0 });
+    assertThat(ByteUtils.toByteArray(0, 1)).isEqualTo(new byte[] {0});
   }
 
   @Test
   public void toByteArrayPadded() {
-    assertThat(ByteUtils.toByteArray(1, 2)).isEqualTo(new byte[]{ 0, 1 });
+    assertThat(ByteUtils.toByteArray(1, 2)).isEqualTo(new byte[] {0, 1});
   }
 
   @Test

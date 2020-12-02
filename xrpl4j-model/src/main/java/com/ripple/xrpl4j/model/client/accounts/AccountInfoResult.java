@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import com.ripple.xrpl4j.model.ledger.AccountRootObject;
 import com.ripple.xrpl4j.model.client.rippled.XrplResult;
+import com.ripple.xrpl4j.model.ledger.AccountRootObject;
 import org.immutables.value.Value;
 
-import java.util.List;
 import java.util.Optional;
 
 /**

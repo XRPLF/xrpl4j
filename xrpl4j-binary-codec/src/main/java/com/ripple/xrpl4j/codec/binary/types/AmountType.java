@@ -41,6 +41,59 @@ class AmountType extends SerializedType<AmountType> {
     super(byteList);
   }
 
+  /**
+   * Validate XRP amount
+   *
+   * @param amount String representing XRP amount
+   * @returns void, but will throw if invalid amount
+   */
+  private static void assertXrpIsValid(String amount) {
+    if (amount.contains(".")) {
+      throw new IllegalArgumentException(amount + " is an illegal amount");
+    }
+    BigDecimal value = new BigDecimal(amount);
+    if (!value.equals(BigDecimal.ZERO)) {
+      if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
+        throw new IllegalArgumentException(amount + " is an illegal amount");
+      }
+    }
+  }
+
+  /**
+   * Validate IOU.value amount
+   *
+   * @param decimal Decimal.js object representing IOU.value
+   * @returns void, but will throw if invalid amount
+   */
+  private static void assertIouIsValid(BigDecimal decimal) {
+    if (!decimal.equals(BigDecimal.ZERO)) {
+      int p = decimal.precision();
+      int e = MathUtils.getExponent(decimal);
+      if (p > MAX_IOU_PRECISION ||
+          e > MAX_IOU_EXPONENT ||
+          e < MIN_IOU_EXPONENT
+      ) {
+        throw new Error("Decimal precision out of range");
+      }
+      verifyNoDecimal(decimal);
+    }
+  }
+
+  /**
+   * Ensure that the value after being multiplied by the exponent does not
+   * contain a decimal.
+   *
+   * @param decimal a Decimal object
+   * @returns a string of the object without a decimal
+   */
+  private static void verifyNoDecimal(BigDecimal decimal) {
+    BigDecimal exponent = new BigDecimal("1e" + -(MathUtils.getExponent(decimal) - 15));
+    String integerNumberString = decimal.multiply(exponent).toPlainString();
+    if (integerNumberString.indexOf(".") > 0) {
+      throw new Error("Decimal place found in integerNumberString");
+    }
+  }
+
   @Override
   public AmountType fromParser(BinaryParser parser, OptionalInt lengthHint) {
     boolean isXRP = !parser.peek().isNthBitSet(1);
@@ -149,59 +202,6 @@ class AmountType extends SerializedType<AmountType> {
   private boolean isPositive() {
     // 2nd bit in 1st byte is set to 1 for positive amounts
     return (toBytes()[0] & 0x40) > 0;
-  }
-
-  /**
-   * Validate XRP amount
-   *
-   * @param amount String representing XRP amount
-   * @returns void, but will throw if invalid amount
-   */
-  private static void assertXrpIsValid(String amount) {
-    if (amount.contains(".")) {
-      throw new IllegalArgumentException(amount + " is an illegal amount");
-    }
-    BigDecimal value = new BigDecimal(amount);
-    if (!value.equals(BigDecimal.ZERO)) {
-      if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
-        throw new IllegalArgumentException(amount + " is an illegal amount");
-      }
-    }
-  }
-
-  /**
-   * Validate IOU.value amount
-   *
-   * @param decimal Decimal.js object representing IOU.value
-   * @returns void, but will throw if invalid amount
-   */
-  private static void assertIouIsValid(BigDecimal decimal) {
-    if (!decimal.equals(BigDecimal.ZERO)) {
-      int p = decimal.precision();
-      int e = MathUtils.getExponent(decimal);
-      if (p > MAX_IOU_PRECISION ||
-          e > MAX_IOU_EXPONENT ||
-          e < MIN_IOU_EXPONENT
-      ) {
-        throw new Error("Decimal precision out of range");
-      }
-      verifyNoDecimal(decimal);
-    }
-  }
-
-  /**
-   * Ensure that the value after being multiplied by the exponent does not
-   * contain a decimal.
-   *
-   * @param decimal a Decimal object
-   * @returns a string of the object without a decimal
-   */
-  private static void verifyNoDecimal(BigDecimal decimal) {
-    BigDecimal exponent = new BigDecimal("1e" + -(MathUtils.getExponent(decimal) - 15));
-    String integerNumberString = decimal.multiply(exponent).toPlainString();
-    if (integerNumberString.indexOf(".") > 0) {
-      throw new Error("Decimal place found in integerNumberString");
-    }
   }
 
 }

@@ -14,6 +14,7 @@ import java.util.Optional;
 /**
  * Represents the <a href="https://xrpl.org/ripplestate.html">RippleState XRP Ledger Object</a>.
  *
+ *
  * <p>There can only be one {@link RippleStateObject} per currency for any given pair of accounts. Since no account
  * is privileged in the XRP Ledger, a {@link RippleStateObject} sorts account addresses numerically, to ensure
  * a canonical form. Whichever address is numerically lower when decoded is deemed the "low account" and the

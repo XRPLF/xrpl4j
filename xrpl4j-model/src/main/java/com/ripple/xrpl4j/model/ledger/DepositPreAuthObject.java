@@ -14,10 +14,11 @@ import org.immutables.value.Value;
 /**
  * Tracks a preauthorization from one account to another. {@link DepositPreAuth} transactions create these objects.
  *
- * This has no effect on processing of {@link Transaction}s unless the account that provided the preauthorization
+ *
+ * <p>This has no effect on processing of {@link Transaction}s unless the account that provided the preauthorization
  * requires Deposit Authorization. In that case, the account that was preauthorized can send payments and
  * other transactions directly to the account that provided the preauthorization.
- * Preauthorizations are uni-directional, and have no effect on payments going the opposite direction.
+ * Preauthorizations are uni-directional, and have no effect on payments going the opposite direction.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableDepositPreAuthObject.class)
@@ -58,7 +59,7 @@ public interface DepositPreAuthObject extends LedgerObject {
    * A hint indicating which page of the sender's owner directory links to this object, in case the directory
    * consists of multiple pages.
    *
-   * Note: The object does not contain a direct link to the owner directory containing it, since that value can be
+   * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
    * derived from the Account.
    */
   @JsonProperty("OwnerNode")
@@ -77,7 +78,7 @@ public interface DepositPreAuthObject extends LedgerObject {
   UnsignedInteger previousTransactionLedgerSequence();
 
   /**
-   * The unique ID of the {@link DepositPreAuthObject}
+   * The unique ID of the {@link DepositPreAuthObject}.
    */
   String index();
 }

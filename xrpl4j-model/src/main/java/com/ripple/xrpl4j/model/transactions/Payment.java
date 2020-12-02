@@ -28,8 +28,8 @@ public interface Payment extends Transaction {
   /**
    * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link Flags}
    * object containing the {@link Long} representation of the set bits.
-   * <p>
-   * The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
+   *
+   * <p>The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
    */
   @JsonProperty("Flags")
   @Value.Default
@@ -67,8 +67,8 @@ public interface Payment extends Transaction {
   /**
    * A {@link List} of {@link List}s of payment paths to be used for this transaction. Must be omitted for XRP-to-XRP
    * transactions.
-   * <p>
-   * This field is auto-fillable
+   *
+   * <p>This field is auto-fillable
    *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
@@ -78,8 +78,8 @@ public interface Payment extends Transaction {
   /**
    * Highest amount of source currency this transaction is allowed to cost, including transfer fees, exchange rates, and
    * slippage. Does not include the XRP destroyed as a cost for submitting the transaction.
-   * <p>
-   * Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
+   *
+   * <p>Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
    *
    * @see "https://xrpl.org/transfer-fees.html"
    * @see "https://en.wikipedia.org/wiki/Slippage_%28finance%29"

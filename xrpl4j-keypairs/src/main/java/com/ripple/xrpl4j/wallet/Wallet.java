@@ -32,6 +32,7 @@ public interface Wallet {
 
   /**
    * The XRPL address of this wallet, in the X-Address form.
+   *
    * @return
    */
   // TODO: Create wrapper type.

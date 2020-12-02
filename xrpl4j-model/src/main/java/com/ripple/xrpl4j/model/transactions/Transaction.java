@@ -15,36 +15,36 @@ import java.util.Optional;
 public interface Transaction {
 
   Map<Class<? extends Transaction>, TransactionType> typeMap =
-    new ImmutableMap.Builder<Class<? extends Transaction>, TransactionType>()
-      .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
-      .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
-      .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
-      .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
-      .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
-      .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
-      .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
-      .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
-      .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
-      .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
-      .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
-      .put(ImmutablePayment.class, TransactionType.PAYMENT)
-      .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
-      .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
-      .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
-      .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
-      .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
-      .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
-      .build();
+      new ImmutableMap.Builder<Class<? extends Transaction>, TransactionType>()
+          .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
+          .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
+          .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
+          .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
+          .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
+          .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
+          .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
+          .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
+          .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
+          .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
+          .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
+          .put(ImmutablePayment.class, TransactionType.PAYMENT)
+          .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
+          .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
+          .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+          .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
+          .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
+          .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
+          .build();
 
   static XrpCurrencyAmount computeMultiSigFee(
-    final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerList signerList
+      final XrpCurrencyAmount currentLedgerFeeDrops,
+      final SignerList signerList
   ) {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(signerList);
 
     return currentLedgerFeeDrops
-      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+        .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
   }
 
   /**
@@ -64,8 +64,8 @@ public interface Transaction {
   /**
    * The {@link String} representation of an integer amount of XRP, in drops, to be destroyed as a cost for distributing
    * this Payment transaction to the network.
-   * <p>
-   * This field is auto-fillable
+   *
+   * <p>This field is auto-fillable
    *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
@@ -75,8 +75,8 @@ public interface Transaction {
   /**
    * The sequence number of the account submitting the {@link Transaction}. A {@link Transaction} is only valid if the
    * Sequence number is exactly 1 greater than the previous transaction from the same account.
-   * <p>
-   * This field is auto-fillable
+   *
+   * <p>This field is auto-fillable
    *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
@@ -119,8 +119,8 @@ public interface Transaction {
   /**
    * Hex representation of the public key that corresponds to the private key used to sign this transaction. If an empty
    * string, indicates a multi-signature is present in the {@link Transaction#signers()} field instead.
-   * <p>
-   * This field is automatically added when signing this {@link Transaction}.
+   *
+   * <p>This field is automatically added when signing this {@link Transaction}.
    */
   @JsonInclude(JsonInclude.Include.NON_ABSENT)
   @JsonProperty("SigningPubKey")
@@ -128,8 +128,8 @@ public interface Transaction {
 
   /**
    * The signature that verifies this transaction as originating from the account it says it is from.
-   * <p>
-   * This field is automatically added when signing this {@link Transaction}.
+   *
+   * <p>This field is automatically added when signing this {@link Transaction}.
    */
   @JsonProperty("TxnSignature")
   Optional<String> transactionSignature();

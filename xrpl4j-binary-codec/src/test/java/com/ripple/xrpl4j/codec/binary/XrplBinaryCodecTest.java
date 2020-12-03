@@ -91,6 +91,17 @@ class XrplBinaryCodecTest {
   }
 
   @Test
+  void encodeDecodeBigBlob() throws JsonProcessingException {
+    String bigValue = Strings.repeat("A", 50000);
+    String json = "{\"Domain\":\"" + bigValue + "\"}";
+    String blobType = "77";
+    String lengthInHex = "F130E7"; // 50000 encoded in XRPL hex length encoding
+    String hex = blobType + lengthInHex + bigValue;
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
   void encodeDecodeIssuedCurrency() throws JsonProcessingException {
     String json = "{\"Fee\":{\"currency\":\"USD\",\"value\":\"123\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"}}";
     String hex = "68D5045EADB112E00000000000000000000000000055534400000000005E7B112523F68D2F5E879DB4EAC51C6698A69304";

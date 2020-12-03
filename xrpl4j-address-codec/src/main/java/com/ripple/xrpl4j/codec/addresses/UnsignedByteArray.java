@@ -46,7 +46,7 @@ public class UnsignedByteArray {
     List<UnsignedByte> unsignedBytes = new ArrayList<>();
     unsignedBytes.add(first);
     for (int i = 0; i < rest.length; i++) {
-      unsignedBytes.add(i, rest[i]);
+      unsignedBytes.add(rest[i]);
     }
     return new UnsignedByteArray(unsignedBytes);
   }

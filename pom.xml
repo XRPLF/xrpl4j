@@ -3,14 +3,14 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.ripple</groupId>
+  <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-parent</artifactId>
   <packaging>pom</packaging>
   <version>HEAD-SNAPSHOT</version>
 
   <name>xrpl4j parent</name>
   <description>Parent project for xrpl4j modules.</description>
-  <url>https://github.com/ripple/xrpl4j</url>
+  <url>https://github.com/XRPLF/xrpl4j</url>
   <inceptionYear>2020</inceptionYear>
 
   <licenses>
@@ -22,7 +22,7 @@
   </licenses>
 
   <organization>
-    <name>Ripple and its contributors</name>
+    <name>XRPL Foundation and its contributors</name>
   </organization>
 
   <dependencies>
@@ -230,9 +230,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/ripple/xrpl4j.git</connection>
-    <url>scm:git:git@github.com:ripple/xrpl4j.git</url>
-    <developerConnection>scm:git:git@github.com:ripple/xrpl4j.git</developerConnection>
+    <connection>scm:git:git://github.com/XRPLF/xrpl4j.git</connection>
+    <url>scm:git:git@github.com:XRPLF/xrpl4j.git</url>
+    <developerConnection>scm:git:git@github.com:XRPLF/xrpl4j.git</developerConnection>
   </scm>
 
   <properties>

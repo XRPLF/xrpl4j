@@ -5,4 +5,4 @@ Library providing Java objects modeling [XRP Ledger Objects](https://xrpl.org/le
 ## Usage
 The objects in this module are annotated with `@Value.Immutable` from the [immutables library](https://immutables.github.io/), which generates immutable implementations with builders, copy constructors, and other useful boilerplate code.
 
-These objects can be serialized to and deserialized from the rippled JSON representations using the provided Jackson `ObjectMapper`, which can be instantiated using [`ObjectMapperFactory`](src/main/java/com/ripple/xrpl4j/model/jackson/ObjectMapperFactory.java).
+These objects can be serialized to and deserialized from the rippled JSON representations using the provided Jackson `ObjectMapper`, which can be instantiated using [`ObjectMapperFactory`](src/main/java/org/xrpl/xrpl4j/model/jackson/ObjectMapperFactory.java).

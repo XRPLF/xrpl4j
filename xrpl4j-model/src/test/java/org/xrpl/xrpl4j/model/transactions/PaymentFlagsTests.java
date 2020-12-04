@@ -76,7 +76,7 @@ public class PaymentFlagsTests {
         (tfPartialPayment ? 0x00020000L : 0L) |
         (tfLimitQuality ? 0x00040000L : 0L);
 
-    Assertions.assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
+    assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
   }
 
   @Test
@@ -95,10 +95,10 @@ public class PaymentFlagsTests {
         .sequence(UnsignedInteger.ONE)
         .build();
 
-    Assertions.assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
-    Assertions.assertThat(payment.flags().tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
-    Assertions.assertThat(payment.flags().tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
-    Assertions.assertThat(payment.flags().tfPartialPayment()).isEqualTo(tfPartialPayment);
-    Assertions.assertThat(payment.flags().tfLimitQuality()).isEqualTo(tfLimitQuality);
+    assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
+    assertThat(payment.flags().tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(payment.flags().tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
+    assertThat(payment.flags().tfPartialPayment()).isEqualTo(tfPartialPayment);
+    assertThat(payment.flags().tfLimitQuality()).isEqualTo(tfLimitQuality);
   }
 }

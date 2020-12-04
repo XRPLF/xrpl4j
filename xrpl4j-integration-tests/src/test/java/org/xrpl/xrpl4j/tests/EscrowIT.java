@@ -147,7 +147,7 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(5))))
         .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(1))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
@@ -188,7 +188,12 @@ public class EscrowIT extends AbstractIT {
             FluentCompareTo.is(ledgerResult.ledger().closeTime())
                 .greaterThan(
                     createResult.transaction().cancelAfter()
-                        .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(10)))
+                        .map(cancelAfter -> {
+                          UnsignedLong bufferedCancelAfter = cancelAfter.plus(UnsignedLong.valueOf(12));
+                          logger.info("Ledger close time: {}; Cancel after + 10: {}",
+                              ledgerResult.ledger().closeTime(), bufferedCancelAfter);
+                          return bufferedCancelAfter;
+                        })
                         .orElse(UnsignedLong.MAX_VALUE)
                 )
     );

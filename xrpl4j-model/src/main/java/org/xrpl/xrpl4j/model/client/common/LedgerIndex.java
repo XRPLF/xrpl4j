@@ -4,6 +4,8 @@ import com.google.common.primitives.UnsignedLong;
 
 /**
  * Represents a ledger index, which can either be an integer or a shortcut {@link String}.
+ *
+ * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
  */
 public class LedgerIndex {
 

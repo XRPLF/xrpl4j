@@ -2,6 +2,8 @@ package org.xrpl.xrpl4j.model.client.common;
 
 import com.google.common.primitives.UnsignedLong;
 
+import java.util.Objects;
+
 /**
  * Represents a ledger index, which can either be an integer or a shortcut {@link String}.
  *
@@ -78,5 +80,22 @@ public class LedgerIndex {
    */
   public LedgerIndex plus(LedgerIndex other) {
     return plus(other.unsignedLongValue());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof LedgerIndex)) {
+      return false;
+    }
+    LedgerIndex that = (LedgerIndex) o;
+    return Objects.equals(value, that.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value);
   }
 }

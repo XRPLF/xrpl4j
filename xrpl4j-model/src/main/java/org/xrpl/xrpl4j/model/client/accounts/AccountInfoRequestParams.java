@@ -3,10 +3,10 @@ package org.xrpl.xrpl4j.model.client.accounts;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
-import org.xrpl.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Optional;
 
@@ -30,14 +30,11 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
   @JsonProperty("ledger_hash")
   Optional<String> ledgerHash();
 
-  @JsonSerialize(using = LedgerIndexSerializer.class)
   @JsonProperty("ledger_index")
   @Value.Default
-  default String ledgerIndex() {
-    return "current";
+  default LedgerIndex ledgerIndex() {
+    return LedgerIndex.CURRENT;
   }
-
-  ;
 
   @Value.Default
   default boolean strict() {

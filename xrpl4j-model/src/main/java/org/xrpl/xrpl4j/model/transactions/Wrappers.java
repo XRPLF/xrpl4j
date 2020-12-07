@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.model.transactions.immutables.Wrapped;
-import org.xrpl.xrpl4j.model.transactions.immutables.Wrapper;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.immutables.Wrapped;
+import org.xrpl.xrpl4j.model.immutables.Wrapper;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

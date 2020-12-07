@@ -3,8 +3,8 @@ package org.xrpl.xrpl4j.model.client.fees;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
  * A sub-object of {@link FeeResult} containing various information about the transaction cost, in drops of XRP,

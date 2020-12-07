@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-import org.immutables.value.Value;
 
 /**
  * The result of a tx rippled API method call.
@@ -41,7 +41,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    * The ledger index of the ledger that includes this {@link Transaction}.
    */
   @JsonProperty("ledger_index")
-  UnsignedInteger ledgerIndex();
+  LedgerIndex ledgerIndex();
 
   /**
    * True if this data is from a validated ledger version; if omitted or set to false, this data is not final.

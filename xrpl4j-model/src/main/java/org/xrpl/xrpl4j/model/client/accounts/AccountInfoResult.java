@@ -3,10 +3,10 @@ package org.xrpl.xrpl4j.model.client.accounts;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
-import org.immutables.value.Value;
 
 import java.util.Optional;
 
@@ -33,14 +33,14 @@ public interface AccountInfoResult extends XrplResult {
    * which was used when retrieving this information.
    */
   @JsonProperty("ledger_current_index")
-  Optional<UnsignedInteger> ledgerCurrentIndex();
+  Optional<LedgerIndex> ledgerCurrentIndex();
 
   /**
    * (Omitted if ledger_current_index is provided instead) The ledger index of the ledger version used when
    * retrieving this information. The information does not contain any changes from ledger versions newer than this one.
    */
   @JsonProperty("ledger_index")
-  Optional<UnsignedInteger> ledgerIndex();
+  Optional<LedgerIndex> ledgerIndex();
 
   /**
    * (Omitted unless queue specified as true and querying the current open ledger.)

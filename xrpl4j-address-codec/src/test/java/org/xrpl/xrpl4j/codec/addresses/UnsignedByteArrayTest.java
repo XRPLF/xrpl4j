@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.codec.addresses;
 
 import static org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray.of;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;

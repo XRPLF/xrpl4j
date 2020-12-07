@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-import org.immutables.value.Value.Immutable;
 
 import java.util.Optional;
 
@@ -105,6 +106,6 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * This provides a lower bound on the ledger versions that the transaction can appear in as a result of this request.
    */
   @JsonProperty("validated_ledger_index")
-  UnsignedInteger validatedLedgerIndex();
+  LedgerIndex validatedLedgerIndex();
 
 }

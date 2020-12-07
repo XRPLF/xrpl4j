@@ -4,13 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.xrpl.xrpl4j.codec.binary.definitions.DefinitionsService;
-import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
-import org.xrpl.xrpl4j.codec.fixtures.data.ValueTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xrpl.xrpl4j.codec.binary.definitions.DefinitionsService;
+import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
+import org.xrpl.xrpl4j.codec.fixtures.data.ValueTest;
 
 import java.io.IOException;
 import java.util.stream.Stream;

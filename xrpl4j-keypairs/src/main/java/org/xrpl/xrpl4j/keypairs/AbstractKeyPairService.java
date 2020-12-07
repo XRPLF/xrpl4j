@@ -2,11 +2,11 @@ package org.xrpl.xrpl4j.keypairs;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
+import org.bouncycastle.crypto.Signer;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.bouncycastle.crypto.Signer;
-import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 import java.security.SecureRandom;
 

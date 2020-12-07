@@ -3,12 +3,11 @@ package org.xrpl.xrpl4j.model.client.path;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
-import org.xrpl.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,10 +75,9 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
    * <p>Defaults to "current".
    */
   @JsonProperty("ledger_index")
-  @JsonSerialize(using = LedgerIndexSerializer.class)
   @Value.Default
-  default String ledgerIndex() {
-    return "current";
+  default LedgerIndex ledgerIndex() {
+    return LedgerIndex.CURRENT;
   }
 
 }

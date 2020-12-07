@@ -3,10 +3,10 @@ package org.xrpl.xrpl4j.model.client.channels;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.immutables.value.Value;
 
 /**
  * A payment channel claim that can be signed by the source account of a payment channel

@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
-import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowFinish.Builder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowFinish.Builder;
 
 /**
  * Unit tests for {@link EscrowFinish}.

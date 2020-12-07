@@ -3,8 +3,8 @@ package org.xrpl.xrpl4j.keypairs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.junit.Test;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 public class DefaultKeyPairServiceTest {
 

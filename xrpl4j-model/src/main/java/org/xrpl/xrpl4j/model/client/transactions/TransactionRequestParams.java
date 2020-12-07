@@ -3,9 +3,9 @@ package org.xrpl.xrpl4j.model.client.transactions;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 
 import java.util.Optional;
 
@@ -57,7 +57,7 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * <p>If the server cannot find the transaction, it confirms whether it was able to search all the
    * ledgers in this range.
    */
-  Optional<UnsignedInteger> minLedger();
+  Optional<LedgerIndex> minLedger();
 
   /**
    * Use this with {@link TransactionRequestParams#minLedger()} to specify a range of up to 1000 ledger indexes,
@@ -66,6 +66,6 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * <p>If the server cannot find the transaction, it confirms whether it was able to search all the ledgers in the
    * requested range.
    */
-  Optional<UnsignedInteger> maxLedger();
+  Optional<LedgerIndex> maxLedger();
 
 }

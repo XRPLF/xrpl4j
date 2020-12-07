@@ -5,8 +5,8 @@ import static org.junit.Assert.fail;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.junit.Test;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
 import java.util.Arrays;
 

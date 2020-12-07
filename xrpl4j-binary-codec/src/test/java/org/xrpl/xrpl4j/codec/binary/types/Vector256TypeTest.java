@@ -2,8 +2,8 @@ package org.xrpl.xrpl4j.codec.binary.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.OptionalInt;
 

@@ -3,6 +3,10 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -16,10 +20,6 @@ import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.awaitility.Awaitility;
-import org.awaitility.Duration;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Collection;

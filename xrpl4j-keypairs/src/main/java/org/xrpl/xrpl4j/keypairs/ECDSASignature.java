@@ -1,12 +1,12 @@
 package org.xrpl.xrpl4j.keypairs;
 
 import com.google.common.base.Preconditions;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERSequenceGenerator;
 import org.bouncycastle.asn1.DLSequence;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

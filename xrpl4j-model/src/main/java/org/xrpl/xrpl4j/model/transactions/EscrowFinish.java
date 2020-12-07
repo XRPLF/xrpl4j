@@ -8,8 +8,8 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.Fulfillment;
-import org.xrpl.xrpl4j.model.transactions.immutables.FluentCompareTo;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
 import java.util.Objects;
 import java.util.Optional;

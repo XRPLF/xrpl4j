@@ -7,15 +7,15 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
+import org.json.JSONException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.json.JSONException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class EscrowJsonTests extends AbstractJsonTest {
 

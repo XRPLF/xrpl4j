@@ -2,14 +2,14 @@ package org.xrpl.xrpl4j.model.transactions.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import org.json.JSONException;
+import org.junit.Test;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.json.JSONException;
-import org.junit.Test;
 
 public class CheckJsonTests extends AbstractJsonTest {
 

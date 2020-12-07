@@ -3,10 +3,9 @@ package org.xrpl.xrpl4j.model.client.path;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.immutables.value.Value;
 
 import java.util.List;
 

@@ -30,8 +30,6 @@ import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-import org.xrpl.xrpl4j.tests.environment.LocalRippledEnvironment;
-import org.xrpl.xrpl4j.tests.environment.TestnetEnvironment;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
@@ -49,20 +47,7 @@ public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
 
-  // Use the local rippled environment by default because it's faster and more predictable for testing.
-  // Switching to the TestnetEnvironment can make it easier to debug transactions using in the testnet explorer website.
-  protected static XrplEnvironment xrplEnvironment = isTestnetEnabled() ?
-    new TestnetEnvironment() :
-    new LocalRippledEnvironment();
-
-  /**
-   * Testnet mode can be enabled by setting property "-DuseTestnet". If enabled, returns true.
-   * @return
-   */
-  private static boolean isTestnetEnabled() {
-    String useTestnet = System.getProperty("useTestnet");
-    return useTestnet != null;
-  }
+  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 

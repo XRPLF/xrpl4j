@@ -6,9 +6,11 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -18,7 +20,6 @@ import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -47,8 +48,8 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(20))))
-        .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .cancelAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
+        .finishAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(1))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
 
@@ -147,8 +148,8 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(5))))
-        .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(1))))
+        .cancelAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
+        .finishAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(1))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
 
@@ -189,7 +190,7 @@ public class EscrowIT extends AbstractIT {
                 .greaterThan(
                     createResult.transaction().cancelAfter()
                         .map(cancelAfter -> {
-                          UnsignedLong bufferedCancelAfter = cancelAfter.plus(UnsignedLong.valueOf(12));
+                          UnsignedLong bufferedCancelAfter = cancelAfter.plus(UnsignedLong.valueOf(5));
                           logger.info("Ledger close time: {}; Cancel after + 10: {}",
                               ledgerResult.ledger().closeTime(), bufferedCancelAfter);
                           return bufferedCancelAfter;
@@ -263,7 +264,7 @@ public class EscrowIT extends AbstractIT {
         .destination(receiverWallet.classicAddress())
         .signingPublicKey(senderWallet.publicKey())
         // With the fix1571 amendment enabled, you must supply FinishAfter, Condition, or both.
-        .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .finishAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
         .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
         .build();
 
@@ -370,7 +371,7 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .cancelAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
         .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
         .signingPublicKey(senderWallet.publicKey())
         .build();
@@ -447,6 +448,15 @@ public class EscrowIT extends AbstractIT {
         )
     );
 
+  }
+
+  /**
+   * Returns the close time of the last validated ledger.
+   * @return
+   */
+  private Instant lastCloseTime() {
+    LedgerResult result = getValidatedLedger();
+    return xrpTimestampToInstant(result.ledger().closeTime());
   }
 
 }

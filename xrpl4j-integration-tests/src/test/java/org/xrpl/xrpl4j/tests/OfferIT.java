@@ -3,6 +3,11 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -16,10 +21,6 @@ import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.awaitility.Awaitility;
-import org.awaitility.Duration;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -28,7 +29,55 @@ import java.util.function.Supplier;
 public class OfferIT extends AbstractIT {
 
   public static final String CURRENCY = "USD";
-  private final Address TESTNET_USD_ISSUER = Address.of("rD9W7ULveavz8qBGM1R5jMgK2QKsEDPQVi");
+  private static final Wallet issuerWallet = RippledContainer.getMasterWallet();
+  private static final Address TESTNET_USD_ISSUER = issuerWallet.classicAddress();
+
+  private static boolean usdIssued = false;
+
+  @BeforeEach
+  public void ensureUsdIssued() throws JsonRpcClientErrorException {
+    // this only needs to run once before all tests but can't be a BeforeAll static method due to dependencies on
+    // field level objects in the AbstractIT
+    if (usdIssued) {
+      return;
+    }
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult accountInfoResult =
+      this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.classicAddress()));
+
+    //////////////////////
+    // Create an Offer
+    UnsignedInteger sequence = accountInfoResult.accountData().sequence();
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(issuerWallet.classicAddress())
+      .fee(feeResult.drops().minimumFee())
+      .sequence(sequence)
+      .signingPublicKey(issuerWallet.publicKey())
+      .takerGets(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(TESTNET_USD_ISSUER)
+        .value("1000")
+        .build()
+      )
+      .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2000.0)))
+      .flags(Flags.OfferFlags.builder()
+        .fullyCanonicalSig(true)
+        .sell(true)
+        .build())
+      .build();
+
+    SubmitResult<OfferCreate> response = xrplClient.submit(issuerWallet, offerCreate);
+    assertThat(response.transaction().flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(response.transaction().flags().tfSell()).isTrue();
+
+    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info(
+      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+      response.transaction().hash().orElse("n/a")
+    );
+    usdIssued = true;
+  }
 
   @Test
   public void createOpenOfferAndCancel() throws JsonRpcClientErrorException {
@@ -79,7 +128,7 @@ public class OfferIT extends AbstractIT {
     assertThat(offerObject.takerGets()).isEqualTo(offerCreate.takerGets());
     assertThat(offerObject.takerPays()).isEqualTo(offerCreate.takerPays());
 
-    cancelOffer(purchaser, offerObject.sequence());
+    cancelOffer(purchaser, offerObject.sequence(), "tesSUCCESS");
   }
 
   /**
@@ -89,7 +138,7 @@ public class OfferIT extends AbstractIT {
    * @param offerSequence
    * @throws JsonRpcClientErrorException
    */
-  private void cancelOffer(Wallet purchaser, UnsignedInteger offerSequence) throws JsonRpcClientErrorException {
+  private void cancelOffer(Wallet purchaser, UnsignedInteger offerSequence, String expectedResult) throws JsonRpcClientErrorException {
     AccountInfoResult infoResult = this.scanForResult(() -> this.getValidatedAccountInfo(purchaser.classicAddress()));
     UnsignedInteger nextSequence = infoResult.accountData().sequence();
 
@@ -102,7 +151,7 @@ public class OfferIT extends AbstractIT {
         .build();
 
     SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(purchaser, offerCancel);
-    assertThat(cancelResponse.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(cancelResponse.engineResult()).isNotEmpty().get().isEqualTo(expectedResult);
 
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), RippleStateObject.class));
@@ -220,9 +269,9 @@ public class OfferIT extends AbstractIT {
   @Test
   public void cancelNonExistentOffer() throws JsonRpcClientErrorException {
     Wallet purchaser = createRandomAccount();
-    UnsignedInteger nonExistentOfferSequence = UnsignedInteger.valueOf(12345);
+    UnsignedInteger nonExistentOfferSequence = UnsignedInteger.valueOf(111111111);
     // cancel offer does the assertions
-    cancelOffer(purchaser, nonExistentOfferSequence);
+    cancelOffer(purchaser, nonExistentOfferSequence, "temBAD_SEQUENCE");
   }
 
   public OfferObject scanForOffer(Wallet purchaser, UnsignedInteger sequence) {

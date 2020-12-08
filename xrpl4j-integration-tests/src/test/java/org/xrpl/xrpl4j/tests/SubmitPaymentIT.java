@@ -2,16 +2,14 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.faucet.FaucetAccountResponse;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.junit.jupiter.api.Test;
 
 public class SubmitPaymentIT extends AbstractIT {
 
@@ -19,11 +17,6 @@ public class SubmitPaymentIT extends AbstractIT {
   public void sendPayment() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
-
-    FaucetAccountResponse fundDestinationResponse =
-        faucetClient.fundAccount(FundAccountRequest.of(destinationWallet.classicAddress().value()));
-
-    assertThat(fundDestinationResponse.amount()).isGreaterThan(0);
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
@@ -53,10 +46,7 @@ public class SubmitPaymentIT extends AbstractIT {
     Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
     logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
 
-    FaucetAccountResponse fundResponse =
-        faucetClient.fundAccount(FundAccountRequest.of(senderWallet.classicAddress().value()));
-    logger.info("Source account has been funded");
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    fundAccount(senderWallet);
 
     Wallet destinationWallet = createRandomAccount();
 

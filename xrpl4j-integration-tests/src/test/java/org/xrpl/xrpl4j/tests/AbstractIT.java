@@ -6,11 +6,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.google.common.primitives.UnsignedLong;
+import org.awaitility.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.client.faucet.FaucetAccountResponse;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -19,26 +19,27 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.wallet.Wallet;
 import org.xrpl.xrpl4j.wallet.WalletFactory;
-import okhttp3.HttpUrl;
-import org.awaitility.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -49,12 +50,11 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
+  protected static RippledContainer rippledContainer = new RippledContainer().start();
+
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final FaucetClient faucetClient =
-      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  protected final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
+  protected final XrplClient xrplClient = rippledContainer.getXrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   protected Wallet createRandomAccount() {
@@ -64,12 +64,22 @@ public abstract class AbstractIT {
     final Wallet wallet = seedResult.wallet();
     logger.info("Generated testnet wallet with address {}", wallet.xAddress());
 
-    ///////////////////////
-    // Fund the account
-    FaucetAccountResponse fundResponse = faucetClient.fundAccount(FundAccountRequest.of(wallet.classicAddress().value()));
-    logger.info("Account has been funded: {}", fundResponse);
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    fundAccount(wallet);
+
     return wallet;
+  }
+
+  /**
+   * Funds a wallet with 1000 XRP using the Master wallet on the rippled test container.
+   * @param wallet
+   */
+  protected void fundAccount(Wallet wallet) {
+    try {
+      sendPayment(rippledContainer.getMasterWallet(), wallet.classicAddress(),
+        XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1000)));
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException("could not fund account", e);
+    }
   }
 
   //////////////////////
@@ -228,6 +238,48 @@ public abstract class AbstractIT {
 
   protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
     return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
+  }
+
+  protected AccountInfoResult getCurrentAccountInfo(Address classicAddress) {
+    try {
+      AccountInfoRequestParams params = AccountInfoRequestParams.builder()
+        .account(classicAddress)
+        .ledgerIndex("current")
+        .build();
+      return xrplClient.accountInfo(params);
+    } catch (Exception | JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected void sendPayment(Wallet sourceWallet, Address destinationAddress, XrpCurrencyAmount paymentAmount)
+    throws JsonRpcClientErrorException {
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getCurrentAccountInfo(sourceWallet.classicAddress()));
+    Payment payment = Payment.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().minimumFee())
+      .sequence(accountInfo.accountData().sequence())
+      .destination(destinationAddress)
+      .amount(paymentAmount)
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    logger.info("Payment successful: " + rippledContainer.getBaseUri().toString()
+      + result.transaction().hash().orElse("n/a"));
+
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        result.transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+        Payment.class)
+    );
+  }
+
+  Instant ledgerNow() throws JsonRpcClientErrorException {
+    return xrplClient.serverInfo().time().toInstant();
   }
 
 }

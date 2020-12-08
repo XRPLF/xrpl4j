@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import okhttp3.HttpUrl;
+import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
@@ -23,6 +25,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.rippled.XrplMethods;
+import org.xrpl.xrpl4j.model.client.server.ServerInfo;
+import org.xrpl.xrpl4j.model.client.server.ServerInfoWrapper;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
@@ -52,8 +56,6 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import okhttp3.HttpUrl;
-import org.immutables.value.Value;
 
 /**
  * A client which wraps a rippled network client and is responsible for higher order functionality such as signing
@@ -138,6 +140,21 @@ public class XrplClient {
         .build();
 
     return jsonRpcClient.send(request, FeeResult.class);
+  }
+
+  /**
+   * Get the "server_info" for the rippled node.
+   *
+   * @return A {@link ServerInfo} containing information about the server.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/server_info.html"
+   */
+  public ServerInfo serverInfo() throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SERVER_INFO)
+      .build();
+
+    return jsonRpcClient.send(request, ServerInfoWrapper.class).info();
   }
 
   /**

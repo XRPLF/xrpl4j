@@ -1,20 +1,15 @@
 package org.xrpl.xrpl4j.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.google.common.primitives.UnsignedLong;
-import okhttp3.HttpUrl;
 import org.awaitility.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.client.faucet.FaucetAccountResponse;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -36,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -51,12 +47,12 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
+
+  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final FaucetClient faucetClient =
-      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  protected final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
+  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   protected Wallet createRandomAccount() {
@@ -66,12 +62,17 @@ public abstract class AbstractIT {
     final Wallet wallet = seedResult.wallet();
     logger.info("Generated testnet wallet with address {}", wallet.xAddress());
 
-    ///////////////////////
-    // Fund the account
-    FaucetAccountResponse fundResponse = faucetClient.fundAccount(FundAccountRequest.of(wallet.classicAddress().value()));
-    logger.info("Account has been funded: {}", fundResponse);
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    fundAccount(wallet);
+
     return wallet;
+  }
+
+  /**
+   * Funds a wallet with 1000 XRP.
+   * @param wallet
+   */
+  protected void fundAccount(Wallet wallet) {
+    xrplEnvironment.fundAccount(wallet.classicAddress());
   }
 
   //////////////////////

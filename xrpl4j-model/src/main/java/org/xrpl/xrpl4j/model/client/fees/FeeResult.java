@@ -7,6 +7,8 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 
+import java.util.Optional;
+
 /**
  * The result of a fee rippled API call, which reports the current state of the open-ledger requirements
  * for the transaction cost.
@@ -59,8 +61,9 @@ public interface FeeResult extends XrplResult {
 
   /**
    * The maximum number of transactions that the transaction queue can currently hold.
+   * Optional because this may not be present on older versions of rippled.
    */
   @JsonProperty("max_queue_size")
-  String maxQueueSize();
+  Optional<String> maxQueueSize();
 
 }

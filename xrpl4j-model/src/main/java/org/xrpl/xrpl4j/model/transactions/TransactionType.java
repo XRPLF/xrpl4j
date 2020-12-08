@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Enumeration of the types of Transactions on the XRP Ledger.

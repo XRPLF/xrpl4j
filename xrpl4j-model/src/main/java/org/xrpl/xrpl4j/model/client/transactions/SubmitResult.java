@@ -44,7 +44,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
   String transactionBlob();
 
   /**
-   * The complete {@link Transaction} that was submitted.
+   * The complete {@link Transaction} that was submitted, as a {@link TransactionResult}.
    */
   @JsonProperty("tx_json")
   TransactionResult<TxnType> transactionResult();

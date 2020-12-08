@@ -5,21 +5,25 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-import org.xrpl.xrpl4j.model.transactions.TransactionType;
 
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * Custom deserializer for {@link TransactionResult}, which wraps the {@link Transaction} fields in the result JSON.
+ * This is similar to what {@link com.fasterxml.jackson.annotation.JsonUnwrapped} provides, but is necessary because
+ * deserializing polymorphic types to a {@link com.fasterxml.jackson.annotation.JsonUnwrapped} annotated field
+ * does not function properly.
+ *
+ * @param <T> The type of {@link Transaction} in the {@link TransactionResult}.
+ */
 public class TransactionResultDeserializer<T extends Transaction> extends StdDeserializer<TransactionResult<T>> {
 
   protected TransactionResultDeserializer() {

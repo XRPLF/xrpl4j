@@ -11,6 +11,10 @@ import org.xrpl.xrpl4j.model.transactions.TransactionType;
 
 import java.io.IOException;
 
+/**
+ * Custom deserializer for {@link Transaction}s, which deserializes to a specific {@link Transaction} type
+ * based on the TransactionType JSON field.
+ */
 public class TransactionDeserializer extends StdDeserializer<Transaction> {
 
   protected TransactionDeserializer() {

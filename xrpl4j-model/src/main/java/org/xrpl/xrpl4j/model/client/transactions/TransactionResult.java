@@ -1,9 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
@@ -19,7 +17,6 @@ import java.util.Optional;
  * @param <TxnType> The type of {@link Transaction} that was requested.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableTransactionResult.class)
 @JsonDeserialize(using = TransactionResultDeserializer.class)
 public interface TransactionResult<TxnType extends Transaction> extends XrplResult {
 
@@ -33,7 +30,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   TxnType transaction();
 
   /**
-   * The SHA-512 hash of the transaction in hexadecimal form.
+   * The SHA-512Half hash of the transaction in hexadecimal form.
    */
   Hash256 hash();
 

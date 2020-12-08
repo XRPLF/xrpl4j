@@ -48,8 +48,8 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
-        .finishAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(1))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
 
@@ -148,8 +148,8 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
-        .finishAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(1))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(1))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
 
@@ -264,7 +264,7 @@ public class EscrowIT extends AbstractIT {
         .destination(receiverWallet.classicAddress())
         .signingPublicKey(senderWallet.publicKey())
         // With the fix1571 amendment enabled, you must supply FinishAfter, Condition, or both.
-        .finishAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
         .build();
 
@@ -371,7 +371,7 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(lastCloseTime().plus(Duration.ofSeconds(5))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
         .signingPublicKey(senderWallet.publicKey())
         .build();
@@ -451,12 +451,16 @@ public class EscrowIT extends AbstractIT {
   }
 
   /**
-   * Returns the close time of the last validated ledger.
+   * Returns the minimum time that can be used for escrow expirations. The ledger will not
+   * accept an expiration time that is earlier than the last ledger close time so we must use the latter of
+   * current time or ledger close time (which for unexplained reasons can sometimes be later than now).
    * @return
    */
-  private Instant lastCloseTime() {
+  private Instant getMinExpirationTime() {
     LedgerResult result = getValidatedLedger();
-    return xrpTimestampToInstant(result.ledger().closeTime());
+    Instant closeTime =  xrpTimestampToInstant(result.ledger().closeTime());
+    Instant now = Instant.now();
+    return closeTime.isBefore(now) ? now : closeTime;
   }
 
 }

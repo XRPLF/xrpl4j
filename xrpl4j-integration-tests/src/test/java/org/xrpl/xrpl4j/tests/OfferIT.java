@@ -29,19 +29,23 @@ import java.util.function.Supplier;
 public class OfferIT extends AbstractIT {
 
   public static final String CURRENCY = "USD";
-  private static final Wallet issuerWallet = RippledContainer.getMasterWallet();
-  private static final Address TESTNET_USD_ISSUER = issuerWallet.classicAddress();
+
+  private static Wallet issuerWallet;
 
   private static boolean usdIssued = false;
 
+  /**
+   * Sets up an issued currency (USD) that can be used to test Offers against this currency.
+   * @throws JsonRpcClientErrorException
+   */
   @BeforeEach
   public void ensureUsdIssued() throws JsonRpcClientErrorException {
     // this only needs to run once before all tests but can't be a BeforeAll static method due to dependencies on
-    // field level objects in the AbstractIT
+    // instance methods in AbstractIT
     if (usdIssued) {
       return;
     }
-
+    issuerWallet = createRandomAccount();
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
       this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.classicAddress()));
@@ -56,11 +60,11 @@ public class OfferIT extends AbstractIT {
       .signingPublicKey(issuerWallet.publicKey())
       .takerGets(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(TESTNET_USD_ISSUER)
-        .value("1000")
+        .issuer(issuerWallet.classicAddress())
+        .value("100")
         .build()
       )
-      .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2000.0)))
+      .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0)))
       .flags(Flags.OfferFlags.builder()
         .fullyCanonicalSig(true)
         .sell(true)
@@ -101,7 +105,7 @@ public class OfferIT extends AbstractIT {
         .signingPublicKey(purchaser.publicKey())
         .takerPays(IssuedCurrencyAmount.builder()
             .currency("USD")
-            .issuer(TESTNET_USD_ISSUER)
+            .issuer(issuerWallet.classicAddress())
             .value("1000")
             .build()
         )
@@ -179,7 +183,7 @@ public class OfferIT extends AbstractIT {
         .signingPublicKey(purchaser.publicKey())
         .takerPays(IssuedCurrencyAmount.builder()
             .currency("USD")
-            .issuer(TESTNET_USD_ISSUER)
+            .issuer(issuerWallet.classicAddress())
             .value("1000")
             .build()
         )
@@ -231,7 +235,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     IssuedCurrencyAmount requestCurrencyAmount = IssuedCurrencyAmount.builder()
         .currency(CURRENCY)
-        .issuer(TESTNET_USD_ISSUER)
+        .issuer(issuerWallet.classicAddress())
         .value("0.01")
         .build();
 
@@ -253,13 +257,13 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
-    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaser, CURRENCY, TESTNET_USD_ISSUER);
+    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaser, CURRENCY, issuerWallet.classicAddress());
     // The "issuer" for the balance in a trust line depends on whether the balance is positive or negative.
     // If a RippleState object shows a positive balance, the high account is the issuer.
     // If the balance is negative, the low account is the issuer.
     // Often, the issuer has its limit set to 0 and the other account has a positive limit, but this is not reliable
     // because limits can change without affecting an existing balance.
-    if (issuedCurrency.lowLimit().issuer().equals(TESTNET_USD_ISSUER)) {
+    if (issuedCurrency.lowLimit().issuer().equals(issuerWallet.classicAddress())) {
       assertThat(issuedCurrency.balance().value()).isEqualTo("-" + requestCurrencyAmount.value());
     } else {
       assertThat(issuedCurrency.balance().value()).isEqualTo(requestCurrencyAmount.value());

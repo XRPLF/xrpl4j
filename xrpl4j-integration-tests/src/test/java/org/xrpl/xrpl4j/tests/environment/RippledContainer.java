@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests;
+package org.xrpl.xrpl4j.tests.environment;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -66,7 +66,6 @@ public class RippledContainer {
     }
     started = true;
     rippledContainer.start();
-    waitForLedgerTimeToSync();
     // rippled is run in standalone mode which means that ledgers won't automatically close. You have to manually
     // advance the ledger using the "ledger_accept" method on the admin API. To mimic the behavior of a networked
     // rippled, run a scheduled task to trigger the "ledger_accept" method.
@@ -74,6 +73,7 @@ public class RippledContainer {
       acceptIntervalMillis,
       acceptIntervalMillis,
       TimeUnit.MILLISECONDS);
+    waitForLedgerTimeToSync();
     return this;
   }
 
@@ -82,9 +82,9 @@ public class RippledContainer {
    */
   private void waitForLedgerTimeToSync() {
     Awaitility.await()
+      .pollDelay(org.awaitility.Duration.ONE_SECOND)
       .atMost(org.awaitility.Duration.TEN_SECONDS)
-      .until(() -> {
-        return Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1; });
+      .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
   }
 
   private ZonedDateTime getLedgerTime() {

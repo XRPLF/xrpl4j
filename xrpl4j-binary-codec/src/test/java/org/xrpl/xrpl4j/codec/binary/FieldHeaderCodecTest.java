@@ -3,11 +3,11 @@ package org.xrpl.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.definitions.DefaultDefinitionsProvider;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.FieldTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;

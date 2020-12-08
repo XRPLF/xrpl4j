@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -10,7 +11,6 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.junit.jupiter.api.Test;
 
 public class SetRegularKeyIT extends AbstractIT {
 

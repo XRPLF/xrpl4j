@@ -13,12 +13,12 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.time.Duration;

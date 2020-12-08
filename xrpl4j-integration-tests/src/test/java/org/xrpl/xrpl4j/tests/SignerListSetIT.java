@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
@@ -23,8 +25,6 @@ import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
 import java.util.List;

@@ -3,8 +3,8 @@ package org.xrpl.xrpl4j.model.client.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 
 /**
  * Request parameters for the submit API method.

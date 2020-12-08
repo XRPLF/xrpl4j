@@ -19,6 +19,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -124,7 +125,7 @@ public abstract class AbstractIT {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
@@ -136,7 +137,7 @@ public abstract class AbstractIT {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
       return ledgerObjects
@@ -153,7 +154,7 @@ public abstract class AbstractIT {
     try {
       AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountChannels(params);
     } catch (JsonRpcClientErrorException e) {
@@ -165,7 +166,7 @@ public abstract class AbstractIT {
     try {
       AccountInfoRequestParams params = AccountInfoRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountInfo(params);
     } catch (Exception | JsonRpcClientErrorException e) {
@@ -191,7 +192,7 @@ public abstract class AbstractIT {
   protected LedgerResult getValidatedLedger() {
     try {
       LedgerRequestParams params = LedgerRequestParams.builder()
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.ledger(params);
     } catch (JsonRpcClientErrorException e) {
@@ -209,7 +210,7 @@ public abstract class AbstractIT {
           .sourceAccount(sourceWallet.classicAddress())
           .destinationAccount(destinationWallet.classicAddress())
           .destinationAmount(destinationAmount)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
 
       return xrplClient.ripplePathFind(pathFindParams);
@@ -223,7 +224,7 @@ public abstract class AbstractIT {
       AccountLinesRequestParams params = AccountLinesRequestParams.builder()
           .account(classicAddress)
           .peer(peerAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
 
       return xrplClient.accountLines(params);

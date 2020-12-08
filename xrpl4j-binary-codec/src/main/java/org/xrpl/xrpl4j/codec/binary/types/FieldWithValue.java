@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.codec.binary.types;
 
-import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 
 @Immutable
 public interface FieldWithValue<T> extends Comparable {

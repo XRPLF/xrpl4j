@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.codec.binary.definitions;
 
-import org.xrpl.xrpl4j.codec.binary.FieldHeader;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.codec.binary.FieldHeader;
 
 /**
  * Holder of {@link FieldHeader} and {@link FieldInfo} data.

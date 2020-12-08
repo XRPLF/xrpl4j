@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
@@ -14,7 +15,6 @@ import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.junit.jupiter.api.Test;
 
 public class DepositPreAuthIT extends AbstractIT {
 

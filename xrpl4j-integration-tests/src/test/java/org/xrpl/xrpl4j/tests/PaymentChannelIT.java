@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
@@ -23,7 +24,6 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -111,7 +111,8 @@ public class PaymentChannelIT extends AbstractIT {
         accountInfo -> accountInfo.ledgerIndex()
             .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
             .equals(senderAccountInfo.ledgerIndex()
-                .orElseThrow(() -> new RuntimeException("Ledger index was not present.")).plus(UnsignedInteger.ONE))
+                .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
+                .plus(UnsignedLong.ONE))
     );
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())

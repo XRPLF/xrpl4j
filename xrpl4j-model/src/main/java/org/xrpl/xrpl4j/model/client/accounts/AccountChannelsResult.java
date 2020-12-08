@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public interface AccountChannelsResult extends XrplResult {
    * The Ledger Index of the ledger version used to generate this response.
    */
   @JsonProperty("ledger_index")
-  String ledgerIndex();
+  LedgerIndex ledgerIndex();
 
   /**
    * If true, the information in this response comes from a validated ledger version.

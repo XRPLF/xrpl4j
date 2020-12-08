@@ -1,7 +1,5 @@
 package org.xrpl.xrpl4j.codec.addresses;
 
-import static org.xrpl.xrpl4j.codec.addresses.AddressBase58.decode;
-import static org.xrpl.xrpl4j.codec.addresses.AddressBase58.encode;
 import static java.util.Arrays.copyOfRange;
 
 import com.google.common.collect.Lists;

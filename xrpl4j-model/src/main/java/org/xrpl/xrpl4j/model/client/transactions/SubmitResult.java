@@ -47,7 +47,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * The complete {@link Transaction} that was submitted.
    */
   @JsonProperty("tx_json")
-  TxnType transaction();
+  TransactionResult<TxnType> transactionResult();
 
   /**
    * The value true indicates that the transaction was applied, queued, broadcast, or kept for later.

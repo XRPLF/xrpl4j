@@ -38,12 +38,11 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+            result.transactionResult().hash(),
             Payment.class)
     );
   }
@@ -74,12 +73,11 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+            result.transactionResult().hash(),
             Payment.class)
     );
   }

@@ -9,6 +9,8 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
+import java.util.Optional;
+
 /**
  * The result of a tx rippled API method call.
  *
@@ -41,7 +43,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    * The ledger index of the ledger that includes this {@link Transaction}.
    */
   @JsonProperty("ledger_index")
-  LedgerIndex ledgerIndex();
+  Optional<LedgerIndex> ledgerIndex();
 
   /**
    * True if this data is from a validated ledger version; if omitted or set to false, this data is not final.

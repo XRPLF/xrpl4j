@@ -51,8 +51,7 @@ public class AccountSetIT extends AbstractIT {
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     logger.info(
-        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transaction().hash()
-            .orElse("n/a")
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
@@ -108,7 +107,7 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transaction().hash().orElse("n/a")
+        accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////
@@ -139,7 +138,7 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transaction().hash().orElse("n/a")
+        accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////

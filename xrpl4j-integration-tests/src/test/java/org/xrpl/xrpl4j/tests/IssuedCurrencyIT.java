@@ -129,8 +129,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     SubmitResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
-            .orElse("n/a")
+        "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transactionResult().hash()
     );
 
     ///////////////////////////
@@ -272,8 +271,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     SubmitResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
-            .orElse("n/a")
+        "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transactionResult().hash()
     );
 
     ///////////////////////////
@@ -320,8 +318,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     SubmitResult<AccountSet> setResult = xrplClient.submit(issuerWallet, setDefaultRipple);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + setResult.transaction().hash()
-            .orElse("n/a")
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + setResult.transactionResult().hash()
     );
 
     scanForResult(
@@ -359,14 +356,12 @@ public class IssuedCurrencyIT extends AbstractIT {
     SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transaction().hash()
-            .orElse("n/a")
+        "Payment transaction successful: https://testnet.xrpl.org/transactions/" + paymentResult.transactionResult().hash()
     );
 
     this.scanForResult(
         () -> getValidatedTransaction(
-            paymentResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            paymentResult.transactionResult().hash(),
             Payment.class)
     );
 
@@ -398,8 +393,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
     assertThat(trustSetSubmitResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" + trustSetSubmitResult.transaction().hash()
-            .orElse("n/a")
+        "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" + trustSetSubmitResult.transactionResult().hash()
     );
 
     return scanForResult(

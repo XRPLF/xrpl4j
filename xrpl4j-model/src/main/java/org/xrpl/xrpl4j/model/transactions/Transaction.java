@@ -134,9 +134,4 @@ public interface Transaction {
   @JsonProperty("TxnSignature")
   Optional<String> transactionSignature();
 
-  /**
-   * Unique transaction hash/id. Set by rippled. Only present on transactions that have been applied to the ledger.
-   */
-  @JsonProperty("hash")
-  Optional<String> hash();
 }

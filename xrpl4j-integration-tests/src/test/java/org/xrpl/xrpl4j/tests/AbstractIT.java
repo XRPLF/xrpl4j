@@ -67,7 +67,7 @@ public abstract class AbstractIT {
   }
 
   /**
-   * Funds a wallet with 1000 XRP using the Master wallet on the rippled test container.
+   * Funds a wallet with 1000 XRP.
    * @param wallet
    */
   protected void fundAccount(Wallet wallet) {

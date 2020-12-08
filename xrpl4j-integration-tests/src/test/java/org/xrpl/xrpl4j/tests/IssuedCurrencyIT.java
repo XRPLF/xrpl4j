@@ -361,7 +361,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     this.scanForResult(
         () -> getValidatedTransaction(
-            paymentResult.transactionResult().hash(),
+            paymentResult.transactionResult().hash().value(),
             Payment.class)
     );
 

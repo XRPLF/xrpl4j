@@ -80,7 +80,7 @@ public class DepositPreAuthIT extends AbstractIT {
     TransactionResult<Payment> validatedPayment = this.scanForResult(
         () -> this.getValidatedTransaction(
             paymentResult.transactionResult()
-                .hash(),
+                .hash().value(),
             Payment.class)
     );
 

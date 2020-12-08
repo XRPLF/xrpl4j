@@ -2,6 +2,8 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -14,8 +16,8 @@ import java.util.Optional;
 
 public interface Transaction {
 
-  Map<Class<? extends Transaction>, TransactionType> typeMap =
-      new ImmutableMap.Builder<Class<? extends Transaction>, TransactionType>()
+  BiMap<Class<? extends Transaction>, TransactionType> typeMap =
+      new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
           .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
           .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
           .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)

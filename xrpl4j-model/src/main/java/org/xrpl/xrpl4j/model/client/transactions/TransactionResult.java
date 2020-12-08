@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.jackson.modules.TransactionResultDeserializer;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Optional;
@@ -18,7 +20,7 @@ import java.util.Optional;
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableTransactionResult.class)
-@JsonDeserialize(as = ImmutableTransactionResult.class)
+@JsonDeserialize(using = TransactionResultDeserializer.class)
 public interface TransactionResult<TxnType extends Transaction> extends XrplResult {
 
   static <T extends Transaction> ImmutableTransactionResult.Builder<T> builder() {
@@ -27,17 +29,13 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
 
   /**
    * The {@link Transaction} that was returned as a result of the tx call.
-   *
-   * <p>In JSON form, the {@link Transaction} fields are included as root object fields, and thus this field
-   * needs the {@link JsonUnwrapped} annotation.
    */
-  @JsonUnwrapped
   TxnType transaction();
 
   /**
    * The SHA-512 hash of the transaction in hexadecimal form.
    */
-  String hash();
+  Hash256 hash();
 
   /**
    * The ledger index of the ledger that includes this {@link Transaction}.

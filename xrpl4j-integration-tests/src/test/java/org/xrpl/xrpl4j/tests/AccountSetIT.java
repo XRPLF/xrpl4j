@@ -34,7 +34,7 @@ public class AccountSetIT extends AbstractIT {
     ///////////////////////
     // Get validated account info and validate account state
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
-    assertThat(accountInfo.status()).isEqualTo("success");
+    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
     UnsignedInteger sequence = accountInfo.accountData().sequence();

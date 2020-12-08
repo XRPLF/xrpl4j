@@ -42,7 +42,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transactionResult().hash(),
+            result.transactionResult().hash().value(),
             Payment.class)
     );
   }
@@ -77,7 +77,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transactionResult().hash(),
+            result.transactionResult().hash().value(),
             Payment.class)
     );
   }

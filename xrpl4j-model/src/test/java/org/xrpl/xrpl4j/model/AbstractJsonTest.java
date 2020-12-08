@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.transactions.json;
+package org.xrpl.xrpl4j.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

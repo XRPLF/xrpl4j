@@ -5,6 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.json.JSONException;
 import org.junit.Test;
+import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;

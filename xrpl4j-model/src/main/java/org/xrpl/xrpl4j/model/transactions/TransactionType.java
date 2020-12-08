@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Enumeration of the types of Transactions on the XRP Ledger.
@@ -30,6 +31,16 @@ public enum TransactionType {
 
   TransactionType(String value) {
     this.value = value;
+  }
+
+  public static TransactionType forValue(String value) {
+    for (TransactionType transactionType : TransactionType.values()) {
+      if (transactionType.value.equals(value)) {
+        return transactionType;
+      }
+    }
+
+    throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
   }
 
   @JsonValue

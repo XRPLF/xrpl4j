@@ -64,7 +64,7 @@ public class EscrowIT extends AbstractIT {
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -77,6 +77,7 @@ public class EscrowIT extends AbstractIT {
             ledgerResult
                 .ledger()
                 .closeTime()
+                .orElse(UnsignedLong.ZERO)
                 .compareTo(createResult.transactionResult().transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
     );
 
@@ -104,7 +105,7 @@ public class EscrowIT extends AbstractIT {
     // Wait for the EscrowFinish to get applied to a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            finishResult.transactionResult().hash(),
+            finishResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -160,7 +161,7 @@ public class EscrowIT extends AbstractIT {
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -179,7 +180,7 @@ public class EscrowIT extends AbstractIT {
     this.scanForResult(
         this::getValidatedLedger,
         ledgerResult ->
-            FluentCompareTo.is(ledgerResult.ledger().closeTime())
+            FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
                 .greaterThan(
                     createResult.transactionResult().transaction().cancelAfter()
                         .map(cancelAfter -> {
@@ -213,7 +214,7 @@ public class EscrowIT extends AbstractIT {
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            cancelResult.transactionResult().hash(),
+            cancelResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -271,7 +272,7 @@ public class EscrowIT extends AbstractIT {
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -283,6 +284,7 @@ public class EscrowIT extends AbstractIT {
         ledgerResult -> ledgerResult
             .ledger()
             .closeTime()
+            .orElse(UnsignedLong.ZERO)
             .compareTo(createResult.transactionResult().transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
     );
 
@@ -316,7 +318,7 @@ public class EscrowIT extends AbstractIT {
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            finishResult.transactionResult().hash(),
+            finishResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -375,7 +377,7 @@ public class EscrowIT extends AbstractIT {
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -388,6 +390,7 @@ public class EscrowIT extends AbstractIT {
             ledgerResult
                 .ledger()
                 .closeTime()
+                .orElse(UnsignedLong.ZERO)
                 .compareTo(
                     createResult.transactionResult().transaction().cancelAfter()
                         .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
@@ -416,7 +419,7 @@ public class EscrowIT extends AbstractIT {
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            cancelResult.transactionResult().hash(),
+            cancelResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );

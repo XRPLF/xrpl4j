@@ -245,7 +245,7 @@ public abstract class AbstractIT {
     try {
       AccountInfoRequestParams params = AccountInfoRequestParams.builder()
         .account(classicAddress)
-        .ledgerIndex("current")
+        .ledgerIndex(LedgerIndex.CURRENT)
         .build();
       return xrplClient.accountInfo(params);
     } catch (Exception | JsonRpcClientErrorException e) {

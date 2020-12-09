@@ -23,6 +23,10 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableLedgerHeader.class)
 public interface LedgerHeader {
 
+  static ImmutableLedgerHeader.Builder builder() {
+    return ImmutableLedgerHeader.builder();
+  }
+
   /**
    * The ledger index of the ledger.
    */

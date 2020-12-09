@@ -184,12 +184,7 @@ public class EscrowIT extends AbstractIT {
             FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
                 .greaterThan(
                     createResult.transactionResult().transaction().cancelAfter()
-                        .map(cancelAfter -> {
-                          UnsignedLong bufferedCancelAfter = cancelAfter.plus(UnsignedLong.valueOf(5));
-                          logger.info("Ledger close time: {}; Cancel after + 10: {}",
-                              ledgerResult.ledger().closeTime(), bufferedCancelAfter);
-                          return bufferedCancelAfter;
-                        })
+                        .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
                         .orElse(UnsignedLong.MAX_VALUE)
                 )
     );

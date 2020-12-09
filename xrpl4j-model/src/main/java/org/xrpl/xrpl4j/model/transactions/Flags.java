@@ -661,36 +661,44 @@ public class Flags {
       );
     }
 
+    public static RippleStateFlags of(long value) {
+      return new RippleStateFlags(value);
+    }
+
+    public static RippleStateFlags.Builder builder() {
+      return new RippleStateFlags.Builder();
+    }
+
     public boolean lsfLowReserve() {
       return this.isSet(LOW_RESERVE);
     }
 
     public boolean lsfHighReserve() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(HIGH_RESERVE);
     }
 
     public boolean lsfLowAuth() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(LOW_AUTH);
     }
 
     public boolean lsfHighAuth() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(HIGH_AUTH);
     }
 
     public boolean lsfLowNoRipple() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(LOW_NO_RIPPLE);
     }
 
     public boolean lsfHighNoRipple() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(HIGH_NO_RIPPLE);
     }
 
     public boolean lsfLowFreeze() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(LOW_FREEZE);
     }
 
     public boolean lsfHighFreeze() {
-      return this.isSet(LOW_RESERVE);
+      return this.isSet(HIGH_FREEZE);
     }
 
     public static class Builder {

@@ -281,7 +281,7 @@ public class BinarySerializationTests {
 
     Payment payment = Payment.builder()
         .flags(PaymentFlags.builder()
-            .partialPayment(true)
+            .tfPartialPayment(true)
             .build())
         .account(source)
         .destination(destination)
@@ -366,7 +366,7 @@ public class BinarySerializationTests {
         .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
         .fee(XrpCurrencyAmount.ofDrops(12))
         .flags(Flags.TrustSetFlags.builder()
-            .tfSetNoRipple()
+            .tfSetNoRipple(true)
             .tfFullyCanonicalSig(false)
             .build())
         .sequence(UnsignedInteger.valueOf(44))

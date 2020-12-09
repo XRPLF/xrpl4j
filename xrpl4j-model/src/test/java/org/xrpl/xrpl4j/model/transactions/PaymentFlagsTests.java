@@ -43,10 +43,10 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
   @Test
   public void testFlagsConstructionWithIndividualFlags() {
     Flags.PaymentFlags flags = Flags.PaymentFlags.builder()
-        .fullyCanonicalSig(tfFullyCanonicalSig)
-        .noDirectRipple(tfNoDirectRipple)
-        .partialPayment(tfPartialPayment)
-        .limitQuality(tfLimitQuality)
+        .tfFullyCanonicalSig(tfFullyCanonicalSig)
+        .tfNoDirectRipple(tfNoDirectRipple)
+        .tfPartialPayment(tfPartialPayment)
+        .tfLimitQuality(tfLimitQuality)
         .build();
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);

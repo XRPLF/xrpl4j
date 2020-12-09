@@ -24,7 +24,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
         .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
         .amount(XrpCurrencyAmount.ofDrops(25000000))
         .fee(XrpCurrencyAmount.ofDrops(10))
-        .flags(PaymentFlags.builder().fullyCanonicalSig(false).build())
+        .flags(PaymentFlags.builder().tfFullyCanonicalSig(false).build())
         .sequence(UnsignedInteger.valueOf(2))
         .build();
 
@@ -84,7 +84,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
             .issuer(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
             .build()
         )
-        .flags(PaymentFlags.builder().fullyCanonicalSig(false).build())
+        .flags(PaymentFlags.builder().tfFullyCanonicalSig(false).build())
         .sequence(UnsignedInteger.valueOf(6))
         .addPaths(Lists.newArrayList(
             PathStep.builder()

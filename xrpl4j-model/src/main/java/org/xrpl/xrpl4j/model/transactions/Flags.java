@@ -203,22 +203,22 @@ public class Flags {
       private boolean tfPartialPayment = false;
       private boolean tfLimitQuality = false;
 
-      public Builder fullyCanonicalSig(boolean value) {
+      public Builder tfFullyCanonicalSig(boolean value) {
         this.tfFullyCanonicalSig = value;
         return this;
       }
 
-      public Builder noDirectRipple(boolean value) {
+      public Builder tfNoDirectRipple(boolean value) {
         this.tfNoDirectRipple = value;
         return this;
       }
 
-      public Builder partialPayment(boolean value) {
+      public Builder tfPartialPayment(boolean value) {
         this.tfPartialPayment = value;
         return this;
       }
 
-      public Builder limitQuality(boolean value) {
+      public Builder tfLimitQuality(boolean value) {
         this.tfLimitQuality = value;
         return this;
       }
@@ -543,6 +543,10 @@ public class Flags {
       );
     }
 
+    public static TrustSetFlags of(long value) {
+      return new TrustSetFlags(value);
+    }
+
     public boolean tfFullyCanonicalSig() {
       return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
     }
@@ -585,23 +589,23 @@ public class Flags {
         return this;
       }
 
-      public TrustSetFlags.Builder tfSetNoRipple() {
-        this.tfSetNoRipple = true;
+      public TrustSetFlags.Builder tfSetNoRipple(boolean tfSetNoRipple) {
+        this.tfSetNoRipple = tfSetNoRipple;
         return this;
       }
 
-      public TrustSetFlags.Builder tfClearNoRipple() {
-        this.tfClearNoRipple = true;
+      public TrustSetFlags.Builder tfClearNoRipple(boolean tfClearNoRipple) {
+        this.tfClearNoRipple = tfClearNoRipple;
         return this;
       }
 
-      public TrustSetFlags.Builder tfSetFreeze() {
-        this.tfSetFreeze = true;
+      public TrustSetFlags.Builder tfSetFreeze(boolean tfSetFreeze) {
+        this.tfSetFreeze = tfSetFreeze;
         return this;
       }
 
-      public TrustSetFlags.Builder tfClearFreeze() {
-        this.tfClearFreeze = true;
+      public TrustSetFlags.Builder tfClearFreeze(boolean tfClearFreeze) {
+        this.tfClearFreeze = tfClearFreeze;
         return this;
       }
 

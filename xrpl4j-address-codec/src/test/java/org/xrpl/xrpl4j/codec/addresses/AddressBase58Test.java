@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
-import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
 public class AddressBase58Test {
 

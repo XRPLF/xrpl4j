@@ -5,9 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
 

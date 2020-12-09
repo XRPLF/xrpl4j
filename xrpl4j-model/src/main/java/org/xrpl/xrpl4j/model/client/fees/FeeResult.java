@@ -3,10 +3,11 @@ package org.xrpl.xrpl4j.model.client.fees;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
-import org.xrpl.xrpl4j.model.jackson.modules.LedgerIndexSerializer;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+
+import java.util.Optional;
 
 /**
  * The result of a fee rippled API call, which reports the current state of the open-ledger requirements
@@ -48,9 +49,8 @@ public interface FeeResult extends XrplResult {
   /**
    * The Ledger Index of the current open ledger these stats describe.
    */
-  @JsonSerialize(using = LedgerIndexSerializer.class)
   @JsonProperty("ledger_current_index")
-  UnsignedInteger ledgerCurrentIndex();
+  LedgerIndex ledgerCurrentIndex();
 
   /**
    * Various information about the transaction cost, in
@@ -61,8 +61,9 @@ public interface FeeResult extends XrplResult {
 
   /**
    * The maximum number of transactions that the transaction queue can currently hold.
+   * Optional because this may not be present on older versions of rippled.
    */
   @JsonProperty("max_queue_size")
-  String maxQueueSize();
+  Optional<String> maxQueueSize();
 
 }

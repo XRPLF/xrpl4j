@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.transactions.immutables;
+package org.xrpl.xrpl4j.model.immutables;
 
 /**
  * Provides a fluent, readable alternative to {@link Comparable#compareTo(Object)}. Instead of code like {@code

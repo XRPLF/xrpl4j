@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.transactions.immutables;
+package org.xrpl.xrpl4j.model.immutables;
 
 import org.immutables.value.Value;
 

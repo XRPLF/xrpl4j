@@ -3,14 +3,14 @@ package org.xrpl.xrpl4j.keypairs;
 import static org.xrpl.xrpl4j.keypairs.Secp256k1.ecDomainParameters;
 
 import com.google.common.io.BaseEncoding;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
 import java.math.BigInteger;
 import java.util.Optional;

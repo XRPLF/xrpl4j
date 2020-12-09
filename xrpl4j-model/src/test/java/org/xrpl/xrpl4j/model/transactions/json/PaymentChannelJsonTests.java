@@ -3,6 +3,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.json.JSONException;
+import org.junit.Test;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Flags;
@@ -11,8 +13,6 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.json.JSONException;
-import org.junit.Test;
 
 public class PaymentChannelJsonTests extends AbstractJsonTest {
 

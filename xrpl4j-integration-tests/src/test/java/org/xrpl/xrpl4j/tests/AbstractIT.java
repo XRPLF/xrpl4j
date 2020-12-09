@@ -1,16 +1,15 @@
 package org.xrpl.xrpl4j.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.google.common.primitives.UnsignedLong;
+import org.awaitility.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.client.faucet.FaucetAccountResponse;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -19,6 +18,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
@@ -30,14 +30,11 @@ import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.wallet.Wallet;
 import org.xrpl.xrpl4j.wallet.WalletFactory;
-import okhttp3.HttpUrl;
-import org.awaitility.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -49,12 +46,12 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
+
+  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final FaucetClient faucetClient =
-      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  protected final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
+  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   protected Wallet createRandomAccount() {
@@ -64,12 +61,17 @@ public abstract class AbstractIT {
     final Wallet wallet = seedResult.wallet();
     logger.info("Generated testnet wallet with address {}", wallet.xAddress());
 
-    ///////////////////////
-    // Fund the account
-    FaucetAccountResponse fundResponse = faucetClient.fundAccount(FundAccountRequest.of(wallet.classicAddress().value()));
-    logger.info("Account has been funded: {}", fundResponse);
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    fundAccount(wallet);
+
     return wallet;
+  }
+
+  /**
+   * Funds a wallet with 1000 XRP.
+   * @param wallet
+   */
+  protected void fundAccount(Wallet wallet) {
+    xrplEnvironment.fundAccount(wallet.classicAddress());
   }
 
   //////////////////////
@@ -114,7 +116,7 @@ public abstract class AbstractIT {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
@@ -126,7 +128,7 @@ public abstract class AbstractIT {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
       return ledgerObjects
@@ -143,7 +145,7 @@ public abstract class AbstractIT {
     try {
       AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountChannels(params);
     } catch (JsonRpcClientErrorException e) {
@@ -155,7 +157,7 @@ public abstract class AbstractIT {
     try {
       AccountInfoRequestParams params = AccountInfoRequestParams.builder()
           .account(classicAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountInfo(params);
     } catch (Exception | JsonRpcClientErrorException e) {
@@ -181,7 +183,7 @@ public abstract class AbstractIT {
   protected LedgerResult getValidatedLedger() {
     try {
       LedgerRequestParams params = LedgerRequestParams.builder()
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.ledger(params);
     } catch (JsonRpcClientErrorException e) {
@@ -199,7 +201,7 @@ public abstract class AbstractIT {
           .sourceAccount(sourceWallet.classicAddress())
           .destinationAccount(destinationWallet.classicAddress())
           .destinationAmount(destinationAmount)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
 
       return xrplClient.ripplePathFind(pathFindParams);
@@ -213,7 +215,7 @@ public abstract class AbstractIT {
       AccountLinesRequestParams params = AccountLinesRequestParams.builder()
           .account(classicAddress)
           .peer(peerAddress)
-          .ledgerIndex("validated")
+          .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
 
       return xrplClient.accountLines(params);

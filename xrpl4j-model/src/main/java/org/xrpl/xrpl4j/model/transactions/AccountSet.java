@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
-import org.xrpl.xrpl4j.model.transactions.Flags.TransactionFlags;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.transactions.Flags.TransactionFlags;
 
 import java.util.Optional;
 

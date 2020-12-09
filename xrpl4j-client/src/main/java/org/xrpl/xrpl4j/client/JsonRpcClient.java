@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
-import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
@@ -15,6 +13,8 @@ import feign.optionals.OptionalDecoder;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.time.Duration;
 import java.util.Objects;

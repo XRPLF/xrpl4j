@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.client.faucet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.xrpl.xrpl4j.client.RetryStatusDecoder;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
@@ -9,6 +8,7 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.optionals.OptionalDecoder;
 import okhttp3.HttpUrl;
+import org.xrpl.xrpl4j.client.RetryStatusDecoder;
 
 import java.time.Duration;
 import java.util.Objects;

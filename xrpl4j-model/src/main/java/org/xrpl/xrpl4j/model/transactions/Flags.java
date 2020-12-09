@@ -897,8 +897,8 @@ public class Flags {
 
   public static class PaymentChannelClaimFlags extends TransactionFlags {
 
-    private static final PaymentChannelClaimFlags RENEW = new PaymentChannelClaimFlags(0x00010000);
-    private static final PaymentChannelClaimFlags CLOSE = new PaymentChannelClaimFlags(0x00020000);
+    protected static final PaymentChannelClaimFlags RENEW = new PaymentChannelClaimFlags(0x00010000);
+    protected static final PaymentChannelClaimFlags CLOSE = new PaymentChannelClaimFlags(0x00020000);
 
     private PaymentChannelClaimFlags(long value) {
       super(value);
@@ -916,6 +916,10 @@ public class Flags {
               tfClose ? CLOSE : UNSET
           ).getValue()
       );
+    }
+
+    public static PaymentChannelClaimFlags of(long value) {
+      return new PaymentChannelClaimFlags(value);
     }
 
     public boolean tfFullyCanonicalSig() {

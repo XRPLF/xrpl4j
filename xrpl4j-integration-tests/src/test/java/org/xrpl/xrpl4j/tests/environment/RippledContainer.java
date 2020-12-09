@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.tests.environment;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import okhttp3.HttpUrl;
 import org.awaitility.Awaitility;
 import org.slf4j.Logger;
@@ -38,7 +39,9 @@ public class RippledContainer {
 
   public RippledContainer() {
     rippledContainer = new GenericContainer("xrptipbot/rippled:latest")
-      .withCommand("-a")
+      .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
+        cmd.withEntrypoint("/opt/ripple/bin/rippled"))
+      .withCommand("-a --start --conf /config/rippled.cfg")
       .withExposedPorts(5005)
       .withClasspathResourceMapping("rippled",
         "/config",

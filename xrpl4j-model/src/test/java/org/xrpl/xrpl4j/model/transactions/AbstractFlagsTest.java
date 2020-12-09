@@ -1,5 +1,8 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import java.util.ArrayList;
 import java.util.List;
 

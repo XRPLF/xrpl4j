@@ -474,8 +474,16 @@ public class Flags {
       super(value);
     }
 
+    public static SignerListFlags.Builder builder() {
+      return new SignerListFlags.Builder();
+    }
+
     private static SignerListFlags of(boolean lsfOneOwnerCount) {
       return new SignerListFlags(Flags.of(lsfOneOwnerCount ? SignerListFlags.ONE_OWNER_COUNT : UNSET).getValue());
+    }
+
+    public static SignerListFlags of(long value) {
+      return new SignerListFlags(value);
     }
 
     public boolean lsfOneOwnerCount() {
@@ -484,7 +492,7 @@ public class Flags {
 
     public static class Builder {
 
-      boolean lsfOneOwnerCount = false;
+      private boolean lsfOneOwnerCount = false;
 
       public SignerListFlags.Builder lsfOneOwnerCount(boolean value) {
         this.lsfOneOwnerCount = value;

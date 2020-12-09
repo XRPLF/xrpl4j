@@ -72,13 +72,13 @@ public class OfferIT extends AbstractIT {
       .build();
 
     SubmitResult<OfferCreate> response = xrplClient.submit(issuerWallet, offerCreate);
-    assertThat(response.transaction().flags().tfFullyCanonicalSig()).isTrue();
-    assertThat(response.transaction().flags().tfSell()).isTrue();
+    assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transaction().hash().orElse("n/a")
+      response.transactionResult().hash()
     );
     usdIssued = true;
   }

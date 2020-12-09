@@ -445,7 +445,13 @@ public class EscrowIT extends AbstractIT {
    */
   private Instant getMinExpirationTime() {
     LedgerResult result = getValidatedLedger();
-    Instant closeTime =  xrpTimestampToInstant(result.ledger().closeTime());
+    Instant closeTime =  xrpTimestampToInstant(
+        result.ledger().closeTime()
+            .orElseThrow(() ->
+                new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
+            )
+    );
+
     Instant now = Instant.now();
     return closeTime.isBefore(now) ? now : closeTime;
   }

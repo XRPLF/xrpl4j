@@ -2,22 +2,21 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.primitives.UnsignedInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @RunWith(Parameterized.class)
-public class PaymentFlagsTests {
+public class PaymentFlagsTests extends AbstractFlagsTest {
 
   boolean tfFullyCanonicalSig;
   boolean tfNoDirectRipple;
   boolean tfPartialPayment;
   boolean tfLimitQuality;
+
+  long expectedFlags;
 
   public PaymentFlagsTests(
       boolean tfFullyCanonicalSig,
@@ -29,75 +28,38 @@ public class PaymentFlagsTests {
     this.tfNoDirectRipple = tfNoDirectRipple;
     this.tfPartialPayment = tfPartialPayment;
     this.tfLimitQuality = tfLimitQuality;
+
+    expectedFlags = (tfFullyCanonicalSig ? Flags.PaymentFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+        (tfNoDirectRipple ? Flags.PaymentFlags.NO_DIRECT_RIPPLE.getValue() : 0L) |
+        (tfPartialPayment ? Flags.PaymentFlags.PARTIAL_PAYMENT.getValue() : 0L) |
+        (tfLimitQuality ? Flags.PaymentFlags.LIMIT_QUALITY.getValue() : 0L);
   }
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    // Every combination of 4 booleans
-    List<Object[]> params = new ArrayList<>();
-    int power = 4;
-    for (int i = 0; i < Math.pow(2, power); i++) {
-      String bin = Integer.toBinaryString(i);
-      while (bin.length() < power) {
-        bin = "0" + bin;
-      }
-
-      char[] chars = bin.toCharArray();
-      Boolean[] booleans = new Boolean[power];
-      for (int j = 0; j < chars.length; j++) {
-        booleans[j] = chars[j] == '0';
-      }
-
-      params.add(booleans);
-    }
-
-    return params;
+    return getBooleanCombinations(4);
   }
 
   @Test
   public void testFlagsConstructionWithIndividualFlags() {
-    Payment payment = Payment.builder()
-        .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
-        .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
-        .amount(XrpCurrencyAmount.ofDrops(25000000))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .flags(Flags.PaymentFlags.builder()
-            .fullyCanonicalSig(tfFullyCanonicalSig)
-            .noDirectRipple(tfNoDirectRipple)
-            .partialPayment(tfPartialPayment)
-            .limitQuality(tfLimitQuality)
-            .build())
-        .sequence(UnsignedInteger.ONE)
+    Flags.PaymentFlags flags = Flags.PaymentFlags.builder()
+        .fullyCanonicalSig(tfFullyCanonicalSig)
+        .noDirectRipple(tfNoDirectRipple)
+        .partialPayment(tfPartialPayment)
+        .limitQuality(tfLimitQuality)
         .build();
 
-    long expectedFlags = (tfFullyCanonicalSig ? 0x80000000L : 0L) |
-        (tfNoDirectRipple ? 0x00010000L : 0L) |
-        (tfPartialPayment ? 0x00020000L : 0L) |
-        (tfLimitQuality ? 0x00040000L : 0L);
-
-    assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
+    assertThat(flags.getValue()).isEqualTo(expectedFlags);
   }
 
   @Test
   public void testDeriveIndividualFlagsFromFlags() {
-    long expectedFlags = (tfFullyCanonicalSig ? 0x80000000L : 0L) |
-        (tfNoDirectRipple ? 0x00010000L : 0L) |
-        (tfPartialPayment ? 0x00020000L : 0L) |
-        (tfLimitQuality ? 0x00040000L : 0L);
+    Flags.PaymentFlags flags = Flags.PaymentFlags.of(expectedFlags);
 
-    Payment payment = Payment.builder()
-        .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
-        .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
-        .amount(XrpCurrencyAmount.ofDrops(25000000))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .flags(Flags.PaymentFlags.of(expectedFlags))
-        .sequence(UnsignedInteger.ONE)
-        .build();
-
-    assertThat(payment.flags().getValue()).isEqualTo(expectedFlags);
-    assertThat(payment.flags().tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
-    assertThat(payment.flags().tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
-    assertThat(payment.flags().tfPartialPayment()).isEqualTo(tfPartialPayment);
-    assertThat(payment.flags().tfLimitQuality()).isEqualTo(tfLimitQuality);
+    assertThat(flags.getValue()).isEqualTo(expectedFlags);
+    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(flags.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
+    assertThat(flags.tfPartialPayment()).isEqualTo(tfPartialPayment);
+    assertThat(flags.tfLimitQuality()).isEqualTo(tfLimitQuality);
   }
 }

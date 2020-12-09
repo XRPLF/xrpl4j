@@ -92,7 +92,7 @@ public class Flags {
    */
   public static class TransactionFlags extends Flags {
 
-    private static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
+    protected static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
 
     private TransactionFlags(long value) {
       super(value);
@@ -139,7 +139,7 @@ public class Flags {
     // flags that exist in the server. This is especially accute for AccountSet and other transaction object that have
     // pre-existing state on the ledger.
     public static final PaymentFlags NO_DIRECT_RIPPLE = new PaymentFlags(0x00010000L);
-    public static final PaymentFlags PARTIAL_PAYMENT_FLAGS = new PaymentFlags(0x00020000L);
+    public static final PaymentFlags PARTIAL_PAYMENT = new PaymentFlags(0x00020000L);
     public static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
     private PaymentFlags(long value) {
@@ -159,7 +159,7 @@ public class Flags {
       return new PaymentFlags(of(
           tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
           tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
-          tfPartialPayment ? PARTIAL_PAYMENT_FLAGS : UNSET,
+          tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
           tfLimitQuality ? LIMIT_QUALITY : UNSET
       ).getValue());
     }
@@ -180,7 +180,7 @@ public class Flags {
      * @see "https://xrpl.org/partial-payments.html"
      */
     public boolean tfPartialPayment() {
-      return this.isSet(PaymentFlags.PARTIAL_PAYMENT_FLAGS);
+      return this.isSet(PaymentFlags.PARTIAL_PAYMENT);
     }
 
     /**
@@ -301,7 +301,6 @@ public class Flags {
     }
 
     public static AccountRootFlags of(
-        boolean tfFullyCanonicalSig,
         boolean lsfDefaultRipple,
         boolean lsfDepositAuth,
         boolean lsfDisableMaster,
@@ -314,7 +313,6 @@ public class Flags {
     ) {
       return new AccountRootFlags(
           Flags.of(
-              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
               lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : UNSET,
               lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : UNSET,
               lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : UNSET,
@@ -397,7 +395,6 @@ public class Flags {
      */
     public static class Builder {
 
-      private boolean tfFullyCanonicalSig = true;
       private boolean lsfDefaultRipple = false;
       private boolean lsfDepositAuth = false;
       private boolean lsfDisableMaster = false;
@@ -408,59 +405,53 @@ public class Flags {
       private boolean lsfRequireAuth = false;
       private boolean lsfRequireDestTag = false;
 
-      public AccountRootFlags.Builder fullyCanonicalSig(boolean value) {
-        this.tfFullyCanonicalSig = value;
-        return this;
-      }
-
-      public AccountRootFlags.Builder defaultRipple(boolean value) {
+      public AccountRootFlags.Builder lsfDefaultRipple(boolean value) {
         this.lsfDefaultRipple = value;
         return this;
       }
 
-      public AccountRootFlags.Builder depositAuth(boolean value) {
+      public AccountRootFlags.Builder lsfDepositAuth(boolean value) {
         this.lsfDepositAuth = value;
         return this;
       }
 
-      public AccountRootFlags.Builder disableMaster(boolean value) {
+      public AccountRootFlags.Builder lsfDisableMaster(boolean value) {
         this.lsfDisableMaster = value;
         return this;
       }
 
-      public AccountRootFlags.Builder disallowXrp(boolean value) {
+      public AccountRootFlags.Builder lsfDisallowXrp(boolean value) {
         this.lsfDisallowXrp = value;
         return this;
       }
 
-      public AccountRootFlags.Builder globalFreeze(boolean value) {
+      public AccountRootFlags.Builder lsfGlobalFreeze(boolean value) {
         this.lsfGlobalFreeze = value;
         return this;
       }
 
-      public AccountRootFlags.Builder noFreeze(boolean value) {
+      public AccountRootFlags.Builder lsfNoFreeze(boolean value) {
         this.lsfNoFreeze = value;
         return this;
       }
 
-      public AccountRootFlags.Builder passwordSpent(boolean value) {
+      public AccountRootFlags.Builder lsfPasswordSpent(boolean value) {
         this.lsfPasswordSpent = value;
         return this;
       }
 
-      public AccountRootFlags.Builder requireAuth(boolean value) {
+      public AccountRootFlags.Builder lsfRequireAuth(boolean value) {
         this.lsfRequireAuth = value;
         return this;
       }
 
-      public AccountRootFlags.Builder requireDestTag(boolean value) {
+      public AccountRootFlags.Builder lsfRequireDestTag(boolean value) {
         this.lsfRequireDestTag = value;
         return this;
       }
 
       public AccountRootFlags build() {
         return AccountRootFlags.of(
-            tfFullyCanonicalSig,
             lsfDefaultRipple, lsfDepositAuth, lsfDisableMaster, lsfDisallowXrp, lsfGlobalFreeze, lsfNoFreeze,
             lsfPasswordSpent, lsfRequireAuth, lsfRequireDestTag
         );

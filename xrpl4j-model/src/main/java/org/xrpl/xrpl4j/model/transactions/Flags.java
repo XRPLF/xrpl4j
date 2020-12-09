@@ -771,10 +771,10 @@ public class Flags {
    */
   public static class OfferFlags extends TransactionFlags {
 
-    private static final OfferFlags TF_PASSIVE = new OfferFlags(0x00010000L);
-    private static final OfferFlags TF_IMMEDIATE_OR_CANCEL = new OfferFlags(0x00020000L);
-    private static final OfferFlags TF_FILL_OR_KILL = new OfferFlags(0x00040000L);
-    private static final OfferFlags TF_SELL = new OfferFlags(0x00080000L);
+    protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000L);
+    protected static final OfferFlags IMMEDIATE_OR_CANCEL = new OfferFlags(0x00020000L);
+    protected static final OfferFlags FILL_OR_KILL = new OfferFlags(0x00040000L);
+    protected static final OfferFlags SELL = new OfferFlags(0x00080000L);
 
     private OfferFlags(long value) {
       super(value);
@@ -788,14 +788,19 @@ public class Flags {
       return new OfferFlags(value);
     }
 
-    private static OfferFlags of(boolean tfFullyCanonicalSig, boolean tfPassive, boolean tfImmediateOrCancel,
-                                 boolean tfFillOrKill, boolean tfSell) {
+    private static OfferFlags of(
+        boolean tfFullyCanonicalSig,
+        boolean tfPassive,
+        boolean tfImmediateOrCancel,
+        boolean tfFillOrKill,
+        boolean tfSell
+    ) {
       long value = Flags.of(
           tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfPassive ? TF_PASSIVE : UNSET,
-          tfImmediateOrCancel ? TF_IMMEDIATE_OR_CANCEL : UNSET,
-          tfFillOrKill ? TF_FILL_OR_KILL : UNSET,
-          tfSell ? TF_SELL : UNSET
+          tfPassive ? PASSIVE : UNSET,
+          tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
+          tfFillOrKill ? FILL_OR_KILL : UNSET,
+          tfSell ? SELL : UNSET
       ).getValue();
       return new OfferFlags(value);
     }
@@ -805,7 +810,7 @@ public class Flags {
      * Offer object in the ledger. It still consumes offers that cross it.
      */
     public boolean tfPassive() {
-      return this.isSet(OfferFlags.TF_PASSIVE);
+      return this.isSet(OfferFlags.PASSIVE);
     }
 
     /**
@@ -817,7 +822,7 @@ public class Flags {
      * @return true if enabled
      */
     public boolean tfImmediateOrCancel() {
-      return this.isSet(OfferFlags.TF_IMMEDIATE_OR_CANCEL);
+      return this.isSet(OfferFlags.IMMEDIATE_OR_CANCEL);
     }
 
     /**
@@ -829,7 +834,7 @@ public class Flags {
      * @return true if enabled
      */
     public boolean tfFillOrKill() {
-      return this.isSet(OfferFlags.TF_FILL_OR_KILL);
+      return this.isSet(OfferFlags.FILL_OR_KILL);
     }
 
     /**
@@ -838,7 +843,7 @@ public class Flags {
      * @return true if enabled
      */
     public boolean tfSell() {
-      return this.isSet(OfferFlags.TF_SELL);
+      return this.isSet(OfferFlags.SELL);
     }
 
 
@@ -847,44 +852,44 @@ public class Flags {
      */
     public static class Builder {
 
-      private boolean fullyCanonicalSig = true;
-      private boolean passive = false;
-      private boolean immediateOrCancel = false;
-      private boolean fillOrKill = false;
-      private boolean sell = false;
+      private boolean tfFullyCanonicalSig = true;
+      private boolean tfPassive = false;
+      private boolean tfImmediateOrCancel = false;
+      private boolean tfFillOrKill = false;
+      private boolean tfSell = false;
 
-      public OfferFlags.Builder fullyCanonicalSig(boolean value) {
-        this.fullyCanonicalSig = value;
+      public OfferFlags.Builder tfFullyCanonicalSig(boolean value) {
+        this.tfFullyCanonicalSig = value;
         return this;
       }
 
-      public OfferFlags.Builder passive(boolean value) {
-        this.passive = value;
+      public OfferFlags.Builder tfPassive(boolean value) {
+        this.tfPassive = value;
         return this;
       }
 
-      public OfferFlags.Builder immediateOrCancel(boolean value) {
-        this.immediateOrCancel = value;
+      public OfferFlags.Builder tfImmediateOrCancel(boolean value) {
+        this.tfImmediateOrCancel = value;
         return this;
       }
 
-      public OfferFlags.Builder fillOrKill(boolean value) {
-        this.fillOrKill = value;
+      public OfferFlags.Builder tfFillOrKill(boolean value) {
+        this.tfFillOrKill = value;
         return this;
       }
 
-      public OfferFlags.Builder sell(boolean value) {
-        this.sell = value;
+      public OfferFlags.Builder tfSell(boolean value) {
+        this.tfSell = value;
         return this;
       }
 
       public OfferFlags build() {
         return OfferFlags.of(
-            fullyCanonicalSig,
-            passive,
-            immediateOrCancel,
-            fillOrKill,
-            sell
+            tfFullyCanonicalSig,
+            tfPassive,
+            tfImmediateOrCancel,
+            tfFillOrKill,
+            tfSell
         );
       }
     }

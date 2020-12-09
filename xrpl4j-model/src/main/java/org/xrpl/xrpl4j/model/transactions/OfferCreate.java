@@ -27,7 +27,7 @@ public interface OfferCreate extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default Flags.OfferFlags flags() {
-    return Flags.OfferFlags.builder().fullyCanonicalSig(true).build();
+    return Flags.OfferFlags.builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

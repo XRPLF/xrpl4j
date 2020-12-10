@@ -18,6 +18,10 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 @JsonDeserialize(as = ImmutableTrustLine.class)
 public interface TrustLine {
 
+  static ImmutableTrustLine.Builder builder() {
+    return ImmutableTrustLine.builder();
+  }
+
   /**
    * The unique {@link Address} of the counterparty to this trust line.
    */

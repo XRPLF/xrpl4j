@@ -9,6 +9,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
 
@@ -33,7 +34,7 @@ public interface AccountLinesRequestParams extends XrplRequestParams {
    * A 20-byte hex string for the ledger version to use.
    */
   @JsonProperty("ledger_hash")
-  Optional<String> ledgerHash();
+  Optional<Hash256> ledgerHash();
 
   /**
    * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.

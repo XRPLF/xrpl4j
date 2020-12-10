@@ -20,6 +20,10 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountLinesResult.class)
 public interface AccountLinesResult extends XrplResult {
 
+  static ImmutableAccountLinesResult.Builder builder() {
+    return ImmutableAccountLinesResult.builder();
+  }
+
   /**
    * The unique {@link Address} for the account that made the request.
    */

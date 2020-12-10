@@ -7,6 +7,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
   Address account();
 
   @JsonProperty("ledger_hash")
-  Optional<String> ledgerHash();
+  Optional<Hash256> ledgerHash();
 
   @JsonProperty("ledger_index")
   @Value.Default
@@ -49,7 +50,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
   @Value.Default
   @JsonProperty("signer_lists")
   default boolean signerLists() {
-    return true;
+    return false;
   }
 
 }

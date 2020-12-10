@@ -8,6 +8,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -28,10 +29,27 @@ public interface LedgerHeader {
   }
 
   /**
-   * The ledger index of the ledger.
+   * A bit-map of flags relating to the closing of this ledger. Currently, the ledger has only one flag defined
+   * for close_flags: sLCF_NoConsensusTime (value 1). If this flag is enabled, it means that validators were in
+   * conflict regarding the correct close time for the ledger, but build otherwise the same ledger, so they
+   * declared consensus while "agreeing to disagree" on the close time. In this case, the consensus ledger contains
+   * a close_time that is 1 second after that of the previous ledger.
+   *
+   * <p>(In this case, there is no official close time, but the actual real-world close time is probably 3-6
+   * seconds later than the specified close_time.)</p>
+   */
+  @JsonProperty("close_flags")
+  @Value.Default
+  default Flags.CloseFlags closeFlags() {
+    return Flags.CloseFlags.of(false);
+  }
+
+  /**
+   * The ledger index of the ledger. In other objects, this would be a {@link LedgerIndex}, however the ledger
+   * method returns the ledger_index as a {@link String} representing an unsigned 32 bit integer.
    */
   @JsonProperty("ledger_index")
-  LedgerIndex ledgerIndex();
+  String ledgerIndex();
 
   /**
    * The SHA-512Half of this ledger version. This serves as a unique identifier for this ledger and all its contents.
@@ -54,6 +72,12 @@ public interface LedgerHeader {
   Optional<UnsignedLong> closeTime();
 
   /**
+   * The time this ledger was closed, in human-readable format. Always uses the UTC time zone.
+   */
+  @JsonProperty("close_time_human")
+  String closeTimeHuman();
+
+  /**
    * If true, this ledger version is no longer accepting new transactions. (However, unless this ledger
    * version is validated, it might be replaced by a different ledger version with a different set of transactions.)
    */
@@ -68,6 +92,12 @@ public interface LedgerHeader {
    */
   @JsonProperty("parent_hash")
   Hash256 parentHash();
+
+  /**
+   * The time at which the previous ledger was closed.
+   */
+  @JsonProperty("parent_close_time")
+  UnsignedLong parentCloseTime();
 
   /**
    * The total number of drops of XRP owned by accounts in the ledger. This omits XRP that has been

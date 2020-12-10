@@ -15,7 +15,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Flags;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -66,8 +66,8 @@ public class OfferIT extends AbstractIT {
       )
       .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0)))
       .flags(Flags.OfferFlags.builder()
-        .fullyCanonicalSig(true)
-        .sell(true)
+        .tfFullyCanonicalSig(true)
+        .tfSell(true)
         .build())
       .build();
 
@@ -111,8 +111,8 @@ public class OfferIT extends AbstractIT {
         )
         .takerGets(XrpCurrencyAmount.ofDrops(1000))
         .flags(Flags.OfferFlags.builder()
-            .fullyCanonicalSig(true)
-            .sell(true)
+            .tfFullyCanonicalSig(true)
+            .tfSell(true)
             .build())
         .build();
 
@@ -189,8 +189,8 @@ public class OfferIT extends AbstractIT {
         )
         .takerGets(XrpCurrencyAmount.ofDrops(1000))
         .flags(Flags.OfferFlags.builder()
-            .fullyCanonicalSig(true)
-            .immediateOrCancel(true)
+            .tfFullyCanonicalSig(true)
+            .tfImmediateOrCancel(true)
             .build())
         .build();
 

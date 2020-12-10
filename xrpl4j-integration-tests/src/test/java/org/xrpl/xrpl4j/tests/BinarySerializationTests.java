@@ -25,8 +25,8 @@ import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
-import org.xrpl.xrpl4j.model.transactions.Flags;
-import org.xrpl.xrpl4j.model.transactions.Flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -281,7 +281,7 @@ public class BinarySerializationTests {
 
     Payment payment = Payment.builder()
         .flags(PaymentFlags.builder()
-            .partialPayment(true)
+            .tfPartialPayment(true)
             .build())
         .account(source)
         .destination(destination)
@@ -366,7 +366,7 @@ public class BinarySerializationTests {
         .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
         .fee(XrpCurrencyAmount.ofDrops(12))
         .flags(Flags.TrustSetFlags.builder()
-            .tfSetNoRipple()
+            .tfSetNoRipple(true)
             .tfFullyCanonicalSig(false)
             .build())
         .sequence(UnsignedInteger.valueOf(44))
@@ -391,7 +391,7 @@ public class BinarySerializationTests {
         .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
         .sequence(UnsignedInteger.valueOf(11223344))
         .offerSequence(UnsignedInteger.valueOf(123))
-        .flags(Flags.OfferFlags.builder().fullyCanonicalSig(true).sell(true).build())
+        .flags(Flags.OfferFlags.builder().tfFullyCanonicalSig(true).tfSell(true).build())
         .expiration(UnsignedInteger.valueOf(456))
         .build();
 

@@ -80,5 +80,5 @@ public interface DepositPreAuthObject extends LedgerObject {
   /**
    * The unique ID of the {@link DepositPreAuthObject}.
    */
-  String index();
+  Hash256 index();
 }

@@ -10,6 +10,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public interface AccountObjectsResult extends XrplResult {
    * The identifying hash of the ledger that was used to generate this {@link AccountObjectsResult}.
    */
   @JsonProperty("ledger_hash")
-  Optional<String> ledgerHash();
+  Optional<Hash256> ledgerHash();
 
   /**
    * The ledger index of the ledger version that was used to generate this {@link AccountObjectsResult}.

@@ -143,6 +143,6 @@ public interface EscrowObject extends LedgerObject {
   /**
    * The unique ID of this {@link EscrowObject}.
    */
-  String index();
+  Hash256 index();
 
 }

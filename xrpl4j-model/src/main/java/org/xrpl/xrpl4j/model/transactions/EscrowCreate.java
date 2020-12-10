@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.transactions.Flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
 import java.util.Optional;
 

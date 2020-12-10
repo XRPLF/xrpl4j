@@ -1,6 +1,9 @@
-package org.xrpl.xrpl4j.model.transactions;
+package org.xrpl.xrpl4j.model.flags;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 
 import java.util.Arrays;
 import java.util.Objects;

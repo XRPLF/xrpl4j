@@ -29,6 +29,29 @@ public class AccountInfoResultJsonTests extends AbstractJsonTest {
             .index(Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F"))
             .build())
         .ledgerCurrentIndex(LedgerIndex.of(UnsignedLong.valueOf(4)))
+        .queueData(QueueData.builder()
+            .authChangeQueued(true)
+            .highestSequence(UnsignedInteger.valueOf(10))
+            .lowestSequence(UnsignedInteger.valueOf(6))
+            .maxSpendDropsTotal(XrpCurrencyAmount.ofDrops(500))
+            .addTransactions(
+                QueueTransaction.builder()
+                    .authChange(false)
+                    .fee(XrpCurrencyAmount.ofDrops(100))
+                    .feeLevel(XrpCurrencyAmount.ofDrops(2560))
+                    .maxSpendDrops(XrpCurrencyAmount.ofDrops(100))
+                    .sequence(UnsignedInteger.valueOf(6))
+                    .build(),
+                QueueTransaction.builder()
+                    .authChange(true)
+                    .fee(XrpCurrencyAmount.ofDrops(100))
+                    .feeLevel(XrpCurrencyAmount.ofDrops(2560))
+                    .maxSpendDrops(XrpCurrencyAmount.ofDrops(100))
+                    .sequence(UnsignedInteger.valueOf(10))
+                    .build()
+            )
+            .transactionCount(UnsignedInteger.valueOf(5))
+            .build())
         .status("success")
         .validated(false)
         .build();
@@ -46,10 +69,32 @@ public class AccountInfoResultJsonTests extends AbstractJsonTest {
         "            \"index\": \"92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F\"\n" +
         "        },\n" +
         "        \"ledger_current_index\": 4,\n" +
+        "        \"queue_data\": {\n" +
+        "            \"auth_change_queued\": true,\n" +
+        "            \"highest_sequence\": 10,\n" +
+        "            \"lowest_sequence\": 6,\n" +
+        "            \"max_spend_drops_total\": \"500\",\n" +
+        "            \"transactions\": [\n" +
+        "                {\n" +
+        "                    \"auth_change\": false,\n" +
+        "                    \"fee\": \"100\",\n" +
+        "                    \"fee_level\": \"2560\",\n" +
+        "                    \"max_spend_drops\": \"100\",\n" +
+        "                    \"seq\": 6\n" +
+        "                },\n" +
+        "                {\n" +
+        "                    \"auth_change\": true,\n" +
+        "                    \"fee\": \"100\",\n" +
+        "                    \"fee_level\": \"2560\",\n" +
+        "                    \"max_spend_drops\": \"100\",\n" +
+        "                    \"seq\": 10\n" +
+        "                }\n" +
+        "            ],\n" +
+        "            \"txn_count\": 5\n" +
+        "        },\n" +
         "        \"status\": \"success\",\n" +
         "        \"validated\": false\n" +
         "    }";
-
     assertCanSerializeAndDeserialize(result, json);
   }
 }

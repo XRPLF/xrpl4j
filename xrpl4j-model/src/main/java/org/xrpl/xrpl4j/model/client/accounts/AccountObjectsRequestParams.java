@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
@@ -77,7 +78,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   /**
    * Value from a previous paginated response. Resume retrieving data where that response left off.
    */
-  Optional<String> marker();
+  Optional<JsonNode> marker();
 
   enum AccountObjectType {
     CHECK("check"),

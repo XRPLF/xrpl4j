@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
@@ -65,7 +66,7 @@ public interface AccountObjectsResult extends XrplResult {
    * Server-defined value indicating the response is paginated. Pass this to the next call to resume where this
    * call left off. Omitted when there are no additional pages after this one.
    */
-  Optional<String> marker();
+  Optional<JsonNode> marker();
 
   /**
    * If included and set to true, the information in this response comes from a validated ledger version.

@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.junit.Before;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -42,5 +43,27 @@ public class AbstractJsonTest {
 
     XrplResult deserialized = objectMapper.readValue(serialized, result.getClass());
     assertThat(deserialized).isEqualTo(result);
+  }
+
+  protected void assertCanSerializeAndDeserialize(
+      XrplRequestParams params,
+      String json
+  ) throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(params);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    XrplRequestParams deserialized = objectMapper.readValue(serialized, params.getClass());
+    assertThat(deserialized).isEqualTo(params);
+  }
+
+  protected void assertCanSerializeAndDeserialize(
+      LedgerObject ledgerObject,
+      String json
+  ) throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(ledgerObject);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    LedgerObject deserialized = objectMapper.readValue(serialized, ledgerObject.getClass());
+    assertThat(deserialized).isEqualTo(ledgerObject);
   }
 }

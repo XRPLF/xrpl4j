@@ -14,6 +14,9 @@ import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
 @JsonDeserialize(as = ImmutableChannelVerifyResult.class)
 public interface ChannelVerifyResult extends XrplResult {
 
+  static ImmutableChannelVerifyResult.Builder builder() {
+    return ImmutableChannelVerifyResult.builder();
+  }
   /**
    * If true, the signature is valid for the stated amount, channel, and public key.
    */

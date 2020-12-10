@@ -17,6 +17,10 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableRipplePathFindResult.class)
 public interface RipplePathFindResult extends XrplResult {
 
+  static ImmutableRipplePathFindResult.Builder builder() {
+    return ImmutableRipplePathFindResult.builder();
+  }
+
   /**
    * A {@link List} of {@link PathAlternative}s with possible paths to take. If empty, then are are no paths
    * connecting the source and destination accounts.

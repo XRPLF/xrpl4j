@@ -66,7 +66,7 @@ public interface AccountObjectsResult extends XrplResult {
    * Server-defined value indicating the response is paginated. Pass this to the next call to resume where this
    * call left off. Omitted when there are no additional pages after this one.
    */
-  Optional<JsonNode> marker();
+  Optional<String> marker();
 
   /**
    * If included and set to true, the information in this response comes from a validated ledger version.

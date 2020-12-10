@@ -14,14 +14,14 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
 
   @Test
-  public void testRequestParamsWithStringMarker() throws JsonProcessingException, JSONException {
+  public void testWithStringMarker() throws JsonProcessingException, JSONException {
     AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
         .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .destinationAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .ledgerIndex(LedgerIndex.VALIDATED)
         .ledgerHash(Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"))
         .limit(UnsignedInteger.valueOf(20))
-        .marker(objectMapper.readTree("marker1"))
+        .marker("marker1")
         .build();
 
     String json = "{\n" +
@@ -37,14 +37,14 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
   }
 
   @Test
-  public void testRequestParamsWithJsonMarker() throws JsonProcessingException, JSONException {
+  public void testWithJsonMarker() throws JsonProcessingException, JSONException {
     AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
         .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .destinationAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .ledgerIndex(LedgerIndex.VALIDATED)
         .ledgerHash(Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"))
         .limit(UnsignedInteger.valueOf(20))
-        .marker(objectMapper.readTree("{\"marker\": \"1\"}"))
+        .marker("{\"marker\": \"1\"}")
         .build();
 
     String json = "{\n" +
@@ -52,7 +52,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
         "        \"destination_account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
         "        \"ledger_hash\": \"6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E\",\n" +
         "        \"limit\": 20,\n" +
-        "        \"marker\": {\"marker\":\"1\"},\n" +
+        "        \"marker\": \"{\\\"marker\\\": \\\"1\\\"}\",\n" +
         "        \"ledger_index\": \"validated\"\n" +
         "    }";
 

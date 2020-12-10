@@ -78,7 +78,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   /**
    * Value from a previous paginated response. Resume retrieving data where that response left off.
    */
-  Optional<JsonNode> marker();
+  Optional<String> marker();
 
   enum AccountObjectType {
     CHECK("check"),

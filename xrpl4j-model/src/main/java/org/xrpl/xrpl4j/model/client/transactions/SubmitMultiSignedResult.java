@@ -19,6 +19,10 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableSubmitMultiSignedResult.class)
 public interface SubmitMultiSignedResult<TxnType extends Transaction> extends XrplResult {
 
+  static <T extends Transaction> ImmutableSubmitMultiSignedResult.Builder<T> builder() {
+    return ImmutableSubmitMultiSignedResult.builder();
+  }
+
   /**
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    */

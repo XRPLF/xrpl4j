@@ -21,8 +21,8 @@ public interface SubmitMultiSignedRequestParams<TxnType extends Transaction> ext
     return ImmutableSubmitMultiSignedRequestParams.builder();
   }
 
-  static <TxnType extends Transaction> XrplRequestParams of(TxnType multiSigTransaction) {
-    return builder().transaction(multiSigTransaction).build();
+  static <TxnType extends Transaction> SubmitMultiSignedRequestParams<TxnType> of(TxnType multiSigTransaction) {
+    return SubmitMultiSignedRequestParams.<TxnType>builder().transaction(multiSigTransaction).build();
   }
 
   /**

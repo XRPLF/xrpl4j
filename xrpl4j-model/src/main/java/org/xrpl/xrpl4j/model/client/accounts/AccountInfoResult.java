@@ -59,9 +59,4 @@ public interface AccountInfoResult extends XrplResult {
     return false;
   }
 
-  /**
-   * The value "success" indicates the request was successfully received and understood by the server.
-   */
-  String status();
-
 }

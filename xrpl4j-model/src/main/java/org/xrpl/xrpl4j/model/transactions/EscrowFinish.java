@@ -9,6 +9,7 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.Fulfillment;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
 import java.util.Objects;

@@ -6,6 +6,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class Xrpl4jModule extends SimpleModule {
@@ -38,5 +39,7 @@ public class Xrpl4jModule extends SimpleModule {
 
     addSerializer(LedgerIndex.class, new LedgerIndexSerializer());
     addDeserializer(LedgerIndex.class, new LedgerIndexDeserializer());
+
+    addDeserializer(Transaction.class, new TransactionDeserializer());
   }
 }

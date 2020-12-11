@@ -24,9 +24,9 @@ import java.math.BigDecimal;
 public class LocalRippledEnvironment implements XrplEnvironment {
 
   private static final Logger LOGGER = getLogger(LocalRippledEnvironment.class);
-  
+
   private static final RippledContainer rippledContainer = new RippledContainer().start();
-  
+
   @Override
   public XrplClient getXrplClient() {
     return rippledContainer.getXrplClient();
@@ -71,7 +71,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
     SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString()
-      + result.transaction().hash().orElse("n/a"));
+      + result.transactionResult().transaction());
   }
 
 }

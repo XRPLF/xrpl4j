@@ -28,7 +28,7 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
         "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
         "            \"strict\": true,\n" +
         "            \"ledger_index\": \"current\",\n" +
-        "            \"signer_lists\": false,\n" +
+        "            \"signer_lists\": true,\n" +
         "            \"queue\": true\n" +
         "        }";
 
@@ -44,6 +44,7 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
         .ledgerHash(Hash256.of("5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3"))
         .ledgerIndex(LedgerIndex.CURRENT)
         .queue(true)
+        .signerLists(true)
         .build();
 
     String json = "{\n" +
@@ -51,7 +52,7 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
         "            \"strict\": true,\n" +
         "            \"ledger_index\": \"current\",\n" +
         "            \"ledger_hash\": \"5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3\",\n" +
-        "            \"signer_lists\": false,\n" +
+        "            \"signer_lists\": true,\n" +
         "            \"queue\": true\n" +
         "        }";
 

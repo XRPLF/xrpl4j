@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -47,7 +46,8 @@ public interface LedgerHeader {
   }
 
   /**
-   * The ledger index of the ledger. In other objects, this would be a {@link LedgerIndex}, however the ledger
+   * The ledger index of the ledger. In other objects, this would be a
+   * {@link org.xrpl.xrpl4j.model.client.common.LedgerIndex}, however the ledger
    * method returns the ledger_index as a {@link String} representing an unsigned 32 bit integer.
    */
   @JsonProperty("ledger_index")

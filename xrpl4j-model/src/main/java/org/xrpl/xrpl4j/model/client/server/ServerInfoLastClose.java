@@ -16,7 +16,7 @@ public interface ServerInfoLastClose {
   }
 
   @JsonProperty("converge_time_s")
-  UnsignedInteger convergeTimeSeconds();
+  Double convergeTimeSeconds();
 
   UnsignedInteger proposers();
 }

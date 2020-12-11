@@ -31,7 +31,7 @@ public class ServerInfoResultJsonTests extends AbstractJsonTest {
             .ioLatencyMs(UnsignedLong.ONE)
             .jqTransOverflow("0")
             .lastClose(ServerInfoLastClose.builder()
-                .convergeTimeSeconds(UnsignedInteger.valueOf(2))
+                .convergeTimeSeconds(2d)
                 .proposers(UnsignedInteger.valueOf(34))
                 .build())
             .load(ServerInfoLoad.builder()

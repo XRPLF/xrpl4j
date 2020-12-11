@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
@@ -166,7 +167,7 @@ public abstract class AbstractIT {
   }
 
   protected <TxnType extends Transaction> TransactionResult<TxnType> getValidatedTransaction(
-      String transactionHash,
+      Hash256 transactionHash,
       Class<TxnType> transactionType
   ) {
     try {

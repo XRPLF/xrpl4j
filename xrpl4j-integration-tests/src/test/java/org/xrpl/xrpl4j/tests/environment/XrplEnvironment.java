@@ -16,8 +16,9 @@ public interface XrplEnvironment {
   static XrplEnvironment getConfiguredEnvironment() {
     // Use the local rippled environment by default because it's faster and more predictable for testing.
     // TestnetEnvironment can make it easier to debug transactions using in the testnet explorer website.
-    boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
-    return isTestnetEnabled ? new TestnetEnvironment() : new LocalRippledEnvironment();
+//    boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
+//    return isTestnetEnabled ? new TestnetEnvironment() : new LocalRippledEnvironment();
+    return new TestnetEnvironment();
   }
 
   XrplClient getXrplClient();

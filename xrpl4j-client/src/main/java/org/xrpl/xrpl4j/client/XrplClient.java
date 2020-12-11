@@ -24,7 +24,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.rippled.XrplMethods;
+import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;

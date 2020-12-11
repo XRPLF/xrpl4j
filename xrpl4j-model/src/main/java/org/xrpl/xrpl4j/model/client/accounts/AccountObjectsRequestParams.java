@@ -2,13 +2,12 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Optional;

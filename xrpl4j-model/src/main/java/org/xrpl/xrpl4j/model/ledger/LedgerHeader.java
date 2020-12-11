@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.ledger;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -13,6 +14,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +77,8 @@ public interface LedgerHeader {
    * The time this ledger was closed, in human-readable format. Always uses the UTC time zone.
    */
   @JsonProperty("close_time_human")
-  String closeTimeHuman();
+  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z")
+  ZonedDateTime closeTimeHuman();
 
   /**
    * If true, this ledger version is no longer accepting new transactions. (However, unless this ledger

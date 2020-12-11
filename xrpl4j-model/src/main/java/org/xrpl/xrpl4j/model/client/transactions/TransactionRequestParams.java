@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 
 import java.util.Optional;
 

@@ -8,6 +8,7 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Optional;
 
@@ -99,7 +100,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * likely to be queued.
    */
   @JsonProperty("open_ledger_cost")
-  String openLedgerCost();
+  XrpCurrencyAmount openLedgerCost();
 
   /**
    * The ledger index of the newest validated ledger at the time of submission.

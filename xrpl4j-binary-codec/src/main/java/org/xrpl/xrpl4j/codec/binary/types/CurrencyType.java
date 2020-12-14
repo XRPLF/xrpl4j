@@ -70,12 +70,21 @@ public class CurrencyType extends Hash160Type {
     return true;
   }
 
+  /**
+   * Convert {@code list} to a {@link String} of raw ISO codes.
+   *
+   * @param list
+   *
+   * @return
+   */
   private String rawISO(UnsignedByteArray list) {
     return new String(list.slice(12, 15).toByteArray());
   }
 
   /**
    * Ensures that a value is a valid representation of a currency.
+   *
+   * @return {@code true} if {@code value} is a valid representation; {@code false} otherwise.
    */
   boolean isValidRepresentation(String value) {
     return isStringRepresentation(value);
@@ -83,6 +92,8 @@ public class CurrencyType extends Hash160Type {
 
   /**
    * Tests if ISO is a valid iso code.
+   *
+   * @return {@code true} if {@code iso} is a valid ISO Code; {@code false} otherwise.
    */
   private boolean isIsoCode(String iso) {
     return ISO_REGEX.matcher(iso).matches();
@@ -90,6 +101,8 @@ public class CurrencyType extends Hash160Type {
 
   /**
    * Tests if hex is a valid hex-string.
+   *
+   * @return {@code true} if {@code hex} is a valid hex-encoded string; {@code false} otherwise.
    */
   private boolean isHex(String hex) {
     return HEX_REGEX.matcher(hex).matches();
@@ -97,6 +110,8 @@ public class CurrencyType extends Hash160Type {
 
   /**
    * Tests if a string is a valid representation of a currency.
+   *
+   * @return {@code true} if {@code input} is a valid ISO or Hex representation; {@code false} otherwise.
    */
   boolean isStringRepresentation(String input) {
     return isIsoCode(input) || isHex(input);
@@ -104,6 +119,8 @@ public class CurrencyType extends Hash160Type {
 
   /**
    * Convert an ISO code to a currency bytes representation.
+   *
+   * @return An {@link UnsignedByteArray}.
    */
   private UnsignedByteArray isoToBytes(String iso) {
     UnsignedByteArray bytes = UnsignedByteArray.ofSize(20);

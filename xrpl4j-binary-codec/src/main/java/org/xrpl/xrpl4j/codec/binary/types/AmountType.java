@@ -13,7 +13,6 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.OptionalInt;
 
 /**
  * Codec for XRPL Amount type.
@@ -31,7 +30,7 @@ class AmountType extends SerializedType<AmountType> {
   private static final int MIN_IOU_EXPONENT = -96;
   private static final int MAX_IOU_EXPONENT = 80;
 
-  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
+  private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public AmountType() {
     this(UnsignedByteArray.fromHex(DEFAULT_AMOUNT_HEX));
@@ -42,10 +41,11 @@ class AmountType extends SerializedType<AmountType> {
   }
 
   /**
-   * Validate XRP amount
+   * Validate XRP amount.
    *
    * @param amount String representing XRP amount
-   * @returns void, but will throw if invalid amount
+   *
+   * @throws IllegalArgumentException if invalid amount
    */
   private static void assertXrpIsValid(String amount) {
     if (amount.contains(".")) {
@@ -63,15 +63,16 @@ class AmountType extends SerializedType<AmountType> {
    * Validate IOU.value amount
    *
    * @param decimal Decimal.js object representing IOU.value
-   * @returns void, but will throw if invalid amount
+   *
+   * @throws IllegalArgumentException if invalid amount
    */
   private static void assertIouIsValid(BigDecimal decimal) {
     if (!decimal.equals(BigDecimal.ZERO)) {
-      int p = decimal.precision();
-      int e = MathUtils.getExponent(decimal);
-      if (p > MAX_IOU_PRECISION ||
-          e > MAX_IOU_EXPONENT ||
-          e < MIN_IOU_EXPONENT
+      int precision = decimal.precision();
+      int exponent = MathUtils.getExponent(decimal);
+      if (precision > MAX_IOU_PRECISION ||
+        exponent > MAX_IOU_EXPONENT ||
+        exponent < MIN_IOU_EXPONENT
       ) {
         throw new Error("Decimal precision out of range");
       }
@@ -80,11 +81,11 @@ class AmountType extends SerializedType<AmountType> {
   }
 
   /**
-   * Ensure that the value after being multiplied by the exponent does not
-   * contain a decimal.
+   * Ensure that the value after being multiplied by the exponent does not contain a decimal.
    *
    * @param decimal a Decimal object
-   * @returns a string of the object without a decimal
+   *
+   * @throws IllegalArgumentException if invalid amount
    */
   private static void verifyNoDecimal(BigDecimal decimal) {
     BigDecimal exponent = new BigDecimal("1e" + -(MathUtils.getExponent(decimal) - 15));
@@ -95,17 +96,17 @@ class AmountType extends SerializedType<AmountType> {
   }
 
   @Override
-  public AmountType fromParser(BinaryParser parser, OptionalInt lengthHint) {
-    boolean isXRP = !parser.peek().isNthBitSet(1);
-    int numBytes = isXRP ? NATIVE_AMOUNT_BYTE_LENGTH : CURRENCY_AMOUNT_BYTE_LENGTH;
+  public AmountType fromParser(BinaryParser parser) {
+    boolean isXrp = !parser.peek().isNthBitSet(1);
+    int numBytes = isXrp ? NATIVE_AMOUNT_BYTE_LENGTH : CURRENCY_AMOUNT_BYTE_LENGTH;
     return new AmountType(parser.read(numBytes));
   }
 
   @Override
-  public AmountType fromJSON(JsonNode value) throws JsonProcessingException {
+  public AmountType fromJson(JsonNode value) throws JsonProcessingException {
     if (value.isValueNode()) {
       assertXrpIsValid(value.asText());
-      UInt64Type number = new UInt64Type().fromJSON(value.asText());
+      UInt64Type number = new UInt64Type().fromJson(value.asText());
       byte[] rawBytes = number.toBytes();
       rawBytes[0] |= 0x40;
       return new AmountType(UnsignedByteArray.of(rawBytes));
@@ -115,11 +116,11 @@ class AmountType extends SerializedType<AmountType> {
     BigDecimal number = new BigDecimal(amount.value());
 
     UnsignedByteArray result = number.unscaledValue().equals(BigInteger.ZERO) ?
-        UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
-        getAmountBytes(number);
+      UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
+      getAmountBytes(number);
 
-    UnsignedByteArray currency = new CurrencyType().fromJSON(value.get("currency")).value();
-    UnsignedByteArray issuer = new AccountIdType().fromJSON(value.get("issuer")).value();
+    UnsignedByteArray currency = new CurrencyType().fromJson(value.get("currency")).value();
+    UnsignedByteArray issuer = new AccountIdType().fromJson(value.get("issuer")).value();
 
     result.append(currency);
     result.append(issuer);
@@ -143,12 +144,11 @@ class AmountType extends SerializedType<AmountType> {
     amountBytes[0] |= exponentByte.asInt() >>> 2;
     amountBytes[1] |= (exponentByte.asInt() & 0x03) << 6;
 
-    UnsignedByteArray result = UnsignedByteArray.of(amountBytes);
-    return result;
+    return UnsignedByteArray.of(amountBytes);
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     if (this.isNative()) {
       byte[] rawBytes = toBytes();
       rawBytes[0] &= 0x3f;
@@ -160,8 +160,8 @@ class AmountType extends SerializedType<AmountType> {
     } else {
       BinaryParser parser = new BinaryParser(this.toHex());
       UnsignedByteArray mantissa = parser.read(8);
-      SerializedType currency = new CurrencyType().fromParser(parser);
-      SerializedType issuer = new AccountIdType().fromParser(parser);
+      final SerializedType<?> currency = new CurrencyType().fromParser(parser);
+      final SerializedType<?> issuer = new AccountIdType().fromParser(parser);
 
       UnsignedByte b1 = mantissa.get(0);
       UnsignedByte b2 = mantissa.get(1);
@@ -174,31 +174,36 @@ class AmountType extends SerializedType<AmountType> {
       mantissa.set(1, UnsignedByte.of(b2.asInt() & 0x3f));
 
       BigDecimal value = new BigDecimal(new BigInteger(sign + mantissa.hexValue(), 16))
-          .multiply(new BigDecimal("1e" + exponent))
-          .stripTrailingZeros();
+        .multiply(new BigDecimal("1e" + exponent))
+        .stripTrailingZeros();
 
       assertIouIsValid(value);
 
       Amount amount = Amount.builder()
-          .currency(currency.toJSON().asText())
-          .issuer(issuer.toJSON().asText())
-          .value(value.toPlainString())
-          .build();
+        .currency(currency.toJson().asText())
+        .issuer(issuer.toJson().asText())
+        .value(value.toPlainString())
+        .build();
 
       return objectMapper.valueToTree(amount);
     }
   }
 
   /**
-   * Returns true if this amount is a native XRP amount
+   * Returns true if this amount is a "native" XRP amount.
    *
-   * @return
+   * @return {@code true} if this AmountType is native; {@code false} otherwise.
    */
   private boolean isNative() {
     // 1st bit in 1st byte is set to 0 for native XRP
     return (toBytes()[0] & 0x80) == 0;
   }
 
+  /**
+   * Determines if this AmountType is positive.
+   *
+   * @return {@code true} if this AmountType is positive; {@code false} otherwise.
+   */
   private boolean isPositive() {
     // 2nd bit in 1st byte is set to 1 for positive amounts
     return (toBytes()[0] & 0x40) > 0;

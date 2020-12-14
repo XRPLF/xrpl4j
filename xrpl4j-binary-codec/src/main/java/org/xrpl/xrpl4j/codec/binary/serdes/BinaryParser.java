@@ -53,7 +53,7 @@ public class BinaryParser {
    *
    * @param bytesToRead An int representing the number of bytes to read.
    *
-   * @return A {@link UnsignedByteArray}.
+   * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray read(int bytesToRead) {
     if (cursor >= hex.length()) {

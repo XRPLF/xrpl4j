@@ -21,6 +21,7 @@ jobs:
           find . -type f -regex ".*/target/checkstyle-reports/.*xml" -exec cp {} ~/junit/ \;
 
   codecov:
+    runs-on: ubuntu-latest
     name: Codecov
     needs: build
     steps:

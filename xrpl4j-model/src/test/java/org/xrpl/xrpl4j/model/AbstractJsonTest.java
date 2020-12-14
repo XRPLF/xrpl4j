@@ -63,7 +63,7 @@ public class AbstractJsonTest {
     String serialized = objectMapper.writeValueAsString(ledgerObject);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
-    LedgerObject deserialized = objectMapper.readValue(serialized, ledgerObject.getClass());
+    LedgerObject deserialized = objectMapper.readValue(serialized, LedgerObject.class);
     assertThat(deserialized).isEqualTo(ledgerObject);
   }
 }

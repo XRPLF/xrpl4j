@@ -17,12 +17,12 @@ import java.util.List;
  * individual account. You can create, replace, or remove a signer list using a {@link SignerListSet} transaction.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableSignerList.class)
-@JsonDeserialize(as = ImmutableSignerList.class)
-public interface SignerList {
+@JsonSerialize(as = ImmutableSignerListObject.class)
+@JsonDeserialize(as = ImmutableSignerListObject.class)
+public interface SignerListObject extends LedgerObject {
 
-  static ImmutableSignerList.Builder builder() {
-    return ImmutableSignerList.builder();
+  static ImmutableSignerListObject.Builder builder() {
+    return ImmutableSignerListObject.builder();
   }
 
   /**
@@ -30,8 +30,8 @@ public interface SignerList {
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
-  default String ledgerEntryType() {
-    return "SignerList";
+  default LedgerEntryType ledgerEntryType() {
+    return LedgerEntryType.SIGNER_LIST;
   }
 
   /**
@@ -67,7 +67,7 @@ public interface SignerList {
   UnsignedInteger signerListId();
 
   /**
-   * A target number for signer weights. To produce a valid signature for the owner of this {@link SignerList},
+   * A target number for signer weights. To produce a valid signature for the owner of this {@link SignerListObject},
    * the signers must provide valid signatures whose weights sum to this value or more.
    */
   @JsonProperty("SignerQuorum")
@@ -78,5 +78,7 @@ public interface SignerList {
    */
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();
+
+  Hash256 index();
 
 }

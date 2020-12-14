@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -27,6 +29,12 @@ public interface PayChannelObject extends LedgerObject {
   @Value.Derived
   default LedgerEntryType ledgerEntryType() {
     return LedgerEntryType.PAY_CHANNEL;
+  }
+
+  @JsonProperty("Flags")
+  @Value.Derived
+  default Flags flags() {
+    return Flags.UNSET;
   }
 
   /**
@@ -80,7 +88,7 @@ public interface PayChannelObject extends LedgerObject {
    * source address requests to close the channel.
    */
   @JsonProperty("SettleDelay")
-  UnsignedInteger settleDelay();
+  UnsignedLong settleDelay();
 
   /**
    * A hint indicating which page of the source address's owner directory links to this object, in case
@@ -108,7 +116,7 @@ public interface PayChannelObject extends LedgerObject {
    * {@link LedgerHeader#closeTime()} field.
    */
   @JsonProperty("Expiration")
-  Optional<UnsignedInteger> expiration();
+  Optional<UnsignedLong> expiration();
 
   /**
    * The immutable expiration time for this payment channel, in
@@ -117,7 +125,7 @@ public interface PayChannelObject extends LedgerObject {
    * field.
    */
   @JsonProperty("CancelAfter")
-  Optional<UnsignedInteger> cancelAfter();
+  Optional<UnsignedLong> cancelAfter();
 
   /**
    * An arbitrary tag to further specify the {@link #account()} for this payment channel, such as a hosted recipient

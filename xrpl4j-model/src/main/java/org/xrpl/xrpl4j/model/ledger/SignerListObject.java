@@ -79,6 +79,9 @@ public interface SignerListObject extends LedgerObject {
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();
 
+  /**
+   * Unique ID for this {@link SignerListObject}.
+   */
   Hash256 index();
 
 }

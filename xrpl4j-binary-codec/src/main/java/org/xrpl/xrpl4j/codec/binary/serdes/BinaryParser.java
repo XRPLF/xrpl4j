@@ -12,8 +12,8 @@ import org.xrpl.xrpl4j.codec.binary.types.SerializedType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * Parser for XRPL binary hex values.
@@ -48,6 +48,13 @@ public class BinaryParser {
     cursor += bytesToSkip * BYTE_HEX_LENGTH;
   }
 
+  /**
+   * Read from this parser.
+   *
+   * @param bytesToRead An int representing the number of bytes to read.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
   public UnsignedByteArray read(int bytesToRead) {
     if (cursor >= hex.length()) {
       throw new IndexOutOfBoundsException("cursor moved past end of buffer");
@@ -80,34 +87,36 @@ public class BinaryParser {
     return hex.length() / BYTE_HEX_LENGTH;
   }
 
-  public boolean end() {
-    return cursor >= hex.length();
+  public boolean hasMore() {
+    return cursor < hex.length();
   }
 
   /**
-   * Reads the length of the variable length encoded bytes
+   * Reads the length of the variable length encoded bytes.
    *
-   * @return The length of the variable length encoded bytes
+   * @return The length of the variable length encoded bytes.
    */
   public int readVariableLengthLength() {
-    int b1 = this.readUInt8().intValue();
-    if (b1 <= MAX_SINGLE_BYTE_LENGTH) {
-      return b1;
-    } else if (b1 <= MAX_SECOND_BYTE_VALUE) {
+    int firstByte = this.readUInt8().intValue();
+    if (firstByte <= MAX_SINGLE_BYTE_LENGTH) {
+      return firstByte;
+    } else if (firstByte <= MAX_SECOND_BYTE_VALUE) {
       int b2 = this.readUInt8().intValue();
-      return MAX_SECOND_BYTE_VALUE - 1 + (b1 - MAX_SECOND_BYTE_VALUE - 1) * MAX_BYTE_VALUE + b2;
-    } else if (b1 <= 254) {
+      return MAX_SECOND_BYTE_VALUE - 1 + (firstByte - MAX_SECOND_BYTE_VALUE - 1) * MAX_BYTE_VALUE + b2;
+    } else if (firstByte <= 254) {
       int b2 = this.readUInt8().intValue();
       int b3 = this.readUInt8().intValue();
-      return MAX_DOUBLE_BYTE_LENGTH + (b1 - MAX_SECOND_BYTE_VALUE - 1) * MAX_DOUBLE_BYTE_VALUE + b2 * MAX_BYTE_VALUE + b3;
+      return MAX_DOUBLE_BYTE_LENGTH + (firstByte - MAX_SECOND_BYTE_VALUE - 1) * MAX_DOUBLE_BYTE_VALUE +
+        b2 * MAX_BYTE_VALUE +
+        b3;
     }
     throw new Error("Invalid variable length indicator");
   }
 
   /**
-   * Reads the field ordinal from the BinaryParser
+   * Reads the field ordinal from the BinaryParser.
    *
-   * @return Field ordinal
+   * @return Field ordinal.
    */
   public FieldHeader readFieldHeader() {
     int type = this.readUInt8().intValue();
@@ -132,9 +141,9 @@ public class BinaryParser {
   }
 
   /**
-   * Read the field from the BinaryParser
+   * Read the field from the BinaryParser.
    *
-   * @return The field represented by the bytes at the head of the BinaryParser
+   * @return The field represented by the bytes at the head of the BinaryParser.
    */
   public Optional<FieldInstance> readField() {
     FieldHeader header = readFieldHeader();
@@ -143,10 +152,12 @@ public class BinaryParser {
   }
 
   /**
-   * Read a given type from the BinaryParser
+   * Read a given type from the BinaryParser.
    *
-   * @param type The type that you want to read from the BinaryParser
-   * @return The instance of that type read from the BinaryParser
+   * @param type The type that you want to read from the BinaryParser.
+   * @param <T>  A {@link SerializedType} to read as.
+   *
+   * @return The instance of the type read from the BinaryParser.
    */
   public <T extends SerializedType<T>> T readType(Class<T> type) {
     try {
@@ -157,42 +168,47 @@ public class BinaryParser {
   }
 
   /**
-   * Get the type associated with a given field
+   * Get the type associated with a given field.
    *
-   * @param field The field that you wan to get the type of
-   * @return The type associated with the given field
+   * @param field The field that you wan to get the type of.
+   *
+   * @return The type associated with the given field.
    */
   public SerializedType typeForField(FieldInstance field) {
     return SerializedType.getTypeByName(field.type());
   }
 
-
   /**
-   * Read value of the type specified by field from the BinaryParser
+   * Read value of the type specified by field from the BinaryParser.
    *
-   * @param field The field that you want to get the associated value for
-   * @return The value associated with the given field
+   * @param field The field that you want to get the associated value for.
+   *
+   * @return The value associated with the given field.
    */
-  public SerializedType readFieldValue(FieldInstance field) {
+  public SerializedType readFieldValue(final FieldInstance field) {
+    Objects.requireNonNull(field);
+
     SerializedType type = this.typeForField(field);
     if (type == null) {
       throw new IllegalArgumentException("unsupported type " + type);
     }
-    OptionalInt sizeHint = field.isVariableLengthEncoded()
-      ? OptionalInt.of(this.readVariableLengthLength())
-      : OptionalInt.empty();
 
     try {
-      return type.fromParser(this, sizeHint);
+      if (field.isVariableLengthEncoded()) {
+        int sizeHint = this.readVariableLengthLength();
+        return type.fromParser(this, sizeHint);
+      } else {
+        return type.fromParser(this);
+      }
     } catch (Exception e) {
       throw new RuntimeException("could not instantiate field of type " + field.name(), e);
     }
   }
 
   /**
-   * Get the next field and value from the BinaryParser
+   * Get the next field and value from the BinaryParser.
    *
-   * @return The field and value
+   * @return The field and value.
    */
   public Optional<FieldWithValue> readFieldAndValue() {
     return this.readField()
@@ -206,6 +222,5 @@ public class BinaryParser {
   private UnsignedLong readUInt(int bytes) {
     return ByteUtils.toUnsignedLong(read(bytes));
   }
-
 
 }

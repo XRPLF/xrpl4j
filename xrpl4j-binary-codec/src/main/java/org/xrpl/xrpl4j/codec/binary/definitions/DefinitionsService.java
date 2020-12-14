@@ -34,6 +34,12 @@ public class DefinitionsService {
 
   private final Map<Integer, String> ledgerEntryTypeReverseLookupMap;
 
+  /**
+   * Required-args Constructor.
+   *
+   * @param definitionsProvider A {@link DefinitionsProvider}.
+   * @param mapper              An {@link ObjectMapper}.
+   */
   DefinitionsService(DefinitionsProvider definitionsProvider, ObjectMapper mapper) {
     this.definitions = definitionsProvider.get();
     this.typeOrdinalMap = ImmutableMap.copyOf(definitions.types());
@@ -60,22 +66,55 @@ public class DefinitionsService {
     this.ledgerEntryTypeReverseLookupMap = inverse(definitions.ledgerEntryTypes());
   }
 
+  /**
+   * Obtain the JVM-wide instance of this {@link DefinitionsService}.
+   *
+   * @return A {@link DefinitionsService}.
+   */
   public static DefinitionsService getInstance() {
     return INSTANCE;
   }
 
+  /**
+   * Obtain the field name for the specified field header.
+   *
+   * @param fieldHeader A {@link FieldHeader}.
+   *
+   * @return A {@link String} representing the field name for the specified field header.
+   */
   public String getFieldName(FieldHeader fieldHeader) {
     return fieldIdNameMap.get(fieldHeader);
   }
 
+  /**
+   * Obtain the field info for the specified field name.
+   *
+   * @param fieldName A {@link String} representing the field name.
+   *
+   * @return An optionally-present {@link FieldInfo}.
+   */
   public Optional<FieldInfo> getFieldInfo(String fieldName) {
     return Optional.ofNullable(fieldInfoMap.get(fieldName));
   }
 
+  /**
+   * Obtain the type ordinal for the specified type name.
+   *
+   * @param typeName A {@link String} for the type name.
+   *
+   * @return An {@link Integer} representing the ordinal of the specified type name.
+   */
   public Integer getTypeOrdinal(String typeName) {
     return typeOrdinalMap.get(typeName);
   }
 
+  /**
+   * Obtain an optionally-present field header with the specified field name.
+   *
+   * @param fieldName A {@link String} for the field header to obtain.
+   *
+   * @return An {@link Optional} of type {@link FieldHeader}.
+   */
   public Optional<FieldHeader> getFieldHeader(String fieldName) {
     return getFieldInfo(fieldName).map(info -> {
       Integer typeCode = getTypeOrdinal(info.type());
@@ -84,6 +123,13 @@ public class DefinitionsService {
     });
   }
 
+  /**
+   * Obtain an optionally-present field instance with the specified field header name.
+   *
+   * @param fieldName A {@link String} for the field instance to obtain.
+   *
+   * @return An {@link Optional} of type {@link FieldInstance}.
+   */
   public Optional<FieldInstance> getFieldInstance(String fieldName) {
     return DefinitionsService.getInstance().getFieldInfo(fieldName)
       .flatMap(info -> getFieldHeader(fieldName)
@@ -99,6 +145,14 @@ public class DefinitionsService {
             .build()));
   }
 
+  /**
+   * Obtain an optionally-present integer corresponding to the specified field name and value.
+   *
+   * @param fieldName A {@link String} representing the field name.
+   * @param value     A {@link String} representing the value.
+   *
+   * @return An {@link Optional} of type {@link FieldInstance}.
+   */
   public Optional<Integer> mapFieldSpecialization(String fieldName, String value) {
     if (fieldName == null) {
       return Optional.empty();
@@ -115,6 +169,14 @@ public class DefinitionsService {
     }
   }
 
+  /**
+   * Map a field's raw value to a specialied type.
+   *
+   * @param fieldName A {@link String} representing the name of the field to map.
+   * @param value     A {@link String} value to map.
+   *
+   * @return An optionally-present {@link String} result.
+   */
   public Optional<String> mapFieldRawValueToSpecialization(String fieldName, String value) {
     if (fieldName == null) {
       return Optional.empty();

@@ -4,9 +4,9 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 
 @Immutable
-public interface FieldWithValue<T> extends Comparable {
+public interface FieldWithValue<T> extends Comparable<FieldWithValue<T>> {
 
-  static ImmutableFieldWithValue.Builder builder() {
+  static <T> ImmutableFieldWithValue.Builder<T> builder() {
     return ImmutableFieldWithValue.builder();
   }
 
@@ -15,11 +15,8 @@ public interface FieldWithValue<T> extends Comparable {
   T value();
 
   @Override
-  default int compareTo(Object o) {
-    if (!(o instanceof FieldWithValue)) {
-      throw new IllegalArgumentException("cannot compare to type " + o.getClass());
-    }
-    FieldWithValue other = (FieldWithValue) o;
-    return this.field().ordinal() - other.field().ordinal();
+  @SuppressWarnings( {"NullableProblems", "rawtypes"})
+  default int compareTo(FieldWithValue<T> other) {
+    return this.field().compareTo(other.field());
   }
 }

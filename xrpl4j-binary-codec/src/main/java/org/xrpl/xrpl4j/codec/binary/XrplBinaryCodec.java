@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.codec.binary.types.STObjectType;
 import org.xrpl.xrpl4j.codec.binary.types.UInt64Type;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,18 +30,20 @@ public class XrplBinaryCodec {
   public static final String CHANNEL_FIELD_NAME = "Channel";
   public static final String AMOUNT_FIELD_NAME = "Amount";
 
-  private DefinitionsService definitionsService = DefinitionsService.getInstance();
-
-  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
+  private static final DefinitionsService definitionsService = DefinitionsService.getInstance();
+  private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   /**
    * Encodes JSON to canonical XRPL binary as a hex string.
    *
-   * @param json String containing JSON to be encoded.
-   * @return hex encoded representations
-   * @throws JsonProcessingException if JSON is not valid.
+   * @param json A {@link String} containing JSON to be encoded.
+   *
+   * @return A {@link String} containing the hex-encoded representation of {@code json}.
+   *
+   * @throws JsonProcessingException if {@code json} is not valid JSON.
    */
   public String encode(String json) throws JsonProcessingException {
+    Objects.requireNonNull(json);
     JsonNode node = BinaryCodecObjectMapperFactory.getObjectMapper().readTree(json);
     return encode(node);
   }
@@ -48,8 +51,26 @@ public class XrplBinaryCodec {
   /**
    * Encodes JSON to canonical XRPL binary as a hex string.
    *
+   * @param jsonNode A {@link JsonNode} containing JSON to be encoded.
+   *
+   * @return A {@link String} containing the hex-encoded representation of {@code jsonNode}.
+   *
+   * @throws JsonProcessingException if {@code jsonNode} is not valid JSON.
+   */
+  private String encode(final JsonNode jsonNode) {
+    Objects.requireNonNull(jsonNode);
+    UnsignedByteArray byteList = UnsignedByteArray.empty();
+    new STObjectType().fromJSON(jsonNode).toBytesSink(byteList);
+    return byteList.hexValue();
+  }
+
+  /**
+   * Encodes JSON to canonical XRPL binary as a hex string.
+   *
    * @param json String containing JSON to be encoded.
+   *
    * @return hex encoded representations
+   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForSigning(String json) throws JsonProcessingException {
@@ -60,8 +81,11 @@ public class XrplBinaryCodec {
   /**
    * Encodes JSON to canonical XRPL binary as a hex string for signing purposes.
    *
-   * @param json String containing JSON to be encoded.
+   * @param json         A {@link String} containing JSON to be encoded.
+   * @param xrpAccountId A {@link String} containing the XRPL AccountId.
+   *
    * @return hex encoded representations
+   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForMultiSigning(String json, String xrpAccountId) throws JsonProcessingException {
@@ -76,11 +100,13 @@ public class XrplBinaryCodec {
   }
 
   /**
-   * Encodes JSON to canonical XRPL binary as a hex string for signing payment channel claims.
-   * The only JSON fields which will be encoded are "Channel" and "Amount".
+   * Encodes JSON to canonical XRPL binary as a hex string for signing payment channel claims. The only JSON fields
+   * which will be encoded are "Channel" and "Amount".
    *
    * @param json String containing JSON to be encoded.
+   *
    * @return The binary encoded JSON in hexadecimal form.
+   *
    * @throws JsonProcessingException If the JSON is not valid.
    */
   public String encodeForSigningClaim(String json) throws JsonProcessingException {
@@ -94,7 +120,7 @@ public class XrplBinaryCodec {
     }
     UnsignedByteArray channel = UnsignedByteArray.fromHex(node.get(CHANNEL_FIELD_NAME).asText());
     UnsignedByteArray amount = UnsignedByteArray.of(
-        new UInt64Type(UnsignedLong.valueOf(node.get(AMOUNT_FIELD_NAME).asText())).toBytes()
+      new UInt64Type(UnsignedLong.valueOf(node.get(AMOUNT_FIELD_NAME).asText())).toBytes()
     );
 
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
@@ -106,8 +132,9 @@ public class XrplBinaryCodec {
   /**
    * Decodes canonical XRPL binary hex string to JSON.
    *
-   * @param hex value to decode.
-   * @return
+   * @param hex A {@link String} value to decode.
+   *
+   * @return A {@link String} representing the decoded hex.
    */
   public String decode(String hex) {
     return new BinaryParser(hex).readType(STObjectType.class)
@@ -115,18 +142,13 @@ public class XrplBinaryCodec {
       .toString();
   }
 
-  private String encode(JsonNode node) {
-    UnsignedByteArray byteList = UnsignedByteArray.empty();
-    new STObjectType().fromJSON(node).toBytesSink(byteList);
-    return byteList.hexValue();
-  }
-
   /**
-   * Creates a deep copy of the given node, removing any fields that are not flagged as signing fields
-   * according to the defintion metadata.
+   * Creates a deep copy of the given node, removing any fields that are not flagged as signing fields according to the
+   * definition metadata.
    *
-   * @param node
-   * @return deep clone with non-signing fields omitted
+   * @param node A {@link JsonNode} to remove signing fields from.
+   *
+   * @return A {@link JsonNode} containing a deep clone of {@code node}, with non-signing fields omitted.
    */
   private JsonNode removeNonSigningFields(JsonNode node) {
     if (!node.isObject()) {
@@ -138,7 +160,7 @@ public class XrplBinaryCodec {
 
     Map<String, JsonNode> signingFields = Lists.newArrayList(node.fieldNames())
       .stream()
-      .filter(fieldName -> isSigningField(fieldName))
+      .filter(this::isSigningField)
       .collect(Collectors.toMap(Function.identity(), node::get));
 
     return new ObjectNode(objectMapper.getNodeFactory(), signingFields);

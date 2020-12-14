@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL UInt64 type.
  */
@@ -20,7 +18,7 @@ public class UInt64Type extends UIntType<UInt64Type> {
   }
 
   @Override
-  public UInt64Type fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public UInt64Type fromParser(BinaryParser parser) {
     return new UInt64Type(parser.readUInt64());
   }
 

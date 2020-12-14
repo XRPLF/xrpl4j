@@ -7,7 +7,6 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.regex.Pattern;
 
 /**
@@ -18,7 +17,6 @@ public class CurrencyType extends Hash160Type {
   private static final Pattern ISO_REGEX = Pattern.compile("^[A-Z0-9]{3}$");
 
   private final Optional<String> iso;
-  private final boolean isNative;
 
   public CurrencyType() {
     this(UnsignedByteArray.ofSize(20));
@@ -27,13 +25,13 @@ public class CurrencyType extends Hash160Type {
   public CurrencyType(UnsignedByteArray list) {
     super(list);
     String rawISO = rawISO(list);
-    this.isNative = isNative(list);
+    boolean isNative = isNative(list);
     boolean lossLessISO = onlyIso(list) && !rawISO.equals("XRP") && ISO_REGEX.matcher(rawISO).matches();
-    this.iso = this.isNative ? Optional.of("XRP") : lossLessISO ? Optional.of(rawISO) : Optional.empty();
+    this.iso = isNative ? Optional.of("XRP") : lossLessISO ? Optional.of(rawISO) : Optional.empty();
   }
 
   @Override
-  public CurrencyType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public CurrencyType fromParser(BinaryParser parser) {
     return new CurrencyType(parser.read(getWidth()));
   }
 
@@ -50,10 +48,6 @@ public class CurrencyType extends Hash160Type {
   @Override
   public JsonNode toJSON() {
     return iso.map(TextNode::new).orElseGet(() -> new TextNode(toHex()));
-  }
-
-  public boolean isNative() {
-    return isNative;
   }
 
   private boolean isNative(UnsignedByteArray byteList) {

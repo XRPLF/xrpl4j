@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 
 /**
  * Codec for XRPL STObject type.
@@ -37,11 +36,11 @@ public class STObjectType extends SerializedType<STObjectType> {
   }
 
   @Override
-  public STObjectType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public STObjectType fromParser(BinaryParser parser) {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteArray);
 
-    while (!parser.end()) {
+    while (parser.hasMore()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
@@ -66,7 +65,7 @@ public class STObjectType extends SerializedType<STObjectType> {
       JsonNode fieldNode = node.get(fieldName);
       definitionsService.getFieldInstance(fieldName)
         .filter(FieldInstance::isSerialized)
-        .ifPresent(fieldInstance -> fields.add(FieldWithValue.builder()
+        .ifPresent(fieldInstance -> fields.add(FieldWithValue.<JsonNode>builder()
           .field(fieldInstance)
           .value(mapSpecializedValues(fieldName, fieldNode))
           .build()));
@@ -107,7 +106,7 @@ public class STObjectType extends SerializedType<STObjectType> {
   public JsonNode toJSON() {
     BinaryParser parser = new BinaryParser(this.toString());
     Map<String, JsonNode> objectMap = new LinkedHashMap<>();
-    while (!parser.end()) {
+    while (parser.hasMore()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;

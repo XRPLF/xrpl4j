@@ -18,9 +18,9 @@ import java.util.Map;
 public interface Definitions {
 
   /**
-   * Type definitions map (type name to ordinal value)
+   * Type definitions map (type name to ordinal value).
    *
-   * @return
+   * @return A {@link Map} of types.
    */
   @JsonProperty("TYPES")
   Map<String, Integer> types();
@@ -28,31 +28,31 @@ public interface Definitions {
   /**
    * Fields definitions list.
    *
-   * @return
+   * @return {@link List} of type {@link List} of type {@link JsonNode} containing all field definitions.
    */
   @JsonProperty("FIELDS")
   List<List<JsonNode>> fields();
 
   /**
-   * Ledger types mappings (transaction type to ordinal value)
+   * Ledger types mappings (transaction type to ordinal value).
    *
-   * @return
+   * @return {@link Map} keyed by {@link String} with {@link Integer} values for all ledger entry types.
    */
   @JsonProperty("LEDGER_ENTRY_TYPES")
   Map<String, Integer> ledgerEntryTypes();
 
   /**
-   * Transaction types mappings (transaction type to ordinal value)
+   * Transaction types mappings (transaction type to ordinal value).
    *
-   * @return
+   * @return {@link Map} keyed by {@link String} with {@link Integer} values for all transaction types.
    */
   @JsonProperty("TRANSACTION_TYPES")
   Map<String, Integer> transactionTypes();
 
   /**
-   * Transaction results mappings (transaction result to ordinal value)
+   * Transaction results mappings (transaction result to ordinal value).
    *
-   * @return
+   * @return {@link Map} keyed by {@link String} with {@link Integer} values for all transaction results.
    */
   @JsonProperty("TRANSACTION_RESULTS")
   Map<String, Integer> transactionResults();

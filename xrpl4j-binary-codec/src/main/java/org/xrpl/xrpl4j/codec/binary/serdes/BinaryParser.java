@@ -12,8 +12,8 @@ import org.xrpl.xrpl4j.codec.binary.types.SerializedType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * Parser for XRPL binary hex values.
@@ -80,8 +80,8 @@ public class BinaryParser {
     return hex.length() / BYTE_HEX_LENGTH;
   }
 
-  public boolean end() {
-    return cursor >= hex.length();
+  public boolean hasMore() {
+    return cursor < hex.length();
   }
 
   /**
@@ -99,7 +99,8 @@ public class BinaryParser {
     } else if (b1 <= 254) {
       int b2 = this.readUInt8().intValue();
       int b3 = this.readUInt8().intValue();
-      return MAX_DOUBLE_BYTE_LENGTH + (b1 - MAX_SECOND_BYTE_VALUE - 1) * MAX_DOUBLE_BYTE_VALUE + b2 * MAX_BYTE_VALUE + b3;
+      return MAX_DOUBLE_BYTE_LENGTH + (b1 - MAX_SECOND_BYTE_VALUE - 1) * MAX_DOUBLE_BYTE_VALUE + b2 * MAX_BYTE_VALUE
+        + b3;
     }
     throw new Error("Invalid variable length indicator");
   }
@@ -146,7 +147,9 @@ public class BinaryParser {
    * Read a given type from the BinaryParser
    *
    * @param type The type that you want to read from the BinaryParser
-   * @return The instance of that type read from the BinaryParser
+   * @param <T>  A {@link SerializedType} to read as.
+   *
+   * @return The instance of the type read from the BinaryParser
    */
   public <T extends SerializedType<T>> T readType(Class<T> type) {
     try {
@@ -160,30 +163,35 @@ public class BinaryParser {
    * Get the type associated with a given field
    *
    * @param field The field that you wan to get the type of
+   *
    * @return The type associated with the given field
    */
   public SerializedType typeForField(FieldInstance field) {
     return SerializedType.getTypeByName(field.type());
   }
 
-
   /**
-   * Read value of the type specified by field from the BinaryParser
+   * Read value of the type specified by field from the BinaryParser.
    *
-   * @param field The field that you want to get the associated value for
-   * @return The value associated with the given field
+   * @param field The field that you want to get the associated value for.
+   *
+   * @return The value associated with the given field.
    */
-  public SerializedType readFieldValue(FieldInstance field) {
+  public SerializedType readFieldValue(final FieldInstance field) {
+    Objects.requireNonNull(field);
+
     SerializedType type = this.typeForField(field);
     if (type == null) {
       throw new IllegalArgumentException("unsupported type " + type);
     }
-    OptionalInt sizeHint = field.isVariableLengthEncoded()
-      ? OptionalInt.of(this.readVariableLengthLength())
-      : OptionalInt.empty();
 
     try {
-      return type.fromParser(this, sizeHint);
+      if (field.isVariableLengthEncoded()) {
+        int sizeHint = this.readVariableLengthLength();
+        return type.fromParser(this, sizeHint);
+      } else {
+        return type.fromParser(this);
+      }
     } catch (Exception e) {
       throw new RuntimeException("could not instantiate field of type " + field.name(), e);
     }

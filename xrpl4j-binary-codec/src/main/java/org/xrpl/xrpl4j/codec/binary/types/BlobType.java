@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL Blob type.
  */
@@ -20,8 +18,8 @@ public class BlobType extends SerializedType<BlobType> {
   }
 
   @Override
-  public BlobType fromParser(BinaryParser parser, OptionalInt lengthHint) {
-    return new BlobType(parser.read(lengthHint.getAsInt()));
+  public BlobType fromParser(BinaryParser parser, int lengthHint) {
+    return new BlobType(parser.read(lengthHint));
   }
 
   @Override

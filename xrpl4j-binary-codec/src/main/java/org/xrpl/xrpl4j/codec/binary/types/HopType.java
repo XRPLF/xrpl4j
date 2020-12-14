@@ -8,8 +8,6 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL Hop object inside a Path object.
  */
@@ -22,7 +20,7 @@ public class HopType extends SerializedType<HopType> {
   public static final byte TYPE_CURRENCY = 0x10;
   public static final byte TYPE_ISSUER = 0x20;
 
-  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
+  private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public HopType() {
     this(UnsignedByteArray.empty());
@@ -33,7 +31,7 @@ public class HopType extends SerializedType<HopType> {
   }
 
   @Override
-  public HopType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public HopType fromParser(BinaryParser parser) {
     int type = parser.readUInt8().intValue();
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(type));
 

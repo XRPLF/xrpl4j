@@ -6,8 +6,6 @@ import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL AccountID type.
  */
@@ -24,7 +22,7 @@ public class AccountIdType extends Hash160Type {
   }
 
   @Override
-  public AccountIdType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public AccountIdType fromParser(BinaryParser parser) {
     return new AccountIdType(parser.read(getWidth()));
   }
 

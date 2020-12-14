@@ -9,63 +9,132 @@ import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Map;
-import java.util.OptionalInt;
+import java.util.Objects;
 import java.util.function.Supplier;
 
-abstract public class SerializedType<T extends SerializedType<T>> {
+/**
+ * Defines an abstract type serialization parent-class for all XRPL serialized type definitions.
+ *
+ * @param <T> The actual type of this {@link SerializedType}.
+ */
+public abstract class SerializedType<T extends SerializedType<T>> {
 
-  private static Map<String, Supplier<SerializedType>> typeMap =
-      new ImmutableMap.Builder<String, Supplier<SerializedType>>()
-          .put("AccountID", () -> new AccountIdType())
-          .put("Amount", () -> new AmountType())
-          .put("Blob", () -> new BlobType())
-          .put("Currency", () -> new CurrencyType())
-          .put("Hash128", () -> new Hash128Type())
-          .put("Hash160", () -> new Hash160Type())
-          .put("Hash256", () -> new Hash256Type())
-          .put("PathSet", () -> new PathSetType())
-          .put("STArray", () -> new STArrayType())
-          .put("STObject", () -> new STObjectType())
-          .put("UInt8", () -> new UInt8Type())
-          .put("UInt16", () -> new UInt16Type())
-          .put("UInt32", () -> new UInt32Type())
-          .put("Vector256", () -> new Vector256Type())
-          .build();
+  @SuppressWarnings("all")
+  private static final Map<String, Supplier<SerializedType<?>>> typeMap =
+    new ImmutableMap.Builder<String, Supplier<SerializedType<?>>>()
+      .put("AccountID", () -> new AccountIdType())
+      .put("Amount", () -> new AmountType())
+      .put("Blob", () -> new BlobType())
+      .put("Currency", () -> new CurrencyType())
+      .put("Hash128", () -> new Hash128Type())
+      .put("Hash160", () -> new Hash160Type())
+      .put("Hash256", () -> new Hash256Type())
+      .put("PathSet", () -> new PathSetType())
+      .put("STArray", () -> new STArrayType())
+      .put("STObject", () -> new STObjectType())
+      .put("UInt8", () -> new UInt8Type())
+      .put("UInt16", () -> new UInt16Type())
+      .put("UInt32", () -> new UInt32Type())
+      .put("Vector256", () -> new Vector256Type())
+      .build();
   private final UnsignedByteArray bytes;
 
   public SerializedType(UnsignedByteArray bytes) {
     this.bytes = bytes;
   }
 
-  public static SerializedType getTypeByName(String name) {
+  /**
+   * Get the {@link SerializedType} for the supplied {@code name}.
+   *
+   * @param name A {@link String} representing the name of a {@link SerializedType}.
+   *
+   * @return A {@link SerializedType} for the supplied {@code name}.
+   */
+  public static SerializedType<?> getTypeByName(String name) {
     return typeMap.get(name).get();
   }
 
-  public static String getNameByType(SerializedType type) {
+  /**
+   * Get the name of the supplied type.
+   *
+   * @param type A {@link SerializedType} representing the type to name.
+   *
+   * @return A {@link String} representing the name of {@code type}.
+   */
+  public static String getNameByType(SerializedType<?> type) {
     return typeMap.entrySet()
-        .stream()
-        .filter(entry -> entry.getValue().get().getClass().equals(type.getClass()))
-        .map(Map.Entry::getKey)
-        .findAny()
-        .orElse(null);
+      .stream()
+      .filter(entry -> entry.getValue().get().getClass().equals(type.getClass()))
+      .map(Map.Entry::getKey)
+      .findAny()
+      .orElse(null);
   }
 
+  /**
+   * Obtain a {@link SerializedType} of type {@link T} using the supplied {@code parser}.
+   *
+   * @param parser A {@link BinaryParser} to use.
+   *
+   * @return A {@link T} based upon the information found in {@code parser}.
+   */
   public T fromParser(BinaryParser parser) {
-    return fromParser(parser, OptionalInt.empty());
+    throw new UnsupportedOperationException("This operation is only supported by specific sub-classes.");
   }
 
-  public abstract T fromParser(BinaryParser parser, OptionalInt lengthHint);
+  /**
+   * Obtain a {@link SerializedType} of type {@link T} using the supplied {@code parser}.
+   *
+   * @param parser     A {@link BinaryParser} to use.
+   * @param lengthHint A hint/suggestion for the length of the content in {@code parser}.
+   *
+   * @return A {@link T} based upon the information found in {@code parser}.
+   */
+  public T fromParser(BinaryParser parser, int lengthHint) {
+    throw new UnsupportedOperationException("This operation is only supported by specific sub-classes.");
+  }
 
+  /**
+   * Obtain a {@link T} using the supplied {@code node}.
+   *
+   * @param node A {@link JsonNode} to use.
+   *
+   * @return A {@link T} based upon the information found in {@code node}.
+   *
+   * @throws JsonProcessingException if {@code node} is not well-formed JSON.
+   */
   public abstract T fromJSON(JsonNode node) throws JsonProcessingException;
 
+  /**
+   * Construct a concrete instance of {@link SerializedType} from the supplied {@code hex}.
+   *
+   * @param hex A String of hex-encoded binary data.
+   *
+   * @return A {@link T}.
+   */
   public T fromHex(String hex) {
     return fromParser(new BinaryParser(hex));
   }
 
-  public T fromHex(String hex, int hint) {
-    return fromParser(new BinaryParser(hex), OptionalInt.of(hint));
+  /**
+   * Construct a concrete instance of {@link SerializedType} from the supplied {@code hex}.
+   *
+   * @param hex        A {@link String} containing hex-encoded binary content.
+   * @param lengthHint An int representing the expected length of {@code hex}.
+   *
+   * @return A {@link T}.
+   */
+  public T fromHex(String hex, int lengthHint) {
+    Objects.requireNonNull(hex);
+    return fromParser(new BinaryParser(hex), lengthHint);
   }
 
+  /**
+   * Construct a concrete instance of {@link SerializedType} from the supplied {@code json}.
+   *
+   * @param json A {@link String} containing JSON content.
+   *
+   * @return A {@link T}.
+   */
   public T fromJSON(String json) {
     try {
       JsonNode node = BinaryCodecObjectMapperFactory.getObjectMapper().readTree(json);
@@ -78,28 +147,54 @@ abstract public class SerializedType<T extends SerializedType<T>> {
     }
   }
 
-  public void toBytesSink(UnsignedByteArray list) {
+  /**
+   * Append this type's bytes to {@code list}.
+   *
+   * @param list An {@link UnsignedByteArray}.
+   */
+  public void toBytesSink(final UnsignedByteArray list) {
+    Objects.requireNonNull(list);
     list.append(this.bytes);
   }
 
+  /**
+   * Convert this {@link SerializedType} to a byte array.
+   *
+   * @return An array of bytes.
+   */
   public byte[] toBytes() {
     return bytes.toByteArray();
   }
 
+  /**
+   * Convert this {@link SerializedType} to a {@link JsonNode}.
+   *
+   * @return A {@link JsonNode}.
+   */
   public JsonNode toJSON() {
     return new TextNode(toHex());
   }
 
-  public String toString() {
-    return this.toHex();
-  }
-
+  /**
+   * Convert this {@link SerializedType} to a hex-encoded {@link String}.
+   *
+   * @return A {@link String}.
+   */
   public final String toHex() {
     return bytes.hexValue();
   }
 
+  /**
+   * Convert this {@link SerializedType} to an {@link UnsignedByteArray}.
+   *
+   * @return A {@link UnsignedByteArray}.
+   */
   protected UnsignedByteArray value() {
     return bytes;
   }
 
+  @Override
+  public String toString() {
+    return this.toHex();
+  }
 }

@@ -60,7 +60,7 @@ public class UnsignedByteArray {
   }
 
   /**
-   * Creates an {@link UnsignedByteArray} with a given number of bytes (where each byte has the value 0)
+   * Creates an {@link UnsignedByteArray} with a given number of bytes (where each byte has the value 0).
    *
    * @param size The size of the initialized {@link UnsignedByteArray}.
    * @return An {@link UnsignedByteArray} of the requested size with all 0 {@link UnsignedByte}s
@@ -186,14 +186,14 @@ public class UnsignedByteArray {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object object) {
+    if (this == object) {
       return true;
     }
-    if (!(o instanceof UnsignedByteArray)) {
+    if (!(object instanceof UnsignedByteArray)) {
       return false;
     }
-    UnsignedByteArray that = (UnsignedByteArray) o;
+    UnsignedByteArray that = (UnsignedByteArray) object;
     return getUnsignedBytes().equals(that.getUnsignedBytes());
   }
 

@@ -20,18 +20,43 @@ public class UnsignedByte {
     this.value = value;
   }
 
+  /**
+   * Construct an {@link UnsignedByte} from an {@code int}.
+   *
+   * @param value An {@code int} value.
+   * @return An {@link UnsignedByte}.
+   */
   public static UnsignedByte of(int value) {
     return new UnsignedByte(value);
   }
 
+  /**
+   * Construct an {@link UnsignedByte} from a {@code byte}.
+   *
+   * @param value A {@code byte} value.
+   * @return An {@link UnsignedByte}.
+   */
   public static UnsignedByte of(byte value) {
     return new UnsignedByte(value & 0xff);
   }
 
+  /**
+   * Construct an {@link UnsignedByte} from high bits and low bits.
+   *
+   * @param highBits A {@code byte} of the high bits.
+   * @param lowBits A {@code byte} of the low bits.
+   * @return An {@link UnsignedByte}.
+   */
   public static UnsignedByte of(byte highBits, byte lowBits) {
     return new UnsignedByte((highBits << 4) + lowBits);
   }
 
+  /**
+   * Construct an {@link UnsignedByte} from a hexadecimal {@link String}.
+   *
+   * @param hex A hexadecimal encoded {@link String}.
+   * @return An {@link UnsignedByte}.
+   */
   public static UnsignedByte of(String hex) {
     byte highBits = new BigInteger(hex.substring(0, 1), 16).byteValue();
     byte lowBits = new BigInteger(hex.substring(1, 2), 16).byteValue();
@@ -109,14 +134,14 @@ public class UnsignedByte {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object object) {
+    if (this == object) {
       return true;
     }
-    if (!(o instanceof UnsignedByte)) {
+    if (!(object instanceof UnsignedByte)) {
       return false;
     }
-    UnsignedByte that = (UnsignedByte) o;
+    UnsignedByte that = (UnsignedByte) object;
     return value == that.value;
   }
 

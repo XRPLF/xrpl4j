@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ParameterName", "MethodName"})
 public class AddressCodec {
 
   private static final AddressCodec INSTANCE = new AddressCodec();
@@ -104,7 +105,11 @@ public class AddressCodec {
   public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
 
-    return AddressBase58.decode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33)).bytes();
+    return AddressBase58.decode(
+        publicKey,
+        Lists.newArrayList(Version.NODE_PUBLIC),
+        UnsignedInteger.valueOf(33)
+    ).bytes();
   }
 
   /**
@@ -129,7 +134,11 @@ public class AddressCodec {
   public UnsignedByteArray decodeAccountPublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
 
-    return AddressBase58.decode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33)).bytes();
+    return AddressBase58.decode(
+        publicKey,
+        Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY),
+        UnsignedInteger.valueOf(33)
+    ).bytes();
   }
 
   /**
@@ -137,7 +146,8 @@ public class AddressCodec {
    *
    * @param classicAddress A {@link String} containing the classic address.
    * @param tag            The destination tag of the address.
-   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded
+   *                       for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
   public String classicAddressToXAddress(final String classicAddress, final UnsignedInteger tag, final boolean test) {
@@ -151,7 +161,8 @@ public class AddressCodec {
    * Converts an XRPL Classic Address with no Destination Tag to an X-Address.
    *
    * @param classicAddress A {@link String} containing the classic address.
-   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded
+   *                       for Mainnet.
    * @return The X-Address representation of the classic address.
    */
   public String classicAddressToXAddress(final String classicAddress, final boolean test) {
@@ -165,10 +176,15 @@ public class AddressCodec {
    *
    * @param classicAddress A {@link String} containing the classic address.
    * @param tag            The destination tag of the address.
-   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded
+   *                       for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
-  public String classicAddressToXAddress(final String classicAddress, final Optional<UnsignedInteger> tag, final boolean test) {
+  public String classicAddressToXAddress(
+      final String classicAddress,
+      final Optional<UnsignedInteger> tag,
+      final boolean test
+  ) {
     Objects.requireNonNull(classicAddress);
     Objects.requireNonNull(tag);
 
@@ -184,7 +200,11 @@ public class AddressCodec {
    * @param test      true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
    * @return The X-Address representation of the AccountID and destination tag.
    */
-  private String encodeXAddress(final UnsignedByteArray accountId, final Optional<UnsignedInteger> tag, final boolean test) {
+  private String encodeXAddress(
+      final UnsignedByteArray accountId,
+      final Optional<UnsignedInteger> tag,
+      final boolean test
+  ) {
     Objects.requireNonNull(accountId);
     Objects.requireNonNull(tag);
 
@@ -296,6 +316,12 @@ public class AddressCodec {
     }
   }
 
+  /**
+   * Tests if the given X-Address is a valid X-Address.
+   *
+   * @param xAddress A potentially valid X-Address.
+   * @return {@code true} if the given address is a valid X-Address, {@code false} if not.
+   */
   public boolean isValidXAddress(final String xAddress) {
     try {
       decodeXAddress(xAddress);
@@ -306,6 +332,12 @@ public class AddressCodec {
     return true;
   }
 
+  /**
+   * Tests if the given Address is a valid Classic Address.
+   *
+   * @param address A potentially valid Classic Address.
+   * @return {@code true} if the given address is a valid Classic Address, {@code false} if not.
+   */
   public boolean isValidClassicAddress(final String address) {
     try {
       decodeAccountId(address);

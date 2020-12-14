@@ -24,7 +24,7 @@ public class Base58 {
   }
 
   /**
-   * Encodes the given bytes to a Base58 {@link String}
+   * Encodes the given bytes to a Base58 {@link String}.
    *
    * @param input A byte array to encode.
    * @return The bytes encoded to a Base58 {@link String}
@@ -41,7 +41,7 @@ public class Base58 {
     }
     // The actual encoding.
     byte[] temp = new byte[input.length * 2];
-    int j = temp.length;
+    int tempIndex = temp.length;
 
     int startAt = zeroCount;
     while (startAt < input.length) {
@@ -49,19 +49,19 @@ public class Base58 {
       if (input[startAt] == 0) {
         ++startAt;
       }
-      temp[--j] = (byte) ALPHABET[mod];
+      temp[--tempIndex] = (byte) ALPHABET[mod];
     }
 
     // Strip extra '1' if there are some after decoding.
-    while (j < temp.length && temp[j] == ALPHABET[0]) {
-      ++j;
+    while (tempIndex < temp.length && temp[tempIndex] == ALPHABET[0]) {
+      ++tempIndex;
     }
     // Add as many leading '1' as there were leading zeros.
     while (--zeroCount >= 0) {
-      temp[--j] = (byte) ALPHABET[0];
+      temp[--tempIndex] = (byte) ALPHABET[0];
     }
 
-    byte[] output = copyOfRange(temp, j, temp.length);
+    byte[] output = copyOfRange(temp, tempIndex, temp.length);
     return new String(output, StandardCharsets.US_ASCII);
   }
 
@@ -78,14 +78,14 @@ public class Base58 {
     byte[] input58 = new byte[input.length()];
     // Transform the String to a base58 byte sequence
     for (int i = 0; i < input.length(); ++i) {
-      char c = input.charAt(i);
+      char charAtIndex = input.charAt(i);
 
       int digit58 = -1;
-      if (c < INDEXES.length) {
-        digit58 = INDEXES[c];
+      if (charAtIndex < INDEXES.length) {
+        digit58 = INDEXES[charAtIndex];
       }
       if (digit58 < 0) {
-        throw new EncodingFormatException("Illegal character " + c + " at " + i);
+        throw new EncodingFormatException("Illegal character " + charAtIndex + " at " + i);
       }
 
       input58[i] = (byte) digit58;
@@ -97,7 +97,7 @@ public class Base58 {
     }
     // The encoding
     byte[] temp = new byte[input.length()];
-    int j = temp.length;
+    int tempIndex = temp.length;
 
     int startAt = zeroCount;
     while (startAt < input58.length) {
@@ -106,14 +106,14 @@ public class Base58 {
         ++startAt;
       }
 
-      temp[--j] = mod;
+      temp[--tempIndex] = mod;
     }
-    // Do no add extra leading zeroes, move j to first non null byte.
-    while (j < temp.length && temp[j] == 0) {
-      ++j;
+    // Do no add extra leading zeroes, move tempIndex to first non null byte.
+    while (tempIndex < temp.length && temp[tempIndex] == 0) {
+      ++tempIndex;
     }
 
-    return copyOfRange(temp, j - zeroCount, temp.length);
+    return copyOfRange(temp, tempIndex - zeroCount, temp.length);
   }
 
   /**

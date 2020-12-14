@@ -90,7 +90,7 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    * @return A {@link T} based upon the information found in {@code parser}.
    */
   public T fromParser(BinaryParser parser, int lengthHint) {
-    throw new UnsupportedOperationException("This operation is only supported by specific sub-classes.");
+    return fromParser(parser);
   }
 
   /**

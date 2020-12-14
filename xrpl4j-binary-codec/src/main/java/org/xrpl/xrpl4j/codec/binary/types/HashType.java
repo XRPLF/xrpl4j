@@ -29,7 +29,7 @@ public abstract class HashType<T extends HashType<T>> extends SerializedType<T> 
 
   @Override
   public T fromHex(String hex) {
-    return super.fromHex(hex);
+    return super.fromHex(hex, width);
   }
 
   public int getWidth() {

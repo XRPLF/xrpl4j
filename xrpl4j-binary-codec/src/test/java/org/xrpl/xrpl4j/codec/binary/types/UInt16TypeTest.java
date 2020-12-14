@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 class UInt16TypeTest extends BaseSerializerTypeTest {
 
-  private final static UInt16Type codec = new UInt16Type();
+  private static final UInt16Type codec = new UInt16Type();
 
   private static Stream<Arguments> dataDrivenFixtures() throws IOException {
     return dataDrivenFixturesForType(codec);

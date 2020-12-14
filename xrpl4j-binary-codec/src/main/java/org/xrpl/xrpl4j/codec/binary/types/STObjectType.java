@@ -16,18 +16,17 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 
 /**
  * Codec for XRPL STObject type.
  */
+@SuppressWarnings("AbbreviationAsWordInName")
 public class STObjectType extends SerializedType<STObjectType> {
 
   public static final String OBJECT_END_MARKER_HEX = "E1";
   private static final String OBJECT_END_MARKER = "ObjectEndMarker";
   private static final String ST_OBJECT = "STObject";
-
-  private DefinitionsService definitionsService = DefinitionsService.getInstance();
+  private static final DefinitionsService definitionsService = DefinitionsService.getInstance();
 
   public STObjectType() {
     this(UnsignedByteArray.empty());
@@ -38,17 +37,17 @@ public class STObjectType extends SerializedType<STObjectType> {
   }
 
   @Override
-  public STObjectType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public STObjectType fromParser(BinaryParser parser) {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteArray);
 
-    while (!parser.end()) {
+    while (parser.hasMore()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
       }
 
-      SerializedType associatedValue = parser.readFieldValue(field);
+      SerializedType<?> associatedValue = parser.readFieldValue(field);
       serializer.writeFieldAndValue(field, associatedValue);
       if (field.type().equals(ST_OBJECT)) {
         serializer.put(OBJECT_END_MARKER_HEX);
@@ -58,7 +57,7 @@ public class STObjectType extends SerializedType<STObjectType> {
   }
 
   @Override
-  public STObjectType fromJSON(JsonNode node) {
+  public STObjectType fromJson(JsonNode node) {
     UnsignedByteArray byteList = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteList);
 
@@ -67,7 +66,7 @@ public class STObjectType extends SerializedType<STObjectType> {
       JsonNode fieldNode = node.get(fieldName);
       definitionsService.getFieldInstance(fieldName)
         .filter(FieldInstance::isSerialized)
-        .ifPresent(fieldInstance -> fields.add(FieldWithValue.builder()
+        .ifPresent(fieldInstance -> fields.add(FieldWithValue.<JsonNode>builder()
           .field(fieldInstance)
           .value(mapSpecializedValues(fieldName, fieldNode))
           .build()));
@@ -89,12 +88,13 @@ public class STObjectType extends SerializedType<STObjectType> {
   }
 
   /**
-   * Maps (if necessar) a JSON node for the given fieldName to it's canonical value.
-   * Some fields (e.g. TransactionType) can be specified in JSON as an ordinal value or an enum (e.g. OfferCreate).
-   * Enum values need to be converted to the ordinal value for binary serialization.
+   * Maps (if necessary) a JSON node for the given fieldName to it's canonical value. Some fields (e.g. TransactionType)
+   * can be specified in JSON as an ordinal value or an enum (e.g. OfferCreate). Enum values need to be converted to the
+   * ordinal value for binary serialization.
    *
    * @param fieldName name of the JSON field.
    * @param fieldNode JSON value for the field.
+   *
    * @return either the original fieldNode or a remapped node if it's one of these special cases.
    */
   private JsonNode mapSpecializedValues(String fieldName, JsonNode fieldNode) {
@@ -104,15 +104,20 @@ public class STObjectType extends SerializedType<STObjectType> {
       .orElse(fieldNode);
   }
 
-  public JsonNode toJSON() {
+  /**
+   * Return this object as JSON.
+   *
+   * @return A {@link JsonNode}.
+   */
+  public JsonNode toJson() {
     BinaryParser parser = new BinaryParser(this.toString());
     Map<String, JsonNode> objectMap = new LinkedHashMap<>();
-    while (!parser.end()) {
+    while (parser.hasMore()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
       }
-      JsonNode value = parser.readFieldValue(field).toJSON();
+      JsonNode value = parser.readFieldValue(field).toJson();
       JsonNode mapped = definitionsService.mapFieldRawValueToSpecialization(field.name(), value.asText())
         .map(TextNode::new)
         .map(JsonNode.class::cast)

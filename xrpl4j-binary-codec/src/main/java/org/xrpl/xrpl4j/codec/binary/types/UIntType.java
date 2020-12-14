@@ -27,7 +27,7 @@ abstract class UIntType<T extends UIntType<T>> extends SerializedType<T> {
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new TextNode(UnsignedLong.valueOf(toHex(), 16).toString());
   }
 }

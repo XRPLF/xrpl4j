@@ -6,8 +6,6 @@ import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL AccountID type.
  */
@@ -24,23 +22,23 @@ public class AccountIdType extends Hash160Type {
   }
 
   @Override
-  public AccountIdType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public AccountIdType fromParser(BinaryParser parser) {
     return new AccountIdType(parser.read(getWidth()));
   }
 
   @Override
-  public AccountIdType fromJSON(JsonNode node) {
+  public AccountIdType fromJson(JsonNode node) {
     String textValue = node.textValue();
     if (textValue.isEmpty()) {
       return new AccountIdType();
     }
-    return HEX_REGEX.matcher(textValue).matches()
-      ? new AccountIdType(UnsignedByteArray.fromHex(textValue))
+    return HEX_REGEX.matcher(textValue).matches() ?
+      new AccountIdType(UnsignedByteArray.fromHex(textValue))
       : new AccountIdType(addressCodec.decodeAccountId(textValue));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new TextNode(addressCodec.encodeAccountId(value()));
   }
 

@@ -22,15 +22,15 @@ class HashTypeTest {
 
   @Test
   void encode() {
-    assertThat(codec128.fromJSON(DOUBLE_QUOTE + bytes(16) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(16));
-    assertThat(codec160.fromJSON(DOUBLE_QUOTE + bytes(20) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(20));
-    assertThat(codec256.fromJSON(DOUBLE_QUOTE + bytes(32) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(32));
+    assertThat(codec128.fromJson(DOUBLE_QUOTE + bytes(16) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(16));
+    assertThat(codec160.fromJson(DOUBLE_QUOTE + bytes(20) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(20));
+    assertThat(codec256.fromJson(DOUBLE_QUOTE + bytes(32) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(32));
   }
 
   @Test
   void encodeOutOfBounds() {
     Assertions.assertThrows(IllegalArgumentException.class,
-      () -> codec128.fromJSON(bytes(20)));
+      () -> codec128.fromJson(bytes(20)));
   }
 
   private String bytes(int size) {

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.node.LongNode;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL UInt32 type.
  */
@@ -21,17 +19,17 @@ public class UInt32Type extends UIntType<UInt32Type> {
   }
 
   @Override
-  public UInt32Type fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public UInt32Type fromParser(BinaryParser parser) {
     return new UInt32Type(parser.readUInt32());
   }
 
   @Override
-  public UInt32Type fromJSON(JsonNode value) {
+  public UInt32Type fromJson(JsonNode value) {
     return new UInt32Type(UnsignedLong.valueOf(value.asText()));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new LongNode(UnsignedLong.valueOf(toHex(), 16).longValue());
   }
 }

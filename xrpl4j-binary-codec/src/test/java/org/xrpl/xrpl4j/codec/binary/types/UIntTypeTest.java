@@ -20,14 +20,14 @@ class UIntTypeTest {
 
   @Test
   void encode() throws JsonProcessingException {
-    assertThat(codec.fromJSON("0").toHex()).isEqualTo("0000");
-    assertThat(codec.fromJSON("15").toHex()).isEqualTo("000F");
-    assertThat(codec.fromJSON("65535").toHex()).isEqualTo("FFFF");
+    assertThat(codec.fromJson("0").toHex()).isEqualTo("0000");
+    assertThat(codec.fromJson("15").toHex()).isEqualTo("000F");
+    assertThat(codec.fromJson("65535").toHex()).isEqualTo("FFFF");
   }
 
   @Test
   void encodeOutOfBounds() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> codec.fromJSON("65536"));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> codec.fromJson("65536"));
   }
 
 }

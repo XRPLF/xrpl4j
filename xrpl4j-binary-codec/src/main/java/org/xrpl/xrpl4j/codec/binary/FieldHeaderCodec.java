@@ -34,7 +34,7 @@ public class FieldHeaderCodec {
    * Required-args Constructor.
    *
    * @param definitions A {@link Definitions}.
-   * @param mapper      A {@link ObjectMapper}.
+   * @param mapper      An {@link ObjectMapper}.
    */
   public FieldHeaderCodec(Definitions definitions, ObjectMapper mapper) {
     this.definitions = definitions;
@@ -139,5 +139,4 @@ public class FieldHeaderCodec {
   }
 
 }
-
 

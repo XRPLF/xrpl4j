@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 /**
  * Codec for currency property inside an XRPL issued currency amount json.
  */
+@SuppressWarnings("AbbreviationAsWordInName")
 public class CurrencyType extends Hash160Type {
 
   private static final Pattern ISO_REGEX = Pattern.compile("^[A-Z0-9]{3}$");
@@ -22,7 +23,12 @@ public class CurrencyType extends Hash160Type {
     this(UnsignedByteArray.ofSize(20));
   }
 
-  public CurrencyType(UnsignedByteArray list) {
+  /**
+   * Required-args Constructor.
+   *
+   * @param list A {@link UnsignedByteArray} for intializing this CurrencyType.
+   */
+  public CurrencyType(final UnsignedByteArray list) {
     super(list);
     String rawISO = rawISO(list);
     boolean isNative = isNative(list);
@@ -36,7 +42,7 @@ public class CurrencyType extends Hash160Type {
   }
 
   @Override
-  public CurrencyType fromJSON(JsonNode node) {
+  public CurrencyType fromJson(JsonNode node) {
     String textValue = node.textValue();
     if (!isValidRepresentation(textValue)) {
       throw new IllegalArgumentException("Unsupported Currency representation: " + textValue);
@@ -46,7 +52,7 @@ public class CurrencyType extends Hash160Type {
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return iso.map(TextNode::new).orElseGet(() -> new TextNode(toHex()));
   }
 
@@ -69,35 +75,35 @@ public class CurrencyType extends Hash160Type {
   }
 
   /**
-   * Ensures that a value is a valid representation of a currency
+   * Ensures that a value is a valid representation of a currency.
    */
   boolean isValidRepresentation(String value) {
     return isStringRepresentation(value);
   }
 
   /**
-   * Tests if ISO is a valid iso code
+   * Tests if ISO is a valid iso code.
    */
   private boolean isIsoCode(String iso) {
     return ISO_REGEX.matcher(iso).matches();
   }
 
   /**
-   * Tests if hex is a valid hex-string
+   * Tests if hex is a valid hex-string.
    */
   private boolean isHex(String hex) {
     return HEX_REGEX.matcher(hex).matches();
   }
 
   /**
-   * Tests if a string is a valid representation of a currency
+   * Tests if a string is a valid representation of a currency.
    */
   boolean isStringRepresentation(String input) {
     return isIsoCode(input) || isHex(input);
   }
 
   /**
-   * Convert an ISO code to a currency bytes representation
+   * Convert an ISO code to a currency bytes representation.
    */
   private UnsignedByteArray isoToBytes(String iso) {
     UnsignedByteArray bytes = UnsignedByteArray.ofSize(20);

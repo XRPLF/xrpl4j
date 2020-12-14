@@ -35,9 +35,9 @@ public class BinarySerializer {
   }
 
   /**
-   * Calculate the header of Variable Length encoded bytes
+   * Calculate the header of Variable Length encoded bytes.
    *
-   * @param length the length of the bytes
+   * @param length the length of the bytes.
    */
   private UnsignedByteArray encodeVariableLength(int length) {
     if (length <= 192) {
@@ -58,7 +58,7 @@ public class BinarySerializer {
   }
 
   /**
-   * Write field and value to BinarySerializer
+   * Write field and value to BinarySerializer.
    *
    * @param field A {@link FieldInstance} to write into a {@link BinarySerializer}.
    * @param value A {@link SerializedType} to write into.
@@ -77,7 +77,7 @@ public class BinarySerializer {
   }
 
   /**
-   * Write field and value to BinarySerializer
+   * Write field and value to BinarySerializer.
    *
    * @param field A {@link FieldInstance} to write into a {@link BinarySerializer}.
    * @param value A {@link JsonNode} to write into.
@@ -87,14 +87,14 @@ public class BinarySerializer {
   public void writeFieldAndValue(final FieldInstance field, final JsonNode value) throws JsonProcessingException {
     Objects.requireNonNull(field);
     Objects.requireNonNull(value);
-    SerializedType typedValue = SerializedType.getTypeByName(field.type()).fromJSON(value);
+    SerializedType typedValue = SerializedType.getTypeByName(field.type()).fromJson(value);
     writeFieldAndValue(field, typedValue);
   }
 
   /**
-   * Write a variable length encoded value to the BinarySerializer
+   * Write a variable length encoded value to the BinarySerializer.
    *
-   * @param value length encoded value to write to BytesList
+   * @param value length encoded value to write to BytesList.
    */
   public void writeLengthEncoded(final SerializedType value) {
     Objects.requireNonNull(value);

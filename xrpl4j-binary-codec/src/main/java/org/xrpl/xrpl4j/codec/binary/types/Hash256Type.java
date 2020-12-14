@@ -25,7 +25,7 @@ public class Hash256Type extends HashType<Hash256Type> {
   }
 
   @Override
-  public Hash256Type fromJSON(JsonNode node) {
+  public Hash256Type fromJson(JsonNode node) {
     return new Hash256Type(UnsignedByteArray.fromHex(node.asText()));
   }
 }

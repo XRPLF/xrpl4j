@@ -60,7 +60,7 @@ public class XrplBinaryCodec {
   private String encode(final JsonNode jsonNode) {
     Objects.requireNonNull(jsonNode);
     UnsignedByteArray byteList = UnsignedByteArray.empty();
-    new STObjectType().fromJSON(jsonNode).toBytesSink(byteList);
+    new STObjectType().fromJson(jsonNode).toBytesSink(byteList);
     return byteList.hexValue();
   }
 
@@ -95,7 +95,7 @@ public class XrplBinaryCodec {
     }
     // any existing signing keys should not also be signed
     ((ObjectNode) node).set("SigningPubKey", new TextNode(""));
-    String suffix = new AccountIdType().fromJSON(new TextNode(xrpAccountId)).toHex();
+    String suffix = new AccountIdType().fromJson(new TextNode(xrpAccountId)).toHex();
     return TRX_MULTI_SIGNATURE_PREFIX + encode(removeNonSigningFields(node)) + suffix;
   }
 
@@ -138,7 +138,7 @@ public class XrplBinaryCodec {
    */
   public String decode(String hex) {
     return new BinaryParser(hex).readType(STObjectType.class)
-      .toJSON()
+      .toJson()
       .toString();
   }
 

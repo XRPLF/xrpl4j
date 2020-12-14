@@ -28,7 +28,7 @@ public class Hash160Type extends HashType<Hash160Type> {
   }
 
   @Override
-  public Hash160Type fromJSON(JsonNode node) {
+  public Hash160Type fromJson(JsonNode node) {
     return new Hash160Type(UnsignedByteArray.fromHex(node.asText()));
   }
 }

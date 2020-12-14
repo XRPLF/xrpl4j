@@ -37,14 +37,14 @@ public interface FieldInstance extends Comparable {
   boolean isSerialized();
 
   /**
-   * Field name
+   * Field name.
    *
    * @return A {@link String} representing the name of this FieldInstance.
    */
   String name();
 
   /**
-   * XRPL type (e.g. UInt32, AccountID, etc.)
+   * XRPL type (e.g. UInt32, AccountID, etc).
    *
    * @return A {@link String} representing the type of this FieldInstance.
    */
@@ -74,11 +74,11 @@ public interface FieldInstance extends Comparable {
   FieldHeader header();
 
   @Override
-  default int compareTo(Object o) {
-    if (!(o instanceof FieldInstance)) {
-      throw new IllegalArgumentException("cannot compare to type " + o.getClass());
+  default int compareTo(Object object) {
+    if (!(object instanceof FieldInstance)) {
+      throw new IllegalArgumentException("cannot compare to type " + object.getClass());
     }
-    FieldInstance other = (FieldInstance) o;
-    return ((FieldInstance) o).ordinal() - other.ordinal();
+    FieldInstance other = (FieldInstance) object;
+    return ((FieldInstance) object).ordinal() - other.ordinal();
   }
 }

@@ -24,12 +24,12 @@ public class UInt32Type extends UIntType<UInt32Type> {
   }
 
   @Override
-  public UInt32Type fromJSON(JsonNode value) {
+  public UInt32Type fromJson(JsonNode value) {
     return new UInt32Type(UnsignedLong.valueOf(value.asText()));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new LongNode(UnsignedLong.valueOf(toHex(), 16).longValue());
   }
 }

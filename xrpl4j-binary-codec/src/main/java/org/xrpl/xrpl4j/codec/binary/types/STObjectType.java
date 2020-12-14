@@ -20,6 +20,7 @@ import java.util.Map;
 /**
  * Codec for XRPL STObject type.
  */
+@SuppressWarnings("AbbreviationAsWordInName")
 public class STObjectType extends SerializedType<STObjectType> {
 
   public static final String OBJECT_END_MARKER_HEX = "E1";
@@ -56,7 +57,7 @@ public class STObjectType extends SerializedType<STObjectType> {
   }
 
   @Override
-  public STObjectType fromJSON(JsonNode node) {
+  public STObjectType fromJson(JsonNode node) {
     UnsignedByteArray byteList = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteList);
 
@@ -103,7 +104,12 @@ public class STObjectType extends SerializedType<STObjectType> {
       .orElse(fieldNode);
   }
 
-  public JsonNode toJSON() {
+  /**
+   * Return this object as JSON.
+   *
+   * @return A {@link JsonNode}.
+   */
+  public JsonNode toJson() {
     BinaryParser parser = new BinaryParser(this.toString());
     Map<String, JsonNode> objectMap = new LinkedHashMap<>();
     while (parser.hasMore()) {
@@ -111,7 +117,7 @@ public class STObjectType extends SerializedType<STObjectType> {
       if (field.name().equals(OBJECT_END_MARKER)) {
         break;
       }
-      JsonNode value = parser.readFieldValue(field).toJSON();
+      JsonNode value = parser.readFieldValue(field).toJson();
       JsonNode mapped = definitionsService.mapFieldRawValueToSpecialization(field.name(), value.asText())
         .map(TextNode::new)
         .map(JsonNode.class::cast)

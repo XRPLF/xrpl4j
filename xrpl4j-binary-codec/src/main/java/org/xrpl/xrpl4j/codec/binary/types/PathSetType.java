@@ -18,7 +18,7 @@ import java.util.List;
 public class PathSetType extends SerializedType<PathSetType> {
 
   /**
-   * Constants for separating Paths in a PathSet
+   * Constants for separating Paths in a PathSet.
    */
   public static final String PATHSET_END_HEX = "00";
   public static final String PATH_SEPARATOR_HEX = "FF";
@@ -46,7 +46,7 @@ public class PathSetType extends SerializedType<PathSetType> {
   }
 
   @Override
-  public PathSetType fromJSON(JsonNode node) throws JsonProcessingException {
+  public PathSetType fromJson(JsonNode node) throws JsonProcessingException {
     if (!node.isArray()) {
       throw new IllegalArgumentException("node is not an array");
     }
@@ -56,7 +56,7 @@ public class PathSetType extends SerializedType<PathSetType> {
     Iterator<JsonNode> nodeIterator = node.elements();
     while (nodeIterator.hasNext()) {
       JsonNode child = nodeIterator.next();
-      byteArray.append(new PathType().fromJSON(child).value());
+      byteArray.append(new PathType().fromJson(child).value());
       byteArray.append(UnsignedByteArray.fromHex(PATH_SEPARATOR_HEX));
     }
 
@@ -65,12 +65,12 @@ public class PathSetType extends SerializedType<PathSetType> {
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     BinaryParser parser = new BinaryParser(this.toString());
     List<JsonNode> values = new ArrayList<>();
 
     while (parser.hasMore()) {
-      values.add(new PathType().fromParser(parser).toJSON());
+      values.add(new PathType().fromParser(parser).toJson());
       parser.skip(1);
     }
     return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);

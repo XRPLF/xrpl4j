@@ -10,6 +10,12 @@ public abstract class HashType<T extends HashType<T>> extends SerializedType<T> 
 
   private final int width;
 
+  /**
+   * Required-args Constructor.
+   *
+   * @param bytes A {@link UnsignedByteArray}.
+   * @param width An integer.
+   */
   public HashType(final UnsignedByteArray bytes, final int width) {
     super(bytes);
     Preconditions.checkArgument(bytes.length() == width, "Invalid hash length " + bytes.length());
@@ -31,22 +37,22 @@ public abstract class HashType<T extends HashType<T>> extends SerializedType<T> 
   }
 
   /**
-   * Returns four bits at the specified depth within a hash
+   * Returns four bits at the specified depth within a hash.
    *
-   * @param depth The depth of the four bits
+   * @param depth The depth of the four bits.
    *
-   * @return The number represented by the four bits
+   * @return The number represented by the four bits.
    */
   // TODO: Delete if unused?
   public int nibblet(int depth) {
-    int byteIx = depth > 0 ? (depth / 2) | 0 : 0;
-    int b = this.value().get(byteIx).asInt();
+    int byteIndex = depth > 0 ? (depth / 2) | 0 : 0;
+    int theByte = this.value().get(byteIndex).asInt();
     if (depth % 2 == 0) {
-      b = (b & 0xf0) >>> 4;
+      theByte = (theByte & 0xf0) >>> 4;
     } else {
-      b = b & 0x0f;
+      theByte = theByte & 0x0f;
     }
-    return b;
+    return theByte;
   }
 
 }

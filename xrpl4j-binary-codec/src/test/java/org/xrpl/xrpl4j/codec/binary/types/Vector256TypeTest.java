@@ -23,7 +23,7 @@ class Vector256TypeTest {
 
   @Test
   void encode() {
-    assertThat(codec.fromJSON(JSON).toHex()).isEqualTo(HEX);
+    assertThat(codec.fromJson(JSON).toHex()).isEqualTo(HEX);
   }
 
 }

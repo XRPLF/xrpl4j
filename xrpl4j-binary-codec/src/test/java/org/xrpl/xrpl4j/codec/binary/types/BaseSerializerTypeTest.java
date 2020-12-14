@@ -32,9 +32,9 @@ abstract class BaseSerializerTypeTest {
     SerializedType serializedType = getType();
     JsonNode value = getValue(fixture);
     if (fixture.error() != null) {
-      Assertions.assertThrows(Exception.class, () -> serializedType.fromJSON(value));
+      Assertions.assertThrows(Exception.class, () -> serializedType.fromJson(value));
     } else {
-      assertThat(serializedType.fromJSON(value).toHex()).isEqualTo(fixture.expectedHex());
+      assertThat(serializedType.fromJson(value).toHex()).isEqualTo(fixture.expectedHex());
     }
   }
 

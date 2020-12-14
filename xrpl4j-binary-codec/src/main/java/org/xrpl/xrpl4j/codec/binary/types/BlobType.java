@@ -23,7 +23,7 @@ public class BlobType extends SerializedType<BlobType> {
   }
 
   @Override
-  public BlobType fromJSON(JsonNode node) {
+  public BlobType fromJson(JsonNode node) {
     return new BlobType(UnsignedByteArray.fromHex(node.asText()));
   }
 

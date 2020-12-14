@@ -25,7 +25,7 @@ public class Hash128Type extends HashType<Hash128Type> {
   }
 
   @Override
-  public Hash128Type fromJSON(JsonNode node) {
+  public Hash128Type fromJson(JsonNode node) {
     return new Hash128Type(UnsignedByteArray.fromHex(node.asText()));
   }
 }

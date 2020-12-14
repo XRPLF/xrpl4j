@@ -27,18 +27,18 @@ public class AccountIdType extends Hash160Type {
   }
 
   @Override
-  public AccountIdType fromJSON(JsonNode node) {
+  public AccountIdType fromJson(JsonNode node) {
     String textValue = node.textValue();
     if (textValue.isEmpty()) {
       return new AccountIdType();
     }
-    return HEX_REGEX.matcher(textValue).matches()
-      ? new AccountIdType(UnsignedByteArray.fromHex(textValue))
+    return HEX_REGEX.matcher(textValue).matches() ?
+      new AccountIdType(UnsignedByteArray.fromHex(textValue))
       : new AccountIdType(addressCodec.decodeAccountId(textValue));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new TextNode(addressCodec.encodeAccountId(value()));
   }
 

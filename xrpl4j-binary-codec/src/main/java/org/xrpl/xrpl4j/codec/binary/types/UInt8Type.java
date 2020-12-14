@@ -24,12 +24,12 @@ public class UInt8Type extends UIntType<UInt8Type> {
   }
 
   @Override
-  public UInt8Type fromJSON(JsonNode value) {
+  public UInt8Type fromJson(JsonNode value) {
     return new UInt8Type(UnsignedLong.valueOf(value.asText()));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new IntNode(UnsignedLong.valueOf(toHex(), 16).intValue());
   }
 

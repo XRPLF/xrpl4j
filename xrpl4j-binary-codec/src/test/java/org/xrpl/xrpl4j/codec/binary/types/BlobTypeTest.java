@@ -43,7 +43,7 @@ class BlobTypeTest {
 
   @Test
   void encode() {
-    assertThat(codec.fromJSON(DOUBLE_QUOTE + bytes(16) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(16));
+    assertThat(codec.fromJson(DOUBLE_QUOTE + bytes(16) + DOUBLE_QUOTE).toHex()).isEqualTo(bytes(16));
   }
 
   private String bytes(int size) {

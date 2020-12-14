@@ -24,12 +24,12 @@ public class UInt16Type extends UIntType<UInt16Type> {
   }
 
   @Override
-  public UInt16Type fromJSON(JsonNode value) {
+  public UInt16Type fromJson(JsonNode value) {
     return new UInt16Type(UnsignedLong.valueOf(value.asText()));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new IntNode(UnsignedLong.valueOf(toHex(), 16).intValue());
   }
 

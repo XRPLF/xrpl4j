@@ -16,12 +16,11 @@ public interface FieldWithValue<T> extends Comparable<T> {
 
   @Override
   @SuppressWarnings( {"NullableProblems", "rawtypes"})
-  default int compareTo(Object o) {
-    if (!(o instanceof FieldWithValue)) {
-      throw new IllegalArgumentException("cannot compare to type " + o.getClass());
+  default int compareTo(Object object) {
+    if (!(object instanceof FieldWithValue)) {
+      throw new IllegalArgumentException("cannot compare to type " + object.getClass());
     }
-    FieldWithValue<?> other = (FieldWithValue) o;
+    FieldWithValue<?> other = (FieldWithValue) object;
     return this.field().ordinal() - other.field().ordinal();
-    // return this.field().compareTo(other.field()); // TODO: Why doesn't this work?
   }
 }

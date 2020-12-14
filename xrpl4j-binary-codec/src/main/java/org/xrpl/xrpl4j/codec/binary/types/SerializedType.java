@@ -102,7 +102,26 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    *
    * @throws JsonProcessingException if {@code node} is not well-formed JSON.
    */
-  public abstract T fromJSON(JsonNode node) throws JsonProcessingException;
+  public abstract T fromJson(JsonNode node) throws JsonProcessingException;
+
+  /**
+   * Construct a concrete instance of {@link SerializedType} from the supplied {@code json}.
+   *
+   * @param json A {@link String} containing JSON content.
+   *
+   * @return A {@link T}.
+   */
+  public T fromJson(String json) {
+    try {
+      JsonNode node = BinaryCodecObjectMapperFactory.getObjectMapper().readTree(json);
+      UnsignedByteArray byteList = UnsignedByteArray.empty();
+      T newValue = fromJson(node);
+      newValue.toBytesSink(byteList);
+      return newValue;
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
 
   /**
    * Construct a concrete instance of {@link SerializedType} from the supplied {@code hex}.
@@ -129,25 +148,6 @@ public abstract class SerializedType<T extends SerializedType<T>> {
   }
 
   /**
-   * Construct a concrete instance of {@link SerializedType} from the supplied {@code json}.
-   *
-   * @param json A {@link String} containing JSON content.
-   *
-   * @return A {@link T}.
-   */
-  public T fromJSON(String json) {
-    try {
-      JsonNode node = BinaryCodecObjectMapperFactory.getObjectMapper().readTree(json);
-      UnsignedByteArray byteList = UnsignedByteArray.empty();
-      T newValue = fromJSON(node);
-      newValue.toBytesSink(byteList);
-      return newValue;
-    } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException(e);
-    }
-  }
-
-  /**
    * Append this type's bytes to {@code list}.
    *
    * @param list An {@link UnsignedByteArray}.
@@ -171,7 +171,7 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    *
    * @return A {@link JsonNode}.
    */
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new TextNode(toHex());
   }
 

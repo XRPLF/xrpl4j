@@ -15,12 +15,12 @@ class STArrayTypeTest {
 
   @Test
   void decode() {
-    assertThat(codec.fromHex(HEX).toJSON().toString()).isEqualTo(JSON);
+    assertThat(codec.fromHex(HEX).toJson().toString()).isEqualTo(JSON);
   }
 
   @Test
   void encode() {
-    assertThat(codec.fromJSON(JSON).toHex()).isEqualTo(HEX);
+    assertThat(codec.fromJson(JSON).toHex()).isEqualTo(HEX);
   }
 
 }

@@ -10,7 +10,6 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.OptionalInt;
 
 /**
  * Codec for XRPL Vector256 type.
@@ -39,7 +38,7 @@ public class Vector256Type extends SerializedType<Vector256Type> {
   }
 
   @Override
-  public Vector256Type fromJSON(JsonNode node) {
+  public Vector256Type fromJson(JsonNode node) {
     if (!node.isArray()) {
       throw new IllegalArgumentException("node is not an array");
     }
@@ -50,13 +49,13 @@ public class Vector256Type extends SerializedType<Vector256Type> {
       if (!child.isTextual()) {
         throw new IllegalArgumentException("non-string value found in vector");
       }
-      new Hash256Type().fromJSON(child).toBytesSink(byteList);
+      new Hash256Type().fromJson(child).toBytesSink(byteList);
     }
     return new Vector256Type(byteList);
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     BinaryParser parser = new BinaryParser(this.toString());
     List<JsonNode> values = new ArrayList<>();
     while (parser.hasMore()) {

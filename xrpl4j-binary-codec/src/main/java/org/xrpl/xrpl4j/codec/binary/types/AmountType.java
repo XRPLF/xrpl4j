@@ -68,11 +68,11 @@ class AmountType extends SerializedType<AmountType> {
    */
   private static void assertIouIsValid(BigDecimal decimal) {
     if (!decimal.equals(BigDecimal.ZERO)) {
-      int p = decimal.precision();
-      int e = MathUtils.getExponent(decimal);
-      if (p > MAX_IOU_PRECISION ||
-        e > MAX_IOU_EXPONENT ||
-        e < MIN_IOU_EXPONENT
+      int precision = decimal.precision();
+      int exponent = MathUtils.getExponent(decimal);
+      if (precision > MAX_IOU_PRECISION ||
+        exponent > MAX_IOU_EXPONENT ||
+        exponent < MIN_IOU_EXPONENT
       ) {
         throw new Error("Decimal precision out of range");
       }
@@ -97,16 +97,16 @@ class AmountType extends SerializedType<AmountType> {
 
   @Override
   public AmountType fromParser(BinaryParser parser) {
-    boolean isXRP = !parser.peek().isNthBitSet(1);
-    int numBytes = isXRP ? NATIVE_AMOUNT_BYTE_LENGTH : CURRENCY_AMOUNT_BYTE_LENGTH;
+    boolean isXrp = !parser.peek().isNthBitSet(1);
+    int numBytes = isXrp ? NATIVE_AMOUNT_BYTE_LENGTH : CURRENCY_AMOUNT_BYTE_LENGTH;
     return new AmountType(parser.read(numBytes));
   }
 
   @Override
-  public AmountType fromJSON(JsonNode value) throws JsonProcessingException {
+  public AmountType fromJson(JsonNode value) throws JsonProcessingException {
     if (value.isValueNode()) {
       assertXrpIsValid(value.asText());
-      UInt64Type number = new UInt64Type().fromJSON(value.asText());
+      UInt64Type number = new UInt64Type().fromJson(value.asText());
       byte[] rawBytes = number.toBytes();
       rawBytes[0] |= 0x40;
       return new AmountType(UnsignedByteArray.of(rawBytes));
@@ -119,8 +119,8 @@ class AmountType extends SerializedType<AmountType> {
       UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
       getAmountBytes(number);
 
-    UnsignedByteArray currency = new CurrencyType().fromJSON(value.get("currency")).value();
-    UnsignedByteArray issuer = new AccountIdType().fromJSON(value.get("issuer")).value();
+    UnsignedByteArray currency = new CurrencyType().fromJson(value.get("currency")).value();
+    UnsignedByteArray issuer = new AccountIdType().fromJson(value.get("issuer")).value();
 
     result.append(currency);
     result.append(issuer);
@@ -148,7 +148,7 @@ class AmountType extends SerializedType<AmountType> {
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     if (this.isNative()) {
       byte[] rawBytes = toBytes();
       rawBytes[0] &= 0x3f;
@@ -160,8 +160,8 @@ class AmountType extends SerializedType<AmountType> {
     } else {
       BinaryParser parser = new BinaryParser(this.toHex());
       UnsignedByteArray mantissa = parser.read(8);
-      SerializedType<?> currency = new CurrencyType().fromParser(parser);
-      SerializedType<?> issuer = new AccountIdType().fromParser(parser);
+      final SerializedType<?> currency = new CurrencyType().fromParser(parser);
+      final SerializedType<?> issuer = new AccountIdType().fromParser(parser);
 
       UnsignedByte b1 = mantissa.get(0);
       UnsignedByte b2 = mantissa.get(1);
@@ -180,8 +180,8 @@ class AmountType extends SerializedType<AmountType> {
       assertIouIsValid(value);
 
       Amount amount = Amount.builder()
-        .currency(currency.toJSON().asText())
-        .issuer(issuer.toJSON().asText())
+        .currency(currency.toJson().asText())
+        .issuer(issuer.toJson().asText())
         .value(value.toPlainString())
         .build();
 

@@ -106,7 +106,7 @@ public class UnsignedByte {
    * Checks if the nth bit (1-based index from left to right) is set.
    *
    * @param nth The index of the bit to check.
-   * @return true if the nth bit is set, otherwise false.
+   * @return {@code true} if the nth bit is set, otherwise {@code false}.
    */
   public boolean isNthBitSet(int nth) {
     Preconditions.checkArgument(nth >= 1 && nth <= 8);

@@ -146,7 +146,7 @@ public class AddressCodec {
    *
    * @param classicAddress A {@link String} containing the classic address.
    * @param tag            The destination tag of the address.
-   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded
+   * @param test           {@code true} if the X-Address should be encoded for Testnet, {@code false} if it should be encoded
    *                       for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
@@ -161,7 +161,7 @@ public class AddressCodec {
    * Converts an XRPL Classic Address with no Destination Tag to an X-Address.
    *
    * @param classicAddress A {@link String} containing the classic address.
-   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded
+   * @param test           {@code true} if the X-Address should be encoded for Testnet, {@code false} if it should be encoded
    *                       for Mainnet.
    * @return The X-Address representation of the classic address.
    */
@@ -176,7 +176,7 @@ public class AddressCodec {
    *
    * @param classicAddress A {@link String} containing the classic address.
    * @param tag            The destination tag of the address.
-   * @param test           true if the X-Address should be encoded for Testnet, false if it should be encoded
+   * @param test           {@code true} if the X-Address should be encoded for Testnet, {@code false} if it should be encoded
    *                       for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
@@ -197,7 +197,7 @@ public class AddressCodec {
    *
    * @param accountId An {@link UnsignedByteArray} containing an XRPL AccountID.
    * @param tag       (Optional) The destination tag of the account.
-   * @param test      true if the X-Address should be encoded for Testnet, false if it should be encoded for Mainnet.
+   * @param test      {@code true} if the X-Address should be encoded for Testnet, {@code false} if it should be encoded for Mainnet.
    * @return The X-Address representation of the AccountID and destination tag.
    */
   private String encodeXAddress(

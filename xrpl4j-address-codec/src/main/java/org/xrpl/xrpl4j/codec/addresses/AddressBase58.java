@@ -120,6 +120,7 @@ public class AddressBase58 extends Base58 {
    * @throws EncodingFormatException If more than one version is supplied without an expectedLength value present,
    *                                 or if the version bytes of the Base58 value are invalid.
    */
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static Decoded decode(
       final String base58Value,
       final List<VersionType> versionTypes,

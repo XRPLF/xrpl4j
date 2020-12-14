@@ -64,7 +64,8 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
                                 .build()
                         )
                     )
-                    .build())
+                    .build()
+            )
             .hash(Hash256.of("81A477E2A362D171BB16BE17B4120D9F809A327FA00242ABCA867283BEA2F4F8"))
             .build())
         .build();
@@ -109,6 +110,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
         "            ],\n" +
         "            \"SigningPubKey\": \"\",\n" +
         "            \"TransactionType\": \"TrustSet\",\n" +
+        "            \"validated\": false,\n" +
         "            \"hash\": \"81A477E2A362D171BB16BE17B4120D9F809A327FA00242ABCA867283BEA2F4F8\"\n" +
         "        }\n" +
         "    }";

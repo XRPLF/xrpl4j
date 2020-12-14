@@ -223,5 +223,4 @@ public class BinaryParser {
     return ByteUtils.toUnsignedLong(read(bytes));
   }
 
-
 }

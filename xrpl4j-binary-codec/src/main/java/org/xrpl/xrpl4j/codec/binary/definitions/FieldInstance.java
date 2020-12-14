@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.codec.binary.FieldHeader;
  * fields and their related type data.
  */
 @Immutable
-public interface FieldInstance extends Comparable {
+public interface FieldInstance extends Comparable<FieldInstance> {
 
   static ImmutableFieldInstance.Builder builder() {
     return ImmutableFieldInstance.builder();
@@ -74,11 +74,7 @@ public interface FieldInstance extends Comparable {
   FieldHeader header();
 
   @Override
-  default int compareTo(Object object) {
-    if (!(object instanceof FieldInstance)) {
-      throw new IllegalArgumentException("cannot compare to type " + object.getClass());
-    }
-    FieldInstance other = (FieldInstance) object;
-    return ((FieldInstance) object).ordinal() - other.ordinal();
+  default int compareTo(FieldInstance other) {
+    return Integer.compare(this.ordinal(), other.ordinal());
   }
 }

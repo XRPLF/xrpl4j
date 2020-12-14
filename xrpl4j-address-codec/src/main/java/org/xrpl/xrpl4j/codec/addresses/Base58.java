@@ -12,7 +12,7 @@ import java.util.Arrays;
  * checksum, which is necessary for XRPL Address encoding.
  */
 public class Base58 {
-  public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz".toCharArray();
+  public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz" .toCharArray();
 
   private static final int[] INDEXES = new int[255];
 

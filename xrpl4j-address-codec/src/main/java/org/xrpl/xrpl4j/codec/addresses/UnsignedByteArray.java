@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.codec.addresses;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,10 +21,10 @@ public class UnsignedByteArray {
   }
 
   /**
-   * Creates an UnsignedByteArray from a byte array.
+   * Creates an {@link UnsignedByteArray} from a byte array.
    *
-   * @param bytes
-   * @return
+   * @param bytes The byte array to create an {@link UnsignedByteArray} from.
+   * @return An {@link UnsignedByteArray} containing {@code bytes}.
    */
   public static UnsignedByteArray of(final byte[] bytes) {
     Objects.requireNonNull(bytes);
@@ -36,44 +37,43 @@ public class UnsignedByteArray {
   }
 
   /**
-   * Creates an UnsignedByteArray from one or more UnsignedByte values.
+   * Creates an {@link UnsignedByteArray} from one or more {@link UnsignedByte} values.
    *
-   * @param first
-   * @param rest
-   * @return
+   * @param first An {@link UnsignedByte} to include in the resulting {@link UnsignedByteArray}.
+   * @param rest  Other {@link UnsignedByte}s to include in the resulting {@link UnsignedByteArray}.
+   * @return An {@link UnsignedByteArray} with the given {@link UnsignedByte}s.
    */
   public static UnsignedByteArray of(UnsignedByte first, UnsignedByte... rest) {
     List<UnsignedByte> unsignedBytes = new ArrayList<>();
     unsignedBytes.add(first);
-    for (int i = 0; i < rest.length; i++) {
-      unsignedBytes.add(rest[i]);
-    }
+    Collections.addAll(unsignedBytes, rest);
     return new UnsignedByteArray(unsignedBytes);
   }
 
   /**
-   * Creates an empty UnsignedByteArray.
+   * Creates an empty {@link UnsignedByteArray}.
    *
-   * @return
+   * @return An empty {@link UnsignedByteArray}.
    */
   public static UnsignedByteArray empty() {
     return new UnsignedByteArray(new ArrayList<>());
   }
 
   /**
-   * Creates an UnsignedByteArray with a given number of bytes (where each byte has the value 0)
+   * Creates an {@link UnsignedByteArray} with a given number of bytes (where each byte has the value 0)
    *
-   * @return
+   * @param size The size of the initialized {@link UnsignedByteArray}.
+   * @return An {@link UnsignedByteArray} of the requested size with all 0 {@link UnsignedByte}s
    */
   public static UnsignedByteArray ofSize(int size) {
     return new UnsignedByteArray(fill(size));
   }
 
   /**
-   * Converts a hex string to an UnsignedByteArray.
+   * Converts a hex string to an {@link UnsignedByteArray}.
    *
-   * @param hex
-   * @return
+   * @param hex A hexadecimal encoded {@link String}.
+   * @return The hex value as an {@link UnsignedByteArray}.
    */
   public static UnsignedByteArray fromHex(String hex) {
     Objects.requireNonNull(hex);
@@ -89,10 +89,20 @@ public class UnsignedByteArray {
     return unsignedBytes;
   }
 
+  /**
+   * Get the underlying {@link List} of {@link UnsignedByte}s for this {@link UnsignedByteArray}.
+   *
+   * @return The underlying {@link List} of {@link UnsignedByte}s.
+   */
   public List<UnsignedByte> getUnsignedBytes() {
     return unsignedBytes;
   }
 
+  /**
+   * Converts this {@link UnsignedByteArray} to a byte array.
+   *
+   * @return This {@link UnsignedByteArray} as a byte array.
+   */
   public byte[] toByteArray() {
     byte[] bytes = new byte[unsignedBytes.size()];
 
@@ -103,24 +113,40 @@ public class UnsignedByteArray {
     return bytes;
   }
 
+  /**
+   * Get this {@link UnsignedByteArray} as a hex encoded {@link String}.
+   *
+   * @return This {@link UnsignedByteArray} as a hex encoded {@link String}.
+   */
   public String hexValue() {
     return ByteUtils.toHex(unsignedBytes);
   }
 
+  /**
+   * Get the length of this {@link UnsignedByteArray}.
+   *
+   * @return The length of this {@link UnsignedByteArray}, as an int.
+   */
   public int length() {
     return unsignedBytes.size();
   }
 
   /**
-   * Gets the unsigned byte at a given index.
+   * Gets the {@link UnsignedByte} at a given index.
    *
-   * @param index
-   * @return
+   * @param index The index of the {@link UnsignedByte} to get.
+   * @return The {@link UnsignedByte} at the given index.
    */
   public UnsignedByte get(int index) {
     return unsignedBytes.get(index);
   }
 
+  /**
+   * Appends an {@link UnsignedByte} to this {@link UnsignedByteArray}.
+   *
+   * @param unsignedByte An {@link UnsignedByte} to append.
+   * @return This {@link UnsignedByteArray}, with the given {@link UnsignedByte} appended.
+   */
   public UnsignedByteArray append(UnsignedByte unsignedByte) {
     unsignedBytes.add(unsignedByte);
     return this;
@@ -130,8 +156,8 @@ public class UnsignedByteArray {
    * Appends the given bytes to the end of this array.
    * Note: this method mutates the instance and returns the same instance (mainly for call chaining convenience).
    *
-   * @param array
-   * @return the same instance
+   * @param array An {@link UnsignedByteArray} to append to this {@link UnsignedByteArray}.
+   * @return the same instance.
    */
   public UnsignedByteArray append(UnsignedByteArray array) {
     unsignedBytes.addAll(array.getUnsignedBytes());
@@ -139,10 +165,10 @@ public class UnsignedByteArray {
   }
 
   /**
-   * Sets the value value an unsigned byte at the given index.
+   * Sets the value at the given index to the given {@link UnsignedByte}.
    *
-   * @param index
-   * @param value
+   * @param index The index to set.
+   * @param value The {@link UnsignedByte} to set at the given index.
    */
   public void set(int index, UnsignedByte value) {
     unsignedBytes.set(index, value);
@@ -153,7 +179,7 @@ public class UnsignedByteArray {
    *
    * @param startIndex start index (inclusive)
    * @param endIndex   end index (exclusive)
-   * @return
+   * @return An {@link UnsignedByteArray} containing the sliced elements.
    */
   public UnsignedByteArray slice(int startIndex, int endIndex) {
     return new UnsignedByteArray(unsignedBytes.subList(startIndex, endIndex));

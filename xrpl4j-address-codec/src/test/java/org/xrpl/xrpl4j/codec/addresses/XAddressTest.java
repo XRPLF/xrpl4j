@@ -17,6 +17,7 @@ import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import java.util.Collection;
 import java.util.Optional;
 
+@SuppressWarnings({"ParameterName", "MethodName", "LocalVariableName"})
 @RunWith(Enclosed.class)
 public class XAddressTest {
 
@@ -30,6 +31,14 @@ public class XAddressTest {
 
     AddressCodec addressCodec;
 
+    /**
+     * Required args constructor.
+     *
+     * @param classicAddressAccountId A {@link String} containing an account ID.
+     * @param tag                     An {@link UnsignedInteger} containing a tag.
+     * @param mainnetXAddress         A {@code String} containing a mainnet X-Address.
+     * @param testnetXAddress         A {@link String} containing a testnet X-Address.
+     */
     public XAddressParameterizedTests(
         String classicAddressAccountId,
         UnsignedInteger tag,
@@ -43,6 +52,11 @@ public class XAddressTest {
       this.addressCodec = new AddressCodec();
     }
 
+    /**
+     * Construct the test cases for this parameterized test.
+     *
+     * @return A {@link Collection} of {@link Object} arrays.
+     */
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
       return Lists.newArrayList(

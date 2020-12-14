@@ -40,7 +40,7 @@ public class AddressBase58Test {
   public void decodeDataWithoutExpectedLength() {
     Decoded expected = Decoded.builder()
         .version(Version.ACCOUNT_ID)
-        .bytes(UnsignedByteArray.of("123456789".getBytes()))
+        .bytes(UnsignedByteArray.of("123456789" .getBytes()))
         .build();
 
     Decoded decoded = AddressBase58.decode("rnaC7gW34M77Kneb78s", Version.ACCOUNT_ID);
@@ -51,7 +51,7 @@ public class AddressBase58Test {
   public void decodeDataWithExpectedLength() {
     Decoded expected = Decoded.builder()
         .version(Version.ACCOUNT_ID)
-        .bytes(UnsignedByteArray.of("123456789".getBytes()))
+        .bytes(UnsignedByteArray.of("123456789" .getBytes()))
         .build();
 
     Decoded decoded = AddressBase58.decode(

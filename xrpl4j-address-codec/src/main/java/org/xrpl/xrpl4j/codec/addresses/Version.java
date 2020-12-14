@@ -8,7 +8,7 @@ public enum Version {
   NODE_PUBLIC(new int[] {0x1C}),
   ACCOUNT_PUBLIC_KEY(new int[] {0x23});
 
-  private int[] values;
+  private final int[] values;
 
   Version(int[] values) {
     this.values = values;
@@ -18,6 +18,11 @@ public enum Version {
     return values;
   }
 
+  /**
+   * Get values as a byte array.
+   *
+   * @return A byte array of values.
+   */
   public byte[] getValuesAsBytes() {
     byte[] bytes = new byte[values.length];
     for (int i = 0; i < values.length; i++) {

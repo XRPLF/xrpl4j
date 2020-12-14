@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.flags.Flags;
 
 /**
  * Cancels an unredeemed Check, removing it from the ledger without sending any money. The source or the

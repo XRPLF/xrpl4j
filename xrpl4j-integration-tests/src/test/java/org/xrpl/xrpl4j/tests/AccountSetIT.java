@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
-import org.xrpl.xrpl4j.model.transactions.Flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
@@ -34,7 +34,7 @@ public class AccountSetIT extends AbstractIT {
     ///////////////////////
     // Get validated account info and validate account state
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
-    assertThat(accountInfo.status()).isEqualTo("success");
+    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
     UnsignedInteger sequence = accountInfo.accountData().sequence();
@@ -51,8 +51,7 @@ public class AccountSetIT extends AbstractIT {
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     logger.info(
-        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transaction().hash()
-            .orElse("n/a")
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
@@ -108,7 +107,7 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transaction().hash().orElse("n/a")
+        accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////
@@ -139,7 +138,7 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transaction().hash().orElse("n/a")
+        accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////

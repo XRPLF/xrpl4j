@@ -78,9 +78,9 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * Provide full JSON-formatted information for transaction/account information instead of only hashes.
    * Defaults to false. Ignored unless you request {@link #transactions()}, {@link #accounts()}, or both.
    */
-  @Value.Default
+  @Value.Derived
   default boolean expand() {
-    return false;
+    return true;
   }
 
   /**
@@ -98,7 +98,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * If true, and {@link #transactions()} and {@link #expand()} are both also true, return transaction information
    * in binary format (hexadecimal string) instead of JSON format.
    */
-  @Value.Default
+  @Value.Derived
   default boolean binary() {
     return false;
   }

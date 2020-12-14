@@ -6,9 +6,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Contains the contents of a given ledger on the XRPL.
@@ -18,23 +23,27 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableLedgerHeader.class)
 public interface LedgerHeader {
 
+  static ImmutableLedgerHeader.Builder builder() {
+    return ImmutableLedgerHeader.builder();
+  }
+
   /**
    * The ledger index of the ledger.
    */
   @JsonProperty("ledger_index")
-  String ledgerIndex();
+  LedgerIndex ledgerIndex();
 
   /**
    * The SHA-512Half of this ledger version. This serves as a unique identifier for this ledger and all its contents.
    */
   @JsonProperty("ledger_hash")
-  Hash256 ledgerHash();
+  Optional<Hash256> ledgerHash();
 
   /**
    * The SHA-512Half of this ledger's state tree information.
    */
   @JsonProperty("account_hash")
-  Hash256 accountHash();
+  Optional<Hash256> accountHash();
 
   /**
    * The approximate time this ledger version closed, as the number of
@@ -42,7 +51,7 @@ public interface LedgerHeader {
    * This value is rounded based on the {@link #closeTimeResolution()}}.
    */
   @JsonProperty("close_time")
-  UnsignedLong closeTime();
+  Optional<UnsignedLong> closeTime();
 
   /**
    * If true, this ledger version is no longer accepting new transactions. (However, unless this ledger
@@ -66,28 +75,24 @@ public interface LedgerHeader {
    * accounts are "black holes" whose keys are not known by anyone.
    */
   @JsonProperty("total_coins")
-  String totalCoins();
+  Optional<XrpCurrencyAmount> totalCoins();
 
   /**
    * The SHA-512Half of the transactions included in this ledger.
    */
   @JsonProperty("transaction_hash")
-  Hash256 transactionHash();
+  Optional<Hash256> transactionHash();
 
   /**
-   * Transactions applied in this ledger version. By default, members are the transactions' identifying Hash strings.
-   * If the request specified {@link org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams#expand()} as true,
-   * members are full representations of the transactions instead, in either JSON or binary depending on whether
-   * the request specified {@link org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams#binary()} as true.
+   * Transactions applied in this ledger version.
    */
-  // TODO: This can either be a list of hashes or a list of transactions, so we need a custom deserializer
-  List<String> transactions();
+  List<TransactionResult<? extends Transaction>> transactions();
 
   /**
    * An {@link UnsignedInteger} in the range [2,120] indicating the maximum number of seconds by which the
    * {@link #closeTime()} could be rounded.
    */
   @JsonProperty("close_time_resolution")
-  UnsignedInteger closeTimeResolution();
+  Optional<UnsignedInteger> closeTimeResolution();
 
 }

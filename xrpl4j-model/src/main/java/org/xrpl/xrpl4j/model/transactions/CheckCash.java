@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.transactions.Flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
 import java.util.Optional;
 

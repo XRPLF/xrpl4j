@@ -70,7 +70,7 @@ public class PaymentChannelIT extends AbstractIT {
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-        createResult.transaction().hash().orElse("n/a")
+        createResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -152,7 +152,7 @@ public class PaymentChannelIT extends AbstractIT {
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-        createResult.transaction().hash().orElse("n/a")
+        createResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -221,7 +221,7 @@ public class PaymentChannelIT extends AbstractIT {
     SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(destinationWallet, signedClaim);
     assertThat(claimResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
-        claimResult.transaction().hash().orElse("n/a")
+        claimResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -266,7 +266,7 @@ public class PaymentChannelIT extends AbstractIT {
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-        createResult.transaction().hash().orElse("n/a")
+        createResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -301,7 +301,7 @@ public class PaymentChannelIT extends AbstractIT {
     SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(sourceWallet, addFunds);
     assertThat(fundResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
-        fundResult.transaction().hash().orElse("n/a")
+        fundResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -338,7 +338,7 @@ public class PaymentChannelIT extends AbstractIT {
     SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(sourceWallet, setExpiry);
     assertThat(expiryResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
-        expiryResult.transaction().hash().orElse("n/a")
+        expiryResult.transactionResult().hash()
     );
 
     //////////////////////////

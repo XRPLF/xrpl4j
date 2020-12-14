@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.Test;
+import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Flags;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -18,7 +19,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
         .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
         .fee(XrpCurrencyAmount.ofDrops(12))
         .flags(Flags.TrustSetFlags.builder()
-            .tfClearNoRipple()
+            .tfClearNoRipple(true)
             .tfFullyCanonicalSig(false)
             .build())
         .sequence(UnsignedInteger.valueOf(12))
@@ -51,7 +52,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
         .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
         .fee(XrpCurrencyAmount.ofDrops(12))
         .flags(Flags.TrustSetFlags.builder()
-            .tfClearNoRipple()
+            .tfClearNoRipple(true)
             .tfFullyCanonicalSig(false)
             .build())
         .sequence(UnsignedInteger.valueOf(12))

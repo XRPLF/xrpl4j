@@ -25,6 +25,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.rippled.XrplMethods;
+import org.xrpl.xrpl4j.model.client.server.ServerInfo;
+import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
@@ -138,6 +140,21 @@ public class XrplClient {
         .build();
 
     return jsonRpcClient.send(request, FeeResult.class);
+  }
+
+  /**
+   * Get the "server_info" for the rippled node.
+   *
+   * @return A {@link ServerInfo} containing information about the server.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/server_info.html"
+   */
+  public ServerInfo serverInfo() throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SERVER_INFO)
+      .build();
+
+    return jsonRpcClient.send(request, ServerInfoResult.class).info();
   }
 
   /**

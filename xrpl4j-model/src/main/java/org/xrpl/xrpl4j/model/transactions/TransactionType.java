@@ -32,6 +32,16 @@ public enum TransactionType {
     this.value = value;
   }
 
+  public static TransactionType forValue(String value) {
+    for (TransactionType transactionType : TransactionType.values()) {
+      if (transactionType.value.equals(value)) {
+        return transactionType;
+      }
+    }
+
+    throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
+  }
+
   @JsonValue
   public String value() {
     return value;

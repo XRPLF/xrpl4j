@@ -50,7 +50,7 @@ public class CheckIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transaction().hash().orElse("n/a")
+        response.transactionResult().hash()
     );
 
     //////////////////////
@@ -81,7 +81,7 @@ public class CheckIT extends AbstractIT {
     assertThat(cashResponse.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
-        cashResponse.transaction().hash().orElse("n/a")
+        cashResponse.transactionResult().hash()
     );
 
     //////////////////////
@@ -132,7 +132,7 @@ public class CheckIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transaction().hash().orElse("n/a")
+        response.transactionResult().hash()
     );
 
     //////////////////////
@@ -161,7 +161,7 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-        cancelResult.transaction().hash().orElse("n/a")
+        cancelResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -203,7 +203,7 @@ public class CheckIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transaction().hash().orElse("n/a")
+        response.transactionResult().hash()
     );
 
     CheckObject checkObject = (CheckObject) this.scanForResult(
@@ -230,7 +230,7 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-        cancelResult.transaction().hash().orElse("n/a")
+        cancelResult.transactionResult().hash()
     );
 
     //////////////////////

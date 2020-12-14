@@ -90,7 +90,7 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListSetResult.transaction().hash().orElse("n/a")
+            signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -160,7 +160,7 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-            paymentResult.transaction().hash().orElse("n/a")
+            paymentResult.transaction().hash()
     );
   }
 
@@ -215,7 +215,7 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListSetResult.transaction().hash().orElse("n/a")
+            signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -251,7 +251,7 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListDeleteResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListDeleteResult.transaction().hash().orElse("n/a")
+            signerListDeleteResult.transactionResult().hash()
     );
 
     /////////////////////////////

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
@@ -47,8 +48,8 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(20))))
-        .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
 
@@ -57,16 +58,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -79,7 +78,8 @@ public class EscrowIT extends AbstractIT {
             ledgerResult
                 .ledger()
                 .closeTime()
-                .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
+                .orElse(UnsignedLong.ZERO)
+                .compareTo(createResult.transactionResult().transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
     );
 
     //////////////////////
@@ -99,16 +99,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transactionResult().hash()
     );
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            finishResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            finishResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -147,8 +145,8 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(5))))
-        .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(1))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(1))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
 
@@ -157,16 +155,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -185,15 +181,10 @@ public class EscrowIT extends AbstractIT {
     this.scanForResult(
         this::getValidatedLedger,
         ledgerResult ->
-            FluentCompareTo.is(ledgerResult.ledger().closeTime())
+            FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
                 .greaterThan(
-                    createResult.transaction().cancelAfter()
-                        .map(cancelAfter -> {
-                          UnsignedLong bufferedCancelAfter = cancelAfter.plus(UnsignedLong.valueOf(12));
-                          logger.info("Ledger close time: {}; Cancel after + 10: {}",
-                              ledgerResult.ledger().closeTime(), bufferedCancelAfter);
-                          return bufferedCancelAfter;
-                        })
+                    createResult.transactionResult().transaction().cancelAfter()
+                        .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
                         .orElse(UnsignedLong.MAX_VALUE)
                 )
     );
@@ -212,16 +203,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transactionResult().hash()
     );
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            cancelResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            cancelResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -263,7 +252,7 @@ public class EscrowIT extends AbstractIT {
         .destination(receiverWallet.classicAddress())
         .signingPublicKey(senderWallet.publicKey())
         // With the fix1571 amendment enabled, you must supply FinishAfter, Condition, or both.
-        .finishAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
         .build();
 
@@ -272,16 +261,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -293,7 +280,8 @@ public class EscrowIT extends AbstractIT {
         ledgerResult -> ledgerResult
             .ledger()
             .closeTime()
-            .compareTo(createResult.transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
+            .orElse(UnsignedLong.ZERO)
+            .compareTo(createResult.transactionResult().transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
     );
 
     //////////////////////
@@ -319,16 +307,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transactionResult().hash()
     );
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            finishResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            finishResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -370,7 +356,7 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(Instant.now().plus(Duration.ofSeconds(10))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
         .signingPublicKey(senderWallet.publicKey())
         .build();
@@ -380,16 +366,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            createResult.transactionResult().hash().value(),
             EscrowCreate.class
         )
     );
@@ -402,8 +386,9 @@ public class EscrowIT extends AbstractIT {
             ledgerResult
                 .ledger()
                 .closeTime()
+                .orElse(UnsignedLong.ZERO)
                 .compareTo(
-                    createResult.transaction().cancelAfter()
+                    createResult.transactionResult().transaction().cancelAfter()
                         .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
                         .orElse(UnsignedLong.MAX_VALUE)
                 ) > 0
@@ -423,16 +408,14 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transaction().hash()
-            .orElse("n/a")
+        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transactionResult().hash()
     );
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            cancelResult.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Cannot look up transaction because no hash was returned.")),
+            cancelResult.transactionResult().hash().value(),
             EscrowFinish.class
         )
     );
@@ -447,6 +430,25 @@ public class EscrowIT extends AbstractIT {
         )
     );
 
+  }
+
+  /**
+   * Returns the minimum time that can be used for escrow expirations. The ledger will not
+   * accept an expiration time that is earlier than the last ledger close time so we must use the latter of
+   * current time or ledger close time (which for unexplained reasons can sometimes be later than now).
+   * @return
+   */
+  private Instant getMinExpirationTime() {
+    LedgerResult result = getValidatedLedger();
+    Instant closeTime =  xrpTimestampToInstant(
+        result.ledger().closeTime()
+            .orElseThrow(() ->
+                new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
+            )
+    );
+
+    Instant now = Instant.now();
+    return closeTime.isBefore(now) ? now : closeTime;
   }
 
 }

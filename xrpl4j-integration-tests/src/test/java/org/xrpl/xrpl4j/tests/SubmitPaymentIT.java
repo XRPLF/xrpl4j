@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.faucet.FaucetAccountResponse;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -20,11 +18,6 @@ public class SubmitPaymentIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FaucetAccountResponse fundDestinationResponse =
-        faucetClient.fundAccount(FundAccountRequest.of(destinationWallet.classicAddress().value()));
-
-    assertThat(fundDestinationResponse.amount()).isGreaterThan(0);
-
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
@@ -38,12 +31,11 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+            result.transactionResult().hash().value(),
             Payment.class)
     );
   }
@@ -53,10 +45,7 @@ public class SubmitPaymentIT extends AbstractIT {
     Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
     logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
 
-    FaucetAccountResponse fundResponse =
-        faucetClient.fundAccount(FundAccountRequest.of(senderWallet.classicAddress().value()));
-    logger.info("Source account has been funded");
-    assertThat(fundResponse.amount()).isGreaterThan(0);
+    fundAccount(senderWallet);
 
     Wallet destinationWallet = createRandomAccount();
 
@@ -74,12 +63,11 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transaction().hash().orElse("n/a"));
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transaction().hash()
-                .orElseThrow(() -> new RuntimeException("Could not look up Payment because the result did not have a hash.")),
+            result.transactionResult().hash().value(),
             Payment.class)
     );
   }

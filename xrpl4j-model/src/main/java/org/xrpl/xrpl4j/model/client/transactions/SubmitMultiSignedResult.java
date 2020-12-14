@@ -44,10 +44,10 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
   String transactionBlob();
 
   /**
-   * The complete {@link Transaction} that was submitted.
+   * The complete {@link Transaction} that was submitted, as a {@link TransactionResult}.
    */
   @JsonProperty("tx_json")
-  TxnType transaction();
+  TransactionResult<TxnType> transaction();
 
 
 }

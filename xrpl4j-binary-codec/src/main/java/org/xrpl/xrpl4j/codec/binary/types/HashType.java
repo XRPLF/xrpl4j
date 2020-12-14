@@ -13,7 +13,7 @@ public abstract class HashType<T extends HashType<T>> extends SerializedType<T> 
   /**
    * Required-args Constructor.
    *
-   * @param bytes A {@link UnsignedByteArray}.
+   * @param bytes An {@link UnsignedByteArray}.
    * @param width An integer.
    */
   public HashType(final UnsignedByteArray bytes, final int width) {

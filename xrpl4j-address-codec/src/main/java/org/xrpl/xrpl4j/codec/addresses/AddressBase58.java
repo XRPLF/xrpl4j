@@ -112,13 +112,15 @@ public class AddressBase58 extends Base58 {
    * Decode a Base58Check {@link String}.
    *
    * @param base58Value    The Base58Check encoded {@link String} to be decoded.
-   * @param versionTypes   A {@link List} of {@link VersionType}s which can be associated with the result of this method.
+   * @param versionTypes   A {@link List} of {@link VersionType}s which can be associated with the result of this
+   *                       method.
    * @param versions       A {@link List} of {@link Version}s to try decoding with.
    * @param expectedLength The expected length of the decoded value.
    * @return A {@link Decoded} containing the decoded value, version, and type.
    * @throws EncodingFormatException If more than one version is supplied without an expectedLength value present,
    *                                 or if the version bytes of the Base58 value are invalid.
    */
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static Decoded decode(
       final String base58Value,
       final List<VersionType> versionTypes,

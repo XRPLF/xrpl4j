@@ -10,7 +10,6 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.OptionalInt;
 
 /**
  * Codec for XRPL Path type inside a PathSet.
@@ -18,7 +17,7 @@ import java.util.OptionalInt;
 public class PathType extends SerializedType<PathType> {
 
   /**
-   * Constants for separating Paths in a PathSet
+   * Constants for separating Paths in a PathSet.
    */
   public static final String PATHSET_END_HEX = "00";
   public static final String PATH_SEPARATOR_HEX = "FF";
@@ -32,10 +31,10 @@ public class PathType extends SerializedType<PathType> {
   }
 
   @Override
-  public PathType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public PathType fromParser(BinaryParser parser) {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
 
-    while (!parser.end()) {
+    while (parser.hasMore()) {
       byteArray.append(new HopType().fromParser(parser).value());
       String nextByte = parser.peek().hexValue();
       if (nextByte.equals(PATH_SEPARATOR_HEX) || nextByte.equals(PATHSET_END_HEX)) {
@@ -46,7 +45,7 @@ public class PathType extends SerializedType<PathType> {
   }
 
   @Override
-  public PathType fromJSON(JsonNode node) throws JsonProcessingException {
+  public PathType fromJson(JsonNode node) throws JsonProcessingException {
     if (!node.isArray()) {
       throw new IllegalArgumentException("node is not an object");
     }
@@ -54,17 +53,17 @@ public class PathType extends SerializedType<PathType> {
     Iterator<JsonNode> nodeIterator = node.elements();
     while (nodeIterator.hasNext()) {
       JsonNode child = nodeIterator.next();
-      byteArray.append(new HopType().fromJSON(child).value());
+      byteArray.append(new HopType().fromJson(child).value());
     }
     return new PathType(byteArray);
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     List<JsonNode> values = new ArrayList<>();
     BinaryParser parser = new BinaryParser(this.toHex());
-    while (!parser.end()) {
-      values.add(new HopType().fromParser(parser).toJSON());
+    while (parser.hasMore()) {
+      values.add(new HopType().fromParser(parser).toJson());
     }
     return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);
   }

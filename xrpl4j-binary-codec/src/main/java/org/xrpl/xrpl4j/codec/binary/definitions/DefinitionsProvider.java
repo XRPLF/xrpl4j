@@ -5,7 +5,7 @@ import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import java.util.function.Supplier;
 
 /**
- * Provider for {@link Definitions}
+ * Provider for {@link Definitions}.
  */
 public interface DefinitionsProvider extends Supplier<Definitions> {
 

@@ -57,9 +57,12 @@ class FieldHeaderCodecTest {
   @Test
   void decodeFieldId() {
     assertThat(fieldHeaderCodec.decodeFieldId("11")).isEqualTo(FieldHeader.builder().fieldCode(1).typeCode(1).build());
-    assertThat(fieldHeaderCodec.decodeFieldId("FF")).isEqualTo(FieldHeader.builder().fieldCode(15).typeCode(15).build());
-    assertThat(fieldHeaderCodec.decodeFieldId("0110")).isEqualTo(FieldHeader.builder().fieldCode(1).typeCode(16).build());
-    assertThat(fieldHeaderCodec.decodeFieldId("00FFFF")).isEqualTo(FieldHeader.builder().fieldCode(255).typeCode(255).build());
+    assertThat(fieldHeaderCodec.decodeFieldId("FF"))
+      .isEqualTo(FieldHeader.builder().fieldCode(15).typeCode(15).build());
+    assertThat(fieldHeaderCodec.decodeFieldId("0110"))
+      .isEqualTo(FieldHeader.builder().fieldCode(1).typeCode(16).build());
+    assertThat(fieldHeaderCodec.decodeFieldId("00FFFF"))
+      .isEqualTo(FieldHeader.builder().fieldCode(255).typeCode(255).build());
   }
 
 }

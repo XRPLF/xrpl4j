@@ -7,38 +7,42 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.regex.Pattern;
 
 /**
  * Codec for currency property inside an XRPL issued currency amount json.
  */
+@SuppressWarnings("AbbreviationAsWordInName")
 public class CurrencyType extends Hash160Type {
 
   private static final Pattern ISO_REGEX = Pattern.compile("^[A-Z0-9]{3}$");
 
   private final Optional<String> iso;
-  private final boolean isNative;
 
   public CurrencyType() {
     this(UnsignedByteArray.ofSize(20));
   }
 
-  public CurrencyType(UnsignedByteArray list) {
+  /**
+   * Required-args Constructor.
+   *
+   * @param list A {@link UnsignedByteArray} for intializing this CurrencyType.
+   */
+  public CurrencyType(final UnsignedByteArray list) {
     super(list);
     String rawISO = rawISO(list);
-    this.isNative = isNative(list);
+    boolean isNative = isNative(list);
     boolean lossLessISO = onlyIso(list) && !rawISO.equals("XRP") && ISO_REGEX.matcher(rawISO).matches();
-    this.iso = this.isNative ? Optional.of("XRP") : lossLessISO ? Optional.of(rawISO) : Optional.empty();
+    this.iso = isNative ? Optional.of("XRP") : lossLessISO ? Optional.of(rawISO) : Optional.empty();
   }
 
   @Override
-  public CurrencyType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public CurrencyType fromParser(BinaryParser parser) {
     return new CurrencyType(parser.read(getWidth()));
   }
 
   @Override
-  public CurrencyType fromJSON(JsonNode node) {
+  public CurrencyType fromJson(JsonNode node) {
     String textValue = node.textValue();
     if (!isValidRepresentation(textValue)) {
       throw new IllegalArgumentException("Unsupported Currency representation: " + textValue);
@@ -48,12 +52,8 @@ public class CurrencyType extends Hash160Type {
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return iso.map(TextNode::new).orElseGet(() -> new TextNode(toHex()));
-  }
-
-  public boolean isNative() {
-    return isNative;
   }
 
   private boolean isNative(UnsignedByteArray byteList) {
@@ -70,40 +70,57 @@ public class CurrencyType extends Hash160Type {
     return true;
   }
 
+  /**
+   * Convert {@code list} to a {@link String} of raw ISO codes.
+   *
+   * @param list
+   *
+   * @return
+   */
   private String rawISO(UnsignedByteArray list) {
     return new String(list.slice(12, 15).toByteArray());
   }
 
   /**
-   * Ensures that a value is a valid representation of a currency
+   * Ensures that a value is a valid representation of a currency.
+   *
+   * @return {@code true} if {@code value} is a valid representation; {@code false} otherwise.
    */
   boolean isValidRepresentation(String value) {
     return isStringRepresentation(value);
   }
 
   /**
-   * Tests if ISO is a valid iso code
+   * Tests if ISO is a valid iso code.
+   *
+   * @return {@code true} if {@code iso} is a valid ISO Code; {@code false} otherwise.
    */
   private boolean isIsoCode(String iso) {
     return ISO_REGEX.matcher(iso).matches();
   }
 
   /**
-   * Tests if hex is a valid hex-string
+   * Tests if hex is a valid hex-string.
+   *
+   * @return {@code true} if {@code hex} is a valid hex-encoded string; {@code false} otherwise.
    */
   private boolean isHex(String hex) {
     return HEX_REGEX.matcher(hex).matches();
   }
 
   /**
-   * Tests if a string is a valid representation of a currency
+   * Tests if a string is a valid representation of a currency.
+   *
+   * @return {@code true} if {@code input} is a valid ISO or Hex representation; {@code false} otherwise.
    */
   boolean isStringRepresentation(String input) {
     return isIsoCode(input) || isHex(input);
   }
 
   /**
-   * Convert an ISO code to a currency bytes representation
+   * Convert an ISO code to a currency bytes representation.
+   *
+   * @return An {@link UnsignedByteArray}.
    */
   private UnsignedByteArray isoToBytes(String iso) {
     UnsignedByteArray bytes = UnsignedByteArray.ofSize(20);

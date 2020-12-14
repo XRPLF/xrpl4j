@@ -14,31 +14,31 @@ import org.immutables.value.Value.Immutable;
 public interface FieldInfo {
 
   /**
-   * Sort order position for fields of the same type.
-   * For example, "Fee" has a type "Amount" and has a sort order of 8th.
+   * Sort order position for fields of the same type. For example, "Fee" has a type "Amount" and has a sort order of
+   * 8th.
    *
-   * @return
+   * @return An int with the nth value.
    */
   int nth();
 
   /**
    * If field is included in signed transactions.
    *
-   * @return
+   * @return {@code true} if this is a signing field; {@code false} otherwise.
    */
   boolean isSigningField();
 
   /**
    * If fiels is included in binary serialized representation.
    *
-   * @return
+   * @return {@code true} if this FieldInof is serialized; {@code false} otherwise.
    */
   boolean isSerialized();
 
   /**
    * XRPL type (e.g. UInt32, AccountID, etc.)
    *
-   * @return
+   * @return A {@link String} representing the type of this FieldInfo.
    */
   String type();
 

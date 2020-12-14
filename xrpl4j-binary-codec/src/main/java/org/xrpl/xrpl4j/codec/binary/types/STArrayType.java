@@ -13,11 +13,11 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinarySerializer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.OptionalInt;
 
 /**
  * Codec for XRPL STArray type.
  */
+@SuppressWarnings("AbbreviationAsWordInName")
 public class STArrayType extends SerializedType<STArrayType> {
 
   public static final String ARRAY_END_MARKER_HEX = "F1";
@@ -33,16 +33,17 @@ public class STArrayType extends SerializedType<STArrayType> {
   }
 
   @Override
-  public STArrayType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public STArrayType fromParser(BinaryParser parser) {
     UnsignedByteArray byteArray = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteArray);
 
-    while (!parser.end()) {
-      FieldInstance fieldInstance = parser.readField().get();
+    while (parser.hasMore()) {
+      FieldInstance fieldInstance = parser.readField()
+        .orElseThrow(() -> new IllegalArgumentException("Parser should have had more fields but did not."));
       if (fieldInstance.name().equals(ARRAY_END_MARKER_NAME)) {
         break;
       }
-      SerializedType associatedValue = parser.readFieldValue(fieldInstance);
+      SerializedType<?> associatedValue = parser.readFieldValue(fieldInstance);
       serializer.writeFieldAndValue(fieldInstance, associatedValue);
       serializer.put(STObjectType.OBJECT_END_MARKER_HEX);
     }
@@ -51,7 +52,7 @@ public class STArrayType extends SerializedType<STArrayType> {
   }
 
   @Override
-  public STArrayType fromJSON(JsonNode node) {
+  public STArrayType fromJson(JsonNode node) {
     if (!node.isArray()) {
       throw new IllegalArgumentException("node is not an array");
     }
@@ -61,24 +62,24 @@ public class STArrayType extends SerializedType<STArrayType> {
     Iterator<JsonNode> nodeIterator = node.elements();
     while (nodeIterator.hasNext()) {
       JsonNode child = nodeIterator.next();
-      serializer.put(new STObjectType().fromJSON(child).value().hexValue());
+      serializer.put(new STObjectType().fromJson(child).value().hexValue());
     }
     serializer.put(ARRAY_END_MARKER_HEX);
     return new STArrayType(byteList);
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     BinaryParser parser = new BinaryParser(this.toString());
     List<JsonNode> values = new ArrayList<>();
-    while (!parser.end()) {
+    while (parser.hasMore()) {
       FieldInstance field = parser.readField().orElseThrow(() -> new IllegalArgumentException("bad field encountered"));
       if (field.name().equals(ARRAY_END_MARKER_NAME)) {
         break;
       }
       STObjectType objectType = new STObjectType().fromParser(parser);
       ObjectNode child = new ObjectNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(),
-        ImmutableMap.of(field.name(), objectType.toJSON()));
+        ImmutableMap.of(field.name(), objectType.toJson()));
       values.add(child);
     }
     return new ArrayNode(BinaryCodecObjectMapperFactory.getObjectMapper().getNodeFactory(), values);

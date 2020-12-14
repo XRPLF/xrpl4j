@@ -14,10 +14,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A codec for instances of {@link FieldHeader}.
+ */
 public class FieldHeaderCodec {
 
   private static final FieldHeaderCodec INSTANCE = new FieldHeaderCodec(DefinitionsProvider.getInstance().get(),
-      BinaryCodecObjectMapperFactory.getObjectMapper());
+    BinaryCodecObjectMapperFactory.getObjectMapper());
 
   private final Definitions definitions;
 
@@ -27,7 +30,12 @@ public class FieldHeaderCodec {
 
   private final Map<String, Integer> typeOrdinalMap;
 
-
+  /**
+   * Required-args Constructor.
+   *
+   * @param definitions A {@link Definitions}.
+   * @param mapper      An {@link ObjectMapper}.
+   */
   public FieldHeaderCodec(Definitions definitions, ObjectMapper mapper) {
     this.definitions = definitions;
     this.fieldMetadataMap = new HashMap<>();
@@ -38,8 +46,8 @@ public class FieldHeaderCodec {
         String fieldName = field.get(0).textValue();
         FieldInfo metadata = mapper.readValue(field.get(1).toString(), FieldInfo.class);
         FieldHeader fieldHeader = FieldHeader.builder().fieldCode(metadata.nth())
-            .typeCode(typeOrdinalMap.get(metadata.type()))
-            .build();
+          .typeCode(typeOrdinalMap.get(metadata.type()))
+          .build();
         fieldMetadataMap.put(fieldName, metadata);
         fieldIdNameMap.put(fieldHeader, fieldName);
       } catch (JsonProcessingException e) {
@@ -54,52 +62,6 @@ public class FieldHeaderCodec {
 
   public String encode(String fieldName) {
     return encode(getFieldId(fieldName));
-  }
-
-  public String decode(String hex) {
-    FieldHeader fieldHeader = decodeFieldId(hex);
-    return fieldIdNameMap.get(fieldHeader);
-  }
-
-  protected FieldHeader decodeFieldId(String hex) {
-    Preconditions.checkNotNull(hex, "hex cannot be null");
-    Preconditions.checkArgument(hex.length() >= 2, "hex must be at least 2 characters");
-    List<UnsignedByte> segments = ByteUtils.parse(hex);
-    Preconditions.checkArgument(segments.size() <= 3, "hex value is too large");
-    if (segments.size() == 1) {
-      UnsignedByte first = segments.get(0);
-      return FieldHeader.builder()
-          .typeCode(first.getHighBits())
-          .fieldCode(first.getLowBits())
-          .build();
-    }
-    if (segments.size() == 2) {
-      UnsignedByte first = segments.get(0);
-      UnsignedByte second = segments.get(1);
-      if (first.getHighBits() == 0) {
-        return FieldHeader.builder()
-            .fieldCode(first.getLowBits())
-            .typeCode(second.asInt())
-            .build();
-      } else {
-        return FieldHeader.builder()
-            .typeCode(first.getHighBits())
-            .fieldCode(second.asInt())
-            .build();
-      }
-    }
-    return FieldHeader.builder()
-        .typeCode(segments.get(1).asInt())
-        .fieldCode(segments.get(2).asInt())
-        .build();
-  }
-
-  protected FieldHeader getFieldId(String fieldName) {
-    FieldInfo metadata = fieldMetadataMap.get(fieldName);
-    Preconditions.checkNotNull(metadata, fieldName + " is not a valid field name");
-    Integer typeCode = typeOrdinalMap.get(metadata.type());
-    Preconditions.checkNotNull(typeCode, typeCode + " is not a valid type");
-    return FieldHeader.builder().typeCode(typeCode).fieldCode(metadata.nth()).build();
   }
 
   protected String encode(FieldHeader fieldHeader) {
@@ -130,7 +92,51 @@ public class FieldHeaderCodec {
     return ByteUtils.toHex(segments);
   }
 
+  public String decode(String hex) {
+    FieldHeader fieldHeader = decodeFieldId(hex);
+    return fieldIdNameMap.get(fieldHeader);
+  }
+
+  protected FieldHeader decodeFieldId(String hex) {
+    Preconditions.checkNotNull(hex, "hex cannot be null");
+    Preconditions.checkArgument(hex.length() >= 2, "hex must be at least 2 characters");
+    List<UnsignedByte> segments = ByteUtils.parse(hex);
+    Preconditions.checkArgument(segments.size() <= 3, "hex value is too large");
+    if (segments.size() == 1) {
+      UnsignedByte first = segments.get(0);
+      return FieldHeader.builder()
+        .typeCode(first.getHighBits())
+        .fieldCode(first.getLowBits())
+        .build();
+    }
+    if (segments.size() == 2) {
+      UnsignedByte first = segments.get(0);
+      UnsignedByte second = segments.get(1);
+      if (first.getHighBits() == 0) {
+        return FieldHeader.builder()
+          .fieldCode(first.getLowBits())
+          .typeCode(second.asInt())
+          .build();
+      } else {
+        return FieldHeader.builder()
+          .typeCode(first.getHighBits())
+          .fieldCode(second.asInt())
+          .build();
+      }
+    }
+    return FieldHeader.builder()
+      .typeCode(segments.get(1).asInt())
+      .fieldCode(segments.get(2).asInt())
+      .build();
+  }
+
+  protected FieldHeader getFieldId(String fieldName) {
+    FieldInfo metadata = fieldMetadataMap.get(fieldName);
+    Preconditions.checkNotNull(metadata, fieldName + " is not a valid field name");
+    Integer typeCode = typeOrdinalMap.get(metadata.type());
+    Preconditions.checkNotNull(typeCode, typeCode + " is not a valid type");
+    return FieldHeader.builder().typeCode(typeCode).fieldCode(metadata.nth()).build();
+  }
+
 }
-
-
 

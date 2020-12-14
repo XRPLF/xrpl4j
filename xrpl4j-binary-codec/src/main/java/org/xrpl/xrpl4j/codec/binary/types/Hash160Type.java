@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
 import java.util.regex.Pattern;
 
 /**
@@ -24,12 +23,12 @@ public class Hash160Type extends HashType<Hash160Type> {
   }
 
   @Override
-  public Hash160Type fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public Hash160Type fromParser(BinaryParser parser) {
     return new Hash160Type(parser.read(WIDTH));
   }
 
   @Override
-  public Hash160Type fromJSON(JsonNode node) {
+  public Hash160Type fromJson(JsonNode node) {
     return new Hash160Type(UnsignedByteArray.fromHex(node.asText()));
   }
 }

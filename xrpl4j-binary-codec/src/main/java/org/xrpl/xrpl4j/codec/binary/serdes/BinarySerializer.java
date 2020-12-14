@@ -8,6 +8,8 @@ import org.xrpl.xrpl4j.codec.binary.FieldHeaderCodec;
 import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 import org.xrpl.xrpl4j.codec.binary.types.SerializedType;
 
+import java.util.Objects;
+
 /**
  * Serializes JSON to XRPL binary format.
  */
@@ -15,22 +17,27 @@ public class BinarySerializer {
 
   private final UnsignedByteArray sink;
 
-  public BinarySerializer(UnsignedByteArray sink) {
+  /**
+   * Required-args Constructor.
+   *
+   * @param sink An {@link UnsignedByteArray}.
+   */
+  public BinarySerializer(final UnsignedByteArray sink) {
     this.sink = sink;
   }
 
-  public void put(String hexBytes) {
+  public void put(final String hexBytes) {
     sink.append(UnsignedByteArray.fromHex(hexBytes));
   }
 
-  public void write(UnsignedByteArray list) {
+  public void write(final UnsignedByteArray list) {
     this.sink.append(list);
   }
 
   /**
-   * Calculate the header of Variable Length encoded bytes
+   * Calculate the header of Variable Length encoded bytes.
    *
-   * @param length the length of the bytes
+   * @param length the length of the bytes.
    */
   private UnsignedByteArray encodeVariableLength(int length) {
     if (length <= 192) {
@@ -51,12 +58,14 @@ public class BinarySerializer {
   }
 
   /**
-   * Write field and value to BinarySerializer
+   * Write field and value to BinarySerializer.
    *
-   * @param field field to write to BinarySerializer
-   * @param value value to write to BinarySerializer
+   * @param field A {@link FieldInstance} to write into a {@link BinarySerializer}.
+   * @param value A {@link SerializedType} to write into.
    */
-  public void writeFieldAndValue(FieldInstance field, SerializedType value) {
+  public void writeFieldAndValue(final FieldInstance field, final SerializedType value) {
+    Objects.requireNonNull(field);
+    Objects.requireNonNull(value);
     String fieldHeaderHex = FieldHeaderCodec.getInstance().encode(field.name());
     this.sink.append(UnsignedByteArray.fromHex(fieldHeaderHex));
 
@@ -68,22 +77,27 @@ public class BinarySerializer {
   }
 
   /**
-   * Write field and value to BinarySerializer
+   * Write field and value to BinarySerializer.
    *
-   * @param field field to write to BinarySerializer
-   * @param value value to write to BinarySerializer
+   * @param field A {@link FieldInstance} to write into a {@link BinarySerializer}.
+   * @param value A {@link JsonNode} to write into.
+   *
+   * @throws JsonProcessingException if {@code value} is not properly formed JSON.
    */
-  public void writeFieldAndValue(FieldInstance field, JsonNode value) throws JsonProcessingException {
-    SerializedType typedValue = SerializedType.getTypeByName(field.type()).fromJSON(value);
+  public void writeFieldAndValue(final FieldInstance field, final JsonNode value) throws JsonProcessingException {
+    Objects.requireNonNull(field);
+    Objects.requireNonNull(value);
+    SerializedType typedValue = SerializedType.getTypeByName(field.type()).fromJson(value);
     writeFieldAndValue(field, typedValue);
   }
 
   /**
-   * Write a variable length encoded value to the BinarySerializer
+   * Write a variable length encoded value to the BinarySerializer.
    *
-   * @param value length encoded value to write to BytesList
+   * @param value length encoded value to write to BytesList.
    */
-  public void writeLengthEncoded(SerializedType value) {
+  public void writeLengthEncoded(final SerializedType value) {
+    Objects.requireNonNull(value);
     UnsignedByteArray bytes = UnsignedByteArray.empty();
     value.toBytesSink(bytes);
     this.put(this.encodeVariableLength(bytes.length()).hexValue());

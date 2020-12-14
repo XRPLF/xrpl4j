@@ -15,7 +15,7 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
   /**
    * Required-args Constructor.
    *
-   * @param objectMapper A {@link ObjectMapper}.
+   * @param objectMapper An {@link ObjectMapper}.
    */
   @SuppressWarnings("UnstableApiUsage")
   public DefaultDefinitionsProvider(final ObjectMapper objectMapper) {

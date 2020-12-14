@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A coded for instances of {@link FieldHeader}.
+ * A codec for instances of {@link FieldHeader}.
  */
 public class FieldHeaderCodec {
 
@@ -34,7 +34,7 @@ public class FieldHeaderCodec {
    * Required-args Constructor.
    *
    * @param definitions A {@link Definitions}.
-   * @param mapper      A {@link ObjectMapper}.
+   * @param mapper      An {@link ObjectMapper}.
    */
   public FieldHeaderCodec(Definitions definitions, ObjectMapper mapper) {
     this.definitions = definitions;
@@ -139,6 +139,4 @@ public class FieldHeaderCodec {
   }
 
 }
-
-
 

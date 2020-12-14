@@ -38,7 +38,7 @@ public class DefinitionsService {
    * Required-args Constructor.
    *
    * @param definitionsProvider A {@link DefinitionsProvider}.
-   * @param mapper              A {@link ObjectMapper}.
+   * @param mapper              An {@link ObjectMapper}.
    */
   DefinitionsService(DefinitionsProvider definitionsProvider, ObjectMapper mapper) {
     this.definitions = definitionsProvider.get();

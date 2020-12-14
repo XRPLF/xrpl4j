@@ -20,7 +20,7 @@ public class BinarySerializer {
   /**
    * Required-args Constructor.
    *
-   * @param sink A {@link UnsignedByteArray}.
+   * @param sink An {@link UnsignedByteArray}.
    */
   public BinarySerializer(final UnsignedByteArray sink) {
     this.sink = sink;

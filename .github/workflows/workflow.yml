@@ -1,0 +1,27 @@
+name: xrpl4j-CI
+
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Build
+        run: mvn dependency:go-offline install
+      - name: Save test results
+        run: |
+          mkdir -p ~/junit/
+          find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+          mkdir -p ~/checkstyle/
+          find . -type f -regex ".*/target/checkstyle-reports/.*xml" -exec cp {} ~/junit/ \;
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1.0.15
+        with:
+          files: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-binary-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-integration-tests/target/site/jacoco/jacoco.xml, ./xrpl4j-keypairs/target/site/jacoco/jacoco.xml, ./xrpl4j-model/target/site/jacoco/jacoco.xml
+

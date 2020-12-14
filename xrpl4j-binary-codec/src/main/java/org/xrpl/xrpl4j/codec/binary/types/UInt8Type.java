@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL UInt8 type.
  */
@@ -21,17 +19,17 @@ public class UInt8Type extends UIntType<UInt8Type> {
   }
 
   @Override
-  public UInt8Type fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public UInt8Type fromParser(BinaryParser parser) {
     return new UInt8Type(parser.readUInt8());
   }
 
   @Override
-  public UInt8Type fromJSON(JsonNode value) {
+  public UInt8Type fromJson(JsonNode value) {
     return new UInt8Type(UnsignedLong.valueOf(value.asText()));
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     return new IntNode(UnsignedLong.valueOf(toHex(), 16).intValue());
   }
 

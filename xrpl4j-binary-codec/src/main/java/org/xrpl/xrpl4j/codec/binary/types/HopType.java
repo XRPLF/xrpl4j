@@ -8,21 +8,19 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
-import java.util.OptionalInt;
-
 /**
  * Codec for XRPL Hop object inside a Path object.
  */
 public class HopType extends SerializedType<HopType> {
 
   /**
-   * Constant for masking types of a Hop
+   * Constant for masking types of a Hop.
    */
   public static final byte TYPE_ACCOUNT = 0x01;
   public static final byte TYPE_CURRENCY = 0x10;
   public static final byte TYPE_ISSUER = 0x20;
 
-  private ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
+  private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public HopType() {
     this(UnsignedByteArray.empty());
@@ -33,7 +31,7 @@ public class HopType extends SerializedType<HopType> {
   }
 
   @Override
-  public HopType fromParser(BinaryParser parser, OptionalInt lengthHint) {
+  public HopType fromParser(BinaryParser parser) {
     int type = parser.readUInt8().intValue();
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(type));
 
@@ -53,7 +51,7 @@ public class HopType extends SerializedType<HopType> {
   }
 
   @Override
-  public HopType fromJSON(JsonNode node) throws JsonProcessingException {
+  public HopType fromJson(JsonNode node) throws JsonProcessingException {
     if (!node.isObject()) {
       throw new IllegalArgumentException("node is not an object");
     }
@@ -63,17 +61,17 @@ public class HopType extends SerializedType<HopType> {
     Hop hop = objectMapper.treeToValue(node, Hop.class);
 
     hop.account().ifPresent(account -> {
-      byteArray.append(new AccountIdType().fromJSON(account).value());
+      byteArray.append(new AccountIdType().fromJson(account).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ACCOUNT)));
     });
 
     hop.currency().ifPresent(currency -> {
-      byteArray.append(new CurrencyType().fromJSON(currency).value());
+      byteArray.append(new CurrencyType().fromJson(currency).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_CURRENCY)));
     });
 
     hop.issuer().ifPresent(issuer -> {
-      byteArray.append(new AccountIdType().fromJSON(issuer).value());
+      byteArray.append(new AccountIdType().fromJson(issuer).value());
       byteArray.set(0, byteArray.get(0).or(UnsignedByte.of(TYPE_ISSUER)));
     });
 
@@ -81,22 +79,22 @@ public class HopType extends SerializedType<HopType> {
   }
 
   @Override
-  public JsonNode toJSON() {
+  public JsonNode toJson() {
     BinaryParser parser = new BinaryParser(this.toHex());
     int type = parser.readUInt8().intValue();
 
     ImmutableHop.Builder builder = Hop.builder();
 
     if ((type & TYPE_ACCOUNT) > 0) {
-      builder.account(new AccountIdType().fromParser(parser).toJSON());
+      builder.account(new AccountIdType().fromParser(parser).toJson());
     }
 
     if ((type & TYPE_CURRENCY) > 0) {
-      builder.currency(new CurrencyType().fromParser(parser).toJSON());
+      builder.currency(new CurrencyType().fromParser(parser).toJson());
     }
 
     if ((type & TYPE_ISSUER) > 0) {
-      builder.account(new AccountIdType().fromParser(parser).toJSON());
+      builder.account(new AccountIdType().fromParser(parser).toJson());
     }
 
     return objectMapper.valueToTree(builder.build());

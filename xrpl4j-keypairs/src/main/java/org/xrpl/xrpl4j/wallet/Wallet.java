@@ -35,7 +35,7 @@ public interface Wallet {
    *
    * @return
    */
-  // TODO: Create wrapper type.
+  // TODO: Create wrapper type (https://github.com/XRPLF/xrpl4j/issues/19)
   String xAddress();
 
   /**

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A coded for instances of {@link FieldHeader}.
+ * A codec for instances of {@link FieldHeader}.
  */
 public class FieldHeaderCodec {
 
@@ -139,6 +139,5 @@ public class FieldHeaderCodec {
   }
 
 }
-
 
 

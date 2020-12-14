@@ -6,15 +6,19 @@ import static org.junit.Assert.fail;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 
 import java.util.Arrays;
 
 public class Base58Test {
 
+  private static final Logger logger = LoggerFactory.getLogger(Base58Test.class);
+
   @Test
   public void testEncodeDecodeString() throws Exception {
-    byte[] decoded = "Hello World".getBytes();
+    byte[] decoded = "Hello World" .getBytes();
     String encoded = "JxErpTiA7PhnBMd";
     assertThat(Base58.encode(decoded)).isEqualTo(encoded);
     assertThat(Base58.decode(encoded)).isEqualTo(decoded);
@@ -46,7 +50,7 @@ public class Base58Test {
 
   @Test
   public void testEncodeDecodeChecked() {
-    byte[] input = "123456789".getBytes();
+    byte[] input = "123456789" .getBytes();
     String encoded = AddressBase58.encodeChecked(input, Lists.newArrayList(Version.ACCOUNT_ID));
     assertThat(encoded).isEqualTo("rnaC7gW34M77Kneb78s");
 
@@ -62,7 +66,7 @@ public class Base58Test {
       Base58.decode("This isn't valid base58");
       fail();
     } catch (EncodingFormatException e) {
-
+      logger.error("Test succeeded.");
     }
   }
 }

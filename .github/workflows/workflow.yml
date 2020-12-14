@@ -22,10 +22,10 @@ jobs:
 
   codecov:
     name: Codecov
+    runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Codecov
-      - runs-on: ubuntu-latest
       - uses: codecov/codecov-action@v1.0.15
+      - name: Codecov
         with:
           files: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-binary-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-integration-tests/target/site/jacoco/jacoco.xml, ./xrpl4j-keypairs/target/site/jacoco/jacoco.xml, ./xrpl4j-model/target/site/jacoco/jacoco.xml

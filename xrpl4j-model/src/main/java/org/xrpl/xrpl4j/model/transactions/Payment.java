@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.transactions.Flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public interface Payment extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default PaymentFlags flags() {
-    return PaymentFlags.builder().fullyCanonicalSig(true).build();
+    return PaymentFlags.builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

@@ -44,10 +44,10 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
   String transactionBlob();
 
   /**
-   * The complete {@link Transaction} that was submitted.
+   * The complete {@link Transaction} that was submitted, as a {@link TransactionResult}.
    */
   @JsonProperty("tx_json")
-  TxnType transaction();
+  TransactionResult<TxnType> transactionResult();
 
   /**
    * The value true indicates that the transaction was applied, queued, broadcast, or kept for later.

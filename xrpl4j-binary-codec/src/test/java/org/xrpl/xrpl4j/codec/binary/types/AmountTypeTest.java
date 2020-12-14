@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 class AmountTypeTest extends BaseSerializerTypeTest {
 
-  private final static AmountType codec = new AmountType();
+  private static final AmountType codec = new AmountType();
 
   private static Stream<Arguments> dataDrivenFixtures() throws IOException {
     return dataDrivenFixturesForType(codec);
@@ -41,36 +41,46 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   @Test
   void encodeCurrencyAmount() {
-    assertThat(codec.fromJson("{\"value\":\"0\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
-        .toHex()).isEqualTo("800000000000000000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
+    assertThat(
+      codec.fromJson("{\"value\":\"0\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
+        .toHex())
+      .isEqualTo("800000000000000000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
 
-    assertThat(codec.fromJson("{\"value\":\"1\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
-        .toHex()).isEqualTo("D4838D7EA4C6800000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
+    assertThat(
+      codec.fromJson("{\"value\":\"1\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
+        .toHex())
+      .isEqualTo("D4838D7EA4C6800000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
 
-    assertThat(codec.fromJson("{\"value\":\"2\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
-        .toHex()).isEqualTo("D4871AFD498D000000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
+    assertThat(
+      codec.fromJson("{\"value\":\"2\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
+        .toHex())
+      .isEqualTo("D4871AFD498D000000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
 
-    assertThat(codec.fromJson("{\"value\":\"-2\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
-        .toHex()).isEqualTo("94871AFD498D000000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
+    assertThat(
+      codec.fromJson("{\"value\":\"-2\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
+        .toHex())
+      .isEqualTo("94871AFD498D000000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
 
-    assertThat(codec.fromJson("{\"value\":\"2.1\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
-        .toHex()).isEqualTo("D48775F05A07400000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
+    assertThat(
+      codec.fromJson("{\"value\":\"2.1\",\"currency\":\"USD\",\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}")
+        .toHex())
+      .isEqualTo("D48775F05A07400000000000000000000000000055534400000000008B1CE810C13D6F337DAC85863B3D70265A24DF44");
   }
 
   @Test
   void decodeCurrencyAmount() {
     assertThat(
-        codec.fromHex("D48775F05A07400000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-            .toJson().toString())
-        .isEqualTo("{\"currency\":\"XRP\",\"value\":\"2.1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"}");
+      codec.fromHex("D48775F05A07400000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+        .toJson().toString())
+      .isEqualTo("{\"currency\":\"XRP\",\"value\":\"2.1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"}");
   }
 
   @Test
   void decodeNegativeCurrencyAmount() {
     assertThat(
-        codec.fromHex("94838D7EA4C6800000000000000000000000000055534400000000000000000000000000000000000000000000000001")
-            .toJson().toString())
-        .isEqualTo("{\"currency\":\"USD\",\"value\":\"-1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\"}");
+      codec.fromHex("94838D7EA4C6800000000000000000000000000055534400000000000000000000000000000000000000000000000001")
+        .toJson().toString())
+      .isEqualTo("{\"currency\":\"USD\",\"value\":\"-1\",\"issuer\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\"}");
   }
 
   @Test

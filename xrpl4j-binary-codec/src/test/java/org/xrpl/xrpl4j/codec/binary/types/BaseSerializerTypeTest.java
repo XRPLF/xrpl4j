@@ -19,9 +19,9 @@ abstract class BaseSerializerTypeTest {
 
   protected static Stream<Arguments> dataDrivenFixturesForType(SerializedType serializedType) throws IOException {
     return FixtureUtils.getDataDrivenFixtures().valuesTests()
-        .stream()
-        .filter(fixture -> fixture.type().equals(SerializedType.getNameByType(serializedType)))
-        .map(Arguments::of);
+      .stream()
+      .filter(fixture -> fixture.type().equals(SerializedType.getNameByType(serializedType)))
+      .map(Arguments::of);
   }
 
   abstract SerializedType getType();
@@ -39,11 +39,12 @@ abstract class BaseSerializerTypeTest {
   }
 
   private JsonNode getValue(ValueTest test) {
-    return DefinitionsService.getInstance().mapFieldSpecialization(test.typeSpecializationField(), test.testJson().asText())
-        .map(val -> val.toString())
-        .map(TextNode::new)
-        .map(JsonNode.class::cast)
-        .orElse(test.testJson());
+    return DefinitionsService.getInstance()
+      .mapFieldSpecialization(test.typeSpecializationField(), test.testJson().asText())
+      .map(val -> val.toString())
+      .map(TextNode::new)
+      .map(JsonNode.class::cast)
+      .orElse(test.testJson());
   }
 
 }

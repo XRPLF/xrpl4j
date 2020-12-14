@@ -11,13 +11,13 @@ class CurrencyTypeTest {
   private final CurrencyType codec = new CurrencyType();
 
   @Test
-  void decodeISO3() {
+  void decodeIso3() {
     assertThat(codec.fromHex("0000000000000000000000000000000000000000").toJson().asText()).isEqualTo("XRP");
     assertThat(codec.fromHex("0000000000000000000000005553440000000000").toJson().asText()).isEqualTo("USD");
   }
 
   @Test
-  void encodeISO3() {
+  void encodeIso3() {
     assertThat(codec.fromJson(DOUBLE_QUOTE + "XRP" + DOUBLE_QUOTE).toHex())
       .isEqualTo("0000000000000000000000000000000000000000");
     assertThat(codec.fromJson(DOUBLE_QUOTE + "USD" + DOUBLE_QUOTE).toHex())

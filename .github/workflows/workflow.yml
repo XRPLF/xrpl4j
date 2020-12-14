@@ -21,7 +21,9 @@ jobs:
           find . -type f -regex ".*/target/checkstyle-reports/.*xml" -exec cp {} ~/junit/ \;
 
       - name: Codecov
-        uses: codecov/codecov-action@v1.0.15
-        with:
-          files: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-binary-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-integration-tests/target/site/jacoco/jacoco.xml, ./xrpl4j-keypairs/target/site/jacoco/jacoco.xml, ./xrpl4j-model/target/site/jacoco/jacoco.xml
-
+  codecov:
+    name: Codecov
+    needs: build
+    uses: codecov/codecov-action@v1.0.15
+      with:
+        files: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-binary-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-integration-tests/target/site/jacoco/jacoco.xml, ./xrpl4j-keypairs/target/site/jacoco/jacoco.xml, ./xrpl4j-model/target/site/jacoco/jacoco.xml

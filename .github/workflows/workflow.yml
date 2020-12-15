@@ -26,10 +26,10 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
-      - name: Move Jacoco reports
-        run: cp ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml ./target/jacoco/jacoco.xml
+#      - name: Move Jacoco reports
+#        run: cp ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml ./target/jacoco/jacoco.xml
       - name: Codecov
         uses: codecov/codecov-action@v1.0.15
         with:
-          file: ./target/jacoco/jacoco.xml
+          file: ./target/site/jacoco/jacoco.xml
 #          files: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-binary-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-integration-tests/target/site/jacoco/jacoco.xml, ./xrpl4j-keypairs/target/site/jacoco/jacoco.xml, ./xrpl4j-model/target/site/jacoco/jacoco.xml

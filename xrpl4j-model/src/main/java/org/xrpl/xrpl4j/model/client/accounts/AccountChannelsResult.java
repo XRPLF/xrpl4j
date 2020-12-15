@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,10 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableAccountChannelsResult.class)
 @JsonDeserialize(as = ImmutableAccountChannelsResult.class)
 public interface AccountChannelsResult extends XrplResult {
+
+  static ImmutableAccountChannelsResult.Builder builder() {
+    return ImmutableAccountChannelsResult.builder();
+  }
 
   /**
    * The {@link Address} of the source/owner of the {@link #channels()}. This corresponds to the
@@ -35,7 +40,7 @@ public interface AccountChannelsResult extends XrplResult {
    * The identifying Hash of the ledger version used to generate this response.
    */
   @JsonProperty("ledger_hash")
-  String ledgerHash();
+  Hash256 ledgerHash();
 
   /**
    * The Ledger Index of the ledger version used to generate this response.

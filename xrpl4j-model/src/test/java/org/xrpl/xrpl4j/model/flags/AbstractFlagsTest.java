@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.transactions;
+package org.xrpl.xrpl4j.model.flags;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

@@ -8,7 +8,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
- * Represents an individual signer in a {@link SignerList}.
+ * Represents an individual signer in a {@link SignerListObject}.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableSignerEntry.class)
@@ -28,7 +28,7 @@ public interface SignerEntry {
 
   /**
    * The weight of a signature from this signer. A multi-signature is only valid if the sum weight of the
-   * signatures provided meets or exceeds the {@link SignerList#signerQuorum()} value.
+   * signatures provided meets or exceeds the {@link SignerListObject#signerQuorum()} value.
    */
   @JsonProperty("SignerWeight")
   UnsignedInteger signerWeight();

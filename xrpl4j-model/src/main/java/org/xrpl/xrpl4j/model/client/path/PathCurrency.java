@@ -19,6 +19,12 @@ public interface PathCurrency {
     return ImmutablePathCurrency.builder();
   }
 
+  static PathCurrency of(String currency) {
+    return builder()
+        .currency(currency)
+        .build();
+  }
+
   /**
    * Either a 3 characters currency code, or a 40 character hexadecimal encoded currency code value.
    */

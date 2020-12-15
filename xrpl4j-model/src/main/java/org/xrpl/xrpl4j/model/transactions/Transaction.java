@@ -6,7 +6,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.model.ledger.SignerList;
+import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +38,7 @@ public interface Transaction {
 
   static XrpCurrencyAmount computeMultiSigFee(
       final XrpCurrencyAmount currentLedgerFeeDrops,
-      final SignerList signerList
+      final SignerListObject signerList
   ) {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(signerList);

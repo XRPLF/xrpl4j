@@ -30,6 +30,10 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableEscrowObject.class)
 public interface EscrowObject extends LedgerObject {
 
+  static ImmutableEscrowObject.Builder builder() {
+    return ImmutableEscrowObject.builder();
+  }
+
   /**
    * The type of ledger object, which is always "Escrow".
    */
@@ -143,6 +147,6 @@ public interface EscrowObject extends LedgerObject {
   /**
    * The unique ID of this {@link EscrowObject}.
    */
-  String index();
+  Hash256 index();
 
 }

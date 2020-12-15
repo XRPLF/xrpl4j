@@ -14,6 +14,10 @@ import java.util.List;
 @JsonDeserialize(as = ImmutablePathAlternative.class)
 public interface PathAlternative {
 
+  static ImmutablePathAlternative.Builder builder() {
+    return ImmutablePathAlternative.builder();
+  }
+
   /**
    * A {@link List} of {@link List}s of {@link PathStep}s containing the different payment paths available.
    */

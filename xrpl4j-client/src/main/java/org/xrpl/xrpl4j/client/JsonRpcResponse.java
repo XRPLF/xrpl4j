@@ -3,7 +3,7 @@ package org.xrpl.xrpl4j.client;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 
 /**
  * Generic JSON RPC response object.

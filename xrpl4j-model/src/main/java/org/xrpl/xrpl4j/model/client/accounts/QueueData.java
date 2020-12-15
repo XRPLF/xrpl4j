@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public interface QueueData {
    * if every transaction in the queue consumes the maximum amount of XRP possible.
    */
   @JsonProperty("max_spend_drops_total")
-  Optional<String> maxSpendDropsTotal();
+  Optional<XrpCurrencyAmount> maxSpendDropsTotal();
 
   /**
    * A {@link List} of {@link QueueTransaction}s containing information about each queued transaction from this address.

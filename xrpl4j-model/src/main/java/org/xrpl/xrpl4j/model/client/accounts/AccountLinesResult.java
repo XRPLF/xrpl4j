@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.List;
@@ -18,6 +18,10 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableAccountLinesResult.class)
 @JsonDeserialize(as = ImmutableAccountLinesResult.class)
 public interface AccountLinesResult extends XrplResult {
+
+  static ImmutableAccountLinesResult.Builder builder() {
+    return ImmutableAccountLinesResult.builder();
+  }
 
   /**
    * The unique {@link Address} for the account that made the request.

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.Optional;
 
 /**
  * Represents a transaction that exists in a given account's transaction queue.
@@ -27,24 +30,25 @@ public interface QueueTransaction {
   /**
    * The Transaction Cost of this transaction, in drops of XRP.
    */
-  String fee();
+  XrpCurrencyAmount fee();
 
   /**
    * The transaction cost of this transaction, relative to the minimum cost for this type of transaction, in
    * <a href="https://xrpl.org/transaction-cost.html#fee-levels">fee levels</a>.
    */
   @JsonProperty("fee_level")
-  String feeLevel();
+  XrpCurrencyAmount feeLevel();
 
   /**
    * The maximum amount of XRP, in drops, this transaction could send or destroy.
    */
   @JsonProperty("max_spend_drops")
-  String maxSpendDrops();
+  XrpCurrencyAmount maxSpendDrops();
 
   /**
    * The Sequence Number of this transaction.
    */
-  UnsignedInteger seq();
+  @JsonProperty("seq")
+  UnsignedInteger sequence();
 
 }

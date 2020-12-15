@@ -24,6 +24,6 @@ jobs:
           path: ~/.m2
       - name: Build
         run: mvn dependency:go-offline install
-      - if: ${{ matrix.java }} == "1.8"
+      - if: matrix.java == "1.8"
         - name: Upload to Codecov
           uses: codecov/codecov-action@v1.0.15

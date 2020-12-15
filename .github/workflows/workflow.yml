@@ -19,7 +19,7 @@ jobs:
         with:
           path: ~/.m2
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-            restore-keys: ${{ env.cache-name }}-
+          restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install
       - name: Upload to Codecov
@@ -40,7 +40,7 @@ jobs:
         with:
           path: ~/.m2
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-            restore-keys: ${{ env.cache-name }}-
+          restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install
 
@@ -65,6 +65,6 @@ jobs:
         with:
           path: ~/.m2
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-            restore-keys: ${{ env.cache-name }}-
+          restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install

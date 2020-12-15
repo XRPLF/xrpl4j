@@ -1,11 +1,14 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
 
@@ -32,14 +35,14 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * @return {@link TransactionRequestParams} with {@link TransactionRequestParams#transaction()} set to
    * {@code transactionHash}
    */
-  static TransactionRequestParams of(String transactionHash) {
+  static TransactionRequestParams of(Hash256 transactionHash) {
     return builder().transaction(transactionHash).build();
   }
 
   /**
    * The 256-bit hash of the transaction in hexadecimal form.
    */
-  String transaction();
+  Hash256 transaction();
 
   /**
    * If true, return transaction data and metadata as binary serialized to hexadecimal strings. If false,
@@ -57,7 +60,8 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * <p>If the server cannot find the transaction, it confirms whether it was able to search all the
    * ledgers in this range.
    */
-  Optional<LedgerIndex> minLedger();
+  @JsonProperty("min_ledger")
+  Optional<UnsignedLong> minLedger();
 
   /**
    * Use this with {@link TransactionRequestParams#minLedger()} to specify a range of up to 1000 ledger indexes,
@@ -66,6 +70,7 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * <p>If the server cannot find the transaction, it confirms whether it was able to search all the ledgers in the
    * requested range.
    */
-  Optional<LedgerIndex> maxLedger();
+  @JsonProperty("max_ledger")
+  Optional<UnsignedLong> maxLedger();
 
 }

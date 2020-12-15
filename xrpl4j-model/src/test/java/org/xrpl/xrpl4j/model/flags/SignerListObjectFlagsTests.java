@@ -5,19 +5,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.transactions.AbstractFlagsTest;
 
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
-public class SignerListFlagsTests extends AbstractFlagsTest {
+public class SignerListObjectFlagsTests extends AbstractFlagsTest {
 
   boolean lsfOneOwnerCount;
 
   long expectedFlags;
 
-  public SignerListFlagsTests(boolean lsfOneOwnerCount) {
+  public SignerListObjectFlagsTests(boolean lsfOneOwnerCount) {
     this.lsfOneOwnerCount = lsfOneOwnerCount;
     this.expectedFlags = lsfOneOwnerCount ? Flags.SignerListFlags.ONE_OWNER_COUNT.getValue() : 0L;
   }

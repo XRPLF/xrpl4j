@@ -3,7 +3,7 @@ package org.xrpl.xrpl4j.client;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.client.rippled.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 
 import java.util.List;
 

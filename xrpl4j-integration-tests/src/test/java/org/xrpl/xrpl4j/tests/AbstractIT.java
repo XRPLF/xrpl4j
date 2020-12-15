@@ -23,7 +23,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -167,7 +167,7 @@ public abstract class AbstractIT {
   }
 
   protected <TxnType extends Transaction> TransactionResult<TxnType> getValidatedTransaction(
-      String transactionHash,
+      Hash256 transactionHash,
       Class<TxnType> transactionType
   ) {
     try {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.admin.ImmutableAcceptLedgerResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -20,6 +21,11 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutablePaymentChannelResultObject.class)
 @JsonDeserialize(as = ImmutablePaymentChannelResultObject.class)
 public interface PaymentChannelResultObject {
+
+
+  static ImmutablePaymentChannelResultObject.Builder builder() {
+    return ImmutablePaymentChannelResultObject.builder();
+  }
 
   /**
    * The {@link Address} of the owner of the channel.

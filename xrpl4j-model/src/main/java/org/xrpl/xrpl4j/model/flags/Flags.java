@@ -962,4 +962,23 @@ public class Flags {
       }
     }
   }
+
+  public static class CloseFlags extends Flags {
+
+    protected static final CloseFlags NO_CONSENSUS_TIME = new CloseFlags(1);
+
+    private CloseFlags(long value) {
+      super(value);
+    }
+
+    public static CloseFlags of(boolean sLcfNoConsensusTime) {
+      return new CloseFlags(
+          Flags.of(sLcfNoConsensusTime ? NO_CONSENSUS_TIME : UNSET).getValue()
+      );
+    }
+
+    public boolean sLcfNoConsensusTime() {
+      return this.isSet(NO_CONSENSUS_TIME);
+    }
+  }
 }

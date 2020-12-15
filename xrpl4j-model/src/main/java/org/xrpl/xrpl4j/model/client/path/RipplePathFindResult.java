@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.rippled.XrplResult;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.List;
@@ -16,6 +16,10 @@ import java.util.List;
 @JsonSerialize(as = ImmutableRipplePathFindResult.class)
 @JsonDeserialize(as = ImmutableRipplePathFindResult.class)
 public interface RipplePathFindResult extends XrplResult {
+
+  static ImmutableRipplePathFindResult.Builder builder() {
+    return ImmutableRipplePathFindResult.builder();
+  }
 
   /**
    * A {@link List} of {@link PathAlternative}s with possible paths to take. If empty, then are are no paths

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.client.rippled;
+package org.xrpl.xrpl4j.model.client;
 
 /**
  * A definition class for all rippled method name constants.

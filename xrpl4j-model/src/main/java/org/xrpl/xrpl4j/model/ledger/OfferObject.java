@@ -89,7 +89,7 @@ public interface OfferObject extends LedgerObject {
    * @return page number.
    */
   @JsonProperty("BookNode")
-  UnsignedLong bookNode();
+  String bookNode();
 
   /**
    * A hint indicating which page of the sender's owner directory links to this object, in case the directory
@@ -98,13 +98,13 @@ public interface OfferObject extends LedgerObject {
    * since that value can be derived from the Account.
    */
   @JsonProperty("OwnerNode")
-  UnsignedLong ownerNode();
+  String ownerNode();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
    */
   @JsonProperty("PreviousTxnID")
-  Hash256 previousTxnId();
+  Hash256 previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.

@@ -25,6 +25,10 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 @JsonDeserialize(as = ImmutableDepositPreAuthObject.class)
 public interface DepositPreAuthObject extends LedgerObject {
 
+  static ImmutableDepositPreAuthObject.Builder builder() {
+    return ImmutableDepositPreAuthObject.builder();
+  }
+
   /**
    * The type of ledger object, which will always be "DepositPreauth" in this case.
    */
@@ -80,5 +84,5 @@ public interface DepositPreAuthObject extends LedgerObject {
   /**
    * The unique ID of the {@link DepositPreAuthObject}.
    */
-  String index();
+  Hash256 index();
 }

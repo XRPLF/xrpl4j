@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
  * A sub-object of {@link FeeResult} containing various information about the transaction cost in fee levels
@@ -24,24 +25,24 @@ public interface FeeLevels {
    * The median transaction cost among transactions in the previous validated ledger, represented in fee levels.
    */
   @JsonProperty("median_level")
-  String medianLevel();
+  XrpCurrencyAmount medianLevel();
 
   /**
    * The minimum transaction cost required to be queued for a future ledger, represented in fee levels.
    */
   @JsonProperty("minimum_level")
-  String minimumLevel();
+  XrpCurrencyAmount minimumLevel();
 
   /**
    * The minimum transaction cost required to be included in the current open ledger, represented in fee levels.
    */
   @JsonProperty("open_ledger_level")
-  String openLedgerLevel();
+  XrpCurrencyAmount openLedgerLevel();
 
   /**
    * The equivalent of the minimum transaction cost, represented in fee levels.
    */
   @JsonProperty("reference_level")
-  String referenceLevel();
+  XrpCurrencyAmount referenceLevel();
 
 }

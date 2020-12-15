@@ -128,11 +128,11 @@ public interface AccountRootObject extends LedgerObject {
 
   /**
    * (Omitted unless the request specified signer_lists and at least one SignerList is associated with the account.)
-   * Array of {@link SignerList} ledger objects associated with this account for Multi-Signing. Since an account can own
+   * Array of {@link SignerListObject} ledger objects associated with this account for Multi-Signing. Since an account can own
    * at most one SignerList, this array must have exactly one member if it is present.
    */
   @JsonProperty("signer_lists")
-  List<SignerList> signerLists();
+  List<SignerListObject> signerLists();
 
   /**
    * The unique ID of this {@link AccountRootObject} ledger object.

@@ -36,9 +36,9 @@ jobs:
         env:
           cache-name: mvn-deps
         with:
-          path: ~/.m2
+          path: ~/.m2fix
       - name: Build
-          run: mvn dependency:go-offline install
+        run: mvn dependency:go-offline install
 
   build_other_java:
     runs-on: ubuntu-latest

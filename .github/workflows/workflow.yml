@@ -19,13 +19,7 @@ jobs:
           find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
           mkdir -p ~/checkstyle/
           find . -type f -regex ".*/target/checkstyle-reports/.*xml" -exec cp {} ~/junit/ \;
-
-  codecov:
-    name: Codecov
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Codecov
+      - name: Upload to Codecov
         uses: codecov/codecov-action@v1.0.15
         with:
           file: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml

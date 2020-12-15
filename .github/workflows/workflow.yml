@@ -18,6 +18,8 @@ jobs:
           cache-name: mvn-deps
         with:
           path: ~/.m2
+          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
+            restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install
       - name: Upload to Codecov
@@ -36,7 +38,9 @@ jobs:
         env:
           cache-name: mvn-deps
         with:
-          path: ~/.m2fix
+          path: ~/.m2
+          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
+            restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install
 
@@ -45,7 +49,7 @@ jobs:
     strategy:
       matrix:
         # test against each major Java version
-        java: [ 1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15 ]
+        java: [ 9, 10, 11, 12, 13, 14, 15 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
@@ -60,5 +64,7 @@ jobs:
           cache-name: mvn-deps
         with:
           path: ~/.m2
+          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
+            restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install

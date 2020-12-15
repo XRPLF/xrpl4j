@@ -27,6 +27,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Codecov
-        uses: codecov/codecov-action@v1.0.15
-        with:
-          files: ./xrpl4j-address-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-binary-codec/target/site/jacoco/jacoco.xml, ./xrpl4j-integration-tests/target/site/jacoco/jacoco.xml, ./xrpl4j-keypairs/target/site/jacoco/jacoco.xml, ./xrpl4j-model/target/site/jacoco/jacoco.xml
+      - uses: codecov/codecov-action@v1.0.15
+      - run: bash <(curl -s https://codecov.io/bash)

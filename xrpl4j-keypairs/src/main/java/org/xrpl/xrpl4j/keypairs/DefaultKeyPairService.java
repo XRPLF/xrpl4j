@@ -14,6 +14,9 @@ public class DefaultKeyPairService extends AbstractKeyPairService {
 
   private static final KeyPairService INSTANCE = new DefaultKeyPairService();
 
+  /**
+   * A map of the existing {@link KeyPairService} implementations, keyed by {@link VersionType}.
+   */
   private static final Map<VersionType, Supplier<KeyPairService>> serviceMap =
       new ImmutableMap.Builder<VersionType, Supplier<KeyPairService>>()
           .put(VersionType.SECP256K1, Secp256k1KeyPairService::getInstance)
@@ -24,6 +27,11 @@ public class DefaultKeyPairService extends AbstractKeyPairService {
     return serviceMap.get(type).get();
   }
 
+  /**
+   * Get a JVM wide instance of this {@link KeyPairService}.
+   *
+   * @return A {@link DefaultKeyPairService}.
+   */
   public static KeyPairService getInstance() {
     return INSTANCE;
   }

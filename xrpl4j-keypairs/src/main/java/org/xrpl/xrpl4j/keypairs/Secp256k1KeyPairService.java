@@ -88,6 +88,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
     return deriveScalar(seed, Optional.of(discriminator));
   }
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private BigInteger deriveScalar(UnsignedByteArray seed, Optional<Integer> discriminator) {
     BigInteger key = null;
     UnsignedByteArray seedCopy = UnsignedByteArray.of(seed.toByteArray());

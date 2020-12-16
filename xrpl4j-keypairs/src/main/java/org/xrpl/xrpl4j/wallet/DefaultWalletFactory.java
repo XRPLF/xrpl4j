@@ -6,6 +6,9 @@ import org.xrpl.xrpl4j.keypairs.KeyPair;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
+/**
+ * Default implementation of {@link WalletFactory}.
+ */
 public class DefaultWalletFactory implements WalletFactory {
 
   private static final WalletFactory INSTANCE = new DefaultWalletFactory(
@@ -13,14 +16,25 @@ public class DefaultWalletFactory implements WalletFactory {
       AddressCodec.getInstance()
   );
 
-  private KeyPairService keyPairService;
-  private AddressCodec addressCodec;
+  private final KeyPairService keyPairService;
+  private final AddressCodec addressCodec;
 
+  /**
+   * Construct a {@link DefaultWalletFactory} from a {@link KeyPairService} and an {@link AddressCodec}.
+   *
+   * @param keyPairService A {@link KeyPairService}.
+   * @param addressCodec   An {@link AddressCodec}.
+   */
   public DefaultWalletFactory(KeyPairService keyPairService, AddressCodec addressCodec) {
     this.keyPairService = keyPairService;
     this.addressCodec = addressCodec;
   }
 
+  /**
+   * Get a JVM wide {@link WalletFactory} instance.
+   *
+   * @return A static {@link DefaultWalletFactory} instance.
+   */
   public static WalletFactory getInstance() {
     return INSTANCE;
   }

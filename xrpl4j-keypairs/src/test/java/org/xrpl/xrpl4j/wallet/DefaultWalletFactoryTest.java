@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+@SuppressWarnings("LocalVariableName")
 public class DefaultWalletFactoryTest {
 
-  private WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+  private final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   @Test
   public void generateMainnetWalletFromEd25519Seed() {

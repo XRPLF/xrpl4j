@@ -47,6 +47,7 @@ public abstract class AbstractKeyPairService implements KeyPairService {
    * Compute the RIPEMD160 of the SHA256 of the given public key, which can be encoded to an XRPL address.
    *
    * @param publicKey The public key that should be hashed.
+   *
    * @return An {@link UnsignedByteArray} containing the non-encoded XRPL address derived from the public key.
    */
   private UnsignedByteArray computePublicKeyHash(UnsignedByteArray publicKey) {

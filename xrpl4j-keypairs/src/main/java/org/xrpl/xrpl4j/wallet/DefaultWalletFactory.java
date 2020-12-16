@@ -8,7 +8,10 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 
 public class DefaultWalletFactory implements WalletFactory {
 
-  private static final WalletFactory INSTANCE = new DefaultWalletFactory(DefaultKeyPairService.getInstance(), AddressCodec.getInstance());
+  private static final WalletFactory INSTANCE = new DefaultWalletFactory(
+      DefaultKeyPairService.getInstance(),
+      AddressCodec.getInstance()
+  );
 
   private KeyPairService keyPairService;
   private AddressCodec addressCodec;

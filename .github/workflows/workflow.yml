@@ -67,8 +67,4 @@ jobs:
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
           restore-keys: ${{ env.cache-name }}-
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
-      - name: Surefire Report
-        uses: ScaCap/action-surefire-report@v1.0.5
-        with:
-          fail_on_test_failures: true
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -e

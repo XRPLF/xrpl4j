@@ -5,6 +5,8 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -16,6 +18,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class LedgerResultJsonTests extends AbstractJsonTest {
+
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
@@ -62,6 +66,8 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
         "    \"validated\": true\n" +
         "  }";
 
+    logger.info("Result: {}", result);
+    logger.info("Deserialized: {}", objectMapper.readValue(objectMapper.writeValueAsString(result), LedgerResult.class));
     assertCanSerializeAndDeserialize(result, json);
   }
 }

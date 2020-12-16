@@ -3,18 +3,13 @@ package org.xrpl.xrpl4j.model.client.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.assertj.core.util.Lists;
 import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.path.PathAlternative;
-import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.PathStep;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -85,7 +80,7 @@ public class ServerInfoResultJsonTests extends AbstractJsonTest {
             .serverState("proposing")
             .serverStateDurationUs("1850969666")
             .time(ZonedDateTime.parse("2020-Mar-24 01:27:42.147330 UTC",
-                DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z")))
+                DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z")).withZoneSameLocal(ZoneId.of("UTC")))
             .upTime(UnsignedLong.valueOf(1984))
             .validatedLedger(ServerInfoLedger.builder()
                 .age(UnsignedInteger.valueOf(2))

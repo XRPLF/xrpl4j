@@ -9,11 +9,12 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
 
 /**
- * Represents the request parameters for an account_objects rippled JSON RPC API call.
+ * Represents the request parameters for an "account_objects" rippled API call.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountObjectsRequestParams.class)
@@ -24,6 +25,13 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
     return ImmutableAccountObjectsRequestParams.builder();
   }
 
+  /**
+   * Construct an {@link AccountObjectsRequestParams} for a given account and otherwise default parameters.
+   *
+   * @param classicAddress The classic {@link Address} of the account to request objects for.
+   *
+   * @return An {@link AccountObjectsRequestParams} for the given {@link Address}.
+   */
   static AccountObjectsRequestParams of(Address classicAddress) {
     return builder()
         .account(classicAddress)
@@ -32,17 +40,24 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
 
   /**
    * The unique XRPL {@link Address} for the account.
+   *
+   * @return The unique XRPL {@link Address} for the account.
    */
   Address account();
 
   /**
    * If included, filter results to include only this type of ledger object.
+   *
+   * @return An optionally-present {@link AccountObjectType} to filter by.
    */
   Optional<AccountObjectType> type();
 
   /**
    * If true, the response only includes {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}s that would block this
    * account from being deleted. The default is false.
+   *
+   * @return {@code true} if requesting only ledger objects that would block this account from being deleted, otherwise
+   *         {@code false}.
    */
   @JsonProperty("deletion_blockers_only")
   @Value.Default
@@ -52,14 +67,16 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
 
   /**
    * A 20-byte hex string for the ledger version to use.
+   *
+   * @return An optionally-present {@link org.xrpl.xrpl4j.model.transactions.Hash256} containing the ledger hash.
    */
   @JsonProperty("ledger_hash")
-  Optional<String> ledgerHash();
+  Optional<Hash256> ledgerHash();
 
   /**
    * The ledger index of the ledger to use, or a shortcut {@link String} to choose a ledger automatically.
    *
-   * <p>Defaults to "current".
+   * @return A {@link LedgerIndex}. Defaults to {@link LedgerIndex#CURRENT}.
    */
   @JsonProperty("ledger_index")
   @Value.Default
@@ -71,22 +88,53 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * The maximum number of {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}s to include in the resulting
    * {@link AccountObjectsResult#accountObjects()}. Must be within the inclusive range 10 to 400 on non-admin
    * connections. The default is 200.
+   *
+   * @return An optionally-present {@link UnsignedInteger} denoting the response limit.
    */
   Optional<UnsignedInteger> limit();
 
   /**
    * Value from a previous paginated response. Resume retrieving data where that response left off.
+   *
+   * @return An optionally-present {@link String} containing the marker.
    */
   Optional<String> marker();
 
+  /**
+   * The enum Account object type.
+   */
   enum AccountObjectType {
+    /**
+     * Check account object type.
+     */
     CHECK("check"),
+    /**
+     * Desposit pre auth account object type.
+     */
     DESPOSIT_PRE_AUTH("deposit_preauth"),
+    /**
+     * Escrow account object type.
+     */
     ESCROW("escrow"),
+    /**
+     * Offer account object type.
+     */
     OFFER("offer"),
+    /**
+     * Payment channel account object type.
+     */
     PAYMENT_CHANNEL("payment_channel"),
+    /**
+     * Signer list account object type.
+     */
     SIGNER_LIST("signer_list"),
+    /**
+     * Ticket account object type.
+     */
     TICKET("ticket"),
+    /**
+     * State account object type.
+     */
     STATE("state");
 
     private final String value;
@@ -95,6 +143,11 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
       this.value = value;
     }
 
+    /**
+     * Value string.
+     *
+     * @return the string
+     */
     @JsonValue
     public String value() {
       return value;

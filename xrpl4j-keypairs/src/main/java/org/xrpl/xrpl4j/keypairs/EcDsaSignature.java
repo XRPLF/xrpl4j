@@ -14,20 +14,20 @@ import java.math.BigInteger;
 
 @Value.Immutable
 @SuppressWarnings( {"LocalVariableName", "MethodName"})
-public interface EcdsaSignature {
+public interface EcDsaSignature {
 
-  static ImmutableEcdsaSignature.Builder builder() {
-    return ImmutableEcdsaSignature.builder();
+  static ImmutableEcDsaSignature.Builder builder() {
+    return ImmutableEcDsaSignature.builder();
   }
 
   /**
-   * Create an {@link EcdsaSignature} from a DER encoded byte array signature.
+   * Create an {@link EcDsaSignature} from a DER encoded byte array signature.
    *
    * @param bytes A DER encoded byte array containing a signature.
    *
-   * @return An {@link EcdsaSignature}.
+   * @return An {@link EcDsaSignature}.
    */
-  static EcdsaSignature fromDer(byte[] bytes) {
+  static EcDsaSignature fromDer(byte[] bytes) {
     try {
       ASN1InputStream decoder = new ASN1InputStream(bytes);
       DLSequence seq = (DLSequence) decoder.readObject();
@@ -43,7 +43,7 @@ public interface EcdsaSignature {
       }
       // OpenSSL deviates from the DER spec by interpreting these values as unsigned, though they should not be
       // Thus, we always use the positive versions. See: http://r6.ca/blog/20111119T211504Z.html
-      return EcdsaSignature.builder()
+      return EcDsaSignature.builder()
           .r(r.getPositiveValue())
           .s(s.getPositiveValue())
           .build();
@@ -53,21 +53,21 @@ public interface EcdsaSignature {
   }
 
   /**
-   * The r component of this {@link EcdsaSignature}.
+   * The r component of this {@link EcDsaSignature}.
    *
    * @return A {@link BigInteger} denoting the r component of this signature.
    */
   BigInteger r();
 
   /**
-   * The s component of this {@link EcdsaSignature}.
+   * The s component of this {@link EcDsaSignature}.
    *
    * @return A {@link BigInteger} denoting the r component of this signature.
    */
   BigInteger s();
 
   /**
-   * Encode this {@link EcdsaSignature} to the ASN.1 DER format.
+   * Encode this {@link EcDsaSignature} to the ASN.1 DER format.
    *
    * @return An {@link UnsignedByteArray} containing the bytes of the encoded signature.
    */

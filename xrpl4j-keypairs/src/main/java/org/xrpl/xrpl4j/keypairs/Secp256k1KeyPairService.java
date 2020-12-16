@@ -108,12 +108,12 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
     UnsignedByteArray messageHash = HashUtils.sha512Half(message);
-    EcdsaSignature signature = createEcdsaSignature(messageHash, new BigInteger(privateKey, 16));
+    EcDsaSignature signature = createEcdsaSignature(messageHash, new BigInteger(privateKey, 16));
     return signature.der().hexValue();
   }
 
   @SuppressWarnings("LocalVariableName")
-  private EcdsaSignature createEcdsaSignature(UnsignedByteArray messageHash, BigInteger privateKey) {
+  private EcDsaSignature createEcdsaSignature(UnsignedByteArray messageHash, BigInteger privateKey) {
     ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
     ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKey, ecDomainParameters);
     signer.init(true, parameters);
@@ -125,7 +125,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
       s = otherS;
     }
 
-    return EcdsaSignature.builder()
+    return EcDsaSignature.builder()
         .r(r)
         .s(s)
         .build();
@@ -134,7 +134,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     UnsignedByteArray messageHash = HashUtils.sha512Half(message);
-    EcdsaSignature sig = EcdsaSignature.fromDer(BaseEncoding.base16().decode(signature));
+    EcDsaSignature sig = EcDsaSignature.fromDer(BaseEncoding.base16().decode(signature));
     if (sig == null) {
       return false;
     }

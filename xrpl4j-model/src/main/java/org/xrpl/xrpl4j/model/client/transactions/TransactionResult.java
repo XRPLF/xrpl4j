@@ -28,24 +28,32 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   }
 
   /**
-   * The {@link Transaction} that was returned as a result of the tx call.
+   * The {@link Transaction} that was returned as a result of the "tx" call.
+   *
+   * @return A {@link Transaction} of type {@link TxnType}.
    */
   @JsonUnwrapped
   TxnType transaction();
 
   /**
    * The SHA-512Half hash of the transaction in hexadecimal form.
+   *
+   * @return A {@link Hash256} containing the transaction hash.
    */
   Hash256 hash();
 
   /**
    * The ledger index of the ledger that includes this {@link Transaction}.
+   *
+   * @return An optionally-present {@link LedgerIndex}.
    */
   @JsonProperty("ledger_index")
   Optional<LedgerIndex> ledgerIndex();
 
   /**
-   * True if this data is from a validated ledger version; if omitted or set to false, this data is not final.
+   * {@code true} if this data is from a validated ledger version; If {@code false}, this data is not final.
+   *
+   * @return {@code true} if this data is from a validated ledger version; If {@code false}, this data is not final.
    */
   @Value.Default
   default boolean validated() {

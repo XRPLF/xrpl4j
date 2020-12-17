@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import java.util.Optional;
 
 /**
- * The result of a submit_multisigned rippled API call.
+ * The result of a "submit_multisigned" rippled API call.
  *
  * @param <TxnType> The type of {@link Transaction} that was submitted.
  */
@@ -25,33 +25,42 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
 
   /**
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
+   *
+   * @return An optionally-present {@link String} containing the result of the submission.
    */
   @JsonProperty("engine_result")
   Optional<String> engineResult();
 
   /**
    * Numeric code indicating the preliminary result of the transaction, directly correlated to {@link #engineResult()}.
+   *
+   * @return An optionally-present {@link String} containing the result code of the submission.
    */
   @JsonProperty("engine_result_code")
   Optional<String> engineResultCode();
 
   /**
    * Human-readable explanation of the transaction's preliminary result.
+   *
+   * @return An optionally-present {@link String} containing the result message of the submission.
    */
   @JsonProperty("engine_result_message")
   Optional<String> engineResultMessage();
 
   /**
    * The complete transaction in hex {@link String} format.
+   *
+   * @return A hexadecimal encoded {@link String} containing the binary encoded transaction that was submitted.
    */
   @JsonProperty("tx_blob")
   String transactionBlob();
 
   /**
    * The complete {@link Transaction} that was submitted, as a {@link TransactionResult}.
+   *
+   * @return A {@link TransactionResult}.
    */
   @JsonProperty("tx_json")
   TransactionResult<TxnType> transaction();
-
 
 }

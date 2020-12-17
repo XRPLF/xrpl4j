@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized;
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
-public class OfferFlagsTests extends AbstractFlagsTest {
+public class OfferCreateFlagsTests extends AbstractFlagsTest {
 
   boolean tfFullyCanonicalSig;
   boolean tfPassive;
@@ -19,7 +19,7 @@ public class OfferFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
-  public OfferFlagsTests(
+  public OfferCreateFlagsTests(
       boolean tfFullyCanonicalSig,
       boolean tfPassive,
       boolean tfImmediateOrCancel,
@@ -32,11 +32,11 @@ public class OfferFlagsTests extends AbstractFlagsTest {
     this.tfFillOrKill = tfFillOrKill;
     this.tfSell = tfSell;
 
-    expectedFlags = (tfFullyCanonicalSig ? Flags.OfferFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-        (tfPassive ? Flags.OfferFlags.PASSIVE.getValue() : 0L) |
-        (tfImmediateOrCancel ? Flags.OfferFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
-        (tfFillOrKill ? Flags.OfferFlags.FILL_OR_KILL.getValue() : 0L) |
-        (tfSell ? Flags.OfferFlags.SELL.getValue() : 0L);
+    expectedFlags = (tfFullyCanonicalSig ? Flags.OfferCreateFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+        (tfPassive ? Flags.OfferCreateFlags.PASSIVE.getValue() : 0L) |
+        (tfImmediateOrCancel ? Flags.OfferCreateFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
+        (tfFillOrKill ? Flags.OfferCreateFlags.FILL_OR_KILL.getValue() : 0L) |
+        (tfSell ? Flags.OfferCreateFlags.SELL.getValue() : 0L);
   }
 
   @Parameterized.Parameters
@@ -46,7 +46,7 @@ public class OfferFlagsTests extends AbstractFlagsTest {
 
   @Test
   public void testFlagsConstructionWithIndividualFlags() {
-    Flags.OfferFlags flags = Flags.OfferFlags.builder()
+    Flags.OfferCreateFlags flags = Flags.OfferCreateFlags.builder()
         .tfFullyCanonicalSig(tfFullyCanonicalSig)
         .tfPassive(tfPassive)
         .tfImmediateOrCancel(tfImmediateOrCancel)
@@ -59,7 +59,7 @@ public class OfferFlagsTests extends AbstractFlagsTest {
 
   @Test
   public void testDeriveIndividualFlagsFromFlags() {
-    Flags.OfferFlags flags = Flags.OfferFlags.of(expectedFlags);
+    Flags.OfferCreateFlags flags = Flags.OfferCreateFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);

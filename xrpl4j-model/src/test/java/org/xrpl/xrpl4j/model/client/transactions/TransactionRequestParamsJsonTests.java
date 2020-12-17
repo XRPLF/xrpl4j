@@ -16,7 +16,6 @@ public class TransactionRequestParamsJsonTests extends AbstractJsonTest {
 
     TransactionRequestParams params = TransactionRequestParams.builder()
         .transaction(Hash256.of("C53ECF838647FA5A4C780377025FEC7999AB4182590510CA461444B207AB74A9"))
-        .binary(false)
         .build();
 
     String json = "{\n" +
@@ -32,7 +31,6 @@ public class TransactionRequestParamsJsonTests extends AbstractJsonTest {
 
     TransactionRequestParams params = TransactionRequestParams.builder()
         .transaction(Hash256.of("C53ECF838647FA5A4C780377025FEC7999AB4182590510CA461444B207AB74A9"))
-        .binary(false)
         .minLedger(UnsignedLong.ZERO)
         .maxLedger(UnsignedLong.ONE)
         .build();

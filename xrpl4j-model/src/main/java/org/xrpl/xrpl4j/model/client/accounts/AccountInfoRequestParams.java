@@ -80,7 +80,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    * enabled, also returns stats about queued transactions associated with this account. Can only be used when
    * querying for the data from the current open ledger.
    *
-   * @return {@code true} if queue transactions should be returned in the response, {@link false} if not.
+   * @return {@code true} if queue transactions should be returned in the response, {@code false} if not.
    *         Defaults to {@code false}.
    */
   @Value.Default
@@ -92,7 +92,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    * If true, and the <a href="https://xrpl.org/known-amendments.html#multisign">MultiSign amendment</a> is enabled,
    * also returns any {@link org.xrpl.xrpl4j.model.ledger.SignerListObject}s associated with this account.
    *
-   * @return {@code true} if signer lists should be returns, {@link false} if not. Defaults to {@code true}.
+   * @return {@code true} if signer lists should be returns, {@code false} if not. Defaults to {@code true}.
    */
   @Value.Default
   @JsonProperty("signer_lists")

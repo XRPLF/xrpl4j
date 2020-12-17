@@ -366,7 +366,7 @@ public class BinarySerializationTests {
         .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
         .fee(XrpCurrencyAmount.ofDrops(12))
         .flags(Flags.TrustSetFlags.builder()
-            .tfSetNoRipple(true)
+            .tfSetNoRipple()
             .tfFullyCanonicalSig(false)
             .build())
         .sequence(UnsignedInteger.valueOf(44))
@@ -391,7 +391,7 @@ public class BinarySerializationTests {
         .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
         .sequence(UnsignedInteger.valueOf(11223344))
         .offerSequence(UnsignedInteger.valueOf(123))
-        .flags(Flags.OfferFlags.builder().tfFullyCanonicalSig(true).tfSell(true).build())
+        .flags(Flags.OfferCreateFlags.builder().tfFullyCanonicalSig(true).tfSell(true).build())
         .expiration(UnsignedInteger.valueOf(456))
         .build();
 

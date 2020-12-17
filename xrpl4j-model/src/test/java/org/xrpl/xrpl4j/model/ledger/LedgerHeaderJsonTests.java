@@ -77,7 +77,6 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "  \"close_flags\" : 0,\n" +
         "  \"ledger_index\" : \"54300940\",\n" +
         "  \"ledger_hash\" : \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
         "  \"account_hash\" : \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +

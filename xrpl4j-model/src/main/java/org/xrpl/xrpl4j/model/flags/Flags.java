@@ -317,21 +317,21 @@ public class Flags {
 
     public static final AccountRootFlags DEFAULT_RIPPLE = new AccountRootFlags(0x00800000L);
 
-    protected static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
+    public static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
 
-    protected static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
+    public static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
 
-    protected static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
+    public static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
 
-    protected static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
+    public static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
 
-    protected static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
+    public static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
 
-    protected static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
+    public static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
 
-    protected static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
+    public static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
 
-    protected static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
+    public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
     /**
      * Required-args Constructor.
@@ -845,40 +845,40 @@ public class Flags {
   /**
    * A set of static {@link TransactionFlags} which can be set on {@link OfferCreate} transactions.
    */
-  public static class OfferFlags extends TransactionFlags {
+  public static class OfferCreateFlags extends TransactionFlags {
 
     /**
      * Static flag value constants.
      */
-    protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000L);
-    protected static final OfferFlags IMMEDIATE_OR_CANCEL = new OfferFlags(0x00020000L);
-    protected static final OfferFlags FILL_OR_KILL = new OfferFlags(0x00040000L);
-    protected static final OfferFlags SELL = new OfferFlags(0x00080000L);
+    protected static final OfferCreateFlags PASSIVE = new OfferCreateFlags(0x00010000L);
+    protected static final OfferCreateFlags IMMEDIATE_OR_CANCEL = new OfferCreateFlags(0x00020000L);
+    protected static final OfferCreateFlags FILL_OR_KILL = new OfferCreateFlags(0x00040000L);
+    protected static final OfferCreateFlags SELL = new OfferCreateFlags(0x00080000L);
 
-    private OfferFlags(long value) {
+    private OfferCreateFlags(long value) {
       super(value);
     }
 
     /**
-     * Create a new {@link OfferFlags.Builder}.
+     * Create a new {@link OfferCreateFlags.Builder}.
      *
-     * @return A new {@link OfferFlags.Builder}.
+     * @return A new {@link OfferCreateFlags.Builder}.
      */
-    public static OfferFlags.Builder builder() {
-      return new OfferFlags.Builder();
+    public static OfferCreateFlags.Builder builder() {
+      return new OfferCreateFlags.Builder();
     }
 
     /**
-     * Construct {@link OfferFlags} with a given value.
+     * Construct {@link OfferCreateFlags} with a given value.
      *
-     * @param value The long-number encoded flags value of this {@link OfferFlags}.
-     * @return New {@link OfferFlags}.
+     * @param value The long-number encoded flags value of this {@link OfferCreateFlags}.
+     * @return New {@link OfferCreateFlags}.
      */
-    public static OfferFlags of(long value) {
-      return new OfferFlags(value);
+    public static OfferCreateFlags of(long value) {
+      return new OfferCreateFlags(value);
     }
 
-    private static OfferFlags of(
+    private static OfferCreateFlags of(
         boolean tfFullyCanonicalSig,
         boolean tfPassive,
         boolean tfImmediateOrCancel,
@@ -892,7 +892,7 @@ public class Flags {
           tfFillOrKill ? FILL_OR_KILL : UNSET,
           tfSell ? SELL : UNSET
       ).getValue();
-      return new OfferFlags(value);
+      return new OfferCreateFlags(value);
     }
 
     /**
@@ -902,7 +902,7 @@ public class Flags {
      * @return {@code true} if {@code tfPassive} is set, otherwise {@code false}.
      */
     public boolean tfPassive() {
-      return this.isSet(OfferFlags.PASSIVE);
+      return this.isSet(OfferCreateFlags.PASSIVE);
     }
 
     /**
@@ -914,7 +914,7 @@ public class Flags {
      * @return {@code true} if {@code tfImmediateOrCancel} is set, otherwise {@code false}.
      */
     public boolean tfImmediateOrCancel() {
-      return this.isSet(OfferFlags.IMMEDIATE_OR_CANCEL);
+      return this.isSet(OfferCreateFlags.IMMEDIATE_OR_CANCEL);
     }
 
     /**
@@ -926,7 +926,7 @@ public class Flags {
      * @return {@code true} if {@code tfFillOrKill} is set, otherwise {@code false}.
      */
     public boolean tfFillOrKill() {
-      return this.isSet(OfferFlags.FILL_OR_KILL);
+      return this.isSet(OfferCreateFlags.FILL_OR_KILL);
     }
 
     /**
@@ -935,12 +935,12 @@ public class Flags {
      * @return {@code true} if {@code tfSell} is set, otherwise {@code false}.
      */
     public boolean tfSell() {
-      return this.isSet(OfferFlags.SELL);
+      return this.isSet(OfferCreateFlags.SELL);
     }
 
 
     /**
-     * A builder class for {@link OfferFlags} flags.
+     * A builder class for {@link OfferCreateFlags} flags.
      */
     public static class Builder {
 
@@ -955,9 +955,9 @@ public class Flags {
        *
        * @param tfFullyCanonicalSig A boolean value.
        *
-       * @return The same {@link OfferFlags.Builder}.
+       * @return The same {@link OfferCreateFlags.Builder}.
        */
-      public OfferFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+      public OfferCreateFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
         this.tfFullyCanonicalSig = tfFullyCanonicalSig;
         return this;
       }
@@ -967,9 +967,9 @@ public class Flags {
        *
        * @param tfPassive A boolean value.
        *
-       * @return The same {@link OfferFlags.Builder}.
+       * @return The same {@link OfferCreateFlags.Builder}.
        */
-      public OfferFlags.Builder tfPassive(boolean tfPassive) {
+      public OfferCreateFlags.Builder tfPassive(boolean tfPassive) {
         this.tfPassive = tfPassive;
         return this;
       }
@@ -979,9 +979,9 @@ public class Flags {
        *
        * @param tfImmediateOrCancel A boolean value.
        *
-       * @return The same {@link OfferFlags.Builder}.
+       * @return The same {@link OfferCreateFlags.Builder}.
        */
-      public OfferFlags.Builder tfImmediateOrCancel(boolean tfImmediateOrCancel) {
+      public OfferCreateFlags.Builder tfImmediateOrCancel(boolean tfImmediateOrCancel) {
         this.tfImmediateOrCancel = tfImmediateOrCancel;
         return this;
       }
@@ -991,9 +991,9 @@ public class Flags {
        *
        * @param tfFillOrKill A boolean value.
        *
-       * @return The same {@link OfferFlags.Builder}.
+       * @return The same {@link OfferCreateFlags.Builder}.
        */
-      public OfferFlags.Builder tfFillOrKill(boolean tfFillOrKill) {
+      public OfferCreateFlags.Builder tfFillOrKill(boolean tfFillOrKill) {
         this.tfFillOrKill = tfFillOrKill;
         return this;
       }
@@ -1003,20 +1003,20 @@ public class Flags {
        *
        * @param tfSell A boolean value.
        *
-       * @return The same {@link OfferFlags.Builder}.
+       * @return The same {@link OfferCreateFlags.Builder}.
        */
-      public OfferFlags.Builder tfSell(boolean tfSell) {
+      public OfferCreateFlags.Builder tfSell(boolean tfSell) {
         this.tfSell = tfSell;
         return this;
       }
 
       /**
-       * Build a new {@link OfferFlags} from the current boolean values.
+       * Build a new {@link OfferCreateFlags} from the current boolean values.
        *
-       * @return A new {@link OfferFlags}.
+       * @return A new {@link OfferCreateFlags}.
        */
-      public OfferFlags build() {
-        return OfferFlags.of(
+      public OfferCreateFlags build() {
+        return OfferCreateFlags.of(
             tfFullyCanonicalSig,
             tfPassive,
             tfImmediateOrCancel,
@@ -1024,6 +1024,34 @@ public class Flags {
             tfSell
         );
       }
+    }
+  }
+
+  public static class OfferFlags extends Flags {
+
+    protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000);
+    protected static final OfferFlags SELL = new OfferFlags(0x00020000);
+
+    /**
+     * Construct {@link OfferFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link OfferFlags}.
+     * @return New {@link OfferFlags}.
+     */
+    public static OfferFlags of(long value) {
+      return new OfferFlags(value);
+    }
+
+    private OfferFlags(long value) {
+      super(value);
+    }
+
+    public boolean lsfPassive() {
+      return this.isSet(PASSIVE);
+    }
+
+    public boolean lsfSell() {
+      return this.isSet(SELL);
     }
   }
 

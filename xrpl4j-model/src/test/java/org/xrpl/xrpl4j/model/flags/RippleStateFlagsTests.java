@@ -57,22 +57,6 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
   }
 
   @Test
-  public void testFlagsConstructionWithIndividualFlags() {
-    Flags.RippleStateFlags flags = Flags.RippleStateFlags.builder()
-        .lsfLowReserve(lsfLowReserve)
-        .lsfHighReserve(lsfHighReserve)
-        .lsfLowAuth(lsfLowAuth)
-        .lsfHighAuth(lsfHighAuth)
-        .lsfLowNoRipple(lsfLowNoRipple)
-        .lsfHighNoRipple(lsfHighNoRipple)
-        .lsfLowFreeze(lsfLowFreeze)
-        .lsfHighFreeze(lsfHighFreeze)
-        .build();
-
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
-  }
-
-  @Test
   public void testDeriveIndividualFlagsFromFlags() {
     Flags.RippleStateFlags flags = Flags.RippleStateFlags.of(expectedFlags);
 

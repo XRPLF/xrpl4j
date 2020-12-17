@@ -61,23 +61,6 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
   }
 
   @Test
-  public void testFlagsConstructionWithIndividualFlags() {
-    Flags.AccountRootFlags flags = Flags.AccountRootFlags.builder()
-        .lsfDefaultRipple(lsfDefaultRipple)
-        .lsfDepositAuth(lsfDepositAuth)
-        .lsfDisableMaster(lsfDisableMaster)
-        .lsfDisallowXrp(lsfDisallowXrp)
-        .lsfGlobalFreeze(lsfGlobalFreeze)
-        .lsfNoFreeze(lsfNoFreeze)
-        .lsfPasswordSpent(lsfPasswordSpent)
-        .lsfRequireAuth(lsfRequireAuth)
-        .lsfRequireDestTag(lsfRequireDestTag)
-        .build();
-
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
-  }
-
-  @Test
   public void testDeriveIndividualFlagsFromFlags() {
     Flags.AccountRootFlags flags = Flags.AccountRootFlags.of(expectedFlags);
 

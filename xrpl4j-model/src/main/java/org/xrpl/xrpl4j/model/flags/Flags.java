@@ -343,15 +343,6 @@ public class Flags {
     }
 
     /**
-     * Create a new {@link AccountRootFlags.Builder}.
-     *
-     * @return A new {@link AccountRootFlags.Builder}.
-     */
-    public static AccountRootFlags.Builder builder() {
-      return new AccountRootFlags.Builder();
-    }
-
-    /**
      * Construct {@link AccountRootFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
@@ -468,142 +459,6 @@ public class Flags {
     public boolean lsfRequireDestTag() {
       return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
     }
-
-    /**
-     * A builder class for {@link AccountRootFlags}.
-     */
-    public static class Builder {
-
-      private boolean lsfDefaultRipple = false;
-      private boolean lsfDepositAuth = false;
-      private boolean lsfDisableMaster = false;
-      private boolean lsfDisallowXrp = false;
-      private boolean lsfGlobalFreeze = false;
-      private boolean lsfNoFreeze = false;
-      private boolean lsfPasswordSpent = false;
-      private boolean lsfRequireAuth = false;
-      private boolean lsfRequireDestTag = false;
-
-      /**
-       * Set {@code lsfDefaultRipple} to the given value.
-       *
-       * @param lsfDefaultRipple A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfDefaultRipple(boolean lsfDefaultRipple) {
-        this.lsfDefaultRipple = lsfDefaultRipple;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfDepositAuth} to the given value.
-       *
-       * @param lsfDepositAuth A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfDepositAuth(boolean lsfDepositAuth) {
-        this.lsfDepositAuth = lsfDepositAuth;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfDisableMaster} to the given value.
-       *
-       * @param lsfDisableMaster A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfDisableMaster(boolean lsfDisableMaster) {
-        this.lsfDisableMaster = lsfDisableMaster;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfDisallowXrp} to the given value.
-       *
-       * @param lsfDisallowXrp A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfDisallowXrp(boolean lsfDisallowXrp) {
-        this.lsfDisallowXrp = lsfDisallowXrp;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfGlobalFreeze} to the given value.
-       *
-       * @param lsfGlobalFreeze A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfGlobalFreeze(boolean lsfGlobalFreeze) {
-        this.lsfGlobalFreeze = lsfGlobalFreeze;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfNoFreeze} to the given value.
-       *
-       * @param lsfNoFreeze A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfNoFreeze(boolean lsfNoFreeze) {
-        this.lsfNoFreeze = lsfNoFreeze;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfPasswordSpent} to the given value.
-       *
-       * @param lsfPasswordSpent A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfPasswordSpent(boolean lsfPasswordSpent) {
-        this.lsfPasswordSpent = lsfPasswordSpent;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfRequireAuth} to the given value.
-       *
-       * @param lsfRequireAuth A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfRequireAuth(boolean lsfRequireAuth) {
-        this.lsfRequireAuth = lsfRequireAuth;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfRequireDestTag} to the given value.
-       *
-       * @param lsfRequireDestTag A boolean value.
-       *
-       * @return The same {@link AccountRootFlags.Builder}.
-       */
-      public AccountRootFlags.Builder lsfRequireDestTag(boolean lsfRequireDestTag) {
-        this.lsfRequireDestTag = lsfRequireDestTag;
-        return this;
-      }
-
-      /**
-       * Build a new {@link AccountRootFlags} from the current boolean values.
-       *
-       * @return A new {@link AccountRootFlags}.
-       */
-      public AccountRootFlags build() {
-        return AccountRootFlags.of(
-            lsfDefaultRipple, lsfDepositAuth, lsfDisableMaster, lsfDisallowXrp, lsfGlobalFreeze, lsfNoFreeze,
-            lsfPasswordSpent, lsfRequireAuth, lsfRequireDestTag
-        );
-      }
-    }
   }
 
   /**
@@ -620,15 +475,6 @@ public class Flags {
 
     private SignerListFlags(long value) {
       super(value);
-    }
-
-    /**
-     * Create a new {@link SignerListFlags.Builder}.
-     *
-     * @return A new {@link SignerListFlags.Builder}.
-     */
-    public static SignerListFlags.Builder builder() {
-      return new SignerListFlags.Builder();
     }
 
     private static SignerListFlags of(boolean lsfOneOwnerCount) {
@@ -655,36 +501,6 @@ public class Flags {
     public boolean lsfOneOwnerCount() {
       return this.isSet(SignerListFlags.ONE_OWNER_COUNT);
     }
-
-    /**
-     * A builder class for {@link SignerListFlags}.
-     */
-    public static class Builder {
-
-      private boolean lsfOneOwnerCount = false;
-
-      /**
-       * Set {@code lsfOneOwnerCount} to the given value.
-       *
-       * @param lsfOneOwnerCount A boolean value.
-       *
-       * @return The same {@link SignerListFlags.Builder}.
-       */
-      public SignerListFlags.Builder lsfOneOwnerCount(boolean lsfOneOwnerCount) {
-        this.lsfOneOwnerCount = lsfOneOwnerCount;
-        return this;
-      }
-
-      /**
-       * Build a new {@link SignerListFlags} from the current boolean values.
-       *
-       * @return A new {@link SignerListFlags}.
-       */
-      public SignerListFlags build() {
-        return SignerListFlags.of(lsfOneOwnerCount);
-      }
-
-    }
   }
 
   /**
@@ -708,9 +524,9 @@ public class Flags {
     }
 
     /**
-     * Create a new {@link SignerListFlags.Builder}.
+     * Create a new {@link TrustSetFlags.Builder}.
      *
-     * @return A new {@link SignerListFlags.Builder}.
+     * @return A new {@link TrustSetFlags.Builder}.
      */
     public static TrustSetFlags.Builder builder() {
       return new TrustSetFlags.Builder();
@@ -736,10 +552,10 @@ public class Flags {
     }
 
     /**
-     * Construct {@link SignerListFlags} with a given value.
+     * Construct {@link TrustSetFlags} with a given value.
      *
-     * @param value The long-number encoded flags value of this {@link SignerListFlags}.
-     * @return New {@link SignerListFlags}.
+     * @param value The long-number encoded flags value of this {@link TrustSetFlags}.
+     * @return New {@link TrustSetFlags}.
      */
     public static TrustSetFlags of(long value) {
       return new TrustSetFlags(value);
@@ -895,8 +711,7 @@ public class Flags {
   }
 
   /**
-   * A set of static {@link Flags} which can be set on
-   * {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}s.
+   * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}s.
    */
   public static class RippleStateFlags extends Flags {
 
@@ -948,15 +763,6 @@ public class Flags {
      */
     public static RippleStateFlags of(long value) {
       return new RippleStateFlags(value);
-    }
-
-    /**
-     * Create a new {@link SignerListFlags.Builder}.
-     *
-     * @return A new {@link SignerListFlags.Builder}.
-     */
-    public static RippleStateFlags.Builder builder() {
-      return new RippleStateFlags.Builder();
     }
 
     /**
@@ -1033,134 +839,6 @@ public class Flags {
      */
     public boolean lsfHighFreeze() {
       return this.isSet(HIGH_FREEZE);
-    }
-
-    /**
-     * A builder class for {@link RippleStateFlags}.
-     */
-    public static class Builder {
-      boolean lsfLowReserve = false;
-      boolean lsfHighReserve = false;
-      boolean lsfLowAuth = false;
-      boolean lsfHighAuth = false;
-      boolean lsfLowNoRipple = false;
-      boolean lsfHighNoRipple = false;
-      boolean lsfLowFreeze = false;
-      boolean lsfHighFreeze = false;
-
-      /**
-       * Set {@code lsfLowReserve} to the given value.
-       *
-       * @param lsfLowReserve A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfLowReserve(boolean lsfLowReserve) {
-        this.lsfLowReserve = lsfLowReserve;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfHighReserve} to the given value.
-       *
-       * @param lsfHighReserve A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfHighReserve(boolean lsfHighReserve) {
-        this.lsfHighReserve = lsfHighReserve;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfLowAuth} to the given value.
-       *
-       * @param lsfLowAuth A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfLowAuth(boolean lsfLowAuth) {
-        this.lsfLowAuth = lsfLowAuth;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfHighAuth} to the given value.
-       *
-       * @param lsfHighAuth A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfHighAuth(boolean lsfHighAuth) {
-        this.lsfHighAuth = lsfHighAuth;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfLowNoRipple} to the given value.
-       *
-       * @param lsfLowNoRipple A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfLowNoRipple(boolean lsfLowNoRipple) {
-        this.lsfLowNoRipple = lsfLowNoRipple;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfHighNoRipple} to the given value.
-       *
-       * @param lsfHighNoRipple A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfHighNoRipple(boolean lsfHighNoRipple) {
-        this.lsfHighNoRipple = lsfHighNoRipple;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfLowFreeze} to the given value.
-       *
-       * @param lsfLowFreeze A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfLowFreeze(boolean lsfLowFreeze) {
-        this.lsfLowFreeze = lsfLowFreeze;
-        return this;
-      }
-
-      /**
-       * Set {@code lsfHighFreeze} to the given value.
-       *
-       * @param lsfHighFreeze A boolean value.
-       *
-       * @return The same {@link RippleStateFlags.Builder}.
-       */
-      public RippleStateFlags.Builder lsfHighFreeze(boolean lsfHighFreeze) {
-        this.lsfHighFreeze = lsfHighFreeze;
-        return this;
-      }
-
-      /**
-       * Build a new {@link RippleStateFlags} from the current boolean values.
-       *
-       * @return A new {@link RippleStateFlags}.
-       */
-      public RippleStateFlags build() {
-        return RippleStateFlags.of(
-            lsfLowReserve,
-            lsfHighReserve,
-            lsfLowAuth,
-            lsfHighAuth,
-            lsfLowNoRipple,
-            lsfHighNoRipple,
-            lsfLowFreeze,
-            lsfHighFreeze
-        );
-      }
     }
   }
 

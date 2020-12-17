@@ -166,9 +166,6 @@ public class Flags {
 
     public static final PaymentFlags UNSET = new PaymentFlags(0);
 
-    /**
-     * Static {@link PaymentFlags} value constants.
-     */
     protected static final PaymentFlags NO_DIRECT_RIPPLE = new PaymentFlags(0x00010000L);
     protected static final PaymentFlags PARTIAL_PAYMENT = new PaymentFlags(0x00020000L);
     protected static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
@@ -314,23 +311,14 @@ public class Flags {
   public static class AccountRootFlags extends Flags {
 
     public static final AccountRootFlags UNSET = new AccountRootFlags(0);
-
     public static final AccountRootFlags DEFAULT_RIPPLE = new AccountRootFlags(0x00800000L);
-
     public static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
-
     public static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
-
     public static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
-
     public static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
-
     public static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
-
     public static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
-
     public static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
-
     public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
     /**
@@ -350,31 +338,6 @@ public class Flags {
      */
     public static AccountRootFlags of(long value) {
       return new AccountRootFlags(value);
-    }
-
-    private static AccountRootFlags of(
-        boolean lsfDefaultRipple,
-        boolean lsfDepositAuth,
-        boolean lsfDisableMaster,
-        boolean lsfDisallowXrp,
-        boolean lsfGlobalFreeze,
-        boolean lsfNoFreeze,
-        boolean lsfPasswordSpent,
-        boolean lsfRequireAuth,
-        boolean lsfRequireDestTag
-    ) {
-      return new AccountRootFlags(
-          Flags.of(
-              lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : UNSET,
-              lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : UNSET,
-              lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : UNSET,
-              lsfDisallowXrp ? AccountRootFlags.DISALLOW_XRP : UNSET,
-              lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE : UNSET,
-              lsfNoFreeze ? AccountRootFlags.NO_FREEZE : UNSET,
-              lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT : UNSET,
-              lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH : UNSET,
-              lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG : UNSET
-          ).getValue());
     }
 
     /**
@@ -468,9 +431,6 @@ public class Flags {
 
     public static final SignerListFlags UNSET = new SignerListFlags(0);
 
-    /**
-     * Static flag value constants.
-     */
     public static final SignerListFlags ONE_OWNER_COUNT = new SignerListFlags(0x00010000);
 
     private SignerListFlags(long value) {
@@ -509,10 +469,7 @@ public class Flags {
    */
   public static class TrustSetFlags extends TransactionFlags {
 
-    /**
-     * Flag value constants.
-     */
-    public static final TrustSetFlags UNSET = new TrustSetFlags(0);
+    protected static final TrustSetFlags UNSET = new TrustSetFlags(0);
     protected static final TrustSetFlags SET_F_AUTH = new TrustSetFlags(0x00010000);
     protected static final TrustSetFlags SET_NO_RIPPLE = new TrustSetFlags(0x00020000);
     protected static final TrustSetFlags CLEAR_NO_RIPPLE = new TrustSetFlags(0x00040000);
@@ -715,9 +672,6 @@ public class Flags {
    */
   public static class RippleStateFlags extends Flags {
 
-    /**
-     * Static flag value constants.
-     */
     public static final RippleStateFlags LOW_RESERVE = new RippleStateFlags(0x00010000);
     public static final RippleStateFlags HIGH_RESERVE = new RippleStateFlags(0x00020000);
     public static final RippleStateFlags LOW_AUTH = new RippleStateFlags(0x00040000);
@@ -729,30 +683,6 @@ public class Flags {
 
     private RippleStateFlags(long value) {
       super(value);
-    }
-
-    private static RippleStateFlags of(
-        boolean lsfLowReserve,
-        boolean lsfHighReserve,
-        boolean lsfLowAuth,
-        boolean lsfHighAuth,
-        boolean lsfLowNoRipple,
-        boolean lsfHighNoRipple,
-        boolean lsfLowFreeze,
-        boolean lsfHighFreeze
-    ) {
-      return new RippleStateFlags(
-          Flags.of(
-              lsfLowReserve ? LOW_RESERVE : UNSET,
-              lsfHighReserve ? HIGH_RESERVE : UNSET,
-              lsfLowAuth ? LOW_AUTH : UNSET,
-              lsfHighAuth ? HIGH_AUTH : UNSET,
-              lsfLowNoRipple ? LOW_NO_RIPPLE : UNSET,
-              lsfHighNoRipple ? HIGH_NO_RIPPLE : UNSET,
-              lsfLowFreeze ? LOW_FREEZE : UNSET,
-              lsfHighFreeze ? HIGH_FREEZE : UNSET
-          ).getValue()
-      );
     }
 
     /**
@@ -847,9 +777,6 @@ public class Flags {
    */
   public static class OfferCreateFlags extends TransactionFlags {
 
-    /**
-     * Static flag value constants.
-     */
     protected static final OfferCreateFlags PASSIVE = new OfferCreateFlags(0x00010000L);
     protected static final OfferCreateFlags IMMEDIATE_OR_CANCEL = new OfferCreateFlags(0x00020000L);
     protected static final OfferCreateFlags FILL_OR_KILL = new OfferCreateFlags(0x00040000L);
@@ -1027,6 +954,9 @@ public class Flags {
     }
   }
 
+  /**
+   * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.ledger.OfferObject}s.
+   */
   public static class OfferFlags extends Flags {
 
     protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000);
@@ -1046,24 +976,32 @@ public class Flags {
       super(value);
     }
 
+    /**
+     * The object was placed as a passive offer. This has no effect on the object in the ledger.
+     *
+     * @return {@code true} if {@code lsfPassive} is set, otherwise {@code false}.
+     */
     public boolean lsfPassive() {
       return this.isSet(PASSIVE);
     }
 
+    /**
+     * The object was placed as a sell offer. This has no effect on the object in the ledger (because tfSell only
+     * matters if you get a better rate than you asked for, which cannot happen after the object enters the ledger).
+     *
+     * @return {@code true} if {@code lsfSell} is set, otherwise {@code false}.
+     */
     public boolean lsfSell() {
       return this.isSet(SELL);
     }
   }
 
   /**
-   * A set of static {@link TransactionFlags} which can be set on {@link org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim}
-   * transactions.
+   * A set of static {@link TransactionFlags} which can be set on
+   * {@link org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim} transactions.
    */
   public static class PaymentChannelClaimFlags extends TransactionFlags {
 
-    /**
-     *
-     */
     protected static final PaymentChannelClaimFlags RENEW = new PaymentChannelClaimFlags(0x00010000);
     protected static final PaymentChannelClaimFlags CLOSE = new PaymentChannelClaimFlags(0x00020000);
 

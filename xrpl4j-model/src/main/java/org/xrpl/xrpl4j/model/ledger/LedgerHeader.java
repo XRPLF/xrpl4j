@@ -30,22 +30,6 @@ public interface LedgerHeader {
   }
 
   /**
-   * A bit-map of flags relating to the closing of this ledger. Currently, the ledger has only one flag defined
-   * for close_flags: sLCF_NoConsensusTime (value 1). If this flag is enabled, it means that validators were in
-   * conflict regarding the correct close time for the ledger, but build otherwise the same ledger, so they
-   * declared consensus while "agreeing to disagree" on the close time. In this case, the consensus ledger contains
-   * a close_time that is 1 second after that of the previous ledger.
-   *
-   * <p>(In this case, there is no official close time, but the actual real-world close time is probably 3-6
-   * seconds later than the specified close_time.)</p>
-   */
-  @JsonProperty("close_flags")
-  @Value.Default
-  default Flags.CloseFlags closeFlags() {
-    return Flags.CloseFlags.of(false);
-  }
-
-  /**
    * The ledger index of the ledger. In other objects, this would be a
    * {@link org.xrpl.xrpl4j.model.client.common.LedgerIndex}, however the ledger
    * method returns the ledger_index as a {@link String} representing an unsigned 32 bit integer.

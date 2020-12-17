@@ -29,7 +29,7 @@ public interface PaymentChannelCreate extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

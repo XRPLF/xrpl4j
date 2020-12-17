@@ -33,7 +33,7 @@ public interface CheckCreate extends Transaction {
   @JsonProperty("Flags")
   @Derived
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

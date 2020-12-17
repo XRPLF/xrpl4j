@@ -50,14 +50,27 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
 
   @Test
   public void testFlagsConstructionWithIndividualFlags() {
-    Flags.TrustSetFlags flags = Flags.TrustSetFlags.builder()
+    Flags.TrustSetFlags.Builder builder = Flags.TrustSetFlags.builder()
         .tfFullyCanonicalSig(tfFullyCanonicalSig)
-        .tfSetfAuth(tfSetfAuth)
-        .tfSetNoRipple(tfSetNoRipple)
-        .tfClearNoRipple(tfClearNoRipple)
-        .tfSetFreeze(tfSetFreeze)
-        .tfClearFreeze(tfClearFreeze)
-        .build();
+        .tfSetfAuth(tfSetfAuth);
+
+    if (tfSetNoRipple) {
+      builder.tfSetNoRipple();
+    }
+
+    if (tfClearNoRipple) {
+      builder.tfClearNoRipple();
+    }
+
+    if (tfSetFreeze) {
+      builder.tfSetFreeze();
+    }
+
+    if (tfClearFreeze) {
+      builder.tfClearFreeze();
+    }
+
+    Flags.TrustSetFlags flags = builder.build();
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
   }

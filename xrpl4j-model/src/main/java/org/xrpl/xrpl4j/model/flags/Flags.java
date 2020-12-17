@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.flags;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -23,10 +24,24 @@ public class Flags {
     this.value = value;
   }
 
+  /**
+   * Construct {@link Flags} for the given value.
+   *
+   * @param value A long flags value.
+   * @return A new {@link Flags}.
+   */
   public static Flags of(long value) {
     return new Flags(value);
   }
 
+  /**
+   * Construct {@link Flags} from one or more {@link Flags} by performing a bitwise OR on all.
+   *
+   * @param flag The first {@link Flags}.
+   * @param others Zero or more other {@link Flags} to include.
+   *
+   * @return A new {@link Flags}.
+   */
   public static Flags of(Flags flag, Flags... others) {
     return flag.bitwiseOr(
         Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
@@ -91,10 +106,13 @@ public class Flags {
   }
 
   /**
-   * A set of static Universal {@link Flags} which could apply to any transaction.
+   * A set of static {@link Flags} which could apply to any {@link org.xrpl.xrpl4j.model.transactions.Transaction}.
    */
   public static class TransactionFlags extends Flags {
 
+    /**
+     * Corresponds to the {@code tfFullyCanonicalSig} flag.
+     */
     protected static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
 
     private TransactionFlags(long value) {
@@ -117,11 +135,22 @@ public class Flags {
 
       private boolean tfFullyCanonicalSig = true;
 
-      public TransactionFlags.Builder fullyCanonicalSig(boolean value) {
-        this.tfFullyCanonicalSig = value;
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given boolean value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       * @return A {@link TransactionFlags.Builder}.
+       */
+      public TransactionFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
         return this;
       }
 
+      /**
+       * Build a {@link TransactionFlags}.
+       *
+       * @return {@link TransactionFlags}.
+       */
       public TransactionFlags build() {
         return new TransactionFlags(
             tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
@@ -131,28 +160,38 @@ public class Flags {
   }
 
   /**
-   * A set of static {@link Flags} which can be set on {@link Payment} transactions.
+   * A set of static {@link TransactionFlags} which can be set on {@link Payment} transactions.
    */
   public static class PaymentFlags extends TransactionFlags {
 
     public static final PaymentFlags UNSET = new PaymentFlags(0);
 
-    // TODO: Consider making these private so that the only way to create flags is to use the builder. This way a
-    //  developer won't accidentally set a single flag in the builder (e.g., AccountSet) that accidentally deletes other
-    // flags that exist in the server. This is especially accute for AccountSet and other transaction object that have
-    // pre-existing state on the ledger.
-    public static final PaymentFlags NO_DIRECT_RIPPLE = new PaymentFlags(0x00010000L);
-    public static final PaymentFlags PARTIAL_PAYMENT = new PaymentFlags(0x00020000L);
-    public static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
+    /**
+     * Static {@link PaymentFlags} value constants.
+     */
+    protected static final PaymentFlags NO_DIRECT_RIPPLE = new PaymentFlags(0x00010000L);
+    protected static final PaymentFlags PARTIAL_PAYMENT = new PaymentFlags(0x00020000L);
+    protected static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
     private PaymentFlags(long value) {
       super(value);
     }
 
+    /**
+     * Create a new {@link PaymentFlags.Builder}.
+     *
+     * @return A new {@link PaymentFlags.Builder}.
+     */
     public static PaymentFlags.Builder builder() {
       return new PaymentFlags.Builder();
     }
 
+    /**
+     * Construct {@link PaymentFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link PaymentFlags}.
+     * @return New {@link PaymentFlags}.
+     */
     public static PaymentFlags of(long value) {
       return new PaymentFlags(value);
     }
@@ -168,8 +207,10 @@ public class Flags {
     }
 
     /**
-     * Flag indicated to only use paths included in the {@link Payment#paths()}
-     * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     * Do not use the default path; only use paths included in the {@link Payment#paths()} field. This is intended
+     * to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     *
+     * @return {@code true} if {@code tfNoDirectRipple} is set, otherwise {@code false}.
      */
     public boolean tfNoDirectRipple() {
       return this.isSet(PaymentFlags.NO_DIRECT_RIPPLE);
@@ -180,6 +221,7 @@ public class Flags {
      * more than {@link Payment#sendMax()}, reduce the received amount instead of
      * failing outright.
      *
+     * @return {@code true} if {@code tfPartialPayment} is set, otherwise {@code false}.
      * @see "https://xrpl.org/partial-payments.html"
      */
     public boolean tfPartialPayment() {
@@ -190,7 +232,7 @@ public class Flags {
      * Only take paths where all the conversions have an input:output ratio that is equal or better than the ratio of
      * {@link Payment#amount()}:{@link Payment#sendMax()}.
      *
-     * @return
+     * @return {@code true} if {@code tfLimitQuality} is set, otherwise {@code false}.
      */
     public boolean tfLimitQuality() {
       return this.isSet(PaymentFlags.LIMIT_QUALITY);
@@ -206,26 +248,60 @@ public class Flags {
       private boolean tfPartialPayment = false;
       private boolean tfLimitQuality = false;
 
-      public Builder tfFullyCanonicalSig(boolean value) {
-        this.tfFullyCanonicalSig = value;
+
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link PaymentFlags.Builder}.
+       */
+      public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
         return this;
       }
 
-      public Builder tfNoDirectRipple(boolean value) {
-        this.tfNoDirectRipple = value;
+      /**
+       * Set {@code tfNoDirectRipple} to the given value.
+       *
+       * @param tfNoDirectRipple A boolean value.
+       *
+       * @return The same {@link PaymentFlags.Builder}.
+       */
+      public Builder tfNoDirectRipple(boolean tfNoDirectRipple) {
+        this.tfNoDirectRipple = tfNoDirectRipple;
         return this;
       }
 
-      public Builder tfPartialPayment(boolean value) {
-        this.tfPartialPayment = value;
+      /**
+       * Set {@code tfPartialPayment} to the given value.
+       *
+       * @param tfPartialPayment A boolean value.
+       *
+       * @return The same {@link PaymentFlags.Builder}.
+       */
+      public Builder tfPartialPayment(boolean tfPartialPayment) {
+        this.tfPartialPayment = tfPartialPayment;
         return this;
       }
 
-      public Builder tfLimitQuality(boolean value) {
-        this.tfLimitQuality = value;
+      /**
+       * Set {@code tfLimitQuality} to the given value.
+       *
+       * @param tfLimitQuality A boolean value.
+       *
+       * @return The same {@link PaymentFlags.Builder}.
+       */
+      public Builder tfLimitQuality(boolean tfLimitQuality) {
+        this.tfLimitQuality = tfLimitQuality;
         return this;
       }
 
+      /**
+       * Build a new {@link PaymentFlags} from the current boolean values.
+       *
+       * @return A new {@link PaymentFlags}.
+       */
       public PaymentFlags build() {
         return PaymentFlags.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
       }
@@ -239,52 +315,23 @@ public class Flags {
 
     public static final AccountRootFlags UNSET = new AccountRootFlags(0);
 
-    /**
-     * Enable rippling on this addresses's trust lines by default. Required for issuing addresses; discouraged for
-     * others.
-     */
     public static final AccountRootFlags DEFAULT_RIPPLE = new AccountRootFlags(0x00800000L);
 
-    /**
-     * This account can only receive funds from transactions it sends, and from preauthorized accounts. (It has
-     * DepositAuth enabled.)
-     */
-    public static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
+    protected static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
 
-    /**
-     * Disallows use of the master key to sign transactions for this account.
-     */
-    public static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
+    protected static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
 
-    /**
-     * Client applications should not send XRP to this account. Not enforced by rippled.
-     */
-    public static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
+    protected static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
 
-    /**
-     * All assets issued by this address are frozen.
-     */
-    public static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
+    protected static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
 
-    /**
-     * This address cannot freeze trust lines connected to it. Once enabled, cannot be disabled.
-     */
-    public static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
+    protected static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
 
-    /**
-     * The account has used its free SetRegularKey transaction.
-     */
-    public static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
+    protected static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
 
-    /**
-     * This account must individually approve other users for those users to hold this account's issued currencies.
-     */
-    public static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
+    protected static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
 
-    /**
-     * Requires incoming payments to specify a Destination Tag.
-     */
-    public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
+    protected static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
     /**
      * Required-args Constructor.
@@ -295,15 +342,26 @@ public class Flags {
       super(value);
     }
 
-    public static Builder builder() {
-      return new Builder();
+    /**
+     * Create a new {@link AccountRootFlags.Builder}.
+     *
+     * @return A new {@link AccountRootFlags.Builder}.
+     */
+    public static AccountRootFlags.Builder builder() {
+      return new AccountRootFlags.Builder();
     }
 
+    /**
+     * Construct {@link AccountRootFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
+     * @return New {@link AccountRootFlags}.
+     */
     public static AccountRootFlags of(long value) {
       return new AccountRootFlags(value);
     }
 
-    public static AccountRootFlags of(
+    private static AccountRootFlags of(
         boolean lsfDefaultRipple,
         boolean lsfDepositAuth,
         boolean lsfDisableMaster,
@@ -329,8 +387,10 @@ public class Flags {
     }
 
     /**
-     * Flag indicated to only use paths included in the {@link Payment#paths()}
-     * field. This is intended to force the transaction to take arbitrage opportunities. Most clients do not need this.
+     * Enable rippling on this addresses's trust lines by default. Required for issuing addresses; discouraged for
+     * others.
+     *
+     * @return {@code true} if {@code lsfDefaultRipple} is set, otherwise {@code false}.
      */
     public boolean lsfDefaultRipple() {
       return this.isSet(AccountRootFlags.DEFAULT_RIPPLE);
@@ -339,6 +399,8 @@ public class Flags {
     /**
      * This account can only receive funds from transactions it sends, and from preauthorized accounts. (It has
      * DepositAuth enabled.)
+     *
+     * @return {@code true} if {@code lsfDepositAuth} is set, otherwise {@code false}.
      */
     public boolean lsfDepositAuth() {
       return this.isSet(AccountRootFlags.DEPOSIT_AUTH);
@@ -346,6 +408,8 @@ public class Flags {
 
     /**
      * Disallows use of the master key to sign transactions for this account.
+     *
+     * @return {@code true} if {@code lsfDisableMaster} is set, otherwise {@code false}.
      */
     public boolean lsfDisableMaster() {
       return this.isSet(AccountRootFlags.DISABLE_MASTER);
@@ -353,6 +417,8 @@ public class Flags {
 
     /**
      * Client applications should not send XRP to this account. Not enforced by rippled.
+     *
+     * @return {@code true} if {@code lsfDisallowXrp} is set, otherwise {@code false}.
      */
     public boolean lsfDisallowXrp() {
       return this.isSet(AccountRootFlags.DISALLOW_XRP);
@@ -360,6 +426,8 @@ public class Flags {
 
     /**
      * All assets issued by this address are frozen.
+     *
+     * @return {@code true} if {@code lsfGlobalFreeze} is set, otherwise {@code false}.
      */
     public boolean lsfGlobalFreeze() {
       return this.isSet(AccountRootFlags.GLOBAL_FREEZE);
@@ -367,6 +435,8 @@ public class Flags {
 
     /**
      * This address cannot freeze trust lines connected to it. Once enabled, cannot be disabled.
+     *
+     * @return {@code true} if {@code lsfNoFreeze} is set, otherwise {@code false}.
      */
     public boolean lsfNoFreeze() {
       return this.isSet(AccountRootFlags.NO_FREEZE);
@@ -374,6 +444,8 @@ public class Flags {
 
     /**
      * The account has used its free SetRegularKey transaction.
+     *
+     * @return {@code true} if {@code lsfPasswordSpent} is set, otherwise {@code false}.
      */
     public boolean lsfPasswordSpent() {
       return this.isSet(AccountRootFlags.PASSWORD_SPENT);
@@ -381,6 +453,8 @@ public class Flags {
 
     /**
      * This account must individually approve other users for those users to hold this account's issued currencies.
+     *
+     * @return {@code true} if {@code lsfRequireAuth} is set, otherwise {@code false}.
      */
     public boolean lsfRequireAuth() {
       return this.isSet(AccountRootFlags.REQUIRE_AUTH);
@@ -388,13 +462,15 @@ public class Flags {
 
     /**
      * Requires incoming payments to specify a Destination Tag.
+     *
+     * @return {@code true} if {@code lsfRequireDestTag} is set, otherwise {@code false}.
      */
     public boolean lsfRequireDestTag() {
       return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
     }
 
     /**
-     * A builder class for {@link PaymentFlags} flags.
+     * A builder class for {@link AccountRootFlags}.
      */
     public static class Builder {
 
@@ -408,51 +484,119 @@ public class Flags {
       private boolean lsfRequireAuth = false;
       private boolean lsfRequireDestTag = false;
 
-      public AccountRootFlags.Builder lsfDefaultRipple(boolean value) {
-        this.lsfDefaultRipple = value;
+      /**
+       * Set {@code lsfDefaultRipple} to the given value.
+       *
+       * @param lsfDefaultRipple A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfDefaultRipple(boolean lsfDefaultRipple) {
+        this.lsfDefaultRipple = lsfDefaultRipple;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfDepositAuth(boolean value) {
-        this.lsfDepositAuth = value;
+      /**
+       * Set {@code lsfDepositAuth} to the given value.
+       *
+       * @param lsfDepositAuth A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfDepositAuth(boolean lsfDepositAuth) {
+        this.lsfDepositAuth = lsfDepositAuth;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfDisableMaster(boolean value) {
-        this.lsfDisableMaster = value;
+      /**
+       * Set {@code lsfDisableMaster} to the given value.
+       *
+       * @param lsfDisableMaster A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfDisableMaster(boolean lsfDisableMaster) {
+        this.lsfDisableMaster = lsfDisableMaster;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfDisallowXrp(boolean value) {
-        this.lsfDisallowXrp = value;
+      /**
+       * Set {@code lsfDisallowXrp} to the given value.
+       *
+       * @param lsfDisallowXrp A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfDisallowXrp(boolean lsfDisallowXrp) {
+        this.lsfDisallowXrp = lsfDisallowXrp;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfGlobalFreeze(boolean value) {
-        this.lsfGlobalFreeze = value;
+      /**
+       * Set {@code lsfGlobalFreeze} to the given value.
+       *
+       * @param lsfGlobalFreeze A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfGlobalFreeze(boolean lsfGlobalFreeze) {
+        this.lsfGlobalFreeze = lsfGlobalFreeze;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfNoFreeze(boolean value) {
-        this.lsfNoFreeze = value;
+      /**
+       * Set {@code lsfNoFreeze} to the given value.
+       *
+       * @param lsfNoFreeze A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfNoFreeze(boolean lsfNoFreeze) {
+        this.lsfNoFreeze = lsfNoFreeze;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfPasswordSpent(boolean value) {
-        this.lsfPasswordSpent = value;
+      /**
+       * Set {@code lsfPasswordSpent} to the given value.
+       *
+       * @param lsfPasswordSpent A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfPasswordSpent(boolean lsfPasswordSpent) {
+        this.lsfPasswordSpent = lsfPasswordSpent;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfRequireAuth(boolean value) {
-        this.lsfRequireAuth = value;
+      /**
+       * Set {@code lsfRequireAuth} to the given value.
+       *
+       * @param lsfRequireAuth A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfRequireAuth(boolean lsfRequireAuth) {
+        this.lsfRequireAuth = lsfRequireAuth;
         return this;
       }
 
-      public AccountRootFlags.Builder lsfRequireDestTag(boolean value) {
-        this.lsfRequireDestTag = value;
+      /**
+       * Set {@code lsfRequireDestTag} to the given value.
+       *
+       * @param lsfRequireDestTag A boolean value.
+       *
+       * @return The same {@link AccountRootFlags.Builder}.
+       */
+      public AccountRootFlags.Builder lsfRequireDestTag(boolean lsfRequireDestTag) {
+        this.lsfRequireDestTag = lsfRequireDestTag;
         return this;
       }
 
+      /**
+       * Build a new {@link AccountRootFlags} from the current boolean values.
+       *
+       * @return A new {@link AccountRootFlags}.
+       */
       public AccountRootFlags build() {
         return AccountRootFlags.of(
             lsfDefaultRipple, lsfDepositAuth, lsfDisableMaster, lsfDisallowXrp, lsfGlobalFreeze, lsfNoFreeze,
@@ -462,14 +606,15 @@ public class Flags {
     }
   }
 
+  /**
+   * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.ledger.SignerListObject}s.
+   */
   public static class SignerListFlags extends Flags {
 
     public static final SignerListFlags UNSET = new SignerListFlags(0);
 
     /**
-     * If this flag is enabled, this SignerList counts as one item for purposes of the owner reserve.
-     * Otherwise, this list counts as N+2 items, where N is the number of signers it contains. This flag is
-     * automatically enabled if you add or update a signer list after the MultiSignReserve amendment is enabled.
+     * Static flag value constants.
      */
     public static final SignerListFlags ONE_OWNER_COUNT = new SignerListFlags(0x00010000);
 
@@ -477,6 +622,11 @@ public class Flags {
       super(value);
     }
 
+    /**
+     * Create a new {@link SignerListFlags.Builder}.
+     *
+     * @return A new {@link SignerListFlags.Builder}.
+     */
     public static SignerListFlags.Builder builder() {
       return new SignerListFlags.Builder();
     }
@@ -485,23 +635,51 @@ public class Flags {
       return new SignerListFlags(Flags.of(lsfOneOwnerCount ? SignerListFlags.ONE_OWNER_COUNT : UNSET).getValue());
     }
 
+    /**
+     * Construct {@link SignerListFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link SignerListFlags}.
+     * @return New {@link SignerListFlags}.
+     */
     public static SignerListFlags of(long value) {
       return new SignerListFlags(value);
     }
 
+    /**
+     * If this flag is enabled, this SignerList counts as one item for purposes of the owner reserve.
+     * Otherwise, this list counts as N+2 items, where N is the number of signers it contains. This flag is
+     * automatically enabled if you add or update a signer list after the MultiSignReserve amendment is enabled.
+     *
+     * @return {@code true} if {@code lsfOneOwnerCount} is set, otherwise {@code false}.
+     */
     public boolean lsfOneOwnerCount() {
       return this.isSet(SignerListFlags.ONE_OWNER_COUNT);
     }
 
+    /**
+     * A builder class for {@link SignerListFlags}.
+     */
     public static class Builder {
 
       private boolean lsfOneOwnerCount = false;
 
-      public SignerListFlags.Builder lsfOneOwnerCount(boolean value) {
-        this.lsfOneOwnerCount = value;
+      /**
+       * Set {@code lsfOneOwnerCount} to the given value.
+       *
+       * @param lsfOneOwnerCount A boolean value.
+       *
+       * @return The same {@link SignerListFlags.Builder}.
+       */
+      public SignerListFlags.Builder lsfOneOwnerCount(boolean lsfOneOwnerCount) {
+        this.lsfOneOwnerCount = lsfOneOwnerCount;
         return this;
       }
 
+      /**
+       * Build a new {@link SignerListFlags} from the current boolean values.
+       *
+       * @return A new {@link SignerListFlags}.
+       */
       public SignerListFlags build() {
         return SignerListFlags.of(lsfOneOwnerCount);
       }
@@ -509,20 +687,31 @@ public class Flags {
     }
   }
 
+  /**
+   * A set of static {@link TransactionFlags} which can be set on {@link org.xrpl.xrpl4j.model.transactions.TrustSet}
+   * transactions.
+   */
   public static class TrustSetFlags extends TransactionFlags {
 
+    /**
+     * Flag value constants.
+     */
     public static final TrustSetFlags UNSET = new TrustSetFlags(0);
-
-    public static final TrustSetFlags SET_F_AUTH = new TrustSetFlags(0x00010000);
-    public static final TrustSetFlags SET_NO_RIPPLE = new TrustSetFlags(0x00020000);
-    public static final TrustSetFlags CLEAR_NO_RIPPLE = new TrustSetFlags(0x00040000);
-    public static final TrustSetFlags SET_FREEZE = new TrustSetFlags(0x00100000);
-    public static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
+    protected static final TrustSetFlags SET_F_AUTH = new TrustSetFlags(0x00010000);
+    protected static final TrustSetFlags SET_NO_RIPPLE = new TrustSetFlags(0x00020000);
+    protected static final TrustSetFlags CLEAR_NO_RIPPLE = new TrustSetFlags(0x00040000);
+    protected static final TrustSetFlags SET_FREEZE = new TrustSetFlags(0x00100000);
+    protected static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
 
     private TrustSetFlags(long value) {
       super(value);
     }
 
+    /**
+     * Create a new {@link SignerListFlags.Builder}.
+     *
+     * @return A new {@link SignerListFlags.Builder}.
+     */
     public static TrustSetFlags.Builder builder() {
       return new TrustSetFlags.Builder();
     }
@@ -546,72 +735,152 @@ public class Flags {
       );
     }
 
+    /**
+     * Construct {@link SignerListFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link SignerListFlags}.
+     * @return New {@link SignerListFlags}.
+     */
     public static TrustSetFlags of(long value) {
       return new TrustSetFlags(value);
     }
 
+    /**
+     * Require a fully canonical signature.
+     *
+     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
+     */
     public boolean tfFullyCanonicalSig() {
       return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
     }
 
+    /**
+     * Authorize the other party to hold currency issued by this account. (No effect unless using
+     * {@link org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag#REQUIRE_AUTH}). Cannot be unset.
+     *
+     * @return {@code true} if {@code tfSetfAuth} is set, otherwise {@code false}.
+     */
     public boolean tfSetfAuth() {
       return this.isSet(SET_F_AUTH);
     }
 
+    /**
+     * Enable the No Ripple flag, which blocks rippling between two trust lines of the same currency if this
+     * flag is enabled on both.
+     *
+     * @return {@code true} if {@code tfSetNoRipple} is set, otherwise {@code false}.
+     */
     public boolean tfSetNoRipple() {
       return this.isSet(SET_NO_RIPPLE);
     }
 
+    /**
+     * Disable the No Ripple flag, allowing rippling on this trust line.
+     *
+     * @return {@code true} if {@code tfClearNoRipple} is set, otherwise {@code false}.
+     */
     public boolean tfClearNoRipple() {
       return this.isSet(CLEAR_NO_RIPPLE);
     }
 
+    /**
+     * <a href="https://xrpl.org/freezes.html">Freeze</a> the trust line.
+     *
+     * @return {@code true} if {@code tfSetFreeze} is set, otherwise {@code false}.
+     */
     public boolean tfSetFreeze() {
       return this.isSet(SET_FREEZE);
     }
 
+    /**
+     * <a href="https://xrpl.org/freezes.html">Unfreeze</a> the trust line.
+     *
+     * @return {@code true} if {@code tfClearFreeze} is set, otherwise {@code false}.
+     */
     public boolean tfClearFreeze() {
       return this.isSet(CLEAR_FREEZE);
     }
 
+    /**
+     * A builder class for {@link TrustSetFlags}.
+     */
     public static class Builder {
-      boolean tfFullyCanonicalSig = true;
-      boolean tfSetfAuth = false;
-      boolean tfSetNoRipple = false;
-      boolean tfClearNoRipple = false;
-      boolean tfSetFreeze = false;
-      boolean tfClearFreeze = false;
+      private boolean tfFullyCanonicalSig = true;
+      private boolean tfSetfAuth = false;
+      private boolean tfSetNoRipple = false;
+      private boolean tfClearNoRipple = false;
+      private boolean tfSetFreeze = false;
+      private boolean tfClearFreeze = false;
 
-      public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link TrustSetFlags.Builder}.
+       */
+      public TrustSetFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
         this.tfFullyCanonicalSig = tfFullyCanonicalSig;
         return this;
       }
 
+      /**
+       * Set {@code tfSetfAuth} to the given value.
+       *
+       * @param tfSetfAuth A boolean value.
+       *
+       * @return The same {@link TrustSetFlags.Builder}.
+       */
       public TrustSetFlags.Builder tfSetfAuth(boolean tfSetfAuth) {
         this.tfSetfAuth = tfSetfAuth;
         return this;
       }
 
-      public TrustSetFlags.Builder tfSetNoRipple(boolean tfSetNoRipple) {
-        this.tfSetNoRipple = tfSetNoRipple;
+      /**
+       * Set {@code tfSetNoRipple} to {@code true}.
+       *
+       * @return The same {@link TrustSetFlags.Builder}.
+       */
+      public TrustSetFlags.Builder tfSetNoRipple() {
+        this.tfSetNoRipple = true;
         return this;
       }
 
-      public TrustSetFlags.Builder tfClearNoRipple(boolean tfClearNoRipple) {
-        this.tfClearNoRipple = tfClearNoRipple;
+      /**
+       * Set {@code tfClearNoRipple} to {@code true}.
+       *
+       * @return The same {@link TrustSetFlags.Builder}.
+       */
+      public TrustSetFlags.Builder tfClearNoRipple() {
+        this.tfClearNoRipple = true;
         return this;
       }
 
-      public TrustSetFlags.Builder tfSetFreeze(boolean tfSetFreeze) {
-        this.tfSetFreeze = tfSetFreeze;
+      /**
+       * Set {@code tfSetFreeze} to {@code true}.
+       *
+       * @return The same {@link TrustSetFlags.Builder}.
+       */
+      public TrustSetFlags.Builder tfSetFreeze() {
+        this.tfSetFreeze = true;
         return this;
       }
 
-      public TrustSetFlags.Builder tfClearFreeze(boolean tfClearFreeze) {
-        this.tfClearFreeze = tfClearFreeze;
+      /**
+       * Set {@code tfClearFreeze} to {@code true}.
+       *
+       * @return The same {@link TrustSetFlags.Builder}.
+       */
+      public TrustSetFlags.Builder tfClearFreeze() {
+        this.tfClearFreeze = true;
         return this;
       }
 
+      /**
+       * Build a new {@link TrustSetFlags} from the current boolean values.
+       *
+       * @return A new {@link TrustSetFlags}.
+       */
       public TrustSetFlags build() {
         return TrustSetFlags.of(
             tfFullyCanonicalSig,
@@ -625,8 +894,15 @@ public class Flags {
     }
   }
 
+  /**
+   * A set of static {@link Flags} which can be set on
+   * {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}s.
+   */
   public static class RippleStateFlags extends Flags {
 
+    /**
+     * Static flag value constants.
+     */
     public static final RippleStateFlags LOW_RESERVE = new RippleStateFlags(0x00010000);
     public static final RippleStateFlags HIGH_RESERVE = new RippleStateFlags(0x00020000);
     public static final RippleStateFlags LOW_AUTH = new RippleStateFlags(0x00040000);
@@ -664,46 +940,104 @@ public class Flags {
       );
     }
 
+    /**
+     * Construct {@link RippleStateFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link RippleStateFlags}.
+     * @return New {@link RippleStateFlags}.
+     */
     public static RippleStateFlags of(long value) {
       return new RippleStateFlags(value);
     }
 
+    /**
+     * Create a new {@link SignerListFlags.Builder}.
+     *
+     * @return A new {@link SignerListFlags.Builder}.
+     */
     public static RippleStateFlags.Builder builder() {
       return new RippleStateFlags.Builder();
     }
 
+    /**
+     * The corresponding {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}
+     * <a href="https://xrpl.org/ripplestate.html#contributing-to-the-owner-reserve">contributes to the low
+     * account's owner reserve.</a>
+     *
+     * @return {@code true} if {@code lsfLowReserve} is set, otherwise {@code false}.
+     */
     public boolean lsfLowReserve() {
       return this.isSet(LOW_RESERVE);
     }
 
+    /**
+     * The corresponding {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}
+     * <a href="https://xrpl.org/ripplestate.html#contributing-to-the-owner-reserve">contributes to the high
+     * account's owner reserve.</a>
+     *
+     * @return {@code true} if {@code lsfHighReserve} is set, otherwise {@code false}.
+     */
     public boolean lsfHighReserve() {
       return this.isSet(HIGH_RESERVE);
     }
 
+    /**
+     * The low account has authorized the high account to hold the low account's issued currency.
+     *
+     * @return {@code true} if {@code lsfLowAuth} is set, otherwise {@code false}.
+     */
     public boolean lsfLowAuth() {
       return this.isSet(LOW_AUTH);
     }
 
+    /**
+     * The high account has authorized the low account to hold the high account's issued currency.
+     *
+     * @return {@code true} if {@code lsfHighAuth} is set, otherwise {@code false}.
+     */
     public boolean lsfHighAuth() {
       return this.isSet(HIGH_AUTH);
     }
 
+    /**
+     * The low account has <a href="https://xrpl.org/rippling.html">disabled rippling</a> from this trust line.
+     *
+     * @return {@code true} if {@code lsfLowNoRipple} is set, otherwise {@code false}.
+     */
     public boolean lsfLowNoRipple() {
       return this.isSet(LOW_NO_RIPPLE);
     }
 
+    /**
+     * The high account has <a href="https://xrpl.org/rippling.html">disabled rippling</a> from this trust line.
+     *
+     * @return {@code true} if {@code lsfHighNoRipple} is set, otherwise {@code false}.
+     */
     public boolean lsfHighNoRipple() {
       return this.isSet(HIGH_NO_RIPPLE);
     }
 
+    /**
+     * The low account has frozen the trust line, preventing the high account from transferring the asset.
+     *
+     * @return {@code true} if {@code lsfLowFreeze} is set, otherwise {@code false}.
+     */
     public boolean lsfLowFreeze() {
       return this.isSet(LOW_FREEZE);
     }
 
+    /**
+     * The high account has frozen the trust line, preventing the low account from transferring the asset.
+     *
+     * @return {@code true} if {@code lsfHighFreeze} is set, otherwise {@code false}.
+     */
     public boolean lsfHighFreeze() {
       return this.isSet(HIGH_FREEZE);
     }
 
+    /**
+     * A builder class for {@link RippleStateFlags}.
+     */
     public static class Builder {
       boolean lsfLowReserve = false;
       boolean lsfHighReserve = false;
@@ -714,46 +1048,107 @@ public class Flags {
       boolean lsfLowFreeze = false;
       boolean lsfHighFreeze = false;
 
-      public Builder lsfLowReserve(boolean lsfLowReserve) {
+      /**
+       * Set {@code lsfLowReserve} to the given value.
+       *
+       * @param lsfLowReserve A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfLowReserve(boolean lsfLowReserve) {
         this.lsfLowReserve = lsfLowReserve;
         return this;
       }
 
-      public Builder lsfHighReserve(boolean lsfHighReserve) {
+      /**
+       * Set {@code lsfHighReserve} to the given value.
+       *
+       * @param lsfHighReserve A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfHighReserve(boolean lsfHighReserve) {
         this.lsfHighReserve = lsfHighReserve;
         return this;
       }
 
-      public Builder lsfLowAuth(boolean lsfLowAuth) {
+      /**
+       * Set {@code lsfLowAuth} to the given value.
+       *
+       * @param lsfLowAuth A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfLowAuth(boolean lsfLowAuth) {
         this.lsfLowAuth = lsfLowAuth;
         return this;
       }
 
-      public Builder lsfHighAuth(boolean lsfHighAuth) {
+      /**
+       * Set {@code lsfHighAuth} to the given value.
+       *
+       * @param lsfHighAuth A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfHighAuth(boolean lsfHighAuth) {
         this.lsfHighAuth = lsfHighAuth;
         return this;
       }
 
-      public Builder lsfLowNoRipple(boolean lsfLowNoRipple) {
+      /**
+       * Set {@code lsfLowNoRipple} to the given value.
+       *
+       * @param lsfLowNoRipple A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfLowNoRipple(boolean lsfLowNoRipple) {
         this.lsfLowNoRipple = lsfLowNoRipple;
         return this;
       }
 
-      public Builder lsfHighNoRipple(boolean lsfHighNoRipple) {
+      /**
+       * Set {@code lsfHighNoRipple} to the given value.
+       *
+       * @param lsfHighNoRipple A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfHighNoRipple(boolean lsfHighNoRipple) {
         this.lsfHighNoRipple = lsfHighNoRipple;
         return this;
       }
 
-      public Builder lsfLowFreeze(boolean lsfLowFreeze) {
+      /**
+       * Set {@code lsfLowFreeze} to the given value.
+       *
+       * @param lsfLowFreeze A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfLowFreeze(boolean lsfLowFreeze) {
         this.lsfLowFreeze = lsfLowFreeze;
         return this;
       }
 
-      public Builder lsfHighFreeze(boolean lsfHighFreeze) {
+      /**
+       * Set {@code lsfHighFreeze} to the given value.
+       *
+       * @param lsfHighFreeze A boolean value.
+       *
+       * @return The same {@link RippleStateFlags.Builder}.
+       */
+      public RippleStateFlags.Builder lsfHighFreeze(boolean lsfHighFreeze) {
         this.lsfHighFreeze = lsfHighFreeze;
         return this;
       }
 
+      /**
+       * Build a new {@link RippleStateFlags} from the current boolean values.
+       *
+       * @return A new {@link RippleStateFlags}.
+       */
       public RippleStateFlags build() {
         return RippleStateFlags.of(
             lsfLowReserve,
@@ -770,10 +1165,13 @@ public class Flags {
   }
 
   /**
-   * {@link Flags} for {@link OfferCreate} transactions.
+   * A set of static {@link TransactionFlags} which can be set on {@link OfferCreate} transactions.
    */
   public static class OfferFlags extends TransactionFlags {
 
+    /**
+     * Static flag value constants.
+     */
     protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000L);
     protected static final OfferFlags IMMEDIATE_OR_CANCEL = new OfferFlags(0x00020000L);
     protected static final OfferFlags FILL_OR_KILL = new OfferFlags(0x00040000L);
@@ -783,10 +1181,21 @@ public class Flags {
       super(value);
     }
 
+    /**
+     * Create a new {@link OfferFlags.Builder}.
+     *
+     * @return A new {@link OfferFlags.Builder}.
+     */
     public static OfferFlags.Builder builder() {
       return new OfferFlags.Builder();
     }
 
+    /**
+     * Construct {@link OfferFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link OfferFlags}.
+     * @return New {@link OfferFlags}.
+     */
     public static OfferFlags of(long value) {
       return new OfferFlags(value);
     }
@@ -811,6 +1220,8 @@ public class Flags {
     /**
      * If enabled, the offer does not consume offers that exactly match it, and instead becomes an
      * Offer object in the ledger. It still consumes offers that cross it.
+     *
+     * @return {@code true} if {@code tfPassive} is set, otherwise {@code false}.
      */
     public boolean tfPassive() {
       return this.isSet(OfferFlags.PASSIVE);
@@ -822,7 +1233,7 @@ public class Flags {
      * it executes "successfully" without trading any currency. In this case, the transaction has the result code
      * tesSUCCESS, but creates no Offer objects in the ledger.
      *
-     * @return true if enabled
+     * @return {@code true} if {@code tfImmediateOrCancel} is set, otherwise {@code false}.
      */
     public boolean tfImmediateOrCancel() {
       return this.isSet(OfferFlags.IMMEDIATE_OR_CANCEL);
@@ -834,7 +1245,7 @@ public class Flags {
      * executed when placed, the transaction has the result code tecKILLED; otherwise, the transaction uses the result
      * code tesSUCCESS even when it was killed without trading any currency.
      *
-     * @return true if enabled
+     * @return {@code true} if {@code tfFillOrKill} is set, otherwise {@code false}.
      */
     public boolean tfFillOrKill() {
       return this.isSet(OfferFlags.FILL_OR_KILL);
@@ -843,7 +1254,7 @@ public class Flags {
     /**
      * Exchange the entire TakerGets amount, even if it means obtaining more than the TakerPays amount in exchange.
      *
-     * @return true if enabled
+     * @return {@code true} if {@code tfSell} is set, otherwise {@code false}.
      */
     public boolean tfSell() {
       return this.isSet(OfferFlags.SELL);
@@ -861,31 +1272,71 @@ public class Flags {
       private boolean tfFillOrKill = false;
       private boolean tfSell = false;
 
-      public OfferFlags.Builder tfFullyCanonicalSig(boolean value) {
-        this.tfFullyCanonicalSig = value;
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link OfferFlags.Builder}.
+       */
+      public OfferFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
         return this;
       }
 
-      public OfferFlags.Builder tfPassive(boolean value) {
-        this.tfPassive = value;
+      /**
+       * Set {@code tfPassive} to the given value.
+       *
+       * @param tfPassive A boolean value.
+       *
+       * @return The same {@link OfferFlags.Builder}.
+       */
+      public OfferFlags.Builder tfPassive(boolean tfPassive) {
+        this.tfPassive = tfPassive;
         return this;
       }
 
-      public OfferFlags.Builder tfImmediateOrCancel(boolean value) {
-        this.tfImmediateOrCancel = value;
+      /**
+       * Set {@code tfImmediateOrCancel} to the given value.
+       *
+       * @param tfImmediateOrCancel A boolean value.
+       *
+       * @return The same {@link OfferFlags.Builder}.
+       */
+      public OfferFlags.Builder tfImmediateOrCancel(boolean tfImmediateOrCancel) {
+        this.tfImmediateOrCancel = tfImmediateOrCancel;
         return this;
       }
 
-      public OfferFlags.Builder tfFillOrKill(boolean value) {
-        this.tfFillOrKill = value;
+      /**
+       * Set {@code tfFillOrKill} to the given value.
+       *
+       * @param tfFillOrKill A boolean value.
+       *
+       * @return The same {@link OfferFlags.Builder}.
+       */
+      public OfferFlags.Builder tfFillOrKill(boolean tfFillOrKill) {
+        this.tfFillOrKill = tfFillOrKill;
         return this;
       }
 
-      public OfferFlags.Builder tfSell(boolean value) {
-        this.tfSell = value;
+      /**
+       * Set {@code tfSell} to the given value.
+       *
+       * @param tfSell A boolean value.
+       *
+       * @return The same {@link OfferFlags.Builder}.
+       */
+      public OfferFlags.Builder tfSell(boolean tfSell) {
+        this.tfSell = tfSell;
         return this;
       }
 
+      /**
+       * Build a new {@link OfferFlags} from the current boolean values.
+       *
+       * @return A new {@link OfferFlags}.
+       */
       public OfferFlags build() {
         return OfferFlags.of(
             tfFullyCanonicalSig,
@@ -898,8 +1349,15 @@ public class Flags {
     }
   }
 
+  /**
+   * A set of static {@link TransactionFlags} which can be set on {@link org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim}
+   * transactions.
+   */
   public static class PaymentChannelClaimFlags extends TransactionFlags {
 
+    /**
+     *
+     */
     protected static final PaymentChannelClaimFlags RENEW = new PaymentChannelClaimFlags(0x00010000);
     protected static final PaymentChannelClaimFlags CLOSE = new PaymentChannelClaimFlags(0x00020000);
 
@@ -907,7 +1365,12 @@ public class Flags {
       super(value);
     }
 
-    public static Builder builder() {
+    /**
+     * Create a new {@link PaymentChannelClaimFlags.Builder}.
+     *
+     * @return A new {@link PaymentChannelClaimFlags.Builder}.
+     */
+    public static PaymentChannelClaimFlags.Builder builder() {
       return new Builder();
     }
 
@@ -921,64 +1384,110 @@ public class Flags {
       );
     }
 
+    /**
+     * Construct {@link PaymentChannelClaimFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link PaymentChannelClaimFlags}.
+     * @return New {@link PaymentChannelClaimFlags}.
+     */
     public static PaymentChannelClaimFlags of(long value) {
       return new PaymentChannelClaimFlags(value);
     }
 
+    /**
+     * Require a fully canonical transaction signature.
+     *
+     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
+     */
     public boolean tfFullyCanonicalSig() {
       return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
     }
 
+    /**
+     * Clear the {@link PayChannelObject#expiration()} time (different from {@link PayChannelObject#cancelAfter()}
+     * time.) Only the source address of the payment channel can use this flag.
+     *
+     * @return {@code true} if {@code tfRenew} is set, otherwise {@code false}.
+     */
     public boolean tfRenew() {
       return this.isSet(RENEW);
     }
 
+    /**
+     * Request to close the channel.
+     *
+     * <p>Only the {@link PayChannelObject#account()} and {@link PayChannelObject#destination()} addresses can use
+     * this flag.</p>
+     *
+     * <p>This flag closes the channel immediately if it has no more XRP allocated to it after processing the
+     * current claim, or if the {@link PayChannelObject#destination()} address uses it. If the source address uses
+     * this flag when the channel still holds XRP, this schedules the channel to close after
+     * {@link PayChannelObject#settleDelay()} seconds have passed. (Specifically, this sets the
+     * {@link PayChannelObject#expiration()} of the channel to the close time of the previous ledger plus the channel's
+     * {@link PayChannelObject#settleDelay()} time, unless the channel already has an earlier
+     * {@link PayChannelObject#expiration()} time.)</p>
+     *
+     * <p>If the {@link PayChannelObject#destination()} address uses this flag when the channel still holds XRP,
+     * any XRP that remains after processing the claim is returned to the source address.</p>
+     *
+     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
+     */
     public boolean tfClose() {
       return this.isSet(CLOSE);
     }
 
+    /**
+     * A builder class for {@link PaymentChannelClaimFlags}.
+     */
     public static class Builder {
       boolean tfFullyCanonicalSig = true;
       boolean tfRenew = false;
       boolean tfClose = false;
 
-      public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link PaymentChannelClaimFlags.Builder}.
+       */
+      public PaymentChannelClaimFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
         this.tfFullyCanonicalSig = tfFullyCanonicalSig;
         return this;
       }
 
-      public Builder tfRenew(boolean tfRenew) {
+      /**
+       * Set {@code tfRenew} to the given value.
+       *
+       * @param tfRenew A boolean value.
+       *
+       * @return The same {@link PaymentChannelClaimFlags.Builder}.
+       */
+      public PaymentChannelClaimFlags.Builder tfRenew(boolean tfRenew) {
         this.tfRenew = tfRenew;
         return this;
       }
 
-      public Builder tfClose(boolean tfClose) {
+      /**
+       * Set {@code tfClose} to the given value.
+       *
+       * @param tfClose A boolean value.
+       *
+       * @return The same {@link PaymentChannelClaimFlags.Builder}.
+       */
+      public PaymentChannelClaimFlags.Builder tfClose(boolean tfClose) {
         this.tfClose = tfClose;
         return this;
       }
 
+      /**
+       * Build a new {@link PaymentChannelClaimFlags} from the current boolean values.
+       *
+       * @return A new {@link PaymentChannelClaimFlags}.
+       */
       public PaymentChannelClaimFlags build() {
         return PaymentChannelClaimFlags.of(tfFullyCanonicalSig, tfRenew, tfClose);
       }
-    }
-  }
-
-  public static class CloseFlags extends Flags {
-
-    protected static final CloseFlags NO_CONSENSUS_TIME = new CloseFlags(1);
-
-    private CloseFlags(long value) {
-      super(value);
-    }
-
-    public static CloseFlags of(boolean sLcfNoConsensusTime) {
-      return new CloseFlags(
-          Flags.of(sLcfNoConsensusTime ? NO_CONSENSUS_TIME : UNSET).getValue()
-      );
-    }
-
-    public boolean sLcfNoConsensusTime() {
-      return this.isSet(NO_CONSENSUS_TIME);
     }
   }
 }

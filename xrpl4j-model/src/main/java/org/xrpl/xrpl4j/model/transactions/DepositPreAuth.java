@@ -36,7 +36,7 @@ public interface DepositPreAuth extends Transaction {
   @JsonProperty("Flags")
   @Derived
   default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

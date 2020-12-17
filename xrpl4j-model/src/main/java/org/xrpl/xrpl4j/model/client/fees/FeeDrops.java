@@ -22,6 +22,8 @@ public interface FeeDrops {
   /**
    * The transaction cost required for a reference transaction to be included in a ledger under minimum load,
    * represented in drops of XRP.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the base fee.
    */
   @JsonProperty("base_fee")
   XrpCurrencyAmount baseFee();
@@ -29,6 +31,8 @@ public interface FeeDrops {
   /**
    * The minimum transaction cost for a reference transaction to be queued for a later ledger, represented
    * in drops of XRP. If greater than {@code base_fee}, the transaction queue is full.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the minimum fee.
    */
   @JsonProperty("minimum_fee")
   XrpCurrencyAmount minimumFee();
@@ -36,6 +40,8 @@ public interface FeeDrops {
   /**
    * An approximation of the median transaction cost among transactions included in the previous
    * validated ledger, represented in drops of XRP.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the median fee.
    */
   @JsonProperty("median_fee")
   XrpCurrencyAmount medianFee();
@@ -43,6 +49,8 @@ public interface FeeDrops {
   /**
    * The minimum transaction cost that a reference transaction must pay to be included in the current
    * open ledger, represented in drops of XRP.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the open ledger fee.
    */
   @JsonProperty("open_ledger_fee")
   XrpCurrencyAmount openLedgerFee();

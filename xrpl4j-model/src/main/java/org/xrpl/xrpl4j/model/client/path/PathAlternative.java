@@ -9,6 +9,10 @@ import org.xrpl.xrpl4j.model.transactions.PathStep;
 
 import java.util.List;
 
+/**
+ * Represents a path from one possible source currency, held by the initiating account of a "ripple_path_find" request,
+ * to the destination account and currency of the request.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePathAlternative.class)
 @JsonDeserialize(as = ImmutablePathAlternative.class)
@@ -20,6 +24,8 @@ public interface PathAlternative {
 
   /**
    * A {@link List} of {@link List}s of {@link PathStep}s containing the different payment paths available.
+   *
+   * @return A {@link List} of {@link List}s of type {@link PathStep}.
    */
   @JsonProperty("paths_computed")
   List<List<PathStep>> pathsComputed();
@@ -27,6 +33,8 @@ public interface PathAlternative {
   /**
    * {@link CurrencyAmount} that the source would have to send along this path for the destination to receive the
    * desired amount.
+   *
+   * @return A {@link CurrencyAmount} denoting the source amount.
    */
   @JsonProperty("source_amount")
   CurrencyAmount sourceAmount();

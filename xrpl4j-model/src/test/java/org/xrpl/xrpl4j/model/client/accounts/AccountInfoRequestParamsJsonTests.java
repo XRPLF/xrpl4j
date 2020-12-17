@@ -19,7 +19,6 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
 
     AccountInfoRequestParams params = AccountInfoRequestParams.builder()
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-        .strict(true)
         .ledgerIndex(LedgerIndex.CURRENT)
         .queue(true)
         .build();
@@ -40,7 +39,6 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
 
     AccountInfoRequestParams params = AccountInfoRequestParams.builder()
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-        .strict(true)
         .ledgerHash(Hash256.of("5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3"))
         .ledgerIndex(LedgerIndex.CURRENT)
         .queue(true)

@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 
 /**
- * Result from request to advance_ledger.
+ * Result from a "advance_ledger" rippled admin API call.
  */
 @Immutable
 @JsonSerialize(as = ImmutableAcceptLedgerResult.class)
@@ -21,6 +21,8 @@ public interface AcceptLedgerResult extends XrplResult {
 
   /**
    * The Ledger Index of the current open ledger these stats describe.
+   *
+   * @return A {@link LedgerIndex} denoting the current ledger index.
    */
   @JsonProperty("ledger_current_index")
   LedgerIndex ledgerCurrentIndex();

@@ -6,7 +6,7 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 
 /**
- * Result wrapper for the "server_info" API result.
+ * Result of a "server_info" rippled API method request.
  */
 @Immutable
 @JsonSerialize(as = ImmutableServerInfoResult.class)
@@ -17,6 +17,11 @@ public interface ServerInfoResult extends XrplResult {
     return ImmutableServerInfoResult.builder();
   }
 
+  /**
+   * Information about the requested server.
+   *
+   * @return A {@link ServerInfo}.
+   */
   ServerInfo info();
 
 }

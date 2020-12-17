@@ -21,6 +21,13 @@ public interface SubmitMultiSignedRequestParams<TxnType extends Transaction> ext
     return ImmutableSubmitMultiSignedRequestParams.builder();
   }
 
+  /**
+   * Construct a {@link SubmitMultiSignedRequestParams} with the given {@link Transaction}.
+   *
+   * @param multiSigTransaction
+   * @param <TxnType>
+   * @return
+   */
   static <TxnType extends Transaction> SubmitMultiSignedRequestParams<TxnType> of(TxnType multiSigTransaction) {
     return SubmitMultiSignedRequestParams.<TxnType>builder().transaction(multiSigTransaction).build();
   }

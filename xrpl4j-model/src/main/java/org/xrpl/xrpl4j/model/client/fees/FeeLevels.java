@@ -23,24 +23,32 @@ public interface FeeLevels {
 
   /**
    * The median transaction cost among transactions in the previous validated ledger, represented in fee levels.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the median level.
    */
   @JsonProperty("median_level")
   XrpCurrencyAmount medianLevel();
 
   /**
    * The minimum transaction cost required to be queued for a future ledger, represented in fee levels.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the minimum level.
    */
   @JsonProperty("minimum_level")
   XrpCurrencyAmount minimumLevel();
 
   /**
    * The minimum transaction cost required to be included in the current open ledger, represented in fee levels.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the open ledger level.
    */
   @JsonProperty("open_ledger_level")
   XrpCurrencyAmount openLedgerLevel();
 
   /**
    * The equivalent of the minimum transaction cost, represented in fee levels.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the reference level.
    */
   @JsonProperty("reference_level")
   XrpCurrencyAmount referenceLevel();

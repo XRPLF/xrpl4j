@@ -3,10 +3,14 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson deserializer for {@link XrpCurrencyAmount}s.
+ */
 public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAmount> {
 
   public XrpCurrencyAmountDeserializer() {

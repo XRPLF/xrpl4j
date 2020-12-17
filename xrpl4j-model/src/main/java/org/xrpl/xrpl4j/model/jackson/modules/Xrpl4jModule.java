@@ -9,6 +9,9 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+/**
+ * Jackson module for the xrpl4j-model project.
+ */
 public class Xrpl4jModule extends SimpleModule {
 
   private static final String NAME = "Xrpl4jModule";

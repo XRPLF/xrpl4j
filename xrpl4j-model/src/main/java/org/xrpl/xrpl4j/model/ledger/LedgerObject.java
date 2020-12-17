@@ -32,6 +32,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
 
+  /**
+   * Enum for all types of ledger objects.
+   */
   enum LedgerEntryType {
     ACCOUNT_ROOT("AccountRoot"),
     AMENDMENTS("Amendments"),

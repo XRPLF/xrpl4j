@@ -36,6 +36,8 @@ public interface EscrowObject extends LedgerObject {
 
   /**
    * The type of ledger object, which is always "Escrow".
+   *
+   * @return Always {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#ESCROW}.
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
@@ -46,18 +48,24 @@ public interface EscrowObject extends LedgerObject {
   /**
    * The {@link Address} of the owner (sender) of this held payment. This is the account that provided the XRP, and gets
    * it back if the held payment is canceled.
+   *
+   * @return The {@link Address} of the owner of this escrow.
    */
   @JsonProperty("Account")
   Address account();
 
   /**
    * The destination {@link Address} where the XRP is paid if the held payment is successful.
+   *
+   * @return The {@link Address} of the destination of this escrow.
    */
   @JsonProperty("Destination")
   Address destination();
 
   /**
    * The amount of XRP, in drops, to be delivered by the held payment.
+   *
+   * @return A {@link XrpCurrencyAmount} denoting the amount.
    */
   @JsonProperty("Amount")
   XrpCurrencyAmount amount();
@@ -67,6 +75,7 @@ public interface EscrowObject extends LedgerObject {
    * {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} transaction
    * must contain a fulfillment that satisfies this condition.
    *
+   * @return An {@link Optional} of type {@link Condition} containing the escrow condition.
    * @see "https://tools.ietf.org/html/draft-thomas-crypto-conditions-04#section-8.1"
    */
   @JsonProperty("Condition")
@@ -77,6 +86,8 @@ public interface EscrowObject extends LedgerObject {
    * Specifically, this is specified as
    * <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a> and
    * it "has passed" if it's earlier than the close time of the previous validated ledger.
+   *
+   * @return An {@link Optional} of type {@link UnsignedLong} representing the cancel after time.
    */
   @JsonProperty("CancelAfter")
   Optional<UnsignedLong> cancelAfter();
@@ -86,12 +97,16 @@ public interface EscrowObject extends LedgerObject {
    * after which this held payment can be finished. Any {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish}
    * transaction before this time fails.
    * (Specifically, this is compared with the close time of the previous validated ledger.)
+   *
+   * @return An {@link Optional} of type {@link UnsignedLong} representing the finish after time.
    */
   @JsonProperty("FinishAfter")
   Optional<UnsignedLong> finishAfter();
 
   /**
    * A bit-map of boolean flags. No flags are defined for the {@link EscrowObject} type, so this value is always 0.
+   *
+   * @return Always {@link Flags#UNSET}.
    */
   @JsonProperty("Flags")
   @Value.Derived
@@ -102,6 +117,8 @@ public interface EscrowObject extends LedgerObject {
   /**
    * An arbitrary tag to further specify the source for this held payment, such as a hosted recipient at the owner's
    * address.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the tag of the owner account.
    */
   @JsonProperty("SourceTag")
   Optional<UnsignedInteger> sourceTag();
@@ -109,6 +126,8 @@ public interface EscrowObject extends LedgerObject {
   /**
    * An arbitrary tag to further specify the destination for this held payment, such as a hosted recipient at the
    * destination address.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the tag of the destination account.
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
@@ -120,6 +139,8 @@ public interface EscrowObject extends LedgerObject {
    *
    * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
    * derived from the Account.</p>
+   *
+   * @return An {@link Optional} of type {@link String} containing the owner node hint.
    */
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();
@@ -128,24 +149,32 @@ public interface EscrowObject extends LedgerObject {
    * A hint indicating which page of the destination's owner directory links to this object, in case the directory
    * consists of multiple pages. Omitted on escrows created before enabling the
    * <a href="https://xrpl.org/known-amendments.html#fix1523">fix1523 amendment</a>.
+   *
+   * @return An {@link Optional} of type {@link String} containing the destination node hint.
    */
   @JsonProperty("DestinationNode")
   Optional<String> destinationNode();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
+   *
+   * @return A {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
   Optional<Hash256> previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the previous transaction ledger sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
   Optional<UnsignedInteger> previousTransactionLedgerSequence();
 
   /**
    * The unique ID of this {@link EscrowObject}.
+   *
+   * @return A {@link Hash256} containing the ID.
    */
   Hash256 index();
 

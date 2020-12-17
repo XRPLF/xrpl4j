@@ -25,8 +25,9 @@ public class Secp256k1KeyPairServiceTest {
   @Test
   public void signMessageWithSecp2561k() {
     String privateKey = "00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23";
-    String message = BaseEncoding.base16().encode("test message".getBytes());
-    String expectedSignature = "30440220583A91C95E54E6A651C47BEC22744E0B101E2C4060E7B08F6341657DAD9BC3EE02207D1489C7395DB0188D3A56A977ECBA54B36FA9371B40319655B1B4429E33EF2D";
+    String message = BaseEncoding.base16().encode("test message" .getBytes());
+    String expectedSignature = "30440220583A91C95E54E6A651C47BEC22744E0B101E2C4060E7B08F63416" +
+        "57DAD9BC3EE02207D1489C7395DB0188D3A56A977ECBA54B36FA9371B40319655B1B4429E33EF2D";
     String signature = keyPairService.sign(message, privateKey);
 
     assertThat(signature).isEqualTo(expectedSignature);
@@ -34,9 +35,10 @@ public class Secp256k1KeyPairServiceTest {
 
   @Test
   public void verifySignatureWithSecp2561k() {
-    String signature = "30440220583A91C95E54E6A651C47BEC22744E0B101E2C4060E7B08F6341657DAD9BC3EE02207D1489C7395DB0188D3A56A977ECBA54B36FA9371B40319655B1B4429E33EF2D";
+    String signature = "30440220583A91C95E54E6A651C47BEC22744E0B101E2C4060E7B08F6341657" +
+        "DAD9BC3EE02207D1489C7395DB0188D3A56A977ECBA54B36FA9371B40319655B1B4429E33EF2D";
     String publicKey = "030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435";
-    String message = BaseEncoding.base16().encode("test message".getBytes());
+    String message = BaseEncoding.base16().encode("test message" .getBytes());
     assertThat(keyPairService.verify(message, signature, publicKey)).isTrue();
   }
 

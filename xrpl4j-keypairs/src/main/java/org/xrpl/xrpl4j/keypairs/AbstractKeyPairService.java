@@ -10,6 +10,9 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.security.SecureRandom;
 
+/**
+ * An abstract implementation of {@link KeyPairService} which handles common behavior among concrete implementations.
+ */
 public abstract class AbstractKeyPairService implements KeyPairService {
 
   protected Signer signer;
@@ -47,8 +50,10 @@ public abstract class AbstractKeyPairService implements KeyPairService {
    * Compute the RIPEMD160 of the SHA256 of the given public key, which can be encoded to an XRPL address.
    *
    * @param publicKey The public key that should be hashed.
+   *
    * @return An {@link UnsignedByteArray} containing the non-encoded XRPL address derived from the public key.
    */
+  @SuppressWarnings("UnstableApiUsage")
   private UnsignedByteArray computePublicKeyHash(UnsignedByteArray publicKey) {
     byte[] sha256 = Hashing.sha256().hashBytes(publicKey.toByteArray()).asBytes();
     RIPEMD160Digest digest = new RIPEMD160Digest();

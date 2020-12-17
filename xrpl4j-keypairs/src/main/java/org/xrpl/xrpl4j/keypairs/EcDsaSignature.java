@@ -13,17 +13,26 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 @Value.Immutable
-public interface ECDSASignature {
+@SuppressWarnings( {"LocalVariableName", "MethodName"})
+public interface EcDsaSignature {
 
-  static ImmutableECDSASignature.Builder builder() {
-    return ImmutableECDSASignature.builder();
+  static ImmutableEcDsaSignature.Builder builder() {
+    return ImmutableEcDsaSignature.builder();
   }
 
-  static ECDSASignature fromDer(byte[] bytes) {
+  /**
+   * Create an {@link EcDsaSignature} from a DER encoded byte array signature.
+   *
+   * @param bytes A DER encoded byte array containing a signature.
+   *
+   * @return An {@link EcDsaSignature}.
+   */
+  static EcDsaSignature fromDer(byte[] bytes) {
     try {
       ASN1InputStream decoder = new ASN1InputStream(bytes);
       DLSequence seq = (DLSequence) decoder.readObject();
-      ASN1Integer r, s;
+      ASN1Integer r;
+      ASN1Integer s;
       try {
         r = (ASN1Integer) seq.getObjectAt(0);
         s = (ASN1Integer) seq.getObjectAt(1);
@@ -34,7 +43,7 @@ public interface ECDSASignature {
       }
       // OpenSSL deviates from the DER spec by interpreting these values as unsigned, though they should not be
       // Thus, we always use the positive versions. See: http://r6.ca/blog/20111119T211504Z.html
-      return ECDSASignature.builder()
+      return EcDsaSignature.builder()
           .r(r.getPositiveValue())
           .s(s.getPositiveValue())
           .build();
@@ -43,10 +52,25 @@ public interface ECDSASignature {
     }
   }
 
+  /**
+   * The r component of this {@link EcDsaSignature}.
+   *
+   * @return A {@link BigInteger} denoting the r component of this signature.
+   */
   BigInteger r();
 
+  /**
+   * The s component of this {@link EcDsaSignature}.
+   *
+   * @return A {@link BigInteger} denoting the r component of this signature.
+   */
   BigInteger s();
 
+  /**
+   * Encode this {@link EcDsaSignature} to the ASN.1 DER format.
+   *
+   * @return An {@link UnsignedByteArray} containing the bytes of the encoded signature.
+   */
   @Value.Derived
   default UnsignedByteArray der() {
     // Usually 70-72 bytes.
@@ -62,18 +86,19 @@ public interface ECDSASignature {
     }
   }
 
+  /**
+   * Make sure signature is canonical to protect against signature morphing attacks.
+   *
+   * <p>Signature should be:
+   * {@code <30> <len> [ <02> <lenR> <R> ] [ <02> <lenS> <S> ]}
+   * where
+   * {@code 6 <= len <= 70}
+   * {@code  1 <= lenR <= 33}
+   * {@code 1 <= lenS <= 33}
+   * </p>
+   */
   @Value.Check
   default void isStrictlyCanonical() {
-    // Make sure signature is canonical
-    // To protect against signature morphing attacks
-
-    // Signature should be:
-    // <30> <len> [ <02> <lenR> <R> ] [ <02> <lenS> <S> ]
-    // where
-    // 6 <= len <= 70
-    // 1 <= lenR <= 33
-    // 1 <= lenS <= 33
-
     int sigLen = der().length();
 
     Preconditions.checkArgument(sigLen >= 8 && sigLen <= 72);

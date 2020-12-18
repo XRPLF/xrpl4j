@@ -46,9 +46,9 @@ public class LocalRippledEnvironment implements XrplEnvironment {
   protected AccountInfoResult getCurrentAccountInfo(Address classicAddress) {
     try {
       AccountInfoRequestParams params = AccountInfoRequestParams.builder()
-        .account(classicAddress)
-        .ledgerIndex(LedgerIndex.CURRENT)
-        .build();
+          .account(classicAddress)
+          .ledgerIndex(LedgerIndex.CURRENT)
+          .build();
       return getXrplClient().accountInfo(params);
     } catch (Exception | JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -56,22 +56,22 @@ public class LocalRippledEnvironment implements XrplEnvironment {
   }
 
   protected void sendPayment(Wallet sourceWallet, Address destinationAddress, XrpCurrencyAmount paymentAmount)
-    throws JsonRpcClientErrorException {
+      throws JsonRpcClientErrorException {
     FeeResult feeResult = getXrplClient().fee();
     AccountInfoResult accountInfo = this.getCurrentAccountInfo(sourceWallet.classicAddress());
     Payment payment = Payment.builder()
-      .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
-      .sequence(accountInfo.accountData().sequence())
-      .destination(destinationAddress)
-      .amount(paymentAmount)
-      .signingPublicKey(sourceWallet.publicKey())
-      .build();
+        .account(sourceWallet.classicAddress())
+        .fee(feeResult.drops().minimumFee())
+        .sequence(accountInfo.accountData().sequence())
+        .destination(destinationAddress)
+        .amount(paymentAmount)
+        .signingPublicKey(sourceWallet.publicKey())
+        .build();
 
     SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString()
-      + result.transactionResult().transaction());
+        + result.transactionResult().transaction());
   }
 
 }

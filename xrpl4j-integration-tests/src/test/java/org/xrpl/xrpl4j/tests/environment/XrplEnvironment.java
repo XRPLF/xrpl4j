@@ -11,6 +11,7 @@ public interface XrplEnvironment {
 
   /**
    * Gets the XRPL environment to use (based on existence of -DuseTestnet property).
+   *
    * @return
    */
   static XrplEnvironment getConfiguredEnvironment() {

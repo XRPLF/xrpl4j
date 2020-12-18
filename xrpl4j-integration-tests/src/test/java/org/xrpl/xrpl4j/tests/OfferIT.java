@@ -12,10 +12,10 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -36,6 +36,7 @@ public class OfferIT extends AbstractIT {
 
   /**
    * Sets up an issued currency (USD) that can be used to test Offers against this currency.
+   *
    * @throws JsonRpcClientErrorException
    */
   @BeforeEach
@@ -48,28 +49,28 @@ public class OfferIT extends AbstractIT {
     issuerWallet = createRandomAccount();
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
-      this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.classicAddress()));
+        this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.classicAddress()));
 
     //////////////////////
     // Create an Offer
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
-      .account(issuerWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
-      .sequence(sequence)
-      .signingPublicKey(issuerWallet.publicKey())
-      .takerGets(IssuedCurrencyAmount.builder()
-        .currency("USD")
-        .issuer(issuerWallet.classicAddress())
-        .value("100")
-        .build()
-      )
-      .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0)))
-      .flags(Flags.OfferCreateFlags.builder()
-        .tfFullyCanonicalSig(true)
-        .tfSell(true)
-        .build())
-      .build();
+        .account(issuerWallet.classicAddress())
+        .fee(feeResult.drops().minimumFee())
+        .sequence(sequence)
+        .signingPublicKey(issuerWallet.publicKey())
+        .takerGets(IssuedCurrencyAmount.builder()
+            .currency("USD")
+            .issuer(issuerWallet.classicAddress())
+            .value("100")
+            .build()
+        )
+        .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0)))
+        .flags(Flags.OfferCreateFlags.builder()
+            .tfFullyCanonicalSig(true)
+            .tfSell(true)
+            .build())
+        .build();
 
     SubmitResult<OfferCreate> response = xrplClient.submit(issuerWallet, offerCreate);
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
@@ -77,8 +78,8 @@ public class OfferIT extends AbstractIT {
 
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().hash()
+        "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+        response.transactionResult().hash()
     );
     usdIssued = true;
   }
@@ -140,6 +141,7 @@ public class OfferIT extends AbstractIT {
    *
    * @param purchaser
    * @param offerSequence
+   *
    * @throws JsonRpcClientErrorException
    */
   private void cancelOffer(Wallet purchaser, UnsignedInteger offerSequence, String expectedResult) throws JsonRpcClientErrorException {

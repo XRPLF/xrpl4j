@@ -24,14 +24,25 @@ public interface PaymentChannelFund extends Transaction {
     return ImmutablePaymentChannelFund.builder();
   }
 
+  /**
+   * Set of {@link Flags.TransactionFlags}s for this {@link PaymentChannelFund}, which only allows
+   * {@code tfFullyCanonicalSig} flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   */
   @JsonProperty("Flags")
-  @Value.Default
+  @Value.Derived
   default Flags.TransactionFlags flags() {
     return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**
    * The unique ID of the channel to fund.
+   *
+   * @return A {@link Hash256} containing the channel ID.
    */
   @JsonProperty("Channel")
   Hash256 channel();
@@ -40,6 +51,8 @@ public interface PaymentChannelFund extends Transaction {
    * Amount of XRP, in drops to add to the channel. This field is required, therefore it is not possible to
    * set the {@link #expiration()} without adding value to the channel.  However, you can change the expiration
    * and add a negligible amount of XRP (like 1 drop) to the channel.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the amount of the payment channel.
    */
   @JsonProperty("Amount")
   XrpCurrencyAmount amount();
@@ -50,6 +63,8 @@ public interface PaymentChannelFund extends Transaction {
    * After the Expiration time, any transaction that would access the channel closes the channel without
    * taking its normal action. Any unspent XRP is returned to the source address when the channel closes.
    * (Expiration is separate from the channel's immutable CancelAfter time.)
+   *
+   * @return An {@link Optional} of type {@link UnsignedLong}.
    */
   @JsonProperty("Expiration")
   Optional<UnsignedLong> expiration();

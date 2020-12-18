@@ -48,6 +48,8 @@ public interface PaymentChannelClaim extends Transaction {
 
   /**
    * Bit-map of boolean {@link Flags.PaymentChannelClaimFlags} to set for this transaction.
+   *
+   * @return The {@link Flags.PaymentChannelClaimFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default
@@ -57,6 +59,8 @@ public interface PaymentChannelClaim extends Transaction {
 
   /**
    * The unique ID of the channel, as a {@link Hash256}.
+   *
+   * @return A {@link Hash256} representing the channel ID.
    */
   @JsonProperty("Channel")
   Hash256 channel();
@@ -65,6 +69,8 @@ public interface PaymentChannelClaim extends Transaction {
    * Total amount of XRP, in drops, delivered by this channel after processing this claim. Required to deliver XRP.
    * Must be more than the total amount delivered by the channel so far, but not greater than the {@link #amount()}
    * of the signed claim. Must be provided except when closing the channel.
+   *
+   * @return An {@link Optional} of type {@link XrpCurrencyAmount} representing the payment channel balance.
    */
   @JsonProperty("Balance")
   Optional<XrpCurrencyAmount> balance();
@@ -73,6 +79,8 @@ public interface PaymentChannelClaim extends Transaction {
    * The amount of XRP, in drops, authorized by the {@link #signature()}. This must match the amount in
    * the signed message. This is the cumulative amount of XRP that can be dispensed by the channel,
    * including XRP previously redeemed.
+   *
+   * @return An {@link Optional} of type {@link XrpCurrencyAmount} representing the payment channel amount.
    */
   @JsonProperty("Amount")
   Optional<XrpCurrencyAmount> amount();
@@ -80,6 +88,8 @@ public interface PaymentChannelClaim extends Transaction {
   /**
    * The signature of this claim, in hexadecimal form. The signed message contains the channel ID and the amount
    * of the claim. Required unless the sender of the transaction is the source address of the channel.
+   *
+   * @return An {@link Optional} of type {@link String} containing the payment channel signature.
    */
   @JsonProperty("Signature")
   Optional<String> signature();
@@ -90,6 +100,8 @@ public interface PaymentChannelClaim extends Transaction {
    * address of the channel and the {@link #signature()} field is omitted.
    * (The transaction includes the public key so that rippled can check the validity of the signature
    * before trying to apply the transaction to the ledger.)
+   *
+   * @return An {@link Optional} of type {@link String} containing the public key used to sign this payment channel.
    */
   @JsonProperty("PublicKey")
   Optional<String> publicKey();

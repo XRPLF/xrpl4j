@@ -19,18 +19,24 @@ public interface Signer {
 
   /**
    * The {@link Address} associated with this signature, as it appears in the signer list.
+   *
+   * @return The {@link Address} of the signer account.
    */
   @JsonProperty("Account")
   Address account();
 
   /**
    * A signature for a transaction, verifiable using the {@link Signer#signingPublicKey()}.
+   *
+   * @return A {@link String} containing the transaction signature.
    */
   @JsonProperty("TxnSignature")
   String transactionSignature();
 
   /**
    * The public key used to create this signature.
+   *
+   * @return A {@link String} containing the public key used to sign the transaction.
    */
   @JsonProperty("SigningPubKey")
   String signingPublicKey();

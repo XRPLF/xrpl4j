@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -24,6 +25,8 @@ public interface PathStep {
    * If present, this {@link PathStep} represents rippling through the specified {@link Address}.
    * MUST NOT be provided if this {@link PathStep} specifies the {@link PathStep#currency()} or
    * {@link PathStep#issuer()} fields.
+   *
+   * @return An {@link Optional} of type {@link Address}.
    */
   Optional<Address> account();
 
@@ -31,6 +34,8 @@ public interface PathStep {
    * If present, this {@link PathStep} represents changing currencies through an order book.
    * The currency specified indicates the new currency. MUST NOT be provided if this {@link PathStep} specifies the
    * {@link PathStep#account()} field.
+   *
+   * @return An {@link Optional} of type {@link String} containing the currency code.
    */
   Optional<String> currency();
 
@@ -41,6 +46,8 @@ public interface PathStep {
    * currencies with different issuers.
    * MUST be omitted if the currency is XRP. MUST NOT be provided if this step specifies the {@link PathStep#account()}
    * field.
+   *
+   * @return The {@link Optional} {@link Address} of the currency issuer.
    */
   Optional<Address> issuer();
 

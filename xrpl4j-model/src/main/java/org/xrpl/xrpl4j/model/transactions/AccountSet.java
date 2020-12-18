@@ -27,10 +27,12 @@ public interface AccountSet extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Derived
@@ -43,6 +45,8 @@ public interface AccountSet extends Transaction {
    *
    * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should
    * not be set in conjunction with the {@link AccountSet#flags()} field.
+   *
+   * @return An {@link Optional} of type {@link AccountSetFlag} representing the flag to disable on this account.
    */
   @JsonProperty("ClearFlag")
   Optional<AccountSetFlag> clearFlag();
@@ -52,6 +56,8 @@ public interface AccountSet extends Transaction {
    *
    * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be set
    * in conjunction with the {@link AccountSet#flags()} field.
+   *
+   * @return An {@link Optional} of type {@link AccountSetFlag} representing the flag to enable on this account.
    */
   @JsonProperty("SetFlag")
   Optional<AccountSetFlag> setFlag();
@@ -62,6 +68,8 @@ public interface AccountSet extends Transaction {
    *
    * <p>To remove the Domain field from an account, send an {@link AccountSet} with the {@link AccountSet#domain()}
    * set to an empty string.
+   *
+   * @return An {@link Optional} of type {@link String} containing the domain.
    */
   @JsonProperty("Domain")
   Optional<String> domain();
@@ -69,12 +77,16 @@ public interface AccountSet extends Transaction {
   /**
    * Hash of an email address to be used for generating an avatar image. Conventionally, clients use <a
    * href="http://en.gravatar.com/site/implement/hash/">Gravatar</a> to display this image.
+   *
+   * @return An {@link Optional} of type {@link String} containing the hash of the email.
    */
   @JsonProperty("EmailHash")
   Optional<String> emailHash();
 
   /**
    * Hexadecimal encoded public key for sending encrypted messages to this account.
+   *
+   * @return An {@link Optional} of type {@link String} containing the messaging public key.
    */
   @JsonProperty("MessageKey")
   Optional<String> messageKey();
@@ -82,6 +94,8 @@ public interface AccountSet extends Transaction {
   /**
    * The fee to charge when users transfer this account's issued currencies, represented as billionths of a unit. Cannot
    * be more than 2000000000 or less than 1000000000, except for the special case 0 meaning no fee.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the transfer rate.
    */
   @JsonProperty("TransferRate")
   Optional<UnsignedInteger> transferRate();
@@ -89,10 +103,15 @@ public interface AccountSet extends Transaction {
   /**
    * Tick size to use for offers involving a currency issued by this address. The exchange rates of those offers is
    * rounded to this many significant digits. Valid values are 3 to 15 inclusive, or 0 to disable.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the tick size.
    */
   @JsonProperty("TickSize")
   Optional<UnsignedInteger> tickSize();
 
+  /**
+   * Check email hash length.
+   */
   @Value.Check
   default void checkEmailHashLength() {
     emailHash()
@@ -104,6 +123,9 @@ public interface AccountSet extends Transaction {
         );
   }
 
+  /**
+   * Check transfer rate.
+   */
   @Value.Check
   default void checkTransferRate() {
     transferRate()
@@ -115,6 +137,9 @@ public interface AccountSet extends Transaction {
         );
   }
 
+  /**
+   * Check tick size.
+   */
   @Value.Check
   default void checkTickSize() {
     tickSize()
@@ -206,6 +231,9 @@ public interface AccountSet extends Transaction {
      * To deserialize enums with integer values, you need to specify this factory method with the {@link JsonCreator}
      * annotation, otherwise Jackson treats the JSON integer value as an ordinal.
      *
+     * @param value The int value of the flag.
+     *
+     * @return The {@link AccountSetFlag} for the given integer value.
      * @see "https://github.com/FasterXML/jackson-databind/issues/1850"
      */
     @JsonCreator

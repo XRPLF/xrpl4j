@@ -19,6 +19,15 @@ public interface EscrowCancel extends Transaction {
     return ImmutableEscrowCancel.builder();
   }
 
+  /**
+   * Set of {@link Flags.TransactionFlags}s for this {@link EscrowCancel}, which only allows {@code tfFullyCanonicalSig}
+   * flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   */
   @JsonProperty("Flags")
   @Value.Derived
   default Flags.TransactionFlags flags() {
@@ -27,12 +36,17 @@ public interface EscrowCancel extends Transaction {
 
   /**
    * {@link Address} of the source account that funded the escrow payment.
+   *
+   * @return The {@link Address} of the escrow owner.
    */
   @JsonProperty("Owner")
   Address owner();
 
   /**
    * The {@link EscrowCreate#sequence()} of the transaction that created the escrow to cancel.
+   *
+   * @return An {@link UnsignedInteger} representing the sequence of the {@link EscrowCreate} transaction that created
+   *         the escrow.
    */
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();

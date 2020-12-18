@@ -25,10 +25,12 @@ public interface AccountDelete extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Derived
@@ -39,6 +41,8 @@ public interface AccountDelete extends Transaction {
   /**
    * The {@link Address} of an account to receive any leftover XRP after deleting the sending account. Must be a funded
    * account in the ledger, and must not be the sending account.
+   *
+   * @return The {@link Address} of the leftover XRP destination account.
    */
   @JsonProperty("Destination")
   Address destination();
@@ -46,6 +50,8 @@ public interface AccountDelete extends Transaction {
   /**
    * Arbitrary destination tag that identifies a hosted recipient or other information for the recipient of the deleted
    * account's leftover XRP.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the tag of the destination account.
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();

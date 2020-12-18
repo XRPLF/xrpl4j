@@ -33,9 +33,9 @@ public interface EscrowFinish extends Transaction {
    * is 330 drops of XRP plus another 10 drops for every 16 bytes in size of the preimage.
    *
    * @param currentLedgerFeeDrops The number of drops that the ledger demands at present.
-   * @param fulfillment           The {@link Fulfillment} that is being presented to the ledger for computation
-   *                              purposes.
-   * @return
+   * @param fulfillment           The {@link Fulfillment} that is being presented to the ledger for computation                              purposes.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the computed fee.
    * @see "https://xrpl.org/escrowfinish.html"
    */
   static XrpCurrencyAmount computeFee(final XrpCurrencyAmount currentLedgerFeeDrops, final Fulfillment fulfillment) {
@@ -51,6 +51,15 @@ public interface EscrowFinish extends Transaction {
     return XrpCurrencyAmount.of(newFee);
   }
 
+  /**
+   * Set of {@link Flags.TransactionFlags}s for this {@link EscrowFinish}, which only allows {@code tfFullyCanonicalSig}
+   * flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   */
   @JsonProperty("Flags")
   @Value.Derived
   default Flags.TransactionFlags flags() {
@@ -59,28 +68,39 @@ public interface EscrowFinish extends Transaction {
 
   /**
    * {@link Address} of the source account that funded the escrow payment.
+   *
+   * @return The {@link Address} of the source account.
    */
   @JsonProperty("Owner")
   Address owner();
 
   /**
    * The {@link EscrowCreate#sequence()} of the transaction that created the escrow to cancel.
+   *
+   * @return An {@link UnsignedInteger} representing the sequence number.
    */
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();
 
   /**
    * Hex value matching the previously-supplied PREIMAGE-SHA-256 crypto-condition of the held payment.
+   *
+   * @return An {@link Optional} of type {@link Condition} containing the escrow condition.
    */
   @JsonProperty("Condition")
   Optional<Condition> condition();
 
   /**
    * Hex value of the PREIMAGE-SHA-256 crypto-condition fulfillment matching the held payment's {@code condition}.
+   *
+   * @return An {@link Optional} of type {@link Fulfillment} containing the fulfillment for the escrow's condition.
    */
   @JsonProperty("Fulfillment")
-  Optional<Fulfillment> fulfillment();
+  Optional<Fulfillment<?>> fulfillment();
 
+  /**
+   * Validate fields.
+   */
   @Value.Check
   default void check() {
     fulfillment().ifPresent(f -> {

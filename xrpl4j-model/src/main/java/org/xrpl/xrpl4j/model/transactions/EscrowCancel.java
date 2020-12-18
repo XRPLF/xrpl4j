@@ -46,7 +46,7 @@ public interface EscrowCancel extends Transaction {
    * The {@link EscrowCreate#sequence()} of the transaction that created the escrow to cancel.
    *
    * @return An {@link UnsignedInteger} representing the sequence of the {@link EscrowCreate} transaction that created
-   *         the escrow.
+   *     the escrow.
    */
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();

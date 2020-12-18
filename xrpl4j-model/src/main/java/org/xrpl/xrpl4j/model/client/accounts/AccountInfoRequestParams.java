@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -33,8 +33,8 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    */
   static AccountInfoRequestParams of(Address account) {
     return builder()
-      .account(account)
-      .build();
+        .account(account)
+        .build();
   }
 
   /**
@@ -68,7 +68,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    * Always true, as {@link #account()} is always an {@link Address}.
    *
    * @return {@code true} if the account field only accepts a public key or XRP Ledger address, otherwise {@code false}.
-   *         Defaults to {@code true}.
+   *     Defaults to {@code true}.
    */
   @Value.Derived
   default boolean strict() {
@@ -81,7 +81,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    * querying for the data from the current open ledger.
    *
    * @return {@code true} if queue transactions should be returned in the response, {@code false} if not.
-   *         Defaults to {@code false}.
+   *     Defaults to {@code false}.
    */
   @Value.Default
   default boolean queue() {

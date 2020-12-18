@@ -20,6 +20,16 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param tfFullyCanonicalSig The current value of {@link this.tfFullyCanonicalSig}.
+   * @param tfSetfAuth          The current value of {@link this.tfSetfAuth}.
+   * @param tfSetNoRipple       The current value of {@link this.tfSetNoRipple}.
+   * @param tfClearNoRipple     The current value of {@link this.tfClearNoRipple}.
+   * @param tfSetFreeze         The current value of {@link this.tfSetFreeze}.
+   * @param tfClearFreeze       The current value of {@link this.tfClearFreeze}.
+   */
   public TrustSetFlagsTests(
       boolean tfFullyCanonicalSig,
       boolean tfSetfAuth,

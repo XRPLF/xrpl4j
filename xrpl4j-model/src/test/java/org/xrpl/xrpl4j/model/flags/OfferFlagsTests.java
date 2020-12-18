@@ -16,6 +16,12 @@ public class OfferFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param lsfPassive The current value of {@link this.lsfPassive}.
+   * @param lsfSell    The current value of {@link this.lsfSell}.
+   */
   public OfferFlagsTests(
       boolean lsfPassive,
       boolean lsfSell

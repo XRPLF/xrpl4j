@@ -33,7 +33,8 @@ public interface EscrowFinish extends Transaction {
    * is 330 drops of XRP plus another 10 drops for every 16 bytes in size of the preimage.
    *
    * @param currentLedgerFeeDrops The number of drops that the ledger demands at present.
-   * @param fulfillment           The {@link Fulfillment} that is being presented to the ledger for computation                              purposes.
+   * @param fulfillment           The {@link Fulfillment} that is being presented to the ledger for computation
+   *                              purposes.
    *
    * @return An {@link XrpCurrencyAmount} representing the computed fee.
    * @see "https://xrpl.org/escrowfinish.html"
@@ -104,12 +105,12 @@ public interface EscrowFinish extends Transaction {
   @Value.Check
   default void check() {
     fulfillment().ifPresent(f -> {
-          UnsignedLong feeInDrops = fee().value();
-          Preconditions.checkState(condition().isPresent(),
-              "If a fulfillment is specified, the corresponding condition must also be specified.");
-          Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(UnsignedLong.valueOf(330)),
-              "If a fulfillment is specified, the fee must be set to 330 or greater.");
-        }
+        UnsignedLong feeInDrops = fee().value();
+        Preconditions.checkState(condition().isPresent(),
+            "If a fulfillment is specified, the corresponding condition must also be specified.");
+        Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(UnsignedLong.valueOf(330)),
+            "If a fulfillment is specified, the fee must be set to 330 or greater.");
+      }
     );
     condition().ifPresent($ -> Preconditions.checkState(fulfillment().isPresent(),
         "If a condition is specified, the corresponding fulfillment must also be specified."));

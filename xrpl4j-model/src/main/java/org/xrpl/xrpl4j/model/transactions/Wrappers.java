@@ -75,6 +75,7 @@ public class Wrappers {
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
      *
      * @param drops A long representing the number of drops of XRP of this amount.
+     *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
     public static XrpCurrencyAmount ofDrops(long drops) {
@@ -85,6 +86,7 @@ public class Wrappers {
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
      *
      * @param drops An {@link UnsignedLong} representing the number of drops of XRP of this amount.
+     *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
     public static XrpCurrencyAmount ofDrops(UnsignedLong drops) {
@@ -95,6 +97,7 @@ public class Wrappers {
      * Constructs an {@link XrpCurrencyAmount} using decimal amount of XRP.
      *
      * @param amount A {@link BigDecimal} amount of XRP.
+     *
      * @return An {@link XrpCurrencyAmount} of the amount of drops in {@code amount}.
      */
     public static XrpCurrencyAmount ofXrp(BigDecimal amount) {
@@ -110,6 +113,7 @@ public class Wrappers {
      * Adds another {@link XrpCurrencyAmount} to this amount.
      *
      * @param other An {@link XrpCurrencyAmount} to add to this.
+     *
      * @return The sum of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
@@ -120,6 +124,7 @@ public class Wrappers {
      * Subtract another {@link XrpCurrencyAmount} from this amount.
      *
      * @param other An {@link XrpCurrencyAmount} to subtract from this.
+     *
      * @return The difference of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
@@ -130,6 +135,7 @@ public class Wrappers {
      * Multiplies this amount by another {@link XrpCurrencyAmount}.
      *
      * @param other An {@link XrpCurrencyAmount} to multiply to this by.
+     *
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {

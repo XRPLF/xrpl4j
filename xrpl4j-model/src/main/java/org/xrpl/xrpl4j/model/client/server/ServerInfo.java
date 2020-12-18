@@ -49,7 +49,7 @@ public interface ServerInfo {
    * instead.
    *
    * @return An optionally-present {@link ServerInfoLedger} containing information about the server's view of the
-   *         most recently closed ledger.
+   *     most recently closed ledger.
    */
   @JsonProperty("closed_ledger")
   Optional<ServerInfoLedger> closedLedger();

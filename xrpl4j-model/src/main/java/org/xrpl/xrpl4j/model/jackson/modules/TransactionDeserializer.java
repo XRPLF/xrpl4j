@@ -22,7 +22,7 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
   }
 
   @Override
-  public Transaction deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+  public Transaction deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
     ObjectNode objectNode = objectMapper.readTree(jsonParser);
 

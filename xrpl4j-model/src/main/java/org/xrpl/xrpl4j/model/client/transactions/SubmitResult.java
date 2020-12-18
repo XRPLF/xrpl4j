@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -97,7 +97,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * {@code false} indicates the transaction was not broadcast to any other servers.
    *
    * @return {@code true} if this transaction was broadcast to peer servers in the peer-to-peer XRP Ledger network,
-   *         otherwise {@code false}.
+   *     otherwise {@code false}.
    */
   boolean broadcast();
 

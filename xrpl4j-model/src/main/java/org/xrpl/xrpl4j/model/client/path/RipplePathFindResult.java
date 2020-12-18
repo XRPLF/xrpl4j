@@ -40,7 +40,7 @@ public interface RipplePathFindResult extends XrplResult {
 
   /**
    * {@link List} of {@link String}s representing the currencies that the {@link #destinationAccount()} accepts,
-   * as 3-letter codes like "USD" or as 40-character hex like "015841551A748AD2C1F76FF6ECB0CCCD00000000";
+   * as 3-letter codes like "USD" or as 40-character hex like "015841551A748AD2C1F76FF6ECB0CCCD00000000".
    *
    * @return A {@link List} of {@link String}s of destination currency codes.
    */

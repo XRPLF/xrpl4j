@@ -6,8 +6,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -27,7 +27,8 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
             .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
             .sequence(UnsignedInteger.valueOf(2062126))
             .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
-            .transactionSignature("3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
+            .transactionSignature("3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +
+                "39F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
             .build())
         .build();
 
@@ -39,9 +40,12 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         "                    \"Flags\": 2147483648,\n" +
         "                    \"LastLedgerSequence\": 13010048,\n" +
         "                    \"Sequence\": 2062126,\n" +
-        "                    \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+        "                    \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C001" +
+        "                                         8B37FC\",\n" +
         "                    \"TransactionType\": \"Payment\",\n" +
-        "                    \"TxnSignature\": \"3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD\",\n" +
+        "                    \"TxnSignature\": \"3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE3962" +
+        "                                        4EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737F" +
+        "                                        A5436BCF8FEF29E4DD\",\n" +
         "                    \"validated\": false,\n" +
         "                    \"hash\": \"E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8\"\n" +
         "                }";

@@ -28,7 +28,8 @@ public interface PathCurrency {
   /**
    * Construct a {@link PathCurrency} with the specified currency code and no issuer.
    *
-   * @param currency A {@link String} of either a 3 character currency code, or a 40 character hexadecimal encoded                  currency code value.
+   * @param currency A {@link String} of either a 3 character currency code, or a 40 character hexadecimal encoded
+   *                 currency code value.
    *
    * @return A new {@link PathCurrency}.
    */

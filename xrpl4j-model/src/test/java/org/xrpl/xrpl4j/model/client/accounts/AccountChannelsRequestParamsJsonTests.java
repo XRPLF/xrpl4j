@@ -1,8 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.Test;

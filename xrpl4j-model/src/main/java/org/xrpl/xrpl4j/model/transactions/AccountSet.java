@@ -27,7 +27,8 @@ public interface AccountSet extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows {@code tfFullyCanonicalSig} flag.
+   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows the
+   * {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -133,7 +134,8 @@ public interface AccountSet extends Transaction {
             Preconditions.checkArgument(rate.equals(UnsignedInteger.ZERO) ||
                     (rate.compareTo(UnsignedInteger.valueOf(1000000000L)) >= 0 &&
                         rate.compareTo(UnsignedInteger.valueOf(2000000000L)) <= 0),
-                "transferRate must be between 1,000,000,000 and 2,000,000,000 or equal to 0.")
+                "transferRate must be between 1,000,000,000 and 2,000,000,000 or equal to 0."
+            )
         );
   }
 
@@ -147,7 +149,8 @@ public interface AccountSet extends Transaction {
             Preconditions.checkArgument(tickSize.equals(UnsignedInteger.ZERO) ||
                     (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
                         tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
-                "tickSize must be between 3 and 15 inclusive or be equal to 0.")
+                "tickSize must be between 3 and 15 inclusive or be equal to 0."
+            )
         );
 
   }

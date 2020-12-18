@@ -22,6 +22,19 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+
+  /**
+   * Required-args constructor.
+   *
+   * @param lsfLowReserve   The current value of {@link this.lsfLowReserve}.
+   * @param lsfHighReserve  The current value of {@link this.lsfHighReserve}.
+   * @param lsfLowAuth      The current value of {@link this.lsfLowAuth}.
+   * @param lsfHighAuth     The current value of {@link this.lsfHighAuth}.
+   * @param lsfLowNoRipple  The current value of {@link this.lsfLowNoRipple}.
+   * @param lsfHighNoRipple The current value of {@link this.lsfHighNoRipple}.
+   * @param lsfLowFreeze    The current value of {@link this.lsfLowFreeze}.
+   * @param lsfHighFreeze   The current value of {@link this.lsfHighFreeze}.
+   */
   public RippleStateFlagsTests(
       boolean lsfLowReserve,
       boolean lsfHighReserve,

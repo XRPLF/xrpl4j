@@ -7,8 +7,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.util.Optional;
-
 /**
  * Represents a transaction that exists in a given account's transaction queue.
  */
@@ -25,7 +23,7 @@ public interface QueueTransaction {
    * Whether this transaction changes this address's ways of authorizing transactions.
    *
    * @return {@code true} if this transaction changes this account's ways of authorizing transactions, otherwise
-   *         {@code false}.
+   *     {@code false}.
    */
   @JsonProperty("auth_change")
   boolean authChange();

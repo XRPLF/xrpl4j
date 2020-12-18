@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -57,7 +57,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * account from being deleted. The default is false.
    *
    * @return {@code true} if requesting only ledger objects that would block this account from being deleted, otherwise
-   *         {@code false}.
+   *     {@code false}.
    */
   @JsonProperty("deletion_blockers_only")
   @Value.Default

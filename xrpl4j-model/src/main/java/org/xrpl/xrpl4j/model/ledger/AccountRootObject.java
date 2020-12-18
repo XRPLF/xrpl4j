@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -158,8 +158,8 @@ public interface AccountRootObject extends LedgerObject {
 
   /**
    * (Omitted unless the request specified signer_lists and at least one SignerList is associated with the account.)
-   * Array of {@link SignerListObject} ledger objects associated with this account for Multi-Signing. Since an account can own
-   * at most one SignerList, this array must have exactly one member if it is present.
+   * Array of {@link SignerListObject} ledger objects associated with this account for Multi-Signing. Since an account
+   * can own at most one SignerList, this array must have exactly one member if it is present.
    *
    * @return A {@link List} of {@link SignerListObject}s.
    */

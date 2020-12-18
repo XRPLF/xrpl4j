@@ -17,11 +17,22 @@ public class LedgerIndex {
   public static final LedgerIndex CURRENT = LedgerIndex.of("current");
   public static final LedgerIndex VALIDATED = LedgerIndex.of("validated");
   public static final LedgerIndex CLOSED = LedgerIndex.of("closed");
+  private final String value;
+
+  /**
+   * Public constructor.
+   *
+   * @param value The ledger index value as a {@link String}.
+   */
+  public LedgerIndex(String value) {
+    this.value = value;
+  }
 
   /**
    * Construct a {@link LedgerIndex} for a {@link String} value.
    *
    * @param value A {@link String} containing either an integer or a shortcut.
+   *
    * @return A {@link LedgerIndex} with the given value.
    */
   public static LedgerIndex of(String value) {
@@ -32,21 +43,11 @@ public class LedgerIndex {
    * Construct a {@link LedgerIndex} from an {@link UnsignedLong}.
    *
    * @param value An {@link UnsignedLong} specifying a ledger index.
+   *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
    */
   public static LedgerIndex of(UnsignedLong value) {
     return new LedgerIndex(value.toString());
-  }
-
-  private final String value;
-
-  /**
-   * Public constructor.
-   *
-   * @param value The ledger index value as a {@link String}.
-   */
-  public LedgerIndex(String value) {
-    this.value = value;
   }
 
   public String value() {
@@ -66,6 +67,7 @@ public class LedgerIndex {
    * Add an {@link UnsignedLong} to this {@link LedgerIndex}.
    *
    * @param other The {@link UnsignedLong} to add to this {@link LedgerIndex}.
+   *
    * @return The sum of the {@link UnsignedLong} and this {@link LedgerIndex}'s {@link UnsignedLong} value.
    */
   public LedgerIndex plus(UnsignedLong other) {
@@ -76,6 +78,7 @@ public class LedgerIndex {
    * Add another {@link LedgerIndex} to this {@link LedgerIndex}.
    *
    * @param other The {@link LedgerIndex} to add to this {@link LedgerIndex}.
+   *
    * @return The sum of the {@link LedgerIndex}' and this {@link LedgerIndex}'s {@link UnsignedLong} value.
    */
   public LedgerIndex plus(LedgerIndex other) {
@@ -83,14 +86,14 @@ public class LedgerIndex {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
     }
-    if (!(o instanceof LedgerIndex)) {
+    if (!(obj instanceof LedgerIndex)) {
       return false;
     }
-    LedgerIndex that = (LedgerIndex) o;
+    LedgerIndex that = (LedgerIndex) obj;
     return Objects.equals(value, that.value);
   }
 

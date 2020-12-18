@@ -29,8 +29,8 @@ public interface PaymentChannelCreate extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link PaymentChannelCreate}, which only allows {@code tfFullyCanonicalSig}
-   * flag.
+   * Set of {@link Flags.TransactionFlags}s for this {@link PaymentChannelCreate}, which only allows the
+   * {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.

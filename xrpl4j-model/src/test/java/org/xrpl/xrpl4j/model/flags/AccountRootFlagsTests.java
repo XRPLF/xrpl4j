@@ -23,6 +23,19 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+  /**
+   * Required-arg constructor.
+   *
+   * @param lsfDefaultRipple  The current value of {@link this.lsfDefaultRipple}.
+   * @param lsfDepositAuth    The current value of {@link this.lsfDepositAuth}.
+   * @param lsfDisableMaster  The current value of {@link this.lsfDisableMaster}.
+   * @param lsfDisallowXrp    The current value of {@link this.lsfDisallowXrp}.
+   * @param lsfGlobalFreeze   The current value of {@link this.lsfGlobalFreeze}.
+   * @param lsfNoFreeze       The current value of {@link this.lsfNoFreeze}.
+   * @param lsfPasswordSpent  The current value of {@link this.lsfPasswordSpent}.
+   * @param lsfRequireAuth    The current value of {@link this.lsfRequireAuth}.
+   * @param lsfRequireDestTag The current value of {@link this.lsfRequireDestTag}.
+   */
   public AccountRootFlagsTests(
       boolean lsfDefaultRipple,
       boolean lsfDepositAuth,

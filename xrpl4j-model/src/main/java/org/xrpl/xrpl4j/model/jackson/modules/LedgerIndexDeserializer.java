@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.io.IOException;
 
@@ -19,7 +18,7 @@ public class LedgerIndexDeserializer extends StdDeserializer<LedgerIndex> {
   }
 
   @Override
-  public LedgerIndex deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+  public LedgerIndex deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
     return LedgerIndex.of(jsonParser.getValueAsString());
   }
 }

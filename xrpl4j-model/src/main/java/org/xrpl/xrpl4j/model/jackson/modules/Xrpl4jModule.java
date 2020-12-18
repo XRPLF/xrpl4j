@@ -16,6 +16,9 @@ public class Xrpl4jModule extends SimpleModule {
 
   private static final String NAME = "Xrpl4jModule";
 
+  /**
+   * No-arg constructor.
+   */
   public Xrpl4jModule() {
     super(
         NAME,

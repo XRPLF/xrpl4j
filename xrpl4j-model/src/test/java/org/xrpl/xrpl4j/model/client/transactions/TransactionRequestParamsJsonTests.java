@@ -5,8 +5,6 @@ import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 public class TransactionRequestParamsJsonTests extends AbstractJsonTest {

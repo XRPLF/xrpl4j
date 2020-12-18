@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -61,7 +61,7 @@ public interface AccountChannelsResult extends XrplResult {
    * Otherwise, the information is subject to change.
    *
    * @return {@code true} if the information in this response comes from a validated ledger version, {@code false}
-   *         if not.
+   *     if not.
    */
   @Value.Default
   default boolean validated() {

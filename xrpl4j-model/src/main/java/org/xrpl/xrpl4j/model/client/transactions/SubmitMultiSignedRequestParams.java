@@ -23,6 +23,7 @@ public interface SubmitMultiSignedRequestParams extends XrplRequestParams {
    * Construct a {@link SubmitMultiSignedRequestParams} with the given {@link Transaction}.
    *
    * @param multiSigTransaction A {@link Transaction} that has been signed by multiple accounts.
+   *
    * @return A {@link SubmitMultiSignedRequestParams} populated with the given {@link Transaction}.
    */
   static SubmitMultiSignedRequestParams of(Transaction multiSigTransaction) {
@@ -31,6 +32,8 @@ public interface SubmitMultiSignedRequestParams extends XrplRequestParams {
 
   /**
    * The {@link Transaction} to submit.
+   *
+   * @return The {@link Transaction} to submit.
    */
   @JsonProperty("tx_json")
   Transaction transaction();

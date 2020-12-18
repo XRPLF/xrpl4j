@@ -28,6 +28,7 @@ public class Flags {
    * Construct {@link Flags} for the given value.
    *
    * @param value A long flags value.
+   *
    * @return A new {@link Flags}.
    */
   public static Flags of(long value) {
@@ -37,7 +38,7 @@ public class Flags {
   /**
    * Construct {@link Flags} from one or more {@link Flags} by performing a bitwise OR on all.
    *
-   * @param flag The first {@link Flags}.
+   * @param flag   The first {@link Flags}.
    * @param others Zero or more other {@link Flags} to include.
    *
    * @return A new {@link Flags}.
@@ -57,6 +58,7 @@ public class Flags {
    * Performs a bitwise OR on this {@link Flags} and another {@link Flags}.
    *
    * @param other The {@link Flags} to perform the OR with.
+   *
    * @return The {@link Flags} resulting from the OR operation.
    */
   Flags bitwiseOr(Flags other) {
@@ -67,6 +69,7 @@ public class Flags {
    * Performs a bitwise AND on this {@link Flags} and another {@link Flags}.
    *
    * @param other The {@link Flags} to perform the AND with.
+   *
    * @return The {@link Flags} resulting from the AND operation.
    */
   Flags bitwiseAnd(Flags other) {
@@ -78,6 +81,7 @@ public class Flags {
    * Flags} in question, and checking if the result of that operation is equal to the given flag.
    *
    * @param flag The {@link Flags} that this method determines is set or not.
+   *
    * @return true if the flag is set, false if not.
    */
   // TODO: Unit test.
@@ -122,6 +126,7 @@ public class Flags {
     /**
      * Flags indicating that a fully-canonical signature is required. This flag is highly recommended.
      *
+     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
      * @see "https://xrpl.org/transaction-common-fields.html#flags-field"
      */
     public boolean tfFullyCanonicalSig() {
@@ -139,6 +144,7 @@ public class Flags {
        * Set {@code tfFullyCanonicalSig} to the given boolean value.
        *
        * @param tfFullyCanonicalSig A boolean value.
+       *
        * @return A {@link TransactionFlags.Builder}.
        */
       public TransactionFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
@@ -187,6 +193,7 @@ public class Flags {
      * Construct {@link PaymentFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link PaymentFlags}.
+     *
      * @return New {@link PaymentFlags}.
      */
     public static PaymentFlags of(long value) {
@@ -334,6 +341,7 @@ public class Flags {
      * Construct {@link AccountRootFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
+     *
      * @return New {@link AccountRootFlags}.
      */
     public static AccountRootFlags of(long value) {
@@ -445,6 +453,7 @@ public class Flags {
      * Construct {@link SignerListFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link SignerListFlags}.
+     *
      * @return New {@link SignerListFlags}.
      */
     public static SignerListFlags of(long value) {
@@ -512,6 +521,7 @@ public class Flags {
      * Construct {@link TrustSetFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link TrustSetFlags}.
+     *
      * @return New {@link TrustSetFlags}.
      */
     public static TrustSetFlags of(long value) {
@@ -689,6 +699,7 @@ public class Flags {
      * Construct {@link RippleStateFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link RippleStateFlags}.
+     *
      * @return New {@link RippleStateFlags}.
      */
     public static RippleStateFlags of(long value) {
@@ -698,7 +709,7 @@ public class Flags {
     /**
      * The corresponding {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}
      * <a href="https://xrpl.org/ripplestate.html#contributing-to-the-owner-reserve">contributes to the low
-     * account's owner reserve.</a>
+     * account's owner reserve</a>.
      *
      * @return {@code true} if {@code lsfLowReserve} is set, otherwise {@code false}.
      */
@@ -709,7 +720,7 @@ public class Flags {
     /**
      * The corresponding {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}
      * <a href="https://xrpl.org/ripplestate.html#contributing-to-the-owner-reserve">contributes to the high
-     * account's owner reserve.</a>
+     * account's owner reserve</a>.
      *
      * @return {@code true} if {@code lsfHighReserve} is set, otherwise {@code false}.
      */
@@ -799,6 +810,7 @@ public class Flags {
      * Construct {@link OfferCreateFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link OfferCreateFlags}.
+     *
      * @return New {@link OfferCreateFlags}.
      */
     public static OfferCreateFlags of(long value) {
@@ -962,18 +974,19 @@ public class Flags {
     protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000);
     protected static final OfferFlags SELL = new OfferFlags(0x00020000);
 
+    private OfferFlags(long value) {
+      super(value);
+    }
+
     /**
      * Construct {@link OfferFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link OfferFlags}.
+     *
      * @return New {@link OfferFlags}.
      */
     public static OfferFlags of(long value) {
       return new OfferFlags(value);
-    }
-
-    private OfferFlags(long value) {
-      super(value);
     }
 
     /**
@@ -1032,6 +1045,7 @@ public class Flags {
      * Construct {@link PaymentChannelClaimFlags} with a given value.
      *
      * @param value The long-number encoded flags value of this {@link PaymentChannelClaimFlags}.
+     *
      * @return New {@link PaymentChannelClaimFlags}.
      */
     public static PaymentChannelClaimFlags of(long value) {

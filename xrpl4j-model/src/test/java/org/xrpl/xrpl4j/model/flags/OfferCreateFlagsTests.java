@@ -19,6 +19,15 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param tfFullyCanonicalSig The current value of {@link this.tfFullyCanonicalSig}.
+   * @param tfPassive           The current value of {@link this.tfPassive}.
+   * @param tfImmediateOrCancel The current value of {@link this.tfImmediateOrCancel}.
+   * @param tfFillOrKill        The current value of {@link this.tfFillOrKill}.
+   * @param tfSell              The current value of {@link this.tfSell}.
+   */
   public OfferCreateFlagsTests(
       boolean tfFullyCanonicalSig,
       boolean tfPassive,

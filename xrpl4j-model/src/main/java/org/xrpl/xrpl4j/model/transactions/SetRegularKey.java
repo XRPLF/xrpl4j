@@ -25,17 +25,25 @@ public interface SetRegularKey extends Transaction {
   }
 
   /**
-   * A bit-map of boolean flags for this transaction.
+   * Set of {@link Flags.TransactionFlags}s for this {@link SetRegularKey}, which only allows
+   * {@code tfFullyCanonicalSig} flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Value.Derived
   default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**
    * An {@link Address} that indicates the regular key pair to be assigned to the account. If omitted,
    * removes any existing regular key pair from the account. Must not match the master key pair for the address.
+   *
+   * @return The {@link Optional} {@link Address} indicating the regular key pair to use.
    */
   @JsonProperty("RegularKey")
   Optional<Address> regularKey();

@@ -14,16 +14,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "LedgerEntryType"
 )
-@JsonSubTypes({
+@JsonSubTypes( {
     @JsonSubTypes.Type(value = ImmutableAccountRootObject.class, name = "AccountRoot"),
-//    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
+    //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
     @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
     @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
-//    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
+    //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
     @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
-//    @JsonSubTypes.Type(value = ImmutableFeeSettingsObject.class, name = "FeeSettings"),
-//    @JsonSubTypes.Type(value = ImmutableLedgerHashesObject.class, name = "LedgerHashes"),
-//    @JsonSubTypes.Type(value = ImmutableNegativeUnlObject.class, name = "NegativeUNL"),
+    //    @JsonSubTypes.Type(value = ImmutableFeeSettingsObject.class, name = "FeeSettings"),
+    //    @JsonSubTypes.Type(value = ImmutableLedgerHashesObject.class, name = "LedgerHashes"),
+    //    @JsonSubTypes.Type(value = ImmutableNegativeUnlObject.class, name = "NegativeUNL"),
     @JsonSubTypes.Type(value = ImmutableOfferObject.class, name = "Offer"),
     @JsonSubTypes.Type(value = ImmutablePayChannelObject.class, name = "PayChannel"),
     @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
@@ -32,6 +32,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
 
+  /**
+   * Enum for all types of ledger objects.
+   */
   enum LedgerEntryType {
     ACCOUNT_ROOT("AccountRoot"),
     AMENDMENTS("Amendments"),

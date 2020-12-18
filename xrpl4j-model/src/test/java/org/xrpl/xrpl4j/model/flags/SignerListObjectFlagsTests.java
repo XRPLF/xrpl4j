@@ -26,15 +26,6 @@ public class SignerListObjectFlagsTests extends AbstractFlagsTest {
   }
 
   @Test
-  public void testFlagsConstructionWithIndividualFlags() {
-    Flags.SignerListFlags flags = Flags.SignerListFlags.builder()
-        .lsfOneOwnerCount(lsfOneOwnerCount)
-        .build();
-
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
-  }
-
-  @Test
   public void testDeriveIndividualFlagsFromFlags() {
     Flags.SignerListFlags flags = Flags.SignerListFlags.of(expectedFlags);
 

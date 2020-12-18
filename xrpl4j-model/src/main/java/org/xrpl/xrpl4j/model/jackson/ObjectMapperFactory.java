@@ -15,13 +15,12 @@ import com.ripple.cryptoconditions.jackson.Encoding;
 import org.xrpl.xrpl4j.model.jackson.modules.Xrpl4jModule;
 
 /**
- * A factory for constructing instances of {@link ObjectMapper} for all connector components.
+ * A factory for constructing instances of {@link ObjectMapper} for all xrpl4j-model components.
  */
 public class ObjectMapperFactory {
 
   /**
-   * Construct an {@link ObjectMapper} that can be used to serialize and deserialize JSON where all numbers are Strings,
-   * by default.
+   * Construct an {@link ObjectMapper} that can be used to serialize and deserialize JSON.
    *
    * @return An {@link ObjectMapper}.
    */

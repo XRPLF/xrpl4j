@@ -27,6 +27,8 @@ public interface SignerListObject extends LedgerObject {
 
   /**
    * The type of ledger object. In this case, always "SignerList".
+   *
+   * @return Always {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#SIGNER_LIST}.
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
@@ -36,18 +38,24 @@ public interface SignerListObject extends LedgerObject {
 
   /**
    * A bit-map of Boolean {@link Flags.SignerListFlags} enabled for this signer list.
+   *
+   * @return The {@link org.xrpl.xrpl4j.model.flags.Flags.SignerListFlags} for this object.
    */
   @JsonProperty("Flags")
   Flags.SignerListFlags flags();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
+   *
+   * @return A {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
   Hash256 previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
+   *
+   * @return An {@link UnsignedInteger} representing the previous transaction ledger sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
   UnsignedInteger previousTransactionLedgerSequence();
@@ -55,6 +63,8 @@ public interface SignerListObject extends LedgerObject {
   /**
    * A hint indicating which page of the owner directory links to this object, in case the directory
    * consists of multiple pages.
+   *
+   * @return A {@link String} containing the hint.
    */
   @JsonProperty("OwnerNode")
   String ownerNode();
@@ -62,6 +72,8 @@ public interface SignerListObject extends LedgerObject {
   /**
    * An ID for this signer list. Currently always set to 0. If a future amendment allows multiple
    * signer lists for an account, this may change.
+   *
+   * @return An {@link UnsignedInteger} representing the ID.
    */
   @JsonProperty("SignerListID")
   UnsignedInteger signerListId();
@@ -69,18 +81,24 @@ public interface SignerListObject extends LedgerObject {
   /**
    * A target number for signer weights. To produce a valid signature for the owner of this {@link SignerListObject},
    * the signers must provide valid signatures whose weights sum to this value or more.
+   *
+   * @return An {@link UnsignedInteger} representing the signer quorum.
    */
   @JsonProperty("SignerQuorum")
   UnsignedInteger signerQuorum();
 
   /**
    * A {@link List} of {@link SignerEntry} objects representing the parties who are part of this signer list.
+   *
+   * @return A {@link List} of {@link SignerEntryWrapper}s for this signer list.
    */
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();
 
   /**
    * Unique ID for this {@link SignerListObject}.
+   *
+   * @return A {@link Hash256} containing the ID.
    */
   Hash256 index();
 

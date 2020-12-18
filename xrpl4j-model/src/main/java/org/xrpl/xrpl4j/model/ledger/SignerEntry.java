@@ -22,6 +22,8 @@ public interface SignerEntry {
   /**
    * An XRP Ledger classic {@link Address} whose signature contributes to the multi-signature. It does not need to be a
    * funded address in the ledger.
+   *
+   * @return The {@link Address} of the signer.
    */
   @JsonProperty("Account")
   Address account();
@@ -29,6 +31,8 @@ public interface SignerEntry {
   /**
    * The weight of a signature from this signer. A multi-signature is only valid if the sum weight of the
    * signatures provided meets or exceeds the {@link SignerListObject#signerQuorum()} value.
+   *
+   * @return An {@link UnsignedInteger} representing the signer weight.
    */
   @JsonProperty("SignerWeight")
   UnsignedInteger signerWeight();

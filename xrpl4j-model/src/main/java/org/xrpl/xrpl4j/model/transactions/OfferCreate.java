@@ -11,7 +11,7 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 import java.util.Optional;
 
 /**
- * An OfferCreate transaction is effectively a limit order . It defines an intent to exchange currencies, and
+ * An OfferCreate transaction is effectively a limit order. It defines an intent to exchange currencies, and
  * creates an offer object if not completely fulfilled when placed. Offers can be partially fulfilled.
  *
  * @see "https://xrpl.org/offercreate.html"
@@ -25,14 +25,21 @@ public interface OfferCreate extends Transaction {
     return ImmutableOfferCreate.builder();
   }
 
+  /**
+   * Set of {@link Flags.OfferCreateFlags}s for this {@link OfferCreate}.
+   *
+   * @return The {@link org.xrpl.xrpl4j.model.flags.Flags.OfferCreateFlags} for this transaction.
+   */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags.OfferFlags flags() {
-    return Flags.OfferFlags.builder().tfFullyCanonicalSig(true).build();
+  default Flags.OfferCreateFlags flags() {
+    return Flags.OfferCreateFlags.builder().tfFullyCanonicalSig(true).build();
   }
 
   /**
    * An offer to delete first, specified in the same way as an Offer Cancel.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the offer sequence.
    */
   @JsonProperty("OfferSequence")
   Optional<UnsignedInteger> offerSequence();
@@ -40,7 +47,7 @@ public interface OfferCreate extends Transaction {
   /**
    * The amount and type of currency being requested by the offer creator.
    *
-   * @return amount
+   * @return A {@link CurrencyAmount} representing the amount being requested.
    */
   @JsonProperty("TakerPays")
   CurrencyAmount takerPays();
@@ -48,7 +55,7 @@ public interface OfferCreate extends Transaction {
   /**
    * The amount and type of currency being provided by the offer creator.
    *
-   * @return amount
+   * @return A {@link CurrencyAmount} representing the amount being offered.
    */
   @JsonProperty("TakerGets")
   CurrencyAmount takerGets();
@@ -56,6 +63,8 @@ public interface OfferCreate extends Transaction {
   /**
    * Time after which the Check is no longer valid, in
    * <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the expiration time.
    */
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();

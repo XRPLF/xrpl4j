@@ -24,14 +24,25 @@ public interface OfferCancel extends Transaction {
     return ImmutableOfferCancel.builder();
   }
 
+  /**
+   * Set of {@link Flags.TransactionFlags}s for this {@link OfferCancel}, which only allows {@code tfFullyCanonicalSig}
+   * flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   */
   @JsonProperty("Flags")
   @Value.Default
   default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**
    * The sequence number of a previous {@link OfferCreate} transaction.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the offer sequence.
    */
   @JsonProperty("OfferSequence")
   Optional<UnsignedInteger> offerSequence();

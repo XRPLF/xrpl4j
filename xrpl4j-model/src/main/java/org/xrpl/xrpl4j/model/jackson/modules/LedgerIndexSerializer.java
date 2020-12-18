@@ -8,6 +8,9 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson serializer for {@link LedgerIndex}s.
+ */
 // TODO: Unittest
 public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 

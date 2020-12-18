@@ -7,6 +7,9 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson serializer for {@link Hash256}s.
+ */
 public class Hash256Serializer extends StdScalarSerializer<Hash256> {
 
   public Hash256Serializer() {

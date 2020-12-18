@@ -11,50 +11,31 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class OfferFlagsTests extends AbstractFlagsTest {
 
-  boolean tfFullyCanonicalSig;
-  boolean tfPassive;
-  boolean tfImmediateOrCancel;
-  boolean tfFillOrKill;
-  boolean tfSell;
+  boolean lsfPassive;
+  boolean lsfSell;
 
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param lsfPassive The current value of {@link this.lsfPassive}.
+   * @param lsfSell    The current value of {@link this.lsfSell}.
+   */
   public OfferFlagsTests(
-      boolean tfFullyCanonicalSig,
-      boolean tfPassive,
-      boolean tfImmediateOrCancel,
-      boolean tfFillOrKill,
-      boolean tfSell
+      boolean lsfPassive,
+      boolean lsfSell
   ) {
-    this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-    this.tfPassive = tfPassive;
-    this.tfImmediateOrCancel = tfImmediateOrCancel;
-    this.tfFillOrKill = tfFillOrKill;
-    this.tfSell = tfSell;
+    this.lsfPassive = lsfPassive;
+    this.lsfSell = lsfSell;
 
-    expectedFlags = (tfFullyCanonicalSig ? Flags.OfferFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-        (tfPassive ? Flags.OfferFlags.PASSIVE.getValue() : 0L) |
-        (tfImmediateOrCancel ? Flags.OfferFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
-        (tfFillOrKill ? Flags.OfferFlags.FILL_OR_KILL.getValue() : 0L) |
-        (tfSell ? Flags.OfferFlags.SELL.getValue() : 0L);
+    expectedFlags = (lsfPassive ? Flags.OfferFlags.PASSIVE.getValue() : 0L) |
+        (lsfSell ? Flags.OfferFlags.SELL.getValue() : 0L);
   }
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    return getBooleanCombinations(5);
-  }
-
-  @Test
-  public void testFlagsConstructionWithIndividualFlags() {
-    Flags.OfferFlags flags = Flags.OfferFlags.builder()
-        .tfFullyCanonicalSig(tfFullyCanonicalSig)
-        .tfPassive(tfPassive)
-        .tfImmediateOrCancel(tfImmediateOrCancel)
-        .tfFillOrKill(tfFillOrKill)
-        .tfSell(tfSell)
-        .build();
-
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
+    return getBooleanCombinations(2);
   }
 
   @Test
@@ -62,10 +43,7 @@ public class OfferFlagsTests extends AbstractFlagsTest {
     Flags.OfferFlags flags = Flags.OfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
-    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
-    assertThat(flags.tfPassive()).isEqualTo(tfPassive);
-    assertThat(flags.tfImmediateOrCancel()).isEqualTo(tfImmediateOrCancel);
-    assertThat(flags.tfFillOrKill()).isEqualTo(tfFillOrKill);
-    assertThat(flags.tfSell()).isEqualTo(tfSell);
+    assertThat(flags.lsfPassive()).isEqualTo(lsfPassive);
+    assertThat(flags.lsfSell()).isEqualTo(lsfSell);
   }
 }

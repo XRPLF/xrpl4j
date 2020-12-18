@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Provides an abstract interface for all concrete XRPL transactions.
+ */
 public interface Transaction {
 
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
@@ -36,6 +39,17 @@ public interface Transaction {
           .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
           .build();
 
+  /**
+   * Computes the fee necessary for a multisigned transaction.
+   *
+   * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
+   * transaction cost)}, where {@code N} is the number of signatures provided.
+   *
+   * @param currentLedgerFeeDrops The current ledger fee, represented as an {@link XrpCurrencyAmount}.
+   * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the multisig fee.
+   */
   static XrpCurrencyAmount computeMultiSigFee(
       final XrpCurrencyAmount currentLedgerFeeDrops,
       final SignerListObject signerList
@@ -48,13 +62,17 @@ public interface Transaction {
   }
 
   /**
-   * The unique {@link Address} of the account that initiated the transaction.
+   * The unique {@link Address} of the account that initiated this transaction.
+   *
+   * @return The {@link Address} of the account submitting this transaction.
    */
   @JsonProperty("Account")
   Address account();
 
   /**
    * The type of transaction.
+   *
+   * @return A {@link TransactionType}.
    */
   @JsonProperty("TransactionType")
   default TransactionType transactionType() {
@@ -67,6 +85,7 @@ public interface Transaction {
    *
    * <p>This field is auto-fillable
    *
+   * @return An {@link XrpCurrencyAmount} representing the transaction cost.
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
@@ -78,6 +97,7 @@ public interface Transaction {
    *
    * <p>This field is auto-fillable
    *
+   * @return An {@link UnsignedInteger} representing the sequence of the transaction.
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Sequence")
@@ -86,6 +106,8 @@ public interface Transaction {
   /**
    * Hash value identifying another transaction. If provided, this {@link Transaction} is only valid if the sending
    * account's previously-sent transaction matches the provided hash.
+   *
+   * @return An {@link Optional} of type {@link Hash256} containing the account transaction ID.
    */
   @JsonProperty("AccountTxnID")
   Optional<Hash256> accountTransactionId();
@@ -93,18 +115,24 @@ public interface Transaction {
   /**
    * Highest ledger index this transaction can appear in. Specifying this field places a strict upper limit on how long
    * the transaction can wait to be validated or rejected.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the last ledger sequence.
    */
   @JsonProperty("LastLedgerSequence")
   Optional<UnsignedInteger> lastLedgerSequence();
 
   /**
    * Additional arbitrary information used to identify this {@link Transaction}.
+   *
+   * @return A {@link List} of {@link MemoWrapper}s.
    */
   @JsonProperty("Memos")
   List<MemoWrapper> memos();
 
   /**
    * Array of {@link SignerWrapper}s that represent a multi-signature which authorizes this {@link Transaction}.
+   *
+   * @return A {@link List} of {@link SignerWrapper}s.
    */
   @JsonProperty("Signers")
   List<SignerWrapper> signers();
@@ -112,6 +140,8 @@ public interface Transaction {
   /**
    * Arbitrary {@link UnsignedInteger} used to identify the reason for this {@link Transaction}, or a sender on whose
    * behalf this {@link Transaction} is made.
+   *
+   * @return An {@link Optional} {@link UnsignedInteger} representing the source account's tag.
    */
   @JsonProperty("SourceTag")
   Optional<UnsignedInteger> sourceTag();
@@ -121,6 +151,8 @@ public interface Transaction {
    * string, indicates a multi-signature is present in the {@link Transaction#signers()} field instead.
    *
    * <p>This field is automatically added when signing this {@link Transaction}.
+   *
+   * @return An {@link Optional} {@link String} containing the public key of the account submitting the transaction.
    */
   @JsonInclude(JsonInclude.Include.NON_ABSENT)
   @JsonProperty("SigningPubKey")
@@ -130,6 +162,8 @@ public interface Transaction {
    * The signature that verifies this transaction as originating from the account it says it is from.
    *
    * <p>This field is automatically added when signing this {@link Transaction}.
+   *
+   * @return An {@link Optional} {@link String} containing the transaction signature.
    */
   @JsonProperty("TxnSignature")
   Optional<String> transactionSignature();

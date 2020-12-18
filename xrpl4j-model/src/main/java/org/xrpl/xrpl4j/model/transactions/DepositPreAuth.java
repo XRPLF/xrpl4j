@@ -28,25 +28,32 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows the
+   * {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Derived
   default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**
    * The XRP Ledger {@link Address} of the sender to preauthorize.
+   *
+   * @return An {@link Optional} of type {@link Address} of the sender to preauthorize.
    */
   @JsonProperty("Authorize")
   Optional<Address> authorize();
 
   /**
    * The XRP Ledger {@link Address} of a sender whose preauthorization should be revoked.
+   *
+   * @return An {@link Optional} of type {@link Address} of the sender to unauthorize.
    */
   @JsonProperty("Unauthorize")
   Optional<Address> unauthorize();

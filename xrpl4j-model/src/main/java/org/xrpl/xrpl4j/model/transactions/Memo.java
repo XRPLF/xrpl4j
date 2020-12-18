@@ -28,6 +28,8 @@ public interface Memo {
 
   /**
    * Arbitrary hex value, conventionally containing the content of the memo.
+   *
+   * @return An {@link Optional} of type {@link String} containing the memo data.
    */
   @JsonProperty("MemoData")
   Optional<String> memoData();
@@ -35,6 +37,8 @@ public interface Memo {
   /**
    * Hex value representing characters allowed in URLs. Conventionally containing information on how the memo
    * is encoded.
+   *
+   * @return An {@link Optional} of type {@link String} containing the memo format.
    */
   @JsonProperty("MemoFormat")
   Optional<String> memoFormat();
@@ -42,6 +46,8 @@ public interface Memo {
   /**
    * Hex value representing characters allowed in URLs. Conventionally, a unique relation that defines the format
    * of this memo.
+   *
+   * @return An {@link Optional} of type {@link String} containing the memo type.
    */
   @JsonProperty("MemoType")
   Optional<String> memoType();

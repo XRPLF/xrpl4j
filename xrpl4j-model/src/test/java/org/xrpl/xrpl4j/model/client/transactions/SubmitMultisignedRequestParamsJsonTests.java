@@ -18,7 +18,7 @@ public class SubmitMultisignedRequestParamsJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
 
-    SubmitMultiSignedRequestParams<TrustSet> params = SubmitMultiSignedRequestParams.of(
+    SubmitMultiSignedRequestParams params = SubmitMultiSignedRequestParams.of(
         TrustSet.builder()
             .account(Address.of("rEuLyBCvcw4CFmzv8RepSiAoNgF8tTGJQC"))
             .fee(XrpCurrencyAmount.ofDrops(30000))

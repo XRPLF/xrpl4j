@@ -26,6 +26,8 @@ public interface QueueData {
 
   /**
    * Number of queued transactions from this address.
+   *
+   * @return An {@link UnsignedInteger} representing the number of transactions.
    */
   @JsonProperty("txn_count")
   UnsignedInteger transactionCount();
@@ -34,7 +36,8 @@ public interface QueueData {
    * Whether a transaction in the queue changes this address's ways of authorizing transactions. If true,
    * this address can queue no further transactions until that transaction has been executed or dropped from the queue.
    *
-   * @return
+   * @return {@code true} if a transaction in the queue changes this account's way of authorizing transactions,
+   *     otherwise {@code false}.
    */
   @JsonProperty("auth_change_queued")
   @Value.Default
@@ -44,12 +47,16 @@ public interface QueueData {
 
   /**
    * The lowest Sequence Number among transactions queued by this address.
+   *
+   * @return An optionally-present {@link UnsignedInteger}.
    */
   @JsonProperty("lowest_sequence")
   Optional<UnsignedInteger> lowestSequence();
 
   /**
    * The highest Sequence Number among transactions queued by this address.
+   *
+   * @return An optionally-present {@link UnsignedInteger}.
    */
   @JsonProperty("highest_sequence")
   Optional<UnsignedInteger> highestSequence();
@@ -57,12 +64,16 @@ public interface QueueData {
   /**
    * Integer amount of drops of XRP, represented as a {@link String}, that could be debited from this address
    * if every transaction in the queue consumes the maximum amount of XRP possible.
+   *
+   * @return An optionally-present {@link XrpCurrencyAmount}.
    */
   @JsonProperty("max_spend_drops_total")
   Optional<XrpCurrencyAmount> maxSpendDropsTotal();
 
   /**
    * A {@link List} of {@link QueueTransaction}s containing information about each queued transaction from this address.
+   *
+   * @return A {@link List} of {@link QueueTransaction}s.
    */
   List<QueueTransaction> transactions();
 }

@@ -16,16 +16,22 @@ public interface FaucetAccountResponse {
 
   /**
    * XRPL account that was created on testnet.
+   *
+   * @return A {@link FaucetAccount}.
    */
   FaucetAccount account();
 
   /**
    * Amount the faucet sent to the account.
+   *
+   * @return A long representing the amount of XRP the faucent sent to the account.
    */
   long amount();
 
   /**
    * Current balance of the account. Only sent back for newly generated accounts.
+   *
+   * @return An optionally_present {@link Long} representing the balance of the account.
    */
   OptionalLong balance();
 

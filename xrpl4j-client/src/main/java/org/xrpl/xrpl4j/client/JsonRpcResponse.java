@@ -17,6 +17,8 @@ public interface JsonRpcResponse<ResultType extends XrplResult> {
 
   /**
    * The result of a request to the rippled JSON RPC API. Contents vary depending on the API method.
+   *
+   * @return The result of a request, represented by a {@link ResultType}.
    */
   ResultType result();
 

@@ -45,6 +45,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
    * account indexes for deriving secp2551k keys.
    *
    * @param seed An {@link UnsignedByteArray} of length 16 containing a seed.
+   *
    * @return A {@link KeyPair} containing a public/private keypair derived from seed using the secp2561k algorithm.
    */
   private KeyPair deriveKeyPair(UnsignedByteArray seed) {
@@ -87,6 +88,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
     return deriveScalar(seed, Optional.of(discriminator));
   }
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private BigInteger deriveScalar(UnsignedByteArray seed, Optional<Integer> discriminator) {
     BigInteger key = null;
     UnsignedByteArray seedCopy = UnsignedByteArray.of(seed.toByteArray());
@@ -106,23 +108,24 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
     UnsignedByteArray messageHash = HashUtils.sha512Half(message);
-    ECDSASignature signature = createEcdsaSignature(messageHash, new BigInteger(privateKey, 16));
+    EcDsaSignature signature = createEcdsaSignature(messageHash, new BigInteger(privateKey, 16));
     return signature.der().hexValue();
   }
 
-  private ECDSASignature createEcdsaSignature(UnsignedByteArray messageHash, BigInteger privateKey) {
+  @SuppressWarnings("LocalVariableName")
+  private EcDsaSignature createEcdsaSignature(UnsignedByteArray messageHash, BigInteger privateKey) {
     ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
     ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKey, ecDomainParameters);
     signer.init(true, parameters);
-    BigInteger[] sigs = signer.generateSignature(messageHash.toByteArray());
-    BigInteger r = sigs[0];
-    BigInteger s = sigs[1];
+    BigInteger[] signatures = signer.generateSignature(messageHash.toByteArray());
+    BigInteger r = signatures[0];
+    BigInteger s = signatures[1];
     BigInteger otherS = ecDomainParameters.getN().subtract(s);
     if (s.compareTo(otherS) > 0) {
       s = otherS;
     }
 
-    return ECDSASignature.builder()
+    return EcDsaSignature.builder()
         .r(r)
         .s(s)
         .build();
@@ -131,7 +134,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     UnsignedByteArray messageHash = HashUtils.sha512Half(message);
-    ECDSASignature sig = ECDSASignature.fromDer(BaseEncoding.base16().decode(signature));
+    EcDsaSignature sig = EcDsaSignature.fromDer(BaseEncoding.base16().decode(signature));
     if (sig == null) {
       return false;
     }

@@ -23,14 +23,14 @@ public class XrplAdminClient {
    * Advances the ledger. When running rippled in standalone mode, this method is useful to manually trigger
    * the ledger to close.
    *
-   * @see "https://xrpl.org/ledger_accept.html"
    * @return A {@link AcceptLedgerResult} containing information about the accepted ledger.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/ledger_accept.html"
    */
   public AcceptLedgerResult acceptLedger() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
-      .method("ledger_accept")
-      .build();
+        .method("ledger_accept")
+        .build();
 
     return jsonRpcClient.send(request, AcceptLedgerResult.class);
   }

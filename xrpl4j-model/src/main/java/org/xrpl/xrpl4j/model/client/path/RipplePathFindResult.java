@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import java.util.List;
 
 /**
- * The result of a ripple_path_find rippled method call.
+ * The result of a "ripple_path_find" rippled API method call.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableRipplePathFindResult.class)
@@ -24,19 +24,25 @@ public interface RipplePathFindResult extends XrplResult {
   /**
    * A {@link List} of {@link PathAlternative}s with possible paths to take. If empty, then are are no paths
    * connecting the source and destination accounts.
+   *
+   * @return A {@link List} of {@link PathAlternative}s.
    */
   List<PathAlternative> alternatives();
 
   /**
    * Unique {@link org.xrpl.xrpl4j.model.transactions.Address} of the account that would receive a
    * {@link org.xrpl.xrpl4j.model.transactions.Payment} transaction.
+   *
+   * @return The unique {@link Address} of the destination account.
    */
   @JsonProperty("destination_account")
   Address destinationAccount();
 
   /**
    * {@link List} of {@link String}s representing the currencies that the {@link #destinationAccount()} accepts,
-   * as 3-letter codes like "USD" or as 40-character hex like "015841551A748AD2C1F76FF6ECB0CCCD00000000";
+   * as 3-letter codes like "USD" or as 40-character hex like "015841551A748AD2C1F76FF6ECB0CCCD00000000".
+   *
+   * @return A {@link List} of {@link String}s of destination currency codes.
    */
   @JsonProperty("destination_currencies")
   List<String> destinationCurrencies();

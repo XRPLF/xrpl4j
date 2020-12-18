@@ -7,7 +7,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 
 /**
- * The result of a channel_verify request.
+ * The result of a "channel_verify" rippled API request.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableChannelVerifyResult.class)
@@ -17,8 +17,11 @@ public interface ChannelVerifyResult extends XrplResult {
   static ImmutableChannelVerifyResult.Builder builder() {
     return ImmutableChannelVerifyResult.builder();
   }
+
   /**
-   * If true, the signature is valid for the stated amount, channel, and public key.
+   * If {@code true}, the signature is valid for the stated amount, channel, and public key.
+   *
+   * @return {@code true} if the signature was valid, otherwise {@code false}.
    */
   @JsonProperty("signature_verified")
   boolean signatureVerified();

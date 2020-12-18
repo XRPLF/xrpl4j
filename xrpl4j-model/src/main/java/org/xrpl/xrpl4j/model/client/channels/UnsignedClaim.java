@@ -25,13 +25,15 @@ public interface UnsignedClaim {
   /**
    * The Channel ID of the channel that provides the XRP.
    *
-   * @return
+   * @return A {@link Hash256} containing the Channel ID.
    */
   @JsonProperty("Channel")
   Hash256 channel();
 
   /**
    * The amount of XRP, in drops, that the signature of this claim authorizes.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the amount of the claim.
    */
   @JsonProperty("Amount")
   XrpCurrencyAmount amount();

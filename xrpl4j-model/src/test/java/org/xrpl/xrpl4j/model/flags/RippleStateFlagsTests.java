@@ -22,6 +22,19 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+
+  /**
+   * Required-args constructor.
+   *
+   * @param lsfLowReserve   The current value of {@link this.lsfLowReserve}.
+   * @param lsfHighReserve  The current value of {@link this.lsfHighReserve}.
+   * @param lsfLowAuth      The current value of {@link this.lsfLowAuth}.
+   * @param lsfHighAuth     The current value of {@link this.lsfHighAuth}.
+   * @param lsfLowNoRipple  The current value of {@link this.lsfLowNoRipple}.
+   * @param lsfHighNoRipple The current value of {@link this.lsfHighNoRipple}.
+   * @param lsfLowFreeze    The current value of {@link this.lsfLowFreeze}.
+   * @param lsfHighFreeze   The current value of {@link this.lsfHighFreeze}.
+   */
   public RippleStateFlagsTests(
       boolean lsfLowReserve,
       boolean lsfHighReserve,
@@ -54,22 +67,6 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return getBooleanCombinations(8);
-  }
-
-  @Test
-  public void testFlagsConstructionWithIndividualFlags() {
-    Flags.RippleStateFlags flags = Flags.RippleStateFlags.builder()
-        .lsfLowReserve(lsfLowReserve)
-        .lsfHighReserve(lsfHighReserve)
-        .lsfLowAuth(lsfLowAuth)
-        .lsfHighAuth(lsfHighAuth)
-        .lsfLowNoRipple(lsfLowNoRipple)
-        .lsfHighNoRipple(lsfHighNoRipple)
-        .lsfLowFreeze(lsfLowFreeze)
-        .lsfHighFreeze(lsfHighFreeze)
-        .build();
-
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
   }
 
   @Test

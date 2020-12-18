@@ -20,6 +20,16 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param tfFullyCanonicalSig The current value of {@link this.tfFullyCanonicalSig}.
+   * @param tfSetfAuth          The current value of {@link this.tfSetfAuth}.
+   * @param tfSetNoRipple       The current value of {@link this.tfSetNoRipple}.
+   * @param tfClearNoRipple     The current value of {@link this.tfClearNoRipple}.
+   * @param tfSetFreeze         The current value of {@link this.tfSetFreeze}.
+   * @param tfClearFreeze       The current value of {@link this.tfClearFreeze}.
+   */
   public TrustSetFlagsTests(
       boolean tfFullyCanonicalSig,
       boolean tfSetfAuth,
@@ -50,14 +60,27 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
 
   @Test
   public void testFlagsConstructionWithIndividualFlags() {
-    Flags.TrustSetFlags flags = Flags.TrustSetFlags.builder()
+    Flags.TrustSetFlags.Builder builder = Flags.TrustSetFlags.builder()
         .tfFullyCanonicalSig(tfFullyCanonicalSig)
-        .tfSetfAuth(tfSetfAuth)
-        .tfSetNoRipple(tfSetNoRipple)
-        .tfClearNoRipple(tfClearNoRipple)
-        .tfSetFreeze(tfSetFreeze)
-        .tfClearFreeze(tfClearFreeze)
-        .build();
+        .tfSetfAuth(tfSetfAuth);
+
+    if (tfSetNoRipple) {
+      builder.tfSetNoRipple();
+    }
+
+    if (tfClearNoRipple) {
+      builder.tfClearNoRipple();
+    }
+
+    if (tfSetFreeze) {
+      builder.tfSetFreeze();
+    }
+
+    if (tfClearFreeze) {
+      builder.tfClearFreeze();
+    }
+
+    Flags.TrustSetFlags flags = builder.build();
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
   }

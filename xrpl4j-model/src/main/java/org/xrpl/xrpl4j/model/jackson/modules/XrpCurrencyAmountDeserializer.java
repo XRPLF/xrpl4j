@@ -7,6 +7,9 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson deserializer for {@link XrpCurrencyAmount}s.
+ */
 public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAmount> {
 
   public XrpCurrencyAmountDeserializer() {

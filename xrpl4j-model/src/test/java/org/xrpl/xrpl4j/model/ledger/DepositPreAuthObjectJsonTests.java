@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class DepositPreAuthObjectJsonTests extends AbstractJsonTest {
 

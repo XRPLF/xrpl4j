@@ -9,7 +9,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Represents a TrustLine between two accounts on the XRPL. This representation is only present in responses
- * to account_lines rippled method calls.
+ * to "account_lines" rippled API method calls.
  *
  * <p>The values in this object are from the perspective of the requesting account.
  */
@@ -24,27 +24,37 @@ public interface TrustLine {
 
   /**
    * The unique {@link Address} of the counterparty to this trust line.
+   *
+   * @return The unique {@link Address} of the counterparty to this trust line.
    */
   Address account();
 
   /**
    * Representation of the numeric balance currently held against this line. A positive balance means that
    * the perspective account holds value; a negative balance means that the perspective account owes value.
+   *
+   * @return A {@link String} representing a numeric balance.
    */
   String balance();
 
   /**
    * A Currency Code identifying what currency this trust line can hold.
+   *
+   * @return A {@link String} containing the currency code.
    */
   String currency();
 
   /**
    * The maximum amount of the given currency that this account is willing to owe the peer account.
+   *
+   * @return A {@link String} containing the numeric limit amount.
    */
   String limit();
 
   /**
    * The maximum amount of currency that the counterparty account is willing to owe the perspective account.
+   *
+   * @return A {@link String} containing the numeric limit amount for the peer account.
    */
   @JsonProperty("limit_peer")
   String limitPeer();
@@ -54,6 +64,8 @@ public interface TrustLine {
    * billion units. (For example, a value of 500 million represents a 0.5:1 ratio.)
    *
    * <p>As a special case, 0 is treated as a 1:1 ratio.
+   *
+   * @return An {@link UnsignedInteger} representing the quality in ratio.
    */
   @JsonProperty("quality_in")
   UnsignedInteger qualityIn();
@@ -63,12 +75,16 @@ public interface TrustLine {
    * billion units. (For example, a value of 500 million represents a 0.5:1 ratio.)
    *
    * <p>As a special case, 0 is treated as a 1:1 ratio.
+   *
+   * @return An {@link UnsignedInteger} representing the quality out ratio.
    */
   @JsonProperty("quality_out")
   UnsignedInteger qualityOut();
 
   /**
    * Whether or not this account has enabled the lsfNoRipple flag for this line.
+   *
+   * @return {@code true} if this account has set the lsfNoRipple flag for this trust line, otherwise {@code false}.
    */
   @JsonProperty("no_ripple")
   @Value.Default
@@ -78,6 +94,8 @@ public interface TrustLine {
 
   /**
    * Whether or not the peer account has enabled the lsfNoRipple flag for this line.
+   *
+   * @return {@code true} if the peer account has set the lsfNoRipple flag for this trust line, otherwise {@code false}.
    */
   @JsonProperty("no_ripple_peer")
   @Value.Default
@@ -87,6 +105,8 @@ public interface TrustLine {
 
   /**
    * Whether or not this account has authorized this trust line.
+   *
+   * @return {@code true} if this account has authorized this trust line, otherwise {@code false}.
    */
   @Value.Default
   default boolean authorized() {
@@ -95,6 +115,8 @@ public interface TrustLine {
 
   /**
    * Whether or not the peer account has authorized this trust line.
+   *
+   * @return {@code true} if the peer account has authorized this trust line, otherwise {@code false}.
    */
   @JsonProperty("peer_authorized")
   @Value.Default
@@ -104,6 +126,8 @@ public interface TrustLine {
 
   /**
    * Whether or not this account has frozen this trust line.
+   *
+   * @return {@code true} if this account has frozen this trust line, otherwise {@code false}.
    */
   @Value.Default
   default boolean freeze() {
@@ -112,6 +136,8 @@ public interface TrustLine {
 
   /**
    * Whether or not the peer account has frozen this trust line.
+   *
+   * @return {@code true} if the peer account has frozen this trust line, otherwise {@code false}.
    */
   @JsonProperty("freeze_peer")
   @Value.Default

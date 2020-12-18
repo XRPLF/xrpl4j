@@ -7,6 +7,9 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson serializer for {@link Address}es.
+ */
 public class AddressSerializer extends StdScalarSerializer<Address> {
 
   public AddressSerializer() {

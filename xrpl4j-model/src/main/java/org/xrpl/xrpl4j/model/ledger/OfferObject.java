@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -30,6 +29,8 @@ public interface OfferObject extends LedgerObject {
 
   /**
    * The value 0x006F, mapped to the string "Offer", indicates that this object is a {@link OfferObject} object.
+   *
+   * @return Always {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#OFFER}.
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
@@ -39,12 +40,16 @@ public interface OfferObject extends LedgerObject {
 
   /**
    * The sender of the {@link OfferObject}. Cashing the {@link OfferObject} debits this address's balance.
+   *
+   * @return The {@link Address} of the offer sender.
    */
   @JsonProperty("Account")
   Address account();
 
   /**
    * A bit-map of boolean flags.
+   *
+   * @return A {@link org.xrpl.xrpl4j.model.flags.Flags.OfferFlags}.
    */
   @JsonProperty("Flags")
   Flags.OfferFlags flags();
@@ -52,6 +57,8 @@ public interface OfferObject extends LedgerObject {
   /**
    * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that
    * created this offer.
+   *
+   * @return An {@link UnsignedInteger} representing the sequence number.
    */
   @JsonProperty("Sequence")
   UnsignedInteger sequence();
@@ -59,7 +66,7 @@ public interface OfferObject extends LedgerObject {
   /**
    * The remaining amount and type of currency requested by the offer creator.
    *
-   * @return amount.
+   * @return A {@link CurrencyAmount}.
    */
   @JsonProperty("TakerPays")
   CurrencyAmount takerPays();
@@ -68,7 +75,7 @@ public interface OfferObject extends LedgerObject {
   /**
    * The remaining amount and type of currency being provided by the offer creator.
    *
-   * @return amount.
+   * @return A {@link CurrencyAmount}.
    */
   @JsonProperty("TakerGets")
   CurrencyAmount takerGets();
@@ -77,7 +84,7 @@ public interface OfferObject extends LedgerObject {
   /**
    * The ID of the Offer Directory that links to this offer.
    *
-   * @return ID hash.
+   * @return A {@link Hash256} containing the ID.
    */
   @JsonProperty("BookDirectory")
   Hash256 bookDirectory();
@@ -86,7 +93,7 @@ public interface OfferObject extends LedgerObject {
    * A hint indicating which page of the offer directory links to this object, in case the directory consists of
    * multiple pages.
    *
-   * @return page number.
+   * @return A {@link String} containing the hint.
    */
   @JsonProperty("BookNode")
   String bookNode();
@@ -96,31 +103,41 @@ public interface OfferObject extends LedgerObject {
    * consists of multiple pages.
    * Note: The object does not contain a direct link to the owner directory containing it,
    * since that value can be derived from the Account.
+   *
+   * @return A {@link String} containing the hint.
    */
   @JsonProperty("OwnerNode")
   String ownerNode();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
+   *
+   * @return A {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
   Hash256 previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
+   *
+   * @return An {@link UnsignedInteger} representing the previous transaction ledger sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
   UnsignedInteger previousTransactionLedgerSequence();
 
   /**
-   * Indicates the time after which this Check is considered expired, in
+   * Indicates the time after which this offer is considered expired, in
    * <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} representing the expiration of this offer.
    */
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
 
   /**
    * The unique ID of the {@link OfferObject}.
+   *
+   * @return A {@link Hash256} containing the ID.
    */
   Hash256 index();
 

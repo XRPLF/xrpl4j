@@ -14,8 +14,8 @@ public class FeeResultJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     FeeResult feeResult = FeeResult.builder()
-        .currentLedgerSize("56")
-        .currentQueueSize("11")
+        .currentLedgerSize(UnsignedInteger.valueOf(56))
+        .currentQueueSize(UnsignedInteger.valueOf(11))
         .drops(
             FeeDrops.builder()
                 .baseFee(XrpCurrencyAmount.ofDrops(10))
@@ -24,7 +24,7 @@ public class FeeResultJsonTests extends AbstractJsonTest {
                 .openLedgerFee(XrpCurrencyAmount.ofDrops(2653937))
                 .build()
         )
-        .expectedLedgerSize("55")
+        .expectedLedgerSize(UnsignedInteger.valueOf(55))
         .ledgerCurrentIndex(LedgerIndex.of(UnsignedLong.valueOf(26575101)))
         .levels(
             FeeLevels.builder()
@@ -34,7 +34,7 @@ public class FeeResultJsonTests extends AbstractJsonTest {
                 .referenceLevel(XrpCurrencyAmount.ofDrops(256))
                 .build()
         )
-        .maxQueueSize("1100")
+        .maxQueueSize(UnsignedInteger.valueOf(1100))
         .status("success")
         .build();
 

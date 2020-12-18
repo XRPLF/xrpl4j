@@ -77,7 +77,6 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "  \"close_flags\" : 0,\n" +
         "  \"ledger_index\" : \"54300940\",\n" +
         "  \"ledger_hash\" : \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
         "  \"account_hash\" : \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +
@@ -94,7 +93,8 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
         "    \"Sequence\" : 2062124,\n" +
         "    \"LastLedgerSequence\" : 13010048,\n" +
         "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-        "    \"TxnSignature\" : \"3045022100E1F74E892839A9818D991F1E7B3D069ED499A5D412DD6C8C2634E87D0A37D3750220141AF3DCE6DA4D134614E49C99FFB1E498C238B46FC47CF3F79A989C4A2053AC\",\n" +
+        "    \"TxnSignature\" : \"3045022100E1F74E892839A9818D991F1E7B3D069ED499A5D412DD6C8C2634E87D0A37D375022014" +
+        "1AF3DCE6DA4D134614E49C99FFB1E498C238B46FC47CF3F79A989C4A2053AC\",\n" +
         "    \"Flags\" : 2147483648,\n" +
         "    \"Amount\" : \"1000000000\",\n" +
         "    \"Destination\" : \"rBkoiq4sVF5N6zu4QwZPm9iVQht4BtxtM1\",\n" +

@@ -1,11 +1,9 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 public class SubmitRequestParamsJsonTests extends AbstractJsonTest {
 

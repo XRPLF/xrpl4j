@@ -9,7 +9,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
- * Request parameters for the channel_verify rippled method.
+ * Request parameters for the "channel_verify" rippled API method.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableChannelVerifyRequestParams.class)
@@ -22,11 +22,15 @@ public interface ChannelVerifyRequestParams extends XrplRequestParams {
 
   /**
    * The amount of XRP, in drops, the provided {@link #signature()} authorizes.
+   *
+   * @return the xrp currency amount
    */
   XrpCurrencyAmount amount();
 
   /**
    * The Channel ID of the channel that provides the XRP.
+   *
+   * @return the hash 256
    */
   @JsonProperty("channel_id")
   Hash256 channelId();
@@ -34,12 +38,16 @@ public interface ChannelVerifyRequestParams extends XrplRequestParams {
   /**
    * The public key of the channel and the key pair that was used to create the {@link #signature()}, in
    * hexadecimal or the XRP Ledger's base58 format.
+   *
+   * @return A {@link String} containing the public key.
    */
   @JsonProperty("public_key")
   String publicKey();
 
   /**
    * The signature to verify, in hexadecimal.
+   *
+   * @return A {@link String} containing the signature.
    */
   String signature();
 

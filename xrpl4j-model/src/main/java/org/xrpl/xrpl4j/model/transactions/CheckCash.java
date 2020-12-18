@@ -30,19 +30,24 @@ public interface CheckCash extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows tfFullyCanonicalSig flag.
+   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows the
+   * {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Value.Derived
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**
    * The ID of the Check ledger object to cash, as a 64-character hexadecimal string.
+   *
+   * @return A {@link Hash256} containing the Check ID.
    */
   @JsonProperty("CheckID")
   Hash256 checkId();
@@ -51,6 +56,8 @@ public interface CheckCash extends Transaction {
    * Redeem the Check for exactly this amount, if possible.
    * The currency must match that of the {@link CheckCreate#sendMax()}SendMax of the corresponding {@link CheckCreate}
    * transaction. You must provide either this field or {@link CheckCash#deliverMin()}.
+   *
+   * @return An {@link Optional} of type {@link CurrencyAmount} containing the check amount.
    */
   @JsonProperty("Amount")
   Optional<CurrencyAmount> amount();
@@ -60,7 +67,7 @@ public interface CheckCash extends Transaction {
    * The currency must match that of the {@link CheckCreate#sendMax()}SendMax of the corresponding {@link CheckCreate}
    * transaction. You must provide either this field or {@link CheckCash#amount()}.
    *
-   * @return
+   * @return An {@link Optional} of type {@link CurrencyAmount} containing the minimum delivery amount for this check.
    */
   @JsonProperty("DeliverMin")
   Optional<CurrencyAmount> deliverMin();

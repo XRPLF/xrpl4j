@@ -8,27 +8,34 @@ import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 /**
- * Request parameters for the submit_multisigned API method.
- *
- * @param <TxnType> The type of {@link Transaction} to submit.
+ * Request parameters for the "submit_multisigned" rippled API method.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableSubmitMultiSignedRequestParams.class)
 @JsonDeserialize(as = ImmutableSubmitMultiSignedRequestParams.class)
-public interface SubmitMultiSignedRequestParams<TxnType extends Transaction> extends XrplRequestParams {
+public interface SubmitMultiSignedRequestParams extends XrplRequestParams {
 
-  static <T extends Transaction> ImmutableSubmitMultiSignedRequestParams.Builder<T> builder() {
+  static ImmutableSubmitMultiSignedRequestParams.Builder builder() {
     return ImmutableSubmitMultiSignedRequestParams.builder();
   }
 
-  static <TxnType extends Transaction> SubmitMultiSignedRequestParams<TxnType> of(TxnType multiSigTransaction) {
-    return SubmitMultiSignedRequestParams.<TxnType>builder().transaction(multiSigTransaction).build();
+  /**
+   * Construct a {@link SubmitMultiSignedRequestParams} with the given {@link Transaction}.
+   *
+   * @param multiSigTransaction A {@link Transaction} that has been signed by multiple accounts.
+   *
+   * @return A {@link SubmitMultiSignedRequestParams} populated with the given {@link Transaction}.
+   */
+  static SubmitMultiSignedRequestParams of(Transaction multiSigTransaction) {
+    return SubmitMultiSignedRequestParams.builder().transaction(multiSigTransaction).build();
   }
 
   /**
    * The {@link Transaction} to submit.
+   *
+   * @return The {@link Transaction} to submit.
    */
   @JsonProperty("tx_json")
-  TxnType transaction();
+  Transaction transaction();
 
 }

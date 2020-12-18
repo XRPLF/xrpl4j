@@ -20,6 +20,8 @@ public interface MemoWrapper {
 
   /**
    * A {@link Memo} containing arbitrary information.
+   *
+   * @return A {@link Memo}.
    */
   @JsonProperty("Memo")
   Memo memo();

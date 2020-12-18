@@ -16,6 +16,13 @@ public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
   boolean tfClose;
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param tfFullyCanonicalSig The current value of {@link this.tfFullyCanonicalSig}.
+   * @param tfRenew             The current value of {@link this.tfRenew}.
+   * @param tfClose             The current value of {@link this.tfClose}.
+   */
   public PaymentChannelClaimFlagsTests(boolean tfFullyCanonicalSig, boolean tfRenew, boolean tfClose) {
     this.tfFullyCanonicalSig = tfFullyCanonicalSig;
     this.tfRenew = tfRenew;

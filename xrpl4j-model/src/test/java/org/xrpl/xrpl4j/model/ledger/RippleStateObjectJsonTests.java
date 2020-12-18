@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.model.ledger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -10,7 +9,6 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class RippleStateObjectJsonTests extends AbstractJsonTest {
 

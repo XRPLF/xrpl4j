@@ -18,6 +18,14 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
 
   long expectedFlags;
 
+  /**
+   * Required-args constructor.
+   *
+   * @param tfFullyCanonicalSig The current value of {@link this.tfFullyCanonicalSig}.
+   * @param tfNoDirectRipple    The current value of {@link this.tfNoDirectRipple}.
+   * @param tfPartialPayment    The current value of {@link this.tfPartialPayment}.
+   * @param tfLimitQuality      The current value of {@link this.tfLimitQuality}.
+   */
   public PaymentFlagsTests(
       boolean tfFullyCanonicalSig,
       boolean tfNoDirectRipple,

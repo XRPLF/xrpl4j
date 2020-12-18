@@ -23,12 +23,16 @@ public interface ServerInfoLoad {
   /**
    * (Admin only) Information about the rate of different types of jobs the server is doing and how much time
    * it spends on each.
+   *
+   * @return A {@link List} of {@link JobType}s.
    */
   @JsonProperty("job_types")
   List<JobType> jobTypes();
 
   /**
    * (Admin only) The number of threads in the server's main job pool.
+   *
+   * @return An {@link UnsignedLong} representing the number of threads.
    */
   UnsignedLong threads();
 }

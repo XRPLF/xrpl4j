@@ -8,6 +8,9 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson deserializer for {@link LedgerIndex}s.
+ */
 public class LedgerIndexDeserializer extends StdDeserializer<LedgerIndex> {
 
   protected LedgerIndexDeserializer() {
@@ -15,7 +18,7 @@ public class LedgerIndexDeserializer extends StdDeserializer<LedgerIndex> {
   }
 
   @Override
-  public LedgerIndex deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+  public LedgerIndex deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
     return LedgerIndex.of(jsonParser.getValueAsString());
   }
 }

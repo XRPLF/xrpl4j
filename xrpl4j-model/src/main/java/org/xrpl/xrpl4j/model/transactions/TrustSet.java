@@ -21,6 +21,14 @@ public interface TrustSet extends Transaction {
     return ImmutableTrustSet.builder();
   }
 
+  /**
+   * Set of {@link Flags.TrustSetFlags}s for this {@link TrustSet}, which have been properly combined to yield a
+   * {@link Flags} object containing the {@link Long} representation of the set bits.
+   *
+   * <p>The value of the flags can either be set manually, or constructed using {@link Flags.TrustSetFlags.Builder}.
+   *
+   * @return The {@link Flags.PaymentFlags} for this transaction.
+   */
   @JsonProperty("Flags")
   @Value.Default
   default Flags.TrustSetFlags flags() {
@@ -29,6 +37,8 @@ public interface TrustSet extends Transaction {
 
   /**
    * The {@link IssuedCurrencyAmount} defining the trust line to create or modify.
+   *
+   * @return An {@link IssuedCurrencyAmount} containing the amount of the trust line.
    */
   @JsonProperty("LimitAmount")
   IssuedCurrencyAmount limitAmount();
@@ -36,6 +46,8 @@ public interface TrustSet extends Transaction {
   /**
    * Value incoming balances on this trust line at the ratio of this number per 1,000,000,000 units.
    * A value of 0 is shorthand for treating balances at face value.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} defining the inbound quality.
    */
   @JsonProperty("QualityIn")
   Optional<UnsignedInteger> qualityIn();
@@ -43,6 +55,8 @@ public interface TrustSet extends Transaction {
   /**
    * Value outgoing balances on this trust line at the ratio of this number per 1,000,000,000 units.
    * A value of 0 is shorthand for treating balances at face value.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger} defining the outbound quality.
    */
   @JsonProperty("QualityOut")
   Optional<UnsignedInteger> qualityOut();

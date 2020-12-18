@@ -95,20 +95,19 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
         "                    \"Signer\": {\n" +
         "                        \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
         "                        \"SigningPubKey\": \"02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B4" +
-        "                                             6BD77DF\",\n" +
+        "6BD77DF\",\n" +
         "                        \"TxnSignature\": \"3045022100CC9C56DF51251CB04BB047E5F3B5EF01A0F4A8A549D7A20A7402B" +
-        "                                            F54BA744064022061EF8EF1BCCBF144F480B32508B1D10FD4271831D5303F92" +
-        "                                            0DE41C64671CB5B7\"\n" +
+        "F54BA744064022061EF8EF1BCCBF144F480B32508B1D10FD4271831D5303F920DE41C64671CB5B7\"\n" +
         "                    }\n" +
         "                },\n" +
         "                {\n" +
         "                    \"Signer\": {\n" +
         "                        \"Account\": \"raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n\",\n" +
         "                        \"SigningPubKey\": \"03398A4EDAE8EE009A5879113EAA5BA15C7BB0F612A87F4103E793AC919BD" +
-        "                                             1E3C1\",\n" +
+        "1E3C1\",\n" +
         "                        \"TxnSignature\": \"3045022100FEE8D8FA2D06CE49E9124567DCA265A21A9F5465F4A9279F075E" +
-        "                                            4CE27E4430DE022042D5305777DA1A7801446780308897699412E4EDF0E1AE" +
-        "                                            FDF3C8A0532BDE4D08\"\n" +
+        "4CE27E4430DE022042D5305777DA1A7801446780308897699412E4EDF0E1AE" +
+        "FDF3C8A0532BDE4D08\"\n" +
         "                    }\n" +
         "                }\n" +
         "            ],\n" +

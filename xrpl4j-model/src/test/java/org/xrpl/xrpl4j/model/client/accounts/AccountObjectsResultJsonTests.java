@@ -133,7 +133,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
         "        \"ledger_index\": 14380380,\n" +
         "        \"limit\": 10,\n" +
         "        \"marker\": \"F60ADF645E78B69857D2E4AEC8B7742FEABC8431BD8611D099B428C3E816DF93," +
-        "                      94A9F05FEF9A153229E2E997E64919FD75AAE2028C8153E8EBDB4440BD3ECBB5\",\n" +
+        "94A9F05FEF9A153229E2E997E64919FD75AAE2028C8153E8EBDB4440BD3ECBB5\",\n" +
         "        \"status\": \"success\",\n" +
         "        \"validated\": true\n" +
         "    }";

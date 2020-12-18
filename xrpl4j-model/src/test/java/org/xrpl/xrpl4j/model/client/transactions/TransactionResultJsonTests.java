@@ -41,11 +41,10 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         "                    \"LastLedgerSequence\": 13010048,\n" +
         "                    \"Sequence\": 2062126,\n" +
         "                    \"SigningPubKey\": \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C001" +
-        "                                         8B37FC\",\n" +
+        "8B37FC\",\n" +
         "                    \"TransactionType\": \"Payment\",\n" +
         "                    \"TxnSignature\": \"3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE3962" +
-        "                                        4EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737F" +
-        "                                        A5436BCF8FEF29E4DD\",\n" +
+        "4EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD\",\n" +
         "                    \"validated\": false,\n" +
         "                    \"hash\": \"E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8\"\n" +
         "                }";

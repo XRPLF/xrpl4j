@@ -21,6 +21,8 @@ public class RetryStatusDecoder implements ErrorDecoder {
   private final List<Integer> retryableStatuses;
 
   /**
+   * Required-args constructor.
+   *
    * @param retryInterval       retry frequency.
    * @param retryHttpStatusCode http status code to retry
    * @param otherStatuses       additional http status codes to retry.

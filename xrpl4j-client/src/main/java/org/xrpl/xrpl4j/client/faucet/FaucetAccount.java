@@ -4,6 +4,7 @@ package org.xrpl.xrpl4j.client.faucet;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Optional;
 
@@ -16,30 +17,31 @@ import java.util.Optional;
 public interface FaucetAccount {
 
   /**
-   * X-address of the created account.
+   * X-Address of the created account.
    *
-   * @return
+   * @return A {@link String} containing the X-Address.
    */
+  @SuppressWarnings("MethodName")
   String xAddress();
 
   /**
    * Classic address of the created account.
    *
-   * @return
+   * @return An {@link Address} containing the classic address of the account.
    */
-  String classicAddress();
+  Address classicAddress();
 
   /**
    * Same value as classicAddress.
    *
-   * @return
+   * @return An {@link Address} containing the classic address of the account.
    */
-  String address();
+  Address address();
 
   /**
    * Private secret/seed for the address.
    *
-   * @return
+   * @return An {@link Optional} of type {@link String} containing the private key for the account.
    */
   Optional<String> secret();
 

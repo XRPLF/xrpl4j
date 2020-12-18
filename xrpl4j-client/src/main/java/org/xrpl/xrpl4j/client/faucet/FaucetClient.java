@@ -9,6 +9,7 @@ import feign.jackson.JacksonEncoder;
 import feign.optionals.OptionalDecoder;
 import okhttp3.HttpUrl;
 import org.xrpl.xrpl4j.client.RetryStatusDecoder;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -28,12 +29,13 @@ public interface FaucetClient {
    * Constructs a new client for the given url.
    *
    * @param faucetUrl url for the faucet server.
-   * @return
+   *
+   * @return A {@link FaucetClient}.
    */
   static FaucetClient construct(final HttpUrl faucetUrl) {
     Objects.requireNonNull(faucetUrl);
 
-    final ObjectMapper objectMapper = new ObjectMapper();
+    final ObjectMapper objectMapper = ObjectMapperFactory.create();
     return Feign.builder()
         .encoder(new JacksonEncoder(objectMapper))
         .decode404()
@@ -46,25 +48,15 @@ public interface FaucetClient {
   /**
    * Request a new account to be created and funded by the test faucet.
    *
-   * @return
-   */
-  @RequestLine("POST /accounts")
-  @Headers( {
-    HEADER_ACCEPT + ": " + APPLICATION_JSON,
-    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
-  })
-  ImmutableFaucetAccountResponse generateFaucetAccount();
-
-  /**
-   * Request a new account to be created and funded by the test faucet.
+   * @param request A {@link FundAccountRequest} to send.
    *
-   * @return
+   * @return A {@link FaucetAccountResponse} containing the faucet response fields.
    */
   @RequestLine("POST /accounts")
   @Headers( {
-    HEADER_ACCEPT + ": " + APPLICATION_JSON,
-    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+      HEADER_ACCEPT + ": " + APPLICATION_JSON,
+      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
-  ImmutableFaucetAccountResponse fundAccount(FundAccountRequest request);
+  FaucetAccountResponse fundAccount(FundAccountRequest request);
 
 }

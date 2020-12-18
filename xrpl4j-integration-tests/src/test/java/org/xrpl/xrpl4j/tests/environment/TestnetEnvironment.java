@@ -23,7 +23,7 @@ public class TestnetEnvironment implements XrplEnvironment {
 
   @Override
   public void fundAccount(Address classicAddress) {
-    faucetClient.fundAccount(FundAccountRequest.of(classicAddress.value()));
+    faucetClient.fundAccount(FundAccountRequest.of(classicAddress));
   }
 
 }

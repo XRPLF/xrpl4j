@@ -69,7 +69,8 @@ public abstract class AbstractIT {
 
   /**
    * Funds a wallet with 1000 XRP.
-   * @param wallet
+   *
+   * @param wallet The {@link Wallet} to fund.
    */
   protected void fundAccount(Wallet wallet) {
     fundAddress(wallet.classicAddress());
@@ -175,12 +176,12 @@ public abstract class AbstractIT {
     }
   }
 
-  protected <TxnType extends Transaction> TransactionResult<TxnType> getValidatedTransaction(
+  protected <T extends Transaction> TransactionResult<T> getValidatedTransaction(
       Hash256 transactionHash,
-      Class<TxnType> transactionType
+      Class<T> transactionType
   ) {
     try {
-      TransactionResult<TxnType> transaction = xrplClient.transaction(
+      TransactionResult<T> transaction = xrplClient.transaction(
           TransactionRequestParams.of(transactionHash),
           transactionType
       );

@@ -141,6 +141,7 @@ public class DepositPreAuthIT extends AbstractIT {
    *
    * @param wallet The {@link Wallet} of the account to enable Deposit Preauthorization on.
    * @param fee    The {@link XrpCurrencyAmount} of the ledger fee for the AccountSet transaction.
+   *
    * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */

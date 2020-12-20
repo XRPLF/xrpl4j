@@ -8,9 +8,9 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
-import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;

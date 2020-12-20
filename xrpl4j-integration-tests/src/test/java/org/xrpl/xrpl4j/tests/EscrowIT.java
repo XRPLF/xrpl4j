@@ -436,11 +436,12 @@ public class EscrowIT extends AbstractIT {
    * Returns the minimum time that can be used for escrow expirations. The ledger will not
    * accept an expiration time that is earlier than the last ledger close time so we must use the latter of
    * current time or ledger close time (which for unexplained reasons can sometimes be later than now).
+   *
    * @return
    */
   private Instant getMinExpirationTime() {
     LedgerResult result = getValidatedLedger();
-    Instant closeTime =  xrpTimestampToInstant(
+    Instant closeTime = xrpTimestampToInstant(
         result.ledger().closeTime()
             .orElseThrow(() ->
                 new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")

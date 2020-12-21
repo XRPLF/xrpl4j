@@ -36,7 +36,7 @@ You can use one or more xrpl4j modules in your Maven project by adding the follo
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-{module-name}</artifactId>
-  <version>1.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 

@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 public class TestnetEnvironment implements XrplEnvironment {
 
   private final FaucetClient faucetClient =
-    FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
+      FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
 
   private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s.altnet.rippletest.net:51234"));
 
@@ -23,7 +23,7 @@ public class TestnetEnvironment implements XrplEnvironment {
 
   @Override
   public void fundAccount(Address classicAddress) {
-    faucetClient.fundAccount(FundAccountRequest.of(classicAddress.value()));
+    faucetClient.fundAccount(FundAccountRequest.of(classicAddress));
   }
 
 }

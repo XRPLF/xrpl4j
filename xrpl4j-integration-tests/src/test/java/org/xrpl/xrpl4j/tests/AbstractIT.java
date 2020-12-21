@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -23,7 +24,6 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -69,7 +69,8 @@ public abstract class AbstractIT {
 
   /**
    * Funds a wallet with 1000 XRP.
-   * @param wallet
+   *
+   * @param wallet The {@link Wallet} to fund.
    */
   protected void fundAccount(Wallet wallet) {
     xrplEnvironment.fundAccount(wallet.classicAddress());
@@ -166,12 +167,12 @@ public abstract class AbstractIT {
     }
   }
 
-  protected <TxnType extends Transaction> TransactionResult<TxnType> getValidatedTransaction(
+  protected <T extends Transaction> TransactionResult<T> getValidatedTransaction(
       Hash256 transactionHash,
-      Class<TxnType> transactionType
+      Class<T> transactionType
   ) {
     try {
-      TransactionResult<TxnType> transaction = xrplClient.transaction(
+      TransactionResult<T> transaction = xrplClient.transaction(
           TransactionRequestParams.of(transactionHash),
           transactionType
       );

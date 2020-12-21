@@ -8,7 +8,7 @@ Use this module in your project by adding the following to your `pom.xml`:
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-model</artifactId>
-  <version>1.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 

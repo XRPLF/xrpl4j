@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -62,7 +63,10 @@ import org.xrpl.xrpl4j.wallet.Wallet;
  * A client which wraps a rippled network client and is responsible for higher order functionality such as signing
  * and serializing transactions, as well as hiding certain implementation details from the public API such as JSON
  * RPC request object creation.
+ *
+ * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
+@Beta
 public class XrplClient {
 
   private final ObjectMapper objectMapper;

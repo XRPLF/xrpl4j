@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.Beta;
 import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
@@ -24,7 +25,10 @@ import java.util.Optional;
  * A feign HTTP client for interacting with the rippled JSON RPC API. This client is strictly responsible for
  * making network calls and deserializing responses. All higher order functionality such as signing and serialization
  * should be implemented in a wrapper class.
+ *
+ * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
+@Beta
 public interface JsonRpcClient {
 
   Logger logger = LoggerFactory.getLogger(JsonRpcClient.class);

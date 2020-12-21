@@ -74,3 +74,34 @@ Wallet: Wallet{
 
 For full API documentation, check out the [`DefaultWalletFactory` Javadoc](TODO: Link to javadoc).
 
+
+### DefaultKeyPairService
+`DefaultWalletFactory` uses an instance of `DefaultKeyPairService`, which is responsible for generating seeds, deriving `KeyPair`s from seeds, signing messages, and verifying message signatures.
+
+The following code generates a seed, derives a `KeyPair` from the seed, signs a message with that `KeyPair`, and finally verifies the signature:
+```java
+KeyPairService keyPairService = DefaultKeyPairService.getInstance();
+String seed = keyPairService.generateSeed();
+System.out.println("Generated seed: " + seed);
+
+KeyPair keyPair = keyPairService.deriveKeyPair(seed);
+System.out.println("Derived KeyPair: " + keyPair);
+
+String message = BaseEncoding.base16().encode("test message".getBytes());
+String signature = keyPairService.sign(message, keyPair.privateKey());
+System.out.println("Message signature: " + signature);
+
+boolean verifies = keyPairService.verify(message, signature, keyPair.publicKey());
+System.out.println("Signature verified? : " + verifies);
+```
+
+which produces the following output:
+```
+Generated seed: sEd7Ld6RUVbX9cZEG3jx221tCkq3ZaP
+Derived KeyPair: KeyPair{
+  privateKey=ED2AAB0754AEB0638D8B87777031F8A524C41A1492AF910BEEF2FBFDF08E2C9168, 
+  publicKey=ED0924FE18B96F63BD9C1EF74BC2DA8093840A4F1A272BD13FDBF6E3399AF24448
+}
+Message signature: 6687EF589B2571938F42043A3617B09AEA92E5C2420C307E670145E9620149D8798224DF1AEB3E2B90CD30D2AD097530F8E32AF7324F2A0B573090C913189C00
+Signature verified? : true
+```

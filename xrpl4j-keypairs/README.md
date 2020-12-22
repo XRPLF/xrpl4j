@@ -1,4 +1,4 @@
-# xrpl4j-keypairs
+# xrpl4j-keypairs [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-keypairs/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-keypairs)
 Library for generating secure random seeds, deriving public/private keypairs, and signing messages and verifying signatures. This library supports both [ECDSA 
 using the secp256k1 elliptic curve and EdDSA using the Ed25519 elliptic curve](https://xrpl.org/cryptographic-keys.html#signing-algorithms).
 
@@ -72,7 +72,7 @@ Wallet: Wallet{
 }
 ```
 
-For full API documentation, check out the [`DefaultWalletFactory` Javadoc](TODO: Link to javadoc).
+For full API documentation, check out the [`DefaultWalletFactory` Javadoc](https://www.javadoc.io/doc/org.xrpl/xrpl4j-keypairs/latest/org/xrpl/xrpl4j/wallet/DefaultWalletFactory.html).
 
 
 ### DefaultKeyPairService

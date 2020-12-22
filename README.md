@@ -31,12 +31,38 @@ TODO: Link to Javadocs and ITs
 - A Java project manager such as Maven or Gradle
 
 ## Installation
-You can use one or more xrpl4j modules in your Maven project by adding the following to your `pom.xml` for each module (remember to replace `{module-name}`!):
+You can use one or more xrpl4j modules in your Maven project by adding one or more of the following to your `pom.xml`:
 ```
 <dependency>
   <groupId>org.xrpl</groupId>
-  <artifactId>xrpl4j-{module-name}</artifactId>
-  <version>1.0.0</version>
+  <artifactId>xrpl4j-address-codec</artifactId>
+  <version>0.1.0</version>
+</dependency>
+
+<dependency>
+  <groupId>org.xrpl</groupId>
+  <artifactId>xrpl4j-binary-codec</artifactId>
+  <version>0.1.0</version>
+</dependency>
+
+
+<dependency>
+  <groupId>org.xrpl</groupId>
+  <artifactId>xrpl4j-keypairs</artifactId>
+  <version>0.1.0</version>
+</dependency>
+
+
+<dependency>
+  <groupId>org.xrpl</groupId>
+  <artifactId>xrpl4j-model</artifactId>
+  <version>0.1.0</version>
+</dependency>
+
+<dependency>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>xrpl4j-client</artifactId>
+  <version>0.1.0</version>
 </dependency>
 ```
 

@@ -5,7 +5,7 @@
   <parent>
     <artifactId>xrpl4j-parent</artifactId>
     <groupId>org.xrpl</groupId>
-    <version>HEAD-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -19,7 +19,6 @@
     <dependency>
       <groupId>org.xrpl</groupId>
       <artifactId>xrpl4j-address-codec</artifactId>
-      <version>HEAD-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>

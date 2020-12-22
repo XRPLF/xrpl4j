@@ -1,7 +1,7 @@
 # xrpl4j
 [![codecov][codecov-image]][codecov-url]
 [![issues][github-issues-image]][github-issues-url]
-[![Javadocs](https://www.javadoc.io/badge/org.xrpl/xrpl4j.svg?color=blue)](https://www.javadoc.io/doc/org.xrpl/xrpl4j.svg)
+[![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-parent)
 
 A pure Java implementation of the core functionality necessary to interact with the XRP Ledger.  While this library does not provide a network client, it does support the difficult tasks of XRPL serialization and transaction signing, and provides useful Java bindings for XRP Ledger objects and rippled request/response objects.  
 

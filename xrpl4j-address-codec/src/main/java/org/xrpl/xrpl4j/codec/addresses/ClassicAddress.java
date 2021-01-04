@@ -23,9 +23,9 @@ public interface ClassicAddress {
   }
 
   /**
-   * A classic address, as a {@link String}.
+   * A classic address, as an {@link Address}.
    *
-   * @return A {@link String} containing the classic address.
+   * @return An {@link Address} containing the classic address.
    */
   Address classicAddress();
 

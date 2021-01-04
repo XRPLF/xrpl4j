@@ -33,7 +33,7 @@ public class Wrappers {
   }
 
   /**
-   * A wrapped {@link String} representing an address on the XRPL.
+   * A wrapped {@link String} representing an X-Address on the XRPL.
    */
   @Value.Immutable(intern = true)
   @Wrapped

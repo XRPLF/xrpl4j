@@ -33,6 +33,22 @@ public class Wrappers {
   }
 
   /**
+   * A wrapped {@link String} representing an X-Address on the XRPL.
+   */
+  @Value.Immutable(intern = true)
+  @Wrapped
+  @JsonSerialize(as = XAddress.class)
+  @JsonDeserialize(as = XAddress.class)
+  abstract static class _XAddress extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
    * A wrapped {@link String} containing the Hex representation of a 256-bit Hash.
    */
   @Value.Immutable

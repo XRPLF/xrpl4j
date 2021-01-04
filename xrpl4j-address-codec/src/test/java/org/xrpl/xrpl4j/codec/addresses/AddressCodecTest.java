@@ -9,6 +9,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.function.Function;
 
@@ -124,8 +125,8 @@ public class AddressCodecTest {
   @Test
   public void encodeDecodeAccountId() {
     testEncodeDecode(
-        accountId -> addressCodec.encodeAccountId(accountId),
-        accountId -> addressCodec.decodeAccountId(accountId),
+        accountId -> addressCodec.encodeAccountId(accountId).value(),
+        accountId -> addressCodec.decodeAccountId(Address.of(accountId)),
         unsignedByteArrayFromHex("BA8E78626EE42C41B46D46C3048DF3A1C3C87072"),
         "rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN"
     );

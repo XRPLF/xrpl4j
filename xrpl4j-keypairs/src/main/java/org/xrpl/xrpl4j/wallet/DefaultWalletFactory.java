@@ -64,7 +64,7 @@ public class DefaultWalletFactory implements WalletFactory {
         .publicKey(keyPair.publicKey())
         .isTest(isTest)
         .classicAddress(classicAddress)
-        .xAddress(addressCodec.classicAddressToXAddress(classicAddress.value(), isTest))
+        .xAddress(addressCodec.classicAddressToXAddress(classicAddress, isTest))
         .build();
   }
 

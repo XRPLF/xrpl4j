@@ -33,6 +33,10 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.xrpl</groupId>
+      <artifactId>xrpl4j-model</artifactId>
+    </dependency>
   </dependencies>
 
 

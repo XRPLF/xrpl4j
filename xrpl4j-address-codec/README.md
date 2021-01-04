@@ -45,13 +45,13 @@ Encoded seed: sEdTM1uX8pu2do5XvTnutH6HsouMaM2
 Similarly, XRPL addresses can be decoded from their Base58 format and vice versa:
 ```java
 AddressCodec addressCodec = AddressCodec.getInstance();
-String address = "rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN";
+Address address = Address.of("rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN");
 System.out.println("Address: " + address);
 
 UnsignedByteArray decoded = addressCodec.decodeAccountId(address);
 System.out.println("Decoded: " + decoded.hexValue());
 
-String encoded = addressCodec.encodeAccountId(decoded);
+Address encoded = addressCodec.encodeAccountId(decoded);
 
 System.out.println("Encoded Address: " + encoded);
 ```
@@ -67,11 +67,11 @@ An `AddressCodec` is also responsible for converting between Classic Addresses a
 ```java
 AddressCodec addressCodec = AddressCodec.getInstance();
 
-String address = "rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN";
+Address address = Address.of("rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN");
 UnsignedInteger tag = UnsignedInteger.valueOf(2345664);
 System.out.println(String.format("Address: %s; Tag: %s", address, tag));
 
-String xAddress = addressCodec.classicAddressToXAddress(address, tag, true);
+XAddress xAddress = addressCodec.classicAddressToXAddress(address, tag, true);
 System.out.println("X-Address: " + xAddress);
 
 ClassicAddress classicAddress = addressCodec.xAddressToClassicAddress(xAddress);

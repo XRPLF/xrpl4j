@@ -13,6 +13,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.XAddress;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -24,10 +26,10 @@ public class XAddressTest {
   @RunWith(Parameterized.class)
   public static class XAddressParameterizedTests {
 
-    String classicAddressAccountId;
+    Address classicAddressAccountId;
     UnsignedInteger tag;
-    String mainnetXAddress;
-    String testnetXAddress;
+    XAddress mainnetXAddress;
+    XAddress testnetXAddress;
 
     AddressCodec addressCodec;
 
@@ -45,10 +47,10 @@ public class XAddressTest {
         String mainnetXAddress,
         String testnetXAddress
     ) {
-      this.classicAddressAccountId = classicAddressAccountId;
+      this.classicAddressAccountId = Address.of(classicAddressAccountId);
       this.tag = tag;
-      this.mainnetXAddress = mainnetXAddress;
-      this.testnetXAddress = testnetXAddress;
+      this.mainnetXAddress = XAddress.of(mainnetXAddress);
+      this.testnetXAddress = XAddress.of(testnetXAddress);
       this.addressCodec = new AddressCodec();
     }
 
@@ -207,7 +209,11 @@ public class XAddressTest {
 
       assertThat(fromXAddress).isEqualTo(classicAddress);
 
-      String xAddress = addressCodec.classicAddressToXAddress(classicAddressAccountId, Optional.ofNullable(tag), false);
+      XAddress xAddress = addressCodec.classicAddressToXAddress(
+        classicAddressAccountId,
+        Optional.ofNullable(tag),
+        false
+      );
       assertThat(xAddress).isEqualTo(mainnetXAddress);
 
       assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
@@ -225,7 +231,11 @@ public class XAddressTest {
 
       assertThat(fromXAddress).isEqualTo(classicAddress);
 
-      String xAddress = addressCodec.classicAddressToXAddress(classicAddressAccountId, Optional.ofNullable(tag), true);
+      XAddress xAddress = addressCodec.classicAddressToXAddress(
+        classicAddressAccountId,
+        Optional.ofNullable(tag),
+        true
+      );
       assertThat(xAddress).isEqualTo(testnetXAddress);
 
       assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
@@ -247,7 +257,7 @@ public class XAddressTest {
 
     @Test
     public void xAddressWithBadChecksum() {
-      String xAddress = "XVLhHMPHU98es4dbozjVtdWzVrDjtV5fdx1mHp98tDMoQXa";
+      XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV5fdx1mHp98tDMoQXa");
 
       expectedException.expect(EncodingFormatException.class);
       expectedException.expectMessage("Checksum does not validate");
@@ -257,7 +267,7 @@ public class XAddressTest {
 
     @Test
     public void xAddressWithBadPrefix() {
-      String xAddress = "dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g";
+      XAddress xAddress = XAddress.of("dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g");
 
       expectedException.expect(DecodeException.class);
       expectedException.expectMessage("Invalid X-Address: Bad Prefix");
@@ -266,7 +276,7 @@ public class XAddressTest {
 
     @Test
     public void xAddressWith64BitTag() {
-      String xAddress = "XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh";
+      XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh");
 
       expectedException.expect(DecodeException.class);
       expectedException.expectMessage("Unsupported X-Address: 64-bit tags are not supported");

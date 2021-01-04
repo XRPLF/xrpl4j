@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.wallet;
 
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.XAddress;
 
 import java.util.Optional;
 
@@ -44,11 +45,10 @@ public interface Wallet {
   /**
    * The XRPL address of this wallet, in the X-Address form.
    *
-   * @return A {@link String} containing the X-Address of this wallet.
+   * @return An {@link XAddress} containing the X-Address of this wallet.
    */
-  // TODO: Create wrapper type (https://github.com/XRPLF/xrpl4j/issues/19)
   @SuppressWarnings("MethodName")
-  String xAddress();
+  XAddress xAddress();
 
   /**
    * Whether or not this wallet is on XRPL testnet or mainnet.

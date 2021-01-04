@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.codec.addresses;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * An address on the XRP Ledger represented in Classic Address form.  This form includes a Base58Check encoded
@@ -22,11 +23,11 @@ public interface ClassicAddress {
   }
 
   /**
-   * A classic address, as a {@link String}.
+   * A classic address, as an {@link Address}.
    *
-   * @return A {@link String} containing the classic address.
+   * @return An {@link Address} containing the classic address.
    */
-  String classicAddress();
+  Address classicAddress();
 
   /**
    * The tag of the classic address.

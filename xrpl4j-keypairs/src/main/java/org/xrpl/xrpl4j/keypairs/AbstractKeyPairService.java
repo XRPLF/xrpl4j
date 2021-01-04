@@ -43,7 +43,7 @@ public abstract class AbstractKeyPairService implements KeyPairService {
 
   @Override
   public Address deriveAddress(UnsignedByteArray publicKey) {
-    return Address.of(addressCodec.encodeAccountId(computePublicKeyHash(publicKey)));
+    return addressCodec.encodeAccountId(computePublicKeyHash(publicKey));
   }
 
   /**

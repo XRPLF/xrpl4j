@@ -46,7 +46,6 @@ public interface Wallet {
    *
    * @return A {@link String} containing the X-Address of this wallet.
    */
-  // TODO: Create wrapper type (https://github.com/XRPLF/xrpl4j/issues/19)
   @SuppressWarnings("MethodName")
   String xAddress();
 

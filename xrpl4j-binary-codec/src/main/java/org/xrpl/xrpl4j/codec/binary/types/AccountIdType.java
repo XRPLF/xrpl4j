@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Codec for XRPL AccountID type.
@@ -34,12 +35,12 @@ public class AccountIdType extends Hash160Type {
     }
     return HEX_REGEX.matcher(textValue).matches() ?
       new AccountIdType(UnsignedByteArray.fromHex(textValue))
-      : new AccountIdType(addressCodec.decodeAccountId(textValue));
+      : new AccountIdType(addressCodec.decodeAccountId(Address.of(textValue)));
   }
 
   @Override
   public JsonNode toJson() {
-    return new TextNode(addressCodec.encodeAccountId(value()));
+    return new TextNode(addressCodec.encodeAccountId(value()).value());
   }
 
 }

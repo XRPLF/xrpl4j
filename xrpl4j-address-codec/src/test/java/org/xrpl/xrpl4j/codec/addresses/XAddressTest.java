@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public class XAddressTest {
   @RunWith(Parameterized.class)
   public static class XAddressParameterizedTests {
 
-    String classicAddressAccountId;
+    Address classicAddressAccountId;
     UnsignedInteger tag;
     String mainnetXAddress;
     String testnetXAddress;
@@ -45,7 +46,7 @@ public class XAddressTest {
         String mainnetXAddress,
         String testnetXAddress
     ) {
-      this.classicAddressAccountId = classicAddressAccountId;
+      this.classicAddressAccountId = Address.of(classicAddressAccountId);
       this.tag = tag;
       this.mainnetXAddress = mainnetXAddress;
       this.testnetXAddress = testnetXAddress;

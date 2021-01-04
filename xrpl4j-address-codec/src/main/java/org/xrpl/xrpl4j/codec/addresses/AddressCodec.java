@@ -7,6 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -64,10 +65,12 @@ public class AddressCodec {
    * @param accountId An {@link UnsignedByteArray} containing the AccountID to be encoded.
    * @return The Base58 representation of accountId.
    */
-  public String encodeAccountId(final UnsignedByteArray accountId) {
+  public Address encodeAccountId(final UnsignedByteArray accountId) {
     Objects.requireNonNull(accountId);
 
-    return AddressBase58.encode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20));
+    return Address.of(
+      AddressBase58.encode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20))
+    );
   }
 
   /**
@@ -77,10 +80,14 @@ public class AddressCodec {
    * @return An {@link UnsignedByteArray} containing the decoded AccountID.
    * @see "https://xrpl.org/base58-encodings.html"
    */
-  public UnsignedByteArray decodeAccountId(final String accountId) {
+  public UnsignedByteArray decodeAccountId(final Address accountId) {
     Objects.requireNonNull(accountId);
 
-    return AddressBase58.decode(accountId, Lists.newArrayList(Version.ACCOUNT_ID), UnsignedInteger.valueOf(20)).bytes();
+    return AddressBase58.decode(
+      accountId.value(),
+      Lists.newArrayList(Version.ACCOUNT_ID),
+      UnsignedInteger.valueOf(20)
+    ).bytes();
   }
 
   /**
@@ -150,7 +157,7 @@ public class AddressCodec {
    *                       for Mainnet.
    * @return The X-Address representation of the classic address and destination tag.
    */
-  public String classicAddressToXAddress(final String classicAddress, final UnsignedInteger tag, final boolean test) {
+  public String classicAddressToXAddress(final Address classicAddress, final UnsignedInteger tag, final boolean test) {
     Objects.requireNonNull(classicAddress);
     Objects.requireNonNull(tag);
 
@@ -165,7 +172,7 @@ public class AddressCodec {
    *                       for Mainnet.
    * @return The X-Address representation of the classic address.
    */
-  public String classicAddressToXAddress(final String classicAddress, final boolean test) {
+  public String classicAddressToXAddress(final Address classicAddress, final boolean test) {
     Objects.requireNonNull(classicAddress);
 
     return classicAddressToXAddress(classicAddress, Optional.empty(), test);
@@ -181,7 +188,7 @@ public class AddressCodec {
    * @return The X-Address representation of the classic address and destination tag.
    */
   public String classicAddressToXAddress(
-      final String classicAddress,
+      final Address classicAddress,
       final Optional<UnsignedInteger> tag,
       final boolean test
   ) {
@@ -246,7 +253,7 @@ public class AddressCodec {
     Objects.requireNonNull(xAddress);
 
     DecodedXAddress decodedXAddress = decodeXAddress(xAddress);
-    String classicAddress = encodeAccountId(decodedXAddress.accountId());
+    Address classicAddress = encodeAccountId(decodedXAddress.accountId());
 
     return ClassicAddress.builder()
         .classicAddress(classicAddress)
@@ -338,7 +345,7 @@ public class AddressCodec {
    * @param address A potentially valid Classic Address.
    * @return {@code true} if the given address is a valid Classic Address, {@code false} if not.
    */
-  public boolean isValidClassicAddress(final String address) {
+  public boolean isValidClassicAddress(final Address address) {
     try {
       decodeAccountId(address);
     } catch (Exception e) {

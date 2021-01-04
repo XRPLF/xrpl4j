@@ -1,4 +1,5 @@
-# xrpl4j-address-codec
+# xrpl4j-address-codec [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-address-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-address-codec)
+
 Library for encoding seeds, addresses, and keys from bytes to the [XRPL Base58Check encoding format](https://xrpl.org/base58-encodings.html) and decoding Base58Check encoded `String`s to bytes.
 
 ## Installation
@@ -7,7 +8,7 @@ Use this module in your project by adding the following to your `pom.xml`:
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-address-codec</artifactId>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
 </dependency>
 ```
 
@@ -84,4 +85,4 @@ X-Address: TVLVXbLF8Yvds6YKtQYHDTDrZ18Anz2aHjqeKVTzVCy3oLo
 Classic address from X-Address: ClassicAddress{classicAddress=rJrRMgiRgrU6hDF4pgu5DXQdWyPbY35ErN, tag=2345664, test=true}
 ```
 
-For full documentation, please refer to the [`AddressCodec` Javadoc](TODO: Link javadoc).
+For full documentation, please refer to the [`AddressCodec` Javadoc](https://www.javadoc.io/doc/org.xrpl/xrpl4j-address-codec/latest/org/xrpl/xrpl4j/codec/addresses/AddressCodec.html).

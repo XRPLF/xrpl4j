@@ -1,4 +1,5 @@
-# xrpl4j-model
+# xrpl4j-model [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-model/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-model)
+
 Library providing Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html), [Transactions](https://xrpl.org/transaction-formats.html), and [request parameters](https://xrpl.org/request-formatting.html)/[response results](https://xrpl.org/response-formatting.html) for the 
 [rippled API](https://xrpl.org/public-rippled-methods.html).
 
@@ -8,7 +9,7 @@ Use this module in your project by adding the following to your `pom.xml`:
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-model</artifactId>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
 </dependency>
 ```
 

@@ -1,4 +1,5 @@
-# xrpl4j-binary-codec
+# xrpl4j-binary-codec [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
+
 Library to encode XRPL primitives in their JSON format to the [XRPL binary serialization format](https://xrpl.org/serialization.html) and vice versa.
 
 ## Installation
@@ -7,14 +8,14 @@ Use this module in your project by adding the following to your `pom.xml`:
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-binary-codec</artifactId>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
 </dependency>
 ```
 
 ## Usage
 The primary API can be found in [`XrplBinaryCodec`](xrpl4j-binary-codec/src/main/java/org/xrpl/xrpl4j/codec/binary/XrplBinaryCodec.java).
 
-For a full API reference, check out the [`XrplBinaryCodec` Javadoc](TODO: Link to javadoc).
+For a full API reference, check out the [`XrplBinaryCodec` Javadoc](https://www.javadoc.io/doc/org.xrpl/xrpl4j-binary-codec/latest/org/xrpl/xrpl4j/codec/binary/XrplBinaryCodec.html).
 
 ### Encode/Decode JSON and Binary
 The following code encodes a Payment transaction in JSON form to the canonical XRPL binary format as a hexadecimal `String`:

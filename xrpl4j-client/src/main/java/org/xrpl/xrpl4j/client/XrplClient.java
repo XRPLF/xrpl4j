@@ -64,6 +64,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.SetHook;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -610,6 +611,10 @@ public class XrplClient {
         .build();
     } else if (PaymentChannelFund.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return PaymentChannelFund.builder().from((PaymentChannelFund) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (SetHook.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return SetHook.builder().from((SetHook) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     } else if (SetRegularKey.class.isAssignableFrom(unsignedTransaction.getClass())) {

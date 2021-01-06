@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
   @JsonSubTypes.Type(value = ImmutableAccountRootObject.class, name = "AccountRoot"),
   //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
   @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
+  @JsonSubTypes.Type(value = ImmutableHookObject.class, name = "Hook"),
   @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
   //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
   @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
@@ -70,6 +71,11 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code FeeSettings} ledger objects.
      */
     FEE_SETTINGS("FeeSettings"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code HookObject} ledger objects.
+     */
+    HOOK("Hook"),
 
     /**
      * The {@link LedgerEntryType} for {@code LedgerHashes} ledger objects.

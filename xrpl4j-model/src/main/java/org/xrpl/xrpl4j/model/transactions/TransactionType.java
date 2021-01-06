@@ -83,6 +83,11 @@ public enum TransactionType {
   PAYMENT_CHANNEL_FUND("PaymentChannelFund"),
 
   /**
+   * The {@link TransactionType} for the {@link SetHook} transaction.
+   */
+  SET_HOOK("SetHook"),
+
+  /**
    * The {@link TransactionType} for the {@link SetRegularKey} transaction.
    */
   SET_REGULAR_KEY("SetRegularKey"),

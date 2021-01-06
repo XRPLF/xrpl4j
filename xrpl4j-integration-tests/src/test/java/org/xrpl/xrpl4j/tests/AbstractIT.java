@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -23,7 +24,6 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -72,8 +72,17 @@ public abstract class AbstractIT {
    * @param wallet
    */
   protected void fundAccount(Wallet wallet) {
-    xrplEnvironment.fundAccount(wallet.classicAddress());
+    fundAddress(wallet.classicAddress());
   }
+
+  /**
+   * Funds an address with 1000 XRP.
+   * @param wallet
+   */
+  protected void fundAddress(Address address) {
+    xrplEnvironment.fundAccount(address);
+  }
+
 
   //////////////////////
   // Ledger Helpers

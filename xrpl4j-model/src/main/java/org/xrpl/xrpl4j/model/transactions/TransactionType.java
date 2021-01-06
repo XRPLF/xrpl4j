@@ -22,6 +22,7 @@ public enum TransactionType {
   PAYMENT_CHANNEL_CLAIM("PaymentChannelClaim"),
   PAYMENT_CHANNEL_CREATE("PaymentChannelCreate"),
   PAYMENT_CHANNEL_FUND("PaymentChannelFund"),
+  SET_HOOK("SetHook"),
   SET_REGULAR_KEY("SetRegularKey"),
   SIGNER_LIST_SET("SignerListSet"),
   TRUST_SET("TrustSet");

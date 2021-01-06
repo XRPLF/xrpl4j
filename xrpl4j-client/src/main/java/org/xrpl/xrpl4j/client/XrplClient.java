@@ -9,6 +9,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -24,7 +25,6 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
@@ -50,6 +50,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.SetHook;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -404,6 +405,10 @@ public class XrplClient {
       return PaymentChannelFund.builder().from((PaymentChannelFund) unsignedTransaction)
           .transactionSignature(signature)
           .build();
+    } else if (SetHook.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return SetHook.builder().from((SetHook) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
     } else if (SetRegularKey.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return SetRegularKey.builder().from((SetRegularKey) unsignedTransaction)
           .transactionSignature(signature)

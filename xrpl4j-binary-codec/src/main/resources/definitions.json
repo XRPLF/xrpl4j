@@ -445,6 +445,16 @@
       }
     ],
     [
+      "EmitGeneration",
+      {
+        "nth": 43,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt32"
+      }
+    ],
+    [
       "IndexNext",
       {
         "nth": 1,
@@ -1135,6 +1145,16 @@
       }
     ],
     [
+      "EmitCallback",
+      {
+        "nth": 9,
+        "isVLEncoded": true,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "AccountID"
+      }
+    ],
+    [
       "ObjectEndMarker",
       {
         "nth": 1,
@@ -1268,6 +1288,16 @@
       "DisabledValidator",
       {
         "nth": 19,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "STObject"
+      }
+    ],
+    [
+      "EmitDetails",
+      {
+        "nth": 12,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -1535,13 +1565,53 @@
       }
     ],
     [
-      "BeginLedgerSeq",
+      "HookStateCount",
       {
         "nth": 40,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
         "type": "UInt32"
+      }
+    ],
+    [
+      "HookReserveCount",
+      {
+        "nth": 41,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "HookDataMaxSize",
+      {
+        "nth": 42,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt32"
+      }
+    ],
+    [
+      "HookOn",
+      {
+        "nth": 16,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt64"
+      }
+    ],
+    [
+      "EmitBurden",
+      {
+        "nth": 12,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt64"
       }
     ],
     [
@@ -1568,6 +1638,36 @@
       "CheckID",
       {
         "nth": 24,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Hash256"
+      }
+    ],
+    [
+      "ValidatedHash",
+      {
+        "nth": 25,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Hash256"
+      }
+    ],
+    [
+      "EmitParentTxnID",
+      {
+        "nth": 10,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Hash256"
+      }
+    ],
+    [
+      "EmitNonce",
+      {
+        "nth": 11,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -1619,6 +1719,7 @@
     "telCAN_NOT_QUEUE_BLOCKED": -389,
     "telCAN_NOT_QUEUE_FEE": -388,
     "telCAN_NOT_QUEUE_FULL": -387,
+
     "temMALFORMED": -299,
     "temBAD_AMOUNT": -298,
     "temBAD_CURRENCY": -297,
@@ -1654,6 +1755,7 @@
     "temCANNOT_PREAUTH_SELF": -267,
     "temUNCERTAIN": -266,
     "temUNKNOWN": -265,
+
     "tefFAILURE": -199,
     "tefALREADY": -198,
     "tefBAD_ADD_AUTH": -197,
@@ -1673,6 +1775,7 @@
     "tefBAD_AUTH_MASTER": -183,
     "tefINVARIANT_FAILED": -182,
     "tefTOO_BIG": -181,
+
     "terRETRY": -99,
     "terFUNDS_SPENT": -98,
     "terINSUF_FEE_B": -97,
@@ -1684,7 +1787,9 @@
     "terLAST": -91,
     "terNO_RIPPLE": -90,
     "terQUEUED": -89,
+
     "tesSUCCESS": 0,
+
     "tecCLAIM": 100,
     "tecPATH_PARTIAL": 101,
     "tecUNFUNDED_ADD": 102,
@@ -1726,6 +1831,7 @@
   },
   "TRANSACTION_TYPES": {
     "Invalid": -1,
+
     "Payment": 0,
     "EscrowCreate": 1,
     "EscrowFinish": 2,
@@ -1748,8 +1854,12 @@
     "DepositPreauth": 19,
     "TrustSet": 20,
     "AccountDelete": 21,
+    "SetHook": 22,
+    "Invoke": 23,
+    "Batch": 24,
+
     "EnableAmendment": 100,
     "SetFee": 101,
     "UNLModify": 102
   }
-}s
+}

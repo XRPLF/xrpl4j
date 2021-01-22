@@ -13,7 +13,7 @@ Use this module in your project by adding the following to your `pom.xml`:
 ```
 
 ## Usage
-The primary API for this module can be found in the [`AddressCodec`](./src/main/java/com/ripple/xrpl4j/codec/addresses/AddressCodec.java) class.
+The primary API for this module can be found in the [`AddressCodec`](./src/main/java/org/xrpl/xrpl4j/codec/addresses/AddressCodec.java) class.
 
 ### Encode/Decode Seeds
 The following code decodes a Base58 encoded seed value, then re-encodes the decoded bytes:

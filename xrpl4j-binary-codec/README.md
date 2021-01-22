@@ -13,7 +13,7 @@ Use this module in your project by adding the following to your `pom.xml`:
 ```
 
 ## Usage
-The primary API can be found in [`XrplBinaryCodec`](xrpl4j-binary-codec/src/main/java/org/xrpl/xrpl4j/codec/binary/XrplBinaryCodec.java).
+The primary API can be found in [`XrplBinaryCodec`](./src/main/java/org/xrpl/xrpl4j/codec/binary/XrplBinaryCodec.java).
 
 For a full API reference, check out the [`XrplBinaryCodec` Javadoc](https://www.javadoc.io/doc/org.xrpl/xrpl4j-binary-codec/latest/org/xrpl/xrpl4j/codec/binary/XrplBinaryCodec.html).
 

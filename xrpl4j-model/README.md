@@ -35,7 +35,7 @@ EscrowCreate escrowCreate = EscrowCreate.builder()
     .build();
 ```
 
-These objects can be serialized to and deserialized from the rippled JSON representations using the provided Jackson `ObjectMapper`, which can be instantiated using [`ObjectMapperFactory`](src/main/java/org/xrpl/xrpl4j/model/jackson/ObjectMapperFactory.java).
+These objects can be serialized to and deserialized from the rippled JSON representations using the provided Jackson `ObjectMapper`, which can be instantiated using [`ObjectMapperFactory`](./src/main/java/org/xrpl/xrpl4j/model/jackson/ObjectMapperFactory.java).
 
 Using the `EscrowCreate` object we just created, we can use the supplied `ObjectMapper` to serialize to JSON:
 ```java

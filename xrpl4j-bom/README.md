@@ -28,6 +28,6 @@ To use this bom in your project, add the following to your the `<dependencyManam
 </project>
 ```
 
-With this in place, whenever you want add a `<dependency/>` you won't need to worr about specifying the version. Instead, version numbers are controlled by the BOM you import, as in the example above, which will use only version `1.0.1` of all XRPL-4j dependencies.
+With this in place, whenever you want add a `<dependency/>` you won't need to worry about specifying the version. Instead, version numbers are controlled by the BOM you import, as in the example above, which will use only version `1.0.1` of all XRPL-4j dependencies.
 
 For more information on how BOM files work, consult this [tutorial](https://www.baeldung.com/spring-maven-bom) or other on Google.

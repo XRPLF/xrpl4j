@@ -8,14 +8,14 @@ Use this module in your project by adding the following to your `pom.xml`:
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-keypairs</artifactId>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
 ## Usage
-The [`DefaultWalletFactory`](xrpl4j-keypairs/src/main/java/org/xrpl/xrpl4j/wallet/DefaultWalletFactory.java) class can be used to generate a random wallet, 
+The [`DefaultWalletFactory`](./src/main/java/org/xrpl/xrpl4j/wallet/DefaultWalletFactory.java) class can be used to generate a random wallet, 
 or to restore a wallet from a seed or a key pair. `DefaultWalletFactory` uses a 
-[`DefaultKeyPairService`](xrpl4j-keypairs/src/main/java/org/xrpl/xrpl4j/keypairs/DefaultKeyPairService.java), which can also be used on its own, to 
+[`DefaultKeyPairService`](./src/main/java/org/xrpl/xrpl4j/keypairs/DefaultKeyPairService.java), which can also be used on its own, to 
 generate seeds and derive keypairs and addresses.
 
 ### DefaultWalletFactory

@@ -8,12 +8,12 @@ Use this module in your project by adding the following to your `pom.xml`:
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-address-codec</artifactId>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
 ## Usage
-The primary API for this module can be found in the [`AddressCodec`](https://github.com/ripple/xrpl4j/blob/master/xrpl4j-address-codec/src/main/java/com/ripple/xrpl4j/codec/addresses/AddressCodec.java) class.
+The primary API for this module can be found in the [`AddressCodec`](./src/main/java/org/xrpl/xrpl4j/codec/addresses/AddressCodec.java) class.
 
 ### Encode/Decode Seeds
 The following code decodes a Base58 encoded seed value, then re-encodes the decoded bytes:

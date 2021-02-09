@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -11,6 +13,10 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class TransactionResultJsonTests extends AbstractJsonTest {
 
@@ -32,6 +38,10 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
                 "39F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
             .build())
         .build();
+
+    assertThat(paymentResult.transaction().closeDateHuman()).hasValue(
+      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneId.of("UTC"))
+    );
 
     String json = "{\n" +
         "                    \"Account\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +

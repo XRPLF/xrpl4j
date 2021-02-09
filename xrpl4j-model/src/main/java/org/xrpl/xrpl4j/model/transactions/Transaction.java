@@ -22,6 +22,7 @@ import java.util.Optional;
  */
 public interface Transaction {
 
+  // XRP Ledger represents dates using a custom epoch called Ripple Epoch
   long RIPPLE_EPOCH = 946684800;
 
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =

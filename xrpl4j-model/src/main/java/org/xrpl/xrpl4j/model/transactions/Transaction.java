@@ -1,21 +1,27 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.model.ledger.SignerListObject;
-
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value.Auxiliary;
+import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
 /**
  * Provides an abstract interface for all concrete XRPL transactions.
  */
 public interface Transaction {
+
+  long RIPPLE_EPOCH = 946684800;
 
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
       new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
@@ -167,5 +173,24 @@ public interface Transaction {
    */
   @JsonProperty("TxnSignature")
   Optional<String> transactionSignature();
+
+  /**
+   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
+   * This is an undocumented field.
+   */
+  @JsonProperty("date")
+  Optional<UnsignedLong> closeDate();
+
+  /**
+   * The approximate close time in UTC offset.
+   * This is derived from undocumented field.
+   */
+  @JsonIgnore
+  @Auxiliary
+  default Optional<ZonedDateTime> closeDateHuman() {
+    return closeDate().map(secondsSinceRippleEpoch ->
+      Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
+    );
+  }
 
 }

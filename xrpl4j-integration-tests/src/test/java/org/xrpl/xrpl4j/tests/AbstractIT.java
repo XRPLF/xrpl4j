@@ -5,6 +5,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import com.google.common.primitives.UnsignedLong;
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.awaitility.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +42,6 @@ import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.wallet.Wallet;
 import org.xrpl.xrpl4j.wallet.WalletFactory;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public abstract class AbstractIT {
 
@@ -162,7 +161,7 @@ public abstract class AbstractIT {
           .ledgerIndex(LedgerIndex.VALIDATED)
           .build();
       return xrplClient.accountInfo(params);
-    } catch (Exception | JsonRpcClientErrorException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

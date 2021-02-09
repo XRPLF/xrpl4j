@@ -6,7 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -33,11 +36,13 @@ public class SubmitPaymentIT extends AbstractIT {
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
-    this.scanForResult(
+    TransactionResult<Payment> validatedPayment = this.scanForResult(
         () -> this.getValidatedTransaction(
             result.transactionResult().hash(),
             Payment.class)
     );
+
+    assertPaymentCloseTimeMatchesLedgerCloseTime(validatedPayment);
   }
 
   @Test
@@ -70,6 +75,16 @@ public class SubmitPaymentIT extends AbstractIT {
             result.transactionResult().hash(),
             Payment.class)
     );
+  }
+
+  private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
+      throws JsonRpcClientErrorException {
+    LedgerResult ledger = xrplClient.ledger(
+        LedgerRequestParams.builder().ledgerIndex(validatedPayment.ledgerIndex().get()).build());
+
+    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
+    assertThat(validatedPayment.transaction().closeDateHuman().get())
+        .isEqualTo(ledger.ledger().closeTimeHuman());
   }
 
 }

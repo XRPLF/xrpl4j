@@ -22,6 +22,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
             .account(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
             .amount(XrpCurrencyAmount.of(UnsignedLong.valueOf(1000000000)))
             .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
+            .closeDate(UnsignedLong.valueOf(666212460))
             .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
             .flags(Flags.PaymentFlags.of(2147483648L))
             .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
@@ -35,6 +36,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
     String json = "{\n" +
         "                    \"Account\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
         "                    \"Amount\": \"1000000000\",\n" +
+        "                    \"date\": 666212460,\n" +
         "                    \"Destination\": \"r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS\",\n" +
         "                    \"Fee\": \"12\",\n" +
         "                    \"Flags\": 2147483648,\n" +

@@ -7,14 +7,15 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value.Auxiliary;
+import org.xrpl.xrpl4j.model.ledger.SignerListObject;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import org.immutables.value.Value.Auxiliary;
-import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
 /**
  * Provides an abstract interface for all concrete XRPL transactions.

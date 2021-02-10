@@ -15,7 +15,7 @@ import java.io.IOException;
 public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
   public LedgerIndexSerializer() {
-    super(Address.class, false);
+    super(LedgerIndex.class, false);
   }
 
   @Override

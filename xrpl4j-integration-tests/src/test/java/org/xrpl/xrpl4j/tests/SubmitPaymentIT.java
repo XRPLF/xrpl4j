@@ -34,11 +34,15 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+      result.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    );
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transactionResult().hash(),
+            result.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             Payment.class)
     );
 
@@ -68,11 +72,15 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+      result.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    );
 
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            result.transactionResult().hash(),
+            result.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             Payment.class)
     );
   }

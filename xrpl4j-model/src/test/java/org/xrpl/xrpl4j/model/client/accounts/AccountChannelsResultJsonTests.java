@@ -9,6 +9,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class AccountChannelsResultJsonTests extends AbstractJsonTest {
@@ -72,7 +73,7 @@ public class AccountChannelsResultJsonTests extends AbstractJsonTest {
         .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(37230600)))
         .status("success")
         .limit(UnsignedInteger.valueOf(10))
-        .marker("marker")
+        .marker(Marker.of("marker"))
         .validated(true)
         .addChannels(
             PaymentChannelResultObject.builder()

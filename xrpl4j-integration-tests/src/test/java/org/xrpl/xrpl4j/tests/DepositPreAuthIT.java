@@ -43,7 +43,8 @@ public class DepositPreAuthIT extends AbstractIT {
     SubmitResult<DepositPreAuth> result = xrplClient.submit(receiverWallet, depositPreAuth);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
-        result.transactionResult().hash()
+        result.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
@@ -72,15 +73,16 @@ public class DepositPreAuthIT extends AbstractIT {
     SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
-        paymentResult.transactionResult().hash()
+        paymentResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
     // Validate that the Payment was included in a validated ledger
     TransactionResult<Payment> validatedPayment = this.scanForResult(
         () -> this.getValidatedTransaction(
-            paymentResult.transactionResult()
-                .hash(),
+            paymentResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             Payment.class)
     );
 
@@ -159,7 +161,7 @@ public class DepositPreAuthIT extends AbstractIT {
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(wallet, accountSet);
     assertThat(accountSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
-        accountSetResult.transactionResult().hash()
+        accountSetResult.transactionResult().transaction().hash()
     );
     return this.scanForResult(
         () -> this.getValidatedAccountInfo(wallet.classicAddress()),

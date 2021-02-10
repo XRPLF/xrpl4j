@@ -79,7 +79,8 @@ public class OfferIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transactionResult().hash()
+        response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
     usdIssued = true;
   }
@@ -124,7 +125,8 @@ public class OfferIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transactionResult().hash()
+        response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
@@ -200,7 +202,8 @@ public class OfferIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transactionResult().hash()
+        response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
@@ -254,7 +257,8 @@ public class OfferIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-        response.transactionResult().hash()
+        response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////

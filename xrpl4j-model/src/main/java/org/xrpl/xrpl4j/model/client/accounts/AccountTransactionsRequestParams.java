@@ -9,6 +9,7 @@ import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.Optional;
 
@@ -37,6 +38,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return A {@link LedgerIndex} with a default of "-1".
    */
+  @Value.Default
   @JsonProperty("ledger_index_min")
   default LedgerIndex ledgerIndexMin() {
     return LedgerIndex.of("-1");
@@ -48,6 +50,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return A {@link LedgerIndex} with a default of "-1".
    */
+  @Value.Default
   @JsonProperty("ledger_index_max")
   default LedgerIndex ledgerIndexMax() {
     return LedgerIndex.of("-1");
@@ -108,6 +111,6 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return An optionally-present {@link String} containing the marker.
    */
-  Optional<String> marker();
+  Optional<Marker> marker();
 
 }

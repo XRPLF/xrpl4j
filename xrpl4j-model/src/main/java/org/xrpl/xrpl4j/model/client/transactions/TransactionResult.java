@@ -40,7 +40,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    *
    * @return A {@link Hash256} containing the transaction hash.
    */
-  Hash256 hash();
+//  Hash256 hash();
 
   /**
    * The ledger index of the ledger that includes this {@link Transaction}.

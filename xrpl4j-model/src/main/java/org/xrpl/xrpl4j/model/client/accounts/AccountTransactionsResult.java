@@ -9,6 +9,7 @@ import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.List;
@@ -62,19 +63,19 @@ public interface AccountTransactionsResult extends XrplResult {
    *
    * @return A {@link String} containing the marker.
    */
-  Optional<String> marker();
+  Optional<Marker> marker();
 
   /**
    * Array of transactions matching the request's criteria.
    *
-   * @return A {@link List} of {@link TransactionResult}s.
+   * @return A {@link List} of {@link AccountTransactionsTransactionResult}s.
    */
-  List<TransactionResult<? extends Transaction>> transactions();
+  List<AccountTransactionsTransactionResult<? extends Transaction>> transactions();
 
   /**
    * Whether or not the information in this response comes from a validated ledger version.
    *
-   * @return {@code true} if the information is from a validated ledger, otherwise {@link false}.
+   * @return {@code true} if the information is from a validated ledger, otherwise {@code false}.
    */
   @Value.Default
   default boolean validated() {

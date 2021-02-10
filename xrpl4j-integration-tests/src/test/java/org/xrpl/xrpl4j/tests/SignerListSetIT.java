@@ -90,7 +90,8 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListSetResult.transactionResult().hash()
+            signerListSetResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////////
@@ -160,7 +161,8 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-            paymentResult.transaction().hash()
+          paymentResult.transaction().transaction().hash()
+            .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
   }
 
@@ -215,7 +217,8 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListSetResult.transactionResult().hash()
+            signerListSetResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////////
@@ -251,7 +254,8 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListDeleteResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListDeleteResult.transactionResult().hash()
+            signerListDeleteResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////////

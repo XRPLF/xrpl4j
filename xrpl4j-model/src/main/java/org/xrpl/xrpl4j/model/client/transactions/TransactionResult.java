@@ -36,13 +36,6 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   TxnType transaction();
 
   /**
-   * The SHA-512Half hash of the transaction in hexadecimal form.
-   *
-   * @return A {@link Hash256} containing the transaction hash.
-   */
-//  Hash256 hash();
-
-  /**
    * The ledger index of the ledger that includes this {@link Transaction}.
    *
    * @return An optionally-present {@link LedgerIndex}.

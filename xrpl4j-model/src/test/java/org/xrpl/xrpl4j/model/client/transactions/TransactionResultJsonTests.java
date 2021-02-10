@@ -23,7 +23,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
   @Test
   public void testPaymentTransactionResultJson() throws JsonProcessingException, JSONException {
     TransactionResult<Payment> paymentResult = TransactionResult.<Payment>builder()
-//        .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
         .transaction(Payment.builder()
             .account(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
             .amount(XrpCurrencyAmount.of(UnsignedLong.valueOf(1000000000)))

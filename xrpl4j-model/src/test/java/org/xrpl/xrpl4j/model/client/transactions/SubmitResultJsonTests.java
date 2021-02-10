@@ -50,7 +50,6 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
                     "02203B61DEE4AC027C5743A1B56AF568D1E2B8E79BB9E9E14744AC87F38375C3C2F1")
                 .hash(Hash256.of("5B31A7518DC304D5327B4887CD1F7DC2C38D5F684170097020C7C9758B973847"))
                 .build())
-//            .hash(Hash256.of("5B31A7518DC304D5327B4887CD1F7DC2C38D5F684170097020C7C9758B973847"))
             .build())
         .validatedLedgerIndex(LedgerIndex.of(UnsignedLong.valueOf(21184416)))
         .build();

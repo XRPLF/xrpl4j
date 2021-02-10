@@ -56,7 +56,6 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
                         .hash(Hash256.of("E22068A818EA853DD3B7B574FF58C3A84D1F664495FF6ECD11D3B03B1D2FC2F7"))
                         .build()
                 )
-//                .hash(Hash256.of("E22068A818EA853DD3B7B574FF58C3A84D1F664495FF6ECD11D3B03B1D2FC2F7"))
                 .build(),
             TransactionResult.builder()
                 .transaction(
@@ -73,7 +72,6 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
                         .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
                         .build()
                 )
-//                .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
                 .build()
         )
         .build();

@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
+
+import java.util.Optional;
 
 /**
  * The transaction that gets returned as part of a response to the account_tx rippled method.
@@ -28,6 +31,14 @@ public interface AccountTransactionsTransactionResult<T extends Transaction> ext
    */
   @JsonProperty("tx")
   T transaction();
+
+  /**
+   * Metadata about the transaction if this data is from a validated ledger version.
+   *
+   * @return {@link TransactionMetadata} or empty for non-validated transactions.
+   */
+  @JsonProperty("meta")
+  Optional<TransactionMetadata> metadata();
 
   /**
    * Whether or not this transaction came from a validated ledger.

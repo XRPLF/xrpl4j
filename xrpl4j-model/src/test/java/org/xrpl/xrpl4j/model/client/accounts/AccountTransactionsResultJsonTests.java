@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
@@ -46,6 +47,13 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
               .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(57112015)))
               .build()
           )
+          .metadata(
+            TransactionMetadata.builder()
+              .transactionIndex(UnsignedInteger.valueOf(12))
+              .transactionResult("tesSUCCESS")
+              .deliveredAmount(XrpCurrencyAmount.ofDrops(455643030))
+              .build()
+          )
           .validated(true)
           .build(),
         AccountTransactionsTransactionResult.builder()
@@ -67,6 +75,13 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
               .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(57112010)))
               .build()
           )
+          .metadata(
+            TransactionMetadata.builder()
+              .transactionIndex(UnsignedInteger.valueOf(33))
+              .transactionResult("tesSUCCESS")
+              .deliveredAmount(XrpCurrencyAmount.ofDrops(499500387))
+              .build()
+          )
           .validated(true)
           .build()
       )
@@ -85,6 +100,11 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "        \"status\": \"success\",\n" +
       "        \"transactions\": [\n" +
       "            {\n" +
+      "                \"meta\": {\n" +
+      "                    \"TransactionIndex\": 12,\n" +
+      "                    \"TransactionResult\": \"tesSUCCESS\",\n" +
+      "                    \"delivered_amount\": \"455643030\"\n" +
+      "                },\n" +
       "                \"tx\": {\n" +
       "                    \"Account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
       "                    \"Amount\": \"455643030\",\n" +
@@ -104,6 +124,11 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                \"validated\": true\n" +
       "            },\n" +
       "            {\n" +
+      "                \"meta\": {\n" +
+      "                    \"TransactionIndex\": 33,\n" +
+      "                    \"TransactionResult\": \"tesSUCCESS\",\n" +
+      "                    \"delivered_amount\": \"499500387\"\n" +
+      "                },\n" +
       "                \"tx\": {\n" +
       "                    \"Account\": \"rw2ciyaNshpHe7bCHo4bRWq6pqqynnWKQg\",\n" +
       "                    \"Amount\": \"499500387\",\n" +

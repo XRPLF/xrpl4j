@@ -16,6 +16,8 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class SubmitPaymentIT extends AbstractIT {
 
+  public static final String SUCCESS_STATUS = "tesSUCCESS";
+
   @Test
   public void sendPayment() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
@@ -23,17 +25,18 @@ public class SubmitPaymentIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
+    XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
         .account(sourceWallet.classicAddress())
         .fee(feeResult.drops().openLedgerFee())
         .sequence(accountInfo.accountData().sequence())
         .destination(destinationWallet.classicAddress())
-        .amount(XrpCurrencyAmount.ofDrops(12345))
+        .amount(amount)
         .signingPublicKey(sourceWallet.publicKey())
         .build();
 
     SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(SUCCESS_STATUS);
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
       result.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -45,6 +48,9 @@ public class SubmitPaymentIT extends AbstractIT {
               .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             Payment.class)
     );
+
+    assertThat(validatedPayment.metadata().get().deliveredAmount()).hasValue(amount);
+    assertThat(validatedPayment.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
 
     assertPaymentCloseTimeMatchesLedgerCloseTime(validatedPayment);
   }

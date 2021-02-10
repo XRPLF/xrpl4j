@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Optional;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.TransactionResultDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-
-import java.util.Optional;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
 /**
  * The result of a tx rippled API method call.
@@ -60,5 +60,12 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
     return false;
   }
 
-  // TODO: Add tx metadata if people need it
+  /**
+   * Metadata about the transaction if this data is from a validated ledger version.
+   *
+   * @return metadata or empty for non-validated transactions.
+   */
+  @JsonProperty("meta")
+  Optional<TransactionMetadata> metadata();
+
 }

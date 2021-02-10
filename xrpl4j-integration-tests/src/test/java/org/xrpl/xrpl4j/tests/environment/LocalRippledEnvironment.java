@@ -50,7 +50,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
           .ledgerIndex(LedgerIndex.CURRENT)
           .build();
       return getXrplClient().accountInfo(params);
-    } catch (Exception | JsonRpcClientErrorException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
@@ -157,5 +158,19 @@ public class Wrappers {
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {
       return XrpCurrencyAmount.of(this.value().times(other.value()));
     }
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = Marker.class)
+  @JsonDeserialize(as = Marker.class)
+  abstract static class _Marker extends Wrapper<String> implements Serializable {
+
+    @Override
+    @JsonRawValue
+    public String toString() {
+      return this.value();
+    }
+
   }
 }

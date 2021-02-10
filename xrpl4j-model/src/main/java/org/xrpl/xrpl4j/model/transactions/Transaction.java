@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Auxiliary;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
 import java.time.Instant;
@@ -179,6 +180,8 @@ public interface Transaction {
   /**
    * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
    * This is an undocumented field.
+   *
+   * @return An optionally-present {@link UnsignedLong}.
    */
   @JsonProperty("date")
   Optional<UnsignedLong> closeDate();
@@ -186,6 +189,8 @@ public interface Transaction {
   /**
    * The approximate close time in UTC offset.
    * This is derived from undocumented field.
+   *
+   * @return An optionally-present {@link ZonedDateTime}.
    */
   @JsonIgnore
   @Auxiliary
@@ -194,5 +199,21 @@ public interface Transaction {
       Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
     );
   }
+
+  /**
+   * The transaction hash of this transaction.  Only present in responses to {@code account_tx} rippled calls.
+   *
+   * @return An optionally present {@link Hash256} containing the transaction hash.
+   */
+  Optional<Hash256> hash();
+
+  /**
+   * The index of the ledger that this transaction was included in. Only present in responses to {@code account_tx}
+   * rippled calls.
+   *
+   * @return An optionally-present {@link LedgerIndex}.
+   */
+  @JsonProperty("ledger_index")
+  Optional<LedgerIndex> ledgerIndex();
 
 }

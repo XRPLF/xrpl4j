@@ -58,14 +58,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowCreate.class
         )
     );
@@ -99,14 +101,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transactionResult().hash()
+        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            finishResult.transactionResult().hash(),
+            finishResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowFinish.class
         )
     );
@@ -155,14 +159,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowCreate.class
         )
     );
@@ -203,14 +209,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transactionResult().hash()
+        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            cancelResult.transactionResult().hash(),
+            cancelResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowFinish.class
         )
     );
@@ -261,14 +269,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowCreate.class
         )
     );
@@ -307,14 +317,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transactionResult().hash()
+        "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" + finishResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            finishResult.transactionResult().hash(),
+            finishResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowFinish.class
         )
     );
@@ -366,14 +378,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().hash()
+        "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" + createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
         () -> this.getValidatedTransaction(
-            createResult.transactionResult().hash(),
+            createResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowCreate.class
         )
     );
@@ -408,14 +422,16 @@ public class EscrowIT extends AbstractIT {
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transactionResult().hash()
+        "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" + cancelResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
     this.scanForResult(
         () -> this.getValidatedTransaction(
-            cancelResult.transactionResult().hash(),
+            cancelResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
             EscrowFinish.class
         )
     );

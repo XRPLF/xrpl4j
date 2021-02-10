@@ -19,6 +19,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.channels.ImmutableChannelVerifyRequestParams;
@@ -38,6 +40,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -225,6 +228,39 @@ public class XrplClient {
         .addParams(params)
         .build();
     return jsonRpcClient.send(request, AccountObjectsResult.class);
+  }
+
+  /**
+   * Get the {@link AccountTransactionsResult} for the specified {@code address} by making an account_tx
+   * method call.
+   *
+   * @param address The {@link Address} of the account to request.
+   *
+   * @return The {@link AccountTransactionsResult} returned by the account_tx method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountTransactionsResult accountTransactions(Address address) throws JsonRpcClientErrorException {
+    return accountTransactions(AccountTransactionsRequestParams.builder()
+      .account(address)
+      .build());
+  }
+
+  /**
+   * Get the {@link AccountTransactionsResult} for the account specified in {@code params} by making an account_tx
+   * method call.
+   *
+   * @param params The {@link AccountTransactionsRequestParams} to send in the request.
+   *
+   * @return The {@link AccountTransactionsResult} returned by the account_tx method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountTransactionsResult accountTransactions(AccountTransactionsRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_TX)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountTransactionsResult.class);
   }
 
   /**

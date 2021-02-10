@@ -10,6 +10,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.List;
 import java.util.Optional;
@@ -80,7 +81,7 @@ public interface AccountObjectsResult extends XrplResult {
    *
    * @return An optionally-present {@link String}.
    */
-  Optional<String> marker();
+  Optional<Marker> marker();
 
   /**
    * If included and set to true, the information in this response comes from a validated ledger version.

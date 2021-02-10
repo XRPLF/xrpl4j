@@ -42,7 +42,6 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     LedgerIndex ledgerIndex = objectNode.has("ledger_index") ?
         LedgerIndex.of(objectNode.get("ledger_index").asText()) :
         null;
-    Hash256 hash = Hash256.of(objectNode.get("hash").asText());
     String status = objectNode.has("status") ? objectNode.get("status").asText() : null;
     boolean validated = objectNode.has("validated") && objectNode.get("validated").asBoolean();
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);
@@ -50,7 +49,6 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     return TransactionResult.<T>builder()
         .transaction(transaction)
         .ledgerIndex(Optional.ofNullable(ledgerIndex))
-        .hash(hash)
         .status(Optional.ofNullable(status))
         .validated(validated)
         .metadata(metadata)

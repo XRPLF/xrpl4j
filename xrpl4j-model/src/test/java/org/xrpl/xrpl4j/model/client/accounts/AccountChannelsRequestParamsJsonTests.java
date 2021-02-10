@@ -8,6 +8,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
 
@@ -19,7 +20,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
         .ledgerIndex(LedgerIndex.VALIDATED)
         .ledgerHash(Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"))
         .limit(UnsignedInteger.valueOf(20))
-        .marker("marker1")
+        .marker(Marker.of("marker1"))
         .build();
 
     String json = "{\n" +
@@ -42,7 +43,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
         .ledgerIndex(LedgerIndex.VALIDATED)
         .ledgerHash(Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"))
         .limit(UnsignedInteger.valueOf(20))
-        .marker("{\"marker\": \"1\"}")
+        .marker(Marker.of("{\"marker\":\"1\"}"))
         .build();
 
     String json = "{\n" +
@@ -50,7 +51,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
         "        \"destination_account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
         "        \"ledger_hash\": \"6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E\",\n" +
         "        \"limit\": 20,\n" +
-        "        \"marker\": \"{\\\"marker\\\": \\\"1\\\"}\",\n" +
+        "        \"marker\": {\"marker\": \"1\"},\n" +
         "        \"ledger_index\": \"validated\"\n" +
         "    }";
 

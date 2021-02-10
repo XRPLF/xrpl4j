@@ -9,6 +9,7 @@ import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.Optional;
 
@@ -70,6 +71,6 @@ public interface AccountLinesRequestParams extends XrplRequestParams {
    *
    * @return An optionally-present {@link String} containing the marker.
    */
-  Optional<String> marker();
+  Optional<Marker> marker();
 
 }

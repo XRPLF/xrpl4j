@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import java.util.Optional;
 import org.immutables.value.Value.Immutable;
+
+import java.util.Optional;
 
 /**
  * Transaction metadata is a section of data that gets added to a transaction after it is processed.

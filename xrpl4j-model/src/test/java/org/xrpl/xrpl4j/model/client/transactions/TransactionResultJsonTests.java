@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -12,6 +14,10 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 public class TransactionResultJsonTests extends AbstractJsonTest {
 
   @Test
@@ -22,6 +28,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
             .account(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
             .amount(XrpCurrencyAmount.of(UnsignedLong.valueOf(1000000000)))
             .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
+            .closeDate(UnsignedLong.valueOf(666212460))
             .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
             .flags(Flags.PaymentFlags.of(2147483648L))
             .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
@@ -32,9 +39,14 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
             .build())
         .build();
 
+    assertThat(paymentResult.transaction().closeDateHuman()).hasValue(
+      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneId.of("UTC"))
+    );
+
     String json = "{\n" +
         "                    \"Account\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
         "                    \"Amount\": \"1000000000\",\n" +
+        "                    \"date\": 666212460,\n" +
         "                    \"Destination\": \"r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS\",\n" +
         "                    \"Fee\": \"12\",\n" +
         "                    \"Flags\": 2147483648,\n" +

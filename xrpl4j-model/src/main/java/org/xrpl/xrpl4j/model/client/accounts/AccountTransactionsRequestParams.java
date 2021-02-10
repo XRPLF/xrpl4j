@@ -36,25 +36,19 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * The earliest ledger to include transactions from. A value of {@code -1} instructs the server to use the
    * earliest validated ledger version available.
    *
-   * @return A {@link LedgerIndex} with a default of "-1".
+   * @return A {@link LedgerIndex} with a default of empty.
    */
-  @Value.Default
   @JsonProperty("ledger_index_min")
-  default LedgerIndex ledgerIndexMin() {
-    return LedgerIndex.of("-1");
-  }
+  Optional<LedgerIndex> ledgerIndexMin();
 
   /**
    * The most recent ledger to include transactions from. A value of {@code -1} instructs the server to use the most
    * recent validated ledger version available.
    *
-   * @return A {@link LedgerIndex} with a default of "-1".
+   * @return A {@link LedgerIndex} with a default of empty.
    */
-  @Value.Default
   @JsonProperty("ledger_index_max")
-  default LedgerIndex ledgerIndexMax() {
-    return LedgerIndex.of("-1");
-  }
+  Optional<LedgerIndex> ledgerIndexMax();
 
   /**
    * Return transactions from the ledger with this hash only.
@@ -70,10 +64,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return A {@link LedgerIndex} containing the ledger index, defaults to "current".
    */
   @JsonProperty("ledger_index")
-  @Value.Default
-  default LedgerIndex ledgerIndex() {
-    return LedgerIndex.CURRENT;
-  }
+  Optional<LedgerIndex> ledgerIndex();
 
   /**
    * Whether or not to return transactions as JSON or binary-encoded hex strings. Always {@code false}.

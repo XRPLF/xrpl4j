@@ -18,7 +18,7 @@ public class HashUtils {
    *
    * @return An {@link UnsignedByteArray} containing the first half of the SHA-512 hash of bytes.
    */
-  static UnsignedByteArray sha512Half(UnsignedByteArray bytes) {
+  public static UnsignedByteArray sha512Half(UnsignedByteArray bytes) {
     return sha512Half(bytes.toByteArray());
   }
 
@@ -29,7 +29,7 @@ public class HashUtils {
    *
    * @return An {@link UnsignedByteArray} containing the first half of the SHA-512 hash of bytes.
    */
-  static UnsignedByteArray sha512Half(byte[] bytes) {
+  public static UnsignedByteArray sha512Half(byte[] bytes) {
     return UnsignedByteArray.of(copyOfRange(Hashing.sha512().hashBytes(bytes).asBytes(), 0, 32));
   }
 

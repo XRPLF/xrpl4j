@@ -15,7 +15,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link CurrencyAmount}s.
+ * Custom Jackson deserializer for {@link Marker}s.
  */
 public class MarkerDeserializer extends StdDeserializer<Marker> {
 

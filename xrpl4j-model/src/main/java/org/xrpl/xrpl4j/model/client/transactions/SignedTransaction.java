@@ -1,10 +1,12 @@
-package org.xrpl.xrpl4j.client;
+package org.xrpl.xrpl4j.model.client.transactions;
+
+import static java.util.Arrays.copyOfRange;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.keypairs.HashUtils;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -21,7 +23,7 @@ public interface SignedTransaction<T extends Transaction> {
   /**
    * The hash prefix used by the XRPL to identify transaction hashes.
    */
-  String SIGNED_TRANSACTION_HASH_PREFIX = "54584e00";
+  String SIGNED_TRANSACTION_HASH_PREFIX = "54584E00";
 
   static <T extends Transaction> ImmutableSignedTransaction.Builder<T> builder() {
     return ImmutableSignedTransaction.builder();
@@ -47,14 +49,16 @@ public interface SignedTransaction<T extends Transaction> {
    *
    * @return A {@link Hash256} containing the transaction hash.
    */
+  @SuppressWarnings("UnstableApiUsage")
   @Value.Derived
   default Hash256 hash() {
-    return Hash256.of(
-      HashUtils.sha512Half(
-        UnsignedByteArray.fromHex(
-          SIGNED_TRANSACTION_HASH_PREFIX.concat(signedTransactionBlob()))
-      )
-        .hexValue()
+    byte[] hashBytes = copyOfRange(
+      Hashing.sha512().hashBytes(
+        BaseEncoding.base16().decode(SIGNED_TRANSACTION_HASH_PREFIX.concat(signedTransactionBlob().toUpperCase()))
+      ).asBytes(),
+      0,
+      32
     );
+    return Hash256.of(BaseEncoding.base16().encode(hashBytes));
   }
 }

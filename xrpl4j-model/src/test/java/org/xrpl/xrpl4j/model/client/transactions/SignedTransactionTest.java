@@ -1,17 +1,17 @@
-package org.xrpl.xrpl4j.client;
+package org.xrpl.xrpl4j.model.client.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-class SignedTransactionTest {
+public class SignedTransactionTest {
 
   @Test
-  void computesCorrectTransactionHash() {
+  public void computesCorrectTransactionHash() {
     SignedTransaction<Payment> signedTransaction = SignedTransaction.<Payment>builder()
       .signedTransaction(
         Payment.builder()

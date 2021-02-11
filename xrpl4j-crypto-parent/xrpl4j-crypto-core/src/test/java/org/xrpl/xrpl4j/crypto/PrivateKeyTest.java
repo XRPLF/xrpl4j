@@ -2,12 +2,10 @@ package org.xrpl.xrpl4j.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.io.BaseEncoding;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
-import org.xrpl.xrpl4j.keypairs.KeyPair;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 
 /**
@@ -17,7 +15,7 @@ public class PrivateKeyTest {
 
   private KeyPairService keyPairService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.keyPairService = new DefaultKeyPairService();
   }

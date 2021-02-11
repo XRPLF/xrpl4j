@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.SecureRandomUtils.isAndroidRuntime;
 import static org.xrpl.xrpl4j.crypto.SecureRandomUtils.secureRandom;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link SecureRandomUtils}.

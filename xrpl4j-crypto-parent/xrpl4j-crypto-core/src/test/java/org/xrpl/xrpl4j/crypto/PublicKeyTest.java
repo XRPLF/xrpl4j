@@ -2,8 +2,8 @@ package org.xrpl.xrpl4j.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
@@ -17,7 +17,7 @@ public class PublicKeyTest {
 
   private KeyPairService keyPairService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.keyPairService = new DefaultKeyPairService();
   }

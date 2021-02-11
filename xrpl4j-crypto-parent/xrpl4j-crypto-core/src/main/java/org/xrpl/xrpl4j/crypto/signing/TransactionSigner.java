@@ -19,11 +19,4 @@ public interface TransactionSigner {
    *   to effect a transaction.
    */
   SignedTransaction sign(KeyMetadata keyMetadata, Transaction transaction);
-
-  /**
-   * The type of org.xrpl4j.crypto.keystore this signer can be used with.
-   *
-   * @return A {@link KeyStoreType}.
-   */
-  KeyStoreType keyStoreType();
 }

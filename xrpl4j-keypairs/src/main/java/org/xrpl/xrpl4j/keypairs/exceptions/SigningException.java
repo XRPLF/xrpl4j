@@ -2,7 +2,10 @@ package org.xrpl.xrpl4j.keypairs.exceptions;
 
 /**
  * A {@link RuntimeException} thrown when an error occurs during signing.
+ *
+ * @deprecated use the version from xrpl4j-signing instead.
  */
+@Deprecated
 public class SigningException extends RuntimeException {
 
   /**

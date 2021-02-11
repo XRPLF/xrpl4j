@@ -50,17 +50,6 @@
         <artifactId>xrpl4j-crypto-bouncycastle</artifactId>
         <version>${project.version}</version>
       </dependency>
-      <!-- TODO: Remove? -->
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-crypto-jks</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-crypto-gcp</artifactId>
-        <version>${project.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>

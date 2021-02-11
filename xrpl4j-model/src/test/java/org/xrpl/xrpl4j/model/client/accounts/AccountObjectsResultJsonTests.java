@@ -12,6 +12,7 @@ import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 public class AccountObjectsResultJsonTests extends AbstractJsonTest {
 
@@ -70,8 +71,8 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
         .ledgerHash(Hash256.of("4C99E5F63C0D0B1C2283B4F5DCE2239F80CE92E8B1A6AED1E110C198FC96E659"))
         .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(14380380)))
         .limit(UnsignedInteger.valueOf(10))
-        .marker("F60ADF645E78B69857D2E4AEC8B7742FEABC8431BD8611D099B428C3E816DF93," +
-            "94A9F05FEF9A153229E2E997E64919FD75AAE2028C8153E8EBDB4440BD3ECBB5")
+        .marker(Marker.of("F60ADF645E78B69857D2E4AEC8B7742FEABC8431BD8611D099B428C3E816DF93," +
+            "94A9F05FEF9A153229E2E997E64919FD75AAE2028C8153E8EBDB4440BD3ECBB5"))
         .validated(true)
         .status("success")
 

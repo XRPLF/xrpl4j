@@ -10,8 +10,6 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-//import org.xrpl.xrpl4j.crypto.signing.TransactionWithSignature;
-import org.xrpl.xrpl4j.crypto.signing.SignedTransaction;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
@@ -23,6 +21,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
@@ -41,6 +42,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -66,7 +68,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
  * A client which wraps a rippled network client and is responsible for higher order functionality such as signing and
  * serializing transactions, as well as hiding certain implementation details from the public API such as JSON RPC
  * request object creation.
- *
+ * <p>
  * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
 @Beta
@@ -108,30 +110,42 @@ public class XrplClient {
     Wallet wallet,
     T unsignedTransaction
   ) throws JsonRpcClientErrorException {
-    try {
-      Preconditions.checkArgument(
-        unsignedTransaction.signingPublicKey().isPresent(),
-        "Transaction.signingPublicKey() must be set."
-      );
+    Preconditions.checkArgument(
+      unsignedTransaction.signingPublicKey().isPresent(),
+      "Transaction.signingPublicKey() must be set."
+    );
 
-      String signedTransaction = serializeAndSignTransaction(wallet, unsignedTransaction);
-      JsonRpcRequest request = JsonRpcRequest.builder()
-        .method(XrplMethods.SUBMIT)
-        .addParams(SubmitRequestParams.of(signedTransaction))
-        .build();
-      JavaType resultType = objectMapper.getTypeFactory()
-        .constructParametricType(SubmitResult.class, unsignedTransaction.getClass());
-      return jsonRpcClient.send(request, resultType);
-    } catch (JsonProcessingException e) {
-      throw new IllegalStateException(e);
-    }
+    SignedTransaction<T> signedTransaction = signTransaction(wallet, unsignedTransaction);
+    return submit(signedTransaction);
+  }
+
+  /**
+   * Submit a {@link SignedTransaction} to the ledger.
+   *
+   * @param signedTransaction A {@link SignedTransaction} to submit.
+   * @param <T>               The type of {@link Transaction} contained in the {@link SignedTransaction} object.
+   *
+   * @return The {@link SubmitResult} resulting from the submission request.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public <T extends Transaction> SubmitResult<T> submit(
+    SignedTransaction<T> signedTransaction
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SUBMIT)
+      .addParams(SubmitRequestParams.of(signedTransaction.signedTransactionBlob()))
+      .build();
+    JavaType resultType = objectMapper.getTypeFactory()
+      .constructParametricType(SubmitResult.class, signedTransaction.signedTransaction().getClass());
+    return jsonRpcClient.send(request, resultType);
   }
 
   /**
    * Submit a {@link SignedTransaction} to the XRP Ledger.
    *
-   * @param <T>                      The type of signed {@link Transaction} that is being submitted.
-   * @param transactionWithSignature A {@link SignedTransaction} to submit.
+   * @param <T>               The type of signed {@link Transaction} that is being submitted.
+   * @param signedTransaction A {@link org.xrpl.xrpl4j.crypto.signing.SignedTransaction} to submit.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
    *
@@ -140,14 +154,14 @@ public class XrplClient {
    * @see "https://xrpl.org/submit.html"
    */
   public <T extends Transaction> SubmitResult<T> submit(
-    final SignedTransaction transactionWithSignature
+    final org.xrpl.xrpl4j.crypto.signing.SignedTransaction signedTransaction
   ) throws JsonRpcClientErrorException, JsonProcessingException {
 
     if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("About to submit transactionWithSignature: {}", transactionWithSignature);
+      LOGGER.debug("About to submit signedTransaction: {}", signedTransaction);
     }
 
-    String signedJson = objectMapper.writeValueAsString(transactionWithSignature.signedTransaction());
+    String signedJson = objectMapper.writeValueAsString(signedTransaction.signedTransaction());
     String signedBlob = binaryCodec.encode(signedJson); // <-- txBlob must be binary-encoded.
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SUBMIT)
@@ -158,7 +172,7 @@ public class XrplClient {
     }
 
     JavaType resultType = objectMapper.getTypeFactory()
-      .constructParametricType(SubmitResult.class, transactionWithSignature.unsignedTransaction().getClass());
+      .constructParametricType(SubmitResult.class, signedTransaction.unsignedTransaction().getClass());
     return jsonRpcClient.send(request, resultType);
   }
 
@@ -274,12 +288,46 @@ public class XrplClient {
   }
 
   /**
+   * Get the {@link AccountTransactionsResult} for the specified {@code address} by making an account_tx method call.
+   *
+   * @param address The {@link Address} of the account to request.
+   *
+   * @return The {@link AccountTransactionsResult} returned by the account_tx method call.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountTransactionsResult accountTransactions(Address address) throws JsonRpcClientErrorException {
+    return accountTransactions(AccountTransactionsRequestParams.builder()
+      .account(address)
+      .build());
+  }
+
+  /**
+   * Get the {@link AccountTransactionsResult} for the account specified in {@code params} by making an account_tx
+   * method call.
+   *
+   * @param params The {@link AccountTransactionsRequestParams} to send in the request.
+   *
+   * @return The {@link AccountTransactionsResult} returned by the account_tx method call.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountTransactionsResult accountTransactions(AccountTransactionsRequestParams params)
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_TX)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountTransactionsResult.class);
+  }
+
+  /**
    * Get a transaction from the ledger by sending a tx method request.
    *
    * @param params          The {@link TransactionRequestParams} to send in the request.
    * @param transactionType The {@link Transaction} type of the transaction with the hash {@code params.transaction()}.
    * @param <T>             Type parameter for the type of {@link Transaction} that the {@link TransactionResult} will
-   *                        contain.
    *
    * @return A {@link TransactionResult} containing the requested transaction and other metadata.
    *
@@ -387,30 +435,27 @@ public class XrplClient {
     return jsonRpcClient.send(request, ChannelVerifyResult.class);
   }
 
-  /**
-   * Serialize a {@link Transaction} to binary and sign it using {@code wallet.privateKey()}.
-   *
-   * @param wallet              The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
-   * @param unsignedTransaction An unsigned {@link Transaction} to submit. {@link Transaction#transactionSignature()}
-   *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
-   *
-   * @return The signed transaction as hex encoded {@link String}.
-   *
-   * @throws JsonProcessingException If the transaction cannot be serialized.
-   */
-  private String serializeAndSignTransaction(
-    Wallet wallet,
-    Transaction unsignedTransaction
-  ) throws JsonProcessingException {
-    String unsignedJson = objectMapper.writeValueAsString(unsignedTransaction);
-    String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
-    String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-      .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
+  public <T extends Transaction> SignedTransaction<T> signTransaction(
+    Wallet wallet, T unsignedTransaction
+  ) {
+    try {
+      String unsignedJson = objectMapper.writeValueAsString(unsignedTransaction);
 
-    Transaction signedTransaction = addSignature(unsignedTransaction, signature);
+      String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
+      String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
+        .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
 
-    String signedJson = objectMapper.writeValueAsString(signedTransaction);
-    return binaryCodec.encode(signedJson);
+      T signedTransaction = (T) addSignature(unsignedTransaction, signature);
+
+      String signedJson = objectMapper.writeValueAsString(signedTransaction);
+      String signedBinary = binaryCodec.encode(signedJson);
+      return SignedTransaction.<T>builder()
+        .signedTransaction(signedTransaction)
+        .signedTransactionBlob(signedBinary)
+        .build();
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -420,7 +465,9 @@ public class XrplClient {
    *
    * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to. {@link
    *                            Transaction#transactionSignature()} must not be provided, and {@link
-   *                            Transaction#signingPublicKey()} must be provided.
+   *                            Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it does not
+   *                            have a generated builder like the subclasses.  Thus, this method needs to rebuild
+   *                            transactions based on their runtime type.
    * @param signature           The hex encoded {@link String} containing the transaction signature.
    *
    * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.

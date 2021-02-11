@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
@@ -33,7 +34,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
         .ledgerHash(Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F"))
         .peer(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .limit(UnsignedInteger.ONE)
-        .marker("marker")
+        .marker(Marker.of("marker"))
         .build();
 
     String json = "{\n" +

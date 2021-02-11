@@ -51,7 +51,9 @@ public class AccountSetIT extends AbstractIT {
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     logger.info(
-        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
+          response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
@@ -107,7 +109,8 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transactionResult().hash()
+        accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
@@ -138,7 +141,8 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
         "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transactionResult().hash()
+        accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////

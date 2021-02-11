@@ -10,6 +10,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.TransactionResultDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
 import java.util.Optional;
 
@@ -36,13 +37,6 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   TxnType transaction();
 
   /**
-   * The SHA-512Half hash of the transaction in hexadecimal form.
-   *
-   * @return A {@link Hash256} containing the transaction hash.
-   */
-  Hash256 hash();
-
-  /**
    * The ledger index of the ledger that includes this {@link Transaction}.
    *
    * @return An optionally-present {@link LedgerIndex}.
@@ -60,5 +54,12 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
     return false;
   }
 
-  // TODO: Add tx metadata if people need it
+  /**
+   * Metadata about the transaction if this data is from a validated ledger version.
+   *
+   * @return metadata or empty for non-validated transactions.
+   */
+  @JsonProperty("meta")
+  Optional<TransactionMetadata> metadata();
+
 }

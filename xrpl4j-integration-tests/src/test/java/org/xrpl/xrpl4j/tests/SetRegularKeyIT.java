@@ -43,7 +43,8 @@ public class SetRegularKeyIT extends AbstractIT {
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-        setResult.transactionResult().hash()
+        setResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////////
@@ -98,7 +99,8 @@ public class SetRegularKeyIT extends AbstractIT {
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-        setResult.transactionResult().hash()
+        setResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     //////////////////////////
@@ -133,7 +135,8 @@ public class SetRegularKeyIT extends AbstractIT {
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
     assertThat(removeResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-        removeResult.transactionResult().hash()
+        removeResult.transactionResult().transaction().hash()
+              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     scanForResult(

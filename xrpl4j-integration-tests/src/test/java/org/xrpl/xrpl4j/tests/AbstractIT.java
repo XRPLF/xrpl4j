@@ -166,7 +166,7 @@ public abstract class AbstractIT {
         .ledgerIndex(LedgerIndex.VALIDATED)
         .build();
       return xrplClient.accountInfo(params);
-    } catch (Exception | JsonRpcClientErrorException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

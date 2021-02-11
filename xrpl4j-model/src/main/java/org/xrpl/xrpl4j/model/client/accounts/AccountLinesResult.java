@@ -8,6 +8,7 @@ import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,6 @@ public interface AccountLinesResult extends XrplResult {
    *
    * @return An optionally-present {@link String} containing a marker.
    */
-  Optional<String> marker();
+  Optional<Marker> marker();
 
 }

@@ -76,14 +76,18 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
-    SignedTransaction transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
-    SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
+    SignedTransaction signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
+    SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
+    logger.info(
+      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash());
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult().hash(),
+        result.transactionResult()
+          .transaction()
+          .hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
         Payment.class)
     );
   }
@@ -109,11 +113,16 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     SignedTransaction transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
+    logger.info(
+      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash()
+    );
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult().hash(),
+        result.transactionResult()
+          .transaction()
+          .hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
         Payment.class)
     );
   }

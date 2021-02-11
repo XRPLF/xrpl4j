@@ -18,6 +18,8 @@ public interface SignedTransaction<T extends Transaction> {
   /**
    * A builder.
    *
+   * @param <T> An instance of {@link Transaction}.
+   *
    * @return An {@link ImmutableSignedTransaction.Builder}.
    */
   static <T extends Transaction> ImmutableSignedTransaction.Builder<T> builder() {

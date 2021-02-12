@@ -65,4 +65,14 @@ public class KeyMetadataTest {
       .build()).isNotNull();
   }
 
+  @Test
+  public void testEmptyKeyMetadata() {
+    assertThat(KeyMetadata.EMPTY)
+      .isEqualTo(KeyMetadata.builder()
+        .platformIdentifier("n/a")
+        .keyringIdentifier("n/a")
+        .keyIdentifier("n/a")
+        .keyVersion("n/a")
+        .build());
+  }
 }

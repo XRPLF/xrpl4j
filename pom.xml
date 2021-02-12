@@ -6,7 +6,7 @@
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-parent</artifactId>
   <packaging>pom</packaging>
-  <version>HEAD-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
 
   <name>xrpl4j parent</name>
   <description>Parent project for xrpl4j modules.</description>

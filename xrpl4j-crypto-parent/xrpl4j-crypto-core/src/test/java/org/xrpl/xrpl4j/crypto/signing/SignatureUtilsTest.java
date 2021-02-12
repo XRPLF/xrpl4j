@@ -78,8 +78,9 @@ public class SignatureUtilsTest {
   public void setUp() throws JsonProcessingException {
     MockitoAnnotations.openMocks(this);
     sourceWallet = this.getSourceWallet();
-    when(objectMapperMock.writeValueAsString(transactionMock)).thenReturn("{foo}");
+    when(objectMapperMock.writeValueAsString(any())).thenReturn("{foo}"); // <-- Unused JSON value.
     when(xrplBinaryCodecMock.encodeForSigning(anyString())).thenReturn("ED");
+    when(xrplBinaryCodecMock.encode(anyString())).thenReturn("0123456789"); // <-- Unused HEX value.
     this.signatureUtils = new SignatureUtils(objectMapperMock, xrplBinaryCodecMock);
   }
 

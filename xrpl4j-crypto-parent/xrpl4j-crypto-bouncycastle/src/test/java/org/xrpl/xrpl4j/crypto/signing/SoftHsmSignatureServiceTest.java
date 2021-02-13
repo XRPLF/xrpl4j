@@ -23,9 +23,9 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * Unit tests for {@link SoftHsmSignatureSigner}.
+ * Unit tests for {@link SoftHsmSignatureService}.
  */
-public class SoftHsmSignatureSignerTest {
+public class SoftHsmSignatureServiceTest {
 
   private static final String SECP256K1 = "secp256k1";
   private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName(SECP256K1);
@@ -53,7 +53,7 @@ public class SoftHsmSignatureSignerTest {
   // private static final String destinationSecret = "snvSCVszQz3bLfPaGNqcU2bM7PsVR";
 
   private SignatureUtils signatureUtils;
-  private SoftHsmSignatureSigner signer;
+  private SoftHsmSignatureService signer;
 
   // These are the BC equivalents of our know keys, as taken from the bytes above.
   private ECPrivateKeyParameters knownEcPrivateKeyParameters;
@@ -78,13 +78,13 @@ public class SoftHsmSignatureSignerTest {
    */
   @Test
   void signAndVerifyWithKnownEdKeys() {
-    this.signer = new SoftHsmSignatureSigner(
+    this.signer = new SoftHsmSignatureService(
       signatureUtils,
       knownEdPrivateKeyParameters, // <-- Use known value.
       knownEcPrivateKeyParameters // <-- Unused in this test.
     );
 
-    final KeyMetadata signingKeyMetadata = keyMetadata(SoftHsmSignatureSigner.KEY_ID_ED25519);
+    final KeyMetadata signingKeyMetadata = keyMetadata(SoftHsmSignatureService.KEY_ID_ED25519);
     final PublicKey publicKey = this.signer.getPublicKey(signingKeyMetadata);
 
     final Payment paymentTransaction = Payment.builder()
@@ -107,9 +107,9 @@ public class SoftHsmSignatureSignerTest {
   @Test
   void signAndVerifyWithNewEd25519Keys() {
     // Generates new keys internally on every run...
-    this.signer = new SoftHsmSignatureSigner(signatureUtils);
+    this.signer = new SoftHsmSignatureService(signatureUtils);
 
-    final KeyMetadata signingKeyMetadata = keyMetadata(SoftHsmSignatureSigner.KEY_ID_ED25519);
+    final KeyMetadata signingKeyMetadata = keyMetadata(SoftHsmSignatureService.KEY_ID_ED25519);
     final PublicKey publicKey = this.signer.getPublicKey(signingKeyMetadata);
 
     final Payment paymentTransaction = Payment.builder()
@@ -134,13 +134,13 @@ public class SoftHsmSignatureSignerTest {
    */
   @Test
   void signAndVerifyWithKnownEcKeys() {
-    this.signer = new SoftHsmSignatureSigner(
+    this.signer = new SoftHsmSignatureService(
       signatureUtils,
       knownEdPrivateKeyParameters, // <-- Unused in this test.
       knownEcPrivateKeyParameters // <-- Use known value.
     );
 
-    final KeyMetadata signingKeyMetadata = keyMetadata(SoftHsmSignatureSigner.KEY_ID_SECP256K1);
+    final KeyMetadata signingKeyMetadata = keyMetadata(SoftHsmSignatureService.KEY_ID_SECP256K1);
     final PublicKey publicKey = this.signer.getPublicKey(signingKeyMetadata);
 
     final Payment paymentTransaction = Payment.builder()
@@ -166,9 +166,9 @@ public class SoftHsmSignatureSignerTest {
   @Test
   void signAndVerifyWithNewEcKeys() {
     // Generates new keys internally on every run...
-    this.signer = new SoftHsmSignatureSigner(signatureUtils);
+    this.signer = new SoftHsmSignatureService(signatureUtils);
 
-    final KeyMetadata signingKeyMetadata = this.keyMetadata(SoftHsmSignatureSigner.KEY_ID_SECP256K1);
+    final KeyMetadata signingKeyMetadata = this.keyMetadata(SoftHsmSignatureService.KEY_ID_SECP256K1);
     final PublicKey publicKey = this.signer.getPublicKey(signingKeyMetadata);
 
     final Payment paymentTransaction = Payment.builder()

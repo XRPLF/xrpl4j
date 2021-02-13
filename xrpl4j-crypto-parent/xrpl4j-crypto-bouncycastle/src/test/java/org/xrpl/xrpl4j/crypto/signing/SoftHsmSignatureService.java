@@ -51,7 +51,7 @@ import java.util.Objects;
  * <p>This implementation has two keys, one generated using the secp256k1 curve (for ECDSA), and one generated using
  * the Ed25519 curve (for EdDSA).</p>
  */
-public class SoftHsmSignatureSigner implements SignatureService {
+public class SoftHsmSignatureService implements SignatureService {
 
   static {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -91,7 +91,7 @@ public class SoftHsmSignatureSigner implements SignatureService {
    *
    * @param signatureUtils A {@link SignatureUtils}.
    */
-  public SoftHsmSignatureSigner(final SignatureUtils signatureUtils) {
+  public SoftHsmSignatureService(final SignatureUtils signatureUtils) {
     this(signatureUtils, generateEdPrivateKeyParameters(), generateEcPrivateKeyParameters());
   }
 
@@ -104,7 +104,7 @@ public class SoftHsmSignatureSigner implements SignatureService {
    * @param ecPrivateKeyParameters      A {@link ECPrivateKeyParameters} generated from an secp256k1 curve.
    */
   @VisibleForTesting
-  SoftHsmSignatureSigner(
+  SoftHsmSignatureService(
     final SignatureUtils signatureUtils,
     final Ed25519PrivateKeyParameters ed25519PrivateKeyParameters,
     final ECPrivateKeyParameters ecPrivateKeyParameters

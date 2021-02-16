@@ -110,6 +110,12 @@
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit-jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
         <version>${junit-jupiter.version}</version>
         <scope>test</scope>
@@ -150,11 +156,6 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
@@ -315,7 +316,7 @@
     <jackson.version>2.11.2</jackson.version>
     <feign.version>11.0</feign.version>
     <slf4j.version>1.7.30</slf4j.version>
-    <junit-jupiter.version>5.6.2</junit-jupiter.version>
+    <junit-jupiter.version>5.7.1</junit-jupiter.version>
   </properties>
 
   <modules>
@@ -362,6 +363,7 @@
                   <ignoredDependency>ch.qos.logback:logback-classic</ignoredDependency>
                   <!-- As part of SkyStreamer, but only for test scope-->
                   <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>
+                  <ignoredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredDependency>
                 </ignoredDependencies>
               </configuration>
             </execution>

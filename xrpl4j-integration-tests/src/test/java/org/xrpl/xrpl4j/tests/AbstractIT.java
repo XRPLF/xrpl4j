@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -10,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.PrivateKey;
+import org.xrpl.xrpl4j.crypto.Seed;
+import org.xrpl.xrpl4j.keypairs.KeyPair;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -60,7 +64,7 @@ public abstract class AbstractIT {
     // Create the account
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
     final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with address {}", wallet.xAddress());
+    logger.info("Generated testnet wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
 
     fundAccount(wallet);
 
@@ -91,44 +95,44 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-        .atMost(Duration.ONE_MINUTE.divide(2))
-        .pollInterval(POLL_INTERVAL)
-        .await()
-        .until(() -> {
-          T result = resultSupplier.get();
-          if (result == null) {
-            return null;
-          }
-          return condition.test(result) ? result : null;
-        }, is(notNullValue()));
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .pollInterval(POLL_INTERVAL)
+      .await()
+      .until(() -> {
+        T result = resultSupplier.get();
+        if (result == null) {
+          return null;
+        }
+        return condition.test(result) ? result : null;
+      }, is(notNullValue()));
   }
 
   protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()
-        .pollInterval(POLL_INTERVAL)
-        .atMost(Duration.ONE_MINUTE.divide(2))
-        .ignoreException(RuntimeException.class)
-        .await()
-        .until(resultSupplier::get, is(notNullValue()));
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .ignoreException(RuntimeException.class)
+      .await()
+      .until(resultSupplier::get, is(notNullValue()));
   }
 
   protected <T extends LedgerObject> T scanForLedgerObject(Supplier<T> ledgerObjectSupplier) {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
-        .pollInterval(POLL_INTERVAL)
-        .atMost(Duration.ONE_MINUTE.divide(2))
-        .ignoreException(RuntimeException.class)
-        .await()
-        .until(ledgerObjectSupplier::get, is(notNullValue()));
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Duration.ONE_MINUTE.divide(2))
+      .ignoreException(RuntimeException.class)
+      .await()
+      .until(ledgerObjectSupplier::get, is(notNullValue()));
   }
 
   protected AccountObjectsResult getValidatedAccountObjects(Address classicAddress) {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
-          .account(classicAddress)
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .account(classicAddress)
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
       return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -138,15 +142,15 @@ public abstract class AbstractIT {
   protected <T extends LedgerObject> List<T> getValidatedAccountObjects(Address classicAddress, Class<T> clazz) {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
-          .account(classicAddress)
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .account(classicAddress)
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
       List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
       return ledgerObjects
-          .stream()
-          .filter(object -> clazz.isAssignableFrom(object.getClass()))
-          .map(object -> (T) object)
-          .collect(Collectors.toList());
+        .stream()
+        .filter(object -> clazz.isAssignableFrom(object.getClass()))
+        .map(object -> (T) object)
+        .collect(Collectors.toList());
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -155,9 +159,9 @@ public abstract class AbstractIT {
   protected AccountChannelsResult getValidatedAccountChannels(Address classicAddress) {
     try {
       AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
-          .account(classicAddress)
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .account(classicAddress)
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
       return xrplClient.accountChannels(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -167,9 +171,9 @@ public abstract class AbstractIT {
   protected AccountInfoResult getValidatedAccountInfo(Address classicAddress) {
     try {
       AccountInfoRequestParams params = AccountInfoRequestParams.builder()
-          .account(classicAddress)
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .account(classicAddress)
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
       return xrplClient.accountInfo(params);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -177,13 +181,13 @@ public abstract class AbstractIT {
   }
 
   protected <T extends Transaction> TransactionResult<T> getValidatedTransaction(
-      Hash256 transactionHash,
-      Class<T> transactionType
+    Hash256 transactionHash,
+    Class<T> transactionType
   ) {
     try {
       TransactionResult<T> transaction = xrplClient.transaction(
-          TransactionRequestParams.of(transactionHash),
-          transactionType
+        TransactionRequestParams.of(transactionHash),
+        transactionType
       );
       return transaction.validated() ? transaction : null;
     } catch (JsonRpcClientErrorException e) {
@@ -194,8 +198,8 @@ public abstract class AbstractIT {
   protected LedgerResult getValidatedLedger() {
     try {
       LedgerRequestParams params = LedgerRequestParams.builder()
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
       return xrplClient.ledger(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -203,17 +207,17 @@ public abstract class AbstractIT {
   }
 
   protected RipplePathFindResult getValidatedRipplePath(
-      Wallet sourceWallet,
-      Wallet destinationWallet,
-      IssuedCurrencyAmount destinationAmount
+    Wallet sourceWallet,
+    Wallet destinationWallet,
+    IssuedCurrencyAmount destinationAmount
   ) {
     try {
       RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
-          .sourceAccount(sourceWallet.classicAddress())
-          .destinationAccount(destinationWallet.classicAddress())
-          .destinationAmount(destinationAmount)
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .sourceAccount(sourceWallet.classicAddress())
+        .destinationAccount(destinationWallet.classicAddress())
+        .destinationAmount(destinationAmount)
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
 
       return xrplClient.ripplePathFind(pathFindParams);
     } catch (JsonRpcClientErrorException e) {
@@ -224,10 +228,10 @@ public abstract class AbstractIT {
   protected AccountLinesResult getValidatedAccountLines(Address classicAddress, Address peerAddress) {
     try {
       AccountLinesRequestParams params = AccountLinesRequestParams.builder()
-          .account(classicAddress)
-          .peer(peerAddress)
-          .ledgerIndex(LedgerIndex.VALIDATED)
-          .build();
+        .account(classicAddress)
+        .peer(peerAddress)
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
 
       return xrplClient.accountLines(params);
     } catch (JsonRpcClientErrorException e) {
@@ -242,5 +246,4 @@ public abstract class AbstractIT {
   protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
     return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
   }
-
 }

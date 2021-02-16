@@ -201,4 +201,11 @@ public class UnsignedByteArray {
   public int hashCode() {
     return Objects.hash(getUnsignedBytes());
   }
+
+  @Override
+  public String toString() {
+    return "UnsignedByteArray{" +
+      "unsignedBytes=List(size=" + unsignedBytes.size() + ")" +
+      '}';
+  }
 }

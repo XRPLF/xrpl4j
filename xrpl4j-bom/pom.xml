@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>xrpl4j-bom</artifactId>
-  <name>xrpl-4j :: bom</name>
+  <name>xrpl4j :: bom</name>
   <description>A Bill of Materials (BOM) for easier dependency reliance.</description>
 
   <dependencyManagement>
@@ -38,6 +38,16 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>xrpl4j-model</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-crypto-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-crypto-bouncycastle</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>

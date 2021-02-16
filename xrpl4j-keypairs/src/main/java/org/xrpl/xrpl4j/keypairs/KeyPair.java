@@ -4,8 +4,11 @@ import org.immutables.value.Value;
 
 /**
  * Represents an XRPL public/private key pair.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
 @Value.Immutable
+@Deprecated
 public interface KeyPair {
 
   static ImmutableKeyPair.Builder builder() {

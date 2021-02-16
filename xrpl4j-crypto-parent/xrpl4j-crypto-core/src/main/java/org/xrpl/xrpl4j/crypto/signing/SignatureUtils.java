@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.crypto.signing;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.io.BaseEncoding;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
@@ -169,11 +170,17 @@ public class SignatureUtils {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the unsignedTransaction.");
     }
-
-    return SignedTransaction.builder()
-      .unsignedTransaction(unsignedTransaction)
-      .signature(signature)
-      .signedTransaction(signedTransaction)
-      .build();
+    try {
+      String signedJson = objectMapper.writeValueAsString(signedTransaction);
+      String signedBlob = binaryCodec.encode(signedJson); // <-- txBlob must be binary-encoded.
+      return SignedTransaction.builder()
+        .unsignedTransaction(unsignedTransaction)
+        .signature(signature)
+        .signedTransaction(signedTransaction)
+        .signedTransactionBytes(UnsignedByteArray.of(BaseEncoding.base16().decode(signedBlob)))
+        .build();
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 }

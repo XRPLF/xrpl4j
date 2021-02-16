@@ -14,10 +14,13 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
  * Represents a transaction that has been signed.
  *
  * @param <T> The type of {@link Transaction} that was signed.
+ *
+ * @deprecated Prefer SignedTransaction from xrpl4j-crypto instead.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableSignedTransaction.class)
 @JsonDeserialize(as = ImmutableSignedTransaction.class)
+@Deprecated
 public interface SignedTransaction<T extends Transaction> {
 
   /**

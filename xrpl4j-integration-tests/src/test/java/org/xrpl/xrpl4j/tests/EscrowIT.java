@@ -77,11 +77,12 @@ public class EscrowIT extends AbstractIT {
     this.scanForResult(
         this::getValidatedLedger,
         ledgerResult ->
-            ledgerResult
-                .ledger()
-                .closeTime()
-                .orElse(UnsignedLong.ZERO)
-                .compareTo(createResult.transactionResult().transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
+          FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+            .greaterThan(
+              createResult.transactionResult().transaction().finishAfter()
+                .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
+                .orElse(UnsignedLong.MAX_VALUE)
+            )
     );
 
     //////////////////////
@@ -287,11 +288,13 @@ public class EscrowIT extends AbstractIT {
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
         this::getValidatedLedger,
-        ledgerResult -> ledgerResult
-            .ledger()
-            .closeTime()
-            .orElse(UnsignedLong.ZERO)
-            .compareTo(createResult.transactionResult().transaction().finishAfter().orElse(UnsignedLong.MAX_VALUE)) > 0
+        ledgerResult ->
+          FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+            .greaterThan(
+              createResult.transactionResult().transaction().finishAfter()
+                .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
+                .orElse(UnsignedLong.MAX_VALUE)
+            )
     );
 
     //////////////////////
@@ -397,15 +400,12 @@ public class EscrowIT extends AbstractIT {
     this.scanForResult(
         this::getValidatedLedger,
         ledgerResult ->
-            ledgerResult
-                .ledger()
-                .closeTime()
-                .orElse(UnsignedLong.ZERO)
-                .compareTo(
-                    createResult.transactionResult().transaction().cancelAfter()
-                        .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
-                        .orElse(UnsignedLong.MAX_VALUE)
-                ) > 0
+          FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+            .greaterThan(
+              createResult.transactionResult().transaction().cancelAfter()
+                .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
+                .orElse(UnsignedLong.MAX_VALUE)
+            )
     );
 
     //////////////////////

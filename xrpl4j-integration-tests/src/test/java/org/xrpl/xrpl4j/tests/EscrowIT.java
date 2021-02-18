@@ -48,7 +48,7 @@ public class EscrowIT extends AbstractIT {
         .fee(feeResult.drops().openLedgerFee())
         .amount(XrpCurrencyAmount.ofDrops(123456))
         .destination(receiverWallet.classicAddress())
-        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+        .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))
         .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
         .signingPublicKey(senderWallet.publicKey())
         .build();
@@ -80,7 +80,7 @@ public class EscrowIT extends AbstractIT {
           FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
             .greaterThan(
               createResult.transactionResult().transaction().finishAfter()
-                .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
+                .map(finishAfter -> finishAfter.plus(UnsignedLong.valueOf(5)))
                 .orElse(UnsignedLong.MAX_VALUE)
             )
     );
@@ -220,7 +220,7 @@ public class EscrowIT extends AbstractIT {
         () -> this.getValidatedTransaction(
             cancelResult.transactionResult().transaction().hash()
               .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-            EscrowFinish.class
+            EscrowCancel.class
         )
     );
 
@@ -432,7 +432,7 @@ public class EscrowIT extends AbstractIT {
         () -> this.getValidatedTransaction(
             cancelResult.transactionResult().transaction().hash()
               .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-            EscrowFinish.class
+            EscrowCancel.class
         )
     );
 

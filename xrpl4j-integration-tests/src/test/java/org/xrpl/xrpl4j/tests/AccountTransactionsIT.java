@@ -1,8 +1,12 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.given;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.primitives.UnsignedLong;
+import org.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -62,15 +66,30 @@ public class AccountTransactionsIT {
   }
 
   @Test
-  public void listTransactionWithIndexRange() throws JsonRpcClientErrorException {
-    // also arbitrary indexes chosen because they have known transaction results we can checl
+  public void listTransactionWithIndexRange() {
+    // also arbitrary indexes chosen because they have known transaction results we can check
     LedgerIndex minLedger = LedgerIndex.of(UnsignedLong.valueOf(61486000));
     LedgerIndex maxLedger = LedgerIndex.of(UnsignedLong.valueOf(61487000));
-    AccountTransactionsResult results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
-      .account(MAINNET_ADDRESS)
-      .ledgerIndexMin(minLedger)
-      .ledgerIndexMax(maxLedger)
-      .build());
+
+    AccountTransactionsResult results = given()
+      .pollInterval(Duration.FIVE_SECONDS)
+      .await()
+      .until(() -> {
+        try {
+          return mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
+            .account(MAINNET_ADDRESS)
+            .ledgerIndexMin(minLedger)
+            .ledgerIndexMax(maxLedger)
+            .build());
+        } catch (JsonRpcClientErrorException e) {
+          if (e.getMessage().equals("The server is too busy to help you now.")) {
+            return null;
+          } else {
+            throw new RuntimeException(e);
+          }
+        }
+
+      }, is(notNullValue()));
 
     assertThat(results.ledgerIndexMin()).isEqualTo(minLedger);
     assertThat(results.ledgerIndexMax()).isEqualTo(maxLedger);

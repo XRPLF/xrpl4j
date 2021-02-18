@@ -71,6 +71,8 @@ public class AccountTransactionsIT {
     LedgerIndex minLedger = LedgerIndex.of(UnsignedLong.valueOf(61486000));
     LedgerIndex maxLedger = LedgerIndex.of(UnsignedLong.valueOf(61487000));
 
+    // Sometimes we will get a "server busy" error back in this test, so if we do get that, we should just wait
+    // a few seconds until asking again.
     AccountTransactionsResult results = given()
       .pollInterval(Duration.FIVE_SECONDS)
       .await()

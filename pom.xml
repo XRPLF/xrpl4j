@@ -29,7 +29,7 @@
     <!-- Enable concrete logging in all tests -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
+      <artifactId>slf4j-api</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -73,16 +73,6 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-crypto-jks</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-crypto-gcp</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
         <artifactId>xrpl4j-crypto-bouncycastle</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -120,8 +110,20 @@
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <version>5.6.2</version>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit-jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit-jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit-jupiter.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -142,10 +144,9 @@
         <version>${slf4j.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-jdk14</artifactId>
-        <version>${slf4j.version}</version>
-        <scope>test</scope>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -155,11 +156,6 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
@@ -219,6 +215,11 @@
         <artifactId>awaitility-proxy</artifactId>
         <version>3.0.0</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java-api</artifactId>
+        <version>3.2.7</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
@@ -315,6 +316,7 @@
     <jackson.version>2.11.2</jackson.version>
     <feign.version>11.0</feign.version>
     <slf4j.version>1.7.30</slf4j.version>
+    <junit-jupiter.version>5.7.1</junit-jupiter.version>
   </properties>
 
   <modules>
@@ -345,6 +347,27 @@
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>3.1.1</version>
+          <executions>
+            <execution>
+              <id>analyze</id>
+              <goals>
+                <goal>analyze-only</goal>
+              </goals>
+              <configuration>
+                <failOnWarning>true</failOnWarning>
+                <ignoredDependencies>
+                  <ignoredDependency>org.slf4j:slf4j-api</ignoredDependency>
+                  <ignoredDependency>com.google.code.findbugs:jsr305</ignoredDependency>
+                  <ignoredDependency>com.google.code.findbugs:annotations</ignoredDependency>
+                  <ignoredDependency>com.google.errorprone:error_prone_annotations</ignoredDependency>
+                  <ignoredDependency>ch.qos.logback:logback-classic</ignoredDependency>
+                  <!-- As part of SkyStreamer, but only for test scope-->
+                  <ignoredDependency>com.vaadin.external.google:android-json</ignoredDependency>
+                  <ignoredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredDependency>
+                </ignoredDependencies>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
 
         <!-- org.apache.maven.plugins:maven-compiler-plugin -->
@@ -593,6 +616,10 @@
       <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
 
       <!-- org.jacoco:jacoco-maven-plugin -->

@@ -2,8 +2,8 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedLong;
 import org.awaitility.Duration;

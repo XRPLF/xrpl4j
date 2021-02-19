@@ -17,7 +17,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.xrpl</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>xrpl4j-model</artifactId>
     </dependency>
     <dependency>

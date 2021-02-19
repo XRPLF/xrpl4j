@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -30,9 +31,21 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return An optionally-present {@link String} containing the result of the submission.
+   * @deprecated  use {@link #result()} instead.
+   */
+  @Deprecated
+  @Value.Auxiliary
+  default Optional<String> engineResult() {
+    return Optional.of(result());
+  }
+
+  /**
+   * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
+   *
+   * @return {@link String} containing the result of the submission.
    */
   @JsonProperty("engine_result")
-  Optional<String> engineResult();
+  String result();
 
   /**
    * Human-readable explanation of the transaction's preliminary result.

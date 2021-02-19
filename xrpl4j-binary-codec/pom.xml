@@ -17,8 +17,12 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.xrpl</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>xrpl4j-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>xrpl4j-address-codec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
@@ -68,10 +72,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xrpl</groupId>
-      <artifactId>xrpl4j-address-codec</artifactId>
     </dependency>
   </dependencies>
 

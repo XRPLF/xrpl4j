@@ -19,6 +19,9 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
 - **xrpl4j-model**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-model/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-model)
     - Provides Java objects which model XRP Ledger objects, as well as request parameters and response results for the rippled websocket and JSON RPC APIs
     - Also provides a Jackson `ObjectMapper` and JSON bindings which can be used to serialize and deserialize to and from JSON
+- **xrpl4j-crypto**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-crypto-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-crypto-parent)
+    - **xrpl4j-crypto-core**: Provides a core primitives like public/private keys definitions, signature interafaces and more.
+    - **xrpl4j-crypto-bouncycastle**: An implementation using [BouncyCastle](https://www.bouncycastle.org/) as the underlying library/provider.
 - **xrpl4j-client**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
     - Provides an example rippled JSON RPC client which can be used to communicate with a rippled node
 - **xrpl4j-integration-tests**: 
@@ -32,37 +35,27 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
 - A Java project manager such as Maven or Gradle
 
 ## Installation
-You can use one or more xrpl4j modules in your Maven project by adding one or more of the following to your `pom.xml`:
+You can use one or more xrpl4j modules in your Maven project by using the current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-dependency/) like this:
+
+```
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.xrpl4j</groupId>
+            <artifactId>xrpl4j-bom</artifactId>
+            <version>1.1.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+Then you can add any of the xrpl4j modules found in the BOM to your `pom.xml`. For example, if you want to use the xrpl4j address codecs, add the following:
 ```
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-address-codec</artifactId>
-  <version>1.0.0</version>
-</dependency>
-
-<dependency>
-  <groupId>org.xrpl</groupId>
-  <artifactId>xrpl4j-binary-codec</artifactId>
-  <version>1.0.0</version>
-</dependency>
-
-
-<dependency>
-  <groupId>org.xrpl</groupId>
-  <artifactId>xrpl4j-keypairs</artifactId>
-  <version>1.0.0</version>
-</dependency>
-
-
-<dependency>
-  <groupId>org.xrpl</groupId>
-  <artifactId>xrpl4j-model</artifactId>
-  <version>1.0.0</version>
-</dependency>
-
-<dependency>
-  <groupId>${project.groupId}</groupId>
-  <artifactId>xrpl4j-client</artifactId>
   <version>1.0.0</version>
 </dependency>
 ```

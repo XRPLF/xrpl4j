@@ -23,7 +23,7 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
         .accountSequenceNext(UnsignedInteger.valueOf(362))
         .applied(true)
         .broadcast(true)
-        .engineResult("tesSUCCESS")
+        .result("tesSUCCESS")
         .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
         .status("success")
         .kept(true)

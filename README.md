@@ -43,7 +43,7 @@ You can use one or more xrpl4j modules in your Maven project by using the curren
         <dependency>
             <groupId>org.xrpl4j</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -56,7 +56,6 @@ Then you can add any of the xrpl4j modules found in the BOM to your `pom.xml`. F
 <dependency>
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-address-codec</artifactId>
-  <version>1.0.0</version>
 </dependency>
 ```
 

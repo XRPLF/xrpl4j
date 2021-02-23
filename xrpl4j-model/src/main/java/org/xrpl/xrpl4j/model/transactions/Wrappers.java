@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.model.immutables.Wrapper;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Locale;
 
 /**
  * Wrapped immutable classes for providing type-safe objects.
@@ -74,7 +75,12 @@ public class Wrappers {
         return false;
       }
 
-      return this.value().toUpperCase().equals(((Hash256) obj).value().toUpperCase());
+      return this.value().toUpperCase(Locale.ENGLISH).equals(((Hash256) obj).value().toUpperCase(Locale.ENGLISH));
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
   }
 

@@ -20,11 +20,9 @@ public class PaymentTest {
     assertThat(xrpPayment().flags().tfFullyCanonicalSig()).isTrue();
   }
 
-  @Test
-  public void amountAsXrp() {
-    assertThat(xrpPayment().amountAsXrp()).isPresent();
-    assertThat(issuedCurrencyPayment().amountAsXrp()).isEmpty();
-  }
+  //////////////////
+  // Private Helpers
+  //////////////////
 
   private Payment xrpPayment() {
     return Payment.builder()

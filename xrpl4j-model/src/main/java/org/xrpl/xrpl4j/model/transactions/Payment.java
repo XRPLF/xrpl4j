@@ -1,13 +1,10 @@
 package org.xrpl.xrpl4j.model.transactions;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
-import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 
@@ -51,24 +48,6 @@ public interface Payment extends Transaction {
    */
   @JsonProperty("Amount")
   CurrencyAmount amount();
-
-  /**
-   * A typed variant of {@link #amount()} which produces a value in XRP Drops if that result is an instance of {@link
-   * XrpCurrencyAmount}.
-   *
-   * @return The amount of this payment if this payment is denominated in XRP (i.e., if the result of calling {@link
-   *   #amount()} is an instance of {@link XrpCurrencyAmount}); otherwise, returns {@link Optional#empty()} (e.g., if
-   *   this payment is denominated in an Issued Currency).
-   */
-  @Derived
-  @JsonIgnore
-  default Optional<XrpCurrencyAmount> amountAsXrp() {
-    if (XrpCurrencyAmount.class.isAssignableFrom(amount().getClass())) {
-      return Optional.of((XrpCurrencyAmount) amount());
-    } else {
-      return Optional.empty();
-    }
-  }
 
   /**
    * The unique {@link Address} of the account receiving the payment. Maybe be empty for an AccountSet or other

@@ -1,10 +1,13 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
+import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 
@@ -27,8 +30,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a
-   * {@link Flags} object containing the {@link Long} representation of the set bits.
+   * Set of {@link Flags.PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
+   * Flags} object containing the {@link Long} representation of the set bits.
    *
    * <p>The value of the flags can either be set manually, or constructed using {@link Flags.PaymentFlags.Builder}.
    *
@@ -41,13 +44,31 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * The amount of currency to deliver. If the {@link Flags.PaymentFlags#tfPartialPayment()} flag is set, deliver
-   * up to this amount instead.
+   * The amount of currency to deliver. If the {@link Flags.PaymentFlags#tfPartialPayment()} flag is set, deliver up to
+   * this amount instead.
    *
    * @return A {@link CurrencyAmount} representing the amount of a specified currency to deliver.
    */
   @JsonProperty("Amount")
   CurrencyAmount amount();
+
+  /**
+   * A typed variant of {@link #amount()} which produces a value in XRP Drops if that result is an instance of {@link
+   * XrpCurrencyAmount}.
+   *
+   * @return The amount of this payment if this payment is denominated in XRP (i.e., if the result of calling {@link
+   *   #amount()} is an instance of {@link XrpCurrencyAmount}); otherwise, returns {@link Optional#empty()} (e.g., if
+   *   this payment is denominated in an Issued Currency).
+   */
+  @Derived
+  @JsonIgnore
+  default Optional<XrpCurrencyAmount> amountAsXrp() {
+    if (XrpCurrencyAmount.class.isAssignableFrom(amount().getClass())) {
+      return Optional.of((XrpCurrencyAmount) amount());
+    } else {
+      return Optional.empty();
+    }
+  }
 
   /**
    * The unique {@link Address} of the account receiving the payment. Maybe be empty for an AccountSet or other
@@ -82,6 +103,7 @@ public interface Payment extends Transaction {
    * <p>This field is auto-fillable
    *
    * @return A {@link List} of {@link List}s of {@link PathStep}s.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Paths")
@@ -94,6 +116,7 @@ public interface Payment extends Transaction {
    * <p>Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
+   *
    * @see "https://xrpl.org/transfer-fees.html"
    * @see "https://en.wikipedia.org/wiki/Slippage_%28finance%29"
    */

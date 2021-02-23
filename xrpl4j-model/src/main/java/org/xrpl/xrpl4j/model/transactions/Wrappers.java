@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.text.DecimalFormat;
+import java.util.Locale;
 
 /**
  * Wrapped immutable classes for providing type-safe objects.
@@ -88,6 +92,12 @@ public class Wrappers {
   @JsonDeserialize(as = XrpCurrencyAmount.class)
   abstract static class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
 
+    static final long ONE_XRP_IN_DROPS = 1_000_000L;
+    static final long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
+    static final long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
+    static final BigDecimal SMALLEST_XRP = new BigDecimal("0.000001");
+    static final DecimalFormat FORMATTER = new DecimalFormat("###,###");
+
     /**
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
      *
@@ -118,12 +128,23 @@ public class Wrappers {
      * @return An {@link XrpCurrencyAmount} of the amount of drops in {@code amount}.
      */
     public static XrpCurrencyAmount ofXrp(BigDecimal amount) {
-      return ofDrops(amount.scaleByPowerOfTen(6).toBigIntegerExact().longValue());
+      if (FluentCompareTo.is(amount).notEqualTo(BigDecimal.ZERO)) {
+        Preconditions.checkArgument(FluentCompareTo.is(amount).greaterThanEqualTo(SMALLEST_XRP));
+      }
+      return ofDrops(UnsignedLong.valueOf(amount.scaleByPowerOfTen(6).toBigIntegerExact()));
     }
 
-    @Override
-    public String toString() {
-      return this.value().toString();
+    /**
+     * Convert the supplied amount of XRP drops into a decimal value representing a value denominated in whole XRP
+     * units.
+     *
+     * @param xrpCurrencyAmount A {@link XrpCurrencyAmount} representing an amount of XRP drops.
+     *
+     * @return A {@link BigDecimal} representing a value denominated in whole XRP units.
+     */
+    static BigDecimal toXrp(final XrpCurrencyAmount xrpCurrencyAmount) {
+      return new BigDecimal(xrpCurrencyAmount.value().bigIntegerValue())
+        .divide(BigDecimal.valueOf(1000000), MathContext.DECIMAL128);
     }
 
     /**
@@ -158,6 +179,21 @@ public class Wrappers {
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {
       return XrpCurrencyAmount.of(this.value().times(other.value()));
     }
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    @Value.Check
+    protected void check() {
+      Preconditions.checkState(
+        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedLong.valueOf(MAX_XRP_IN_DROPS)),
+        String.format(
+          "XRP Amounts may not exceed %s drops (100B XRP, denominated in Drops)", FORMATTER.format(MAX_XRP_IN_DROPS))
+      );
+    }
+
   }
 
   @Value.Immutable

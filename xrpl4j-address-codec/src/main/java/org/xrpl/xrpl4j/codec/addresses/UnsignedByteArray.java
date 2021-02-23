@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.codec.addresses;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -77,7 +78,7 @@ public class UnsignedByteArray {
    */
   public static UnsignedByteArray fromHex(String hex) {
     Objects.requireNonNull(hex);
-    List<UnsignedByte> unsignedBytes = ByteUtils.parse(hex);
+    List<UnsignedByte> unsignedBytes = ByteUtils.parse(hex.toUpperCase(Locale.ENGLISH));
     return new UnsignedByteArray(unsignedBytes);
   }
 
@@ -114,12 +115,12 @@ public class UnsignedByteArray {
   }
 
   /**
-   * Get this {@link UnsignedByteArray} as a hex encoded {@link String}.
+   * Get this {@link UnsignedByteArray} as an upper-cased Hex-encoded {@link String}.
    *
    * @return This {@link UnsignedByteArray} as a hex encoded {@link String}.
    */
   public String hexValue() {
-    return ByteUtils.toHex(unsignedBytes);
+    return ByteUtils.toHex(unsignedBytes).toUpperCase(Locale.ENGLISH);
   }
 
   /**

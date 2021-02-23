@@ -135,15 +135,13 @@ public class Wrappers {
     }
 
     /**
-     * Convert the supplied amount of XRP drops into a decimal value representing a value denominated in whole XRP
-     * units.
+     * Convert this XRP amount into a decimal representing a value denominated in whole XRP units. For example, a value
+     * of `1.0` represents 1 unit of XRP; a value of `0.5` represents a half of an XRP unit.
      *
-     * @param xrpCurrencyAmount A {@link XrpCurrencyAmount} representing an amount of XRP drops.
-     *
-     * @return A {@link BigDecimal} representing a value denominated in whole XRP units.
+     * @return A {@link BigDecimal} representing this value denominated in whole XRP units.
      */
-    static BigDecimal toXrp(final XrpCurrencyAmount xrpCurrencyAmount) {
-      return new BigDecimal(xrpCurrencyAmount.value().bigIntegerValue())
+    public BigDecimal toXrp() {
+      return new BigDecimal(this.value().bigIntegerValue())
         .divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS), MathContext.DECIMAL128);
     }
 

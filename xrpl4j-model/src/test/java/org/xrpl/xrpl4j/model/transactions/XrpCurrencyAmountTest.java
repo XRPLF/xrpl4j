@@ -53,16 +53,15 @@ public class XrpCurrencyAmountTest {
   }
 
   @Test
-  public void ofXrp() {
-    assertThat(XrpCurrencyAmount.toXrp(XrpCurrencyAmount.ofDrops(0L))).isEqualTo(BigDecimal.ZERO);
-    assertThat(XrpCurrencyAmount.toXrp(XrpCurrencyAmount.ofDrops(1L))).isEqualTo(new BigDecimal("0.000001"));
-    assertThat(XrpCurrencyAmount.toXrp(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS))).isEqualTo(BigDecimal.ONE);
-    assertThat(XrpCurrencyAmount.toXrp(XrpCurrencyAmount.ofDrops(33))).isEqualTo(new BigDecimal("0.000033"));
-    assertThat(XrpCurrencyAmount.toXrp(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS))).isEqualTo(new BigDecimal(MAX_XRP));
+  public void toXrp() {
+    assertThat(XrpCurrencyAmount.ofDrops(0L).toXrp()).isEqualTo(BigDecimal.ZERO);
+    assertThat(XrpCurrencyAmount.ofDrops(1L).toXrp()).isEqualTo(new BigDecimal("0.000001"));
+    assertThat(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS).toXrp()).isEqualTo(BigDecimal.ONE);
+    assertThat(XrpCurrencyAmount.ofDrops(33).toXrp()).isEqualTo(new BigDecimal("0.000033"));
+    assertThat(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS).toXrp()).isEqualTo(new BigDecimal(MAX_XRP));
 
     // Too small (the largest number with the largest decimal component (99B plus nearly 1 drop)).
-    assertThat(XrpCurrencyAmount.toXrp(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS - 1)))
-      .isEqualTo(new BigDecimal("99999999999.999999"));
+    assertThat(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS - 1).toXrp()).isEqualTo(new BigDecimal("99999999999.999999"));
   }
 
 }

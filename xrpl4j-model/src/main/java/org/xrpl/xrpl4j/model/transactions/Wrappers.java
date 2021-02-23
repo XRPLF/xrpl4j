@@ -144,7 +144,7 @@ public class Wrappers {
      */
     static BigDecimal toXrp(final XrpCurrencyAmount xrpCurrencyAmount) {
       return new BigDecimal(xrpCurrencyAmount.value().bigIntegerValue())
-        .divide(BigDecimal.valueOf(1000000), MathContext.DECIMAL128);
+        .divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS), MathContext.DECIMAL128);
     }
 
     /**

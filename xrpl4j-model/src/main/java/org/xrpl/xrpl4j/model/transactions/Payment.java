@@ -27,8 +27,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a
-   * {@link Flags} object containing the {@link Long} representation of the set bits.
+   * Set of {@link Flags.PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
+   * Flags} object containing the {@link Long} representation of the set bits.
    *
    * <p>The value of the flags can either be set manually, or constructed using {@link Flags.PaymentFlags.Builder}.
    *
@@ -41,8 +41,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * The amount of currency to deliver. If the {@link Flags.PaymentFlags#tfPartialPayment()} flag is set, deliver
-   * up to this amount instead.
+   * The amount of currency to deliver. If the {@link Flags.PaymentFlags#tfPartialPayment()} flag is set, deliver up to
+   * this amount instead.
    *
    * @return A {@link CurrencyAmount} representing the amount of a specified currency to deliver.
    */
@@ -82,6 +82,7 @@ public interface Payment extends Transaction {
    * <p>This field is auto-fillable
    *
    * @return A {@link List} of {@link List}s of {@link PathStep}s.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Paths")
@@ -94,6 +95,7 @@ public interface Payment extends Transaction {
    * <p>Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
+   *
    * @see "https://xrpl.org/transfer-fees.html"
    * @see "https://en.wikipedia.org/wiki/Slippage_%28finance%29"
    */

@@ -6,6 +6,8 @@ import org.immutables.value.Value;
 
 /**
  * A {@link CurrencyAmount} for Issued Currencies on the XRP Ledger.
+ *
+ * @see "https://xrpl.org/rippleapi-reference.html#value"
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableIssuedCurrencyAmount.class)
@@ -17,8 +19,11 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   }
 
   /**
-   * Quoted decimal representation of the amount of currency. This can include scientific notation, such as
-   * 1.23e11 meaning 123,000,000,000. Both e and E may be used.
+   * Quoted decimal representation of the amount of currency. This can include scientific notation, such as 1.23e11
+   * meaning 123,000,000,000. Both e and E may be used. Note that while this implementation merely holds a {@link
+   * String} with no value restrictions, the XRP Ledger does not tolerate unlimited precision values. Instead, non-XRP
+   * values (i.e., values held in this object) can have up to 16 decimal digits of precision, with a maximum value of
+   * 9999999999999999e80. The smallest positive non-XRP value is 1e-81.
    *
    * @return A {@link String} containing the amount of this issued currency.
    */
@@ -32,8 +37,8 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   String currency();
 
   /**
-   * Unique account {@link Address} of the entity issuing the currency. In other words, the person or business where
-   * the currency can be redeemed.
+   * Unique account {@link Address} of the entity issuing the currency. In other words, the person or business where the
+   * currency can be redeemed.
    *
    * @return The {@link Address} of the account of the issuer of this currency.
    */

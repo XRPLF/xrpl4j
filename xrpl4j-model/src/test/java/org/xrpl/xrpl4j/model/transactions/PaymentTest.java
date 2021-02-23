@@ -13,11 +13,17 @@ public class PaymentTest {
   @Test
   public void paymentBuilder() {
     assertThat(xrpPayment()).isNotNull();
+    assertThat(issuedCurrencyPayment()).isNotNull();
   }
 
   @Test
-  public void flags() {
+  public void flagsForXrpPayment() {
     assertThat(xrpPayment().flags().tfFullyCanonicalSig()).isTrue();
+  }
+
+  @Test
+  public void flagsForIssuedCurrency() {
+    assertThat(issuedCurrencyPayment().flags().tfFullyCanonicalSig()).isTrue();
   }
 
   //////////////////

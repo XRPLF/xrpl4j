@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.crypto.signing;
 import static org.xrpl.xrpl4j.crypto.KeyStoreType.DERIVED_SERVER_SECRET;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.hash.Hashing;
@@ -68,15 +69,37 @@ public class DerivedKeysSignatureService implements SignatureService {
     final VersionType versionType,
     final KeyPairService keyPairService
   ) {
+    this(
+      serverSecretSupplier,
+      versionType,
+      keyPairService,
+      CaffeineSpec.parse("maximumSize=10000,expireAfterWrite=30s")
+    );
+  }
+
+  /**
+   * Required-args Constructor.
+   *
+   * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can
+   * @param versionType          A {@link VersionType} that defines which type of key this signature service uses.
+   * @param keyPairService       A {@link KeyPairService}.
+   * @param caffeineSpec         A {@link CaffeineSpec} that can be initialized externally to configure the Caffeine
+   *                             cache constructed by this service.
+   */
+  public DerivedKeysSignatureService(
+    final ServerSecretSupplier serverSecretSupplier,
+    final VersionType versionType,
+    final KeyPairService keyPairService,
+    final CaffeineSpec caffeineSpec
+  ) {
     this.serverSecretSupplier = Objects.requireNonNull(serverSecretSupplier);
     this.versionType = Objects.requireNonNull(versionType);
     this.keyPairService = Objects.requireNonNull(keyPairService);
-
-    this.keyMetadataLoadingCache = Caffeine.newBuilder()
-      .maximumSize(10_000)
-      .expireAfterWrite(30, TimeUnit.SECONDS)
+    this.keyMetadataLoadingCache = Caffeine
+      .from(Objects.requireNonNull(caffeineSpec))
       .build(this::constructSignatureService);
   }
+
 
   @Override
   public SignedTransaction sign(

@@ -1,7 +1,10 @@
 package org.xrpl.xrpl4j.crypto.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.primitives.UnsignedInteger;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
@@ -16,6 +19,7 @@ import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PublicKey;
 import org.xrpl.xrpl4j.crypto.Seed;
 import org.xrpl.xrpl4j.crypto.ServerSecretSupplier;
+import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -29,6 +33,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Unit tests for {@link DerivedKeysSignatureService}.
+ */
 class DerivedKeysSignatureServiceTest {
 
   private static final String SECP256K1 = "secp256k1";
@@ -64,6 +71,68 @@ class DerivedKeysSignatureServiceTest {
     final ServerSecretSupplier serverSecretSupplier = () -> "happy".getBytes();
     this.edSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.ED25519);
     this.ecSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.SECP256K1);
+  }
+
+  @Test
+  void constructorWithNulls() {
+    // 2-arg Constructor
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(null, VersionType.ED25519));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(() -> new byte[32], null));
+
+    // 3-arg Constructor
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      null,
+      VersionType.ED25519,
+      mock(KeyPairService.class)
+    ));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      () -> new byte[32],
+      null,
+      mock(KeyPairService.class)
+    ));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      () -> new byte[32],
+      VersionType.ED25519,
+      null
+    ));
+
+    // 4-arg Constructor
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      null,
+      VersionType.ED25519,
+      mock(KeyPairService.class),
+      CaffeineSpec.parse("")
+    ));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      () -> new byte[32],
+      null,
+      mock(KeyPairService.class),
+      CaffeineSpec.parse("")
+    ));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      () -> new byte[32],
+      VersionType.ED25519,
+      null,
+      CaffeineSpec.parse("")
+    ));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
+      () -> new byte[32],
+      VersionType.ED25519,
+      mock(KeyPairService.class),
+      null
+    ));
+
+  }
+
+  @Test
+  void constructorWithExternalCaffeineConfig() {
+    // This test merely assert that construction succeeds.
+    new DerivedKeysSignatureService(
+      () -> new byte[32],
+      VersionType.ED25519,
+      mock(KeyPairService.class),
+      CaffeineSpec.parse("maximumSize=200,expireAfterWrite=300s")
+    );
   }
 
   @Test

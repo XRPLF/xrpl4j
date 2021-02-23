@@ -75,7 +75,7 @@ public class Wrappers {
         return false;
       }
 
-      return this.value().equalsIgnoreCase(((Hash256) obj).value());
+      return this.value().toUpperCase(Locale.ENGLISH).equals(((Hash256) obj).value().toUpperCase(Locale.ENGLISH));
     }
 
     @Override

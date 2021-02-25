@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
@@ -19,7 +20,13 @@ public class AbstractJsonTest {
   protected ObjectMapper objectMapper;
 
   @Before
+  @Deprecated // Will be removed once Junit4 is removed.
   public void setUp() {
+    objectMapper = ObjectMapperFactory.create();
+  }
+
+  @BeforeEach
+  public void setUpJunit5() {
     objectMapper = ObjectMapperFactory.create();
   }
 

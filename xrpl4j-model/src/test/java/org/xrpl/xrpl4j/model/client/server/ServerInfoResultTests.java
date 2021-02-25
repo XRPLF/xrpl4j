@@ -165,6 +165,15 @@ public class ServerInfoResultTests extends AbstractJsonTest {
     assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.valueOf(31))).isFalse();
     assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.MAX_VALUE)).isFalse();
 
+    serverInfo = serverInfo("0-10, 20-30 "); // <-- Test the trim function
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.ZERO)).isTrue();
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.ONE)).isTrue();
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.valueOf(19))).isFalse();
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.valueOf(20))).isTrue();
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.valueOf(30))).isTrue();
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.valueOf(31))).isFalse();
+    assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.MAX_VALUE)).isFalse();
+
     serverInfo = serverInfo(UnsignedLong.MAX_VALUE.toString());
     assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.ZERO)).isFalse();
     assertThat(serverInfo.isLedgerInCompleteLedgers(UnsignedLong.ONE)).isFalse();

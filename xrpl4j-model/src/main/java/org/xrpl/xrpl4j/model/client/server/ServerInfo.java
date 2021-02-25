@@ -93,6 +93,7 @@ public interface ServerInfo {
           // Split completeLedgers by comma...
           final List<String> ranges = Stream.of(completeLedgers.split(",")).collect(Collectors.toList());
           return ranges.stream()
+            .map(String::trim)
             .anyMatch(range -> {
               // If ledgerIndex is in this range, return true; otherwise return false.
 

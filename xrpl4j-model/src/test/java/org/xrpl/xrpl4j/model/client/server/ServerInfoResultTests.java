@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.server;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
@@ -14,6 +15,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -105,6 +107,94 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       "  }";
 
     assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  public void completeLedgersRanges() {
+    ServerInfo serverInfo = serverInfo("empty");
+    assertThat(serverInfo.completeLedgerRanges()).hasSize(0);
+
+    serverInfo = serverInfo("");
+    assertThat(serverInfo.completeLedgerRanges()).hasSize(0);
+
+    serverInfo = serverInfo("foo");
+    assertThat(serverInfo.completeLedgerRanges()).hasSize(0);
+
+    serverInfo = serverInfo("foo100");
+    assertThat(serverInfo.completeLedgerRanges()).hasSize(0);
+
+    serverInfo = serverInfo("1--2");
+    assertThat(serverInfo.completeLedgerRanges()).hasSize(0);
+
+    serverInfo = serverInfo("0");
+    List<Range<UnsignedLong>> ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(1);
+    assertThat(ranges.get(0).contains(UnsignedLong.ZERO)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.ONE)).isFalse();
+
+    serverInfo = serverInfo("1");
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(1);
+    assertThat(ranges.get(0).contains(UnsignedLong.ZERO)).isFalse();
+    assertThat(ranges.get(0).contains(UnsignedLong.ONE)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.valueOf(2L))).isFalse();
+
+    serverInfo = serverInfo("1-2");
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(1);
+    assertThat(ranges.get(0).contains(UnsignedLong.ZERO)).isFalse();
+    assertThat(ranges.get(0).contains(UnsignedLong.ONE)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.valueOf(2))).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.MAX_VALUE)).isFalse();
+
+    serverInfo = serverInfo("0-" + UnsignedLong.MAX_VALUE.toString());
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(1);
+
+    serverInfo = serverInfo("0-foo");
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(0);
+
+    serverInfo = serverInfo("foo-0");
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(0);
+
+    serverInfo = serverInfo("foo-0,bar-20");
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(0);
+
+    serverInfo = serverInfo("0-10,20-30");
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(2);
+    assertThat(ranges.get(0).contains(UnsignedLong.ZERO)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.ONE)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.valueOf(10L))).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.valueOf(11L))).isFalse();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(19L))).isFalse();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(20L))).isTrue();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(30L))).isTrue();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(31L))).isFalse();
+    assertThat(ranges.get(1).contains(UnsignedLong.MAX_VALUE)).isFalse();
+
+    serverInfo = serverInfo("0-10, 20-30 "); // <-- Test the trim function
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(2);
+    assertThat(ranges.get(0).contains(UnsignedLong.ZERO)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.ONE)).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.valueOf(10L))).isTrue();
+    assertThat(ranges.get(0).contains(UnsignedLong.valueOf(11L))).isFalse();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(19L))).isFalse();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(20L))).isTrue();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(30L))).isTrue();
+    assertThat(ranges.get(1).contains(UnsignedLong.valueOf(31L))).isFalse();
+    assertThat(ranges.get(1).contains(UnsignedLong.MAX_VALUE)).isFalse();
+
+    serverInfo = serverInfo(UnsignedLong.MAX_VALUE.toString());
+    ranges = serverInfo.completeLedgerRanges();
+    assertThat(ranges).hasSize(1);
+    assertThat(ranges.get(0).contains(UnsignedLong.ZERO)).isFalse();
+    assertThat(ranges.get(0).contains(UnsignedLong.ONE)).isFalse();
+    assertThat(ranges.get(0).contains(UnsignedLong.MAX_VALUE)).isTrue();
   }
 
   @Test

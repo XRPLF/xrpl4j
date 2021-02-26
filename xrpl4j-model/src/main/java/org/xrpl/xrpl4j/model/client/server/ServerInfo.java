@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
@@ -12,7 +13,6 @@ import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -74,6 +74,48 @@ public interface ServerInfo {
   @JsonProperty("complete_ledgers")
   String completeLedgers();
 
+  @Derived
+  @JsonIgnore
+  default List<Range<UnsignedLong>> completeLedgerRanges() {
+    // Split completeLedgers by comma...
+    return Stream.of(completeLedgers().split(","))
+      .map(String::trim)
+      .filter($ -> !$.equals("empty")) // <-- `empty` is a valid value for completed ledgers.
+      .map(range -> {
+        final String[] parts = range.split("-");
+        if (parts.length == 1) {
+          try {
+            return Range.singleton(UnsignedLong.valueOf(parts[0]));
+          } catch (Exception e) {
+            return null; // <-- filtered out of the ultimate List below.
+          }
+        }
+        if (parts.length == 2) {
+          final UnsignedLong lower;
+          final UnsignedLong upper;
+          try {
+            lower = UnsignedLong.valueOf(parts[0]);
+          } catch (Exception e) {
+            LOGGER.warn("Unable to parse valid lower bound number (ignoring range).", e);
+            return null; // <-- filtered out of the ultimate List below.
+          }
+
+          try {
+            upper = UnsignedLong.valueOf(parts[1]);
+          } catch (Exception e) {
+            LOGGER.warn("Unable to parse valid upper bound number (ignoring range).", e);
+            return null; // <-- filtered out of the ultimate List below.
+          }
+          return Range.closed(lower, upper);
+        } else {
+          LOGGER.warn("Range had too many dashes (ignoring range)");
+          return null; // <-- filtered out of the ultimate List below.
+        }
+      })
+      .filter($ -> $ != null)
+      .collect(Collectors.toList());
+  }
+
   /**
    * Determines if the supplied {@code ledgerIndex} exists on the rippled server by inspecting {@link
    * #completeLedgers()}.
@@ -86,44 +128,10 @@ public interface ServerInfo {
   @Derived
   @JsonIgnore
   default boolean isLedgerInCompleteLedgers(final UnsignedLong ledgerIndex) {
-    try {
-      return Optional.ofNullable(completeLedgers())
-        .filter($ -> !$.equalsIgnoreCase("empty"))
-        .map(completeLedgers -> {
-          // Split completeLedgers by comma...
-          final List<String> ranges = Stream.of(completeLedgers.split(",")).collect(Collectors.toList());
-          return ranges.stream()
-            .map(String::trim)
-            .anyMatch(range -> {
-              // If ledgerIndex is in this range, return true; otherwise return false.
-
-              String[] parts = range.split("-");
-              if (parts.length == 1) {
-                return UnsignedLong.valueOf(parts[0]).equals(ledgerIndex);
-              }
-              if (parts.length == 2) {
-                UnsignedLong start = UnsignedLong.valueOf(parts[0]);
-                UnsignedLong end = UnsignedLong.valueOf(parts[1]);
-
-                if (
-                  FluentCompareTo.is(ledgerIndex).greaterThanEqualTo(start) &&
-                    FluentCompareTo.is(ledgerIndex).lessThanOrEqualTo(end)
-                ) {
-                  return true; // <-- ledgerIndex is in this range.
-                } else {
-                  return false; // <-- ledgerIndex not in this range (but try the other ranges).
-                }
-              } else {
-                throw new IllegalArgumentException("Range had too many dashes (should have had 0 or 1)");
-              }
-            });
-        })
-        .orElse(false);
-    } catch (Exception e) {
-      final String errorMessage = String.format("Unable to parse complete_ledgers value `%s`", completeLedgers());
-      LOGGER.warn(errorMessage, e);
-      return false;
-    }
+    return this.completeLedgerRanges().stream()
+      .filter(range -> range.contains(ledgerIndex))
+      .findFirst()
+      .isPresent();
   }
 
   /**

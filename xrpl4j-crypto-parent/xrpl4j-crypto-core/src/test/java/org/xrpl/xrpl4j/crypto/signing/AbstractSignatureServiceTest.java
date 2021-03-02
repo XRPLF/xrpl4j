@@ -18,6 +18,7 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,7 +61,7 @@ public class AbstractSignatureServiceTest {
     when(transactionWithSignatureMock.unsignedTransaction()).thenReturn(transactionMock);
     when(signatureUtilsMock.toSignableBytes(any())).thenReturn(UnsignedByteArray.empty());
 
-    this.signatureService = new AbstractSignatureService(KeyStoreType.DERIVED_SERVER_SECRET, signatureUtilsMock) {
+    this.signatureService = new AbstractSignatureService(KeyStoreType.DERIVED_SERVER_SECRET, signatureUtilsMock, DefaultKeyPairService.getInstance()) {
       @Override
       public PublicKey getPublicKey(KeyMetadata keyMetadata) {
         return publicKeyMock;

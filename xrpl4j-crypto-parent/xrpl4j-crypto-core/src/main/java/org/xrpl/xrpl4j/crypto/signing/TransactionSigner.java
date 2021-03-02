@@ -20,4 +20,6 @@ public interface TransactionSigner {
    *   effect a transaction.
    */
   SignedTransaction sign(KeyMetadata keyMetadata, Transaction transaction);
+
+  Signature signWithBehavior(KeyMetadata keyMetadata, Transaction transaction, SigningBehavior behavior);
 }

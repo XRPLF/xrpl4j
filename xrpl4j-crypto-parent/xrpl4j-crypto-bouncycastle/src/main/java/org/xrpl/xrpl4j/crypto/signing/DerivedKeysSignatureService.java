@@ -21,7 +21,6 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * An implementation that uses an in-memory secret key in order to deterministically create a seed value that can then
@@ -102,8 +101,8 @@ public class DerivedKeysSignatureService implements SignatureService {
 
 
   @Override
-  public SignedTransaction sign(
-    final KeyMetadata keyMetadata, final Transaction transaction
+  public <T extends Transaction> SignedTransaction<T> sign(
+    final KeyMetadata keyMetadata, final T transaction
   ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
@@ -122,9 +121,9 @@ public class DerivedKeysSignatureService implements SignatureService {
   }
 
   @Override
-  public boolean verify(
+  public <T extends Transaction> boolean verify(
     final KeyMetadata keyMetadata,
-    final SignedTransaction transactionWithSignature
+    final SignedTransaction<T> transactionWithSignature
   ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transactionWithSignature);

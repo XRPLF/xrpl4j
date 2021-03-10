@@ -19,5 +19,5 @@ public interface TransactionVerifier {
    *
    * @return {@code true} if the signature is valid and verified; {@code false} otherwise.
    */
-  boolean verify(KeyMetadata keyMetadata, SignedTransaction transactionWithSignature);
+  <T extends Transaction> boolean verify(KeyMetadata keyMetadata, SignedTransaction<T> transactionWithSignature);
 }

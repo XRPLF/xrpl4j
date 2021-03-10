@@ -44,7 +44,7 @@ public abstract class AbstractSignatureService implements SignatureService {
   }
 
   @Override
-  public SignedTransaction sign(final KeyMetadata keyMetadata, final Transaction transaction) {
+  public <T extends Transaction> SignedTransaction<T> sign(final KeyMetadata keyMetadata, final T transaction) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
 

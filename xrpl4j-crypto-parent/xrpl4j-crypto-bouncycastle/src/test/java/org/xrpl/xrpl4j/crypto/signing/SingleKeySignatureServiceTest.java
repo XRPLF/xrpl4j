@@ -102,7 +102,7 @@ class SingleKeySignatureServiceTest {
       .signingPublicKey(publicKey.base16Encoded())
       .build();
 
-    SignedTransaction transactionWithSignature = this.edSignatureService.sign(keyMetadata, paymentTransaction);
+    SignedTransaction<Payment> transactionWithSignature = this.edSignatureService.sign(keyMetadata, paymentTransaction);
     assertThat(transactionWithSignature).isNotNull();
     assertThat(transactionWithSignature.unsignedTransaction()).isEqualTo(paymentTransaction);
 
@@ -124,7 +124,7 @@ class SingleKeySignatureServiceTest {
       .signingPublicKey(publicKey.base16Encoded())
       .build();
 
-    SignedTransaction transactionWithSignature = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
+    SignedTransaction<Payment> transactionWithSignature = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
     assertThat(transactionWithSignature).isNotNull();
     assertThat(transactionWithSignature.unsignedTransaction()).isEqualTo(paymentTransaction);
 

@@ -76,7 +76,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
-    SignedTransaction signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
+    SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
@@ -110,7 +110,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
-    SignedTransaction transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
+    SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(

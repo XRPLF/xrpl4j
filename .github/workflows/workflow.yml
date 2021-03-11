@@ -1,6 +1,9 @@
 name: xrpl4j-CI
 
-on: push
+on:
+  push:
+  pull_request:
+    types: [assigned]
 jobs:
   build_java8:
     runs-on: ubuntu-latest

@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.dex.DexClient;
@@ -25,22 +26,31 @@ public class DexClientIT extends AbstractIT {
 
   private DexClient dexClient = new DexClient(xrplClient);
 
+  private static final String USD = "USD";
+  private static final String XRP = "XRP";
+
   @Test
   public void testSingleCurrencyBalance() throws JsonRpcClientErrorException {
     Wallet issuer = this.createRandomAccount();
     Wallet purchaser = this.createRandomAccount();
-
-    String USD = "USD";
 
     issueCurrency(issuer, USD);
 
     buyIssuedCurrency(purchaser, USD, issuer.classicAddress());
 
     List<Balance> balances = dexClient.getBalances(purchaser.classicAddress());
+
     BigDecimal usdBalance = new BigDecimal("0.5");
+    BigDecimal xrpBalance = new BigDecimal("998.99999");
+    BigDecimal reserve = new BigDecimal("25");
 
     assertThat(balances).isNotEmpty()
       .containsExactlyInAnyOrder(
+        Balance.builder().currency(XRP)
+          .available(xrpBalance.subtract(reserve))
+          .total(xrpBalance)
+          .locked(reserve)
+          .build(),
         Balance.builder().currency(USD)
           .available(usdBalance)
           .total(usdBalance)
@@ -64,9 +74,16 @@ public class DexClientIT extends AbstractIT {
 
     List<Balance> balances = dexClient.getBalances(purchaser.classicAddress());
     BigDecimal usdBalance = new BigDecimal("1");
+    BigDecimal xrpBalance = new BigDecimal("997.99998");
+    BigDecimal reserve = new BigDecimal("30");
 
     assertThat(balances).isNotEmpty()
       .containsExactlyInAnyOrder(
+        Balance.builder().currency(XRP)
+          .available(xrpBalance.subtract(reserve).stripTrailingZeros())
+          .total(xrpBalance)
+          .locked(reserve)
+          .build(),
         Balance.builder().currency(USD)
           .available(usdBalance)
           .total(usdBalance)
@@ -120,7 +137,6 @@ public class DexClientIT extends AbstractIT {
   }
 
   private void issueCurrency(Wallet issuerWallet, String currency) throws JsonRpcClientErrorException {
-    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
       this.scanForResult(() -> this.getCurrentAccountInfo(issuerWallet.classicAddress()));
 
@@ -129,7 +145,7 @@ public class DexClientIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(issuerWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(10)))
       .sequence(sequence)
       .signingPublicKey(issuerWallet.publicKey())
       .takerGets(IssuedCurrencyAmount.builder()

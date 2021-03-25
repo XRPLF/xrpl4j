@@ -3,6 +3,8 @@ package org.xrpl.xrpl4j.client.dex;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.client.dex.model.Balance;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -15,6 +17,9 @@ import java.util.stream.Collectors;
 
 public class DexClient {
 
+  private final BigDecimal XRP_BASE_RESERVE = new BigDecimal("20");
+  private final BigDecimal ACCOUNT_OBJECT_RESERVE = new BigDecimal("5");
+
   private XrplClient xrplClient;
 
   public DexClient(XrplClient xrplClient) {
@@ -22,6 +27,41 @@ public class DexClient {
   }
 
   public List<Balance> getBalances(Address address) throws JsonRpcClientErrorException {
+    List<Balance> balances = getIssuedCurrencyBalances(address);
+    balances.add(getXrpBalance(address));
+    return balances;
+  }
+
+  private Balance getXrpBalance(Address address) throws JsonRpcClientErrorException {
+    AccountInfoResult accountInfo = xrplClient.accountInfo(AccountInfoRequestParams.builder()
+      .account(address)
+      .ledgerIndex(LedgerIndex.VALIDATED)
+      .build());
+
+    BigDecimal total = accountInfo.accountData().balance().toXrp();
+    BigDecimal locked = getReserve(address);
+    BigDecimal available = total.subtract(locked);
+    return Balance.builder()
+      .currency("XRP")
+      .total(total)
+      .locked(locked)
+      .available(available)
+      .build();
+  }
+
+  private BigDecimal getReserve(Address address) throws JsonRpcClientErrorException {
+    AccountInfoResult accountObjects = xrplClient.accountInfo(AccountInfoRequestParams.builder()
+      .account(address)
+      .ledgerIndex(LedgerIndex.VALIDATED)
+      .build()
+    );
+
+    long ownerCount = accountObjects.accountData().ownerCount().longValue();
+    return XRP_BASE_RESERVE
+      .add(ACCOUNT_OBJECT_RESERVE.multiply(BigDecimal.valueOf(ownerCount)));
+  }
+
+  private List<Balance> getIssuedCurrencyBalances(Address address) throws JsonRpcClientErrorException {
     AccountLinesResult accountLines = xrplClient.accountLines(AccountLinesRequestParams.builder()
       .account(address)
       .ledgerIndex(LedgerIndex.VALIDATED)

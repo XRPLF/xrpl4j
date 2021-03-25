@@ -10,12 +10,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
+import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.ImmutableIssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -210,6 +215,76 @@ public class OfferIT extends AbstractIT {
     // Poll the ledger for the source purchaser's offers, and validate no offers or balances (ripple states) exist
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), RippleStateObject.class));
+  }
+
+  @Test
+  void createdOfferShowsUpInOrderBook() throws JsonRpcClientErrorException {
+    Wallet purchaser = createRandomAccount();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult accountInfoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaser.classicAddress())
+    );
+
+    //////////////////////
+    // Create an Offer
+    UnsignedInteger sequence = accountInfoResult.accountData().sequence();
+    final ImmutableIssuedCurrencyAmount takerPays = IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(issuerWallet.classicAddress())
+      .value("1000")
+      .build();
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(purchaser.classicAddress())
+      .fee(feeResult.drops().minimumFee())
+      .sequence(sequence)
+      .signingPublicKey(purchaser.publicKey())
+      .takerPays(takerPays)
+      .takerGets(XrpCurrencyAmount.ofDrops(1000))
+      .flags(Flags.OfferCreateFlags.builder()
+        .tfFullyCanonicalSig(true)
+        .tfSell(true)
+        .build())
+      .build();
+
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
+    assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
+
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+      response.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    );
+
+    final OfferObject offerObject = scanForOffer(purchaser, sequence);
+
+    final Supplier<BookOffersResult> bookOffersResultSupplier = () -> {
+      try {
+        return xrplClient.bookOffers(
+          BookOffersRequestParams.builder()
+            .ledgerIndex(LedgerIndex.VALIDATED)
+            .takerGets(PathCurrency.of("XRP"))
+            .takerPays(PathCurrency.builder()
+              .issuer(takerPays.issuer())
+              .currency(takerPays.currency())
+              .build())
+            .build()
+        );
+      } catch (JsonRpcClientErrorException e) {
+        throw new RuntimeException(e);
+      }
+    };
+
+    final BookOffersResult bookOffersResult = this.scanForResult(
+      bookOffersResultSupplier,
+      result -> result.offers()
+        .contains(offerObject)
+    );
+
+    logger.info("BookOffersResult: {}", bookOffersResult);
   }
 
   /**

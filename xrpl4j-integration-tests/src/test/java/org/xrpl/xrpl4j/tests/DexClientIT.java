@@ -3,7 +3,6 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.dex.DexClient;
@@ -15,6 +14,7 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -31,15 +31,10 @@ public class DexClientIT extends AbstractIT {
     Wallet purchaser = this.createRandomAccount();
 
     String USD = "USD";
+
     issueCurrency(issuer, USD);
 
     buyIssuedCurrency(purchaser, USD, issuer.classicAddress());
-
-    this.scanForResult(
-      () -> getValidatedAccountLines(issuer.classicAddress(), purchaser.classicAddress()),
-      linesResult -> linesResult.lines().stream()
-        .anyMatch(line -> line.account().equals(purchaser.classicAddress()))
-    );
 
     List<Balance> balances = dexClient.getBalances(purchaser.classicAddress());
     BigDecimal usdBalance = new BigDecimal("0.5");
@@ -47,14 +42,13 @@ public class DexClientIT extends AbstractIT {
     assertThat(balances).isNotEmpty()
       .containsExactlyInAnyOrder(
         Balance.builder().currency(USD)
-        .available(usdBalance)
-        .total(usdBalance)
-        .locked(BigDecimal.ZERO)
-        .build()
+          .available(usdBalance)
+          .total(usdBalance)
+          .locked(BigDecimal.ZERO)
+          .build()
       );
   }
 
-  @Ignore // FIXME
   @Test
   public void testSingleCurrencyMultipleIssuerBalance() throws JsonRpcClientErrorException {
     Wallet issuerOne = this.createRandomAccount();
@@ -68,14 +62,8 @@ public class DexClientIT extends AbstractIT {
     buyIssuedCurrency(purchaser, USD, issuerOne.classicAddress());
     buyIssuedCurrency(purchaser, USD, issuerTwo.classicAddress());
 
-    this.scanForResult(
-      () -> getValidatedAccountLines(issuerTwo.classicAddress(), purchaser.classicAddress()),
-      linesResult -> linesResult.lines().stream()
-        .anyMatch(line -> line.account().equals(purchaser.classicAddress()))
-    );
-
     List<Balance> balances = dexClient.getBalances(purchaser.classicAddress());
-    BigDecimal usdBalance = new BigDecimal("1.0");
+    BigDecimal usdBalance = new BigDecimal("1");
 
     assertThat(balances).isNotEmpty()
       .containsExactlyInAnyOrder(
@@ -118,13 +106,23 @@ public class DexClientIT extends AbstractIT {
     // OFFER anyone who pays 0.01 USD can get 1 XRP  (at most 100 XRP per USD)
 
     SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
+    logger.info("offer transaction {} response {}", response.transactionResult().transaction().hash(), response.result());
     assertThat(response.result()).isEqualTo("tesSUCCESS");
+
+    awaitValidatedTransaction(response, OfferCreate.class);
+  }
+
+  private void awaitValidatedTransaction(SubmitResult<?> response, Class<? extends Transaction> trxClass) {
+    this.scanForResult(
+      () -> getValidatedTransaction(
+        response.transactionResult().transaction().hash().orElseThrow(() -> new IllegalStateException("no hash found")), trxClass)
+    );
   }
 
   private void issueCurrency(Wallet issuerWallet, String currency) throws JsonRpcClientErrorException {
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
-      this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.classicAddress()));
+      this.scanForResult(() -> this.getCurrentAccountInfo(issuerWallet.classicAddress()));
 
     //////////////////////
     // Create an Offer
@@ -151,7 +149,10 @@ public class DexClientIT extends AbstractIT {
     // OFFER anyone who pays 200 XRP can get 100 USD (at least 2 XRP PER USD)
 
     SubmitResult<OfferCreate> response = xrplClient.submit(issuerWallet, offerCreate);
+    logger.info("sell offer transaction {} response {}", response.transactionResult().transaction().hash(), response.result());
     assertThat(response.result()).isEqualTo("tesSUCCESS");
+
+    awaitValidatedTransaction(response, OfferCreate.class);
   }
 
 

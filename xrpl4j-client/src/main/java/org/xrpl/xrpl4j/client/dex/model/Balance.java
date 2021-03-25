@@ -45,9 +45,9 @@ public interface Balance {
 
     default Balance add(Balance toAdd) {
         return builder().from(this)
-          .total(this.total().add(toAdd.total()))
-          .available(this.available().add(toAdd.available()))
-          .locked(this.locked().orElse(BigDecimal.ZERO).add(toAdd.locked().orElse(BigDecimal.ZERO)))
+          .total(this.total().add(toAdd.total()).stripTrailingZeros())
+          .available(this.available().add(toAdd.available()).stripTrailingZeros())
+          .locked(this.locked().orElse(BigDecimal.ZERO).add(toAdd.locked().orElse(BigDecimal.ZERO)).stripTrailingZeros())
           .build();
     }
 

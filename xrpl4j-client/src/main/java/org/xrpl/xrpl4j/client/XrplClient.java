@@ -28,6 +28,8 @@ import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
@@ -381,6 +383,15 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, RipplePathFindResult.class);
+  }
+
+  public BookOffersResult bookOffers(BookOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.BOOK_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, BookOffersResult.class);
   }
 
   /**

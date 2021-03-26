@@ -50,7 +50,7 @@ public class DexClient {
    * @throws JsonRpcClientErrorException
    */
   public OrderBook getOrderBook(Ticker ticker, Address taker) throws JsonRpcClientErrorException {
-    List<LimitOrder> bids = xrplClient.bookOffers(BookOffersRequestParams.builder()
+    List<LimitOrder> asks = xrplClient.bookOffers(BookOffersRequestParams.builder()
       .ledgerIndex(LedgerIndex.VALIDATED)
       .takerGets(PathCurrency.of(ticker.baseCurrency()))
       .takerPays(PathCurrency.builder()
@@ -62,10 +62,10 @@ public class DexClient {
     )
       .offers()
       .stream()
-      .map(offer -> converter.convert(offer, ticker, Side.BUY))
+      .map(offer -> converter.convert(offer, ticker, Side.SELL))
       .collect(Collectors.toList());
 
-    List<LimitOrder> asks = xrplClient.bookOffers(BookOffersRequestParams.builder()
+    List<LimitOrder> bids = xrplClient.bookOffers(BookOffersRequestParams.builder()
       .ledgerIndex(LedgerIndex.VALIDATED)
       .takerGets(PathCurrency.builder()
         .currency(ticker.counterCurrency())
@@ -76,7 +76,7 @@ public class DexClient {
     )
       .offers()
       .stream()
-      .map(offer -> converter.convert(offer, ticker, Side.SELL))
+      .map(offer -> converter.convert(offer, ticker, Side.BUY))
       .collect(Collectors.toList());
 
     return OrderBook.builder()

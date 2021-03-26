@@ -36,9 +36,9 @@ public class DexClientIT extends AbstractIT {
     Wallet issuer = this.createRandomAccount();
     Wallet purchaser = this.createRandomAccount();
 
-    sellIssuedCurrency(issuer);
+    offerIssuedCurrency(issuer);
 
-    buyIssuedCurrency(purchaser, issuer.classicAddress());
+    askForIssuedCurrency(purchaser, issuer.classicAddress());
 
     List<Balance> balances = dexClient.getBalances(purchaser.classicAddress());
 
@@ -68,11 +68,11 @@ public class DexClientIT extends AbstractIT {
     Wallet purchaser = this.createRandomAccount();
 
     String USD = "USD";
-    sellIssuedCurrency(issuerOne);
-    sellIssuedCurrency(issuerTwo);
+    offerIssuedCurrency(issuerOne);
+    offerIssuedCurrency(issuerTwo);
 
-    buyIssuedCurrency(purchaser, issuerOne.classicAddress());
-    buyIssuedCurrency(purchaser, issuerTwo.classicAddress());
+    askForIssuedCurrency(purchaser, issuerOne.classicAddress());
+    askForIssuedCurrency(purchaser, issuerTwo.classicAddress());
 
     List<Balance> balances = dexClient.getBalances(purchaser.classicAddress());
     BigDecimal usdBalance = new BigDecimal("1");
@@ -129,52 +129,52 @@ public class DexClientIT extends AbstractIT {
     BigDecimal twoXrp = new BigDecimal(2);
 
 
-    sellIssuedCurrency(issuer, oneHundredXrp, oneDollar); // sell USD for xrp at 0.01
-    sellIssuedCurrency(issuer, fiftyXrp, tenDollars); // sell USD for xrp at .20
+    offerIssuedCurrency(issuer, oneHundredXrp, oneDollar); // offer USD for xrp at 0.01
+    offerIssuedCurrency(issuer, fiftyXrp, tenDollars); // offer USD for xrp at .20
 
-    // buy 20 USD for 0.05 XRP per dollar
-    buyIssuedCurrency(purchaser, issuer.classicAddress(), oneXrp, twentyDollars);
-    // buy 10 USD for 0.20 XRP per dollar
-    buyIssuedCurrency(purchaser, issuer.classicAddress(), twoXrp, tenDollars);
+    // ask 20 USD for 1 XRP (XRP exchange rate $20)
+    askForIssuedCurrency(purchaser, issuer.classicAddress(), oneXrp, twentyDollars);
+    // ask 10 USD for 2 XRP (XRP exchange rate $5)
+    askForIssuedCurrency(purchaser, issuer.classicAddress(), twoXrp, tenDollars);
 
     OrderBook result = dexClient.getOrderBook(ticker, issuer.classicAddress());
-    assertThat(result.bids()).isNotEmpty()
-      .containsExactly(
-        LimitOrder.builder()
-          .ticker(ticker)
-          .baseQuantity(twoXrp)
-          .counterPrice(tenDollars)
-          .side(Side.BUY)
-          .build(),
-        LimitOrder.builder()
-          .ticker(ticker)
-          .baseQuantity(oneXrp)
-          .counterPrice(twentyDollars)
-          .side(Side.BUY)
-          .build()
-      );
     assertThat(result.asks()).isNotEmpty()
       .containsExactly(
         LimitOrder.builder()
           .ticker(ticker)
-          .baseQuantity(fiftyXrp)
-          .counterPrice(tenDollars)
+          .baseQuantity(twoXrp)
+          .counterPrice(new BigDecimal(5))
           .side(Side.SELL)
           .build(),
         LimitOrder.builder()
           .ticker(ticker)
-          .baseQuantity(oneHundredXrp)
-          .counterPrice(oneDollar)
+          .baseQuantity(oneXrp)
+          .counterPrice(new BigDecimal(20).stripTrailingZeros())
           .side(Side.SELL)
+          .build()
+      );
+    assertThat(result.bids()).isNotEmpty()
+      .containsExactly(
+        LimitOrder.builder()
+          .ticker(ticker)
+          .baseQuantity(fiftyXrp)
+          .counterPrice(new BigDecimal("0.2"))
+          .side(Side.BUY)
+          .build(),
+        LimitOrder.builder()
+          .ticker(ticker)
+          .baseQuantity(oneHundredXrp)
+          .counterPrice(new BigDecimal("0.01"))
+          .side(Side.BUY)
           .build()
       );
   }
 
-  private void buyIssuedCurrency(Wallet purchaser, Address issuer) throws JsonRpcClientErrorException {
-    buyIssuedCurrency(purchaser, issuer, BigDecimal.ONE, new BigDecimal("0.01"));
+  private void askForIssuedCurrency(Wallet purchaser, Address issuer) throws JsonRpcClientErrorException {
+    askForIssuedCurrency(purchaser, issuer, BigDecimal.ONE, new BigDecimal("0.01"));
   }
 
-  private void buyIssuedCurrency(Wallet purchaser, Address issuer, BigDecimal xrpQuantity, BigDecimal usdQuantity) throws JsonRpcClientErrorException {
+  private void askForIssuedCurrency(Wallet purchaser, Address issuer, BigDecimal xrpQuantity, BigDecimal usdQuantity) throws JsonRpcClientErrorException {
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
       this.scanForResult(() -> this.getCurrentAccountInfo(purchaser.classicAddress()));
@@ -217,11 +217,11 @@ public class DexClientIT extends AbstractIT {
     );
   }
 
-  private void sellIssuedCurrency(Wallet issuerWallet) throws JsonRpcClientErrorException {
-    sellIssuedCurrency(issuerWallet, new BigDecimal("200"), new BigDecimal("100"));
+  private void offerIssuedCurrency(Wallet issuerWallet) throws JsonRpcClientErrorException {
+    offerIssuedCurrency(issuerWallet, new BigDecimal("200"), new BigDecimal("100"));
   }
 
-  private void sellIssuedCurrency(Wallet issuerWallet, BigDecimal xrpQuantity, BigDecimal usdQuantity)
+  private void offerIssuedCurrency(Wallet issuerWallet, BigDecimal xrpQuantity, BigDecimal usdQuantity)
     throws JsonRpcClientErrorException {
     AccountInfoResult accountInfoResult =
       this.scanForResult(() -> this.getCurrentAccountInfo(issuerWallet.classicAddress()));

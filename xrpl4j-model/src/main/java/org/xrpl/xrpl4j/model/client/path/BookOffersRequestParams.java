@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.path;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -33,5 +34,11 @@ public interface BookOffersRequestParams extends XrplRequestParams {
 
   @JsonProperty("taker_pays")
   PathCurrency takerPays();
+
+  @JsonProperty("limit")
+  @Value.Default
+  default UnsignedInteger limit() {
+    return UnsignedInteger.valueOf(20);
+  }
 
 }

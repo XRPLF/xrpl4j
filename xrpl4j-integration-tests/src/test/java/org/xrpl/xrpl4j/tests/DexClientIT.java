@@ -19,7 +19,6 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
-import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -28,10 +27,9 @@ import java.util.List;
 
 public class DexClientIT extends AbstractIT {
 
-  private static final BigDecimal ONE_THOUSAND = new BigDecimal("1000");
   private static final String USD = "USD";
   private static final String XRP = "XRP";
-  private DexClient dexClient = new DexClient(xrplClient);
+  private final DexClient dexClient = new DexClient(xrplClient);
 
   @Test
   public void testSingleCurrencyBalance() throws JsonRpcClientErrorException {
@@ -213,13 +211,13 @@ public class DexClientIT extends AbstractIT {
     logger.info("offer transaction {} response {}", response.transactionResult().transaction().hash(), response.result());
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
-    awaitValidatedTransaction(response, OfferCreate.class);
+    awaitValidatedTransaction(response);
   }
 
-  private void awaitValidatedTransaction(SubmitResult<?> response, Class<? extends Transaction> trxClass) {
+  private void awaitValidatedTransaction(SubmitResult<?> response) {
     this.scanForResult(
       () -> getValidatedTransaction(
-        response.transactionResult().transaction().hash().orElseThrow(() -> new IllegalStateException("no hash found")), trxClass)
+        response.transactionResult().transaction().hash().orElseThrow(() -> new IllegalStateException("no hash found")), OfferCreate.class)
     );
   }
 
@@ -260,7 +258,7 @@ public class DexClientIT extends AbstractIT {
     logger.info("sell offer transaction {} response {}", response.transactionResult().transaction().hash(), response.result());
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
-    awaitValidatedTransaction(response, OfferCreate.class);
+    awaitValidatedTransaction(response);
   }
 
 

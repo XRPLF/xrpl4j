@@ -98,10 +98,6 @@ public class DexClientIT extends AbstractIT {
   @Test
   public void testEmptyOrderBook() throws JsonRpcClientErrorException {
     Wallet issuer = this.createRandomAccount();
-    Wallet purchaser = this.createRandomAccount();
-
-    sellIssuedCurrency(issuer);
-    buyIssuedCurrency(purchaser, issuer.classicAddress());
 
     Ticker ticker = Ticker.builder()
       .baseCurrency(XRP)
@@ -222,7 +218,7 @@ public class DexClientIT extends AbstractIT {
   }
 
   private void sellIssuedCurrency(Wallet issuerWallet) throws JsonRpcClientErrorException {
-    sellIssuedCurrency(issuerWallet, new BigDecimal("100"), new BigDecimal("200"));
+    sellIssuedCurrency(issuerWallet, new BigDecimal("200"), new BigDecimal("100"));
   }
 
   private void sellIssuedCurrency(Wallet issuerWallet, BigDecimal xrpQuantity, BigDecimal usdQuantity)

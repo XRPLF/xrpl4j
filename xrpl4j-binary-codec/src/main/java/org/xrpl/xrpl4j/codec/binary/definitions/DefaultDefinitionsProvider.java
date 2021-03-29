@@ -23,7 +23,7 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
     this.supplier = Suppliers.memoize(() -> {
       try {
-        return objectMapper.readerFor(Definitions.class).readValue(Resources.getResource("definitions.json"));
+        return objectMapper.readerFor(Definitions.class).readValue(Resources.getResource(DefaultDefinitionsProvider.class, "/definitions.json"));
       } catch (IOException e) {
         throw new IllegalStateException("Cannot read definition.json file", e);
       }

@@ -16,8 +16,10 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.EcDsaSignature;
 import org.xrpl.xrpl4j.keypairs.HashUtils;
+import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.keypairs.Secp256k1;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
@@ -50,6 +52,7 @@ public class SingleKeySignatureService extends AbstractSignatureService implemen
       new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
       new Ed25519Signer(),
       new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest())),
+      DefaultKeyPairService.getInstance(),
       privateKey
     );
   }
@@ -60,15 +63,17 @@ public class SingleKeySignatureService extends AbstractSignatureService implemen
    * @param signatureUtils An {@link SignatureUtils}.
    * @param ed25519Signer  An {@link Ed25519Signer}.
    * @param ecdsaSigner    An {@link ECDSASigner}.
+   * @param keyPairService A {@link KeyPairService}.
    * @param privateKey     A {@link PrivateKey} for obtain keys from.
    */
   public SingleKeySignatureService(
     final SignatureUtils signatureUtils,
     final Ed25519Signer ed25519Signer,
     final ECDSASigner ecdsaSigner,
+    final KeyPairService keyPairService,
     final PrivateKey privateKey
-  ) {
-    super(KEY_STORE_TYPE, signatureUtils);
+    ) {
+    super(KEY_STORE_TYPE, signatureUtils, keyPairService);
     this.ed25519Signer = Objects.requireNonNull(ed25519Signer);
     this.ecdsaSigner = Objects.requireNonNull(ecdsaSigner);
     this.privateKey = Objects.requireNonNull(privateKey);

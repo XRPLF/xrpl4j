@@ -559,4 +559,7 @@ public class XrplClient {
 
   }
 
+  public JsonRpcClient getJsonRpcClient() {
+    return jsonRpcClient;
+  }
 }

@@ -110,6 +110,13 @@ public class DerivedKeysSignatureService implements SignatureService {
   }
 
   @Override
+  public Signature signWithBehavior(KeyMetadata keyMetadata, Transaction transaction, SigningBehavior behavior) {
+    Objects.requireNonNull(keyMetadata);
+    Objects.requireNonNull(transaction);
+    return this.keyMetadataLoadingCache.get(keyMetadata).signWithBehavior(keyMetadata, transaction, behavior);
+  }
+
+  @Override
   public KeyStoreType keyStoreType() {
     return DERIVED_SERVER_SECRET;
   }

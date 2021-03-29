@@ -55,7 +55,11 @@ public abstract class AbstractSignatureService implements SignatureService {
   }
 
   @Override
-  public Signature signWithBehavior(final KeyMetadata keyMetadata, final Transaction transaction, final SigningBehavior behavior) {
+  public Signature signWithBehavior(
+    final KeyMetadata keyMetadata,
+    final Transaction transaction,
+    final SigningBehavior behavior
+  ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
 

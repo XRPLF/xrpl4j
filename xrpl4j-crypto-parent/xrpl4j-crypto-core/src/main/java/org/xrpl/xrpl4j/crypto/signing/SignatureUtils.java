@@ -67,6 +67,8 @@ public class SignatureUtils {
 
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, String signerAddress) {
     Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signerAddress);
+
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, signerAddress);

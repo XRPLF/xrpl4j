@@ -68,7 +68,7 @@ class DerivedKeysSignatureServiceTest {
 
   @BeforeEach
   public void setUp() {
-    final ServerSecretSupplier serverSecretSupplier = () -> "happy".getBytes();
+    final ServerSecretSupplier serverSecretSupplier = "happy"::getBytes;
     this.edSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.ED25519);
     this.ecSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.SECP256K1);
   }

@@ -94,9 +94,25 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  public void toMultiSignableBytesWithNullTransaction() {
+    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableBytes(null, ""));
+  }
+
+  @Test
+  public void toMultiSignableBytesWithNullSignerAddress() {
+    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableBytes(transactionMock, null));
+  }
+
+  @Test
   public void toSignableBytesWithJsonException() throws JsonProcessingException {
     doThrow(new JsonParseException("", mock(JsonLocation.class))).when(objectMapperMock).writeValueAsString(any());
     Assertions.assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(transactionMock));
+  }
+
+  @Test
+  public void toMutliSignableBytesWithJsonException() throws JsonProcessingException {
+    doThrow(new JsonParseException("", mock(JsonLocation.class))).when(objectMapperMock).writeValueAsString(any());
+    Assertions.assertThrows(RuntimeException.class, () -> signatureUtils.toMultiSignableBytes(transactionMock, ""));
   }
 
   @Test

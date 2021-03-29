@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,6 +75,12 @@ public interface ServerInfo {
   @JsonProperty("complete_ledgers")
   String completeLedgers();
 
+  /**
+   * Transforms {@link this::completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
+   *
+   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
+   * rippled node contains in its history.
+   */
   @Derived
   @JsonIgnore
   default List<Range<UnsignedLong>> completeLedgerRanges() {
@@ -112,7 +119,7 @@ public interface ServerInfo {
           return null; // <-- filtered out of the ultimate List below.
         }
       })
-      .filter($ -> $ != null)
+      .filter(Objects::nonNull)
       .collect(Collectors.toList());
   }
 
@@ -129,9 +136,7 @@ public interface ServerInfo {
   @JsonIgnore
   default boolean isLedgerInCompleteLedgers(final UnsignedLong ledgerIndex) {
     return this.completeLedgerRanges().stream()
-      .filter(range -> range.contains(ledgerIndex))
-      .findFirst()
-      .isPresent();
+      .anyMatch(range -> range.contains(ledgerIndex));
   }
 
   /**

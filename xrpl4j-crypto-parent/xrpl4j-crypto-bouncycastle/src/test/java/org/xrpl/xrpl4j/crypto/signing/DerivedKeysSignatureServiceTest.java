@@ -157,7 +157,7 @@ class DerivedKeysSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      SignedTransaction signedTx = this.edSignatureService.sign(keyMetadata, paymentTransaction);
+      SignedTransaction<Payment> signedTx = this.edSignatureService.sign(keyMetadata, paymentTransaction);
       return this.edSignatureService.verify(keyMetadata, signedTx);
     };
 
@@ -193,7 +193,7 @@ class DerivedKeysSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      SignedTransaction signedTx = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
+      SignedTransaction<Payment> signedTx = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
       return this.ecSignatureService.verify(keyMetadata, signedTx);
     };
 

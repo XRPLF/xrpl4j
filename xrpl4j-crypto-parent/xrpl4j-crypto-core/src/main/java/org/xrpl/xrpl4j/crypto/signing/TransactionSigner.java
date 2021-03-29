@@ -19,7 +19,7 @@ public interface TransactionSigner {
    * @return A {@link SignedTransaction} containing binary data that can be submitted to the XRP Ledger in order to
    *   effect a transaction.
    */
-  SignedTransaction sign(KeyMetadata keyMetadata, Transaction transaction);
+  <T extends Transaction> SignedTransaction<T> sign(KeyMetadata keyMetadata, T transaction);
 
   Signature signWithBehavior(KeyMetadata keyMetadata, Transaction transaction, SigningBehavior behavior);
 }

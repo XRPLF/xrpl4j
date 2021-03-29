@@ -29,6 +29,7 @@ public abstract class AbstractSignatureService implements SignatureService {
 
   /**
    * Required-args Constructor.
+   *
    * @param keyStoreType   The {@link KeyStoreType} for this service.
    * @param signatureUtils An {@link SignatureUtils} for help with signing.
    * @param keyPairService
@@ -48,7 +49,7 @@ public abstract class AbstractSignatureService implements SignatureService {
   }
 
   @Override
-  public SignedTransaction sign(final KeyMetadata keyMetadata, final Transaction transaction) {
+  public <T extends Transaction> SignedTransaction<T> sign(final KeyMetadata keyMetadata, final T transaction) {
     Signature signature = this.signWithBehavior(keyMetadata, transaction, SigningBehavior.SINGLE);
     return this.signatureUtils.addSignatureToTransaction(transaction, signature);
   }

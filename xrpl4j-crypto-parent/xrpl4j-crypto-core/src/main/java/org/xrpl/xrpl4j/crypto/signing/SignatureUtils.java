@@ -65,6 +65,19 @@ public class SignatureUtils {
     }
   }
 
+  public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, String signerAddress) {
+    Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signerAddress);
+
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(transaction);
+      final String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, signerAddress);
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
   /**
    * Add {@link Transaction#transactionSignature()} to the given unsignedTransaction. Because {@link Transaction} is not
    * an Immutable object, it does not have a generated builder like its subclasses do. Thus, this method needs to

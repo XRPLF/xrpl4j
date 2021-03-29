@@ -80,6 +80,7 @@ public class SignatureUtilsTest {
     sourceWallet = this.getSourceWallet();
     when(objectMapperMock.writeValueAsString(any())).thenReturn("{foo}"); // <-- Unused JSON value.
     when(xrplBinaryCodecMock.encodeForSigning(anyString())).thenReturn("ED");
+    when(xrplBinaryCodecMock.encodeForMultiSigning(any(), anyString())).thenReturn("ED");
     when(xrplBinaryCodecMock.encode(anyString())).thenReturn("0123456789"); // <-- Unused HEX value.
     this.signatureUtils = new SignatureUtils(objectMapperMock, xrplBinaryCodecMock);
   }
@@ -94,9 +95,25 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  public void toMultiSignableBytesWithNullTransaction() {
+    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableBytes(null, ""));
+  }
+
+  @Test
+  public void toMultiSignableBytesWithNullSignerAddress() {
+    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableBytes(transactionMock, null));
+  }
+
+  @Test
   public void toSignableBytesWithJsonException() throws JsonProcessingException {
     doThrow(new JsonParseException("", mock(JsonLocation.class))).when(objectMapperMock).writeValueAsString(any());
     Assertions.assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(transactionMock));
+  }
+
+  @Test
+  public void toMutliSignableBytesWithJsonException() throws JsonProcessingException {
+    doThrow(new JsonParseException("", mock(JsonLocation.class))).when(objectMapperMock).writeValueAsString(any());
+    Assertions.assertThrows(RuntimeException.class, () -> signatureUtils.toMultiSignableBytes(transactionMock, ""));
   }
 
   @Test
@@ -107,6 +124,17 @@ public class SignatureUtilsTest {
     verify(objectMapperMock).writeValueAsString(transactionMock);
     verifyNoMoreInteractions(objectMapperMock);
     verify(xrplBinaryCodecMock).encodeForSigning(anyString());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  public void toMultiSignableBytes()  throws JsonProcessingException {
+    UnsignedByteArray actual = signatureUtils.toMultiSignableBytes(transactionMock, "");
+    assertThat(actual.length()).isEqualTo(1);
+
+    verify(objectMapperMock).writeValueAsString(transactionMock);
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForMultiSigning(anyString(), anyString());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 

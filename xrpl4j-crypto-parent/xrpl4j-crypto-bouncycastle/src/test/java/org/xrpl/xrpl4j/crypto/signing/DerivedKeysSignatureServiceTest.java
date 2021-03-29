@@ -13,6 +13,7 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
@@ -20,7 +21,9 @@ import org.xrpl.xrpl4j.crypto.PublicKey;
 import org.xrpl.xrpl4j.crypto.Seed;
 import org.xrpl.xrpl4j.crypto.ServerSecretSupplier;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -68,7 +71,7 @@ class DerivedKeysSignatureServiceTest {
 
   @BeforeEach
   public void setUp() {
-    final ServerSecretSupplier serverSecretSupplier = () -> "happy".getBytes();
+    final ServerSecretSupplier serverSecretSupplier = "happy"::getBytes;
     this.edSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.ED25519);
     this.ecSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.SECP256K1);
   }
@@ -159,6 +162,102 @@ class DerivedKeysSignatureServiceTest {
     final Callable<Boolean> signedTxCallable = () -> {
       SignedTransaction<Payment> signedTx = this.edSignatureService.sign(keyMetadata, paymentTransaction);
       return this.edSignatureService.verify(keyMetadata, signedTx);
+    };
+
+    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+    for (int i = 0; i < 500; i++) {
+      futureSeeds.add(pool.submit(signedTxCallable));
+    }
+
+    futureSeeds.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void multiSignEd() {
+    final KeyMetadata keyMetadata = keyMetadata("foo");
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(Flags.PaymentFlags.of(2147483648L))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .signingPublicKey("")
+      .build();
+
+    final Signature expectedSignature =
+      Signature.builder()
+        .value(
+          UnsignedByteArray.fromHex("E2ACD61C90D93433402B1F704DA38DF72876B6788C2C05B3196E14BC711AECFF14A7D6276439A1" +
+            "98D8B4880EE2DB544CF351A8CE231B3340F42F9BF1EDBF5104")
+        )
+        .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signature signature = this.edSignatureService.signWithBehavior(keyMetadata, payment, SigningBehavior.MULTI);
+      return signature.equals(expectedSignature);
+    };
+
+    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+    for (int i = 0; i < 500; i++) {
+      futureSeeds.add(pool.submit(signedTxCallable));
+    }
+
+    futureSeeds.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void multiSignEc() {
+    final KeyMetadata keyMetadata = keyMetadata("foo");
+    final Payment payment = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rE7QZCdvs64wWr88f44R8q8kQtCQwefXFv"))
+        .value("100")
+        .build())
+      .destination(Address.of(destinationClassicAddress))
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .flags(Flags.PaymentFlags.of(2147483648L))
+      .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
+      .sequence(UnsignedInteger.valueOf(4101911))
+      .signingPublicKey("")
+      .build();
+
+    final Signature expectedSignature =
+      Signature.builder()
+        .value(
+          UnsignedByteArray.fromHex("3045022100CE46B9624BB33FF860A2C7334D7A898A43DE7796B94D0647AEA6E15A3F5752690220" +
+            "7BDD66268EBE71A5D0A456B795268A5E27A569472875D65C710B13152C4484A3")
+        )
+        .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signature signature = this.ecSignatureService.signWithBehavior(keyMetadata, payment, SigningBehavior.MULTI);
+      return signature.equals(expectedSignature);
     };
 
     final List<Future<Boolean>> futureSeeds = new ArrayList<>();

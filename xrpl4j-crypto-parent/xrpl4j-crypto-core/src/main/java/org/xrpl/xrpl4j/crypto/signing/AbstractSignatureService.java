@@ -6,6 +6,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -24,18 +25,22 @@ public abstract class AbstractSignatureService implements SignatureService {
 
   private final SignatureUtils signatureUtils;
 
+  private final KeyPairService keyPairService;
+
   /**
    * Required-args Constructor.
    *
    * @param keyStoreType   The {@link KeyStoreType} for this service.
    * @param signatureUtils An {@link SignatureUtils} for help with signing.
+   * @param keyPairService
    */
   public AbstractSignatureService(
     final KeyStoreType keyStoreType,
-    final SignatureUtils signatureUtils
-  ) {
+    final SignatureUtils signatureUtils,
+    final KeyPairService keyPairService) {
     this.keyStoreType = Objects.requireNonNull(keyStoreType);
     this.signatureUtils = Objects.requireNonNull(signatureUtils);
+    this.keyPairService = keyPairService;
   }
 
   @Override
@@ -45,11 +50,23 @@ public abstract class AbstractSignatureService implements SignatureService {
 
   @Override
   public <T extends Transaction> SignedTransaction<T> sign(final KeyMetadata keyMetadata, final T transaction) {
+    Signature signature = this.signWithBehavior(keyMetadata, transaction, SigningBehavior.SINGLE);
+    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
+  }
+
+  @Override
+  public Signature signWithBehavior(
+    final KeyMetadata keyMetadata,
+    final Transaction transaction,
+    final SigningBehavior behavior
+  ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
 
-    final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
     final PublicKey publicKey = this.getPublicKey(keyMetadata);
+    final UnsignedByteArray signableTransactionBytes = behavior == SigningBehavior.SINGLE ?
+      this.signatureUtils.toSignableBytes(transaction) :
+      this.signatureUtils.toMultiSignableBytes(transaction, keyPairService.deriveAddress(publicKey.value()).value());
 
     final Signature signature;
     switch (publicKey.versionType()) {
@@ -66,8 +83,7 @@ public abstract class AbstractSignatureService implements SignatureService {
       }
     }
 
-    // Add sig to original transaction and return
-    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
+    return signature;
   }
 
   @Override

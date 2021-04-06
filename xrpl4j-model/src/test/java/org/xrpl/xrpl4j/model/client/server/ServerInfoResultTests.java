@@ -335,7 +335,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
         )
         .threads(UnsignedLong.valueOf(6))
         .build())
-      .loadFactor(UnsignedInteger.ONE)
+      .loadFactor(1.0)
       .peers(UnsignedInteger.valueOf(21))
       .publicKeyNode("n9KUjqxCr5FKThSNXdzb7oqN8rYwScB2dUnNqxQxbEA17JkaWy5x")
       .publicKeyValidator("nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9")

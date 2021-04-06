@@ -12,6 +12,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -335,7 +336,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
         )
         .threads(UnsignedLong.valueOf(6))
         .build())
-      .loadFactor(1.0)
+      .loadFactor(BigDecimal.ONE)
       .peers(UnsignedInteger.valueOf(21))
       .publicKeyNode("n9KUjqxCr5FKThSNXdzb7oqN8rYwScB2dUnNqxQxbEA17JkaWy5x")
       .publicKeyValidator("nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9")

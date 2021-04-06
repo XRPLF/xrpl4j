@@ -14,6 +14,7 @@ import org.immutables.value.Value.Immutable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -192,60 +193,60 @@ public interface ServerInfo {
    * individual server's load factor, the cluster's load factor, the open ledger cost and the overall network's load
    * factor.
    *
-   * @return An optionally-present {@link Double} representing the load factor.
+   * @return An optionally-present {@link BigDecimal} representing the load factor.
    */
   @JsonProperty("load_factor")
-  Optional<Double> loadFactor();
+  Optional<BigDecimal> loadFactor();
 
   /**
    * Current multiplier to the transaction cost based on load to this server.
    *
-   * @return An optionally-present {@link Double} representing the local load factor.
+   * @return An optionally-present {@link BigDecimal} representing the local load factor.
    */
   @JsonProperty("load_factor_local")
-  Optional<Double> loadFactorLocal();
+  Optional<BigDecimal> loadFactorLocal();
 
   /**
    * Current multiplier to the transaction cost being used by the rest of the network (estimated from other servers'
    * reported load values).
    *
-   * @return An optionally-present {@link UnsignedInteger} representing the network load factor.
+   * @return An optionally-present {@link BigDecimal} representing the network load factor.
    */
   @JsonProperty("load_factor_net")
-  Optional<UnsignedInteger> loadFactorNet();
+  Optional<BigDecimal> loadFactorNet();
 
   /**
    * Current multiplier to the transaction cost based on load to servers in this cluster.
    *
-   * @return An optionally-present {@link Double} representing the cluster load factor.
+   * @return An optionally-present {@link BigDecimal} representing the cluster load factor.
    */
   @JsonProperty("load_factor_cluster")
-  Optional<Double> loadFactorCluster();
+  Optional<BigDecimal> loadFactorCluster();
 
   /**
    * The current multiplier to the transaction cost that a transaction must pay to get into the open ledger.
    *
-   * @return An optionally-present {@link Double} representing the open ledger load factor.
+   * @return An optionally-present {@link BigDecimal} representing the open ledger load factor.
    */
   @JsonProperty("load_factor_fee_escalation")
-  Optional<Double> loadFactorFeeEscalation();
+  Optional<BigDecimal> loadFactorFeeEscalation();
 
   /**
    * The current multiplier to the transaction cost that a transaction must pay to get into the queue, if the queue is
    * full.
    *
-   * @return An optionally-present {@link Double} representing the queue load factor.
+   * @return An optionally-present {@link BigDecimal} representing the queue load factor.
    */
   @JsonProperty("load_factor_fee_queue")
-  Optional<Double> loadFactorFeeQueue();
+  Optional<BigDecimal> loadFactorFeeQueue();
 
   /**
    * The load factor the server is enforcing, not including the open ledger cost.
    *
-   * @return An optionally-present {@link Double} representing the server load factor.
+   * @return An optionally-present {@link BigDecimal} representing the server load factor.
    */
   @JsonProperty("load_factor_server")
-  Optional<Double> loadFactorServer();
+  Optional<BigDecimal> loadFactorServer();
 
   /**
    * How many other rippled servers this one is currently connected to.

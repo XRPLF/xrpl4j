@@ -34,7 +34,7 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
                 .closeTimeResolution(UnsignedInteger.valueOf(10))
                 .closed(true)
                 .ledgerHash(Hash256.of("3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A"))
-                .ledgerIndex("54300940")
+                .ledgerIndex(LedgerIndex.of("54300940"))
                 .parentCloseTime(UnsignedLong.valueOf(638329270))
                 .parentHash(Hash256.of("AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D"))
                 .totalCoins(XrpCurrencyAmount.ofDrops(99991024049618156L))
@@ -51,7 +51,7 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
         "      \"close_time_resolution\": 10,\n" +
         "      \"closed\": true,\n" +
         "      \"ledger_hash\": \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
-        "      \"ledger_index\": \"54300940\",\n" +
+        "      \"ledger_index\": 54300940,\n" +
         "      \"parent_close_time\": 638329270,\n" +
         "      \"parent_hash\": \"AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D\",\n" +
         "      \"total_coins\": \"99991024049618156\",\n" +
@@ -65,5 +65,33 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(result, json);
 
+  }
+
+  @Test
+  public void testCurrentJson() throws JsonProcessingException, JSONException {
+    LedgerResult ledgerResult = LedgerResult.builder()
+      .ledger(
+        LedgerHeader.builder()
+          .closed(false)
+          .ledgerIndex(LedgerIndex.of("4"))
+          .parentHash(Hash256.of("D2A87A6CA50F96068D0532C00EED693C631BFC03DD11D880E6157999A1C06538"))
+          .build()
+      )
+      .ledgerCurrentIndex(LedgerIndex.of("4"))
+      .status("success")
+      .validated(false)
+      .build();
+
+    String json = "{\n" +
+      "  \"ledger\" : {\n" +
+      "    \"closed\" : false,\n" +
+      "    \"ledger_index\" : 4,\n" +
+      "    \"parent_hash\" : \"D2A87A6CA50F96068D0532C00EED693C631BFC03DD11D880E6157999A1C06538\"\n" +
+      "  },\n" +
+      "  \"ledger_current_index\" : 4,\n" +
+      "  \"status\" : \"success\",\n" +
+      "  \"validated\" : false\n" +
+      "}";
+    assertCanSerializeAndDeserialize(ledgerResult, json);
   }
 }

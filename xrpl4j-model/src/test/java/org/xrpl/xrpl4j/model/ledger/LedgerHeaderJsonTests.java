@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -34,7 +35,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
         .closeTimeResolution(UnsignedInteger.valueOf(10))
         .closed(true)
         .ledgerHash(Hash256.of("3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A"))
-        .ledgerIndex("54300940")
+        .ledgerIndex(LedgerIndex.of("54300940"))
         .parentCloseTime(UnsignedLong.valueOf(638329270))
         .parentHash(Hash256.of("AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D"))
         .totalCoins(XrpCurrencyAmount.ofDrops(99991024049618156L))
@@ -77,7 +78,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "  \"ledger_index\" : \"54300940\",\n" +
+        "  \"ledger_index\" : 54300940,\n" +
         "  \"ledger_hash\" : \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
         "  \"account_hash\" : \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +
         "  \"close_time\" : 638329271,\n" +

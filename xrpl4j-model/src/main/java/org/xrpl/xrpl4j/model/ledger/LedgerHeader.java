@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -36,7 +37,7 @@ public interface LedgerHeader {
    * @return A {@link String} containing the ledger index.
    */
   @JsonProperty("ledger_index")
-  String ledgerIndex();
+  LedgerIndex ledgerIndex();
 
   /**
    * The SHA-512Half of this ledger version. This serves as a unique identifier for this ledger and all its contents.
@@ -71,7 +72,7 @@ public interface LedgerHeader {
    */
   @JsonProperty("close_time_human")
   @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z")
-  ZonedDateTime closeTimeHuman();
+  Optional<ZonedDateTime> closeTimeHuman();
 
   /**
    * If true, this ledger version is no longer accepting new transactions. (However, unless this ledger
@@ -99,7 +100,7 @@ public interface LedgerHeader {
    * @return An {@link UnsignedLong} denoting this ledger's parent ledger's close time.
    */
   @JsonProperty("parent_close_time")
-  UnsignedLong parentCloseTime();
+  Optional<UnsignedLong> parentCloseTime();
 
   /**
    * The total number of drops of XRP owned by accounts in the ledger. This omits XRP that has been

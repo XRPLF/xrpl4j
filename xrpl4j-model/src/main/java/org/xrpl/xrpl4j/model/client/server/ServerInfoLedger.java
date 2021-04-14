@@ -8,6 +8,8 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.math.BigDecimal;
+
 /**
  * Information about a recent ledger, as represented in {@link ServerInfoResult}s.
  */
@@ -57,5 +59,13 @@ public interface ServerInfoLedger {
    */
   @JsonProperty("seq")
   LedgerIndex sequence();
+
+  /**
+   * The base XRP cost of transaction.
+   *
+   * @return A {@link BigDecimal} representing base fee amount in XRP.
+   */
+  @JsonProperty("base_fee_xrp")
+  BigDecimal baseFeeXrp();
 
 }

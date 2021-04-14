@@ -9,6 +9,8 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.LedgerHeader;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.util.Optional;
+
 /**
  * The result of a "ledger" rippled API request.
  */
@@ -34,7 +36,7 @@ public interface LedgerResult extends XrplResult {
    * @return A {@link Hash256} containing the ledger hash.
    */
   @JsonProperty("ledger_hash")
-  Hash256 ledgerHash();
+  Optional<Hash256> ledgerHash();
 
   /**
    * The {@link LedgerIndex} of this ledger.
@@ -42,7 +44,16 @@ public interface LedgerResult extends XrplResult {
    * @return The {@link LedgerIndex} of this ledger.
    */
   @JsonProperty("ledger_index")
-  LedgerIndex ledgerIndex();
+  Optional<LedgerIndex> ledgerIndex();
+
+  /**
+   * The {@link LedgerIndex} of this ledger, if the ledger is the current ledger. Only present on a current ledger
+   * response.
+   *
+   * @return A {@link LedgerIndex} if this result is for the current ledger, otherwise {@link Optional#empty()}.
+   */
+  @JsonProperty("ledger_current_index")
+  Optional<LedgerIndex> ledgerCurrentIndex();
 
   /**
    * True if this data is from a validated ledger version; if false, this data is not final.

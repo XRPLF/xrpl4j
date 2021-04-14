@@ -97,8 +97,9 @@ public class SubmitPaymentIT extends AbstractIT {
         LedgerRequestParams.builder().ledgerIndex(validatedPayment.ledgerIndex().get()).build());
 
     assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
+    assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();
     assertThat(validatedPayment.transaction().closeDateHuman().get())
-        .isEqualTo(ledger.ledger().closeTimeHuman());
+        .isEqualTo(ledger.ledger().closeTimeHuman().get());
   }
 
 }

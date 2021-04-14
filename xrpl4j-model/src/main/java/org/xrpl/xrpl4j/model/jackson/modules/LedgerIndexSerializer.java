@@ -11,7 +11,6 @@ import java.io.IOException;
 /**
  * Custom Jackson serializer for {@link LedgerIndex}s.
  */
-// TODO: Unittest
 public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
   public LedgerIndexSerializer() {

@@ -34,9 +34,17 @@ public class LedgerIndex {
    * @param value A {@link String} containing either an integer or a shortcut.
    *
    * @return A {@link LedgerIndex} with the given value.
+   *
+   * @throws NumberFormatException if value is an invalid index
    */
-  public static LedgerIndex of(String value) {
-    return new LedgerIndex(value);
+  public static LedgerIndex of(String value)
+  throws NumberFormatException {
+    LedgerIndex li = new LedgerIndex(value);
+    if (li.isValid()) {
+      return new LedgerIndex(value);
+    } else {
+      throw new NumberFormatException(value);
+    }
   }
 
   /**
@@ -83,6 +91,24 @@ public class LedgerIndex {
    */
   public LedgerIndex plus(LedgerIndex other) {
     return plus(other.unsignedLongValue());
+  }
+
+  /**
+   * Check whether or not the index wrapped by this {@link LedgerIndex} is valid.
+   * A valid index is a shortcut or an unsigned long.
+   *
+   * @return true if the wrapped index is valid, false otherwise.
+   */
+  public boolean isValid() {
+    if (value.equals("current")) return true;
+    if (value.equals("validated")) return true;
+    if (value.equals("closed")) return true;
+    try {
+      unsignedLongValue();
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
   }
 
   @Override

@@ -9,6 +9,36 @@ import org.junit.jupiter.api.Test;
 class LedgerIndexTest {
 
   @Test
+  void createValidLedgerIndex() {
+    assertDoesNotThrow(() -> LedgerIndex.of("current"));
+    assertDoesNotThrow(() -> LedgerIndex.of("validated"));
+    assertDoesNotThrow(() -> LedgerIndex.of("closed"));
+    assertDoesNotThrow(() -> LedgerIndex.of("1"));
+  }
+
+  @Test
+  void createInvalidLedgerIndex() {
+    String nullStr = null;
+    UnsignedLong nullUL = null;
+    assertThrows(
+      NumberFormatException.class,
+      () -> LedgerIndex.of(nullStr)
+    );
+    assertThrows(
+      NumberFormatException.class,
+      () -> LedgerIndex.of(nullUL)
+    );
+    assertThrows(
+      NumberFormatException.class,
+      () -> LedgerIndex.of("foo")
+    );
+    assertThrows(
+      NumberFormatException.class,
+      () -> LedgerIndex.of("-1")
+    );
+  }
+
+  @Test
   void createValidNumericalLedgerIndex() {
     LedgerIndex ledgerIndex = LedgerIndex.of("1");
     assertThat(ledgerIndex.value()).isEqualTo("1");

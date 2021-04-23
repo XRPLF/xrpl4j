@@ -63,7 +63,8 @@ public class LedgerIndex {
    *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
    */
-  public static LedgerIndex of(UnsignedLong value) {
+  public static LedgerIndex of(UnsignedLong value)
+  throws NumberFormatException {
     if (value == null) {
       throw new NumberFormatException("Cannot build LedgerIndex from null value.");
     }

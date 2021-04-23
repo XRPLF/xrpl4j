@@ -23,7 +23,13 @@ public class LedgerIndex {
    * Public constructor.
    *
    * @param value The ledger index value as a {@link String}.
+   *
+   * @deprecated Does not check if the given value is a valid index.
+   *    This constructor should be made private in the future.
+   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)} 
+   *    factory methods should be used to construct {@link LedgerIndex} objects.
    */
+  @Deprecated
   public LedgerIndex(String value) {
     this.value = value;
   }
@@ -39,6 +45,9 @@ public class LedgerIndex {
    */
   public static LedgerIndex of(String value)
   throws NumberFormatException {
+    if (value == null) {
+      throw new NumberFormatException("Cannot build LedgerIndex from null value.");
+    }
     LedgerIndex li = new LedgerIndex(value);
     if (li.isValid()) {
       return new LedgerIndex(value);
@@ -55,6 +64,9 @@ public class LedgerIndex {
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
    */
   public static LedgerIndex of(UnsignedLong value) {
+    if (value == null) {
+      throw new NumberFormatException("Cannot build LedgerIndex from null value.");
+    }
     return new LedgerIndex(value.toString());
   }
 

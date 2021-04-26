@@ -18,15 +18,13 @@ class LedgerIndexTest {
 
   @Test
   void createInvalidLedgerIndex() {
-    String nullStr = null;
-    UnsignedLong nullUL = null;
     assertThrows(
-      NumberFormatException.class,
-      () -> LedgerIndex.of(nullStr)
+      NullPointerException.class,
+      () -> LedgerIndex.of((String) null)
     );
     assertThrows(
-      NumberFormatException.class,
-      () -> LedgerIndex.of(nullUL)
+      NullPointerException.class,
+      () -> LedgerIndex.of((UnsignedLong) null)
     );
     assertThrows(
       NumberFormatException.class,
@@ -36,6 +34,34 @@ class LedgerIndexTest {
       NumberFormatException.class,
       () -> LedgerIndex.of("-1")
     );
+  }
+
+  @Test
+  void testEquality() {
+    LedgerIndex fromString = LedgerIndex.of("42");
+    assertThat(fromString).isEqualTo(fromString);
+    assertThat(fromString).isNotEqualTo("42");
+
+    UnsignedLong ul = UnsignedLong.valueOf("42");
+    LedgerIndex fromUnsignedLong = LedgerIndex.of(ul);
+    assertThat(fromString).isEqualTo(fromUnsignedLong);
+    assertThat(fromString).isNotEqualTo(LedgerIndex.CURRENT);
+  }
+
+  @Test
+  void testToString() {
+    LedgerIndex fromString = LedgerIndex.of("42");
+    assertThat(fromString.toString()).isEqualTo("42");
+    assertThat(LedgerIndex.CURRENT.toString()).isEqualTo("current");
+
+    UnsignedLong ul = UnsignedLong.valueOf("42");
+    LedgerIndex fromUnsignedLong = LedgerIndex.of(ul);
+    assertThat(fromString.toString()).isEqualTo(fromUnsignedLong.toString());
+  }
+
+  @Test
+  void testAddition() {
+    LedgerIndex fromString = LedgerIndex.of("42");
   }
 
   @Test

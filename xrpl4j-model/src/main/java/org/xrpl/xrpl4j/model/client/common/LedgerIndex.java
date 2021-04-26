@@ -41,16 +41,18 @@ public class LedgerIndex {
    *
    * @return A {@link LedgerIndex} with the given value.
    *
+   * @throws NullPointerException if value is null
+   *
    * @throws NumberFormatException if value is an invalid index
    */
   public static LedgerIndex of(String value)
   throws NumberFormatException {
     if (value == null) {
-      throw new NumberFormatException("Cannot build LedgerIndex from null value.");
+      throw new NullPointerException();
     }
     LedgerIndex li = new LedgerIndex(value);
     if (li.isValid()) {
-      return new LedgerIndex(value);
+      return li;
     } else {
       throw new NumberFormatException(value);
     }
@@ -62,11 +64,12 @@ public class LedgerIndex {
    * @param value An {@link UnsignedLong} specifying a ledger index.
    *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
+   *
+   * @throws NullPointerException if value is null
    */
-  public static LedgerIndex of(UnsignedLong value)
-  throws NumberFormatException {
+  public static LedgerIndex of(UnsignedLong value) {
     if (value == null) {
-      throw new NumberFormatException("Cannot build LedgerIndex from null value.");
+      throw new NullPointerException();
     }
     return new LedgerIndex(value.toString());
   }

@@ -79,24 +79,4 @@ class LedgerIndexTest {
     final LedgerIndex added = ledgerIndex.plus(fromUnsignedLong);
     assertThat(added).isEqualTo(LedgerIndex.of("2"));
   }
-
-  @Test
-  void createInvalidNumericalLedgerIndex() {
-    final LedgerIndex fooLedgerIndex = LedgerIndex.of("foo");
-    assertThrows(
-      NumberFormatException.class,
-      fooLedgerIndex::unsignedLongValue
-    );
-
-    final LedgerIndex negativeLedgerIndex = LedgerIndex.of("-1");
-    assertThrows(
-      NumberFormatException.class,
-      negativeLedgerIndex::unsignedLongValue
-    );
-
-    assertThrows(
-      NumberFormatException.class,
-      () -> fooLedgerIndex.plus(negativeLedgerIndex)
-    );
-  }
 }

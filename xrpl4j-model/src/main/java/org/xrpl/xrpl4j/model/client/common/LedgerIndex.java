@@ -23,7 +23,13 @@ public class LedgerIndex {
    * Public constructor.
    *
    * @param value The ledger index value as a {@link String}.
+   *
+   * @deprecated Does not check if the given value is a valid index.
+   *    This constructor should be made private in the future.
+   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)} 
+   *    factory methods should be used to construct {@link LedgerIndex} objects.
    */
+  @Deprecated
   public LedgerIndex(String value) {
     this.value = value;
   }
@@ -34,9 +40,20 @@ public class LedgerIndex {
    * @param value A {@link String} containing either an integer or a shortcut.
    *
    * @return A {@link LedgerIndex} with the given value.
+   *
+   * @throws NullPointerException if value is null
+   *
+   * @throws NumberFormatException if value is an invalid index
    */
-  public static LedgerIndex of(String value) {
-    return new LedgerIndex(value);
+  public static LedgerIndex of(String value)
+  throws NumberFormatException {
+    Objects.requireNonNull(value);
+    if (isValidShortcut(value)) {
+      return new LedgerIndex(value);
+    } else {
+      UnsignedLong.valueOf(value);
+      return new LedgerIndex(value);
+    }
   }
 
   /**
@@ -45,8 +62,11 @@ public class LedgerIndex {
    * @param value An {@link UnsignedLong} specifying a ledger index.
    *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
+   *
+   * @throws NullPointerException if value is null
    */
   public static LedgerIndex of(UnsignedLong value) {
+    Objects.requireNonNull(value);
     return new LedgerIndex(value.toString());
   }
 
@@ -83,6 +103,13 @@ public class LedgerIndex {
    */
   public LedgerIndex plus(LedgerIndex other) {
     return plus(other.unsignedLongValue());
+  }
+
+  public static boolean isValidShortcut(String value) {
+    if (value.equals("current")) return true;
+    if (value.equals("validated")) return true;
+    if (value.equals("closed")) return true;
+    return false;
   }
 
   @Override

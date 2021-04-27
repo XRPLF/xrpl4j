@@ -9,6 +9,62 @@ import org.junit.jupiter.api.Test;
 class LedgerIndexTest {
 
   @Test
+  void createValidLedgerIndex() {
+    assertDoesNotThrow(() -> LedgerIndex.of("current"));
+    assertDoesNotThrow(() -> LedgerIndex.of("validated"));
+    assertDoesNotThrow(() -> LedgerIndex.of("closed"));
+    assertDoesNotThrow(() -> LedgerIndex.of("1"));
+  }
+
+  @Test
+  void createInvalidLedgerIndex() {
+    assertThrows(
+      NullPointerException.class,
+      () -> LedgerIndex.of((String) null)
+    );
+    assertThrows(
+      NullPointerException.class,
+      () -> LedgerIndex.of((UnsignedLong) null)
+    );
+    assertThrows(
+      NumberFormatException.class,
+      () -> LedgerIndex.of("foo")
+    );
+    assertThrows(
+      NumberFormatException.class,
+      () -> LedgerIndex.of("-1")
+    );
+  }
+
+  @Test
+  void testEquality() {
+    LedgerIndex fromString = LedgerIndex.of("42");
+    assertThat(fromString).isEqualTo(fromString);
+    assertThat(fromString).isNotEqualTo("42");
+
+    UnsignedLong ul = UnsignedLong.valueOf("42");
+    LedgerIndex fromUnsignedLong = LedgerIndex.of(ul);
+    assertThat(fromString).isEqualTo(fromUnsignedLong);
+    assertThat(fromString).isNotEqualTo(LedgerIndex.CURRENT);
+  }
+
+  @Test
+  void testToString() {
+    LedgerIndex fromString = LedgerIndex.of("42");
+    assertThat(fromString.toString()).isEqualTo("42");
+    assertThat(LedgerIndex.CURRENT.toString()).isEqualTo("current");
+
+    UnsignedLong ul = UnsignedLong.valueOf("42");
+    LedgerIndex fromUnsignedLong = LedgerIndex.of(ul);
+    assertThat(fromString.toString()).isEqualTo(fromUnsignedLong.toString());
+  }
+
+  @Test
+  void testAddition() {
+    LedgerIndex fromString = LedgerIndex.of("42");
+  }
+
+  @Test
   void createValidNumericalLedgerIndex() {
     LedgerIndex ledgerIndex = LedgerIndex.of("1");
     assertThat(ledgerIndex.value()).isEqualTo("1");
@@ -22,25 +78,5 @@ class LedgerIndexTest {
 
     final LedgerIndex added = ledgerIndex.plus(fromUnsignedLong);
     assertThat(added).isEqualTo(LedgerIndex.of("2"));
-  }
-
-  @Test
-  void createInvalidNumericalLedgerIndex() {
-    final LedgerIndex fooLedgerIndex = LedgerIndex.of("foo");
-    assertThrows(
-      NumberFormatException.class,
-      fooLedgerIndex::unsignedLongValue
-    );
-
-    final LedgerIndex negativeLedgerIndex = LedgerIndex.of("-1");
-    assertThrows(
-      NumberFormatException.class,
-      negativeLedgerIndex::unsignedLongValue
-    );
-
-    assertThrows(
-      NumberFormatException.class,
-      () -> fooLedgerIndex.plus(negativeLedgerIndex)
-    );
   }
 }

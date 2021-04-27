@@ -53,8 +53,8 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
   public void testWithJsonWithLedgerIndex() throws JsonProcessingException, JSONException {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
-      .ledgerIndexMin(LedgerIndex.of("-1"))
-      .ledgerIndexMax(LedgerIndex.of("-1"))
+      .ledgerIndexMin(LedgerIndex.of("0"))
+      .ledgerIndexMax(LedgerIndex.of("0"))
       .ledgerIndex(LedgerIndex.CURRENT)
       .limit(UnsignedInteger.valueOf(2))
       .build();
@@ -63,8 +63,8 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
       "            \"account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
       "            \"binary\": false,\n" +
       "            \"forward\": false,\n" +
-      "            \"ledger_index_max\": -1,\n" +
-      "            \"ledger_index_min\": -1,\n" +
+      "            \"ledger_index_max\": 0,\n" +
+      "            \"ledger_index_min\": 0,\n" +
       "            \"ledger_index\": \"current\",\n" +
       "            \"limit\": 2\n" +
       "        }";

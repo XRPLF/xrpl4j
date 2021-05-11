@@ -28,6 +28,8 @@ import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
+import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
@@ -65,11 +67,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 /**
- * A client which wraps a rippled network client and is responsible for higher order functionality such as signing and
- * serializing transactions, as well as hiding certain implementation details from the public API such as JSON RPC
- * request object creation.
- * <p>
- * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
+ * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing
+ * and serializing transactions, as well as hiding certain implementation details from the public API such as JSON RPC
+ * request object creation.</p>
+ *
+ * <p>Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.</p>
  */
 @Beta
 public class XrplClient {
@@ -288,6 +290,24 @@ public class XrplClient {
   }
 
   /**
+   * Indicates whether one account is authorized to send payments directly to another.
+   *
+   * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
+   *
+   * @return The {@link DepositAuthorizedResult} returned by the deposit_authorized method call.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.DEPOSIT_AUTHORIZED)
+      .addParams(params)
+      .build();
+    return jsonRpcClient.send(request, DepositAuthorizedResult.class);
+  }
+
+  /**
    * Get the {@link AccountTransactionsResult} for the specified {@code address} by making an account_tx method call.
    *
    * @param address The {@link Address} of the account to request.
@@ -435,6 +455,15 @@ public class XrplClient {
     return jsonRpcClient.send(request, ChannelVerifyResult.class);
   }
 
+  /**
+   * Sign the supplied transaction.
+   *
+   * @param wallet              A {@link Wallet}.
+   * @param unsignedTransaction An unsigned transaction of type {@link T}.
+   * @param <T>                 the type of transaction.
+   *
+   * @return An instance of {@link T}.
+   */
   public <T extends Transaction> SignedTransaction<T> signTransaction(
     Wallet wallet, T unsignedTransaction
   ) {

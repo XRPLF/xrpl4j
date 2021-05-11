@@ -162,8 +162,9 @@ public class DepositPreAuthIT extends AbstractIT {
    */
   private AccountInfoResult enableDepositPreauth(Wallet wallet, XrpCurrencyAmount fee)
     throws JsonRpcClientErrorException {
-    AccountInfoResult accountInfoResult = this
-      .scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    AccountInfoResult accountInfoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+    );
     ;
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())

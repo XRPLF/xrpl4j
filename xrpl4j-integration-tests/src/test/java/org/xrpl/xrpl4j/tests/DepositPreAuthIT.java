@@ -165,7 +165,7 @@ public class DepositPreAuthIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-    ;
+    
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
       .fee(fee)

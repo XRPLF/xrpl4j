@@ -460,7 +460,7 @@ public class XrplClient {
    *
    * @param wallet              A {@link Wallet}.
    * @param unsignedTransaction An unsigned transaction of type {@link T}.
-   * @param <T>                 the type of transaction.
+   * @param <T>                 The parameter that specifies the type of {@code unsignedTransaction}.
    *
    * @return An instance of {@link T}.
    */

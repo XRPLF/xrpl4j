@@ -60,7 +60,8 @@ public class DepositPreAuthIT extends AbstractIT {
     );
 
     /////////////////////////
-    // Validate that the
+    // Validate that the `deposit_authorized` client call is implemented properly by ensuring it aligns with the
+    // result found in the account object.
     final boolean depositAuthorized = xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
       .sourceAccount(senderWallet.classicAddress())
       .destinationAccount(receiverWallet.classicAddress())

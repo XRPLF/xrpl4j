@@ -57,7 +57,6 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
   @JsonProperty("ledger_index")
   @Value.Default
   default LedgerIndex ledgerIndex() {
-    return LedgerIndex.VALIDATED;
+    return LedgerIndex.CURRENT;
   }
-
 }

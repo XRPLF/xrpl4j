@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.path;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
@@ -22,6 +24,8 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .ledgerIndex(LedgerIndex.VALIDATED)
       .build();
 
+    assertThat(params.ledgerIndex().equals(LedgerIndex.VALIDATED));
+
     String json = "{\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
       "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
@@ -35,6 +39,7 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .ledgerIndex(LedgerIndex.CURRENT)
       .build();
+    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
 
     json = "{\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
@@ -52,6 +57,7 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
       .build();
+    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
 
     String json = "{\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
@@ -71,6 +77,7 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
       .ledgerIndex(LedgerIndex.CURRENT)
       .build();
+    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
 
     String json = "{\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +

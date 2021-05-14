@@ -70,8 +70,9 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Send a Payment from the sender wallet to the receiver wallet
-    AccountInfoResult senderAccountInfo = this
-      .scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+        () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
+    );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())

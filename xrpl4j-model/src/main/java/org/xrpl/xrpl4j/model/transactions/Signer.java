@@ -7,13 +7,10 @@ import org.immutables.value.Value;
 
 /**
  * Represents a signer for a multi-signature XRPL Transaction.
- *
- * @deprecated Use the constructs found in `xrpl4j-crypto` instead.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableSigner.class)
 @JsonDeserialize(as = ImmutableSigner.class)
-@Deprecated
 public interface Signer {
 
   static ImmutableSigner.Builder builder() {

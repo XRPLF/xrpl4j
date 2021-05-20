@@ -45,7 +45,7 @@ jobs:
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
           restore-keys: ${{ env.cache-name }}-
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -Pandroid
 
   build_other_java:
     runs-on: ubuntu-latest

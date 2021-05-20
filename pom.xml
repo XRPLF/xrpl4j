@@ -166,7 +166,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>29.0-jre</version>
+        <version>${guava.version}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -241,7 +241,7 @@
     <profile>
       <id>android</id>
       <properties>
-        <guava.version>28.1-android</guava.version>
+        <guava.version>29.0-android</guava.version>
       </properties>
     </profile>
     <!-- Signing profile for signed distributions -->
@@ -318,6 +318,7 @@
     <feign.version>11.0</feign.version>
     <slf4j.version>1.7.30</slf4j.version>
     <junit-jupiter.version>5.7.1</junit-jupiter.version>
+    <guava.version>29.0-jre</guava.version>
   </properties>
 
   <modules>

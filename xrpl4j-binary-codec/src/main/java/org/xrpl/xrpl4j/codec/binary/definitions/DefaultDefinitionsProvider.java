@@ -1,12 +1,12 @@
 package org.xrpl.xrpl4j.codec.binary.definitions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Resources;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 public class DefaultDefinitionsProvider implements DefinitionsProvider {
 

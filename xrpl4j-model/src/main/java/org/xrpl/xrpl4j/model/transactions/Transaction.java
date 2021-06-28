@@ -216,4 +216,13 @@ public interface Transaction {
   @JsonProperty("ledger_index")
   Optional<LedgerIndex> ledgerIndex();
 
+  /**
+   * The domain that owns this account, as a string of hex representing the ASCII for the domain in lowercase
+   *
+   *
+   * @return An {@link Optional} {@link String} containing the domain value.
+   */
+  @JsonProperty("domain")
+  Optional<String> domain();
+
 }

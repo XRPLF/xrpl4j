@@ -12,7 +12,7 @@ import java.util.function.Function;
 public interface CurrencyAmount {
 
   /**
-   * Handle this {@link CurrencyAmount} depending on its actualy polymorphic sub-type.
+   * Handle this {@link CurrencyAmount} depending on its actually polymorphic sub-type.
    *
    * @param xrpCurrencyAmountHandler     A {@link Consumer} that is called if this instance is of type {@link
    *                                     XrpCurrencyAmount}.

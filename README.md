@@ -1,4 +1,4 @@
-# xrpl4j
+# xrpl4j: XRP Ledger Java SDK
 [![codecov][codecov-image]][codecov-url]
 [![issues][github-issues-image]][github-issues-url]
 [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-parent)
@@ -28,6 +28,7 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
     - Contains all of the project's integration tests, which serve as valuable xrpl4j usage examples for common XRPL flows
 
 ## Documentation
+- [Get Started Using Java](https://xrpl.org/get-started-using-java.html): a tutorial for building a very simple XRP Ledger-connected app.
 - Example usage can be found in the [`xrpl4j-integration-tests` module](xrpl4j-integration-tests/).
 
 ## Requirements

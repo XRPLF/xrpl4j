@@ -9,6 +9,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The result of an account_currencies rippled call.
@@ -28,7 +29,7 @@ public interface AccountCurrenciesResult extends XrplResult {
      * @return A {@link Hash256} containing the ledger hash.
      */
     @JsonProperty("ledger_hash")
-    Hash256 ledgerHash();
+    Optional<Hash256> ledgerHash();
 
     /**
      * The Ledger Index of the ledger version used to generate this response.

@@ -15,8 +15,6 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 
 public class AccountOffersResultJsonTests extends AbstractJsonTest {
 

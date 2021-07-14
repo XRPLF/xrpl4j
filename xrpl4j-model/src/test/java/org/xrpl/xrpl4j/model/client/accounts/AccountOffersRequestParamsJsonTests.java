@@ -18,12 +18,31 @@ public class AccountOffersRequestParamsJsonTests extends AbstractJsonTest {
                 .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
                 .ledgerIndex(LedgerIndex.VALIDATED)
                 .ledgerHash(Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"))
+                .limit(UnsignedInteger.valueOf(100L))
+                .marker(Marker.of("marker"))
                 .build();
 
         String json = "{\n" +
                 "        \"account\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
                 "        \"ledger_hash\": \"6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E\",\n" +
                 "        \"ledger_index\": \"validated\",\n" +
+                "        \"limit\": 100,\n" +
+                "        \"marker\": \"marker\",\n" +
+                "        \"strict\": true\n" +
+                "    }";
+
+        assertCanSerializeAndDeserialize(params, json);
+    }
+
+    @Test
+    public void testMinimal() throws JsonProcessingException, JSONException {
+        AccountOffersRequestParams params = AccountOffersRequestParams.builder()
+                .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+                .build();
+
+        String json = "{\n" +
+                "        \"account\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
+                "        \"ledger_index\": \"current\",\n" +
                 "        \"strict\": true\n" +
                 "    }";
 

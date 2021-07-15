@@ -97,4 +97,28 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
         .build();
     });
   }
+
+  @Test
+  public void testDefaultValues() {
+    DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
+      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .build();
+    assertThat(params.sourceAccount().equals(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59")));
+    assertThat(params.destinationAccount().equals(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59")));
+    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
+    assertThat(params.ledgerHash()).isEmpty();
+  }
+
+  @Test
+  public void testParamsWithBothHashAndIndex() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      DepositAuthorizedRequestParams.builder()
+        .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+        .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+        .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
+        .ledgerIndex(LedgerIndex.VALIDATED)
+        .build();
+    });
+  }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
@@ -66,6 +67,8 @@ import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.util.Objects;
+
 /**
  * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing
  * and serializing transactions, as well as hiding certain implementation details from the public API such as JSON RPC
@@ -88,10 +91,20 @@ public class XrplClient {
    *
    * @param rippledUrl The {@link HttpUrl} of the rippled node to connect to.
    */
-  public XrplClient(HttpUrl rippledUrl) {
+  public XrplClient(final HttpUrl rippledUrl) {
+    this(JsonRpcClient.construct(rippledUrl));
+  }
+
+  /**
+   * Required-args constructor (exists for testing purposes only).
+   *
+   * @param jsonRpcClient A {@link JsonRpcClient}.
+   */
+  @VisibleForTesting
+  XrplClient(final JsonRpcClient jsonRpcClient) {
+    this.jsonRpcClient = Objects.requireNonNull(jsonRpcClient);
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = new XrplBinaryCodec();
-    this.jsonRpcClient = JsonRpcClient.construct(rippledUrl);
     this.keyPairService = DefaultKeyPairService.getInstance();
   }
 
@@ -300,6 +313,7 @@ public class XrplClient {
    */
   public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
     throws JsonRpcClientErrorException {
+    Objects.requireNonNull(params);
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.DEPOSIT_AUTHORIZED)
       .addParams(params)

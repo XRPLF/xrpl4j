@@ -1,5 +1,6 @@
-package org.xrpl.xrpl4j.model.client.common;
+package org.xrpl.xrpl4j.model.client.specifiers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
@@ -19,6 +20,24 @@ public interface LedgerSpecifier {
 
   static ImmutableLedgerSpecifier.Builder builder() {
     return ImmutableLedgerSpecifier.builder();
+  }
+
+  static LedgerSpecifier ledgerHash(Hash256 ledgerHash) {
+    return builder()
+      .ledgerHash(ledgerHash)
+      .build();
+  }
+
+  static LedgerSpecifier ledgerIndex(LedgerIndex ledgerIndex) {
+    return builder()
+      .ledgerIndex(ledgerIndex)
+      .build();
+  }
+
+  static LedgerSpecifier ledgerIndexShortcut(LedgerIndexShortcut ledgerIndexShortcut) {
+    return builder()
+      .ledgerIndexShortcut(ledgerIndexShortcut)
+      .build();
   }
 
   Optional<Hash256> ledgerHash();

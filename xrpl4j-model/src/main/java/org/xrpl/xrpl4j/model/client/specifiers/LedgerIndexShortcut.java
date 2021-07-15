@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.client.common;
+package org.xrpl.xrpl4j.model.client.specifiers;
 
 /**
  * TODO: Javadoc

@@ -31,4 +31,5 @@ public class LedgerIndexTests {
     final LedgerIndex added = ledgerIndex.plus(toAdd);
     assertThat(added.value()).isEqualTo(ledgerIndex.value().plus(toAdd));
   }
+
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
-class LedgerIndexSerializerTest extends AbstractLedgerIndexTest {
+class OldLedgerIndexSerializerTest extends AbstractLedgerIndexTest {
 
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 

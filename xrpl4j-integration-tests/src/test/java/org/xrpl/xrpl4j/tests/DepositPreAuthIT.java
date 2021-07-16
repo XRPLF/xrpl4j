@@ -2,10 +2,12 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -13,6 +15,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -71,7 +74,7 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Send a Payment from the sender wallet to the receiver wallet
     AccountInfoResult senderAccountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
@@ -151,6 +154,22 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tecNO_PERMISSION");
   }
 
+  @Test
+  public void updateDepositPreAuthWithLedgerIndexAndHash() {
+    // Create random sender/receiver accounts
+    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccount();
+
+    Assertions.assertThrows(JsonRpcClientErrorException.class, () -> {
+      xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+        .sourceAccount(senderWallet.classicAddress())
+        .destinationAccount(receiverWallet.classicAddress())
+        .ledgerIndex(LedgerIndex.CURRENT)
+        .ledgerHash(Hash256.of("19DB20F9037D75361582E804233C517532C1DC5F3158845A9332190342009795"))
+        .build()).depositAuthorized();
+    });
+  }
+
   /**
    * Enable the lsfDepositPreauth flag on a given account by submitting an {@link AccountSet} transaction.
    *
@@ -166,7 +185,7 @@ public class DepositPreAuthIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-    
+
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
       .fee(fee)

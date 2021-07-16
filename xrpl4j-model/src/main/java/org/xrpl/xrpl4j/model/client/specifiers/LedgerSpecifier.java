@@ -1,6 +1,5 @@
 package org.xrpl.xrpl4j.model.client.specifiers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
@@ -8,7 +7,10 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * TODO: javadoc
@@ -45,6 +47,42 @@ public interface LedgerSpecifier {
   Optional<LedgerIndex> ledgerIndex();
 
   Optional<LedgerIndexShortcut> ledgerIndexShortcut();
+
+  @Value.Auxiliary
+  default void handle(
+    final Consumer<Hash256> ledgerHashHandler,
+    final Consumer<LedgerIndex> ledgerIndexHandler,
+    final Consumer<LedgerIndexShortcut> ledgerIndexShortcutHandler
+  ) {
+    Objects.requireNonNull(ledgerHashHandler);
+    Objects.requireNonNull(ledgerIndexHandler);
+    Objects.requireNonNull(ledgerIndexShortcutHandler);
+
+    ledgerHash().ifPresent(ledgerHashHandler);
+    ledgerIndex().ifPresent(ledgerIndexHandler);
+    ledgerIndexShortcut().ifPresent(ledgerIndexShortcutHandler);
+  }
+
+  @Value.Auxiliary
+  default <R> R map(
+    final Function<Hash256, R> ledgerHashMapper,
+    final Function<LedgerIndex, R> ledgerIndexMapper,
+    final Function<LedgerIndexShortcut, R> ledgerIndexShortcutMapper
+  ) {
+    Objects.requireNonNull(ledgerHashMapper);
+    Objects.requireNonNull(ledgerIndexMapper);
+    Objects.requireNonNull(ledgerIndexShortcutMapper);
+
+    if (ledgerHash().isPresent()) {
+      return ledgerHashMapper.apply(ledgerHash().get());
+    } else if (ledgerIndex().isPresent()) {
+      return ledgerIndexMapper.apply(ledgerIndex().get());
+    } else if (ledgerIndexShortcut().isPresent()) {
+      return ledgerIndexShortcutMapper.apply(ledgerIndexShortcut().get());
+    } else {
+      throw new IllegalStateException("Unsupported field.");
+    }
+  }
 
   @Value.Check
   default void validateOnlyOneSpecified() {

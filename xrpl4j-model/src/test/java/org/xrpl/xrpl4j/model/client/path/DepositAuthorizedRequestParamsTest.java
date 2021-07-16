@@ -16,34 +16,42 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
  */
 public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
 
+  private static final Address SOURCE_ACCOUNT = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk58");
+  private static final Address DESTINATION_ACCOUNT = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+  public static final Hash256 LEDGER_HASH = Hash256
+    .of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd");
+
   @Test
-  public void testToFromJsonWithLedgerIndex() throws JSONException, JsonProcessingException {
+  public void testToFromJsonWithLedgerIndexValidated() throws JSONException, JsonProcessingException {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
-      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
       .ledgerIndex(LedgerIndex.VALIDATED)
       .build();
 
     assertThat(params.ledgerIndex().equals(LedgerIndex.VALIDATED));
 
     String json = "{\n" +
-      "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
       "            \"ledger_index\": \"validated\"" +
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);
+  }
 
-    params = DepositAuthorizedRequestParams.builder()
-      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+  @Test
+  public void testToFromJsonWithLedgerIndexCurrent() throws JSONException, JsonProcessingException {
+    DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
       .ledgerIndex(LedgerIndex.CURRENT)
       .build();
     assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
 
-    json = "{\n" +
-      "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+    String json = "{\n" +
+      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
       "            \"ledger_index\": \"current\"" +
       "        }";
 
@@ -53,16 +61,16 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
   @Test
   public void testToFromJsonWithLedgerHash() throws JSONException, JsonProcessingException {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
-      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerHash(LEDGER_HASH)
       .build();
     assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
 
     String json = "{\n" +
-      "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"ledger_hash\": \"abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\"," +
+      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"," +
       "            \"ledger_index\": \"current\"" +
       "        }";
 
@@ -72,17 +80,17 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
   @Test
   public void testToFromJsonWithBothLedgerHashAndLedgerIndex() throws JSONException, JsonProcessingException {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
-      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerHash(LEDGER_HASH)
       .ledgerIndex(LedgerIndex.CURRENT)
       .build();
     assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
 
     String json = "{\n" +
-      "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"ledger_hash\": \"abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\"," +
+      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"," +
       "            \"ledger_index\": \"current\"" +
       "        }";
 
@@ -90,9 +98,9 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
       DepositAuthorizedRequestParams.builder()
-        .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-        .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-        .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
+        .sourceAccount(SOURCE_ACCOUNT)
+        .destinationAccount(DESTINATION_ACCOUNT)
+        .ledgerHash(LEDGER_HASH)
         .ledgerIndex(LedgerIndex.VALIDATED)
         .build();
     });
@@ -101,11 +109,11 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
   @Test
   public void testDefaultValues() {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
-      .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-      .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
       .build();
-    assertThat(params.sourceAccount().equals(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59")));
-    assertThat(params.destinationAccount().equals(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59")));
+    assertThat(params.sourceAccount().equals(SOURCE_ACCOUNT));
+    assertThat(params.destinationAccount().equals(DESTINATION_ACCOUNT));
     assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
     assertThat(params.ledgerHash()).isEmpty();
   }
@@ -114,9 +122,9 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
   public void testParamsWithBothHashAndIndex() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
       DepositAuthorizedRequestParams.builder()
-        .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-        .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-        .ledgerHash(Hash256.of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"))
+        .sourceAccount(SOURCE_ACCOUNT)
+        .destinationAccount(DESTINATION_ACCOUNT)
+        .ledgerHash(LEDGER_HASH)
         .ledgerIndex(LedgerIndex.VALIDATED)
         .build();
     });

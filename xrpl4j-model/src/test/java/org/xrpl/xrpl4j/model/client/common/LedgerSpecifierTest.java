@@ -14,7 +14,6 @@ import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 class LedgerSpecifierTest {
 
@@ -104,6 +103,43 @@ class LedgerSpecifierTest {
   }
 
   @Test
+  void handleThrowsWithNullHandlers() {
+    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerHash(Hash256.of(LEDGER_HASH));
+    assertThrows(
+      NullPointerException.class,
+      () -> ledgerSpecifier.handle(
+        null,
+        $ -> {
+        },
+        $ -> {
+        }
+      )
+    );
+
+    assertThrows(
+      NullPointerException.class,
+      () -> ledgerSpecifier.handle(
+        $ -> {
+        },
+        null,
+        $ -> {
+        }
+      )
+    );
+
+    assertThrows(
+      NullPointerException.class,
+      () -> ledgerSpecifier.handle(
+        $ -> {
+        },
+        $ -> {
+        },
+        null
+      )
+    );
+  }
+
+  @Test
   void mapsAllCorrectly() {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
       LedgerSpecifier.ledgerHash(Hash256.of(LEDGER_HASH)),
@@ -129,6 +165,37 @@ class LedgerSpecifierTest {
           assertThat(mapped).isEqualTo("ledgerIndexShortcut");
         }
       }
+    );
+  }
+
+  @Test
+  void mapThrowsWithNullMappers() {
+    final LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerHash(Hash256.of(LEDGER_HASH));
+    assertThrows(
+      NullPointerException.class,
+      () -> ledgerSpecifier.map(
+        null,
+        $ -> "",
+        $ -> ""
+      )
+    );
+
+    assertThrows(
+      NullPointerException.class,
+      () -> ledgerSpecifier.map(
+        $ -> "",
+        null,
+        $ -> ""
+      )
+    );
+
+    assertThrows(
+      NullPointerException.class,
+      () -> ledgerSpecifier.map(
+        $ -> "",
+        $ -> "",
+        null
+      )
     );
   }
 

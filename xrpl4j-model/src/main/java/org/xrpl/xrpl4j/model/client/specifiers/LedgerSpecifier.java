@@ -42,8 +42,18 @@ public interface LedgerSpecifier {
       .build();
   }
 
+  /**
+   * A 20-byte hex string for the ledger version to use.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
   Optional<Hash256> ledgerHash();
 
+  /**
+   * The ledger index of the ledger to use.
+   *
+   * @return An optionally-present {@link LedgerIndex}.
+   */
   Optional<LedgerIndex> ledgerIndex();
 
   Optional<LedgerIndexShortcut> ledgerIndexShortcut();

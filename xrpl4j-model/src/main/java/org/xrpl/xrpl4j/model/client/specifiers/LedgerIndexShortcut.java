@@ -20,6 +20,15 @@ public class LedgerIndexShortcut {
     this.value = value;
   }
 
+  public String getValue() {
+    return value;
+  }
+
+  @Override
+  public String toString() {
+    return getValue();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -275,6 +276,7 @@ class LedgerSpecifierTest {
       return ImmutableLedgerSpecifierWrapper.builder().ledgerSpecifier(ledgerSpecifier).build();
     }
 
+    @JsonUnwrapped
     LedgerSpecifier ledgerSpecifier();
   }
 }

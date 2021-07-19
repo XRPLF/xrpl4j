@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -49,6 +50,8 @@ public class Xrpl4jModule extends SimpleModule {
 
     addSerializer(org.xrpl.xrpl4j.model.transactions.LedgerIndex.class, new LedgerIndexSerializer());
     addDeserializer(org.xrpl.xrpl4j.model.transactions.LedgerIndex.class, new LedgerIndexDeserializer());
+
+    addSerializer(LedgerSpecifier.class, new LedgerSpecifierSerializer());
 
     addDeserializer(Transaction.class, new TransactionDeserializer());
 

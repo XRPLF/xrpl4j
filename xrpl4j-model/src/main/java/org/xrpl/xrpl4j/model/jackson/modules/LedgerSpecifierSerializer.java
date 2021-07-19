@@ -14,11 +14,22 @@ public class LedgerSpecifierSerializer extends StdSerializer<LedgerSpecifier> {
   }
 
   @Override
+  public boolean isUnwrappingSerializer() {
+    return true;
+  }
+
+  @Override
   public void serialize(
     LedgerSpecifier ledgerSpecifier,
     JsonGenerator jsonGenerator,
     SerializerProvider serializerProvider
   ) throws IOException {
-
+    if (ledgerSpecifier.ledgerHash().isPresent()) {
+      jsonGenerator.writeStringField("ledger_hash", ledgerSpecifier.ledgerHash().get().value());
+    } else if (ledgerSpecifier.ledgerIndex().isPresent()) {
+      jsonGenerator.writeNumberField("ledger_index", ledgerSpecifier.ledgerIndex().get().value().longValue());
+    } else if (ledgerSpecifier.ledgerIndexShortcut().isPresent()) {
+      jsonGenerator.writeStringField("ledger_index", ledgerSpecifier.ledgerIndexShortcut().get().toString());
+    }
   }
 }

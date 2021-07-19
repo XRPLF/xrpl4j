@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
-public class AbstractLedgerIndexTest {
+public abstract class AbstractLedgerIndexTest {
 
   @Value.Immutable
   @JsonSerialize(as = ImmutableLedgerIndexContainer.class)

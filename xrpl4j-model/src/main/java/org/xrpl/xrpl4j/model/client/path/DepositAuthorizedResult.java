@@ -17,6 +17,8 @@ import java.util.Optional;
  *
  * @see "https://xrpl.org/deposit_authorized.html"
  */
+@JsonSerialize(as = ImmutableDepositAuthorizedResult.class)
+@JsonDeserialize(as = ImmutableDepositAuthorizedResult.class)
 public interface DepositAuthorizedResult extends XrplResult {
 
   static ImmutableDepositAuthorizedResult.Builder builder() {

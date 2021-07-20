@@ -196,6 +196,7 @@ public class Wrappers {
           "XRP Amounts may not exceed %s drops (100B XRP, denominated in Drops)", FORMATTER.format(MAX_XRP_IN_DROPS))
       );
     }
+
   }
 
   @Value.Immutable

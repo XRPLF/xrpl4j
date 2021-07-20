@@ -1,9 +1,11 @@
 package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.NameTransformer;
@@ -31,7 +33,8 @@ public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier
 
   @Override
   public LedgerSpecifier deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
-    final ObjectNode node = jsonParser.getCodec().readTree(jsonParser);
+    final ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
+    final ObjectNode node = objectMapper.readTree(jsonParser);
 
     final JsonNode ledgerHash = node.get("ledger_hash");
     if (ledgerHash != null) {
@@ -41,7 +44,7 @@ public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier
       if (ledgerIndex.isNumber()) {
         return LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(ledgerIndex.asLong())));
       } else {
-        return LedgerSpecifier.ledgerIndexShortcut(new LedgerIndexShortcut(ledgerIndex.asText()));
+        return LedgerSpecifier.ledgerIndexShortcut(objectMapper.readValue(ledgerIndex.toString(), LedgerIndexShortcut.class));
       }
     }
   }

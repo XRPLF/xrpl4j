@@ -16,7 +16,7 @@ public class LedgerIndexShortcut {
   @JsonValue
   String value;
 
-  public LedgerIndexShortcut(String value) {
+  private LedgerIndexShortcut(String value) {
     this.value = value;
   }
 

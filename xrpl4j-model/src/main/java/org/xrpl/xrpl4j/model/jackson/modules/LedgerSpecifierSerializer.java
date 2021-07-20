@@ -7,6 +7,9 @@ import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson serializer for {@link LedgerSpecifier}s.
+ */
 public class LedgerSpecifierSerializer extends StdSerializer<LedgerSpecifier> {
 
   public LedgerSpecifierSerializer() {

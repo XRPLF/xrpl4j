@@ -13,31 +13,50 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * TODO: javadoc
+ * Represents one of the three ways of specifying a ledger in a rippled API request.
+ *
+ * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableLedgerSpecifier.class)
 @JsonDeserialize(as = ImmutableLedgerSpecifier.class, using = LedgerSpecifierDeserializer.class)
 public interface LedgerSpecifier {
 
-  static ImmutableLedgerSpecifier.Builder builder() {
-    return ImmutableLedgerSpecifier.builder();
-  }
-
+  /**
+   * Construct a {@link LedgerSpecifier} with a ledger hash.
+   *
+   * @param ledgerHash A {@link Hash256} containing the ledger hash of the desired ledger.
+   *
+   * @return A {@link LedgerSpecifier} containing {@code ledgerHash}.
+   */
   static LedgerSpecifier ledgerHash(Hash256 ledgerHash) {
-    return builder()
+    return ImmutableLedgerSpecifier.builder()
       .ledgerHash(ledgerHash)
       .build();
   }
 
+  /**
+   * Construct a {@link LedgerSpecifier} with a numerical ledger index.
+   *
+   * @param ledgerIndex The {@link LedgerIndex} of the desired ledger.
+   *
+   * @return A {@link LedgerSpecifier} containing {@code ledgerIndex}.
+   */
   static LedgerSpecifier ledgerIndex(LedgerIndex ledgerIndex) {
-    return builder()
+    return ImmutableLedgerSpecifier.builder()
       .ledgerIndex(ledgerIndex)
       .build();
   }
 
+  /**
+   * Construct a {@link LedgerSpecifier} with a ledger index shortcut.
+   *
+   * @param ledgerIndexShortcut A {@link LedgerIndexShortcut} specifying a ledger index shortcut.
+   *
+   * @return A {@link LedgerSpecifier} containing {@code ledgerIndexShortcut}.
+   */
   static LedgerSpecifier ledgerIndexShortcut(LedgerIndexShortcut ledgerIndexShortcut) {
-    return builder()
+    return ImmutableLedgerSpecifier.builder()
       .ledgerIndexShortcut(ledgerIndexShortcut)
       .build();
   }
@@ -56,8 +75,21 @@ public interface LedgerSpecifier {
    */
   Optional<LedgerIndex> ledgerIndex();
 
+  /**
+   * A shortcut word specifying the ledger to use.
+   *
+   * @return An optionally-present {@link LedgerIndexShortcut}.
+   */
   Optional<LedgerIndexShortcut> ledgerIndexShortcut();
 
+  /**
+   * Handle this {@link LedgerSpecifier} depending on which specifier is present.
+   *
+   * @param ledgerHashHandler          A {@link Consumer} that is called if {@link this#ledgerHash()} is present.
+   * @param ledgerIndexHandler         A {@link Consumer} that is called if {@link this#ledgerIndex()} is present.
+   * @param ledgerIndexShortcutHandler A {@link Consumer} that is called if {@link this#ledgerIndexShortcut()}
+   *                                   is present.
+   */
   @Value.Auxiliary
   default void handle(
     final Consumer<Hash256> ledgerHashHandler,
@@ -73,6 +105,17 @@ public interface LedgerSpecifier {
     ledgerIndexShortcut().ifPresent(ledgerIndexShortcutHandler);
   }
 
+  /**
+   * Map this {@link LedgerSpecifier} to an instance of {@link R}, depending on which specifier is present.
+   *
+   * @param ledgerHashMapper          A {@link Function} that is called if {@link this#ledgerHash()} is present.
+   * @param ledgerIndexMapper         A {@link Function} that is called if {@link this#ledgerIndex()} is present.
+   * @param ledgerIndexShortcutMapper A {@link Function} that is called if {@link this#ledgerIndexShortcut()}
+   *                                  is present.
+   * @param <R>                       The type of object to return after mapping.
+   *
+   * @return A {@link R} that is constructed by the appropriate mapper function.
+   */
   @Value.Auxiliary
   default <R> R map(
     final Function<Hash256, R> ledgerHashMapper,
@@ -94,6 +137,9 @@ public interface LedgerSpecifier {
     }
   }
 
+  /**
+   * Validates that only one of the three fields in a {@link LedgerSpecifier} is present.
+   */
   @Value.Check
   default void validateOnlyOneSpecified() {
     int numSpecified = 0;

@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +17,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link LedgerIndex}s.
+ * Custom Jackson deserializer for {@link LedgerSpecifier}s.
  */
 public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier> {
 

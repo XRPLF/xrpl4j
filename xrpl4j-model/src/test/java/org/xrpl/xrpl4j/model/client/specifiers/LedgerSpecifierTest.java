@@ -30,21 +30,15 @@ class LedgerSpecifierTest {
   @Test
   void specifyOneSpecifier() {
     assertDoesNotThrow(
-      () -> LedgerSpecifier.builder()
-        .ledgerHash(LEDGER_HASH)
-        .build()
+      () -> LedgerSpecifier.ledgerHash(LEDGER_HASH)
     );
 
     assertDoesNotThrow(
-      () -> LedgerSpecifier.builder()
-        .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
-        .build()
+      () -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
     );
 
     assertDoesNotThrow(
-      () -> LedgerSpecifier.builder()
-        .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
-        .build()
+      () -> LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
     );
   }
 
@@ -52,7 +46,7 @@ class LedgerSpecifierTest {
   void specifyMoreThanOneThrows() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerSpecifier.builder()
+      () -> ImmutableLedgerSpecifier.builder()
         .ledgerHash(LEDGER_HASH)
         .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
         .build()
@@ -60,7 +54,7 @@ class LedgerSpecifierTest {
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerSpecifier.builder()
+      () -> ImmutableLedgerSpecifier.builder()
         .ledgerHash(LEDGER_HASH)
         .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
         .build()
@@ -68,7 +62,7 @@ class LedgerSpecifierTest {
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerSpecifier.builder()
+      () -> ImmutableLedgerSpecifier.builder()
         .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
         .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
         .build()
@@ -76,7 +70,7 @@ class LedgerSpecifierTest {
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerSpecifier.builder()
+      () -> ImmutableLedgerSpecifier.builder()
         .ledgerHash(LEDGER_HASH)
         .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
         .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
@@ -88,7 +82,7 @@ class LedgerSpecifierTest {
   void specifyNoneThrows() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerSpecifier.builder().build()
+      () -> ImmutableLedgerSpecifier.builder().build()
     );
   }
 

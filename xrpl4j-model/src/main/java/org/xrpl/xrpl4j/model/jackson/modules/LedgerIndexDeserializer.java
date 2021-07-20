@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
 
 import java.io.IOException;
 

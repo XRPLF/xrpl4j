@@ -211,28 +211,4 @@ public class Wrappers {
     }
 
   }
-
-  /**
-   * Represents a Ledger Index on the XRP Ledger.
-   */
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = LedgerIndex.class)
-  @JsonDeserialize(as = LedgerIndex.class)
-  abstract static class _LedgerIndex extends Wrapper<UnsignedLong> implements Serializable {
-
-    @Override
-    public String toString() {
-      return value().toString();
-    }
-
-    public LedgerIndex plus(LedgerIndex other) {
-      return LedgerIndex.of(this.value().plus(other.value()));
-    }
-
-    public LedgerIndex plus(UnsignedLong unsignedLong) {
-      return LedgerIndex.of(this.value().plus(unsignedLong));
-    }
-
-  }
 }

@@ -1,9 +1,9 @@
-package org.xrpl.xrpl4j.model.transactions;
+package org.xrpl.xrpl4j.model.client.specifiers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedLong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LedgerIndexTests {
 

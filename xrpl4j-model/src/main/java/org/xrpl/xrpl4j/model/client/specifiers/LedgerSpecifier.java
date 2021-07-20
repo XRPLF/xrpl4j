@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.jackson.modules.LedgerSpecifierDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
 
 import java.util.Objects;
 import java.util.Optional;

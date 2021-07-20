@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
 
 public class LedgerIndexJsonTests extends AbstractJsonTest {
 

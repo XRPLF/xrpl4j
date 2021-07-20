@@ -48,8 +48,8 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(LedgerIndex.class, new OldLedgerIndexSerializer());
     addDeserializer(LedgerIndex.class, new OldLedgerIndexDeserializer());
 
-    addSerializer(org.xrpl.xrpl4j.model.transactions.LedgerIndex.class, new LedgerIndexSerializer());
-    addDeserializer(org.xrpl.xrpl4j.model.transactions.LedgerIndex.class, new LedgerIndexDeserializer());
+    addSerializer(org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex.class, new LedgerIndexSerializer());
+    addDeserializer(org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex.class, new LedgerIndexDeserializer());
 
     addSerializer(LedgerSpecifier.class, new LedgerSpecifierSerializer());
     addDeserializer(LedgerSpecifier.class, new LedgerSpecifierDeserializer());

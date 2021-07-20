@@ -10,10 +10,10 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 import com.google.common.primitives.UnsignedLong;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
 
 import java.io.IOException;
 

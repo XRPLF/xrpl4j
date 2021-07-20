@@ -85,9 +85,9 @@ public interface LedgerSpecifier {
   /**
    * Handle this {@link LedgerSpecifier} depending on which specifier is present.
    *
-   * @param ledgerHashHandler          A {@link Consumer} that is called if {@link this#ledgerHash()} is present.
-   * @param ledgerIndexHandler         A {@link Consumer} that is called if {@link this#ledgerIndex()} is present.
-   * @param ledgerIndexShortcutHandler A {@link Consumer} that is called if {@link this#ledgerIndexShortcut()}
+   * @param ledgerHashHandler          A {@link Consumer} that is called if {@link #ledgerHash()} is present.
+   * @param ledgerIndexHandler         A {@link Consumer} that is called if {@link #ledgerIndex()} is present.
+   * @param ledgerIndexShortcutHandler A {@link Consumer} that is called if {@link #ledgerIndexShortcut()}
    *                                   is present.
    */
   @Value.Auxiliary
@@ -108,9 +108,9 @@ public interface LedgerSpecifier {
   /**
    * Map this {@link LedgerSpecifier} to an instance of {@link R}, depending on which specifier is present.
    *
-   * @param ledgerHashMapper          A {@link Function} that is called if {@link this#ledgerHash()} is present.
-   * @param ledgerIndexMapper         A {@link Function} that is called if {@link this#ledgerIndex()} is present.
-   * @param ledgerIndexShortcutMapper A {@link Function} that is called if {@link this#ledgerIndexShortcut()}
+   * @param ledgerHashMapper          A {@link Function} that is called if {@link #ledgerHash()} is present.
+   * @param ledgerIndexMapper         A {@link Function} that is called if {@link #ledgerIndex()} is present.
+   * @param ledgerIndexShortcutMapper A {@link Function} that is called if {@link #ledgerIndexShortcut()}
    *                                  is present.
    * @param <R>                       The type of object to return after mapping.
    *

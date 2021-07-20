@@ -217,6 +217,9 @@ class LedgerSpecifierTest {
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_hash\": \"" + LEDGER_HASH + "\"}";
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    final LedgerSpecifierWrapper deserialized = objectMapper.readValue(json, LedgerSpecifierWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
   }
 
   @Test
@@ -226,6 +229,8 @@ class LedgerSpecifierTest {
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_index\": 1}";
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    final LedgerSpecifierWrapper deserialized = objectMapper.readValue(json, LedgerSpecifierWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
   }
 
   @Test
@@ -235,6 +240,8 @@ class LedgerSpecifierTest {
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_index\": \"validated\"}";
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    final LedgerSpecifierWrapper deserialized = objectMapper.readValue(json, LedgerSpecifierWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
   }
 
   private void assertHandlesCorrectly(LedgerSpecifier ledgerSpecifier) {

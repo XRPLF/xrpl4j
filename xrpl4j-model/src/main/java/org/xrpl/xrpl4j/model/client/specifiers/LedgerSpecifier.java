@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.LedgerSpecifierDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.LedgerIndex;
 
@@ -17,7 +18,7 @@ import java.util.function.Function;
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableLedgerSpecifier.class)
-@JsonDeserialize(as = ImmutableLedgerSpecifier.class)
+@JsonDeserialize(as = ImmutableLedgerSpecifier.class, using = LedgerSpecifierDeserializer.class)
 public interface LedgerSpecifier {
 
   static ImmutableLedgerSpecifier.Builder builder() {

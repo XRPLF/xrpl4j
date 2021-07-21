@@ -27,7 +27,7 @@ public class LedgerIndexShortcut {
   public static final LedgerIndexShortcut CLOSED = new LedgerIndexShortcut("closed");
 
   @JsonValue
-  String value;
+  private final String value;
 
   private LedgerIndexShortcut(String value) {
     this.value = value;

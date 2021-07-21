@@ -18,6 +18,33 @@ public class LedgerIndexShortcutTest {
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testConstants() {
+    final LedgerIndexShortcut validated = LedgerIndexShortcut.VALIDATED;
+    assertThat(validated.getValue()).isEqualTo("validated");
+    assertThat(validated.toString()).isEqualTo("validated");
+    assertThat(validated).isEqualTo(validated);
+    assertThat(validated).isEqualTo(LedgerIndexShortcut.VALIDATED);
+    assertThat(validated).isNotEqualTo(LedgerIndexShortcut.CURRENT);
+    assertThat(validated).isNotEqualTo("foo");
+
+    final LedgerIndexShortcut current = LedgerIndexShortcut.CURRENT;
+    assertThat(current.getValue()).isEqualTo("current");
+    assertThat(current.toString()).isEqualTo("current");
+    assertThat(current).isEqualTo(current);
+    assertThat(current).isEqualTo(LedgerIndexShortcut.CURRENT);
+    assertThat(current).isNotEqualTo(LedgerIndexShortcut.VALIDATED);
+    assertThat(current).isNotEqualTo("foo");
+
+    final LedgerIndexShortcut closed = LedgerIndexShortcut.CLOSED;
+    assertThat(closed.getValue()).isEqualTo("closed");
+    assertThat(closed.toString()).isEqualTo("closed");
+    assertThat(closed).isEqualTo(closed);
+    assertThat(closed).isEqualTo(LedgerIndexShortcut.CLOSED);
+    assertThat(closed).isNotEqualTo(LedgerIndexShortcut.CURRENT);
+    assertThat(closed).isNotEqualTo("foo");
+  }
+
+  @Test
   void testJson() throws JsonProcessingException, JSONException {
     LedgerIndexShortcutWrapper validated = LedgerIndexShortcutWrapper.of(LedgerIndexShortcut.VALIDATED);
     LedgerIndexShortcutWrapper current = LedgerIndexShortcutWrapper.of(LedgerIndexShortcut.CURRENT);

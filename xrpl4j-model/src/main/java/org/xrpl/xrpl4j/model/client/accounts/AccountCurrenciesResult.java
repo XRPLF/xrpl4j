@@ -19,48 +19,48 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountCurrenciesResult.class)
 public interface AccountCurrenciesResult extends XrplResult {
 
-    static ImmutableAccountCurrenciesResult.Builder builder() {
-        return ImmutableAccountCurrenciesResult.builder();
-    }
+  static ImmutableAccountCurrenciesResult.Builder builder() {
+    return ImmutableAccountCurrenciesResult.builder();
+  }
 
-    /**
-     * The identifying Hash of the ledger version used to generate this response.
-     *
-     * @return A {@link Hash256} containing the ledger hash.
-     */
-    @JsonProperty("ledger_hash")
-    Optional<Hash256> ledgerHash();
+  /**
+   * The identifying Hash of the ledger version used to generate this response.
+   *
+   * @return A {@link Hash256} containing the ledger hash.
+   */
+  @JsonProperty("ledger_hash")
+  Optional<Hash256> ledgerHash();
 
-    /**
-     * The Ledger Index of the ledger version used to generate this response.
-     *
-     * @return A {@link LedgerIndex}.
-     */
-    @JsonProperty("ledger_index")
-    LedgerIndex ledgerIndex();
+  /**
+   * The Ledger Index of the ledger version used to generate this response.
+   *
+   * @return A {@link LedgerIndex}.
+   */
+  @JsonProperty("ledger_index")
+  LedgerIndex ledgerIndex();
 
-    /**
-     * If true, the information in this response comes from a validated ledger version.
-     * Otherwise, the information is subject to change.
-     *
-     * @return {@code true} if the information in this response comes from a validated ledger version, {@code false}
-     *     if not.
-     */
-    boolean validated();
+  /**
+   * If true, the information in this response comes from a validated ledger version.
+   * Otherwise, the information is subject to change.
+   *
+   * @return {@code true} if the information in this response comes from a validated ledger version, {@code false}
+   * if not.
+   */
+  boolean validated();
 
-    /**
-     * Array of currency codes for currencies that this account can receive.
-     *
-     * @return Array of currencies that this account can receive.
-     */
-    @JsonProperty("receive_currencies")
-    List<String> receiveCurrencies();
+  /**
+   * Array of currency codes for currencies that this account can receive.
+   *
+   * @return Array of currencies that this account can receive.
+   */
+  @JsonProperty("receive_currencies")
+  List<String> receiveCurrencies();
 
-    /**
-     * Array of currency codes for currencies that this account can send
-     *
-     * @return Array of currencies that this account can send.
-     */
-    @JsonProperty("send_currencies")
-    List<String> sendCurrencies();
+  /**
+   * Array of currency codes for currencies that this account can send
+   *
+   * @return Array of currencies that this account can send.
+   */
+  @JsonProperty("send_currencies")
+  List<String> sendCurrencies();
 }

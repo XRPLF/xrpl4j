@@ -21,56 +21,56 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountOffersResult.class)
 public interface AccountOffersResult extends XrplResult {
 
-    static ImmutableAccountOffersResult.Builder builder() {
-        return ImmutableAccountOffersResult.builder();
-    }
+  static ImmutableAccountOffersResult.Builder builder() {
+    return ImmutableAccountOffersResult.builder();
+  }
 
-    /**
-     * Unique {@link Address} identifying the account that made the offers.
-     *
-     * @return The {@link Address} of the account.
-     */
-    Address account();
+  /**
+   * Unique {@link Address} identifying the account that made the offers.
+   *
+   * @return The {@link Address} of the account.
+   */
+  Address account();
 
-    /**
-     * Array of {@link OfferResultObject}, which each represent an offer made by this
-     * account that is outstanding as of the requested ledger version. If
-     * the number of offers is large, only returns up to limit at a time.
-     *
-     * @return A {@link List} of {@link OfferResultObject}
-     */
-    List<OfferResultObject> offers();
+  /**
+   * Array of {@link OfferResultObject}, which each represent an offer made by this
+   * account that is outstanding as of the requested ledger version. If
+   * the number of offers is large, only returns up to limit at a time.
+   *
+   * @return A {@link List} of {@link OfferResultObject}
+   */
+  List<OfferResultObject> offers();
 
-    /**
-     * Omitted if ledger_hash or ledger_index provided. The ledger index
-     * of the current in-progress ledger version, which was used when retrieving this data.
-     *
-     * @return A {@link LedgerIndex}.
-     */
-    @JsonProperty("ledger_current_index")
-    Optional<LedgerIndex> ledgerCurrentIndex();
+  /**
+   * Omitted if ledger_hash or ledger_index provided. The ledger index
+   * of the current in-progress ledger version, which was used when retrieving this data.
+   *
+   * @return A {@link LedgerIndex}.
+   */
+  @JsonProperty("ledger_current_index")
+  Optional<LedgerIndex> ledgerCurrentIndex();
 
-    /**
-     * The Ledger Index of the ledger version used to generate this response.
-     *
-     * @return A {@link LedgerIndex}.
-     */
-    @JsonProperty("ledger_index")
-    Optional<LedgerIndex> ledgerIndex();
+  /**
+   * The Ledger Index of the ledger version used to generate this response.
+   *
+   * @return A {@link LedgerIndex}.
+   */
+  @JsonProperty("ledger_index")
+  Optional<LedgerIndex> ledgerIndex();
 
-    /**
-     * The identifying Hash of the ledger version used to generate this response.
-     *
-     * @return A {@link Hash256} containing the ledger hash.
-     */
-    @JsonProperty("ledger_hash")
-    Optional<Hash256> ledgerHash();
+  /**
+   * The identifying Hash of the ledger version used to generate this response.
+   *
+   * @return A {@link Hash256} containing the ledger hash.
+   */
+  @JsonProperty("ledger_hash")
+  Optional<Hash256> ledgerHash();
 
-    /**
-     * Server-defined value for pagination. Pass this to the next call to resume getting results where this
-     * call left off. Omitted when there are no additional pages after this one.
-     *
-     * @return An optionally-present {@link String} containing the response marker.
-     */
-    Optional<Marker> marker();
+  /**
+   * Server-defined value for pagination. Pass this to the next call to resume getting results where this
+   * call left off. Omitted when there are no additional pages after this one.
+   *
+   * @return An optionally-present {@link String} containing the response marker.
+   */
+  Optional<Marker> marker();
 }

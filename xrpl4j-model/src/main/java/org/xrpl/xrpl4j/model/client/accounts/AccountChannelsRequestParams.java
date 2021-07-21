@@ -49,6 +49,12 @@ public interface AccountChannelsRequestParams extends XrplRequestParams {
   @JsonProperty("destination_account")
   Optional<Address> destinationAccount();
 
+  /**
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
+   * numerical ledger index, or a shortcut value.
+   *
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
+   */
   @Value.Default
   @JsonUnwrapped
   default LedgerSpecifier ledgerSpecifier() {

@@ -165,7 +165,7 @@ public abstract class AbstractIT {
     try {
       AccountInfoRequestParams params = AccountInfoRequestParams.builder()
         .account(classicAddress)
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
       return xrplClient.accountInfo(params);
     } catch (Exception e) {

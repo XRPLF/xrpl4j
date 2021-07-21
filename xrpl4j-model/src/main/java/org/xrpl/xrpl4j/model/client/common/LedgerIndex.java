@@ -8,7 +8,9 @@ import java.util.Objects;
  * Represents a ledger index, which can either be an integer or a shortcut {@link String}.
  *
  * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
+ * @deprecated Will be replaced by {@link org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex} in the future.
  */
+@Deprecated
 public class LedgerIndex {
 
   /**
@@ -26,7 +28,7 @@ public class LedgerIndex {
    *
    * @deprecated Does not check if the given value is a valid index.
    *    This constructor should be made private in the future.
-   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)} 
+   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)}
    *    factory methods should be used to construct {@link LedgerIndex} objects.
    */
   @Deprecated

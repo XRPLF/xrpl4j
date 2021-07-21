@@ -2,14 +2,33 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 
 public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
+
+  @Test
+  public void testWithLedgerIndex() throws JsonProcessingException, JSONException {
+
+    AccountLinesRequestParams params = AccountLinesRequestParams.builder()
+      .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
+      .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE)))
+      .build();
+
+    String json = "{\n" +
+      "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
+      "            \"ledger_index\": 1\n" +
+      "        }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
 
   @Test
   public void testMinimalJson() throws JsonProcessingException, JSONException {
@@ -31,7 +50,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-        .ledgerHash(Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F"))
+        .ledgerSpecifier(LedgerSpecifier.ledgerHash(Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F")))
         .peer(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .limit(UnsignedInteger.ONE)
         .marker(Marker.of("marker"))
@@ -42,8 +61,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
         "            \"ledger_hash\": \"92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F\",\n" +
         "            \"peer\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
         "            \"limit\": 1,\n" +
-        "            \"marker\": \"marker\",\n" +
-        "            \"ledger_index\": \"current\"\n" +
+        "            \"marker\": \"marker\"\n" +
         "        }";
 
     assertCanSerializeAndDeserialize(params, json);

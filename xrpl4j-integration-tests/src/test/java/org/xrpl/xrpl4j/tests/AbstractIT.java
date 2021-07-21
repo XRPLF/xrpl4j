@@ -223,7 +223,7 @@ public abstract class AbstractIT {
       AccountLinesRequestParams params = AccountLinesRequestParams.builder()
         .account(classicAddress)
         .peer(peerAddress)
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
 
       return xrplClient.accountLines(params);

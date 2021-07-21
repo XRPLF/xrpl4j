@@ -13,6 +13,7 @@ import java.io.IOException;
  *
  * FIXME: Remove this class
  */
+@Deprecated
 public class OldLedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
   public OldLedgerIndexSerializer() {

@@ -13,6 +13,7 @@ import java.io.IOException;
  *
  * FIXME: Remove this class
  */
+@Deprecated
 public class OldLedgerIndexDeserializer extends StdDeserializer<LedgerIndex> {
 
   protected OldLedgerIndexDeserializer() {

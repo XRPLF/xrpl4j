@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -9,6 +10,8 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -46,23 +49,10 @@ public interface AccountChannelsRequestParams extends XrplRequestParams {
   @JsonProperty("destination_account")
   Optional<Address> destinationAccount();
 
-  /**
-   * A 20-byte hex string for the ledger version to use.
-   *
-   * @return An optionally-present {@link Hash256}.
-   */
-  @JsonProperty("ledger_hash")
-  Optional<Hash256> ledgerHash();
-
-  /**
-   * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   *
-   * @return A {@link LedgerIndex}.  Defaults to {@link LedgerIndex#CURRENT}.
-   */
-  @JsonProperty("ledger_index")
   @Value.Default
-  default LedgerIndex ledgerIndex() {
-    return LedgerIndex.CURRENT;
+  @JsonUnwrapped
+  default LedgerSpecifier ledgerSpecifier() {
+    return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT);
   }
 
   /**

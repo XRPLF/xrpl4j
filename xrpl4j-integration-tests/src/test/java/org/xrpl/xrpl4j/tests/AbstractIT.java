@@ -124,7 +124,7 @@ public abstract class AbstractIT {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
         .account(classicAddress)
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
       return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
@@ -136,7 +136,7 @@ public abstract class AbstractIT {
     try {
       AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
         .account(classicAddress)
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
       List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
       return ledgerObjects

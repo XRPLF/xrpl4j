@@ -42,8 +42,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
 
   /**
    * The earliest ledger to include transactions from. A value of {@code -1} instructs the server to use the
-   * earliest validated ledger version available. The presence of this value will take precedence over
-   * {@link #ledgerSpecifier()}.
+   * earliest validated ledger version available.
    *
    * @return A {@link LedgerIndexBound} with a default of empty.
    */
@@ -56,8 +55,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
 
   /**
    * The most recent ledger to include transactions from. A value of {@code -1} instructs the server to use the most
-   * recent validated ledger version available. The presence of this value will take precedence over
-   * {@link #ledgerSpecifier()}.
+   * recent validated ledger version available.
    *
    * @return A {@link LedgerIndexBound} with a default of empty.
    */

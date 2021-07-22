@@ -209,7 +209,7 @@ public abstract class AbstractIT {
         .sourceAccount(sourceWallet.classicAddress())
         .destinationAccount(destinationWallet.classicAddress())
         .destinationAmount(destinationAmount)
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
 
       return xrplClient.ripplePathFind(pathFindParams);

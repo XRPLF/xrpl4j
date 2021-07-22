@@ -2,11 +2,14 @@ package org.xrpl.xrpl4j.model.client.ledger;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -24,26 +27,20 @@ public interface LedgerRequestParams extends XrplRequestParams {
   }
 
   /**
-   * A 20-byte hex string for the ledger version to use.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
+   * numerical ledger index, or a shortcut value.
    *
-   * @return An optionally-present {@link Hash256} containing the ledger hash.
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
-  @JsonProperty("ledger_hash")
-  Optional<Hash256> ledgerHash();
-
-  /**
-   * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   *
-   * @return A {@link LedgerIndex}. Defaults to {@link LedgerIndex#CURRENT}.
-   */
-  @JsonProperty("ledger_index")
   @Value.Default
-  default LedgerIndex ledgerIndex() {
-    return LedgerIndex.CURRENT;
+  @JsonUnwrapped
+  default LedgerSpecifier ledgerSpecifier() {
+    return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT);
   }
 
   /**
-   * If true, return full information on the entire ledger. Ignored if you did not specify {@link #ledgerHash()}.
+   * If true, return full information on the entire ledger. Ignored if you did not specify a {@code} ledgerHash in
+   * {@link #ledgerSpecifier()}}.
    * Defaults to false. (Equivalent to enabling transactions, accounts, and expand.)
    *
    * <p>Caution: This is a very large amount of data -- on the order of several hundred megabytes!
@@ -59,8 +56,8 @@ public interface LedgerRequestParams extends XrplRequestParams {
   }
 
   /**
-   * If true, return information on accounts in the ledger. Ignored if you did not specify {@link #ledgerHash()}.
-   * Defaults to false.
+   * If true, return information on accounts in the ledger. Ignored if you did not specify a {@code} ledgerHash in
+   * {@link #ledgerSpecifier()}}.
    *
    * <p>Caution: This returns a very large amount of data!
    *
@@ -76,7 +73,8 @@ public interface LedgerRequestParams extends XrplRequestParams {
 
   /**
    * If true, return information on transactions in the specified ledger version. Defaults to false.
-   * Ignored if you did not specify {@link #ledgerHash()}.
+   * Ignored if you did not specify a {@code} ledgerHash in
+   * {@link #ledgerSpecifier()}}.
    *
    * @return {@code true} if requesting transactions, otherwise {@code false}.
    *     Defaults to {@code false}.

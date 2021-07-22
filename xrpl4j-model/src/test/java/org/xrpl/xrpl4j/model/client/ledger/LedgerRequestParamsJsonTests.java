@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 
 public class LedgerRequestParamsJsonTests extends AbstractJsonTest {
 
@@ -12,7 +14,7 @@ public class LedgerRequestParamsJsonTests extends AbstractJsonTest {
   public void testJson() throws JsonProcessingException, JSONException {
 
     LedgerRequestParams params = LedgerRequestParams.builder()
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
 
     String json = "{\n" +

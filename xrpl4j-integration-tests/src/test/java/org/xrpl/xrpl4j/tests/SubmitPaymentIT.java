@@ -8,6 +8,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -94,7 +96,11 @@ public class SubmitPaymentIT extends AbstractIT {
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
       throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
-        LedgerRequestParams.builder().ledgerIndex(validatedPayment.ledgerIndex().get()).build());
+        LedgerRequestParams.builder()
+          // FIXME: Get rid of LedgerIndex.of once Transaction.ledgerIndex is the new type
+          .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(validatedPayment.ledgerIndex().get().unsignedLongValue())))
+          .build()
+    );
 
     assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
     assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();

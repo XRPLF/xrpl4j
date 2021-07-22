@@ -191,7 +191,7 @@ public abstract class AbstractIT {
   protected LedgerResult getValidatedLedger() {
     try {
       LedgerRequestParams params = LedgerRequestParams.builder()
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
         .build();
       return xrplClient.ledger(params);
     } catch (JsonRpcClientErrorException e) {

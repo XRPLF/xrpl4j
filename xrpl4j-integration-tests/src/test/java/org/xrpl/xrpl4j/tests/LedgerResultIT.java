@@ -7,6 +7,8 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 
 /**
  * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses
@@ -17,7 +19,8 @@ public class LedgerResultIT extends AbstractIT {
   @Test
   void getValidatedLedgerResult() throws JsonRpcClientErrorException {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
-      .ledgerIndex(LedgerIndex.VALIDATED)
+      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
       .build());
     assertThat(ledgerResult.ledgerIndex()).isNotEmpty();
     assertThat(ledgerResult.ledgerHash()).isNotEmpty();
@@ -29,7 +32,7 @@ public class LedgerResultIT extends AbstractIT {
   @Test
   void getCurrentLedgerResult() throws JsonRpcClientErrorException {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
-      .ledgerIndex(LedgerIndex.CURRENT)
+      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT))
       .build());
     assertThat(ledgerResult.ledgerIndex()).isEmpty();
     assertThat(ledgerResult.ledgerHash()).isEmpty();
@@ -41,7 +44,7 @@ public class LedgerResultIT extends AbstractIT {
   @Test
   void getClosedLedgerResult() throws JsonRpcClientErrorException {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
-      .ledgerIndex(LedgerIndex.CLOSED)
+      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CLOSED))
       .build());
     assertThat(ledgerResult.ledgerIndex()).isNotEmpty();
     assertThat(ledgerResult.ledgerHash()).isNotEmpty();

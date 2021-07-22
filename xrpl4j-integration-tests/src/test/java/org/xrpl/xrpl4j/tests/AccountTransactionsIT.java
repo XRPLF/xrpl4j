@@ -13,7 +13,6 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -109,7 +108,12 @@ public class AccountTransactionsIT {
 
     LedgerResult ledger = mainnetClient.ledger(
       LedgerRequestParams.builder()
-        .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(resultByShortcut.ledgerIndexMin().value())))
+        .ledgerSpecifier(
+          LedgerSpecifier.ledgerIndex(
+            org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex.of(
+              UnsignedLong.valueOf(resultByShortcut.ledgerIndexMin().value()))
+          )
+        )
         .build()
     );
 

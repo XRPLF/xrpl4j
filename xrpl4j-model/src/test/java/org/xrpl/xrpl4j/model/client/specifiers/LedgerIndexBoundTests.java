@@ -4,10 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 public class LedgerIndexBoundTests {
+
+  ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
   void constructValidBounds() {
@@ -149,5 +160,40 @@ public class LedgerIndexBoundTests {
       IllegalArgumentException.class,
       () -> LedgerIndexBound.of(1000).minus(10000)
     );
+  }
+
+  @Test
+  void testJson() throws JsonProcessingException, JSONException {
+    LedgerIndexBound ledgerIndexBound = LedgerIndexBound.of(1);
+    LedgerIndexBoundWrapper wrapper = LedgerIndexBoundWrapper.of(ledgerIndexBound);
+
+    String json = "{\"ledgerIndexBound\": 1}";
+    assertSerializesAndDeserializes(wrapper, json);
+
+    LedgerIndexBound negativeLedgerIndexBound = LedgerIndexBound.of(-1);
+    LedgerIndexBoundWrapper negativeWrapper = LedgerIndexBoundWrapper.of(negativeLedgerIndexBound);
+
+    String negativeJson = "{\"ledgerIndexBound\": -1}";
+    assertSerializesAndDeserializes(negativeWrapper, negativeJson);
+  }
+
+  private void assertSerializesAndDeserializes(LedgerIndexBoundWrapper wrapper, String json) throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(wrapper);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    LedgerIndexBoundWrapper deserialized = objectMapper.readValue(serialized, LedgerIndexBoundWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableLedgerIndexBoundWrapper.class)
+  @JsonDeserialize(as = ImmutableLedgerIndexBoundWrapper.class)
+  interface LedgerIndexBoundWrapper {
+
+    static LedgerIndexBoundWrapper of(LedgerIndexBound ledgerIndexBound) {
+      return ImmutableLedgerIndexBoundWrapper.builder().ledgerIndexBound(ledgerIndexBound).build();
+    }
+
+    LedgerIndexBound ledgerIndexBound();
+
   }
 }

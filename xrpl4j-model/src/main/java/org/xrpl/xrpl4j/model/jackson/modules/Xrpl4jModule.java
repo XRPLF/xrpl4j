@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
@@ -62,5 +63,7 @@ public class Xrpl4jModule extends SimpleModule {
 
     addSerializer(Marker.class, new MarkerSerializer());
     addDeserializer(Marker.class, new MarkerDeserializer());
+
+    addDeserializer(AccountTransactionsRequestParams.class, new AccountTransactionsRequestParamsDeserializer());
   }
 }

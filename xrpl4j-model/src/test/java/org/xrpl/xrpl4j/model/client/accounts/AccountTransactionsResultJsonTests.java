@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.junit.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -22,8 +23,8 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
   public void testJson() throws JsonProcessingException, JSONException {
     AccountTransactionsResult result = AccountTransactionsResult.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
-      .ledgerIndexMax(LedgerIndex.of(UnsignedLong.valueOf(57112019)))
-      .ledgerIndexMin(LedgerIndex.of(UnsignedLong.valueOf(56248229)))
+      .ledgerIndexMax(LedgerIndexBound.of(57112019))
+      .ledgerIndexMin(LedgerIndexBound.of(56248229))
       .limit(UnsignedInteger.valueOf(2))
       .marker(Marker.of("{\"ledger\":57112007,\"seq\":13}"))
       .status("success")

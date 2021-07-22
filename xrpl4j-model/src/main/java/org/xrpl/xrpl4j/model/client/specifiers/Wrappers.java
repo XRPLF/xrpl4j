@@ -107,7 +107,7 @@ public class Wrappers {
   @JsonDeserialize(as = LedgerIndexBound.class)
   abstract static class _LedgerIndexBound extends Wrapper<Long> implements Serializable {
 
-    static LedgerIndexBound of(int ledgerIndexBound) {
+    public static LedgerIndexBound of(int ledgerIndexBound) {
       return LedgerIndexBound.of(Integer.valueOf(ledgerIndexBound).longValue());
     }
 

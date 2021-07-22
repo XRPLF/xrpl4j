@@ -7,6 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Marker;
@@ -37,18 +38,18 @@ public interface AccountTransactionsResult extends XrplResult {
   /**
    * The ledger index of the earliest ledger actually searched for transactions.
    *
-   * @return The {@link LedgerIndex} of the earliest ledger searched.
+   * @return The {@link LedgerIndexBound} of the earliest ledger searched.
    */
   @JsonProperty("ledger_index_min")
-  LedgerIndex ledgerIndexMin();
+  LedgerIndexBound ledgerIndexMin();
 
   /**
    * The ledger index of the most recent ledger actually searched for transactions.
    *
-   * @return The {@link LedgerIndex} of the latest ledger searched.
+   * @return The {@link LedgerIndexBound} of the latest ledger searched.
    */
   @JsonProperty("ledger_index_max")
-  LedgerIndex ledgerIndexMax();
+  LedgerIndexBound ledgerIndexMax();
 
   /**
    * The limit value used in the request. (This may differ from the actual limit value enforced by the server.)

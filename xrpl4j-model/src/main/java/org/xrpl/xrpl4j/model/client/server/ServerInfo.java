@@ -77,7 +77,7 @@ public interface ServerInfo {
   String completeLedgers();
 
   /**
-   * Transforms {@link completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
+   * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
    *
    * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
    * rippled node contains in its history.

@@ -97,8 +97,7 @@ public class SubmitPaymentIT extends AbstractIT {
       throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
         LedgerRequestParams.builder()
-          // FIXME: Get rid of LedgerIndex.of once Transaction.ledgerIndex is the new type
-          .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(validatedPayment.ledgerIndex().get().unsignedLongValue())))
+          .ledgerSpecifier(LedgerSpecifier.ledgerIndex(validatedPayment.ledgerIndex().get()))
           .build()
     );
 

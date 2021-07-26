@@ -1,16 +1,12 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedInteger;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 public class DepositPreAuthTests {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void depositPreAuthWithAuthorize() {
@@ -42,31 +38,30 @@ public class DepositPreAuthTests {
 
   @Test
   public void depositPreAuthWithoutAuthorizeOrUnauthorizeThrows() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage(
-        "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both."
-    );
-
-    DepositPreAuth.builder()
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> DepositPreAuth.builder()
         .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
         .fee(XrpCurrencyAmount.ofDrops(10))
         .sequence(UnsignedInteger.valueOf(2))
-        .build();
+        .build(),
+      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both."
+    );
   }
 
   @Test
   public void depositPreAuthWithAuthorizeAndUnauthorizeThrows() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage(
-        "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both."
-    );
-
-    DepositPreAuth.builder()
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> DepositPreAuth.builder()
         .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
         .fee(XrpCurrencyAmount.ofDrops(10))
         .sequence(UnsignedInteger.valueOf(2))
         .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
         .unauthorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
-        .build();
+        .build(),
+      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both."
+    );
+
   }
 }

@@ -2,75 +2,40 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
 public class RippleStateFlagsTests extends AbstractFlagsTest {
 
-  boolean lsfLowReserve;
-  boolean lsfHighReserve;
-  boolean lsfLowAuth;
-  boolean lsfHighAuth;
-  boolean lsfLowNoRipple;
-  boolean lsfHighNoRipple;
-  boolean lsfLowFreeze;
-  boolean lsfHighFreeze;
-
-  long expectedFlags;
-
-
-  /**
-   * Required-args constructor.
-   *
-   * @param lsfLowReserve   The current value of {@link this.lsfLowReserve}.
-   * @param lsfHighReserve  The current value of {@link this.lsfHighReserve}.
-   * @param lsfLowAuth      The current value of {@link this.lsfLowAuth}.
-   * @param lsfHighAuth     The current value of {@link this.lsfHighAuth}.
-   * @param lsfLowNoRipple  The current value of {@link this.lsfLowNoRipple}.
-   * @param lsfHighNoRipple The current value of {@link this.lsfHighNoRipple}.
-   * @param lsfLowFreeze    The current value of {@link this.lsfLowFreeze}.
-   * @param lsfHighFreeze   The current value of {@link this.lsfHighFreeze}.
-   */
-  public RippleStateFlagsTests(
-      boolean lsfLowReserve,
-      boolean lsfHighReserve,
-      boolean lsfLowAuth,
-      boolean lsfHighAuth,
-      boolean lsfLowNoRipple,
-      boolean lsfHighNoRipple,
-      boolean lsfLowFreeze,
-      boolean lsfHighFreeze
-  ) {
-    this.lsfLowReserve = lsfLowReserve;
-    this.lsfHighReserve = lsfHighReserve;
-    this.lsfLowAuth = lsfLowAuth;
-    this.lsfHighAuth = lsfHighAuth;
-    this.lsfLowNoRipple = lsfLowNoRipple;
-    this.lsfHighNoRipple = lsfHighNoRipple;
-    this.lsfLowFreeze = lsfLowFreeze;
-    this.lsfHighFreeze = lsfHighFreeze;
-
-    expectedFlags = (lsfLowReserve ? Flags.RippleStateFlags.LOW_RESERVE.getValue() : 0L) |
-        (lsfHighReserve ? Flags.RippleStateFlags.HIGH_RESERVE.getValue() : 0L) |
-        (lsfLowAuth ? Flags.RippleStateFlags.LOW_AUTH.getValue() : 0L) |
-        (lsfHighAuth ? Flags.RippleStateFlags.HIGH_AUTH.getValue() : 0L) |
-        (lsfLowNoRipple ? Flags.RippleStateFlags.LOW_NO_RIPPLE.getValue() : 0L) |
-        (lsfHighNoRipple ? Flags.RippleStateFlags.HIGH_NO_RIPPLE.getValue() : 0L) |
-        (lsfLowFreeze ? Flags.RippleStateFlags.LOW_FREEZE.getValue() : 0L) |
-        (lsfHighFreeze ? Flags.RippleStateFlags.HIGH_FREEZE.getValue() : 0L);
-  }
-
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
+  public static Stream<Arguments> data() {
     return getBooleanCombinations(8);
   }
 
-  @Test
-  public void testDeriveIndividualFlagsFromFlags() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDeriveIndividualFlagsFromFlags(
+    boolean lsfLowReserve,
+    boolean lsfHighReserve,
+    boolean lsfLowAuth,
+    boolean lsfHighAuth,
+    boolean lsfLowNoRipple,
+    boolean lsfHighNoRipple,
+    boolean lsfLowFreeze,
+    boolean lsfHighFreeze
+  ) {
+    long expectedFlags = getExpectedFlags(
+      lsfLowReserve,
+      lsfHighReserve,
+      lsfLowAuth,
+      lsfHighAuth,
+      lsfLowNoRipple,
+      lsfHighNoRipple,
+      lsfLowFreeze,
+      lsfHighFreeze
+    );
     Flags.RippleStateFlags flags = Flags.RippleStateFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -82,5 +47,25 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.lsfHighNoRipple()).isEqualTo(lsfHighNoRipple);
     assertThat(flags.lsfLowFreeze()).isEqualTo(lsfLowFreeze);
     assertThat(flags.lsfHighFreeze()).isEqualTo(lsfHighFreeze);
+  }
+
+  protected long getExpectedFlags(
+    boolean lsfLowReserve,
+    boolean lsfHighReserve,
+    boolean lsfLowAuth,
+    boolean lsfHighAuth,
+    boolean lsfLowNoRipple,
+    boolean lsfHighNoRipple,
+    boolean lsfLowFreeze,
+    boolean lsfHighFreeze
+  ) {
+    return (lsfLowReserve ? Flags.RippleStateFlags.LOW_RESERVE.getValue() : 0L) |
+      (lsfHighReserve ? Flags.RippleStateFlags.HIGH_RESERVE.getValue() : 0L) |
+      (lsfLowAuth ? Flags.RippleStateFlags.LOW_AUTH.getValue() : 0L) |
+      (lsfHighAuth ? Flags.RippleStateFlags.HIGH_AUTH.getValue() : 0L) |
+      (lsfLowNoRipple ? Flags.RippleStateFlags.LOW_NO_RIPPLE.getValue() : 0L) |
+      (lsfHighNoRipple ? Flags.RippleStateFlags.HIGH_NO_RIPPLE.getValue() : 0L) |
+      (lsfLowFreeze ? Flags.RippleStateFlags.LOW_FREEZE.getValue() : 0L) |
+      (lsfHighFreeze ? Flags.RippleStateFlags.HIGH_FREEZE.getValue() : 0L);
   }
 }

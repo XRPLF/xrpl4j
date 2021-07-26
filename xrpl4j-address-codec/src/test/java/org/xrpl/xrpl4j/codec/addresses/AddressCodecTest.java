@@ -2,21 +2,17 @@ package org.xrpl.xrpl4j.codec.addresses;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.io.BaseEncoding;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.function.Function;
 
 public class AddressCodecTest {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   AddressCodec addressCodec;
 
@@ -25,7 +21,7 @@ public class AddressCodecTest {
     return UnsignedByteArray.of(decodedHex);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     addressCodec = new AddressCodec();
   }
@@ -110,16 +106,21 @@ public class AddressCodecTest {
 
   @Test
   public void encodeSeedWithFewerThanSixteenBytes() {
-    expectedException.expect(EncodeException.class);
-    expectedException.expectMessage("entropy must have length 16.");
-    addressCodec.encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7B"), VersionType.SECP256K1);
+    assertThrows(
+      EncodeException.class,
+      () -> addressCodec.encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7B"), VersionType.SECP256K1),
+      "entropy must have length 16."
+    );
   }
 
   @Test
   public void encodeSeedWithGreaterThanSixteenBytes() {
-    expectedException.expect(EncodeException.class);
-    expectedException.expectMessage("entropy must have length 16.");
-    addressCodec.encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), VersionType.SECP256K1);
+    assertThrows(
+      EncodeException.class,
+      () -> addressCodec
+        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), VersionType.SECP256K1),
+      "entropy must have length 16."
+    );
   }
 
   @Test

@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 import java.util.Optional;
 
@@ -16,6 +17,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePathStep.class)
 public interface PathStep {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePathStep.Builder}.
+   */
   static ImmutablePathStep.Builder builder() {
     return ImmutablePathStep.builder();
   }

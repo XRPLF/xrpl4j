@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 /**
  * Information about the last time the server closed a ledger, including the amount of time it took to reach a
@@ -15,6 +16,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableServerInfoLastClose.class)
 public interface ServerInfoLastClose {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfoLastClose.Builder}.
+   */
   static ImmutableServerInfoLastClose.Builder builder() {
     return ImmutableServerInfoLastClose.builder();
   }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;
@@ -20,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePaymentChannelFund.class)
 public interface PaymentChannelFund extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePaymentChannelFund.Builder}.
+   */
   static ImmutablePaymentChannelFund.Builder builder() {
     return ImmutablePaymentChannelFund.builder();
   }

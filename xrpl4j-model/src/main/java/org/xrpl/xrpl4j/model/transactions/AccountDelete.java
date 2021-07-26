@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
@@ -20,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountDelete.class)
 public interface AccountDelete extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountDelete.Builder}.
+   */
   static ImmutableAccountDelete.Builder builder() {
     return ImmutableAccountDelete.builder();
   }

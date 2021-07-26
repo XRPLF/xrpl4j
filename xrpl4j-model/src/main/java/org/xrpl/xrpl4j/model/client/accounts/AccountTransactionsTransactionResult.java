@@ -20,6 +20,13 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountTransactionsTransactionResult.class)
 public interface AccountTransactionsTransactionResult<T extends Transaction> extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The type of {@link Transaction} contained in this result.
+   *
+   * @return An {@link ImmutableAccountTransactionsTransactionResult.Builder}.
+   */
   static <T extends Transaction> ImmutableAccountTransactionsTransactionResult.Builder<T> builder() {
     return ImmutableAccountTransactionsTransactionResult.builder();
   }

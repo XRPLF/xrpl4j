@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
@@ -25,6 +26,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableCheckCash.class)
 public interface CheckCash extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCheckCash.Builder}.
+   */
   static ImmutableCheckCash.Builder builder() {
     return ImmutableCheckCash.builder();
   }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -23,6 +24,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableTransactionRequestParams.class)
 public interface TransactionRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTransactionRequestParams.Builder}.
+   */
   static ImmutableTransactionRequestParams.Builder builder() {
     return ImmutableTransactionRequestParams.builder();
   }

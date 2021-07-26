@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 /**
@@ -17,6 +18,11 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 @JsonDeserialize(as = ImmutableCheckCancel.class)
 public interface CheckCancel extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCheckCancel.Builder}.
+   */
   static ImmutableCheckCancel.Builder builder() {
     return ImmutableCheckCancel.builder();
   }

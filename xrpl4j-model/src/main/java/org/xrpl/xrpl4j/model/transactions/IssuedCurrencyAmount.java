@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 /**
  * A {@link CurrencyAmount} for Issued Currencies on the XRP Ledger.
@@ -14,6 +15,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableIssuedCurrencyAmount.class)
 public interface IssuedCurrencyAmount extends CurrencyAmount {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableIssuedCurrencyAmount.Builder}.
+   */
   static ImmutableIssuedCurrencyAmount.Builder builder() {
     return ImmutableIssuedCurrencyAmount.builder();
   }

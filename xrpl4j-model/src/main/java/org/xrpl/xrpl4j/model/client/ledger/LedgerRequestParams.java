@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -19,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableLedgerRequestParams.class)
 public interface LedgerRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableLedgerRequestParams.Builder}.
+   */
   static ImmutableLedgerRequestParams.Builder builder() {
     return ImmutableLedgerRequestParams.builder();
   }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -25,6 +26,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableLedgerHeader.class)
 public interface LedgerHeader {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableLedgerHeader.Builder}.
+   */
   static ImmutableLedgerHeader.Builder builder() {
     return ImmutableLedgerHeader.builder();
   }

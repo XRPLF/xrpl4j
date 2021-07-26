@@ -13,6 +13,7 @@ import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -32,6 +33,11 @@ public interface ServerInfo {
 
   Logger LOGGER = LoggerFactory.getLogger(ServerInfo.class);
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfo.Builder}.
+   */
   static ImmutableServerInfo.Builder builder() {
     return ImmutableServerInfo.builder();
   }
@@ -77,7 +83,7 @@ public interface ServerInfo {
   String completeLedgers();
 
   /**
-   * Transforms {@link completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
+   * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
    *
    * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
    * rippled node contains in its history.

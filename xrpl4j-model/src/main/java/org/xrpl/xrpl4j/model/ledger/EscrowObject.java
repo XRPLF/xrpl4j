@@ -7,6 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
@@ -30,6 +31,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableEscrowObject.class)
 public interface EscrowObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableEscrowObject.Builder}.
+   */
   static ImmutableEscrowObject.Builder builder() {
     return ImmutableEscrowObject.builder();
   }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 import java.util.Optional;
 
@@ -19,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableTransactionMetadata.class)
 public interface TransactionMetadata {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTransactionMetadata.Builder}.
+   */
   static ImmutableTransactionMetadata.Builder builder() {
     return ImmutableTransactionMetadata.builder();
   }

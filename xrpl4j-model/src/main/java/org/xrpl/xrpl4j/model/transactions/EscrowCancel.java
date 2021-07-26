@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 /**
@@ -15,6 +16,11 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 @JsonDeserialize(as = ImmutableEscrowCancel.class)
 public interface EscrowCancel extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableEscrowCancel.Builder}.
+   */
   static ImmutableEscrowCancel.Builder builder() {
     return ImmutableEscrowCancel.builder();
   }

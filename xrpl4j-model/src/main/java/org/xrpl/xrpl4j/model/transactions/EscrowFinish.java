@@ -9,6 +9,7 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.Fulfillment;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
@@ -23,6 +24,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableEscrowFinish.class)
 public interface EscrowFinish extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableEscrowFinish.Builder}.
+   */
   static ImmutableEscrowFinish.Builder builder() {
     return ImmutableEscrowFinish.builder();
   }

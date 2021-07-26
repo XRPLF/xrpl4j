@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
@@ -15,6 +16,11 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 @JsonDeserialize(as = ImmutableSignerEntry.class)
 public interface SignerEntry {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSignerEntry.Builder}.
+   */
   static ImmutableSignerEntry.Builder builder() {
     return ImmutableSignerEntry.builder();
   }

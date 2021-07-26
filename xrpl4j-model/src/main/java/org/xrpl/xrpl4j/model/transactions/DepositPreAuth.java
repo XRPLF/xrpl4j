@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;
@@ -23,6 +24,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableDepositPreAuth.class)
 public interface DepositPreAuth extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableDepositPreAuth.Builder}.
+   */
   static ImmutableDepositPreAuth.Builder builder() {
     return ImmutableDepositPreAuth.builder();
   }

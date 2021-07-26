@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 import java.util.List;
 
@@ -16,6 +17,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableServerInfoLoad.class)
 public interface ServerInfoLoad {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfoLoad.Builder}.
+   */
   static ImmutableServerInfoLoad.Builder builder() {
     return ImmutableServerInfoLoad.builder();
   }

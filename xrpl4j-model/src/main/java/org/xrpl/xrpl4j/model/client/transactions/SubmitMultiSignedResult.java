@@ -19,6 +19,13 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableSubmitMultiSignedResult.class)
 public interface SubmitMultiSignedResult<TxnType extends Transaction> extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The actual type of {@link Transaction} that was submitted.
+   *
+   * @return An {@link ImmutableSubmitMultiSignedResult.Builder}
+   */
   static <T extends Transaction> ImmutableSubmitMultiSignedResult.Builder<T> builder() {
     return ImmutableSubmitMultiSignedResult.builder();
   }

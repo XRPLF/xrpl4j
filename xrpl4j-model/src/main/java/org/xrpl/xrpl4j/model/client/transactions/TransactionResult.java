@@ -24,6 +24,13 @@ import java.util.Optional;
 @JsonDeserialize(using = TransactionResultDeserializer.class)
 public interface TransactionResult<TxnType extends Transaction> extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The actual type of {@link Transaction}.
+   *
+   * @return An {@link ImmutableTransactionResult.Builder}
+   */
   static <T extends Transaction> ImmutableTransactionResult.Builder<T> builder() {
     return ImmutableTransactionResult.builder();
   }

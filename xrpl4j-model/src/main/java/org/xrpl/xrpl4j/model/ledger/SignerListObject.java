@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
@@ -21,6 +22,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableSignerListObject.class)
 public interface SignerListObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSignerListObject.Builder}.
+   */
   static ImmutableSignerListObject.Builder builder() {
     return ImmutableSignerListObject.builder();
   }

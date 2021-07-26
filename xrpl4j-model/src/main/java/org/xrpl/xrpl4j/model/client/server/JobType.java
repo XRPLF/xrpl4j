@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 import java.util.Optional;
 
@@ -16,6 +17,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableJobType.class)
 public interface JobType {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableJobType.Builder}.
+   */
   static ImmutableJobType.Builder builder() {
     return ImmutableJobType.builder();
   }

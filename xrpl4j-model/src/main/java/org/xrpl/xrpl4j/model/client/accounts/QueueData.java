@@ -20,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableQueueData.class)
 public interface QueueData {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableQueueData.Builder}.
+   */
   static ImmutableQueueData.Builder builder() {
     return ImmutableQueueData.builder();
   }

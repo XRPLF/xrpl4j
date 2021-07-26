@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.path;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Optional;
@@ -17,9 +18,9 @@ import java.util.Optional;
 public interface PathCurrency {
 
   /**
-   * Builder immutable path currency . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable path currency . builder
+   * @return An {@link ImmutablePathCurrency.Builder}.
    */
   static ImmutablePathCurrency.Builder builder() {
     return ImmutablePathCurrency.builder();

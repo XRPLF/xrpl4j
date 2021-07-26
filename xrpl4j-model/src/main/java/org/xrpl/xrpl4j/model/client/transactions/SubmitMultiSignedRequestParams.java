@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 /**
@@ -15,6 +16,11 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 @JsonDeserialize(as = ImmutableSubmitMultiSignedRequestParams.class)
 public interface SubmitMultiSignedRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSubmitMultiSignedRequestParams.Builder}.
+   */
   static ImmutableSubmitMultiSignedRequestParams.Builder builder() {
     return ImmutableSubmitMultiSignedRequestParams.builder();
   }

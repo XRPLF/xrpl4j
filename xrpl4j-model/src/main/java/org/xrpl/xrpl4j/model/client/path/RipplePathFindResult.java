@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.List;
@@ -17,6 +18,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableRipplePathFindResult.class)
 public interface RipplePathFindResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableRipplePathFindResult.Builder}.
+   */
   static ImmutableRipplePathFindResult.Builder builder() {
     return ImmutableRipplePathFindResult.builder();
   }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.UnsignedIntegerStringDeserializer;
 
@@ -21,6 +22,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableFeeResult.class)
 public interface FeeResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableFeeResult.Builder}.
+   */
   static ImmutableFeeResult.Builder builder() {
     return ImmutableFeeResult.builder();
   }

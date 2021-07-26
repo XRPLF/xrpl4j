@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;
@@ -20,9 +21,9 @@ import java.util.Optional;
 public interface PaymentChannelCreate extends Transaction {
 
   /**
-   * Builder immutable payment channel create . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable payment channel create . builder
+   * @return An {@link ImmutablePaymentChannelCreate.Builder}.
    */
   static ImmutablePaymentChannelCreate.Builder builder() {
     return ImmutablePaymentChannelCreate.builder();

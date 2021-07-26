@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 
@@ -18,6 +19,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutablePathAlternative.class)
 public interface PathAlternative {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePathAlternative.Builder}.
+   */
   static ImmutablePathAlternative.Builder builder() {
     return ImmutablePathAlternative.builder();
   }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
@@ -21,9 +22,9 @@ import java.util.Optional;
 public interface CheckCreate extends Transaction {
 
   /**
-   * Builder immutable check create . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable check create . builder
+   * @return An {@link ImmutableCheckCreate.Builder}.
    */
   static ImmutableCheckCreate.Builder builder() {
     return ImmutableCheckCreate.builder();

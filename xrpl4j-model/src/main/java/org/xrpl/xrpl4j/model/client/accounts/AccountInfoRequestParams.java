@@ -19,6 +19,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountInfoRequestParams.class)
 public interface AccountInfoRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountInfoRequestParams.Builder}.
+   */
   static ImmutableAccountInfoRequestParams.Builder builder() {
     return ImmutableAccountInfoRequestParams.builder();
   }

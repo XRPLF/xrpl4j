@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;
@@ -17,6 +18,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableTrustSet.class)
 public interface TrustSet extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTrustSet.Builder}.
+   */
   static ImmutableTrustSet.Builder builder() {
     return ImmutableTrustSet.builder();
   }

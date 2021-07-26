@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentChannelClaimFlags;
 
@@ -42,6 +43,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePaymentChannelClaim.class)
 public interface PaymentChannelClaim extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePaymentChannelClaim.Builder}.
+   */
   static ImmutablePaymentChannelClaim.Builder builder() {
     return ImmutablePaymentChannelClaim.builder();
   }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 
@@ -20,9 +21,9 @@ import java.util.List;
 public interface SignerListSet extends Transaction {
 
   /**
-   * Builder immutable signer list set . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable signer list set . builder
+   * @return An {@link ImmutableSignerListSet.Builder}.
    */
   static ImmutableSignerListSet.Builder builder() {
     return ImmutableSignerListSet.builder();

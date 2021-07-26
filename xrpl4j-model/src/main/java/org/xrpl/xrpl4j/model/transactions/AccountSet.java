@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
@@ -22,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountSet.class)
 public interface AccountSet extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountSet.Builder}.
+   */
   static ImmutableAccountSet.Builder builder() {
     return ImmutableAccountSet.builder();
   }

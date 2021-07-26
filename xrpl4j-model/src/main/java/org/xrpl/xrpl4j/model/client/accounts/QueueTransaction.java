@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @JsonDeserialize(as = ImmutableQueueTransaction.class)
 public interface QueueTransaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableQueueTransaction.Builder}.
+   */
   static ImmutableQueueTransaction.Builder builder() {
     return ImmutableQueueTransaction.builder();
   }

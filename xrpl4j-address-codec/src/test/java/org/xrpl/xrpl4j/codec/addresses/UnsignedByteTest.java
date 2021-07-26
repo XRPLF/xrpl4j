@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 

@@ -1,11 +1,14 @@
 package org.xrpl.xrpl4j.model.flags;
 
+import org.junit.jupiter.params.provider.Arguments;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class AbstractFlagsTest {
 
-  protected static List<Object[]> getBooleanCombinations(int flagCount) {
+  protected static Stream<Arguments> getBooleanCombinations(int flagCount) {
     // Every combination of 4 booleans
     List<Object[]> params = new ArrayList<>();
     for (int i = 0; i < Math.pow(2, flagCount); i++) {
@@ -23,6 +26,6 @@ public class AbstractFlagsTest {
       params.add(booleans);
     }
 
-    return params;
+    return params.stream().map(Arguments::of);
   }
 }

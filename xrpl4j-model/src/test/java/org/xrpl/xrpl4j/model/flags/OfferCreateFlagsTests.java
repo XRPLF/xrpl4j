@@ -2,59 +2,28 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
 public class OfferCreateFlagsTests extends AbstractFlagsTest {
 
-  boolean tfFullyCanonicalSig;
-  boolean tfPassive;
-  boolean tfImmediateOrCancel;
-  boolean tfFillOrKill;
-  boolean tfSell;
-
-  long expectedFlags;
-
-  /**
-   * Required-args constructor.
-   *
-   * @param tfFullyCanonicalSig The current value of {@link this.tfFullyCanonicalSig}.
-   * @param tfPassive           The current value of {@link this.tfPassive}.
-   * @param tfImmediateOrCancel The current value of {@link this.tfImmediateOrCancel}.
-   * @param tfFillOrKill        The current value of {@link this.tfFillOrKill}.
-   * @param tfSell              The current value of {@link this.tfSell}.
-   */
-  public OfferCreateFlagsTests(
-      boolean tfFullyCanonicalSig,
-      boolean tfPassive,
-      boolean tfImmediateOrCancel,
-      boolean tfFillOrKill,
-      boolean tfSell
-  ) {
-    this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-    this.tfPassive = tfPassive;
-    this.tfImmediateOrCancel = tfImmediateOrCancel;
-    this.tfFillOrKill = tfFillOrKill;
-    this.tfSell = tfSell;
-
-    expectedFlags = (tfFullyCanonicalSig ? Flags.OfferCreateFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-        (tfPassive ? Flags.OfferCreateFlags.PASSIVE.getValue() : 0L) |
-        (tfImmediateOrCancel ? Flags.OfferCreateFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
-        (tfFillOrKill ? Flags.OfferCreateFlags.FILL_OR_KILL.getValue() : 0L) |
-        (tfSell ? Flags.OfferCreateFlags.SELL.getValue() : 0L);
-  }
-
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
+  public static Stream<Arguments> data() {
     return getBooleanCombinations(5);
   }
 
-  @Test
-  public void testFlagsConstructionWithIndividualFlags() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testFlagsConstructionWithIndividualFlags(
+    boolean tfFullyCanonicalSig,
+    boolean tfPassive,
+    boolean tfImmediateOrCancel,
+    boolean tfFillOrKill,
+    boolean tfSell
+  ) {
     Flags.OfferCreateFlags flags = Flags.OfferCreateFlags.builder()
         .tfFullyCanonicalSig(tfFullyCanonicalSig)
         .tfPassive(tfPassive)
@@ -63,11 +32,20 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
         .tfSell(tfSell)
         .build();
 
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
+    assertThat(flags.getValue())
+      .isEqualTo(getExpectedFlags(tfFullyCanonicalSig, tfPassive, tfImmediateOrCancel, tfFillOrKill, tfSell));
   }
 
-  @Test
-  public void testDeriveIndividualFlagsFromFlags() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDeriveIndividualFlagsFromFlags(
+    boolean tfFullyCanonicalSig,
+    boolean tfPassive,
+    boolean tfImmediateOrCancel,
+    boolean tfFillOrKill,
+    boolean tfSell
+  ) {
+    long expectedFlags = getExpectedFlags(tfFullyCanonicalSig, tfPassive, tfImmediateOrCancel, tfFillOrKill, tfSell);
     Flags.OfferCreateFlags flags = Flags.OfferCreateFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -76,5 +54,19 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfImmediateOrCancel()).isEqualTo(tfImmediateOrCancel);
     assertThat(flags.tfFillOrKill()).isEqualTo(tfFillOrKill);
     assertThat(flags.tfSell()).isEqualTo(tfSell);
+  }
+
+  private long getExpectedFlags(
+    boolean tfFullyCanonicalSig,
+    boolean tfPassive,
+    boolean tfImmediateOrCancel,
+    boolean tfFillOrKill,
+    boolean tfSell
+  ) {
+    return (tfFullyCanonicalSig ? Flags.OfferCreateFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+      (tfPassive ? Flags.OfferCreateFlags.PASSIVE.getValue() : 0L) |
+      (tfImmediateOrCancel ? Flags.OfferCreateFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
+      (tfFillOrKill ? Flags.OfferCreateFlags.FILL_OR_KILL.getValue() : 0L) |
+      (tfSell ? Flags.OfferCreateFlags.SELL.getValue() : 0L);
   }
 }

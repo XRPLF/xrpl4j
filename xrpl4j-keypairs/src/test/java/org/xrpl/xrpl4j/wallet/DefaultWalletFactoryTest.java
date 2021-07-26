@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.wallet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.transactions.XAddress;
 
 @SuppressWarnings("LocalVariableName")

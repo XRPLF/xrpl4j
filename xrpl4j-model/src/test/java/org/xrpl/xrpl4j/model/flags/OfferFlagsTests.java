@@ -2,44 +2,27 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
 public class OfferFlagsTests extends AbstractFlagsTest {
 
-  boolean lsfPassive;
-  boolean lsfSell;
-
-  long expectedFlags;
-
-  /**
-   * Required-args constructor.
-   *
-   * @param lsfPassive The current value of {@link this.lsfPassive}.
-   * @param lsfSell    The current value of {@link this.lsfSell}.
-   */
-  public OfferFlagsTests(
-      boolean lsfPassive,
-      boolean lsfSell
-  ) {
-    this.lsfPassive = lsfPassive;
-    this.lsfSell = lsfSell;
-
-    expectedFlags = (lsfPassive ? Flags.OfferFlags.PASSIVE.getValue() : 0L) |
-        (lsfSell ? Flags.OfferFlags.SELL.getValue() : 0L);
-  }
-
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
+  public static Stream<Arguments> data() {
     return getBooleanCombinations(2);
   }
 
-  @Test
-  public void testDeriveIndividualFlagsFromFlags() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDeriveIndividualFlagsFromFlags(
+    boolean lsfPassive,
+    boolean lsfSell
+  ) {
+    long expectedFlags = (lsfPassive ? Flags.OfferFlags.PASSIVE.getValue() : 0L) |
+      (lsfSell ? Flags.OfferFlags.SELL.getValue() : 0L);
+
     Flags.OfferFlags flags = Flags.OfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);

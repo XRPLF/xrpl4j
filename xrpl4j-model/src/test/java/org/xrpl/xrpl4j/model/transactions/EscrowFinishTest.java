@@ -1,22 +1,18 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.transactions.ImmutableEscrowFinish.Builder;
 
 /**
  * Unit tests for {@link EscrowFinish}.
  */
 public class EscrowFinishTest {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void testNormalizeWithNoFulfillmentNoCondition() {
@@ -39,40 +35,38 @@ public class EscrowFinishTest {
 
   @Test
   public void testNormalizeWithFulfillmentNoCondition() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException
-        .expectMessage("If a fulfillment is specified, the corresponding condition must also be specified.");
-
     Fulfillment fulfillment = PreimageSha256Fulfillment.from("ssh".getBytes());
 
-    EscrowFinish.builder()
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowFinish.builder()
         .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("account"))
         .sequence(UnsignedInteger.ONE)
         .owner(Address.of("owner"))
         .offerSequence(UnsignedInteger.ZERO)
         .fulfillment(fulfillment)
-        .build();
-
+        .build(),
+      "If a fulfillment is specified, the corresponding condition must also be specified."
+    );
   }
 
   @Test
   public void testNormalizeWithNoFulfillmentAndCondition() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException
-        .expectMessage("If a condition is specified, the corresponding fulfillment must also be specified.");
-
     Fulfillment fulfillment = PreimageSha256Fulfillment.from("ssh".getBytes());
 
-    EscrowFinish.builder()
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowFinish.builder()
         .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("account"))
         .sequence(UnsignedInteger.ONE)
         .owner(Address.of("owner"))
         .offerSequence(UnsignedInteger.ZERO)
         .condition(fulfillment.getDerivedCondition())
-        .build();
-
+        .build(),
+      "If a condition is specified, the corresponding fulfillment must also be specified."
+    );
   }
 
   @Test
@@ -104,11 +98,11 @@ public class EscrowFinishTest {
 
   @Test
   public void testNormalizeWithFeeTooLow() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("If a fulfillment is specified, the fee must be set to 330 or greater.");
-
     Fulfillment fulfillment = PreimageSha256Fulfillment.from("ssh".getBytes());
-    EscrowFinish.builder()
+
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowFinish.builder()
         .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("account"))
         .sequence(UnsignedInteger.ONE)
@@ -116,7 +110,9 @@ public class EscrowFinishTest {
         .offerSequence(UnsignedInteger.ZERO)
         .fulfillment(fulfillment)
         .condition(fulfillment.getDerivedCondition())
-        .build();
+        .build(),
+      "If a fulfillment is specified, the fee must be set to 330 or greater."
+    );
   }
 
   @Test

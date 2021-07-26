@@ -1,8 +1,9 @@
 package org.xrpl.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 
@@ -28,9 +29,12 @@ public class ByteUtilsTest {
     ByteUtils.checkSize(4, BigInteger.valueOf(15));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void checkSizeExceedMaxValue() {
-    ByteUtils.checkSize(4, BigInteger.valueOf(17));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> ByteUtils.checkSize(4, BigInteger.valueOf(17))
+    );
   }
 
   @Test

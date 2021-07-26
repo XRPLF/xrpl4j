@@ -2,31 +2,23 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
 public class SignerListObjectFlagsTests extends AbstractFlagsTest {
 
-  boolean lsfOneOwnerCount;
-
-  long expectedFlags;
-
-  public SignerListObjectFlagsTests(boolean lsfOneOwnerCount) {
-    this.lsfOneOwnerCount = lsfOneOwnerCount;
-    this.expectedFlags = lsfOneOwnerCount ? Flags.SignerListFlags.ONE_OWNER_COUNT.getValue() : 0L;
-  }
-
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
+  public static Stream<Arguments> data() {
     return getBooleanCombinations(1);
   }
 
-  @Test
-  public void testDeriveIndividualFlagsFromFlags() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDeriveIndividualFlagsFromFlags(boolean lsfOneOwnerCount) {
+    long expectedFlags = lsfOneOwnerCount ? Flags.SignerListFlags.ONE_OWNER_COUNT.getValue() : 0L;
     Flags.SignerListFlags flags = Flags.SignerListFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);

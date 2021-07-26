@@ -3,15 +3,15 @@ package org.xrpl.xrpl4j.keypairs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.io.BaseEncoding;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 public class Ed25519KeyPairServiceTest {
 
   private Ed25519KeyPairService keyPairService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     keyPairService = Ed25519KeyPairService.getInstance();
   }

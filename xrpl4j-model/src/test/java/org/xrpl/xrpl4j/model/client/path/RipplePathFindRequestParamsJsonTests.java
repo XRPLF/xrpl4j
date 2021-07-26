@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.model.client.path;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;

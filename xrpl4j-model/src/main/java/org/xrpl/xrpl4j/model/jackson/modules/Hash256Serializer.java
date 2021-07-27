@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class Hash256Serializer extends StdScalarSerializer<Hash256> {
 
+  /**
+   * No-args constructor.
+   */
   public Hash256Serializer() {
     super(Hash256.class, false);
   }

@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class XrpCurrencyAmountDeserializer extends StdDeserializer<XrpCurrencyAmount> {
 
+  /**
+   * No-args constructor.
+   */
   public XrpCurrencyAmountDeserializer() {
     super(XrpCurrencyAmount.class);
   }

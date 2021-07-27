@@ -17,6 +17,9 @@ import java.io.IOException;
  */
 public class TransactionDeserializer extends StdDeserializer<Transaction> {
 
+  /**
+   * No-args constructor.
+   */
   protected TransactionDeserializer() {
     super(Transaction.class);
   }

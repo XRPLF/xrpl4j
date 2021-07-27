@@ -26,6 +26,9 @@ import java.util.Optional;
  */
 public class TransactionResultDeserializer<T extends Transaction> extends StdDeserializer<TransactionResult<T>> {
 
+  /**
+   * No-args constructor.
+   */
   protected TransactionResultDeserializer() {
     super(TransactionResult.class);
   }

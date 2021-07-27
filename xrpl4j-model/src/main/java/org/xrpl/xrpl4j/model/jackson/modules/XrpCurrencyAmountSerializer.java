@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class XrpCurrencyAmountSerializer extends StdScalarSerializer<XrpCurrencyAmount> {
 
+  /**
+   * No-args constructor.
+   */
   public XrpCurrencyAmountSerializer() {
     super(XrpCurrencyAmount.class, false);
   }

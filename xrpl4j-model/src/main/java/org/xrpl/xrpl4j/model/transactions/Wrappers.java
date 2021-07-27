@@ -67,6 +67,9 @@ public class Wrappers {
       return this.value();
     }
 
+    /**
+     * Validates that a {@link Hash256}'s value's length is equal to 64 characters.
+     */
     @Value.Check
     public void validateLength() {
       Preconditions.checkArgument(this.value().length() == 64, "Hash256 Strings must be 64 characters long.");
@@ -188,6 +191,9 @@ public class Wrappers {
       return this.value().toString();
     }
 
+    /**
+     * Validates that this {@link XrpCurrencyAmount} does not exceed the maximum number of drops.
+     */
     @Value.Check
     protected void check() {
       Preconditions.checkState(

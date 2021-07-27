@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class Hash256Deserializer extends StdDeserializer<Hash256> {
 
+  /**
+   * No-args constructor.
+   */
   public Hash256Deserializer() {
     super(Hash256.class);
   }

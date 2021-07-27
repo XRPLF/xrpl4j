@@ -256,6 +256,11 @@ public interface AccountSet extends Transaction {
       throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
     }
 
+    /**
+     * Get the underlying value of this {@link AccountSetFlag}.
+     *
+     * @return The underlying {@code int} value of this {@link AccountSetFlag}.
+     */
     @JsonValue
     public int getValue() {
       return value;

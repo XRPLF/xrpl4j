@@ -23,9 +23,17 @@ import java.util.Optional;
  */
 public interface Transaction {
 
-  // XRP Ledger represents dates using a custom epoch called Ripple Epoch
+  /**
+   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
+   * the start of that epoch.
+   */
   long RIPPLE_EPOCH = 946684800;
 
+  /**
+   * A bi-directional map of immutable transaction types to their corresponding {@link TransactionType}.
+   *
+   * <p>This is useful for polymorphic Jackson deserialization.
+   */
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
       new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
           .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)

@@ -12,11 +12,27 @@ import java.util.Objects;
 public class LedgerIndex {
 
   /**
-   * Constant shortcut values for specifying a ledger index.
+   * Constant shortcut value to request a rippled server's current working version of the ledger.
+   *
+   * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
    */
   public static final LedgerIndex CURRENT = LedgerIndex.of("current");
+
+  /**
+   * Constant shortcut value to request the most recent ledger that has been validated by consensus.
+   *
+   * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
+   */
   public static final LedgerIndex VALIDATED = LedgerIndex.of("validated");
+
+  /**
+   * Constant shortcut value to request a the most recent ledger that has been closed for modifications
+   * and proposed for validation.
+   *
+   * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
+   */
   public static final LedgerIndex CLOSED = LedgerIndex.of("closed");
+
   private final String value;
 
   /**
@@ -26,7 +42,7 @@ public class LedgerIndex {
    *
    * @deprecated Does not check if the given value is a valid index.
    *    This constructor should be made private in the future.
-   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)} 
+   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)}
    *    factory methods should be used to construct {@link LedgerIndex} objects.
    */
   @Deprecated
@@ -70,6 +86,11 @@ public class LedgerIndex {
     return new LedgerIndex(value.toString());
   }
 
+  /**
+   * Get the value of this {@link LedgerIndex} as a {@link String}.
+   *
+   * @return The underlying {@code value} of this {@link LedgerIndex}.
+   */
   public String value() {
     return value;
   }
@@ -105,6 +126,13 @@ public class LedgerIndex {
     return plus(other.unsignedLongValue());
   }
 
+  /**
+   * Checks to see if a given value is a valid ledger index shortcut.
+   *
+   * @param value A {@link String} containing the value to check.
+   *
+   * @return {@code true} if the value is a valid ledger index shortcut, otherwise {@code false}.
+   */
   public static boolean isValidShortcut(String value) {
     if (value.equals("current")) return true;
     if (value.equals("validated")) return true;

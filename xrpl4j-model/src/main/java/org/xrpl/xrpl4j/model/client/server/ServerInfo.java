@@ -31,6 +31,9 @@ import java.util.stream.Stream;
 @JsonDeserialize(as = ImmutableServerInfo.class)
 public interface ServerInfo {
 
+  /**
+   * Logger for this {@link ServerInfo}.
+   */
   Logger LOGGER = LoggerFactory.getLogger(ServerInfo.class);
 
   /**

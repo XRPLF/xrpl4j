@@ -19,6 +19,9 @@ import java.io.IOException;
  */
 public class MarkerDeserializer extends StdDeserializer<Marker> {
 
+  /**
+   * No-args constructor.
+   */
   protected MarkerDeserializer() {
     super(Marker.class);
   }

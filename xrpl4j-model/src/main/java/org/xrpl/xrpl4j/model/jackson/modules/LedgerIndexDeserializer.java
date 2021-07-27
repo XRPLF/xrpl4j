@@ -13,6 +13,9 @@ import java.io.IOException;
  */
 public class LedgerIndexDeserializer extends StdDeserializer<LedgerIndex> {
 
+  /**
+   * No-args constructor.
+   */
   protected LedgerIndexDeserializer() {
     super(LedgerIndex.class);
   }

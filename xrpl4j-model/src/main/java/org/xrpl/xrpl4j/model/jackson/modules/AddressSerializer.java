@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class AddressSerializer extends StdScalarSerializer<Address> {
 
+  /**
+   * No-args constructor.
+   */
   public AddressSerializer() {
     super(Address.class, false);
   }

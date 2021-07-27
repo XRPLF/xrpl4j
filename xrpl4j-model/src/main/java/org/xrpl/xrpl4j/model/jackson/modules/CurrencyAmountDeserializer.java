@@ -16,6 +16,9 @@ import java.io.IOException;
  */
 public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> {
 
+  /**
+   * No-args constructor.
+   */
   protected CurrencyAmountDeserializer() {
     super(CurrencyAmount.class);
   }

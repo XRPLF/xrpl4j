@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions.json;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
@@ -8,9 +10,7 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.json.JSONException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
@@ -19,9 +19,6 @@ import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class EscrowJsonTests extends AbstractJsonTest {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void testEscrowCreateJson() throws JsonProcessingException, JSONException, DerEncodingException {
@@ -112,11 +109,9 @@ public class EscrowJsonTests extends AbstractJsonTest {
 
   @Test
   public void testEscrowFinishJsonWithFeeTooLow() {
-
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("If a fulfillment is specified, the fee must be set to 330 or greater.");
-
-    EscrowFinish.builder()
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowFinish.builder()
         .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .fee(XrpCurrencyAmount.ofDrops(3))
         .sequence(UnsignedInteger.ONE)
@@ -124,6 +119,8 @@ public class EscrowJsonTests extends AbstractJsonTest {
         .offerSequence(UnsignedInteger.valueOf(7))
         .condition(PreimageSha256Fulfillment.from(new byte[48]).getDerivedCondition())
         .fulfillment(PreimageSha256Fulfillment.from(new byte[60]))
-        .build();
+        .build(),
+      "If a fulfillment is specified, the fee must be set to 330 or greater."
+    );
   }
 }

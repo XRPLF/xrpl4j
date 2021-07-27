@@ -56,7 +56,7 @@ public interface AccountOffersRequestParams extends XrplRequestParams {
    * Always true, as {@link #account()} is always an {@link Address}.
    *
    * @return {@code true} if the account field only accepts a public key or XRP Ledger address, otherwise {@code false}.
-   * Defaults to {@code true}.
+   *   Defaults to {@code true}.
    */
   @Value.Derived
   default boolean strict() {

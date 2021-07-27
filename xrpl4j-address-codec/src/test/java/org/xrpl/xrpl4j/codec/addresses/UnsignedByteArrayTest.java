@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray.of;
 
 import com.google.common.io.BaseEncoding;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class UnsignedByteArrayTest {

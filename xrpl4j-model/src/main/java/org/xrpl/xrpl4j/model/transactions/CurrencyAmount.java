@@ -43,7 +43,6 @@ public interface CurrencyAmount {
    * @param issuedCurrencyAmountMapper A {@link Function} that is called if this instance is  of type {@link
    *                                   IssuedCurrencyAmount}.
    * @param <R>                        The type of object to return after mapping.
-   *
    * @return A {@link R} that is constructed by the appropriate mapper function.
    */
   default <R> R map(

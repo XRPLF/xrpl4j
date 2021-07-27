@@ -13,7 +13,6 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 
 /**
  * The result of an account_channels rippled call.
@@ -63,7 +62,7 @@ public interface AccountChannelsResult extends XrplResult {
    * Otherwise, the information is subject to change.
    *
    * @return {@code true} if the information in this response comes from a validated ledger version, {@code false}
-   *     if not.
+   * if not.
    */
   @Value.Default
   default boolean validated() {

@@ -114,9 +114,11 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                    \"Flags\": 2147483648,\n" +
       "                    \"LastLedgerSequence\": 57112037,\n" +
       "                    \"Sequence\": 702819,\n" +
-      "                    \"SigningPubKey\": \"020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A\",\n" +
+      "                    \"SigningPubKey\": " +
+      "\"020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A\",\n" +
       "                    \"TransactionType\": \"Payment\",\n" +
-      "                    \"TxnSignature\": \"30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB79C2C8431722C0ADB911022024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576\",\n" +
+      "                    \"TxnSignature\": \"30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB" +
+      "79C2C8431722C0ADB911022024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576\",\n" +
       "                    \"date\": 649200322,\n" +
       "                    \"hash\": \"08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C\",\n" +
       "                    \"ledger_index\": 57112015\n" +
@@ -138,9 +140,11 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                    \"Flags\": 2147483648,\n" +
       "                    \"LastLedgerSequence\": 57112032,\n" +
       "                    \"Sequence\": 466334,\n" +
-      "                    \"SigningPubKey\": \"0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01\",\n" +
+      "                    \"SigningPubKey\": " +
+      "\"0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01\",\n" +
       "                    \"TransactionType\": \"Payment\",\n" +
-      "                    \"TxnSignature\": \"3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB48AB99AEA960BFA360AE163ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7\",\n" +
+      "                    \"TxnSignature\": \"3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB4" +
+      "8AB99AEA960BFA360AE163ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7\",\n" +
       "                    \"date\": 649200302,\n" +
       "                    \"hash\": \"7C031FD5B710E3C048EEF31254089BEEC505900BCC9A842257A0319453333998\",\n" +
       "                    \"ledger_index\": 57112010\n" +

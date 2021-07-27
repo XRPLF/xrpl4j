@@ -19,6 +19,7 @@ import java.util.Locale;
 /**
  * Wrapped immutable classes for providing type-safe objects.
  */
+@SuppressWarnings("TypeName")
 public class Wrappers {
 
   /**

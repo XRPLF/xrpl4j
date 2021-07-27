@@ -106,6 +106,7 @@ public class LinuxSecureRandom extends SecureRandomSpi {
   }
 
   @Override
+  @SuppressWarnings("ParameterName")
   protected byte[] engineGenerateSeed(int i) {
     byte[] bits = new byte[i];
     engineNextBytes(bits);

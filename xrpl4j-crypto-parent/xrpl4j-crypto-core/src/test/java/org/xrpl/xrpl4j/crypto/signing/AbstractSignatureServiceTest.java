@@ -73,7 +73,11 @@ public class AbstractSignatureServiceTest {
     signerAddress = Address.of("");
     when(keyPairServiceMock.deriveAddress(publicKeyMock.value())).thenReturn(signerAddress);
 
-    this.signatureService = new AbstractSignatureService(KeyStoreType.DERIVED_SERVER_SECRET, signatureUtilsMock, keyPairServiceMock) {
+    this.signatureService = new AbstractSignatureService(
+      KeyStoreType.DERIVED_SERVER_SECRET,
+      signatureUtilsMock,
+      keyPairServiceMock
+    ) {
       @Override
       public PublicKey getPublicKey(KeyMetadata keyMetadata) {
         return publicKeyMock;
@@ -159,7 +163,11 @@ public class AbstractSignatureServiceTest {
   void signWithSingleBehaviorEd25519() {
     when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
 
-    final Signature signature = signatureService.signWithBehavior(keyMetadataMock, transactionMock, SigningBehavior.SINGLE);
+    final Signature signature = signatureService.signWithBehavior(
+      keyMetadataMock,
+      transactionMock,
+      SigningBehavior.SINGLE
+    );
     assertThat(signature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(transactionMock, signerAddress.value());
@@ -171,7 +179,11 @@ public class AbstractSignatureServiceTest {
   void signWithSingleBehaviorSecp256k1() {
     when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
 
-    final Signature signature = signatureService.signWithBehavior(keyMetadataMock, transactionMock, SigningBehavior.SINGLE);
+    final Signature signature = signatureService.signWithBehavior(
+      keyMetadataMock,
+      transactionMock,
+      SigningBehavior.SINGLE
+    );
     assertThat(signature).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(transactionMock, signerAddress.value());
@@ -183,7 +195,11 @@ public class AbstractSignatureServiceTest {
   void signWithMultiBehaviorEd25519() {
     when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
 
-    final Signature signature = signatureService.signWithBehavior(keyMetadataMock, transactionMock, SigningBehavior.MULTI);
+    final Signature signature = signatureService.signWithBehavior(
+      keyMetadataMock,
+      transactionMock,
+      SigningBehavior.MULTI
+    );
     assertThat(signature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, signerAddress.value());
@@ -195,7 +211,11 @@ public class AbstractSignatureServiceTest {
   void signWithMultiBehaviorSecp256k1() {
     when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
 
-    final Signature signature = signatureService.signWithBehavior(keyMetadataMock, transactionMock, SigningBehavior.MULTI);
+    final Signature signature = signatureService.signWithBehavior(
+      keyMetadataMock,
+      transactionMock,
+      SigningBehavior.MULTI
+    );
     assertThat(signature).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, signerAddress.value());

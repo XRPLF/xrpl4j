@@ -33,69 +33,71 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
-        .account(receiverWallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(receiverAccountInfo.accountData().sequence())
-        .signingPublicKey(receiverWallet.publicKey())
-        .authorize(senderWallet.classicAddress())
-        .build();
+      .account(receiverWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .signingPublicKey(receiverWallet.publicKey())
+      .authorize(senderWallet.classicAddress())
+      .build();
 
     SubmitResult<DepositPreAuth> result = xrplClient.submit(receiverWallet, depositPreAuth);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
-        result.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      result.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
     // Validate that the DepositPreAuthObject was added to the receiver's account objects
     this.scanForResult(
-        () -> this.getValidatedAccountObjects(receiverWallet.classicAddress()),
-        accountObjects ->
-            accountObjects.accountObjects().stream().anyMatch(object ->
-                DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-                    ((DepositPreAuthObject) object).authorize().equals(senderWallet.classicAddress())
-            )
+      () -> this.getValidatedAccountObjects(receiverWallet.classicAddress()),
+      accountObjects ->
+        accountObjects.accountObjects().stream().anyMatch(object ->
+          DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+            ((DepositPreAuthObject) object).authorize().equals(senderWallet.classicAddress())
+        )
     );
 
     /////////////////////////
     // Send a Payment from the sender wallet to the receiver wallet
-    AccountInfoResult senderAccountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
+    );
     Payment payment = Payment.builder()
-        .account(senderWallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(senderAccountInfo.accountData().sequence())
-        .signingPublicKey(senderWallet.publicKey())
-        .amount(XrpCurrencyAmount.ofDrops(12345))
-        .destination(receiverWallet.classicAddress())
-        .build();
+      .account(senderWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .signingPublicKey(senderWallet.publicKey())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(receiverWallet.classicAddress())
+      .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
-        paymentResult.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      paymentResult.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
     // Validate that the Payment was included in a validated ledger
     TransactionResult<Payment> validatedPayment = this.scanForResult(
-        () -> this.getValidatedTransaction(
-            paymentResult.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-            Payment.class)
+      () -> this.getValidatedTransaction(
+        paymentResult.transactionResult().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        Payment.class)
     );
 
     /////////////////////////
     // And validate that the receiver's balance was updated correctly
     this.scanForResult(
-        () -> this.getValidatedAccountInfo(receiverWallet.classicAddress()),
-        info -> {
-          XrpCurrencyAmount expectedBalance = receiverAccountInfo.accountData().balance()
-              .minus(depositPreAuth.fee())
-              .plus(((XrpCurrencyAmount) validatedPayment.transaction().amount()));
-          return info.accountData().balance().equals(expectedBalance);
-        });
+      () -> this.getValidatedAccountInfo(receiverWallet.classicAddress()),
+      info -> {
+        XrpCurrencyAmount expectedBalance = receiverAccountInfo.accountData().balance()
+          .minus(depositPreAuth.fee())
+          .plus(((XrpCurrencyAmount) validatedPayment.transaction().amount()));
+        return info.accountData().balance().equals(expectedBalance);
+      });
   }
 
   @Test
@@ -113,24 +115,26 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Validate that the receiver has not given authorization to anyone to send them Payments
     AccountObjectsResult receiverObjects = this.scanForResult(
-        () -> this.getValidatedAccountObjects(receiverWallet.classicAddress()));
+      () -> this.getValidatedAccountObjects(receiverWallet.classicAddress()));
     assertThat(receiverObjects.accountObjects().stream()
-        .anyMatch(ledgerObject ->
-            DepositPreAuthObject.class.isAssignableFrom(ledgerObject.getClass())
-        )
+      .anyMatch(ledgerObject ->
+        DepositPreAuthObject.class.isAssignableFrom(ledgerObject.getClass())
+      )
     ).isFalse();
 
     /////////////////////////
     // Try to send a Payment from sender wallet to receiver wallet
-    AccountInfoResult senderAccountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
+    );
     Payment payment = Payment.builder()
-        .account(senderWallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(senderAccountInfo.accountData().sequence())
-        .signingPublicKey(senderWallet.publicKey())
-        .amount(XrpCurrencyAmount.ofDrops(12345))
-        .destination(receiverWallet.classicAddress())
-        .build();
+      .account(senderWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .signingPublicKey(senderWallet.publicKey())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(receiverWallet.classicAddress())
+      .build();
 
     /////////////////////////
     // And validate that the transaction failed with a tecNO_PERMISSION error code
@@ -147,25 +151,29 @@ public class DepositPreAuthIT extends AbstractIT {
    * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */
-  private AccountInfoResult enableDepositPreauth(Wallet wallet, XrpCurrencyAmount fee) throws JsonRpcClientErrorException {
-    AccountInfoResult accountInfoResult = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
-    ;
+  private AccountInfoResult enableDepositPreauth(
+    Wallet wallet,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException {
+    AccountInfoResult accountInfoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+    );
     AccountSet accountSet = AccountSet.builder()
-        .account(wallet.classicAddress())
-        .fee(fee)
-        .sequence(accountInfoResult.accountData().sequence())
-        .signingPublicKey(wallet.publicKey())
-        .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
-        .build();
+      .account(wallet.classicAddress())
+      .fee(fee)
+      .sequence(accountInfoResult.accountData().sequence())
+      .signingPublicKey(wallet.publicKey())
+      .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
+      .build();
 
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(wallet, accountSet);
     assertThat(accountSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
-        accountSetResult.transactionResult().transaction().hash()
+      accountSetResult.transactionResult().transaction().hash()
     );
     return this.scanForResult(
-        () -> this.getValidatedAccountInfo(wallet.classicAddress()),
-        accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
+      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
     );
   }
 }

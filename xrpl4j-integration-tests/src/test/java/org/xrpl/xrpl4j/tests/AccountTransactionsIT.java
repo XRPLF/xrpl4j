@@ -35,7 +35,7 @@ public class AccountTransactionsIT {
   @Test
   @Timeout(30)
   public void listTransactionsPagination() throws JsonRpcClientErrorException {
-    int expectedTransactions = 748;
+    final int expectedTransactions = 748;
     // known ledger index range for this account that is known to have exactly 748 transactions
     LedgerIndex minLedger = LedgerIndex.of(UnsignedLong.valueOf(61400000));
     LedgerIndex maxLedger = LedgerIndex.of(UnsignedLong.valueOf(61487000));

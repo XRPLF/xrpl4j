@@ -33,7 +33,7 @@ public interface AccountTransactionsResult extends XrplResult {
   }
 
   /**
-   * Unique Address identifying the related account
+   * Unique Address identifying the related account.
    *
    * @return The {@link Address} of the account.
    */

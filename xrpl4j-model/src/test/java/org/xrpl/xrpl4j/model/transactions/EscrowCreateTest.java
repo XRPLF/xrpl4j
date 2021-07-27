@@ -1,18 +1,16 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link EscrowCreate}.
  */
 public class EscrowCreateTest {
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void testWithNeitherCancelNorFinish() {
@@ -27,12 +25,9 @@ public class EscrowCreateTest {
 
   @Test
   public void testCancelBeforeFinish() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage(
-        "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
-    );
-
-    EscrowCreate.builder()
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowCreate.builder()
         .sequence(UnsignedInteger.ONE)
         .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("account"))
@@ -40,7 +35,9 @@ public class EscrowCreateTest {
         .destination(Address.of("destination"))
         .cancelAfter(UnsignedLong.ONE)
         .finishAfter(UnsignedLong.valueOf(2L))
-        .build();
+        .build(),
+      "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
+    );
   }
 
   @Test
@@ -58,12 +55,9 @@ public class EscrowCreateTest {
 
   @Test
   public void testCancelEqualsFinish() {
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage(
-        "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
-    );
-
-    EscrowCreate.builder()
+    assertThrows(
+      IllegalStateException.class,
+      () -> EscrowCreate.builder()
         .sequence(UnsignedInteger.ONE)
         .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("account"))
@@ -71,7 +65,9 @@ public class EscrowCreateTest {
         .destination(Address.of("destination"))
         .cancelAfter(UnsignedLong.ONE)
         .finishAfter(UnsignedLong.ONE)
-        .build();
+        .build(),
+      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both."
+    );
   }
 
 }

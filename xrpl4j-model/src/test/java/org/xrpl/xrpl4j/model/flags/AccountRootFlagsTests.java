@@ -2,79 +2,40 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
 public class AccountRootFlagsTests extends AbstractFlagsTest {
 
-  boolean lsfDefaultRipple;
-  boolean lsfDepositAuth;
-  boolean lsfDisableMaster;
-  boolean lsfDisallowXrp;
-  boolean lsfGlobalFreeze;
-  boolean lsfNoFreeze;
-  boolean lsfPasswordSpent;
-  boolean lsfRequireAuth;
-  boolean lsfRequireDestTag;
-
-  long expectedFlags;
-
-  /**
-   * Required-arg constructor.
-   *
-   * @param lsfDefaultRipple  The current value of {@link this.lsfDefaultRipple}.
-   * @param lsfDepositAuth    The current value of {@link this.lsfDepositAuth}.
-   * @param lsfDisableMaster  The current value of {@link this.lsfDisableMaster}.
-   * @param lsfDisallowXrp    The current value of {@link this.lsfDisallowXrp}.
-   * @param lsfGlobalFreeze   The current value of {@link this.lsfGlobalFreeze}.
-   * @param lsfNoFreeze       The current value of {@link this.lsfNoFreeze}.
-   * @param lsfPasswordSpent  The current value of {@link this.lsfPasswordSpent}.
-   * @param lsfRequireAuth    The current value of {@link this.lsfRequireAuth}.
-   * @param lsfRequireDestTag The current value of {@link this.lsfRequireDestTag}.
-   */
-  public AccountRootFlagsTests(
-      boolean lsfDefaultRipple,
-      boolean lsfDepositAuth,
-      boolean lsfDisableMaster,
-      boolean lsfDisallowXrp,
-      boolean lsfGlobalFreeze,
-      boolean lsfNoFreeze,
-      boolean lsfPasswordSpent,
-      boolean lsfRequireAuth,
-      boolean lsfRequireDestTag
-  ) {
-    this.lsfDefaultRipple = lsfDefaultRipple;
-    this.lsfDepositAuth = lsfDepositAuth;
-    this.lsfDisableMaster = lsfDisableMaster;
-    this.lsfDisallowXrp = lsfDisallowXrp;
-    this.lsfGlobalFreeze = lsfGlobalFreeze;
-    this.lsfNoFreeze = lsfNoFreeze;
-    this.lsfPasswordSpent = lsfPasswordSpent;
-    this.lsfRequireAuth = lsfRequireAuth;
-    this.lsfRequireDestTag = lsfRequireDestTag;
-
-    expectedFlags = (lsfDefaultRipple ? Flags.AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
-        (lsfDepositAuth ? Flags.AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
-        (lsfDisableMaster ? Flags.AccountRootFlags.DISABLE_MASTER.getValue() : 0L) |
-        (lsfDisallowXrp ? Flags.AccountRootFlags.DISALLOW_XRP.getValue() : 0L) |
-        (lsfGlobalFreeze ? Flags.AccountRootFlags.GLOBAL_FREEZE.getValue() : 0L) |
-        (lsfNoFreeze ? Flags.AccountRootFlags.NO_FREEZE.getValue() : 0L) |
-        (lsfPasswordSpent ? Flags.AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
-        (lsfRequireAuth ? Flags.AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
-        (lsfRequireDestTag ? Flags.AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L);
-  }
-
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
+  public static Stream<Arguments> data() {
     return getBooleanCombinations(9);
   }
 
-  @Test
-  public void testDeriveIndividualFlagsFromFlags() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void testDeriveIndividualFlagsFromFlags(
+    boolean lsfDefaultRipple,
+    boolean lsfDepositAuth,
+    boolean lsfDisableMaster,
+    boolean lsfDisallowXrp,
+    boolean lsfGlobalFreeze,
+    boolean lsfNoFreeze,
+    boolean lsfPasswordSpent,
+    boolean lsfRequireAuth,
+    boolean lsfRequireDestTag
+  ) {
+    long expectedFlags = (lsfDefaultRipple ? Flags.AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
+      (lsfDepositAuth ? Flags.AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
+      (lsfDisableMaster ? Flags.AccountRootFlags.DISABLE_MASTER.getValue() : 0L) |
+      (lsfDisallowXrp ? Flags.AccountRootFlags.DISALLOW_XRP.getValue() : 0L) |
+      (lsfGlobalFreeze ? Flags.AccountRootFlags.GLOBAL_FREEZE.getValue() : 0L) |
+      (lsfNoFreeze ? Flags.AccountRootFlags.NO_FREEZE.getValue() : 0L) |
+      (lsfPasswordSpent ? Flags.AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
+      (lsfRequireAuth ? Flags.AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
+      (lsfRequireDestTag ? Flags.AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L);
     Flags.AccountRootFlags flags = Flags.AccountRootFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);

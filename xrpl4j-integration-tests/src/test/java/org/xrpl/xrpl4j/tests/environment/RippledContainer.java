@@ -152,13 +152,13 @@ public class RippledContainer {
     return new XrplClient(this.getBaseUri());
   }
 
+  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
+    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
+  }
+
   public HttpUrl getBaseUri() {
     assertContainerStarted();
     return getBaseUri(rippledContainer);
-  }
-
-  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
-    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
   }
 
 }

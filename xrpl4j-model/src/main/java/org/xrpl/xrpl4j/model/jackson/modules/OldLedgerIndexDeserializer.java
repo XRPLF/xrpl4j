@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * Custom Jackson deserializer for {@link LedgerIndex}s.
  *
- * FIXME: Remove this class
+ * <p>FIXME: Remove this class
  */
 @Deprecated
 public class OldLedgerIndexDeserializer extends StdDeserializer<LedgerIndex> {

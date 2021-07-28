@@ -16,6 +16,7 @@ import java.io.Serializable;
 @Wrapped
 @JsonSerialize(as = LedgerIndex.class)
 @JsonDeserialize(as = LedgerIndex.class)
+@SuppressWarnings("TypeName")
 public abstract class _LedgerIndex extends Wrapper<UnsignedLong> implements Serializable {
 
   @Override

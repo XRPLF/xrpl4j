@@ -22,6 +22,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountObjectsRequestParams.class)
 public interface AccountObjectsRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountObjectsRequestParams.Builder}.
+   */
   static ImmutableAccountObjectsRequestParams.Builder builder() {
     return ImmutableAccountObjectsRequestParams.builder();
   }
@@ -35,8 +40,8 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    */
   static AccountObjectsRequestParams of(Address classicAddress) {
     return builder()
-        .account(classicAddress)
-        .build();
+      .account(classicAddress)
+      .build();
   }
 
   /**
@@ -58,7 +63,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * account from being deleted. The default is false.
    *
    * @return {@code true} if requesting only ledger objects that would block this account from being deleted, otherwise
-   *     {@code false}.
+   *   {@code false}.
    */
   @JsonProperty("deletion_blockers_only")
   @Value.Default

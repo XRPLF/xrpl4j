@@ -18,6 +18,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutablePathAlternative.class)
 public interface PathAlternative {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePathAlternative.Builder}.
+   */
   static ImmutablePathAlternative.Builder builder() {
     return ImmutablePathAlternative.builder();
   }

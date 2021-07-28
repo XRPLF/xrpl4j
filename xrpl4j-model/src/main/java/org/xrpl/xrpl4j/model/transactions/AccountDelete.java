@@ -20,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountDelete.class)
 public interface AccountDelete extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountDelete.Builder}.
+   */
   static ImmutableAccountDelete.Builder builder() {
     return ImmutableAccountDelete.builder();
   }

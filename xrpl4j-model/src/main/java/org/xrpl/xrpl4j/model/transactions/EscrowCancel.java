@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 @JsonDeserialize(as = ImmutableEscrowCancel.class)
 public interface EscrowCancel extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableEscrowCancel.Builder}.
+   */
   static ImmutableEscrowCancel.Builder builder() {
     return ImmutableEscrowCancel.builder();
   }
@@ -46,7 +51,7 @@ public interface EscrowCancel extends Transaction {
    * The {@link EscrowCreate#sequence()} of the transaction that created the escrow to cancel.
    *
    * @return An {@link UnsignedInteger} representing the sequence of the {@link EscrowCreate} transaction that created
-   *     the escrow.
+   *   the escrow.
    */
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();

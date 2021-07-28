@@ -72,8 +72,8 @@ import org.xrpl.xrpl4j.wallet.Wallet;
  * A client which wraps a rippled network client and is responsible for higher order functionality such as signing and
  * serializing transactions, as well as hiding certain implementation details from the public API such as JSON RPC
  * request object creation.
- * <p>
- * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
+ *
+ * <p>Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
 @Beta
 public class XrplClient {
@@ -256,7 +256,9 @@ public class XrplClient {
    * @return The {@link AccountCurrenciesResult} returned by the account_currencies method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountCurrenciesResult accountCurrencies(AccountCurrenciesRequestParams params) throws JsonRpcClientErrorException {
+  public AccountCurrenciesResult accountCurrencies(
+    AccountCurrenciesRequestParams params
+  ) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_CURRENCIES)
       .addParams(params)
@@ -459,6 +461,15 @@ public class XrplClient {
     return jsonRpcClient.send(request, ChannelVerifyResult.class);
   }
 
+  /**
+   * Sign a {@link Transaction} with the private key from a {@link Wallet}.
+   *
+   * @param wallet              A {@link Wallet} with a private key to sign the transaction with.
+   * @param unsignedTransaction A {@link Transaction} without a signature.
+   * @param <T>                 The actual polymorphic type of {@link Transaction} to sign.
+   *
+   * @return A {@link SignedTransaction}.
+   */
   public <T extends Transaction> SignedTransaction<T> signTransaction(
     Wallet wallet, T unsignedTransaction
   ) {

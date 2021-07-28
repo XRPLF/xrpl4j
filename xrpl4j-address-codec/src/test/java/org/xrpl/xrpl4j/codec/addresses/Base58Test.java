@@ -18,7 +18,7 @@ public class Base58Test {
 
   @Test
   public void testEncodeDecodeString() throws Exception {
-    byte[] decoded = "Hello World" .getBytes();
+    byte[] decoded = "Hello World".getBytes();
     String encoded = "JxErpTiA7PhnBMd";
     assertThat(Base58.encode(decoded)).isEqualTo(encoded);
     assertThat(Base58.decode(encoded)).isEqualTo(decoded);
@@ -50,7 +50,7 @@ public class Base58Test {
 
   @Test
   public void testEncodeDecodeChecked() {
-    byte[] input = "123456789" .getBytes();
+    byte[] input = "123456789".getBytes();
     String encoded = AddressBase58.encodeChecked(input, Lists.newArrayList(Version.ACCOUNT_ID));
     assertThat(encoded).isEqualTo("rnaC7gW34M77Kneb78s");
 

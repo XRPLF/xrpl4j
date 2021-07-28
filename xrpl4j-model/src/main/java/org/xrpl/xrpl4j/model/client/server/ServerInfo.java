@@ -30,8 +30,16 @@ import java.util.stream.Stream;
 @JsonDeserialize(as = ImmutableServerInfo.class)
 public interface ServerInfo {
 
+  /**
+   * Logger for this {@link ServerInfo}.
+   */
   Logger LOGGER = LoggerFactory.getLogger(ServerInfo.class);
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfo.Builder}.
+   */
   static ImmutableServerInfo.Builder builder() {
     return ImmutableServerInfo.builder();
   }
@@ -77,10 +85,10 @@ public interface ServerInfo {
   String completeLedgers();
 
   /**
-   * Transforms {@link completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
+   * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
    *
    * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
-   * rippled node contains in its history.
+   *   rippled node contains in its history.
    */
   @Derived
   @JsonIgnore

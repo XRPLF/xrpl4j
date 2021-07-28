@@ -18,6 +18,11 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 @JsonDeserialize(as = ImmutableTrustLine.class)
 public interface TrustLine {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTrustLine.Builder}.
+   */
   static ImmutableTrustLine.Builder builder() {
     return ImmutableTrustLine.builder();
   }

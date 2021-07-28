@@ -20,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePaymentChannelFund.class)
 public interface PaymentChannelFund extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePaymentChannelFund.Builder}.
+   */
   static ImmutablePaymentChannelFund.Builder builder() {
     return ImmutablePaymentChannelFund.builder();
   }

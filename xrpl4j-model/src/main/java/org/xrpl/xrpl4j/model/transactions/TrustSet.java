@@ -17,6 +17,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableTrustSet.class)
 public interface TrustSet extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTrustSet.Builder}.
+   */
   static ImmutableTrustSet.Builder builder() {
     return ImmutableTrustSet.builder();
   }

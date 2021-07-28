@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 @JsonDeserialize(as = ImmutableSubmitMultiSignedRequestParams.class)
 public interface SubmitMultiSignedRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSubmitMultiSignedRequestParams.Builder}.
+   */
   static ImmutableSubmitMultiSignedRequestParams.Builder builder() {
     return ImmutableSubmitMultiSignedRequestParams.builder();
   }

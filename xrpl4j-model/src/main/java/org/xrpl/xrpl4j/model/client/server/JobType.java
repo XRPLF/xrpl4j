@@ -16,6 +16,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableJobType.class)
 public interface JobType {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableJobType.Builder}.
+   */
   static ImmutableJobType.Builder builder() {
     return ImmutableJobType.builder();
   }

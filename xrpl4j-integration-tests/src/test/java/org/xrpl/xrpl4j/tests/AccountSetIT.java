@@ -42,18 +42,18 @@ public class AccountSetIT extends AbstractIT {
     // Set asfAccountTxnID (no corresponding ledger flag)
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-        .account(wallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(accountInfo.accountData().sequence())
-        .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
-        .signingPublicKey(wallet.publicKey())
-        .build();
+      .account(wallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(accountInfo.accountData().sequence())
+      .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+      .signingPublicKey(wallet.publicKey())
+      .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     logger.info(
-        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
-          response.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        response.transactionResult().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
@@ -91,67 +91,73 @@ public class AccountSetIT extends AbstractIT {
   //////////////////////
 
   private void assertSetFlag(
-      final Wallet wallet, UnsignedInteger sequence, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
+    final Wallet wallet,
+    final UnsignedInteger sequence,
+    final AccountSetFlag accountSetFlag,
+    final AccountRootFlags accountRootFlag
   ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-        .account(wallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(sequence)
-        .setFlag(accountSetFlag)
-        .signingPublicKey(wallet.publicKey())
-        .build();
+      .account(wallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sequence)
+      .setFlag(accountSetFlag)
+      .signingPublicKey(wallet.publicKey())
+      .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
+      accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-        () -> this.getValidatedAccountInfo(wallet.classicAddress()),
-        accountInfoResult -> {
-          logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-          return accountInfoResult.accountData().flags().isSet(accountRootFlag);
-        });
+      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      accountInfoResult -> {
+        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+        return accountInfoResult.accountData().flags().isSet(accountRootFlag);
+      });
   }
 
   private void assertClearFlag(
-      final Wallet wallet, UnsignedInteger sequence, final AccountSetFlag accountSetFlag, final AccountRootFlags accountRootFlag
+    final Wallet wallet,
+    final UnsignedInteger sequence,
+    final AccountSetFlag accountSetFlag,
+    final AccountRootFlags accountRootFlag
   ) throws JsonRpcClientErrorException {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-        .account(wallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(sequence)
-        .clearFlag(accountSetFlag)
-        .signingPublicKey(wallet.publicKey())
-        .build();
+      .account(wallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sequence)
+      .clearFlag(accountSetFlag)
+      .signingPublicKey(wallet.publicKey())
+      .build();
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-        accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
+      accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
+        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-        () -> this.getValidatedAccountInfo(wallet.classicAddress()),
-        accountInfoResult -> {
-          logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
-          return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
-        });
+      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      accountInfoResult -> {
+        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+        return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
+      });
   }
 }

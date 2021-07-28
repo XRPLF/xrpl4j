@@ -48,8 +48,8 @@ public class SignerListSetIT extends AbstractIT {
 
     /////////////////////////////
     // Wait for all of the accounts to show up in a validated ledger
-    AccountInfoResult sourceAccountInfo = scanForResult(
-        () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+    final AccountInfoResult sourceAccountInfo = scanForResult(
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
     scanForResult(() -> this.getValidatedAccountInfo(aliceWallet.classicAddress()));
     scanForResult(() -> this.getValidatedAccountInfo(bobWallet.classicAddress()));
@@ -63,106 +63,106 @@ public class SignerListSetIT extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-        .account(sourceWallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(sourceAccountInfo.accountData().sequence())
-        .signerQuorum(UnsignedInteger.valueOf(2))
-        .addSignerEntries(
-            SignerEntryWrapper.of(
-                SignerEntry.builder()
-                    .account(aliceWallet.classicAddress())
-                    .signerWeight(UnsignedInteger.ONE)
-                    .build()
-            ),
-            SignerEntryWrapper.of(
-                SignerEntry.builder()
-                    .account(bobWallet.classicAddress())
-                    .signerWeight(UnsignedInteger.ONE)
-                    .build()
-            )
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sourceAccountInfo.accountData().sequence())
+      .signerQuorum(UnsignedInteger.valueOf(2))
+      .addSignerEntries(
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(aliceWallet.classicAddress())
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
+        ),
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(bobWallet.classicAddress())
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
         )
-        .signingPublicKey(sourceWallet.publicKey())
-        .build();
+      )
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
 
     /////////////////////////////
     // Validate that the transaction was submitted successfully
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListSetResult.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        signerListSetResult.transactionResult().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     AccountInfoResult sourceAccountInfoAfterSignerListSet = scanForResult(
-        () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
-        infoResult -> infoResult.accountData().signerLists().size() == 1
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
+      infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
     assertThat(
-        sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-            .signerEntries().stream()
-            .sorted(Comparator.comparing(entry -> entry.signerEntry().account()))
-            .collect(Collectors.toList())
-    ).isEqualTo(signerListSet.signerEntries().stream()
+      sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
+        .signerEntries().stream()
         .sorted(Comparator.comparing(entry -> entry.signerEntry().account()))
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList())
+    ).isEqualTo(signerListSet.signerEntries().stream()
+      .sorted(Comparator.comparing(entry -> entry.signerEntry().account()))
+      .collect(Collectors.toList()));
 
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
-        .account(sourceWallet.classicAddress())
-        .fee(
-            Transaction.computeMultiSigFee(
-                feeResult.drops().openLedgerFee(),
-                sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-            )
+      .account(sourceWallet.classicAddress())
+      .fee(
+        Transaction.computeMultiSigFee(
+          feeResult.drops().openLedgerFee(),
+          sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         )
-        .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
-        .amount(XrpCurrencyAmount.ofDrops(12345))
-        .destination(destinationWallet.classicAddress())
-        .signingPublicKey("")
-        .build();
+      )
+      .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(destinationWallet.classicAddress())
+      .signingPublicKey("")
+      .build();
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
     List<SignerWrapper> signers = Lists.newArrayList(aliceWallet, bobWallet).stream()
-        .map(wallet -> {
-              try {
-                String unsignedJson = objectMapper.writeValueAsString(unsignedPayment);
+      .map(wallet -> {
+          try {
+            String unsignedJson = objectMapper.writeValueAsString(unsignedPayment);
 
-                String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, wallet.classicAddress().value());
-                String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-                    .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
-                return SignerWrapper.of(Signer.builder()
-                    .account(wallet.classicAddress())
-                    .signingPublicKey(wallet.publicKey())
-                    .transactionSignature(signature)
-                    .build()
-                );
-              } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-              }
-            }
-        )
-        .collect(Collectors.toList());
+            String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, wallet.classicAddress().value());
+            String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
+              .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
+            return SignerWrapper.of(Signer.builder()
+              .account(wallet.classicAddress())
+              .signingPublicKey(wallet.publicKey())
+              .transactionSignature(signature)
+              .build()
+            );
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      )
+      .collect(Collectors.toList());
 
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
     Payment multiSigPayment = Payment.builder()
-        .from(unsignedPayment)
-        .signers(signers)
-        .build();
+      .from(unsignedPayment)
+      .signers(signers)
+      .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-          paymentResult.transaction().transaction().hash()
-            .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
+        paymentResult.transaction().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
   }
 
@@ -177,7 +177,7 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Wait for all of the accounts to show up in a validated ledger
     AccountInfoResult sourceAccountInfo = scanForResult(
-        () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
     scanForResult(() -> this.getValidatedAccountInfo(aliceWallet.classicAddress()));
     scanForResult(() -> this.getValidatedAccountInfo(bobWallet.classicAddress()));
@@ -190,79 +190,79 @@ public class SignerListSetIT extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-        .account(sourceWallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
-        .sequence(sourceAccountInfo.accountData().sequence())
-        .signerQuorum(UnsignedInteger.valueOf(2))
-        .addSignerEntries(
-            SignerEntryWrapper.of(
-                SignerEntry.builder()
-                    .account(aliceWallet.classicAddress())
-                    .signerWeight(UnsignedInteger.ONE)
-                    .build()
-            ),
-            SignerEntryWrapper.of(
-                SignerEntry.builder()
-                    .account(bobWallet.classicAddress())
-                    .signerWeight(UnsignedInteger.ONE)
-                    .build()
-            )
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sourceAccountInfo.accountData().sequence())
+      .signerQuorum(UnsignedInteger.valueOf(2))
+      .addSignerEntries(
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(aliceWallet.classicAddress())
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
+        ),
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(bobWallet.classicAddress())
+            .signerWeight(UnsignedInteger.ONE)
+            .build()
         )
-        .signingPublicKey(sourceWallet.publicKey())
-        .build();
+      )
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
 
     ////////////////////////////
     // Validate that the transaction was submitted successfully
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListSetResult.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        signerListSetResult.transactionResult().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     AccountInfoResult sourceAccountInfoAfterSignerListSet = scanForResult(
-        () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
-        infoResult -> infoResult.accountData().signerLists().size() == 1
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
+      infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
     assertThat(
-        sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-            .signerEntries().stream()
-            .sorted(Comparator.comparing(entry -> entry.signerEntry().account()))
-            .collect(Collectors.toList())
-    ).isEqualTo(signerListSet.signerEntries().stream()
+      sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
+        .signerEntries().stream()
         .sorted(Comparator.comparing(entry -> entry.signerEntry().account()))
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList())
+    ).isEqualTo(signerListSet.signerEntries().stream()
+      .sorted(Comparator.comparing(entry -> entry.signerEntry().account()))
+      .collect(Collectors.toList()));
 
     /////////////////////////////
     // Construct a SignerListSet transaction with 0 quorum and an empty list of signer entries to
     // delete the signer list
     SignerListSet deleteSignerList = SignerListSet.builder()
-        .from(signerListSet)
-        .signerQuorum(UnsignedInteger.ZERO)
-        .signerEntries(Lists.emptyList())
-        .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
-        .build();
+      .from(signerListSet)
+      .signerQuorum(UnsignedInteger.ZERO)
+      .signerEntries(Lists.emptyList())
+      .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
+      .build();
 
     /////////////////////////////
     // Submit it and validate that it was successful
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(sourceWallet, deleteSignerList);
     assertThat(signerListDeleteResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info(
-        "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-            signerListDeleteResult.transactionResult().transaction().hash()
-              .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        signerListDeleteResult.transactionResult().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
     );
 
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the signer list has been deleted
     scanForResult(
-        () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
-        infoResult -> infoResult.accountData().signerLists().size() == 0
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
+      infoResult -> infoResult.accountData().signerLists().size() == 0
     );
 
   }

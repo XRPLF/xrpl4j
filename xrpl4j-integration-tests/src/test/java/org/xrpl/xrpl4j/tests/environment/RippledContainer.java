@@ -42,25 +42,29 @@ public class RippledContainer {
   private final ScheduledExecutorService ledgerAcceptor;
   private boolean started;
 
+  /**
+   * No-args constructor.
+   */
   public RippledContainer() {
     rippledContainer = new GenericContainer("xrptipbot/rippled:latest")
-        .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-            cmd.withEntrypoint("/opt/ripple/bin/rippled"))
-        .withCommand("-a --start --conf /config/rippled.cfg")
-        .withExposedPorts(5005)
-        .withClasspathResourceMapping("rippled",
-            "/config",
-            BindMode.READ_ONLY)
-        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
+      .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
+        cmd.withEntrypoint("/opt/ripple/bin/rippled"))
+      .withCommand("-a --start --conf /config/rippled.cfg")
+      .withExposedPorts(5005)
+      .withClasspathResourceMapping("rippled",
+        "/config",
+        BindMode.READ_ONLY)
+      .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     ledgerAcceptor = Executors.newScheduledThreadPool(1);
   }
 
+  /**
+   * Get the {@link Wallet} of the master account.
+   *
+   * @return The {@link Wallet} of the master account.
+   */
   public static Wallet getMasterWallet() {
     return DefaultWalletFactory.getInstance().fromSeed(MASTER_WALLET_SEED, false);
-  }
-
-  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
-    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
   }
 
   /**
@@ -89,9 +93,9 @@ public class RippledContainer {
     // advance the ledger using the "ledger_accept" method on the admin API. To mimic the behavior of a networked
     // rippled, run a scheduled task to trigger the "ledger_accept" method.
     ledgerAcceptor.scheduleAtFixedRate(() -> LEDGER_ACCEPTOR.accept(this),
-        acceptIntervalMillis,
-        acceptIntervalMillis,
-        TimeUnit.MILLISECONDS);
+      acceptIntervalMillis,
+      acceptIntervalMillis,
+      TimeUnit.MILLISECONDS);
     waitForLedgerTimeToSync();
     return this;
   }
@@ -101,9 +105,9 @@ public class RippledContainer {
    */
   private void waitForLedgerTimeToSync() {
     Awaitility.await()
-        .pollDelay(org.awaitility.Duration.ONE_SECOND)
-        .atMost(org.awaitility.Duration.TEN_SECONDS)
-        .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
+      .pollDelay(org.awaitility.Duration.ONE_SECOND)
+      .atMost(org.awaitility.Duration.TEN_SECONDS)
+      .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
   }
 
   private ZonedDateTime getLedgerTime() {
@@ -114,6 +118,9 @@ public class RippledContainer {
     }
   }
 
+  /**
+   * Shutdown all TestContainers.
+   */
   public void shutdown() {
     assertContainerStarted();
     ledgerAcceptor.shutdownNow();
@@ -143,6 +150,10 @@ public class RippledContainer {
    */
   public XrplClient getXrplClient() {
     return new XrplClient(this.getBaseUri());
+  }
+
+  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
+    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
   }
 
   public HttpUrl getBaseUri() {

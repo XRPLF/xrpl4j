@@ -40,19 +40,16 @@ class SingleKeySignatureServiceTest {
   // Source ed25519 Key
   // 32 Bytes (no XRPL prefix here)
   private static final String ED_PRIVATE_KEY_HEX = "60F72F359647AD376D2CB783340CD843BD57CCD46093AA16B0C4D3A5143BADC5";
-  private ECPrivateKeyParameters knownEcPrivateKeyParameters;
   private static final String sourceClassicAddressED = "rLg3vY8w2tTZz1WVYjub32V4SGynLWnNRw";
-
   // Source secp256k1 Key
   // 33 Bytes
   private static final String EC_PRIVATE_KEY_HEX = "0093CC77E2333958D1480FC36811A68A1785258F65251DE100012FA18D0186FFB0";
-  private Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters;
   private static final String sourceClassicAddressEC = "rDt78kzcAfRf5NwmwL4f3E5pK14iM4CxRi";
-
   // Dest address
   private static final String destinationClassicAddress = "rKdi2esXfU7VmZyvRtMKZFFMVESBLE1iiw";
+  private ECPrivateKeyParameters knownEcPrivateKeyParameters;
+  private Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters;
   // private static final String destinationSecret = "snvSCVszQz3bLfPaGNqcU2bM7PsVR";
-
   private SingleKeySignatureService edSignatureService;
   private SingleKeySignatureService ecSignatureService;
 

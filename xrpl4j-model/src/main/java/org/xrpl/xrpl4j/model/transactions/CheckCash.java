@@ -25,6 +25,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableCheckCash.class)
 public interface CheckCash extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCheckCash.Builder}.
+   */
   static ImmutableCheckCash.Builder builder() {
     return ImmutableCheckCash.builder();
   }
@@ -78,7 +83,7 @@ public interface CheckCash extends Transaction {
   @Value.Check
   default void validateOnlyOneAmountSet() {
     Preconditions.checkArgument((amount().isPresent() || deliverMin().isPresent()) &&
-            !(amount().isPresent() && deliverMin().isPresent()),
-        "The CheckCash transaction must include either amount or deliverMin, but not both.");
+        !(amount().isPresent() && deliverMin().isPresent()),
+      "The CheckCash transaction must include either amount or deliverMin, but not both.");
   }
 }

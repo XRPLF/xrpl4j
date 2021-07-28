@@ -197,6 +197,11 @@ public class FluentCompareTo<T extends Comparable<? super T>> {
     return !betweenExclusive(startExclusive, endExclusive);
   }
 
+  /**
+   * Get the underlying value of this {@link FluentCompareTo}.
+   *
+   * @return This {@link FluentCompareTo}'s underlying value, as type {@link T}.
+   */
   public T getValue() {
     return value;
   }

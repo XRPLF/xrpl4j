@@ -13,6 +13,9 @@ import java.io.IOException;
  */
 public class UnsignedIntegerStringDeserializer extends StdDeserializer<UnsignedInteger> {
 
+  /**
+   * No-args constructor.
+   */
   protected UnsignedIntegerStringDeserializer() {
     super(UnsignedInteger.class);
   }

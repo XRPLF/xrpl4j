@@ -8,7 +8,6 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.TransactionResultDeserializer;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
@@ -24,6 +23,13 @@ import java.util.Optional;
 @JsonDeserialize(using = TransactionResultDeserializer.class)
 public interface TransactionResult<TxnType extends Transaction> extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The actual type of {@link Transaction}.
+   *
+   * @return An {@link ImmutableTransactionResult.Builder}
+   */
   static <T extends Transaction> ImmutableTransactionResult.Builder<T> builder() {
     return ImmutableTransactionResult.builder();
   }

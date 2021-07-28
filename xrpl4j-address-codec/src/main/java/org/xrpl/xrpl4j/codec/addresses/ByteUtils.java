@@ -17,6 +17,7 @@ public class ByteUtils {
    *
    * @param value    The int value to convert.
    * @param byteSize The final size of the byte[].
+   *
    * @return A byte[] with the converted value, left padded with 0 bytes.
    */
   public static byte[] toByteArray(int value, int byteSize) {
@@ -29,6 +30,7 @@ public class ByteUtils {
    *
    * @param value    The {@link BigInteger} to convert.
    * @param byteSize The final size of the byte[].
+   *
    * @return A byte[] with the converted value, left padded with 0 bytes.
    */
   public static byte[] toByteArray(BigInteger value, int byteSize) {
@@ -42,6 +44,7 @@ public class ByteUtils {
    *
    * @param byteSize   The final size of the byte[].
    * @param bigInteger The {@link BigInteger} to convert.
+   *
    * @return A left padded byte array with the converted value.
    */
   private static byte[] toLeftPaddedByteArray(int byteSize, BigInteger bigInteger) {
@@ -57,6 +60,7 @@ public class ByteUtils {
    * Parses a hexadecimal {@link String} to a {@link List} of {@link UnsignedByte}s.
    *
    * @param hex A hexadecimal {@link String} to parse.
+   *
    * @return A {@link List} of {@link UnsignedByte}s containing the parsed hex.
    */
   public static List<UnsignedByte> parse(String hex) {
@@ -76,11 +80,12 @@ public class ByteUtils {
    *
    * @param expectedBits The expected number of bits in {@code value}
    * @param value        The {@link BigInteger} to check.
+   *
    * @return The {@link BigInteger} {@code value}.
    */
   public static BigInteger checkSize(int expectedBits, BigInteger value) {
     Preconditions.checkArgument(value.bitLength() <= expectedBits,
-        "value has " + value.bitLength() + " bits but should be <= " + expectedBits);
+      "value has " + value.bitLength() + " bits but should be <= " + expectedBits);
     return value;
   }
 
@@ -88,6 +93,7 @@ public class ByteUtils {
    * Converts a {@link List} of {@link UnsignedByte}s to a hexadecimal {@link String}.
    *
    * @param segments A {@link List} of {@link UnsignedByte}s to convert.
+   *
    * @return A hexadecimal {@link String}.
    */
   public static String toHex(List<UnsignedByte> segments) {
@@ -98,6 +104,7 @@ public class ByteUtils {
    * Converts an {@link UnsignedByteArray} to an {@link UnsignedLong}.
    *
    * @param segments The {@link UnsignedByteArray} to convert.
+   *
    * @return The {@link UnsignedLong} value of {@code segments}.
    */
   public static UnsignedLong toUnsignedLong(UnsignedByteArray segments) {
@@ -109,6 +116,7 @@ public class ByteUtils {
    * "FF" remains "FF" since it already as an even number.
    *
    * @param hex The hex {@link String} to pad.
+   *
    * @return A left padded hex {@link String}.
    */
   public static String padded(String hex) {
@@ -121,6 +129,7 @@ public class ByteUtils {
    *
    * @param hex       The hex {@link String} to pad.
    * @param hexLength The length of the final padded hex {@link String}.
+   *
    * @return A left padded hex {@link String} with the given length.
    */
   public static String padded(String hex, int hexLength) {

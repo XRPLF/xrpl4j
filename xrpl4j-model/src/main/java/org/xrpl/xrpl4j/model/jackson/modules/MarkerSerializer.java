@@ -7,8 +7,14 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson serializer for {@link Marker}s.
+ */
 public class MarkerSerializer extends StdSerializer<Marker> {
 
+  /**
+   * No-args constructor.
+   */
   protected MarkerSerializer() {
     super(Marker.class);
   }

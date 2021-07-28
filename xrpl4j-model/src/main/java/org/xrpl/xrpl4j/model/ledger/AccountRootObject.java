@@ -21,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountRootObject.class)
 public interface AccountRootObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountRootObject.Builder}.
+   */
   static ImmutableAccountRootObject.Builder builder() {
     return ImmutableAccountRootObject.builder();
   }

@@ -12,11 +12,27 @@ import java.util.Objects;
 public class LedgerIndex {
 
   /**
-   * Constant shortcut values for specifying a ledger index.
+   * Constant shortcut value to request a rippled server's current working version of the ledger.
+   *
+   * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
    */
   public static final LedgerIndex CURRENT = LedgerIndex.of("current");
+
+  /**
+   * Constant shortcut value to request the most recent ledger that has been validated by consensus.
+   *
+   * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
+   */
   public static final LedgerIndex VALIDATED = LedgerIndex.of("validated");
+
+  /**
+   * Constant shortcut value to request a the most recent ledger that has been closed for modifications
+   * and proposed for validation.
+   *
+   * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
+   */
   public static final LedgerIndex CLOSED = LedgerIndex.of("closed");
+
   private final String value;
 
   /**
@@ -25,9 +41,9 @@ public class LedgerIndex {
    * @param value The ledger index value as a {@link String}.
    *
    * @deprecated Does not check if the given value is a valid index.
-   *    This constructor should be made private in the future.
-   *    Only the {@link #of(String value)} and {@link #of(UnsignedLong value)} 
-   *    factory methods should be used to construct {@link LedgerIndex} objects.
+   *   This constructor should be made private in the future.
+   *   Only the {@link #of(String value)} and {@link #of(UnsignedLong value)}
+   *   factory methods should be used to construct {@link LedgerIndex} objects.
    */
   @Deprecated
   public LedgerIndex(String value) {
@@ -40,13 +56,11 @@ public class LedgerIndex {
    * @param value A {@link String} containing either an integer or a shortcut.
    *
    * @return A {@link LedgerIndex} with the given value.
-   *
-   * @throws NullPointerException if value is null
-   *
+   * @throws NullPointerException  if value is null
    * @throws NumberFormatException if value is an invalid index
    */
   public static LedgerIndex of(String value)
-  throws NumberFormatException {
+    throws NumberFormatException {
     Objects.requireNonNull(value);
     if (isValidShortcut(value)) {
       return new LedgerIndex(value);
@@ -62,7 +76,6 @@ public class LedgerIndex {
    * @param value An {@link UnsignedLong} specifying a ledger index.
    *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
-   *
    * @throws NullPointerException if value is null
    */
   public static LedgerIndex of(UnsignedLong value) {
@@ -70,6 +83,31 @@ public class LedgerIndex {
     return new LedgerIndex(value.toString());
   }
 
+  /**
+   * Checks to see if a given value is a valid ledger index shortcut.
+   *
+   * @param value A {@link String} containing the value to check.
+   *
+   * @return {@code true} if the value is a valid ledger index shortcut, otherwise {@code false}.
+   */
+  public static boolean isValidShortcut(String value) {
+    if (value.equals("current")) {
+      return true;
+    }
+    if (value.equals("validated")) {
+      return true;
+    }
+    if (value.equals("closed")) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get the value of this {@link LedgerIndex} as a {@link String}.
+   *
+   * @return The underlying {@code value} of this {@link LedgerIndex}.
+   */
   public String value() {
     return value;
   }
@@ -103,13 +141,6 @@ public class LedgerIndex {
    */
   public LedgerIndex plus(LedgerIndex other) {
     return plus(other.unsignedLongValue());
-  }
-
-  public static boolean isValidShortcut(String value) {
-    if (value.equals("current")) return true;
-    if (value.equals("validated")) return true;
-    if (value.equals("closed")) return true;
-    return false;
   }
 
   @Override

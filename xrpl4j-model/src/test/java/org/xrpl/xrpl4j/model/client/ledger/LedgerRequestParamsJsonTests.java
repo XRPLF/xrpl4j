@@ -12,19 +12,19 @@ public class LedgerRequestParamsJsonTests extends AbstractJsonTest {
   public void testJson() throws JsonProcessingException, JSONException {
 
     LedgerRequestParams params = LedgerRequestParams.builder()
-        .ledgerIndex(LedgerIndex.VALIDATED)
-        .build();
+      .ledgerIndex(LedgerIndex.VALIDATED)
+      .build();
 
     String json = "{\n" +
-        "            \"ledger_index\": \"validated\",\n" +
-        "            \"accounts\": false,\n" +
-        "            \"full\": false,\n" +
-        "            \"transactions\": false,\n" +
-        "            \"expand\": true,\n" +
-        "            \"binary\": false,\n" +
-        "            \"queue\": false,\n" +
-        "            \"owner_funds\": false\n" +
-        "        }";
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"accounts\": false,\n" +
+      "            \"full\": false,\n" +
+      "            \"transactions\": false,\n" +
+      "            \"expand\": true,\n" +
+      "            \"binary\": false,\n" +
+      "            \"queue\": false,\n" +
+      "            \"owner_funds\": false\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }

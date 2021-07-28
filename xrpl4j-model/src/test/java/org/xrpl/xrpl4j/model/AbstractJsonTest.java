@@ -24,8 +24,8 @@ public class AbstractJsonTest {
   }
 
   protected void assertCanSerializeAndDeserialize(
-      Transaction transaction,
-      String json
+    Transaction transaction,
+    String json
   ) throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(transaction);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
@@ -35,8 +35,8 @@ public class AbstractJsonTest {
   }
 
   protected void assertCanSerializeAndDeserialize(
-      XrplResult result,
-      String json
+    XrplResult result,
+    String json
   ) throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(result);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
@@ -46,8 +46,8 @@ public class AbstractJsonTest {
   }
 
   protected void assertCanSerializeAndDeserialize(
-      XrplRequestParams params,
-      String json
+    XrplRequestParams params,
+    String json
   ) throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(params);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
@@ -57,8 +57,8 @@ public class AbstractJsonTest {
   }
 
   protected void assertCanSerializeAndDeserialize(
-      LedgerObject ledgerObject,
-      String json
+    LedgerObject ledgerObject,
+    String json
   ) throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(ledgerObject);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);

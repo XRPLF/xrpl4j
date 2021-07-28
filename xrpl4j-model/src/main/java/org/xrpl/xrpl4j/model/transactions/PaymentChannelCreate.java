@@ -20,9 +20,9 @@ import java.util.Optional;
 public interface PaymentChannelCreate extends Transaction {
 
   /**
-   * Builder immutable payment channel create . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable payment channel create . builder
+   * @return An {@link ImmutablePaymentChannelCreate.Builder}.
    */
   static ImmutablePaymentChannelCreate.Builder builder() {
     return ImmutablePaymentChannelCreate.builder();

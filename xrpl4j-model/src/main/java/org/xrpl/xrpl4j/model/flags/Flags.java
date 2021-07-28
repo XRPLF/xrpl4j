@@ -16,6 +16,9 @@ import java.util.Objects;
  */
 public class Flags {
 
+  /**
+   * Constant for an unset flag.
+   */
   public static final Flags UNSET = new Flags(0);
 
   private final long value;
@@ -45,10 +48,15 @@ public class Flags {
    */
   public static Flags of(Flags flag, Flags... others) {
     return flag.bitwiseOr(
-        Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
+      Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
     );
   }
 
+  /**
+   * Get the underlying value of this {@link Flags}.
+   *
+   * @return The underlying {@code long} value of this {@link Flags}.
+   */
   @JsonValue
   public long getValue() {
     return value;
@@ -159,7 +167,7 @@ public class Flags {
        */
       public TransactionFlags build() {
         return new TransactionFlags(
-            tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
         );
       }
     }
@@ -170,10 +178,24 @@ public class Flags {
    */
   public static class PaymentFlags extends TransactionFlags {
 
+    /**
+     * Constant {@link PaymentFlags} for an unset flag.
+     */
     public static final PaymentFlags UNSET = new PaymentFlags(0);
 
+    /**
+     * Constant {@link PaymentFlags} for the {@code tfNoDirectRipple} flag.
+     */
     protected static final PaymentFlags NO_DIRECT_RIPPLE = new PaymentFlags(0x00010000L);
+
+    /**
+     * Constant {@link PaymentFlags} for the {@code tfPartialPayment} flag.
+     */
     protected static final PaymentFlags PARTIAL_PAYMENT = new PaymentFlags(0x00020000L);
+
+    /**
+     * Constant {@link PaymentFlags} for the {@code tfLimitQuality} flag.
+     */
     protected static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
     private PaymentFlags(long value) {
@@ -203,10 +225,10 @@ public class Flags {
     private static PaymentFlags of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment,
                                    boolean tfLimitQuality) {
       return new PaymentFlags(of(
-          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
-          tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
-          tfLimitQuality ? LIMIT_QUALITY : UNSET
+        tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+        tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
+        tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
+        tfLimitQuality ? LIMIT_QUALITY : UNSET
       ).getValue());
     }
 
@@ -317,15 +339,54 @@ public class Flags {
    */
   public static class AccountRootFlags extends Flags {
 
+    /**
+     * Constant for an unset flag.
+     */
     public static final AccountRootFlags UNSET = new AccountRootFlags(0);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfDefaultRipple} account flag.
+     */
     public static final AccountRootFlags DEFAULT_RIPPLE = new AccountRootFlags(0x00800000L);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfDepositAuth} account flag.
+     */
     public static final AccountRootFlags DEPOSIT_AUTH = new AccountRootFlags(0x01000000);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfDisableMaster} account flag.
+     */
     public static final AccountRootFlags DISABLE_MASTER = new AccountRootFlags(0x00100000);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfDisallowXRP} account flag.
+     */
     public static final AccountRootFlags DISALLOW_XRP = new AccountRootFlags(0x00080000L);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfGlobalFreeze} account flag.
+     */
     public static final AccountRootFlags GLOBAL_FREEZE = new AccountRootFlags(0x00400000);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfNoFreeze} account flag.
+     */
     public static final AccountRootFlags NO_FREEZE = new AccountRootFlags(0x00200000);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfPasswordSpent} account flag.
+     */
     public static final AccountRootFlags PASSWORD_SPENT = new AccountRootFlags(0x00010000);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfRequireAuth} account flag.
+     */
     public static final AccountRootFlags REQUIRE_AUTH = new AccountRootFlags(0x00040000);
+
+    /**
+     * Constant {@link AccountRootFlags} for the {@code lsfRequireDestTag} account flag.
+     */
     public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
     /**
@@ -437,16 +498,18 @@ public class Flags {
    */
   public static class SignerListFlags extends Flags {
 
+    /**
+     * Constant for an unset flag.
+     */
     public static final SignerListFlags UNSET = new SignerListFlags(0);
 
+    /**
+     * Constant {@link SignerListFlags} for the {@code lsfOneOwner} flag.
+     */
     public static final SignerListFlags ONE_OWNER_COUNT = new SignerListFlags(0x00010000);
 
     private SignerListFlags(long value) {
       super(value);
-    }
-
-    private static SignerListFlags of(boolean lsfOneOwnerCount) {
-      return new SignerListFlags(Flags.of(lsfOneOwnerCount ? SignerListFlags.ONE_OWNER_COUNT : UNSET).getValue());
     }
 
     /**
@@ -478,11 +541,34 @@ public class Flags {
    */
   public static class TrustSetFlags extends TransactionFlags {
 
+    /**
+     * Constant for an unset flag.
+     */
     protected static final TrustSetFlags UNSET = new TrustSetFlags(0);
+
+    /**
+     * Constant {@link TrustSetFlags} for the {@code tfSetfAuth} flag.
+     */
     protected static final TrustSetFlags SET_F_AUTH = new TrustSetFlags(0x00010000);
+
+    /**
+     * Constant {@link TrustSetFlags} for the {@code tfSetNoRipple} flag.
+     */
     protected static final TrustSetFlags SET_NO_RIPPLE = new TrustSetFlags(0x00020000);
+
+    /**
+     * Constant {@link TrustSetFlags} for the {@code tfClearNoRipple} flag.
+     */
     protected static final TrustSetFlags CLEAR_NO_RIPPLE = new TrustSetFlags(0x00040000);
+
+    /**
+     * Constant {@link TrustSetFlags} for the {@code tfSetFreeze} flag.
+     */
     protected static final TrustSetFlags SET_FREEZE = new TrustSetFlags(0x00100000);
+
+    /**
+     * Constant {@link TrustSetFlags} for the {@code tfClearFreeze} flag.
+     */
     protected static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
 
     private TrustSetFlags(long value) {
@@ -499,21 +585,21 @@ public class Flags {
     }
 
     private static TrustSetFlags of(
-        boolean tfFullyCanonicalSig,
-        boolean tfSetfAuth,
-        boolean tfSetNoRipple,
-        boolean tfClearNoRipple,
-        boolean tfSetFreeze,
-        boolean tfClearFreeze
+      boolean tfFullyCanonicalSig,
+      boolean tfSetfAuth,
+      boolean tfSetNoRipple,
+      boolean tfClearNoRipple,
+      boolean tfSetFreeze,
+      boolean tfClearFreeze
     ) {
       return new TrustSetFlags(
-          Flags.of(
-              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-              tfSetfAuth ? SET_F_AUTH : UNSET,
-              tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
-              tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
-              tfSetFreeze ? SET_FREEZE : UNSET,
-              tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
+        Flags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfSetfAuth ? SET_F_AUTH : UNSET,
+          tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
+          tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
+          tfSetFreeze ? SET_FREEZE : UNSET,
+          tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
       );
     }
 
@@ -666,12 +752,12 @@ public class Flags {
        */
       public TrustSetFlags build() {
         return TrustSetFlags.of(
-            tfFullyCanonicalSig,
-            tfSetfAuth,
-            tfSetNoRipple,
-            tfClearNoRipple,
-            tfSetFreeze,
-            tfClearFreeze
+          tfFullyCanonicalSig,
+          tfSetfAuth,
+          tfSetNoRipple,
+          tfClearNoRipple,
+          tfSetFreeze,
+          tfClearFreeze
         );
       }
     }
@@ -682,13 +768,44 @@ public class Flags {
    */
   public static class RippleStateFlags extends Flags {
 
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfLowReserve} flag.
+     */
     public static final RippleStateFlags LOW_RESERVE = new RippleStateFlags(0x00010000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfHighReserve} flag.
+     */
     public static final RippleStateFlags HIGH_RESERVE = new RippleStateFlags(0x00020000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfLowAuth} flag.
+     */
     public static final RippleStateFlags LOW_AUTH = new RippleStateFlags(0x00040000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfHighAuth} flag.
+     */
     public static final RippleStateFlags HIGH_AUTH = new RippleStateFlags(0x00080000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfLowNoRipple} flag.
+     */
     public static final RippleStateFlags LOW_NO_RIPPLE = new RippleStateFlags(0x00100000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfHighNoRipple} flag.
+     */
     public static final RippleStateFlags HIGH_NO_RIPPLE = new RippleStateFlags(0x00200000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfLowFreeze} flag.
+     */
     public static final RippleStateFlags LOW_FREEZE = new RippleStateFlags(0x00400000);
+
+    /**
+     * Constant {@link RippleStateFlags} for the {@code lsfHighFreeze} flag.
+     */
     public static final RippleStateFlags HIGH_FREEZE = new RippleStateFlags(0x00800000);
 
     private RippleStateFlags(long value) {
@@ -788,9 +905,24 @@ public class Flags {
    */
   public static class OfferCreateFlags extends TransactionFlags {
 
+    /**
+     * Constant {@link OfferCreateFlags} for the {@code tfPassive} flag.
+     */
     protected static final OfferCreateFlags PASSIVE = new OfferCreateFlags(0x00010000L);
+
+    /**
+     * Constant {@link OfferCreateFlags} for the {@code tfImmediateOrCancel} flag.
+     */
     protected static final OfferCreateFlags IMMEDIATE_OR_CANCEL = new OfferCreateFlags(0x00020000L);
+
+    /**
+     * Constant {@link OfferCreateFlags} for the {@code tfFillOrKill} flag.
+     */
     protected static final OfferCreateFlags FILL_OR_KILL = new OfferCreateFlags(0x00040000L);
+
+    /**
+     * Constant {@link OfferCreateFlags} for the {@code tfSell} flag.
+     */
     protected static final OfferCreateFlags SELL = new OfferCreateFlags(0x00080000L);
 
     private OfferCreateFlags(long value) {
@@ -818,18 +950,18 @@ public class Flags {
     }
 
     private static OfferCreateFlags of(
-        boolean tfFullyCanonicalSig,
-        boolean tfPassive,
-        boolean tfImmediateOrCancel,
-        boolean tfFillOrKill,
-        boolean tfSell
+      boolean tfFullyCanonicalSig,
+      boolean tfPassive,
+      boolean tfImmediateOrCancel,
+      boolean tfFillOrKill,
+      boolean tfSell
     ) {
       long value = Flags.of(
-          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfPassive ? PASSIVE : UNSET,
-          tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
-          tfFillOrKill ? FILL_OR_KILL : UNSET,
-          tfSell ? SELL : UNSET
+        tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+        tfPassive ? PASSIVE : UNSET,
+        tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
+        tfFillOrKill ? FILL_OR_KILL : UNSET,
+        tfSell ? SELL : UNSET
       ).getValue();
       return new OfferCreateFlags(value);
     }
@@ -956,11 +1088,11 @@ public class Flags {
        */
       public OfferCreateFlags build() {
         return OfferCreateFlags.of(
-            tfFullyCanonicalSig,
-            tfPassive,
-            tfImmediateOrCancel,
-            tfFillOrKill,
-            tfSell
+          tfFullyCanonicalSig,
+          tfPassive,
+          tfImmediateOrCancel,
+          tfFillOrKill,
+          tfSell
         );
       }
     }
@@ -971,7 +1103,14 @@ public class Flags {
    */
   public static class OfferFlags extends Flags {
 
+    /**
+     * Constant {@link OfferFlags} for the {@code lsfPassive} flag.
+     */
     protected static final OfferFlags PASSIVE = new OfferFlags(0x00010000);
+
+    /**
+     * Constant {@link OfferFlags} for the {@code lsfSell} flag.
+     */
     protected static final OfferFlags SELL = new OfferFlags(0x00020000);
 
     private OfferFlags(long value) {
@@ -1015,7 +1154,14 @@ public class Flags {
    */
   public static class PaymentChannelClaimFlags extends TransactionFlags {
 
+    /**
+     * Constant {@link PaymentChannelClaimFlags} for the {@code tfRenew} flag.
+     */
     protected static final PaymentChannelClaimFlags RENEW = new PaymentChannelClaimFlags(0x00010000);
+
+    /**
+     * Constant {@link PaymentChannelClaimFlags} for the {@code tfClose} flag.
+     */
     protected static final PaymentChannelClaimFlags CLOSE = new PaymentChannelClaimFlags(0x00020000);
 
     private PaymentChannelClaimFlags(long value) {
@@ -1033,11 +1179,11 @@ public class Flags {
 
     private static PaymentChannelClaimFlags of(boolean tfFullyCanonicalSig, boolean tfRenew, boolean tfClose) {
       return new PaymentChannelClaimFlags(
-          TransactionFlags.of(
-              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-              tfRenew ? RENEW : UNSET,
-              tfClose ? CLOSE : UNSET
-          ).getValue()
+        TransactionFlags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfRenew ? RENEW : UNSET,
+          tfClose ? CLOSE : UNSET
+        ).getValue()
       );
     }
 

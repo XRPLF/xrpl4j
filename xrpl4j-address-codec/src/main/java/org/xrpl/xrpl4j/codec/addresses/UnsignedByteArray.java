@@ -25,6 +25,7 @@ public class UnsignedByteArray {
    * Creates an {@link UnsignedByteArray} from a byte array.
    *
    * @param bytes The byte array to create an {@link UnsignedByteArray} from.
+   *
    * @return An {@link UnsignedByteArray} containing {@code bytes}.
    */
   public static UnsignedByteArray of(final byte[] bytes) {
@@ -42,6 +43,7 @@ public class UnsignedByteArray {
    *
    * @param first An {@link UnsignedByte} to include in the resulting {@link UnsignedByteArray}.
    * @param rest  Other {@link UnsignedByte}s to include in the resulting {@link UnsignedByteArray}.
+   *
    * @return An {@link UnsignedByteArray} with the given {@link UnsignedByte}s.
    */
   public static UnsignedByteArray of(UnsignedByte first, UnsignedByte... rest) {
@@ -64,6 +66,7 @@ public class UnsignedByteArray {
    * Creates an {@link UnsignedByteArray} with a given number of bytes (where each byte has the value 0).
    *
    * @param size The size of the initialized {@link UnsignedByteArray}.
+   *
    * @return An {@link UnsignedByteArray} of the requested size with all 0 {@link UnsignedByte}s
    */
   public static UnsignedByteArray ofSize(int size) {
@@ -74,6 +77,7 @@ public class UnsignedByteArray {
    * Converts a hex string to an {@link UnsignedByteArray}.
    *
    * @param hex A hexadecimal encoded {@link String}.
+   *
    * @return The hex value as an {@link UnsignedByteArray}.
    */
   public static UnsignedByteArray fromHex(String hex) {
@@ -136,6 +140,7 @@ public class UnsignedByteArray {
    * Gets the {@link UnsignedByte} at a given index.
    *
    * @param index The index of the {@link UnsignedByte} to get.
+   *
    * @return The {@link UnsignedByte} at the given index.
    */
   public UnsignedByte get(int index) {
@@ -146,6 +151,7 @@ public class UnsignedByteArray {
    * Appends an {@link UnsignedByte} to this {@link UnsignedByteArray}.
    *
    * @param unsignedByte An {@link UnsignedByte} to append.
+   *
    * @return This {@link UnsignedByteArray}, with the given {@link UnsignedByte} appended.
    */
   public UnsignedByteArray append(UnsignedByte unsignedByte) {
@@ -158,6 +164,7 @@ public class UnsignedByteArray {
    * Note: this method mutates the instance and returns the same instance (mainly for call chaining convenience).
    *
    * @param array An {@link UnsignedByteArray} to append to this {@link UnsignedByteArray}.
+   *
    * @return the same instance.
    */
   public UnsignedByteArray append(UnsignedByteArray array) {
@@ -180,6 +187,7 @@ public class UnsignedByteArray {
    *
    * @param startIndex start index (inclusive)
    * @param endIndex   end index (exclusive)
+   *
    * @return An {@link UnsignedByteArray} containing the sliced elements.
    */
   public UnsignedByteArray slice(int startIndex, int endIndex) {

@@ -12,8 +12,8 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 public class DefaultWalletFactory implements WalletFactory {
 
   private static final WalletFactory INSTANCE = new DefaultWalletFactory(
-      DefaultKeyPairService.getInstance(),
-      AddressCodec.getInstance()
+    DefaultKeyPairService.getInstance(),
+    AddressCodec.getInstance()
   );
 
   private final KeyPairService keyPairService;
@@ -45,9 +45,9 @@ public class DefaultWalletFactory implements WalletFactory {
     Wallet wallet = this.fromSeed(seed, isTest);
 
     return SeedWalletGenerationResult.builder()
-        .seed(seed)
-        .wallet(wallet)
-        .build();
+      .seed(seed)
+      .wallet(wallet)
+      .build();
   }
 
   @Override
@@ -60,12 +60,12 @@ public class DefaultWalletFactory implements WalletFactory {
   public Wallet fromKeyPair(KeyPair keyPair, boolean isTest) {
     Address classicAddress = keyPairService.deriveAddress(keyPair.publicKey());
     return Wallet.builder()
-        .privateKey(keyPair.privateKey())
-        .publicKey(keyPair.publicKey())
-        .isTest(isTest)
-        .classicAddress(classicAddress)
-        .xAddress(addressCodec.classicAddressToXAddress(classicAddress, isTest))
-        .build();
+      .privateKey(keyPair.privateKey())
+      .publicKey(keyPair.publicKey())
+      .isTest(isTest)
+      .classicAddress(classicAddress)
+      .xAddress(addressCodec.classicAddressToXAddress(classicAddress, isTest))
+      .build();
   }
 
 }

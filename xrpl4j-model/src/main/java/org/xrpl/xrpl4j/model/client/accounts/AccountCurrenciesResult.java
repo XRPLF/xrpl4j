@@ -57,7 +57,7 @@ public interface AccountCurrenciesResult extends XrplResult {
   List<String> receiveCurrencies();
 
   /**
-   * Array of currency codes for currencies that this account can send
+   * Array of currency codes for currencies that this account can send.
    *
    * @return Array of currencies that this account can send.
    */

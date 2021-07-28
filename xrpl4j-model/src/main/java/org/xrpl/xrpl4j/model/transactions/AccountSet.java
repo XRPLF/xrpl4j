@@ -22,6 +22,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountSet.class)
 public interface AccountSet extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountSet.Builder}.
+   */
   static ImmutableAccountSet.Builder builder() {
     return ImmutableAccountSet.builder();
   }
@@ -116,12 +121,12 @@ public interface AccountSet extends Transaction {
   @Value.Check
   default void checkEmailHashLength() {
     emailHash()
-        .ifPresent(hash ->
-            Preconditions.checkArgument(
-                hash.length() == 32,
-                String.format("emailHash must be 32 characters (128 bits), but was %s characters long.", hash.length())
-            )
-        );
+      .ifPresent(hash ->
+        Preconditions.checkArgument(
+          hash.length() == 32,
+          String.format("emailHash must be 32 characters (128 bits), but was %s characters long.", hash.length())
+        )
+      );
   }
 
   /**
@@ -130,13 +135,13 @@ public interface AccountSet extends Transaction {
   @Value.Check
   default void checkTransferRate() {
     transferRate()
-        .ifPresent(rate ->
-            Preconditions.checkArgument(rate.equals(UnsignedInteger.ZERO) ||
-                    (rate.compareTo(UnsignedInteger.valueOf(1000000000L)) >= 0 &&
-                        rate.compareTo(UnsignedInteger.valueOf(2000000000L)) <= 0),
-                "transferRate must be between 1,000,000,000 and 2,000,000,000 or equal to 0."
-            )
-        );
+      .ifPresent(rate ->
+        Preconditions.checkArgument(rate.equals(UnsignedInteger.ZERO) ||
+            (rate.compareTo(UnsignedInteger.valueOf(1000000000L)) >= 0 &&
+              rate.compareTo(UnsignedInteger.valueOf(2000000000L)) <= 0),
+          "transferRate must be between 1,000,000,000 and 2,000,000,000 or equal to 0."
+        )
+      );
   }
 
   /**
@@ -145,13 +150,13 @@ public interface AccountSet extends Transaction {
   @Value.Check
   default void checkTickSize() {
     tickSize()
-        .ifPresent(tickSize ->
-            Preconditions.checkArgument(tickSize.equals(UnsignedInteger.ZERO) ||
-                    (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
-                        tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
-                "tickSize must be between 3 and 15 inclusive or be equal to 0."
-            )
-        );
+      .ifPresent(tickSize ->
+        Preconditions.checkArgument(tickSize.equals(UnsignedInteger.ZERO) ||
+            (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
+              tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
+          "tickSize must be between 3 and 15 inclusive or be equal to 0."
+        )
+      );
 
   }
 
@@ -250,6 +255,11 @@ public interface AccountSet extends Transaction {
       throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
     }
 
+    /**
+     * Get the underlying value of this {@link AccountSetFlag}.
+     *
+     * @return The underlying {@code int} value of this {@link AccountSetFlag}.
+     */
     @JsonValue
     public int getValue() {
       return value;

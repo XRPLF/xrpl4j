@@ -21,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableOfferCreate.class)
 public interface OfferCreate extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableOfferCreate.Builder}.
+   */
   static ImmutableOfferCreate.Builder builder() {
     return ImmutableOfferCreate.builder();
   }

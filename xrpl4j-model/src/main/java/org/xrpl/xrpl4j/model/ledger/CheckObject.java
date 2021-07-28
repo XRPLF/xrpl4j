@@ -23,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableCheckObject.class)
 public interface CheckObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCheckObject.Builder}.
+   */
   static ImmutableCheckObject.Builder builder() {
     return ImmutableCheckObject.builder();
   }

@@ -100,7 +100,6 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    * @param node A {@link JsonNode} to use.
    *
    * @return A {@link T} based upon the information found in {@code node}.
-   *
    * @throws JsonProcessingException if {@code node} is not well-formed JSON.
    */
   public abstract T fromJson(JsonNode node) throws JsonProcessingException;

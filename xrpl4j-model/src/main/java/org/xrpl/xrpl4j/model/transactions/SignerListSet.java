@@ -20,9 +20,9 @@ import java.util.List;
 public interface SignerListSet extends Transaction {
 
   /**
-   * Builder immutable signer list set . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable signer list set . builder
+   * @return An {@link ImmutableSignerListSet.Builder}.
    */
   static ImmutableSignerListSet.Builder builder() {
     return ImmutableSignerListSet.builder();

@@ -22,6 +22,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountChannelsResult.class)
 public interface AccountChannelsResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountChannelsResult.Builder}.
+   */
   static ImmutableAccountChannelsResult.Builder builder() {
     return ImmutableAccountChannelsResult.builder();
   }

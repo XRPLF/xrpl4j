@@ -21,7 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePaymentChannelResultObject.class)
 public interface PaymentChannelResultObject {
 
-
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePaymentChannelResultObject.Builder}.
+   */
   static ImmutablePaymentChannelResultObject.Builder builder() {
     return ImmutablePaymentChannelResultObject.builder();
   }

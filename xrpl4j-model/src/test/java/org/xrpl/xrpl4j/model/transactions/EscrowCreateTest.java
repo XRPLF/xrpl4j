@@ -15,12 +15,12 @@ public class EscrowCreateTest {
   @Test
   public void testWithNeitherCancelNorFinish() {
     EscrowCreate.builder()
-        .sequence(UnsignedInteger.ONE)
-        .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
-        .amount(XrpCurrencyAmount.ofDrops(1))
-        .destination(Address.of("destination"))
-        .build();
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("account"))
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .destination(Address.of("destination"))
+      .build();
   }
 
   @Test
@@ -43,14 +43,14 @@ public class EscrowCreateTest {
   @Test
   public void testCancelAfterFinish() {
     EscrowCreate.builder()
-        .sequence(UnsignedInteger.ONE)
-        .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
-        .amount(XrpCurrencyAmount.ofDrops(1))
-        .destination(Address.of("destination"))
-        .cancelAfter(UnsignedLong.valueOf(2L))
-        .finishAfter(UnsignedLong.ONE)
-        .build();
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("account"))
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .destination(Address.of("destination"))
+      .cancelAfter(UnsignedLong.valueOf(2L))
+      .finishAfter(UnsignedLong.ONE)
+      .build();
   }
 
   @Test

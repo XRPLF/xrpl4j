@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.io.IOException;
 
@@ -13,6 +12,9 @@ import java.io.IOException;
  */
 public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
+  /**
+   * No-args constructor.
+   */
   public LedgerIndexSerializer() {
     super(LedgerIndex.class, false);
   }

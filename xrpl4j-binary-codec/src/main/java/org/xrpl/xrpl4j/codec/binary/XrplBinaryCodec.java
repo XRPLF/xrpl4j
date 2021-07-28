@@ -39,7 +39,6 @@ public class XrplBinaryCodec {
    * @param json A {@link String} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code json}.
-   *
    * @throws JsonProcessingException if {@code json} is not valid JSON.
    */
   public String encode(String json) throws JsonProcessingException {
@@ -54,7 +53,6 @@ public class XrplBinaryCodec {
    * @param jsonNode A {@link JsonNode} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code jsonNode}.
-   *
    * @throws JsonProcessingException if {@code jsonNode} is not valid JSON.
    */
   private String encode(final JsonNode jsonNode) {
@@ -70,7 +68,6 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return hex encoded representations
-   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForSigning(String json) throws JsonProcessingException {
@@ -85,7 +82,6 @@ public class XrplBinaryCodec {
    * @param xrpAccountId A {@link String} containing the XRPL AccountId.
    *
    * @return hex encoded representations
-   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForMultiSigning(String json, String xrpAccountId) throws JsonProcessingException {
@@ -106,7 +102,6 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return The binary encoded JSON in hexadecimal form.
-   *
    * @throws JsonProcessingException If the JSON is not valid.
    */
   public String encodeForSigningClaim(String json) throws JsonProcessingException {

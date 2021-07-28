@@ -7,7 +7,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -23,12 +22,17 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountTransactionsResult.class)
 public interface AccountTransactionsResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountTransactionsResult.Builder}.
+   */
   static ImmutableAccountTransactionsResult.Builder builder() {
     return ImmutableAccountTransactionsResult.builder();
   }
 
   /**
-   * Unique Address identifying the related account
+   * Unique Address identifying the related account.
    *
    * @return The {@link Address} of the account.
    */

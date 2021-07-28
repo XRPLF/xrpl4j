@@ -23,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableRipplePathFindRequestParams.class)
 public interface RipplePathFindRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableRipplePathFindRequestParams.Builder}.
+   */
   static ImmutableRipplePathFindRequestParams.Builder builder() {
     return ImmutableRipplePathFindRequestParams.builder();
   }

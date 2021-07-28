@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
@@ -26,6 +25,9 @@ import java.util.Optional;
  */
 public class TransactionResultDeserializer<T extends Transaction> extends StdDeserializer<TransactionResult<T>> {
 
+  /**
+   * No-args constructor.
+   */
   protected TransactionResultDeserializer() {
     super(TransactionResult.class);
   }
@@ -40,19 +42,19 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     T transaction = objectMapper.convertValue(objectNode, javaType);
 
     LedgerIndex ledgerIndex = objectNode.has("ledger_index") ?
-        LedgerIndex.of(objectNode.get("ledger_index").asText()) :
-        null;
+      LedgerIndex.of(objectNode.get("ledger_index").asText()) :
+      null;
     String status = objectNode.has("status") ? objectNode.get("status").asText() : null;
     boolean validated = objectNode.has("validated") && objectNode.get("validated").asBoolean();
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);
 
     return TransactionResult.<T>builder()
-        .transaction(transaction)
-        .ledgerIndex(Optional.ofNullable(ledgerIndex))
-        .status(Optional.ofNullable(status))
-        .validated(validated)
-        .metadata(metadata)
-        .build();
+      .transaction(transaction)
+      .ledgerIndex(Optional.ofNullable(ledgerIndex))
+      .status(Optional.ofNullable(status))
+      .validated(validated)
+      .metadata(metadata)
+      .build();
   }
 
   private Optional<TransactionMetadata> getTransactionMetadata(ObjectMapper objectMapper, ObjectNode objectNode) {

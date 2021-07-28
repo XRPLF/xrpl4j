@@ -23,31 +23,38 @@ import java.util.Optional;
  */
 public interface Transaction {
 
-  // XRP Ledger represents dates using a custom epoch called Ripple Epoch
+  /**
+   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
+   * the start of that epoch.
+   */
   long RIPPLE_EPOCH = 946684800;
 
+  /**
+   * A bi-directional map of immutable transaction types to their corresponding {@link TransactionType}.
+   *
+   * <p>This is useful for polymorphic Jackson deserialization.
+   */
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
-      new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
-          .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
-          .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
-          .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
-          .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
-          .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
-          .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
-          .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
-          .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
-          .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
-          .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
-          .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
-          .put(ImmutablePayment.class, TransactionType.PAYMENT)
-          .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
-          .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
-          .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
-          .put(ImmutableSetHook.class, TransactionType.SET_HOOK)
-          .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
-          .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
-          .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
-          .build();
+    new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
+      .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
+      .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
+      .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
+      .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
+      .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
+      .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
+      .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
+      .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
+      .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
+      .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
+      .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
+      .put(ImmutablePayment.class, TransactionType.PAYMENT)
+      .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
+      .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
+      .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+      .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
+      .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
+      .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
+      .build();
 
   /**
    * Computes the fee necessary for a multisigned transaction.
@@ -61,14 +68,14 @@ public interface Transaction {
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    */
   static XrpCurrencyAmount computeMultiSigFee(
-      final XrpCurrencyAmount currentLedgerFeeDrops,
-      final SignerListObject signerList
+    final XrpCurrencyAmount currentLedgerFeeDrops,
+    final SignerListObject signerList
   ) {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(signerList);
 
     return currentLedgerFeeDrops
-        .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
   }
 
   /**

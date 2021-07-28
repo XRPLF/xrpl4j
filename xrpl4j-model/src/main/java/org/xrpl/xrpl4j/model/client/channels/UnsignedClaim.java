@@ -18,6 +18,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @JsonDeserialize(as = ImmutableUnsignedClaim.class)
 public interface UnsignedClaim {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableUnsignedClaim.Builder}.
+   */
   static ImmutableUnsignedClaim.Builder builder() {
     return ImmutableUnsignedClaim.builder();
   }

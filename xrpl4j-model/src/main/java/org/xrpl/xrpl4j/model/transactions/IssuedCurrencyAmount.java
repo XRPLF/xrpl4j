@@ -14,6 +14,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableIssuedCurrencyAmount.class)
 public interface IssuedCurrencyAmount extends CurrencyAmount {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableIssuedCurrencyAmount.Builder}.
+   */
   static ImmutableIssuedCurrencyAmount.Builder builder() {
     return ImmutableIssuedCurrencyAmount.builder();
   }

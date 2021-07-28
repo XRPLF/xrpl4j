@@ -15,6 +15,12 @@ import java.util.Objects;
 public final class JavaKeystoreLoader {
 
   /**
+   * No-args Constructor, to avoid instantiation.
+   */
+  private JavaKeystoreLoader() {
+  }
+
+  /**
    * Helper method to load a {@link KeyStore} from the filesystem.
    *
    * @param keystoreFileName The name of the Java KeyStore file to load.
@@ -39,11 +45,5 @@ public final class JavaKeystoreLoader {
     } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  /**
-   * No-args Constructor, to avoid instantiation.
-   */
-  private JavaKeystoreLoader() {
   }
 }

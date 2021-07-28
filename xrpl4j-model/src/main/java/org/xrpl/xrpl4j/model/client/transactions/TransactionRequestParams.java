@@ -23,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableTransactionRequestParams.class)
 public interface TransactionRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTransactionRequestParams.Builder}.
+   */
   static ImmutableTransactionRequestParams.Builder builder() {
     return ImmutableTransactionRequestParams.builder();
   }
@@ -33,7 +38,7 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * @param transactionHash A {@link Hash256} containing the transaction hash of the transaction to look up.
    *
    * @return {@link TransactionRequestParams} with {@link TransactionRequestParams#transaction()} set to
-   *     {@code transactionHash}
+   *   {@code transactionHash}
    */
   static TransactionRequestParams of(Hash256 transactionHash) {
     return builder().transaction(transactionHash).build();

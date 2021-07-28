@@ -14,6 +14,8 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 
 public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
+  public static final Hash256 HASH_256 = Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F");
+
   @Test
   public void testWithLedgerIndex() throws JsonProcessingException, JSONException {
 
@@ -50,7 +52,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-        .ledgerSpecifier(LedgerSpecifier.ledgerHash(Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F")))
+        .ledgerSpecifier(LedgerSpecifier.ledgerHash(HASH_256))
         .peer(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .limit(UnsignedInteger.ONE)
         .marker(Marker.of("marker"))
@@ -58,7 +60,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
     String json = "{\n" +
         "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
-        "            \"ledger_hash\": \"92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F\",\n" +
+        "            \"ledger_hash\": \"" + HASH_256 + "\",\n" +
         "            \"peer\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
         "            \"limit\": 1,\n" +
         "            \"marker\": \"marker\"\n" +

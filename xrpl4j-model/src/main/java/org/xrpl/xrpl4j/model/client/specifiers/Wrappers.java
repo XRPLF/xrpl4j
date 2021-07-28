@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.model.immutables.Wrapper;
 
 import java.io.Serializable;
 
+@SuppressWarnings("TypeName")
 public class Wrappers {
 
   /**

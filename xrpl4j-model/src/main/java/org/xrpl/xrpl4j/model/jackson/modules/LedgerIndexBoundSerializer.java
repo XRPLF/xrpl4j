@@ -18,10 +18,10 @@ public class LedgerIndexBoundSerializer extends StdSerializer<LedgerIndexBound> 
 
   @Override
   public void serialize(
-    LedgerIndexBound LedgerIndexBound,
+    LedgerIndexBound ledgerIndexBound,
     JsonGenerator jsonGenerator,
     SerializerProvider serializerProvider
   ) throws IOException {
-    jsonGenerator.writeNumber(LedgerIndexBound.value());
+    jsonGenerator.writeNumber(ledgerIndexBound.value());
   }
 }

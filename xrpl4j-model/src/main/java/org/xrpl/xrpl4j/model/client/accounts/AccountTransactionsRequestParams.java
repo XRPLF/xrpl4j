@@ -124,6 +124,10 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    */
   Optional<Marker> marker();
 
+  /**
+   * Validates that if {@link LedgerSpecifier#ledgerIndexShortcut()} is present, its value is
+   * {@link LedgerIndexShortcut#VALIDATED}.
+   */
   @Value.Check
   default void validateSpecifierNotCurrentOrClosed() {
     ledgerSpecifier().ifPresent(
@@ -140,6 +144,11 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
     );
   }
 
+  /**
+   * Nullifies {@link #ledgerIndexMin()} and {@link #ledgerIndexMax()} if {@link #ledgerSpecifier()} is present.
+   *
+   * @return An {@link AccountTransactionsRequestParams}.
+   */
   @Value.Check
   default AccountTransactionsRequestParams emptyBoundedParametersIfSpecifierPresent() {
     // If user included a ledgerSpecifier, this will blank out ledgerIndexMin and ledgerIndexMax

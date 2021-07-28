@@ -177,7 +177,10 @@ public class LedgerIndexBoundTests {
     assertSerializesAndDeserializes(negativeWrapper, negativeJson);
   }
 
-  private void assertSerializesAndDeserializes(LedgerIndexBoundWrapper wrapper, String json) throws JsonProcessingException, JSONException {
+  private void assertSerializesAndDeserializes(
+    LedgerIndexBoundWrapper wrapper,
+    String json
+  ) throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(wrapper);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
     LedgerIndexBoundWrapper deserialized = objectMapper.readValue(serialized, LedgerIndexBoundWrapper.class);

@@ -32,9 +32,12 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
   }
 
   @Override
-  public AccountTransactionsRequestParams deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-    ObjectMapper objectMapper = (ObjectMapper) p.getCodec();
-    JsonNode node = objectMapper.readTree(p);
+  public AccountTransactionsRequestParams deserialize(
+    JsonParser jsonParser,
+    DeserializationContext ctxt
+  ) throws IOException, JsonProcessingException {
+    ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
+    JsonNode node = objectMapper.readTree(jsonParser);
 
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of(node.get("account").asText()))
@@ -56,14 +59,14 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
       )
       .marker(
         Optional.ofNullable(node.get("marker"))
-        .map(JsonNode::toString)
-        .map(markerString -> {
-          try {
-            return objectMapper.readValue(markerString, Marker.class);
-          } catch (JsonProcessingException e) {
-            return null;
-          }
-        })
+          .map(JsonNode::toString)
+          .map(markerString -> {
+            try {
+              return objectMapper.readValue(markerString, Marker.class);
+            } catch (JsonProcessingException e) {
+              return null;
+            }
+          })
       )
       .build();
 

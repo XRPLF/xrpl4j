@@ -1,15 +1,13 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
-
-import java.util.Optional;
 
 /**
  * Request parameters for the account_currencies rippled method.
@@ -31,22 +29,15 @@ public interface AccountCurrenciesRequestParams extends XrplRequestParams {
   Address account();
 
   /**
-   * A 20-byte hex string for the ledger version to use.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
+   * numerical ledger index, or a shortcut value.
    *
-   * @return An optionally-present {@link Hash256}.
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
-  @JsonProperty("ledger_hash")
-  Optional<Hash256> ledgerHash();
-
-  /**
-   * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   *
-   * @return A {@link LedgerIndex}.  Defaults to {@link LedgerIndex#CURRENT}.
-   */
-  @JsonProperty("ledger_index")
   @Value.Default
-  default LedgerIndex ledgerIndex() {
-    return LedgerIndex.CURRENT;
+  @JsonUnwrapped
+  default LedgerSpecifier ledgerSpecifier() {
+    return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT);
   }
 
   /**

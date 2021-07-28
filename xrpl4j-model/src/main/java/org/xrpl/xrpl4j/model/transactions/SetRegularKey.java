@@ -20,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableSetRegularKey.class)
 public interface SetRegularKey extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSetRegularKey.Builder}.
+   */
   static ImmutableSetRegularKey.Builder builder() {
     return ImmutableSetRegularKey.builder();
   }

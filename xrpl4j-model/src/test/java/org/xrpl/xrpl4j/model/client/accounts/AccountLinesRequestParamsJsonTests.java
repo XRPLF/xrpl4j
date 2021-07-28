@@ -34,13 +34,13 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
   public void testMinimalJson() throws JsonProcessingException, JSONException {
 
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()
-        .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-        .build();
+      .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
+      .build();
 
     String json = "{\n" +
-        "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
-        "            \"ledger_index\": \"current\"\n" +
-        "        }";
+      "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
+      "            \"ledger_index\": \"current\"\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }

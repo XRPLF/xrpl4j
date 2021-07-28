@@ -51,7 +51,6 @@ public interface KeyPairService {
    * @param privateKey The hexadecimal encoded private key used to sign the transaction.
    *
    * @return The signed message, in hexadecimal form.
-   *
    * @deprecated Consider using  TransactionSigner instead.
    */
   @Deprecated

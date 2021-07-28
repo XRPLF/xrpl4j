@@ -72,7 +72,7 @@ public class SingleKeySignatureService extends AbstractSignatureService implemen
     final ECDSASigner ecdsaSigner,
     final KeyPairService keyPairService,
     final PrivateKey privateKey
-    ) {
+  ) {
     super(KEY_STORE_TYPE, signatureUtils, keyPairService);
     this.ed25519Signer = Objects.requireNonNull(ed25519Signer);
     this.ecdsaSigner = Objects.requireNonNull(ecdsaSigner);

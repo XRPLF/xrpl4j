@@ -21,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableEscrowCreate.class)
 public interface EscrowCreate extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableEscrowCreate.Builder}.
+   */
   static ImmutableEscrowCreate.Builder builder() {
     return ImmutableEscrowCreate.builder();
   }
@@ -103,8 +108,8 @@ public interface EscrowCreate extends Transaction {
   default void check() {
     if (cancelAfter().isPresent() && finishAfter().isPresent()) {
       Preconditions.checkState(
-          finishAfter().get().compareTo(cancelAfter().get()) < 0,
-          "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
+        finishAfter().get().compareTo(cancelAfter().get()) < 0,
+        "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
       );
     }
   }

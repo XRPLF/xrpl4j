@@ -20,6 +20,7 @@ import java.util.function.Function;
 @Value.Immutable
 @JsonSerialize(as = ImmutableLedgerSpecifier.class)
 @JsonDeserialize(as = ImmutableLedgerSpecifier.class, using = LedgerSpecifierDeserializer.class)
+@SuppressWarnings("OverloadMethodsDeclarationOrder")
 public interface LedgerSpecifier {
 
   /**

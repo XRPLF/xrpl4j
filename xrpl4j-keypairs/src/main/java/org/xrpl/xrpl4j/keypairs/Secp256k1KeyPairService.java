@@ -59,9 +59,9 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
     UnsignedByteArray publicKey = derivePublicKey(privateKey);
 
     return KeyPair.builder()
-        .privateKey(UnsignedByteArray.of(privateKey.toByteArray()).hexValue())
-        .publicKey(UnsignedByteArray.of(publicKey.toByteArray()).hexValue())
-        .build();
+      .privateKey(UnsignedByteArray.of(privateKey.toByteArray()).hexValue())
+      .publicKey(UnsignedByteArray.of(publicKey.toByteArray()).hexValue())
+      .build();
   }
 
   private UnsignedByteArray derivePublicKey(BigInteger privateKey) {
@@ -76,8 +76,8 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
     UnsignedByteArray publicGen = UnsignedByteArray.of(ecDomainParameters.getG().multiply(privateGen).getEncoded(true));
     return deriveScalar(publicGen, accountNumber)
-        .add(privateGen)
-        .mod(ecDomainParameters.getN());
+      .add(privateGen)
+      .mod(ecDomainParameters.getN());
   }
 
   private BigInteger deriveScalar(UnsignedByteArray seed) {
@@ -126,9 +126,9 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
     }
 
     return EcDsaSignature.builder()
-        .r(r)
-        .s(s)
-        .build();
+      .r(r)
+      .s(s)
+      .build();
   }
 
   @Override

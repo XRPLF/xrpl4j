@@ -43,7 +43,9 @@ public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier
       if (ledgerIndex.isNumber()) {
         return LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(ledgerIndex.asLong())));
       } else {
-        return LedgerSpecifier.ledgerIndexShortcut(objectMapper.readValue(ledgerIndex.toString(), LedgerIndexShortcut.class));
+        return LedgerSpecifier.ledgerIndexShortcut(
+          objectMapper.readValue(ledgerIndex.toString(), LedgerIndexShortcut.class)
+        );
       }
     }
   }

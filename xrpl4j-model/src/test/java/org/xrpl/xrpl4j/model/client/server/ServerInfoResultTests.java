@@ -117,39 +117,39 @@ public class ServerInfoResultTests extends AbstractJsonTest {
     ServerInfoResult result = ServerInfoResult.builder().info(updatedServerInfo()).build();
 
     String json = "{\n" +
-            "    \"info\": {\n" +
-            "      \"build_version\": \"1.7.0\",\n" +
-            "      \"amendment_blocked\": false,\n" +
-            "      \"complete_ledgers\": \"61881385-62562429\",\n" +
-            "      \"hostid\": \"LARD\",\n" +
-            "      \"io_latency_ms\": 2,\n" +
-            "      \"jq_trans_overflow\": \"0\",\n" +
-            "      \"last_close\": {\n" +
-            "        \"converge_time_s\": 3.002,\n" +
-            "        \"proposers\": 38\n" +
-            "      },\n" +
-            "      \"load_factor\": 511.83203125,\n" +
-            "      \"load_factor_server\": 1,\n" +
-            "      \"peers\": 261,\n" +
-            "      \"pubkey_node\": \"n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD\",\n" +
-            "      \"server_state\": \"full\",\n" +
-            "      \"server_state_duration_us\": \"2274468435925\",\n" +
-            "      \"time\": \"2021-Mar-30 15:37:51.486384 UTC\",\n" +
-            "      \"uptime\": 2274704,\n" +
-            "      \"validated_ledger\": {\n" +
-            "        \"age\": 4,\n" +
-            "        \"base_fee_xrp\": 0.00001,\n" +
-            "        \"hash\": \"E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3\",\n" +
-            "        \"reserve_base_xrp\": 20,\n" +
-            "        \"reserve_inc_xrp\": 5,\n" +
-            "        \"seq\": 62562429\n" +
-            "      },\n" +
-            "      \"validation_quorum\": 31\n" +
-            "    }\n" +
-            "  },\n" +
-            "  \"status\": \"success\",\n" +
-            "  \"type\": \"response\"\n" +
-            "}";
+      "    \"info\": {\n" +
+      "      \"build_version\": \"1.7.0\",\n" +
+      "      \"amendment_blocked\": false,\n" +
+      "      \"complete_ledgers\": \"61881385-62562429\",\n" +
+      "      \"hostid\": \"LARD\",\n" +
+      "      \"io_latency_ms\": 2,\n" +
+      "      \"jq_trans_overflow\": \"0\",\n" +
+      "      \"last_close\": {\n" +
+      "        \"converge_time_s\": 3.002,\n" +
+      "        \"proposers\": 38\n" +
+      "      },\n" +
+      "      \"load_factor\": 511.83203125,\n" +
+      "      \"load_factor_server\": 1,\n" +
+      "      \"peers\": 261,\n" +
+      "      \"pubkey_node\": \"n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD\",\n" +
+      "      \"server_state\": \"full\",\n" +
+      "      \"server_state_duration_us\": \"2274468435925\",\n" +
+      "      \"time\": \"2021-Mar-30 15:37:51.486384 UTC\",\n" +
+      "      \"uptime\": 2274704,\n" +
+      "      \"validated_ledger\": {\n" +
+      "        \"age\": 4,\n" +
+      "        \"base_fee_xrp\": 0.00001,\n" +
+      "        \"hash\": \"E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3\",\n" +
+      "        \"reserve_base_xrp\": 20,\n" +
+      "        \"reserve_inc_xrp\": 5,\n" +
+      "        \"seq\": 62562429\n" +
+      "      },\n" +
+      "      \"validation_quorum\": 31\n" +
+      "    }\n" +
+      "  },\n" +
+      "  \"status\": \"success\",\n" +
+      "  \"type\": \"response\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(result, json);
 

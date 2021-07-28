@@ -8,6 +8,12 @@ import org.immutables.value.Value;
  * @see "http://immutables.github.io/immutable.html#wrapper-types"
  */
 public abstract class Wrapper<T extends Comparable<T>> implements Comparable<Wrapper<T>> {
+
+  /**
+   * The wrapped value.
+   *
+   * @return The wrapped value.
+   */
   @Value.Parameter
   public abstract T value();
 

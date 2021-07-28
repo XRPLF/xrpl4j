@@ -17,15 +17,15 @@ public class LedgerRequestParamsJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "            \"ledger_index\": \"validated\",\n" +
-        "            \"accounts\": false,\n" +
-        "            \"full\": false,\n" +
-        "            \"transactions\": false,\n" +
-        "            \"expand\": true,\n" +
-        "            \"binary\": false,\n" +
-        "            \"queue\": false,\n" +
-        "            \"owner_funds\": false\n" +
-        "        }";
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"accounts\": false,\n" +
+      "            \"full\": false,\n" +
+      "            \"transactions\": false,\n" +
+      "            \"expand\": true,\n" +
+      "            \"binary\": false,\n" +
+      "            \"queue\": false,\n" +
+      "            \"owner_funds\": false\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }

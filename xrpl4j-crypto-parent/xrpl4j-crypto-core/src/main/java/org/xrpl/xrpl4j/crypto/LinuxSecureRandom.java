@@ -38,18 +38,6 @@ import java.security.Security;
 public class LinuxSecureRandom extends SecureRandomSpi {
 
   private static final FileInputStream urandom;
-
-  private static class LinuxSecureRandomProvider extends Provider {
-
-    public LinuxSecureRandomProvider() {
-      super(
-        "LinuxSecureRandom",
-        1.0,
-        "A Linux specific random number provider that uses /dev/urandom");
-      put("SecureRandom.LinuxSecureRandom", LinuxSecureRandom.class.getName());
-    }
-  }
-
   private static final Logger log = LoggerFactory.getLogger(LinuxSecureRandom.class);
 
   static {
@@ -106,9 +94,21 @@ public class LinuxSecureRandom extends SecureRandomSpi {
   }
 
   @Override
+  @SuppressWarnings("ParameterName")
   protected byte[] engineGenerateSeed(int i) {
     byte[] bits = new byte[i];
     engineNextBytes(bits);
     return bits;
+  }
+
+  private static class LinuxSecureRandomProvider extends Provider {
+
+    public LinuxSecureRandomProvider() {
+      super(
+        "LinuxSecureRandom",
+        1.0,
+        "A Linux specific random number provider that uses /dev/urandom");
+      put("SecureRandom.LinuxSecureRandom", LinuxSecureRandom.class.getName());
+    }
   }
 }

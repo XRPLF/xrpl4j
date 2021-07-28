@@ -19,6 +19,7 @@ public class Utils {
    * See {@link Utils#doubleDigest(byte[], int, int)}.
    *
    * @param input A byte array to double digest.
+   *
    * @return The SHA-256 hash of the SHA-256 hash of the given input.
    */
   public static byte[] doubleDigest(byte[] input) {
@@ -32,6 +33,7 @@ public class Utils {
    * @param input  A byte array to double digest.
    * @param offset The beginning index of the input to digest.
    * @param length The length of the input to digest.
+   *
    * @return The SHA-256 hash of the SHA-256 hash of the given input.
    */
   public static byte[] doubleDigest(byte[] input, int offset, int length) {

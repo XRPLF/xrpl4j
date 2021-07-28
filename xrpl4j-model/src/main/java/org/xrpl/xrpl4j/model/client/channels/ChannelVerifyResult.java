@@ -14,6 +14,11 @@ import org.xrpl.xrpl4j.model.client.XrplResult;
 @JsonDeserialize(as = ImmutableChannelVerifyResult.class)
 public interface ChannelVerifyResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableChannelVerifyResult.Builder}.
+   */
   static ImmutableChannelVerifyResult.Builder builder() {
     return ImmutableChannelVerifyResult.builder();
   }

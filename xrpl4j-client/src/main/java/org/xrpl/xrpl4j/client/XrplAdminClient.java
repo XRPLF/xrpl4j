@@ -7,7 +7,7 @@ import org.xrpl.xrpl4j.model.client.admin.AcceptLedgerResult;
 /**
  * A client that can call Rippled Admin API methods. @see "https://xrpl.org/admin-rippled-methods.html".
  *
- * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
+ * <p>Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
 @Beta
 public class XrplAdminClient {
@@ -33,8 +33,8 @@ public class XrplAdminClient {
    */
   public AcceptLedgerResult acceptLedger() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
-        .method("ledger_accept")
-        .build();
+      .method("ledger_accept")
+      .build();
 
     return jsonRpcClient.send(request, AcceptLedgerResult.class);
   }

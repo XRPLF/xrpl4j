@@ -22,6 +22,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableMemo.class)
 public interface Memo {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableMemo.Builder}.
+   */
   static ImmutableMemo.Builder builder() {
     return ImmutableMemo.builder();
   }

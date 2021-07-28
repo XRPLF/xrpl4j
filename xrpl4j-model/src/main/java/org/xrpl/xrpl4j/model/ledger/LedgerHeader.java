@@ -25,6 +25,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableLedgerHeader.class)
 public interface LedgerHeader {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableLedgerHeader.Builder}.
+   */
   static ImmutableLedgerHeader.Builder builder() {
     return ImmutableLedgerHeader.builder();
   }

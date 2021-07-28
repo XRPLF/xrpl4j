@@ -16,6 +16,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @JsonDeserialize(as = ImmutableChannelVerifyRequestParams.class)
 public interface ChannelVerifyRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableChannelVerifyRequestParams.Builder}.
+   */
   static ImmutableChannelVerifyRequestParams.Builder builder() {
     return ImmutableChannelVerifyRequestParams.builder();
   }

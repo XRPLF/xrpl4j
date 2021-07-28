@@ -44,24 +44,24 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "    \"ledger\": {\n" +
-        "      \"account_hash\": \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +
-        "      \"close_time\": 638329271,\n" +
-        "      \"close_time_human\": \"2020-Mar-24 01:41:11.000000000 UTC\",\n" +
-        "      \"close_time_resolution\": 10,\n" +
-        "      \"closed\": true,\n" +
-        "      \"ledger_hash\": \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
-        "      \"ledger_index\": 54300940,\n" +
-        "      \"parent_close_time\": 638329270,\n" +
-        "      \"parent_hash\": \"AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D\",\n" +
-        "      \"total_coins\": \"99991024049618156\",\n" +
-        "      \"transaction_hash\": \"FC6FFCB71B2527DDD630EE5409D38913B4D4C026AA6C3B14A3E9D4ED45CFE30D\"\n" +
-        "    },\n" +
-        "    \"ledger_hash\": \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
-        "    \"ledger_index\": 54300940,\n" +
-        "    \"status\": \"success\",\n" +
-        "    \"validated\": true\n" +
-        "  }";
+      "    \"ledger\": {\n" +
+      "      \"account_hash\": \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +
+      "      \"close_time\": 638329271,\n" +
+      "      \"close_time_human\": \"2020-Mar-24 01:41:11.000000000 UTC\",\n" +
+      "      \"close_time_resolution\": 10,\n" +
+      "      \"closed\": true,\n" +
+      "      \"ledger_hash\": \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
+      "      \"ledger_index\": 54300940,\n" +
+      "      \"parent_close_time\": 638329270,\n" +
+      "      \"parent_hash\": \"AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D\",\n" +
+      "      \"total_coins\": \"99991024049618156\",\n" +
+      "      \"transaction_hash\": \"FC6FFCB71B2527DDD630EE5409D38913B4D4C026AA6C3B14A3E9D4ED45CFE30D\"\n" +
+      "    },\n" +
+      "    \"ledger_hash\": \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
+      "    \"ledger_index\": 54300940,\n" +
+      "    \"status\": \"success\",\n" +
+      "    \"validated\": true\n" +
+      "  }";
 
     assertCanSerializeAndDeserialize(result, json);
 

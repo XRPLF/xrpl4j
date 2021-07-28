@@ -12,6 +12,7 @@ import java.util.Optional;
  * Transaction metadata is a section of data that gets added to a transaction after it is processed.
  * Any transaction that gets included in a ledger has metadata, regardless of whether it is successful.
  * The transaction metadata describes the outcome of the transaction in detail.
+ *
  * @see "https://xrpl.org/transaction-metadata.html"
  */
 @Immutable
@@ -19,6 +20,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableTransactionMetadata.class)
 public interface TransactionMetadata {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableTransactionMetadata.Builder}.
+   */
   static ImmutableTransactionMetadata.Builder builder() {
     return ImmutableTransactionMetadata.builder();
   }

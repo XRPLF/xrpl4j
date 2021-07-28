@@ -23,6 +23,13 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableSubmitResult.class)
 public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The actual type of {@link Transaction} that was submitted.
+   *
+   * @return An {@link ImmutableSubmitResult.Builder}
+   */
   static <T extends Transaction> ImmutableSubmitResult.Builder<T> builder() {
     return ImmutableSubmitResult.builder();
   }
@@ -31,7 +38,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return An optionally-present {@link String} containing the result of the submission.
-   * @deprecated  use {@link #result()} instead.
+   * @deprecated use {@link #result()} instead.
    */
   @Deprecated
   @Value.Auxiliary
@@ -110,7 +117,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * {@code false} indicates the transaction was not broadcast to any other servers.
    *
    * @return {@code true} if this transaction was broadcast to peer servers in the peer-to-peer XRP Ledger network,
-   *     otherwise {@code false}.
+   *   otherwise {@code false}.
    */
   boolean broadcast();
 

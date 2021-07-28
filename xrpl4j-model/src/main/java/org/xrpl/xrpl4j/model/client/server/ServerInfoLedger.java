@@ -18,6 +18,11 @@ import java.math.BigDecimal;
 @JsonDeserialize(as = ImmutableServerInfoLedger.class)
 public interface ServerInfoLedger {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfoLedger.Builder}.
+   */
   static ImmutableServerInfoLedger.Builder builder() {
     return ImmutableServerInfoLedger.builder();
   }

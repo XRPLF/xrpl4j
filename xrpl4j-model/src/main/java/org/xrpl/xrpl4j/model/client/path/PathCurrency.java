@@ -17,9 +17,9 @@ import java.util.Optional;
 public interface PathCurrency {
 
   /**
-   * Builder immutable path currency . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable path currency . builder
+   * @return An {@link ImmutablePathCurrency.Builder}.
    */
   static ImmutablePathCurrency.Builder builder() {
     return ImmutablePathCurrency.builder();
@@ -35,8 +35,8 @@ public interface PathCurrency {
    */
   static PathCurrency of(String currency) {
     return builder()
-        .currency(currency)
-        .build();
+      .currency(currency)
+      .build();
   }
 
   /**

@@ -26,6 +26,9 @@ import java.util.Optional;
  */
 public class TransactionResultDeserializer<T extends Transaction> extends StdDeserializer<TransactionResult<T>> {
 
+  /**
+   * No-args constructor.
+   */
   protected TransactionResultDeserializer() {
     super(TransactionResult.class);
   }
@@ -47,12 +50,12 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);
 
     return TransactionResult.<T>builder()
-        .transaction(transaction)
-        .ledgerIndex(Optional.ofNullable(ledgerIndex))
-        .status(Optional.ofNullable(status))
-        .validated(validated)
-        .metadata(metadata)
-        .build();
+      .transaction(transaction)
+      .ledgerIndex(Optional.ofNullable(ledgerIndex))
+      .status(Optional.ofNullable(status))
+      .validated(validated)
+      .metadata(metadata)
+      .build();
   }
 
   private Optional<TransactionMetadata> getTransactionMetadata(ObjectMapper objectMapper, ObjectNode objectNode) {

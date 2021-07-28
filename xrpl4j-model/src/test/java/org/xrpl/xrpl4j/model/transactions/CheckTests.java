@@ -13,12 +13,12 @@ public class CheckTests {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(100);
     Hash256 checkId = Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334");
     CheckCash checkCash = CheckCash.builder()
-        .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
-        .checkId(checkId)
-        .sequence(UnsignedInteger.ONE)
-        .fee(XrpCurrencyAmount.ofDrops(12))
-        .amount(amount)
-        .build();
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(checkId)
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(amount)
+      .build();
 
     assertThat(checkCash.amount()).isPresent().get().isEqualTo(amount);
     assertThat(checkCash.deliverMin()).isEmpty();
@@ -30,12 +30,12 @@ public class CheckTests {
     XrpCurrencyAmount deliverMin = XrpCurrencyAmount.ofDrops(100);
     Hash256 checkId = Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334");
     CheckCash checkCash = CheckCash.builder()
-        .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
-        .checkId(checkId)
-        .sequence(UnsignedInteger.ONE)
-        .fee(XrpCurrencyAmount.ofDrops(12))
-        .deliverMin(deliverMin)
-        .build();
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(checkId)
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .deliverMin(deliverMin)
+      .build();
 
     assertThat(checkCash.deliverMin()).isPresent().get().isEqualTo(deliverMin);
     assertThat(checkCash.amount()).isEmpty();

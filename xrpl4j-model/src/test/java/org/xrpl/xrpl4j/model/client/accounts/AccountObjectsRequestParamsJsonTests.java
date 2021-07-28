@@ -71,12 +71,12 @@ public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "            \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-        "            \"ledger_index\": \"validated\",\n" +
-        "            \"type\": \"state\",\n" +
-        "            \"deletion_blockers_only\": false,\n" +
-        "            \"limit\": 10\n" +
-        "        }";
+      "            \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "            \"ledger_index\": \"validated\",\n" +
+      "            \"type\": \"state\",\n" +
+      "            \"deletion_blockers_only\": false,\n" +
+      "            \"limit\": 10\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }

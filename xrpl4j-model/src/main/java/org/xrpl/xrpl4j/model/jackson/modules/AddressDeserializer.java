@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class AddressDeserializer extends StdDeserializer<Address> {
 
+  /**
+   * No-args constructor.
+   */
   public AddressDeserializer() {
     super(Address.class);
   }

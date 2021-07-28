@@ -21,6 +21,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableSignerListObject.class)
 public interface SignerListObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSignerListObject.Builder}.
+   */
   static ImmutableSignerListObject.Builder builder() {
     return ImmutableSignerListObject.builder();
   }

@@ -16,6 +16,7 @@ public interface TransactionVerifier {
    *                                 verification.
    * @param transactionWithSignature A {@link SignedTransaction} with a {@link Signature} over a supplied {@link
    *                                 Transaction}.
+   * @param <T>                      The actual type of {@link Transaction}.
    *
    * @return {@code true} if the signature is valid and verified; {@code false} otherwise.
    */

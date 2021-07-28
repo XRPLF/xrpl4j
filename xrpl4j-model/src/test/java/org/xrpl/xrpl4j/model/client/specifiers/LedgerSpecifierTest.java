@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class LedgerSpecifierTest {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
-  public static final Hash256 LEDGER_HASH = Hash256.of("0000000000000000000000000000000000000000000000000000000000000000");
+  public static final Hash256 LEDGER_HASH = Hash256.of(Strings.repeat("0", 64));
 
   @Test
   void specifyOneSpecifier() {

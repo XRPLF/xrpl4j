@@ -13,6 +13,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableSigner.class)
 public interface Signer {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableSigner.Builder}.
+   */
   static ImmutableSigner.Builder builder() {
     return ImmutableSigner.builder();
   }

@@ -12,7 +12,7 @@ import java.util.Arrays;
  * checksum, which is necessary for XRPL Address encoding.
  */
 public class Base58 {
-  public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz" .toCharArray();
+  public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz".toCharArray();
 
   private static final int[] INDEXES = new int[255];
 
@@ -27,6 +27,7 @@ public class Base58 {
    * Encodes the given bytes to a Base58 {@link String}.
    *
    * @param input A byte array to encode.
+   *
    * @return The bytes encoded to a Base58 {@link String}
    */
   public static String encode(byte[] input) {
@@ -69,6 +70,7 @@ public class Base58 {
    * Decodes a Base58 encoded {@link String} to a byte array.
    *
    * @param input The Base58 {@link String}.
+   *
    * @return A byte array containing the decoded Base58 {@link String}.
    */
   public static byte[] decode(String input) {
@@ -120,6 +122,7 @@ public class Base58 {
    * Encodes the given byte array to a Base58 {@link String} with a 4 byte checksum appended.
    *
    * @param bytes The byte array to encode.
+   *
    * @return A {@link String} containing the Base58Check encoded bytes.
    */
   public static String encodeChecked(byte[] bytes) {
@@ -136,6 +139,7 @@ public class Base58 {
    * Decodes the given Base58Check encoded {@link String} to a byte array, and validates the checksum.
    *
    * @param input A Base58Check encoded {@link String}.
+   *
    * @return A byte array containing the decoded value.
    * @throws EncodingFormatException If the input is not Base58 encoded or the checksum does not validate.
    */

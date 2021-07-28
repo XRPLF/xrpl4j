@@ -25,15 +25,15 @@ public class Xrpl4jModule extends SimpleModule {
    */
   public Xrpl4jModule() {
     super(
-        NAME,
-        new Version(
-            1,
-            0,
-            0,
-            null,
-            "org.xrpl.xrpl4j",
-            "xrpl4j"
-        )
+      NAME,
+      new Version(
+        1,
+        0,
+        0,
+        null,
+        "org.xrpl.xrpl4j",
+        "xrpl4j"
+      )
     );
 
     addSerializer(Address.class, new AddressSerializer());

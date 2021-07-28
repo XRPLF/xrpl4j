@@ -43,15 +43,15 @@ public class LedgerIndexShortcut {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object other) {
+    if (this == other) {
       return true;
     }
-    if (!(o instanceof LedgerIndexShortcut)) {
+    if (!(other instanceof LedgerIndexShortcut)) {
       return false;
     }
 
-    LedgerIndexShortcut that = (LedgerIndexShortcut) o;
+    LedgerIndexShortcut that = (LedgerIndexShortcut) other;
 
     return Objects.equals(value, that.value);
   }

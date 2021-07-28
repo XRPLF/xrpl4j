@@ -23,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableDepositPreAuth.class)
 public interface DepositPreAuth extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableDepositPreAuth.Builder}.
+   */
   static ImmutableDepositPreAuth.Builder builder() {
     return ImmutableDepositPreAuth.builder();
   }
@@ -65,7 +70,7 @@ public interface DepositPreAuth extends Transaction {
   @Value.Check
   default void validateFieldPresence() {
     Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent()) &&
-            !(authorize().isPresent() && unauthorize().isPresent()),
-        "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
+        !(authorize().isPresent() && unauthorize().isPresent()),
+      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
 }

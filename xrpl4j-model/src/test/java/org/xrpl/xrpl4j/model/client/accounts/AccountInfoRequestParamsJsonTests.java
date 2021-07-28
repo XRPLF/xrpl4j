@@ -63,12 +63,12 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
         .build();
 
     String json = "{\n" +
-        "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
-        "            \"strict\": true,\n" +
-        "            \"ledger_index\": \"current\",\n" +
-        "            \"signer_lists\": true,\n" +
-        "            \"queue\": true\n" +
-        "        }";
+      "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
+      "            \"strict\": true,\n" +
+      "            \"ledger_index\": \"current\",\n" +
+      "            \"signer_lists\": true,\n" +
+      "            \"queue\": true\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }

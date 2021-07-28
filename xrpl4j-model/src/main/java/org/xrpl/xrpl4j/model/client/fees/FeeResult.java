@@ -21,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableFeeResult.class)
 public interface FeeResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableFeeResult.Builder}.
+   */
   static ImmutableFeeResult.Builder builder() {
     return ImmutableFeeResult.builder();
   }

@@ -32,12 +32,13 @@ public abstract class AbstractSignatureService implements SignatureService {
    *
    * @param keyStoreType   The {@link KeyStoreType} for this service.
    * @param signatureUtils An {@link SignatureUtils} for help with signing.
-   * @param keyPairService
+   * @param keyPairService A {@link KeyPairService} to sign transactions.
    */
   public AbstractSignatureService(
     final KeyStoreType keyStoreType,
     final SignatureUtils signatureUtils,
-    final KeyPairService keyPairService) {
+    final KeyPairService keyPairService
+  ) {
     this.keyStoreType = Objects.requireNonNull(keyStoreType);
     this.signatureUtils = Objects.requireNonNull(signatureUtils);
     this.keyPairService = keyPairService;

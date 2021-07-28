@@ -16,6 +16,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePathStep.class)
 public interface PathStep {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePathStep.Builder}.
+   */
   static ImmutablePathStep.Builder builder() {
     return ImmutablePathStep.builder();
   }

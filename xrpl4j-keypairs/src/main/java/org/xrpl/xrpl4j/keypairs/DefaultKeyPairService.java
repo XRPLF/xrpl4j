@@ -18,10 +18,10 @@ public class DefaultKeyPairService extends AbstractKeyPairService {
    * A map of the existing {@link KeyPairService} implementations, keyed by {@link VersionType}.
    */
   private static final Map<VersionType, Supplier<KeyPairService>> serviceMap =
-      new ImmutableMap.Builder<VersionType, Supplier<KeyPairService>>()
-          .put(VersionType.SECP256K1, Secp256k1KeyPairService::getInstance)
-          .put(VersionType.ED25519, Ed25519KeyPairService::getInstance)
-          .build();
+    new ImmutableMap.Builder<VersionType, Supplier<KeyPairService>>()
+      .put(VersionType.SECP256K1, Secp256k1KeyPairService::getInstance)
+      .put(VersionType.ED25519, Ed25519KeyPairService::getInstance)
+      .build();
 
   private static KeyPairService getKeyPairServiceByType(VersionType type) {
     return serviceMap.get(type).get();
@@ -52,8 +52,8 @@ public class DefaultKeyPairService extends AbstractKeyPairService {
   @Override
   public KeyPair deriveKeyPair(String seed) {
     return addressCodec.decodeSeed(seed).type()
-        .map(type -> DefaultKeyPairService.getKeyPairServiceByType(type).deriveKeyPair(seed))
-        .orElseThrow(() -> new IllegalArgumentException("Unsupported seed type."));
+      .map(type -> DefaultKeyPairService.getKeyPairServiceByType(type).deriveKeyPair(seed))
+      .orElseThrow(() -> new IllegalArgumentException("Unsupported seed type."));
   }
 
   @Override

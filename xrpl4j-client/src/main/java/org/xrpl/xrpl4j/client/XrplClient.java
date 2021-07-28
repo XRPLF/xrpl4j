@@ -15,12 +15,16 @@ import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
@@ -244,6 +248,24 @@ public class XrplClient {
   }
 
   /**
+   * Get the {@link AccountCurrenciesResult} for the account specified in {@code params} by making an account_currencies
+   * method call.
+   *
+   * @param params The {@link AccountCurrenciesRequestParams} to send in the request.
+   *
+   * @return The {@link AccountCurrenciesResult} returned by the account_currencies method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountCurrenciesResult accountCurrencies(AccountCurrenciesRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_CURRENCIES)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountCurrenciesResult.class);
+  }
+
+  /**
    * Get the {@link AccountInfoResult} for the account specified in {@code params} by making an account_info method
    * call.
    *
@@ -276,6 +298,24 @@ public class XrplClient {
       .addParams(params)
       .build();
     return jsonRpcClient.send(request, AccountObjectsResult.class);
+  }
+
+  /**
+   * Get the {@link AccountOffersResult} for the account specified in {@code params} by making an account_offers
+   * method call.
+   *
+   * @param params The {@link AccountOffersRequestParams} to send in the request.
+   *
+   * @return The {@link AccountOffersResult} returned by the account_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountOffersResult accountOffers(AccountCurrenciesRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountOffersResult.class);
   }
 
   /**

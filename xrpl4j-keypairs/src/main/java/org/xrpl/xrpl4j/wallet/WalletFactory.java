@@ -15,7 +15,7 @@ public interface WalletFactory {
    *               (if {@code false}).
    *
    * @return A {@link SeedWalletGenerationResult}, which contains the seed that was generated,
-   *         as well as the {@link Wallet}.
+   *   as well as the {@link Wallet}.
    */
   SeedWalletGenerationResult randomWallet(boolean isTest);
 

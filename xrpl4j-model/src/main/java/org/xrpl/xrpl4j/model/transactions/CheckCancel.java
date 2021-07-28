@@ -17,6 +17,11 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 @JsonDeserialize(as = ImmutableCheckCancel.class)
 public interface CheckCancel extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCheckCancel.Builder}.
+   */
   static ImmutableCheckCancel.Builder builder() {
     return ImmutableCheckCancel.builder();
   }

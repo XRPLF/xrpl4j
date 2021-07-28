@@ -21,9 +21,9 @@ import java.util.Optional;
 public interface CheckCreate extends Transaction {
 
   /**
-   * Builder immutable check create . builder.
+   * Construct a builder for this class.
    *
-   * @return the immutable check create . builder
+   * @return An {@link ImmutableCheckCreate.Builder}.
    */
   static ImmutableCheckCreate.Builder builder() {
     return ImmutableCheckCreate.builder();

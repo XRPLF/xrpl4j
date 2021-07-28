@@ -14,6 +14,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableMemoWrapper.class)
 public interface MemoWrapper {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableMemoWrapper.Builder}.
+   */
   static ImmutableMemoWrapper.Builder builder() {
     return ImmutableMemoWrapper.builder();
   }

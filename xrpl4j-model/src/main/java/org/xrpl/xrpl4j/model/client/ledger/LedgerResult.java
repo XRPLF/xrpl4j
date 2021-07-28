@@ -19,6 +19,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableLedgerResult.class)
 public interface LedgerResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableLedgerResult.Builder}.
+   */
   static ImmutableLedgerResult.Builder builder() {
     return ImmutableLedgerResult.builder();
   }

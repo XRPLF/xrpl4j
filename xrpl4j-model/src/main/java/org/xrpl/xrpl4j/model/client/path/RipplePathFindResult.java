@@ -17,6 +17,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableRipplePathFindResult.class)
 public interface RipplePathFindResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableRipplePathFindResult.Builder}.
+   */
   static ImmutableRipplePathFindResult.Builder builder() {
     return ImmutableRipplePathFindResult.builder();
   }

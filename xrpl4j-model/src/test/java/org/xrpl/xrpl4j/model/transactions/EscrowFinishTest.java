@@ -17,12 +17,12 @@ public class EscrowFinishTest {
   @Test
   public void testNormalizeWithNoFulfillmentNoCondition() {
     EscrowFinish actual = EscrowFinish.builder()
-        .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
-        .sequence(UnsignedInteger.ONE)
-        .owner(Address.of("owner"))
-        .offerSequence(UnsignedInteger.ZERO)
-        .build();
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("account"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("owner"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .build();
 
     assertThat(actual.condition()).isNotPresent();
     assertThat(actual.fulfillment()).isNotPresent();
@@ -76,14 +76,14 @@ public class EscrowFinishTest {
     Fulfillment fulfillment = PreimageSha256Fulfillment.from("ssh".getBytes());
 
     EscrowFinish actual = EscrowFinish.builder()
-        .fee(XrpCurrencyAmount.ofDrops(330))
-        .account(Address.of("account"))
-        .sequence(UnsignedInteger.ONE)
-        .owner(Address.of("owner"))
-        .offerSequence(UnsignedInteger.ZERO)
-        .fulfillment(fulfillment)
-        .condition(fulfillment.getDerivedCondition())
-        .build();
+      .fee(XrpCurrencyAmount.ofDrops(330))
+      .account(Address.of("account"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("owner"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .fulfillment(fulfillment)
+      .condition(fulfillment.getDerivedCondition())
+      .build();
 
     assertThat(actual.condition()).isPresent();
     assertThat(actual.account()).isEqualTo(Address.of("account"));
@@ -118,11 +118,11 @@ public class EscrowFinishTest {
   @Test
   public void testNormalizeWithVariousFulfillmentSizes() {
     Builder builder = EscrowFinish.builder()
-        .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
-        .sequence(UnsignedInteger.ONE)
-        .owner(Address.of("owner"))
-        .offerSequence(UnsignedInteger.ZERO);
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("account"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("owner"))
+      .offerSequence(UnsignedInteger.ZERO);
 
     // 0 bytes
     Fulfillment fulfillment = PreimageSha256Fulfillment.from(new byte[0]);
@@ -202,35 +202,35 @@ public class EscrowFinishTest {
   public void testComputeFee() {
     // 0 bytes
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[0])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(330));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[0])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(330));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[1])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(330));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[1])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(330));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[2])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(330));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[2])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(330));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[15])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(330));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[15])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(330));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[16])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(340));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[16])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(340));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[17])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(340));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[17])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(340));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[31])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(340));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[31])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(340));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[32])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(350));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[32])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(350));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[33])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(350));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[33])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(350));
     assertThat(
-        EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[64])))
-        .isEqualTo(XrpCurrencyAmount.ofDrops(370));
+      EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), PreimageSha256Fulfillment.from(new byte[64])))
+      .isEqualTo(XrpCurrencyAmount.ofDrops(370));
   }
 
 }

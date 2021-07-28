@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @JsonDeserialize(as = ImmutableFeeDrops.class)
 public interface FeeDrops {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableFeeDrops.Builder}.
+   */
   static ImmutableFeeDrops.Builder builder() {
     return ImmutableFeeDrops.builder();
   }

@@ -27,6 +27,16 @@ import java.util.Objects;
  */
 public final class BcKeyUtils {
 
+  private static final String SECP256K1 = "secp256k1";
+  private static final ECNamedCurveParameterSpec EC_PARAMS = ECNamedCurveTable.getParameterSpec(SECP256K1);
+  static final ECDomainParameters PARAMS =
+    new ECDomainParameters(
+      EC_PARAMS.getCurve(),
+      EC_PARAMS.getG(),
+      EC_PARAMS.getN(),
+      EC_PARAMS.getH()
+    );
+
   static {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       final BouncyCastleProvider bcProvider = new BouncyCastleProvider();
@@ -36,16 +46,11 @@ public final class BcKeyUtils {
     }
   }
 
-  private static final String SECP256K1 = "secp256k1";
-
-  private static final ECNamedCurveParameterSpec EC_PARAMS = ECNamedCurveTable.getParameterSpec(SECP256K1);
-  static final ECDomainParameters PARAMS =
-    new ECDomainParameters(
-      EC_PARAMS.getCurve(),
-      EC_PARAMS.getG(),
-      EC_PARAMS.getN(),
-      EC_PARAMS.getH()
-    );
+  /**
+   * No-args Constructor to prevent instantiation.
+   */
+  private BcKeyUtils() {
+  }
 
   /**
    * Convert from a {@link Ed25519PrivateKeyParameters} to a {@link PrivateKey}.
@@ -215,11 +220,5 @@ public final class BcKeyUtils {
 
     final BigInteger privateKeyInt = new BigInteger(privateKey.base16Encoded(), 16);
     return new ECPrivateKeyParameters(privateKeyInt, ecDomainParameters);
-  }
-
-  /**
-   * No-args Constructor to prevent instantiation.
-   */
-  private BcKeyUtils() {
   }
 }

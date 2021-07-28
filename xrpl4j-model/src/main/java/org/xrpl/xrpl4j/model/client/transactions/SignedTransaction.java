@@ -28,6 +28,13 @@ public interface SignedTransaction<T extends Transaction> {
    */
   String SIGNED_TRANSACTION_HASH_PREFIX = "54584E00";
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The actual type of {@link Transaction} enclosed in this {@code SignedTransaction}.
+   *
+   * @return An {@link ImmutableSignedTransaction.Builder}.
+   */
   static <T extends Transaction> ImmutableSignedTransaction.Builder<T> builder() {
     return ImmutableSignedTransaction.builder();
   }

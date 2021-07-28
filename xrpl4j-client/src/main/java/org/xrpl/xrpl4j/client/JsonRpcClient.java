@@ -26,7 +26,7 @@ import java.util.Optional;
  * making network calls and deserializing responses. All higher order functionality such as signing and serialization
  * should be implemented in a wrapper class.
  *
- * Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
+ * <p>Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
 @Beta
 public interface JsonRpcClient {
@@ -52,12 +52,12 @@ public interface JsonRpcClient {
     Objects.requireNonNull(rippledUrl);
 
     return Feign.builder()
-        .encoder(new JacksonEncoder(objectMapper))
-        // rate limiting will return a 503 status that can be retried
-        .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
-        .decode404()
-        .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-        .target(JsonRpcClient.class, rippledUrl.toString());
+      .encoder(new JacksonEncoder(objectMapper))
+      // rate limiting will return a 503 status that can be retried
+      .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
+      .decode404()
+      .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
+      .target(JsonRpcClient.class, rippledUrl.toString());
   }
 
   /**
@@ -69,25 +69,25 @@ public interface JsonRpcClient {
    */
   @RequestLine("POST /")
   @Headers( {
-      HEADER_ACCEPT + ": " + APPLICATION_JSON,
-      HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
+    HEADER_ACCEPT + ": " + APPLICATION_JSON,
+    HEADER_CONTENT_TYPE + ": " + APPLICATION_JSON,
   })
   JsonNode postRpcRequest(JsonRpcRequest rpcRequest);
 
   /**
    * Send a given request to rippled.
    *
-   * @param request      The {@link JsonRpcRequest} to send to the server.
-   * @param resultType   The type of {@link XrplResult} that should be returned.
-   * @param <T> The extension of {@link XrplResult} corresponding to the request method.
+   * @param request    The {@link JsonRpcRequest} to send to the server.
+   * @param resultType The type of {@link XrplResult} that should be returned.
+   * @param <T>        The extension of {@link XrplResult} corresponding to the request method.
    *
    * @return The {@link T} representing the result of the request.
    * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
   default <T extends XrplResult> T send(
-      JsonRpcRequest request,
-      Class<T> resultType
+    JsonRpcRequest request,
+    Class<T> resultType
   ) throws JsonRpcClientErrorException {
     JavaType javaType = objectMapper.constructType(resultType);
     return send(request, javaType);
@@ -99,17 +99,17 @@ public interface JsonRpcClient {
    * with type parameters. In this case, you can use an {@link ObjectMapper}'s
    * {@link com.fasterxml.jackson.databind.type.TypeFactory} to construct parameterized types.
    *
-   * @param request      The {@link JsonRpcRequest} to send to the server.
-   * @param resultType   The type of {@link XrplResult} that should be returned, converted to a {@link JavaType}.
-   * @param <T> The extension of {@link XrplResult} corresponding to the request method.
+   * @param request    The {@link JsonRpcRequest} to send to the server.
+   * @param resultType The type of {@link XrplResult} that should be returned, converted to a {@link JavaType}.
+   * @param <T>        The extension of {@link XrplResult} corresponding to the request method.
    *
    * @return The {@link T} representing the result of the request.
    * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
   default <T extends XrplResult> T send(
-      JsonRpcRequest request,
-      JavaType resultType
+    JsonRpcRequest request,
+    JavaType resultType
   ) throws JsonRpcClientErrorException {
     JsonNode response = postRpcRequest(request);
     JsonNode result = response.get("result");
@@ -133,8 +133,8 @@ public interface JsonRpcClient {
       JsonNode result = response.get("result");
       if (result.has("error")) {
         String errorMessage = Optional.ofNullable(result.get("error_exception"))
-            .map(JsonNode::asText)
-            .orElseGet(() -> result.get("error_message").asText());
+          .map(JsonNode::asText)
+          .orElseGet(() -> result.get("error_message").asText());
         throw new JsonRpcClientErrorException(errorMessage);
       }
     }

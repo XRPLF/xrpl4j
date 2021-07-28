@@ -21,6 +21,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAccountTransactionsRequestParams.class)
 public interface AccountTransactionsRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
   static ImmutableAccountTransactionsRequestParams.Builder builder() {
     return ImmutableAccountTransactionsRequestParams.builder();
   }
@@ -82,7 +87,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * ordered.)
    *
    * @return {@code true} if values should be indexed with the oldest ledger first, otherwise {@code false}. Defaults
-   * to {@code false}.
+   *   to {@code false}.
    */
   @Value.Default
   default boolean forward() {

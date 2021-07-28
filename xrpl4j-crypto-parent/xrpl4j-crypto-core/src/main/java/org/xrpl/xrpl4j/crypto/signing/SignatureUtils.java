@@ -65,6 +65,15 @@ public class SignatureUtils {
     }
   }
 
+  /**
+   * Helper method to convert a {@link Transaction} into bytes that can be signed by multiple signers, as
+   * is the case when the source account has set a SignerList.
+   *
+   * @param transaction   A {@link Transaction} to be signed.
+   * @param signerAddress The address of the signer of the transaction.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, String signerAddress) {
     Objects.requireNonNull(transaction);
     Objects.requireNonNull(signerAddress);

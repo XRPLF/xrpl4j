@@ -10,14 +10,14 @@ public class ChannelVerifyResultJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     ChannelVerifyResult result = ChannelVerifyResult.builder()
-        .signatureVerified(true)
-        .status("success")
-        .build();
+      .signatureVerified(true)
+      .status("success")
+      .build();
 
     String json = "{\n" +
-        "        \"signature_verified\":true,\n" +
-        "        \"status\":\"success\"\n" +
-        "    }";
+      "        \"signature_verified\":true,\n" +
+      "        \"status\":\"success\"\n" +
+      "    }";
 
     assertCanSerializeAndDeserialize(result, json);
   }

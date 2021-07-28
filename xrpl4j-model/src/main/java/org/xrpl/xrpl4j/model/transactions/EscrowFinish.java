@@ -23,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableEscrowFinish.class)
 public interface EscrowFinish extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableEscrowFinish.Builder}.
+   */
   static ImmutableEscrowFinish.Builder builder() {
     return ImmutableEscrowFinish.builder();
   }
@@ -44,11 +49,11 @@ public interface EscrowFinish extends Transaction {
     Objects.requireNonNull(fulfillment);
 
     UnsignedLong newFee =
-        currentLedgerFeeDrops.value() // <-- usually 10 drops, per the docs.
-            // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
-            .plus(UnsignedLong.valueOf(320))
-            // <-- 10 drops for each additional 16 bytes.
-            .plus(UnsignedLong.valueOf(10 * (fulfillment.getDerivedCondition().getCost() / 16)));
+      currentLedgerFeeDrops.value() // <-- usually 10 drops, per the docs.
+        // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
+        .plus(UnsignedLong.valueOf(320))
+        // <-- 10 drops for each additional 16 bytes.
+        .plus(UnsignedLong.valueOf(10 * (fulfillment.getDerivedCondition().getCost() / 16)));
     return XrpCurrencyAmount.of(newFee);
   }
 
@@ -107,13 +112,13 @@ public interface EscrowFinish extends Transaction {
     fulfillment().ifPresent(f -> {
         UnsignedLong feeInDrops = fee().value();
         Preconditions.checkState(condition().isPresent(),
-            "If a fulfillment is specified, the corresponding condition must also be specified.");
+          "If a fulfillment is specified, the corresponding condition must also be specified.");
         Preconditions.checkState(FluentCompareTo.is(feeInDrops).greaterThanEqualTo(UnsignedLong.valueOf(330)),
-            "If a fulfillment is specified, the fee must be set to 330 or greater.");
+          "If a fulfillment is specified, the fee must be set to 330 or greater.");
       }
     );
     condition().ifPresent($ -> Preconditions.checkState(fulfillment().isPresent(),
-        "If a condition is specified, the corresponding fulfillment must also be specified."));
+      "If a condition is specified, the corresponding fulfillment must also be specified."));
   }
 
 }

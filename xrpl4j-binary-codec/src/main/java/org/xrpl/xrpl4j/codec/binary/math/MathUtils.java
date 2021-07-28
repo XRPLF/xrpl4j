@@ -38,7 +38,6 @@ public class MathUtils {
    * @param expectedDigits An int representing the total number of digits that {@code numberToPad} is expected to have.
    *
    * @return A {@link BigInteger} that is correctly padded.
-   *
    * @throws IllegalArgumentException if {@code numberToPad} does not have a total digit count equal to {@code
    *                                  expectedDigits}.
    */

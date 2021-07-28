@@ -302,7 +302,7 @@
 
     <!-- org.apache.maven.plugins:maven-checkstyle-plugin -->
     <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
-    <checkstyle.violationSeverity>error</checkstyle.violationSeverity>
+    <checkstyle.violationSeverity>warning</checkstyle.violationSeverity>
 
     <skipITs>false</skipITs>
 
@@ -414,11 +414,10 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.1.0</version>
           <configuration>
-            <excludes>
-              <exclude>**/generated-sources/**/*</exclude>
-            </excludes>
-            <!-- FIXME: Remove this once javadocs are fixed -->
-            <failOnWarnings>false</failOnWarnings>
+            <sourceFileExcludes>
+              <sourceFileExclude>**/generated-sources/**/*</sourceFileExclude>
+            </sourceFileExcludes>
+            <failOnWarnings>true</failOnWarnings>
             <source>8</source>
           </configuration>
           <executions>
@@ -442,10 +441,15 @@
             <consoleOutput>true</consoleOutput>
             <linkXRef>false</linkXRef>
             <failOnViolation>true</failOnViolation>
-            <excludes>**/generated-sources/**/*,**/generated-test-sources/**/*</excludes>
+            <excludes>
+              **/generated-sources/**/*,**/generated-test-sources/**/*
+            </excludes>
             <sourceDirectories>
               <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
             </sourceDirectories>
+            <testSourceDirectories>
+              <testSourceDirectory>${project.build.testSourceDirectory}</testSourceDirectory>
+            </testSourceDirectories>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
           </configuration>
           <dependencies>

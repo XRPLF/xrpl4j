@@ -1,7 +1,8 @@
 package org.xrpl.xrpl4j.model.client.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;

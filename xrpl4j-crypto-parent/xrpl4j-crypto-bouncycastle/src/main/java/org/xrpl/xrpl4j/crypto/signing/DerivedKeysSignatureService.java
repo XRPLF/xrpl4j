@@ -176,7 +176,6 @@ public class DerivedKeysSignatureService implements SignatureService {
    *                          generate a seed for entropy.
    *
    * @return A {@link Seed} that can be used to generate an XRPL public/private key pair.
-   *
    * @see "https://xrpl.org/cryptographic-keys.html#key-derivation"
    */
   @VisibleForTesting
@@ -206,7 +205,6 @@ public class DerivedKeysSignatureService implements SignatureService {
    *                          generate a seed for entropy.
    *
    * @return A {@link Seed} that can be used to generate an XRPL public/private key pair.
-   *
    * @see "https://xrpl.org/cryptographic-keys.html#key-derivation"
    */
   @VisibleForTesting

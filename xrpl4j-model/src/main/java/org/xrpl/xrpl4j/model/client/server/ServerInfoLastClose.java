@@ -15,6 +15,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableServerInfoLastClose.class)
 public interface ServerInfoLastClose {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfoLastClose.Builder}.
+   */
   static ImmutableServerInfoLastClose.Builder builder() {
     return ImmutableServerInfoLastClose.builder();
   }

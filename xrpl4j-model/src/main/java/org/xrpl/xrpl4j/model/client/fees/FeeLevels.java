@@ -17,6 +17,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @JsonDeserialize(as = ImmutableFeeLevels.class)
 public interface FeeLevels {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableFeeLevels.Builder}.
+   */
   static ImmutableFeeLevels.Builder builder() {
     return ImmutableFeeLevels.builder();
   }

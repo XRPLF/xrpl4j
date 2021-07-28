@@ -16,6 +16,11 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableServerInfoLoad.class)
 public interface ServerInfoLoad {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfoLoad.Builder}.
+   */
   static ImmutableServerInfoLoad.Builder builder() {
     return ImmutableServerInfoLoad.builder();
   }

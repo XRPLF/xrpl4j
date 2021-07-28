@@ -34,6 +34,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePayChannelObject.class)
 public interface PayChannelObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePayChannelObject.Builder}.
+   */
   static ImmutablePayChannelObject.Builder builder() {
     return ImmutablePayChannelObject.builder();
   }

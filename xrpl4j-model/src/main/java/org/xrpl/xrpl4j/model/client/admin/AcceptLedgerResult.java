@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 @JsonDeserialize(as = ImmutableAcceptLedgerResult.class)
 public interface AcceptLedgerResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAcceptLedgerResult.Builder}.
+   */
   static ImmutableAcceptLedgerResult.Builder builder() {
     return ImmutableAcceptLedgerResult.builder();
   }

@@ -24,6 +24,11 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 @JsonDeserialize(as = ImmutableDepositPreAuthObject.class)
 public interface DepositPreAuthObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableDepositPreAuthObject.Builder}.
+   */
   static ImmutableDepositPreAuthObject.Builder builder() {
     return ImmutableDepositPreAuthObject.builder();
   }

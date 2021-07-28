@@ -23,6 +23,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableOfferObject.class)
 public interface OfferObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableOfferObject.Builder}.
+   */
   static ImmutableOfferObject.Builder builder() {
     return ImmutableOfferObject.builder();
   }

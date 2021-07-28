@@ -19,6 +19,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableLedgerRequestParams.class)
 public interface LedgerRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableLedgerRequestParams.Builder}.
+   */
   static ImmutableLedgerRequestParams.Builder builder() {
     return ImmutableLedgerRequestParams.builder();
   }
@@ -51,7 +56,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * <p>Note: You must be a rippled Admin to set to true.
    *
    * @return {@code true} if requesting full information on the entire ledger, otherwise {@code false}.
-   *     Defaults to {@code false}.
+   *   Defaults to {@code false}.
    */
   @Value.Default
   default boolean full() {
@@ -67,7 +72,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * <p>Note: You must be a rippled Admin to set to true.
    *
    * @return {@code true} if requesting account information, otherwise {@code false}.
-   *     Defaults to {@code false}.
+   *   Defaults to {@code false}.
    */
   @Value.Default
   default boolean accounts() {
@@ -79,7 +84,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * Ignored if you did not specify {@link #ledgerHash()}.
    *
    * @return {@code true} if requesting transactions, otherwise {@code false}.
-   *     Defaults to {@code false}.
+   *   Defaults to {@code false}.
    */
   @Value.Default
   default boolean transactions() {
@@ -103,7 +108,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * Ignored unless {@link #transactions()} and {@link #expand()} are true.
    *
    * @return {@code true} if requesting the {@code "owner_funds"} field, otherwise {@code false}.
-   *     Defaults to {@code false}.
+   *   Defaults to {@code false}.
    */
   @JsonProperty("owner_funds")
   @Value.Default
@@ -126,7 +131,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
    * If true, and the command is requesting the current ledger, includes an array of queued transactions in the results.
    *
    * @return {@code true} if requesting queued transactions, otherwise {@code false}.
-   *     Defaults to {@code false}.
+   *   Defaults to {@code false}.
    */
   @Value.Default
   default boolean queue() {

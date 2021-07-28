@@ -13,6 +13,11 @@ import org.xrpl.xrpl4j.model.client.XrplResult;
 @JsonDeserialize(as = ImmutableServerInfoResult.class)
 public interface ServerInfoResult extends XrplResult {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableServerInfoResult.Builder}.
+   */
   static ImmutableServerInfoResult.Builder builder() {
     return ImmutableServerInfoResult.builder();
   }

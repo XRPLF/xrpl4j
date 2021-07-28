@@ -14,15 +14,6 @@ import java.util.Optional;
 public interface KeyMetadata {
 
   /**
-   * A Builder for immutables.
-   *
-   * @return A {@link ImmutableKeyMetadata.Builder}.
-   */
-  static ImmutableKeyMetadata.Builder builder() {
-    return ImmutableKeyMetadata.builder();
-  }
-
-  /**
    * Any empty instance that conformas to this interface but is otherwise empty. The purpose of this instance is to
    * enable the signing interface to work with implementations that don't have more than a single private key internally
    * without having to introduce null values into the API.
@@ -33,6 +24,15 @@ public interface KeyMetadata {
     .keyIdentifier("n/a")
     .keyVersion("n/a")
     .build();
+
+  /**
+   * A Builder for immutables.
+   *
+   * @return A {@link ImmutableKeyMetadata.Builder}.
+   */
+  static ImmutableKeyMetadata.Builder builder() {
+    return ImmutableKeyMetadata.builder();
+  }
 
   /**
    * The unique identifier of the platform that can decode this secret.

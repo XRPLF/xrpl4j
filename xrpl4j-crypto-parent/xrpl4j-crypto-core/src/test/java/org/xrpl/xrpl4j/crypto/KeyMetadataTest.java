@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
 /**
  * Unit tests for {@link KeyMetadata}.

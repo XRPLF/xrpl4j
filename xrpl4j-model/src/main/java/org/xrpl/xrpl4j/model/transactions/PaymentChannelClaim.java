@@ -42,6 +42,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePaymentChannelClaim.class)
 public interface PaymentChannelClaim extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutablePaymentChannelClaim.Builder}.
+   */
   static ImmutablePaymentChannelClaim.Builder builder() {
     return ImmutablePaymentChannelClaim.builder();
   }

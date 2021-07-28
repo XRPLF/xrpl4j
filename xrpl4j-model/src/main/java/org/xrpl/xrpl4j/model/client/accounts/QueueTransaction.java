@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @JsonDeserialize(as = ImmutableQueueTransaction.class)
 public interface QueueTransaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableQueueTransaction.Builder}.
+   */
   static ImmutableQueueTransaction.Builder builder() {
     return ImmutableQueueTransaction.builder();
   }
@@ -23,7 +28,7 @@ public interface QueueTransaction {
    * Whether this transaction changes this address's ways of authorizing transactions.
    *
    * @return {@code true} if this transaction changes this account's ways of authorizing transactions, otherwise
-   *     {@code false}.
+   *   {@code false}.
    */
   @JsonProperty("auth_change")
   boolean authChange();

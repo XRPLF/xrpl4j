@@ -24,6 +24,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableRippleStateObject.class)
 public interface RippleStateObject extends LedgerObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableRippleStateObject.Builder}.
+   */
   static ImmutableRippleStateObject.Builder builder() {
     return ImmutableRippleStateObject.builder();
   }

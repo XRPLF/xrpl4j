@@ -137,8 +137,9 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Try to send a Payment from sender wallet to receiver wallet
-    AccountInfoResult senderAccountInfo = this
-      .scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
+    );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -180,12 +181,13 @@ public class DepositPreAuthIT extends AbstractIT {
    *
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */
-  private AccountInfoResult enableDepositPreauth(Wallet wallet, XrpCurrencyAmount fee)
-    throws JsonRpcClientErrorException {
+  private AccountInfoResult enableDepositPreauth(
+    Wallet wallet,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
       .fee(fee)

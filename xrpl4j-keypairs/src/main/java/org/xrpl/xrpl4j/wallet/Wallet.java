@@ -25,9 +25,8 @@ public interface Wallet {
    * The private key of the wallet, encoded in hexadecimal.
    *
    * @return An optionally present {@link String} containing a private key.
-   *
    * @deprecated This method will be removed in a future version. Consider storing private keys in an associated
-   *     instance of TransactionSigner.
+   *   instance of TransactionSigner.
    */
   @Deprecated
   Optional<String> privateKey();

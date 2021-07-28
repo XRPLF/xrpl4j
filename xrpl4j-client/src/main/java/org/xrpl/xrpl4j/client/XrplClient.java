@@ -507,7 +507,7 @@ public class XrplClient {
    *
    * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.
    * @deprecated This method will go away in a future version and be replaced with the implementation in SignatureUtils
-   *     in the xrpl4j-crypto module.
+   *   in the xrpl4j-crypto module.
    */
   @Deprecated
   private Transaction addSignature(

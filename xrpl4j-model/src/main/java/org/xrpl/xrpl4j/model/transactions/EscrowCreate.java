@@ -8,7 +8,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
@@ -109,8 +108,8 @@ public interface EscrowCreate extends Transaction {
   default void check() {
     if (cancelAfter().isPresent() && finishAfter().isPresent()) {
       Preconditions.checkState(
-          finishAfter().get().compareTo(cancelAfter().get()) < 0,
-          "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
+        finishAfter().get().compareTo(cancelAfter().get()) < 0,
+        "If both CancelAfter and FinishAfter are specified, the FinishAfter time must be before the CancelAfter time."
       );
     }
   }

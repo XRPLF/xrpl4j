@@ -48,7 +48,7 @@ public class Flags {
    */
   public static Flags of(Flags flag, Flags... others) {
     return flag.bitwiseOr(
-        Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
+      Arrays.stream(others).reduce(Flags::bitwiseOr).orElse(UNSET)
     );
   }
 
@@ -167,7 +167,7 @@ public class Flags {
        */
       public TransactionFlags build() {
         return new TransactionFlags(
-            tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
         );
       }
     }
@@ -225,10 +225,10 @@ public class Flags {
     private static PaymentFlags of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment,
                                    boolean tfLimitQuality) {
       return new PaymentFlags(of(
-          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
-          tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
-          tfLimitQuality ? LIMIT_QUALITY : UNSET
+        tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+        tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
+        tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
+        tfLimitQuality ? LIMIT_QUALITY : UNSET
       ).getValue());
     }
 
@@ -585,21 +585,21 @@ public class Flags {
     }
 
     private static TrustSetFlags of(
-        boolean tfFullyCanonicalSig,
-        boolean tfSetfAuth,
-        boolean tfSetNoRipple,
-        boolean tfClearNoRipple,
-        boolean tfSetFreeze,
-        boolean tfClearFreeze
+      boolean tfFullyCanonicalSig,
+      boolean tfSetfAuth,
+      boolean tfSetNoRipple,
+      boolean tfClearNoRipple,
+      boolean tfSetFreeze,
+      boolean tfClearFreeze
     ) {
       return new TrustSetFlags(
-          Flags.of(
-              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-              tfSetfAuth ? SET_F_AUTH : UNSET,
-              tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
-              tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
-              tfSetFreeze ? SET_FREEZE : UNSET,
-              tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
+        Flags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfSetfAuth ? SET_F_AUTH : UNSET,
+          tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
+          tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
+          tfSetFreeze ? SET_FREEZE : UNSET,
+          tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
       );
     }
 
@@ -752,12 +752,12 @@ public class Flags {
        */
       public TrustSetFlags build() {
         return TrustSetFlags.of(
-            tfFullyCanonicalSig,
-            tfSetfAuth,
-            tfSetNoRipple,
-            tfClearNoRipple,
-            tfSetFreeze,
-            tfClearFreeze
+          tfFullyCanonicalSig,
+          tfSetfAuth,
+          tfSetNoRipple,
+          tfClearNoRipple,
+          tfSetFreeze,
+          tfClearFreeze
         );
       }
     }
@@ -950,18 +950,18 @@ public class Flags {
     }
 
     private static OfferCreateFlags of(
-        boolean tfFullyCanonicalSig,
-        boolean tfPassive,
-        boolean tfImmediateOrCancel,
-        boolean tfFillOrKill,
-        boolean tfSell
+      boolean tfFullyCanonicalSig,
+      boolean tfPassive,
+      boolean tfImmediateOrCancel,
+      boolean tfFillOrKill,
+      boolean tfSell
     ) {
       long value = Flags.of(
-          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfPassive ? PASSIVE : UNSET,
-          tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
-          tfFillOrKill ? FILL_OR_KILL : UNSET,
-          tfSell ? SELL : UNSET
+        tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+        tfPassive ? PASSIVE : UNSET,
+        tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
+        tfFillOrKill ? FILL_OR_KILL : UNSET,
+        tfSell ? SELL : UNSET
       ).getValue();
       return new OfferCreateFlags(value);
     }
@@ -1088,11 +1088,11 @@ public class Flags {
        */
       public OfferCreateFlags build() {
         return OfferCreateFlags.of(
-            tfFullyCanonicalSig,
-            tfPassive,
-            tfImmediateOrCancel,
-            tfFillOrKill,
-            tfSell
+          tfFullyCanonicalSig,
+          tfPassive,
+          tfImmediateOrCancel,
+          tfFillOrKill,
+          tfSell
         );
       }
     }
@@ -1179,11 +1179,11 @@ public class Flags {
 
     private static PaymentChannelClaimFlags of(boolean tfFullyCanonicalSig, boolean tfRenew, boolean tfClose) {
       return new PaymentChannelClaimFlags(
-          TransactionFlags.of(
-              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-              tfRenew ? RENEW : UNSET,
-              tfClose ? CLOSE : UNSET
-          ).getValue()
+        TransactionFlags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfRenew ? RENEW : UNSET,
+          tfClose ? CLOSE : UNSET
+        ).getValue()
       );
     }
 

@@ -42,7 +42,7 @@ public interface QueueData {
    * this address can queue no further transactions until that transaction has been executed or dropped from the queue.
    *
    * @return {@code true} if a transaction in the queue changes this account's way of authorizing transactions,
-   *     otherwise {@code false}.
+   *   otherwise {@code false}.
    */
   @JsonProperty("auth_change_queued")
   @Value.Default

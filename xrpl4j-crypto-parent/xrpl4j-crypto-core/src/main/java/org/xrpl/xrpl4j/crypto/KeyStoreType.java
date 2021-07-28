@@ -48,13 +48,6 @@ public interface KeyStoreType {
   }
 
   /**
-   * The unique identifier of this KeyStore type.
-   *
-   * @return A {@link String}
-   */
-  String keystoreId();
-
-  /**
    * Helper method to construct a org.xrpl4j.crypto.keystore type from a {@link String}.
    *
    * @param keystoreTypeId A {@link String} identifying the KeyStore type to construct.
@@ -68,6 +61,13 @@ public interface KeyStoreType {
       .map(KeyStoreType::of)
       .orElseThrow(() -> new IllegalArgumentException("KeyStoreType must be non-null and have at least 1 character"));
   }
+
+  /**
+   * The unique identifier of this KeyStore type.
+   *
+   * @return A {@link String}
+   */
+  String keystoreId();
 
   /**
    * For immutables.

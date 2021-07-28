@@ -24,6 +24,7 @@ public class UnsignedByte {
    * Construct an {@link UnsignedByte} from an {@code int}.
    *
    * @param value An {@code int} value.
+   *
    * @return An {@link UnsignedByte}.
    */
   public static UnsignedByte of(int value) {
@@ -34,6 +35,7 @@ public class UnsignedByte {
    * Construct an {@link UnsignedByte} from a {@code byte}.
    *
    * @param value A {@code byte} value.
+   *
    * @return An {@link UnsignedByte}.
    */
   public static UnsignedByte of(byte value) {
@@ -44,7 +46,8 @@ public class UnsignedByte {
    * Construct an {@link UnsignedByte} from high bits and low bits.
    *
    * @param highBits A {@code byte} of the high bits.
-   * @param lowBits A {@code byte} of the low bits.
+   * @param lowBits  A {@code byte} of the low bits.
+   *
    * @return An {@link UnsignedByte}.
    */
   public static UnsignedByte of(byte highBits, byte lowBits) {
@@ -55,6 +58,7 @@ public class UnsignedByte {
    * Construct an {@link UnsignedByte} from a hexadecimal {@link String}.
    *
    * @param hex A hexadecimal encoded {@link String}.
+   *
    * @return An {@link UnsignedByte}.
    */
   public static UnsignedByte of(String hex) {
@@ -106,6 +110,7 @@ public class UnsignedByte {
    * Checks if the nth bit (1-based index from left to right) is set.
    *
    * @param nth The index of the bit to check.
+   *
    * @return {@code true} if the nth bit is set, otherwise {@code false}.
    */
   public boolean isNthBitSet(int nth) {
@@ -118,6 +123,7 @@ public class UnsignedByte {
    * {@link UnsignedByte} as the result.
    *
    * @param unsignedByte The {@link UnsignedByte} to perform a bitwise OR on.
+   *
    * @return The result of the bitwise OR operation.
    */
   public UnsignedByte or(UnsignedByte unsignedByte) {

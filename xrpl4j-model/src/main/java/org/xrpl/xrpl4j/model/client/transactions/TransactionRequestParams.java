@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -39,7 +38,7 @@ public interface TransactionRequestParams extends XrplRequestParams {
    * @param transactionHash A {@link Hash256} containing the transaction hash of the transaction to look up.
    *
    * @return {@link TransactionRequestParams} with {@link TransactionRequestParams#transaction()} set to
-   *     {@code transactionHash}
+   *   {@code transactionHash}
    */
   static TransactionRequestParams of(Hash256 transactionHash) {
     return builder().transaction(transactionHash).build();

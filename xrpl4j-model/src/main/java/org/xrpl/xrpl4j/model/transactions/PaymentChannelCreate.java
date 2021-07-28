@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;

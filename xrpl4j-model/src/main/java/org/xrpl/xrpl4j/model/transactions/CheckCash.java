@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.TransactionFlags;
 
@@ -84,7 +83,7 @@ public interface CheckCash extends Transaction {
   @Value.Check
   default void validateOnlyOneAmountSet() {
     Preconditions.checkArgument((amount().isPresent() || deliverMin().isPresent()) &&
-            !(amount().isPresent() && deliverMin().isPresent()),
-        "The CheckCash transaction must include either amount or deliverMin, but not both.");
+        !(amount().isPresent() && deliverMin().isPresent()),
+      "The CheckCash transaction must include either amount or deliverMin, but not both.");
   }
 }

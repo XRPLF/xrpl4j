@@ -29,8 +29,8 @@ public class RetryStatusDecoder implements ErrorDecoder {
    */
   public RetryStatusDecoder(Duration retryInterval, Integer retryHttpStatusCode, Integer... otherStatuses) {
     this.retryableStatuses = ImmutableList.<Integer>builder().add(retryHttpStatusCode)
-        .addAll(Arrays.asList(otherStatuses))
-        .build();
+      .addAll(Arrays.asList(otherStatuses))
+      .build();
     this.retryInterval = retryInterval;
   }
 
@@ -39,13 +39,13 @@ public class RetryStatusDecoder implements ErrorDecoder {
     Exception exception = defaultErrorDecoder.decode(methodKey, response);
     if (retryableStatuses.contains(response.status())) {
       JsonRpcClient.logger.error(String.format("##### Got %s response from %s #######", response.status(),
-          methodKey));
+        methodKey));
       return new RetryableException(
-          response.status(),
-          exception.getMessage(),
-          response.request().httpMethod(),
-          Date.from(new Date().toInstant().plus(retryInterval)),
-          response.request()
+        response.status(),
+        exception.getMessage(),
+        response.request().httpMethod(),
+        Date.from(new Date().toInstant().plus(retryInterval)),
+        response.request()
       );
     }
     return exception;

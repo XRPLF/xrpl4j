@@ -33,8 +33,8 @@ public class XrplAdminClient {
    */
   public AcceptLedgerResult acceptLedger() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
-        .method("ledger_accept")
-        .build();
+      .method("ledger_accept")
+      .build();
 
     return jsonRpcClient.send(request, AcceptLedgerResult.class);
   }

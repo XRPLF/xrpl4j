@@ -68,7 +68,7 @@ public interface ServerInfo {
    * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.
    *
    * @return An optionally-present {@link ServerInfoLedger} containing information about the server's view of the most
-   *     recently closed ledger.
+   *   recently closed ledger.
    */
   @JsonProperty("closed_ledger")
   Optional<ServerInfoLedger> closedLedger();
@@ -88,7 +88,7 @@ public interface ServerInfo {
    * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
    *
    * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
-   *     rippled node contains in its history.
+   *   rippled node contains in its history.
    */
   @Derived
   @JsonIgnore
@@ -139,7 +139,7 @@ public interface ServerInfo {
    * @param ledgerIndex An {@link UnsignedLong} representing a particular ledger index.
    *
    * @return {@code true} if the rippled server includes {@code ledgerIndex} in its local database; {@code false}
-   *     otherwise.
+   *   otherwise.
    */
   @Derived
   @JsonIgnore

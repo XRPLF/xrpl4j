@@ -21,9 +21,9 @@ public class XrpCurrencyAmountSerializer extends StdScalarSerializer<XrpCurrency
 
   @Override
   public void serialize(
-      XrpCurrencyAmount xrpCurrencyAmount,
-      JsonGenerator gen,
-      SerializerProvider provider
+    XrpCurrencyAmount xrpCurrencyAmount,
+    JsonGenerator gen,
+    SerializerProvider provider
   ) throws IOException {
     gen.writeString(xrpCurrencyAmount.toString());
   }

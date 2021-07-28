@@ -3,15 +3,9 @@ package org.xrpl.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP;
-import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP_IN_DROPS;
-import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.ONE_XRP_IN_DROPS;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.util.function.Consumer;
 
 /**
  * Unit tests for {@link CurrencyAmount}.

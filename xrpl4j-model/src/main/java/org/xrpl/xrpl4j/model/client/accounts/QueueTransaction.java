@@ -28,7 +28,7 @@ public interface QueueTransaction {
    * Whether this transaction changes this address's ways of authorizing transactions.
    *
    * @return {@code true} if this transaction changes this account's ways of authorizing transactions, otherwise
-   *     {@code false}.
+   *   {@code false}.
    */
   @JsonProperty("auth_change")
   boolean authChange();

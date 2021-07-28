@@ -15,10 +15,10 @@ public interface TransactionSigner {
    *
    * @param keyMetadata A {@link KeyMetadata} that describes the public/private Keypair to use for signing operations.
    * @param transaction A {@link Transaction} to sign.
-   * @param <T> The type of the transaction to be signed.
+   * @param <T>         The type of the transaction to be signed.
    *
    * @return A {@link SignedTransaction} containing binary data that can be submitted to the XRP Ledger in order to
-   *     effect a transaction.
+   *   effect a transaction.
    */
   <T extends Transaction> SignedTransaction<T> sign(KeyMetadata keyMetadata, T transaction);
 
@@ -32,7 +32,7 @@ public interface TransactionSigner {
    *
    * @param keyMetadata A {@link KeyMetadata} that describes the public/private Keypair to use for signing operations.
    * @param transaction A {@link Transaction} to sign.
-   * @param behavior A {@link SigningBehavior} specifying the type of signature that should be produced.
+   * @param behavior    A {@link SigningBehavior} specifying the type of signature that should be produced.
    *
    * @return A {@link Signature} containing the transaction signature.
    */

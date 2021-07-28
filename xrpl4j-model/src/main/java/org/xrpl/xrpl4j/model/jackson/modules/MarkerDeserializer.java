@@ -6,11 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Marker;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 
@@ -28,8 +24,8 @@ public class MarkerDeserializer extends StdDeserializer<Marker> {
 
   @Override
   public Marker deserialize(
-      JsonParser jsonParser,
-      DeserializationContext deserializationContext
+    JsonParser jsonParser,
+    DeserializationContext deserializationContext
   ) throws IOException {
     ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
     JsonNode node = mapper.readTree(jsonParser);

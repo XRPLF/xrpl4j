@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 
 import java.util.Optional;
 
@@ -13,6 +12,7 @@ import java.util.Optional;
  * Transaction metadata is a section of data that gets added to a transaction after it is processed.
  * Any transaction that gets included in a ledger has metadata, regardless of whether it is successful.
  * The transaction metadata describes the outcome of the transaction in detail.
+ *
  * @see "https://xrpl.org/transaction-metadata.html"
  */
 @Immutable

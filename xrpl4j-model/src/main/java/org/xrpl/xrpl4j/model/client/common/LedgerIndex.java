@@ -41,9 +41,9 @@ public class LedgerIndex {
    * @param value The ledger index value as a {@link String}.
    *
    * @deprecated Does not check if the given value is a valid index.
-   *     This constructor should be made private in the future.
-   *     Only the {@link #of(String value)} and {@link #of(UnsignedLong value)}
-   *     factory methods should be used to construct {@link LedgerIndex} objects.
+   *   This constructor should be made private in the future.
+   *   Only the {@link #of(String value)} and {@link #of(UnsignedLong value)}
+   *   factory methods should be used to construct {@link LedgerIndex} objects.
    */
   @Deprecated
   public LedgerIndex(String value) {
@@ -84,6 +84,26 @@ public class LedgerIndex {
   }
 
   /**
+   * Checks to see if a given value is a valid ledger index shortcut.
+   *
+   * @param value A {@link String} containing the value to check.
+   *
+   * @return {@code true} if the value is a valid ledger index shortcut, otherwise {@code false}.
+   */
+  public static boolean isValidShortcut(String value) {
+    if (value.equals("current")) {
+      return true;
+    }
+    if (value.equals("validated")) {
+      return true;
+    }
+    if (value.equals("closed")) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get the value of this {@link LedgerIndex} as a {@link String}.
    *
    * @return The underlying {@code value} of this {@link LedgerIndex}.
@@ -121,26 +141,6 @@ public class LedgerIndex {
    */
   public LedgerIndex plus(LedgerIndex other) {
     return plus(other.unsignedLongValue());
-  }
-
-  /**
-   * Checks to see if a given value is a valid ledger index shortcut.
-   *
-   * @param value A {@link String} containing the value to check.
-   *
-   * @return {@code true} if the value is a valid ledger index shortcut, otherwise {@code false}.
-   */
-  public static boolean isValidShortcut(String value) {
-    if (value.equals("current")) {
-      return true;
-    }
-    if (value.equals("validated")) {
-      return true;
-    }
-    if (value.equals("closed")) {
-      return true;
-    }
-    return false;
   }
 
   @Override

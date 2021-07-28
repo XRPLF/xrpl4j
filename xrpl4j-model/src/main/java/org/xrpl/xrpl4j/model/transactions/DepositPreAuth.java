@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;
@@ -71,7 +70,7 @@ public interface DepositPreAuth extends Transaction {
   @Value.Check
   default void validateFieldPresence() {
     Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent()) &&
-            !(authorize().isPresent() && unauthorize().isPresent()),
-        "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
+        !(authorize().isPresent() && unauthorize().isPresent()),
+      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
 }

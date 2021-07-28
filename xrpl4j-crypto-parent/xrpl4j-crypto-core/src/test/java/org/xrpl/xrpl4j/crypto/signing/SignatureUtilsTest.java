@@ -131,7 +131,7 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  public void toMultiSignableBytes()  throws JsonProcessingException {
+  public void toMultiSignableBytes() throws JsonProcessingException {
     UnsignedByteArray actual = signatureUtils.toMultiSignableBytes(transactionMock, "");
     assertThat(actual.length()).isEqualTo(1);
 

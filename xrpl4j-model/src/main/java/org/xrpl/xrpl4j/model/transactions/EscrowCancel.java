@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 /**
@@ -52,7 +51,7 @@ public interface EscrowCancel extends Transaction {
    * The {@link EscrowCreate#sequence()} of the transaction that created the escrow to cancel.
    *
    * @return An {@link UnsignedInteger} representing the sequence of the {@link EscrowCreate} transaction that created
-   *     the escrow.
+   *   the escrow.
    */
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();

@@ -93,7 +93,7 @@ public interface AccountObjectsResult extends XrplResult {
    * Otherwise, the information is subject to change.
    *
    * @return {@code true} if the information in this response comes from a validated ledger version, otherwise
-   *     {@code false}.
+   *   {@code false}.
    */
   @Value.Default
   default boolean validated() {

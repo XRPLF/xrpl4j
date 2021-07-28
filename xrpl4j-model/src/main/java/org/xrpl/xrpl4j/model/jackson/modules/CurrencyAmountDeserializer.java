@@ -25,8 +25,8 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
 
   @Override
   public CurrencyAmount deserialize(
-      JsonParser jsonParser,
-      DeserializationContext deserializationContext
+    JsonParser jsonParser,
+    DeserializationContext deserializationContext
   ) throws IOException {
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
@@ -36,10 +36,10 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
       String issuer = node.get("issuer").asText();
 
       return IssuedCurrencyAmount.builder()
-          .value(value)
-          .issuer(Address.of(issuer))
-          .currency(currency)
-          .build();
+        .value(value)
+        .issuer(Address.of(issuer))
+        .currency(currency)
+        .build();
     } else {
       return XrpCurrencyAmount.ofDrops(node.asLong());
     }

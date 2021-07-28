@@ -11,14 +11,14 @@ public class PaymentChannelTests {
   @Test
   public void createWithoutCancelAfterOrDestinationTag() {
     PaymentChannelCreate create = PaymentChannelCreate.builder()
-        .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-        .fee(XrpCurrencyAmount.ofDrops(100))
-        .sequence(UnsignedInteger.ONE)
-        .amount(XrpCurrencyAmount.ofDrops(10000))
-        .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-        .settleDelay(UnsignedInteger.ONE)
-        .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
-        .build();
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .build();
 
     assertThat(create.account()).isEqualTo(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"));
     assertThat(create.transactionType()).isEqualTo(TransactionType.PAYMENT_CHANNEL_CREATE);
@@ -32,16 +32,16 @@ public class PaymentChannelTests {
   @Test
   public void createWithSourceAndDestinationTags() {
     PaymentChannelCreate create = PaymentChannelCreate.builder()
-        .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-        .sourceTag(UnsignedInteger.ONE)
-        .fee(XrpCurrencyAmount.ofDrops(100))
-        .sequence(UnsignedInteger.ONE)
-        .amount(XrpCurrencyAmount.ofDrops(10000))
-        .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-        .destinationTag(UnsignedInteger.valueOf(2))
-        .settleDelay(UnsignedInteger.ONE)
-        .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
-        .build();
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .sourceTag(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .destinationTag(UnsignedInteger.valueOf(2))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .build();
 
     assertThat(create.account()).isEqualTo(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"));
     assertThat(create.sourceTag()).isNotEmpty().get().isEqualTo(UnsignedInteger.ONE);
@@ -57,15 +57,15 @@ public class PaymentChannelTests {
   @Test
   public void createWithCancelAfterButWithoutDestinationTag() {
     PaymentChannelCreate create = PaymentChannelCreate.builder()
-        .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-        .fee(XrpCurrencyAmount.ofDrops(100))
-        .sequence(UnsignedInteger.ONE)
-        .amount(XrpCurrencyAmount.ofDrops(10000))
-        .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-        .settleDelay(UnsignedInteger.ONE)
-        .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
-        .cancelAfter(UnsignedLong.valueOf(533171558))
-        .build();
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .build();
 
     assertThat(create.account()).isEqualTo(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"));
     assertThat(create.transactionType()).isEqualTo(TransactionType.PAYMENT_CHANNEL_CREATE);

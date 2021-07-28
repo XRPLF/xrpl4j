@@ -256,7 +256,9 @@ public class XrplClient {
    * @return The {@link AccountCurrenciesResult} returned by the account_currencies method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountCurrenciesResult accountCurrencies(AccountCurrenciesRequestParams params) throws JsonRpcClientErrorException {
+  public AccountCurrenciesResult accountCurrencies(
+    AccountCurrenciesRequestParams params
+  ) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_CURRENCIES)
       .addParams(params)

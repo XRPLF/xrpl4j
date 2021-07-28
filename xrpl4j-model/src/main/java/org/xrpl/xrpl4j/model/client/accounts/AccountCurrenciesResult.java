@@ -44,7 +44,7 @@ public interface AccountCurrenciesResult extends XrplResult {
    * Otherwise, the information is subject to change.
    *
    * @return {@code true} if the information in this response comes from a validated ledger version, {@code false}
-   *   if not.
+   *     if not.
    */
   boolean validated();
 
@@ -57,7 +57,7 @@ public interface AccountCurrenciesResult extends XrplResult {
   List<String> receiveCurrencies();
 
   /**
-   * Array of currency codes for currencies that this account can send
+   * Array of currency codes for currencies that this account can send.
    *
    * @return Array of currencies that this account can send.
    */

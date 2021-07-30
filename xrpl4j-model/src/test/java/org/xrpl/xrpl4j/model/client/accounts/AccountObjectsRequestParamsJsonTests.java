@@ -6,9 +6,9 @@ import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 

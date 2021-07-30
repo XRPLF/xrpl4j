@@ -1,9 +1,8 @@
-package org.xrpl.xrpl4j.model.client.specifiers;
+package org.xrpl.xrpl4j.model.client.common;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
@@ -13,87 +12,6 @@ import java.io.Serializable;
 
 @SuppressWarnings("TypeName")
 public class Wrappers {
-
-  /**
-   * Represents a numerical XRPL ledger version by wrapping an {@link UnsignedLong}.
-   */
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = LedgerIndex.class)
-  @JsonDeserialize(as = LedgerIndex.class)
-  abstract static class _LedgerIndex extends Wrapper<UnsignedLong> implements Serializable {
-
-    @Override
-    public String toString() {
-      return value().toString();
-    }
-
-    /**
-     * Add a {@link LedgerIndex} to this {@link LedgerIndex}.
-     *
-     * @param other Another {@link LedgerIndex} to add.
-     *
-     * @return A {@link LedgerIndex} wrapping the sum of the two wrapped {@link UnsignedLong} values of
-     *   this {@link LedgerIndex} and {@code other}.
-     */
-    public LedgerIndex plus(LedgerIndex other) {
-      checkAdditionOverflow(other.value());
-      return LedgerIndex.of(this.value().plus(other.value()));
-    }
-
-    /**
-     * Add an {@link UnsignedLong} to this {@link LedgerIndex}.
-     *
-     * @param value An {@link UnsignedLong} to add.
-     *
-     * @return A {@link LedgerIndex} wrapping the sum of this {@link LedgerIndex}'s value and {@code value}.
-     */
-    public LedgerIndex plus(UnsignedLong value) {
-      checkAdditionOverflow(value);
-      return LedgerIndex.of(this.value().plus(value));
-    }
-
-    /**
-     * Subtract a {@link LedgerIndex} from this {@link LedgerIndex}.
-     *
-     * @param other Another {@link LedgerIndex} to subtract.
-     *
-     * @return A {@link LedgerIndex} wrapping the difference of the two wrapped {@link UnsignedLong} values of
-     *   this {@link LedgerIndex} and {@code other}.
-     */
-    public LedgerIndex minus(LedgerIndex other) {
-      checkSubtractionOverflow(other.value());
-      return LedgerIndex.of(this.value().minus(other.value()));
-    }
-
-    /**
-     * Subtract an {@link UnsignedLong} from this {@link LedgerIndex}.
-     *
-     * @param value An {@link UnsignedLong} to subtract.
-     *
-     * @return A {@link LedgerIndex} wrapping the difference of this {@link LedgerIndex}'s value and {@code value}.
-     */
-    public LedgerIndex minus(UnsignedLong value) {
-      checkSubtractionOverflow(value);
-      return LedgerIndex.of(this.value().minus(value));
-    }
-
-    @Value.Auxiliary
-    private void checkAdditionOverflow(UnsignedLong addedValue) {
-      Preconditions.checkArgument(
-        FluentCompareTo.is(UnsignedLong.MAX_VALUE.minus(addedValue)).greaterThanEqualTo(this.value()),
-        String.format("Value too large. Adding %s would cause an overflow.", addedValue)
-      );
-    }
-
-    @Value.Auxiliary
-    private void checkSubtractionOverflow(UnsignedLong subtractedValue) {
-      Preconditions.checkArgument(
-        FluentCompareTo.is(subtractedValue).lessThanOrEqualTo(this.value()),
-        String.format("Value too large. Subtracting %s would cause an overflow.", subtractedValue)
-      );
-    }
-  }
 
   /**
    * This class is similar to {@link LedgerIndex} in that it represents a numerical ledger version on the XRP Ledger.
@@ -138,8 +56,8 @@ public class Wrappers {
      *   {@code ledgerIndex}.
      */
     public LedgerIndexBound plus(LedgerIndex ledgerIndex) {
-      checkAdditionOverflow(ledgerIndex.value().longValue());
-      return LedgerIndexBound.of(this.value() + ledgerIndex.value().longValue());
+      checkAdditionOverflow(ledgerIndex.unsignedLongValue().longValue());
+      return LedgerIndexBound.of(this.value() + ledgerIndex.unsignedLongValue().longValue());
     }
 
     /**
@@ -187,8 +105,8 @@ public class Wrappers {
      *   {@code ledgerIndex}.
      */
     public LedgerIndexBound minus(LedgerIndex ledgerIndex) {
-      checkSubtractionInBounds(ledgerIndex.value().longValue());
-      return LedgerIndexBound.of(this.value() - ledgerIndex.value().longValue());
+      checkSubtractionInBounds(ledgerIndex.unsignedLongValue().longValue());
+      return LedgerIndexBound.of(this.value() - ledgerIndex.unsignedLongValue().longValue());
     }
 
     /**

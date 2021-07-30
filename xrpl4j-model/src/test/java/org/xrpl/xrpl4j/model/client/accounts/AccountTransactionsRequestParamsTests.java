@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 public class AccountTransactionsRequestParamsTests {

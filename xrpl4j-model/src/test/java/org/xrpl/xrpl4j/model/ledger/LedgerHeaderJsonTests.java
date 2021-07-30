@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;

@@ -17,7 +17,7 @@ public class LedgerIndex {
    * Constant shortcut value to request a rippled server's current working version of the ledger.
    *
    * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
-   * @deprecated Ledger index shortcut values should now be specified using {@link org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut}.
+   * @deprecated Ledger index shortcut values should now be specified using {@link LedgerIndexShortcut}.
    */
   @Deprecated
   public static final LedgerIndex CURRENT = LedgerIndex.of("current");
@@ -26,7 +26,7 @@ public class LedgerIndex {
    * Constant shortcut value to request the most recent ledger that has been validated by consensus.
    *
    * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
-   * @deprecated Ledger index shortcut values should now be specified using {@link org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut}.
+   * @deprecated Ledger index shortcut values should now be specified using {@link LedgerIndexShortcut}.
    */
   @Deprecated
   public static final LedgerIndex VALIDATED = LedgerIndex.of("validated");
@@ -36,7 +36,7 @@ public class LedgerIndex {
    * and proposed for validation.
    *
    * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
-   * @deprecated Ledger index shortcut values should now be specified using {@link org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut}.
+   * @deprecated Ledger index shortcut values should now be specified using {@link LedgerIndexShortcut}.
    */
   @Deprecated
   public static final LedgerIndex CLOSED = LedgerIndex.of("closed");
@@ -67,7 +67,7 @@ public class LedgerIndex {
    * @throws NullPointerException  if value is null
    * @throws NumberFormatException if value is an invalid index
    * @deprecated Ledger index shortcuts will not be specified using this class in the future. Instead,
-   *   use {@link org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut} to specify shortcut values,
+   *   use {@link LedgerIndexShortcut} to specify shortcut values,
    *   and use the {@link UnsignedLong} static constructor for numerical {@link LedgerIndex}es.
    */
   @Deprecated

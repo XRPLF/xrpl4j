@@ -8,9 +8,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.jackson.modules.AccountTransactionsRequestParamsDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Marker;
@@ -76,7 +76,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * numerical ledger index, or a shortcut value.
    *
    * <p>The only valid ledger index shortcut for this request object is
-   * {@link org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut#VALIDATED}.</p>
+   * {@link org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut#VALIDATED}.</p>
    *
    * <p>Setting this value will nullify and take precedence over{@link #ledgerIndexMin()}
    * and {@link #ledgerIndexMax()}</p>

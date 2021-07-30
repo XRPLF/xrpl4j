@@ -7,7 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.XrplResult;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 

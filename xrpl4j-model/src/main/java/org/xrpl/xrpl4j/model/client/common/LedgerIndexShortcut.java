@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.client.specifiers;
+package org.xrpl.xrpl4j.model.client.common;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

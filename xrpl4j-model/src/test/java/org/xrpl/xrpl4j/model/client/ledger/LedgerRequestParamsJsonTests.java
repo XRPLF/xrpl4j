@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 
 public class LedgerRequestParamsJsonTests extends AbstractJsonTest {
 

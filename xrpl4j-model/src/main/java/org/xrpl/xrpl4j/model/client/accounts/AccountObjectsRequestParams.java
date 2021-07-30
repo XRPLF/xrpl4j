@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.client.specifiers;
+package org.xrpl.xrpl4j.model.client.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.json.JSONException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -83,7 +84,7 @@ public class LedgerIndexBoundTests {
     assertThat(subtracted).isEqualTo(LedgerIndexBound.of(100));
     assertThat(subtracted.value()).isEqualTo(100);
 
-    assertDoesNotThrow(
+    Assertions.assertDoesNotThrow(
       () -> ledgerIndexBound1.minus(LedgerIndexBound.of(999))
     );
   }
@@ -109,7 +110,7 @@ public class LedgerIndexBoundTests {
     assertThat(subtracted).isEqualTo(LedgerIndexBound.of(100));
     assertThat(subtracted.value()).isEqualTo(100L);
 
-    assertDoesNotThrow(
+    Assertions.assertDoesNotThrow(
       () -> ledgerIndexBound.minus(LedgerIndex.of(UnsignedLong.valueOf(999)))
     );
   }
@@ -140,11 +141,11 @@ public class LedgerIndexBoundTests {
     assertThat(subtractedInt).isEqualTo(LedgerIndexBound.of(100));
     assertThat(subtractedInt.value()).isEqualTo(100L);
 
-    assertDoesNotThrow(
+    Assertions.assertDoesNotThrow(
       () -> ledgerIndexBound.minus(999)
     );
 
-    assertDoesNotThrow(
+    Assertions.assertDoesNotThrow(
       () -> ledgerIndexBound.minus(999L)
     );
   }

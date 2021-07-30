@@ -3,7 +3,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 
 import java.io.IOException;
 
@@ -30,7 +30,10 @@ public class LedgerSpecifierSerializer extends StdSerializer<LedgerSpecifier> {
     if (ledgerSpecifier.ledgerHash().isPresent()) {
       jsonGenerator.writeStringField("ledger_hash", ledgerSpecifier.ledgerHash().get().value());
     } else if (ledgerSpecifier.ledgerIndex().isPresent()) {
-      jsonGenerator.writeNumberField("ledger_index", ledgerSpecifier.ledgerIndex().get().value().longValue());
+      jsonGenerator.writeNumberField(
+        "ledger_index",
+        ledgerSpecifier.ledgerIndex().get().unsignedLongValue().longValue()
+      );
     } else if (ledgerSpecifier.ledgerIndexShortcut().isPresent()) {
       jsonGenerator.writeStringField("ledger_index", ledgerSpecifier.ledgerIndexShortcut().get().toString());
     }

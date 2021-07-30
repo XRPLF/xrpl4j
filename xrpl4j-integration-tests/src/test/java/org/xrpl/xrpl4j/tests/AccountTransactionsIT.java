@@ -13,12 +13,12 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndexShortcut;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
@@ -112,7 +112,7 @@ public class AccountTransactionsIT {
       LedgerRequestParams.builder()
         .ledgerSpecifier(
           LedgerSpecifier.ledgerIndex(
-            org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex.of(
+            LedgerIndex.of(
               UnsignedLong.valueOf(resultByShortcut.ledgerIndexMin().value()))
           )
         )
@@ -121,7 +121,7 @@ public class AccountTransactionsIT {
 
     Hash256 validatedLedgerHash = ledger.ledgerHash()
       .orElseThrow(() -> new RuntimeException("ledgerHash not present."));
-    org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex validatedLedgerIndex = ledger.ledgerIndex()
+    LedgerIndex validatedLedgerIndex = ledger.ledgerIndex()
       .orElseThrow(() -> new RuntimeException("ledgerIndex not present."));
 
     AccountTransactionsResult resultByLedgerIndex = getAccountTransactions(
@@ -141,7 +141,8 @@ public class AccountTransactionsIT {
     );
 
     assertThat(resultByShortcut.ledgerIndexMin()).isEqualTo(resultByShortcut.ledgerIndexMax());
-    assertThat(resultByShortcut.ledgerIndexMin().value()).isEqualTo(validatedLedgerIndex.value().longValue());
+    assertThat(resultByShortcut.ledgerIndexMin().value())
+      .isEqualTo(validatedLedgerIndex.unsignedLongValue().longValue());
 
     assertThat(resultByShortcut).isEqualTo(resultByLedgerIndex);
     assertThat(resultByLedgerIndex).isEqualTo(resultByLedgerHash);

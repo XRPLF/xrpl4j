@@ -6,7 +6,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class FeeResultJsonTests extends AbstractJsonTest {

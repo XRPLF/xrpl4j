@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
-import org.xrpl.xrpl4j.model.client.specifiers.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;

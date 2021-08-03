@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.accounts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -54,7 +55,7 @@ public class AccountTransactionsRequestParamsTests {
   void constructWithLedgerSpecifier() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))))
       .build();
 
     assertThat(params.ledgerIndexMinimum()).isNull();

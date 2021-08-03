@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.json.JSONException;
@@ -49,7 +50,7 @@ public class LedgerIndexBoundTests {
   @Test
   void addLedgerIndexToBound() {
     LedgerIndexBound ledgerIndexBound = LedgerIndexBound.of(1);
-    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedLong.valueOf(1000));
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(1000));
     LedgerIndexBound added = ledgerIndexBound.plus(ledgerIndex);
     assertThat(added.value()).isEqualTo(1001);
   }
@@ -105,13 +106,13 @@ public class LedgerIndexBoundTests {
   @Test
   void subtractLedgerIndexFromBound() {
     LedgerIndexBound ledgerIndexBound = LedgerIndexBound.of(1000);
-    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedLong.valueOf(900));
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(900));
     LedgerIndexBound subtracted = ledgerIndexBound.minus(ledgerIndex);
     assertThat(subtracted).isEqualTo(LedgerIndexBound.of(100));
     assertThat(subtracted.value()).isEqualTo(100L);
 
     Assertions.assertDoesNotThrow(
-      () -> ledgerIndexBound.minus(LedgerIndex.of(UnsignedLong.valueOf(999)))
+      () -> ledgerIndexBound.minus(LedgerIndex.of(UnsignedInteger.valueOf(999)))
     );
   }
 
@@ -119,12 +120,12 @@ public class LedgerIndexBoundTests {
   void subtractLedgerIndexTooLarge() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndexBound.of(1000).minus(LedgerIndex.of(UnsignedLong.valueOf(1000)))
+      () -> LedgerIndexBound.of(1000).minus(LedgerIndex.of(UnsignedInteger.valueOf(1000)))
     );
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndexBound.of(1000).minus(LedgerIndex.of(UnsignedLong.valueOf(10000)))
+      () -> LedgerIndexBound.of(1000).minus(LedgerIndex.of(UnsignedInteger.valueOf(10000)))
     );
   }
 

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ public class AccountCurrenciesResultJsonTests extends AbstractJsonTest {
   public void testFullJson() throws JsonProcessingException, JSONException {
     AccountCurrenciesResult result = AccountCurrenciesResult.builder()
       .ledgerHash(Hash256.of("B9D3D80EDF4083A06B2D51202E0BFB63C46FC0985E015D06767C21A62853BF6D"))
-      .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(37230600)))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(37230600)))
       .status("success")
       .validated(true)
       .addSendCurrencies("USD")

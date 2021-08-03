@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.json.JSONException;
@@ -37,7 +38,7 @@ class LedgerSpecifierTest {
     );
 
     assertDoesNotThrow(
-      () -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
+      () -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
     );
 
     assertDoesNotThrow(
@@ -51,7 +52,7 @@ class LedgerSpecifierTest {
       IllegalArgumentException.class,
       () -> ImmutableLedgerSpecifier.builder()
         .ledgerHash(LEDGER_HASH)
-        .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
+        .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
         .build()
     );
 
@@ -66,7 +67,7 @@ class LedgerSpecifierTest {
     assertThrows(
       IllegalArgumentException.class,
       () -> ImmutableLedgerSpecifier.builder()
-        .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
+        .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
         .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
         .build()
     );
@@ -75,7 +76,7 @@ class LedgerSpecifierTest {
       IllegalArgumentException.class,
       () -> ImmutableLedgerSpecifier.builder()
         .ledgerHash(LEDGER_HASH)
-        .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
+        .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
         .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
         .build()
     );
@@ -92,7 +93,7 @@ class LedgerSpecifierTest {
   @Test
   void specifyUsingUtilityConstructors() {
     assertDoesNotThrow(() -> LedgerSpecifier.ledgerHash(LEDGER_HASH));
-    assertDoesNotThrow(() -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE)));
+    assertDoesNotThrow(() -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)));
     assertDoesNotThrow(() -> LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT));
   }
 
@@ -100,7 +101,7 @@ class LedgerSpecifierTest {
   void handlesAllCorrectly() {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
       LedgerSpecifier.ledgerHash(LEDGER_HASH),
-      LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE)),
+      LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)),
       LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
     );
 
@@ -148,7 +149,7 @@ class LedgerSpecifierTest {
   void mapsAllCorrectly() {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
       LedgerSpecifier.ledgerHash(LEDGER_HASH),
-      LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE)),
+      LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)),
       LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
     );
 
@@ -218,7 +219,7 @@ class LedgerSpecifierTest {
 
   @Test
   void testLedgerIndexJson() throws JsonProcessingException, JSONException {
-    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE));
+    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE));
     LedgerSpecifierWrapper wrapper = LedgerSpecifierWrapper.of(ledgerSpecifier);
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_index\": 1}";

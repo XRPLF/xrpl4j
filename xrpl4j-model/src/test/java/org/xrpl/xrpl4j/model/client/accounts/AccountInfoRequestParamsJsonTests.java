@@ -100,7 +100,7 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
     AccountInfoRequestParams params = AccountInfoRequestParams.builder()
       .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
       .ledgerSpecifier(
-        LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
+        LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
       )
       .queue(true)
       .build();

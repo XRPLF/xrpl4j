@@ -56,8 +56,8 @@ public class Wrappers {
      *   {@code ledgerIndex}.
      */
     public LedgerIndexBound plus(LedgerIndex ledgerIndex) {
-      checkAdditionOverflow(ledgerIndex.unsignedLongValue().longValue());
-      return LedgerIndexBound.of(this.value() + ledgerIndex.unsignedLongValue().longValue());
+      checkAdditionOverflow(ledgerIndex.unsignedIntegerValue().longValue());
+      return LedgerIndexBound.of(this.value() + ledgerIndex.unsignedIntegerValue().longValue());
     }
 
     /**
@@ -105,8 +105,8 @@ public class Wrappers {
      *   {@code ledgerIndex}.
      */
     public LedgerIndexBound minus(LedgerIndex ledgerIndex) {
-      checkSubtractionInBounds(ledgerIndex.unsignedLongValue().longValue());
-      return LedgerIndexBound.of(this.value() - ledgerIndex.unsignedLongValue().longValue());
+      checkSubtractionInBounds(ledgerIndex.unsignedIntegerValue().longValue());
+      return LedgerIndexBound.of(this.value() - ledgerIndex.unsignedIntegerValue().longValue());
     }
 
     /**

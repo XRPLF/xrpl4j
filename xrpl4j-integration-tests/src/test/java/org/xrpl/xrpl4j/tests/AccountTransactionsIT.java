@@ -144,7 +144,7 @@ public class AccountTransactionsIT {
 
     assertThat(resultByShortcut.ledgerIndexMinimum()).isEqualTo(resultByShortcut.ledgerIndexMaximum());
     assertThat(resultByShortcut.ledgerIndexMinimum().value())
-      .isEqualTo(validatedLedgerIndex.unsignedLongValue().longValue());
+      .isEqualTo(validatedLedgerIndex.unsignedIntegerValue().longValue());
 
     assertThat(resultByShortcut).isEqualTo(resultByLedgerIndex);
     assertThat(resultByLedgerIndex).isEqualTo(resultByLedgerHash);

@@ -68,7 +68,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
   public void testWithLedgerIndex() throws JsonProcessingException, JSONException {
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()
       .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE)))
+      .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)))
       .build();
 
     String json = "{\n" +

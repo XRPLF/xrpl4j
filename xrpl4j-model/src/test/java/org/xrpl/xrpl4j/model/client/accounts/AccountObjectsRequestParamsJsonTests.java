@@ -109,7 +109,7 @@ public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
     AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
       .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .ledgerSpecifier(
-        LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
+        LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
       )
       .type(AccountObjectsRequestParams.AccountObjectType.STATE)
       .deletionBlockersOnly(false)

@@ -78,7 +78,7 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
     } else if (node.has("ledger_index")) {
       final JsonNode ledgerIndex = node.get("ledger_index");
       if (ledgerIndex.isNumber()) {
-        ledgerSpecifier = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(ledgerIndex.asLong())));
+        ledgerSpecifier = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex.asInt())));
       } else {
         ledgerSpecifier = LedgerSpecifier.ledgerIndexShortcut(
           objectMapper.readValue(ledgerIndex.toString(), LedgerIndexShortcut.class)

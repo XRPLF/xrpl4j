@@ -32,7 +32,7 @@ public class LedgerSpecifierSerializer extends StdSerializer<LedgerSpecifier> {
     } else if (ledgerSpecifier.ledgerIndex().isPresent()) {
       jsonGenerator.writeNumberField(
         "ledger_index",
-        ledgerSpecifier.ledgerIndex().get().unsignedLongValue().longValue()
+        ledgerSpecifier.ledgerIndex().get().unsignedIntegerValue().intValue()
       );
     } else if (ledgerSpecifier.ledgerIndexShortcut().isPresent()) {
       jsonGenerator.writeStringField("ledger_index", ledgerSpecifier.ledgerIndexShortcut().get().toString());

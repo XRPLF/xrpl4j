@@ -51,7 +51,7 @@ public class LedgerIndex {
    *
    * @deprecated Does not check if the given value is a valid index.
    *   This constructor should be made private in the future.
-   *   Only the {@link #of(String value)} and {@link #of(UnsignedLong value)}
+   *   Only the {@link #of(String value)} and {@link #of(UnsignedInteger value)}
    *   factory methods should be used to construct {@link LedgerIndex} objects.
    */
   @Deprecated
@@ -90,6 +90,8 @@ public class LedgerIndex {
    *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
    * @throws NullPointerException if value is null
+   * @deprecated In the future, LedgerIndex will wrap an {@link UnsignedInteger}. Use {@link #of(UnsignedInteger)}
+   *   instead.
    */
   @Deprecated
   public static LedgerIndex of(UnsignedLong value) {
@@ -154,10 +156,24 @@ public class LedgerIndex {
    * @param other The {@link UnsignedLong} to add to this {@link LedgerIndex}.
    *
    * @return The sum of the {@link UnsignedLong} and this {@link LedgerIndex}'s {@link UnsignedLong} value.
+   * @deprecated LedgerIndex will only wrap an {@link UnsignedInteger} in the future, so this method will be removed.
+   *   Please use {@link #plus(UnsignedInteger)} instead.
    */
+  @Deprecated
   public LedgerIndex plus(UnsignedLong other) {
-    checkAdditionOverflow(other);
     return LedgerIndex.of(unsignedLongValue().plus(other));
+  }
+
+  /**
+   * Add an {@link UnsignedInteger} to this {@link LedgerIndex}.
+   *
+   * @param other The {@link UnsignedInteger} to add to this {@link LedgerIndex}.
+   *
+   * @return The sum of the {@link UnsignedInteger} and this {@link LedgerIndex}'s {@link UnsignedInteger} value.
+   */
+  public LedgerIndex plus(UnsignedInteger other) {
+    checkAdditionOverflow(other);
+    return LedgerIndex.of(unsignedIntegerValue().plus(other));
   }
 
   /**
@@ -168,7 +184,7 @@ public class LedgerIndex {
    * @return The sum of the {@link LedgerIndex}' and this {@link LedgerIndex}'s {@link UnsignedLong} value.
    */
   public LedgerIndex plus(LedgerIndex other) {
-    return plus(other.unsignedLongValue());
+    return plus(other.unsignedIntegerValue());
   }
 
   /**
@@ -180,31 +196,31 @@ public class LedgerIndex {
    *   this {@link LedgerIndex} and {@code other}.
    */
   public LedgerIndex minus(LedgerIndex other) {
-    return minus(other.unsignedLongValue());
+    return minus(other.unsignedIntegerValue());
   }
 
   /**
-   * Subtract an {@link UnsignedLong} from this {@link LedgerIndex}.
+   * Subtract an {@link UnsignedInteger} from this {@link LedgerIndex}.
    *
-   * @param value An {@link UnsignedLong} to subtract.
+   * @param value An {@link UnsignedInteger} to subtract.
    *
    * @return A {@link LedgerIndex} wrapping the difference of this {@link LedgerIndex}'s value and {@code value}.
    */
-  public LedgerIndex minus(UnsignedLong value) {
+  public LedgerIndex minus(UnsignedInteger value) {
     checkSubtractionOverflow(value);
-    return LedgerIndex.of(this.unsignedLongValue().minus(value));
+    return LedgerIndex.of(this.unsignedIntegerValue().minus(value));
   }
 
-  private void checkAdditionOverflow(UnsignedLong addedValue) {
+  private void checkAdditionOverflow(UnsignedInteger addedValue) {
     Preconditions.checkArgument(
-      FluentCompareTo.is(UnsignedLong.MAX_VALUE.minus(addedValue)).greaterThanEqualTo(this.unsignedLongValue()),
+      FluentCompareTo.is(UnsignedInteger.MAX_VALUE.minus(addedValue)).greaterThanEqualTo(this.unsignedIntegerValue()),
       String.format("Value too large. Adding %s would cause an overflow.", addedValue)
     );
   }
 
-  private void checkSubtractionOverflow(UnsignedLong subtractedValue) {
+  private void checkSubtractionOverflow(UnsignedInteger subtractedValue) {
     Preconditions.checkArgument(
-      FluentCompareTo.is(subtractedValue).lessThanOrEqualTo(this.unsignedLongValue()),
+      FluentCompareTo.is(subtractedValue).lessThanOrEqualTo(this.unsignedIntegerValue()),
       String.format("Value too large. Subtracting %s would cause an overflow.", subtractedValue)
     );
   }

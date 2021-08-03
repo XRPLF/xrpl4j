@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.json.JSONException;
@@ -30,11 +31,11 @@ class LedgerIndexTest {
   void createInvalidLedgerIndex() {
     assertThrows(
       NullPointerException.class,
-      () -> LedgerIndex.of((String) null)
+      () -> LedgerIndex.of((UnsignedInteger) null)
     );
     assertThrows(
       NullPointerException.class,
-      () -> LedgerIndex.of((UnsignedLong) null)
+      () -> LedgerIndex.of((UnsignedInteger) null)
     );
     assertThrows(
       NumberFormatException.class,
@@ -52,9 +53,9 @@ class LedgerIndexTest {
     assertThat(fromString).isEqualTo(fromString);
     assertThat(fromString).isNotEqualTo("42");
 
-    UnsignedLong ul = UnsignedLong.valueOf("42");
-    LedgerIndex fromUnsignedLong = LedgerIndex.of(ul);
-    assertThat(fromString).isEqualTo(fromUnsignedLong);
+    UnsignedInteger ui = UnsignedInteger.valueOf("42");
+    LedgerIndex fromUnsignedInteger = LedgerIndex.of(ui);
+    assertThat(fromString).isEqualTo(fromUnsignedInteger);
     assertThat(fromString).isNotEqualTo(LedgerIndex.CURRENT);
   }
 
@@ -64,9 +65,9 @@ class LedgerIndexTest {
     assertThat(fromString.toString()).isEqualTo("42");
     assertThat(LedgerIndex.CURRENT.toString()).isEqualTo("current");
 
-    UnsignedLong ul = UnsignedLong.valueOf("42");
-    LedgerIndex fromUnsignedLong = LedgerIndex.of(ul);
-    assertThat(fromString.toString()).isEqualTo(fromUnsignedLong.toString());
+    UnsignedInteger ui = UnsignedInteger.valueOf("42");
+    LedgerIndex fromUnsignedInteger = LedgerIndex.of(ui);
+    assertThat(fromString.toString()).isEqualTo(fromUnsignedInteger.toString());
   }
 
   @Test
@@ -74,48 +75,49 @@ class LedgerIndexTest {
     LedgerIndex ledgerIndex = LedgerIndex.of("1");
     assertThat(ledgerIndex.value()).isEqualTo("1");
 
-    final LedgerIndex fromUnsignedLong = LedgerIndex.of(UnsignedLong.ONE);
-    assertThat(ledgerIndex).isEqualTo(fromUnsignedLong);
+    final LedgerIndex fromUnsignedInteger = LedgerIndex.of(UnsignedInteger.ONE);
+    assertThat(ledgerIndex).isEqualTo(fromUnsignedInteger);
 
-    UnsignedLong unsignedLongFromString = ledgerIndex.unsignedLongValue();
-    UnsignedLong unsignedLongFromUnsignedLong = fromUnsignedLong.unsignedLongValue();
-    assertThat(unsignedLongFromString).isEqualTo(unsignedLongFromUnsignedLong);
+    UnsignedInteger unsignedIntegerFromString = ledgerIndex.unsignedIntegerValue();
+    UnsignedInteger unsignedIntegerFromUnsignedInteger = fromUnsignedInteger.unsignedIntegerValue();
+    assertThat(unsignedIntegerFromString).isEqualTo(unsignedIntegerFromUnsignedInteger);
 
-    final LedgerIndex added = ledgerIndex.plus(fromUnsignedLong);
-    assertThat(added).isEqualTo(LedgerIndex.of("2"));
+    final LedgerIndex added = ledgerIndex.plus(fromUnsignedInteger);
+    assertThat(added).isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(2)));
   }
 
   @Test
   public void constructLedgerIndex() {
-    LedgerIndex minLedgerIndex = LedgerIndex.of(UnsignedLong.ONE);
-    assertThat(minLedgerIndex.unsignedLongValue()).isEqualTo(UnsignedLong.ONE);
+    LedgerIndex minLedgerIndex = LedgerIndex.of(UnsignedInteger.ONE);
+    assertThat(minLedgerIndex.unsignedIntegerValue()).isEqualTo(UnsignedInteger.ONE);
 
-    LedgerIndex maxLedgerIndex = LedgerIndex.of(UnsignedLong.MAX_VALUE);
-    assertThat(maxLedgerIndex.unsignedLongValue()).isEqualTo(UnsignedLong.MAX_VALUE);
+    LedgerIndex maxLedgerIndex = LedgerIndex.of(UnsignedInteger.MAX_VALUE);
+    assertThat(maxLedgerIndex.unsignedIntegerValue()).isEqualTo(UnsignedInteger.MAX_VALUE);
   }
 
   @Test
   public void addTwoLedgerIndexes() {
-    LedgerIndex ledgerIndex1 = LedgerIndex.of(UnsignedLong.valueOf(1000));
-    LedgerIndex ledgerIndex2 = LedgerIndex.of(UnsignedLong.valueOf(100));
+    LedgerIndex ledgerIndex1 = LedgerIndex.of(UnsignedInteger.valueOf(1000));
+    LedgerIndex ledgerIndex2 = LedgerIndex.of(UnsignedInteger.valueOf(100));
     LedgerIndex added = ledgerIndex1.plus(ledgerIndex2);
-    assertThat(added.unsignedLongValue())
-      .isEqualTo(ledgerIndex1.unsignedLongValue().plus(ledgerIndex2.unsignedLongValue()));
+    assertThat(added.unsignedIntegerValue())
+      .isEqualTo(ledgerIndex1.unsignedIntegerValue().plus(ledgerIndex2.unsignedIntegerValue()));
 
     assertDoesNotThrow(
-      () -> ledgerIndex1.plus(LedgerIndex.of(UnsignedLong.MAX_VALUE.minus(UnsignedLong.valueOf(1001))))
+      () -> ledgerIndex1.plus(LedgerIndex.of(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.valueOf(1001))))
     );
   }
 
   @Test
   public void addUnsignedLongToLedgerIndex() {
-    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedLong.valueOf(1000));
-    UnsignedLong toAdd = UnsignedLong.valueOf(100);
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(1000));
+    UnsignedInteger toAdd = UnsignedInteger.valueOf(100);
     final LedgerIndex added = ledgerIndex.plus(toAdd);
-    assertThat(added.unsignedLongValue()).isEqualTo(ledgerIndex.unsignedLongValue().plus(toAdd));
+    assertThat(added.unsignedIntegerValue()).isEqualTo(ledgerIndex.unsignedIntegerValue().plus(toAdd));
 
     assertDoesNotThrow(
-      () -> LedgerIndex.of(UnsignedLong.MAX_VALUE.minus(UnsignedLong.valueOf(1000))).plus(UnsignedLong.valueOf(1000))
+      () -> LedgerIndex.of(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.valueOf(1000)))
+        .plus(UnsignedInteger.valueOf(1000))
     );
   }
 
@@ -123,14 +125,14 @@ class LedgerIndexTest {
   void addTooLargeLedgerIndex() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.valueOf(1000))
-        .plus(LedgerIndex.of(UnsignedLong.MAX_VALUE.minus(UnsignedLong.valueOf(999))))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(1000))
+        .plus(LedgerIndex.of(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.valueOf(999))))
     );
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.valueOf(1000))
-        .plus(LedgerIndex.of(UnsignedLong.MAX_VALUE.minus(UnsignedLong.valueOf(1))))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(1000))
+        .plus(LedgerIndex.of(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.valueOf(1))))
     );
   }
 
@@ -138,39 +140,41 @@ class LedgerIndexTest {
   void addTooLargeUnsignedLong() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.MAX_VALUE.minus(UnsignedLong.valueOf(1000))).plus(UnsignedLong.valueOf(1001))
+      () -> LedgerIndex.of(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.valueOf(1000)))
+        .plus(UnsignedInteger.valueOf(1001))
     );
 
     assertThrows(
       IllegalArgumentException.class,
       () ->
-        LedgerIndex.of(UnsignedLong.MAX_VALUE.minus(UnsignedLong.valueOf(1))).plus(UnsignedLong.valueOf(1000))
+        LedgerIndex.of(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.valueOf(1)))
+          .plus(UnsignedInteger.valueOf(1000))
     );
   }
 
   @Test
   void subtractTwoLedgerIndexes() {
-    LedgerIndex ledgerIndex1 = LedgerIndex.of(UnsignedLong.valueOf(1000));
-    LedgerIndex ledgerIndex2 = LedgerIndex.of(UnsignedLong.valueOf(100));
+    LedgerIndex ledgerIndex1 = LedgerIndex.of(UnsignedInteger.valueOf(1000));
+    LedgerIndex ledgerIndex2 = LedgerIndex.of(UnsignedInteger.valueOf(100));
     LedgerIndex subtracted = ledgerIndex1.minus(ledgerIndex2);
-    assertThat(subtracted).isEqualTo(LedgerIndex.of(UnsignedLong.valueOf(900)));
-    assertThat(subtracted.unsignedLongValue()).isEqualTo(UnsignedLong.valueOf(900));
+    assertThat(subtracted).isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(900)));
+    assertThat(subtracted.unsignedIntegerValue()).isEqualTo(UnsignedInteger.valueOf(900));
 
     assertDoesNotThrow(
-      () -> LedgerIndex.of(UnsignedLong.valueOf(1000)).minus(LedgerIndex.of(UnsignedLong.valueOf(1000)))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(1000)).minus(LedgerIndex.of(UnsignedInteger.valueOf(1000)))
     );
   }
 
   @Test
   void subtractUnsignedLongFromLedgerIndex() {
-    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedLong.valueOf(1000));
-    UnsignedLong unsignedLong = UnsignedLong.valueOf(100);
-    LedgerIndex subtracted = ledgerIndex.minus(unsignedLong);
-    assertThat(subtracted).isEqualTo(LedgerIndex.of(UnsignedLong.valueOf(900)));
-    assertThat(subtracted.unsignedLongValue()).isEqualTo(UnsignedLong.valueOf(900));
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(1000));
+    UnsignedInteger unsignedInteger = UnsignedInteger.valueOf(100);
+    LedgerIndex subtracted = ledgerIndex.minus(unsignedInteger);
+    assertThat(subtracted).isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(900)));
+    assertThat(subtracted.unsignedIntegerValue()).isEqualTo(UnsignedInteger.valueOf(900));
 
     assertDoesNotThrow(
-      () -> LedgerIndex.of(UnsignedLong.valueOf(1000)).minus(UnsignedLong.valueOf(1000))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(1000)).minus(UnsignedInteger.valueOf(1000))
     );
   }
 
@@ -178,11 +182,11 @@ class LedgerIndexTest {
   void subtractLedgerIndexTooLarge() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.valueOf(100)).minus(LedgerIndex.of(UnsignedLong.valueOf(1000)))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(100)).minus(LedgerIndex.of(UnsignedInteger.valueOf(1000)))
     );
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.valueOf(999)).minus(LedgerIndex.of(UnsignedLong.valueOf(1000)))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(999)).minus(LedgerIndex.of(UnsignedInteger.valueOf(1000)))
     );
   }
 
@@ -190,19 +194,19 @@ class LedgerIndexTest {
   void subtractUnsignedLongTooLarge() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.valueOf(100)).minus(UnsignedLong.valueOf(1000))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(100)).minus(UnsignedInteger.valueOf(1000))
     );
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndex.of(UnsignedLong.valueOf(999)).minus(UnsignedLong.valueOf(1000))
+      () -> LedgerIndex.of(UnsignedInteger.valueOf(999)).minus(UnsignedInteger.valueOf(1000))
     );
   }
 
   @Test
   void testJsonValueIsNumber() throws JsonProcessingException, JSONException {
     ObjectMapper objectMapper = ObjectMapperFactory.create();
-    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedLong.ONE);
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.ONE);
     LedgerIndexWrapper ledgerIndexWrapper = LedgerIndexWrapper.of(ledgerIndex);
 
     String json = "{\"ledgerIndex\": 1}";

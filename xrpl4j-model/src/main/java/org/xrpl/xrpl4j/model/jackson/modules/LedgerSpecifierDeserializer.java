@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.NameTransformer;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
@@ -41,7 +42,7 @@ public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier
     } else {
       final JsonNode ledgerIndex = node.get("ledger_index");
       if (ledgerIndex.isNumber()) {
-        return LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(ledgerIndex.asLong())));
+        return LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex.asInt())));
       } else {
         return LedgerSpecifier.ledgerIndexShortcut(
           objectMapper.readValue(ledgerIndex.toString(), LedgerIndexShortcut.class)

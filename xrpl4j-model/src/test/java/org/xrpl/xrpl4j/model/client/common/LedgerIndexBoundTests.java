@@ -45,6 +45,11 @@ public class LedgerIndexBoundTests {
       IllegalArgumentException.class,
       () -> LedgerIndexBound.of(-2)
     );
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> LedgerIndexBound.of(UnsignedInteger.MAX_VALUE.longValue() + 1)
+    );
   }
 
   @Test

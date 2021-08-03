@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.common;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
@@ -138,10 +139,13 @@ public class Wrappers {
      * Ensures that this {@link LedgerIndexBound} is not less than {@code -1} and not equal to {@code 0}.
      */
     @Value.Check
-    // TODO: Check that the number isn't > 2^32
     public void checkBounds() {
       Preconditions.checkArgument(value() >= -1, "LedgerIndexBounds must be greater than or equal to -1.");
       Preconditions.checkArgument(value() != 0, "LedgerIndexBounds cannot be 0.");
+      Preconditions.checkArgument(
+        value() <= UnsignedInteger.MAX_VALUE.longValue(),
+        "LedgerIndexBounds cannot be larger than max unsigned integer value " + UnsignedInteger.MAX_VALUE.toString()
+      );
     }
 
     @Value.Auxiliary

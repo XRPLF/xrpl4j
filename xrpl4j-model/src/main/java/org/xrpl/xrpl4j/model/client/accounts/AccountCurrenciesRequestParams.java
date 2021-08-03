@@ -69,6 +69,7 @@ public interface AccountCurrenciesRequestParams extends XrplRequestParams {
   default LedgerSpecifier ledgerSpecifier() {
     return LegacyLedgerSpecifierUtils.computeLedgerSpecifier(ledgerHash(), ledgerIndex());
   }
+
   /**
    * A boolean indicating if the {@link #account()} field only accepts a public key or XRP Ledger {@link Address}.
    * Always true, as {@link #account()} is always an {@link Address}.

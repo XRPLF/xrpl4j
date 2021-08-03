@@ -27,8 +27,8 @@ public class LedgerIndexBoundTests {
     LedgerIndexBound one = LedgerIndexBound.of(1);
     assertThat(one.value()).isEqualTo(1);
 
-    LedgerIndexBound maxValue = LedgerIndexBound.of(Long.MAX_VALUE);
-    assertThat(maxValue.value()).isEqualTo(Long.MAX_VALUE);
+    LedgerIndexBound maxValue = LedgerIndexBound.of(UnsignedInteger.MAX_VALUE.longValue());
+    assertThat(maxValue.value()).isEqualTo(UnsignedInteger.MAX_VALUE.longValue());
 
     LedgerIndexBound negativeOne = LedgerIndexBound.of(-1);
     assertThat(negativeOne.value()).isEqualTo(-1);

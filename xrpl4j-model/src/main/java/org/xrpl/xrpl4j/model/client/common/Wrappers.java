@@ -138,6 +138,7 @@ public class Wrappers {
      * Ensures that this {@link LedgerIndexBound} is not less than {@code -1} and not equal to {@code 0}.
      */
     @Value.Check
+    // TODO: Check that the number isn't > 2^32
     public void checkBounds() {
       Preconditions.checkArgument(value() >= -1, "LedgerIndexBounds must be greater than or equal to -1.");
       Preconditions.checkArgument(value() != 0, "LedgerIndexBounds cannot be 0.");

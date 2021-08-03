@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -8,11 +9,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.jackson.modules.AccountTransactionsRequestParamsDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.Optional;
@@ -49,13 +52,42 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * The earliest ledger to include transactions from. A value of {@code -1} instructs the server to use the
    * earliest validated ledger version available.
    *
+   * @return A {@link LedgerIndex} with a default of empty.
+   * @deprecated ledger_index_min field should be specified by {@link #ledgerIndexMinimum()}
+   */
+  @JsonIgnore
+  @Deprecated
+  @Value.Auxiliary
+  Optional<LedgerIndex> ledgerIndexMin();
+
+  /**
+   * The most recent ledger to include transactions from. A value of {@code -1} instructs the server to use the most
+   * recent validated ledger version available.
+   *
+   * @return A {@link LedgerIndex} with a default of empty.
+   * @deprecated ledger_index_max field should be specified by {@link #ledgerIndexMaximum()}.
+   */
+  @JsonIgnore
+  @Deprecated
+  @Value.Auxiliary
+  Optional<LedgerIndex> ledgerIndexMax();
+
+  /**
+   * The earliest ledger to include transactions from. A value of {@code -1} instructs the server to use the
+   * earliest validated ledger version available.
+   *
    * @return A {@link LedgerIndexBound} with a default of empty.
    */
   @JsonProperty("ledger_index_min")
   @Value.Default
   @Nullable // Value.Default on Optional attributes takes away the non-optional builder method
-  default LedgerIndexBound ledgerIndexMin() {
-    return LedgerIndexBound.of(-1);
+  default LedgerIndexBound ledgerIndexMinimum() {
+    // Gives deprecated field precedence
+    return ledgerIndexMin()
+      .map(LedgerIndex::unsignedIntegerValue)
+      .map(UnsignedInteger::intValue)
+      .map(LedgerIndexBound::of)
+      .orElse(LedgerIndexBound.of(-1));
   }
 
   /**
@@ -67,9 +99,36 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   @JsonProperty("ledger_index_max")
   @Value.Default
   @Nullable // Value.Default on Optional attributes takes away the non-optional builder method
-  default LedgerIndexBound ledgerIndexMax() {
-    return LedgerIndexBound.of(-1);
+  default LedgerIndexBound ledgerIndexMaximum() {
+    // Gives deprecated field precedence
+    return ledgerIndexMax()
+      .map(LedgerIndex::unsignedIntegerValue)
+      .map(UnsignedInteger::intValue)
+      .map(LedgerIndexBound::of)
+      .orElse(LedgerIndexBound.of(-1));
   }
+
+  /**
+   * Return transactions from the ledger with this hash only.
+   *
+   * @return An optionally-present {@link Hash256} containing the ledger hash.
+   * @deprecated Ledger hash should be specified in {@link #ledgerSpecifier()}.
+   */
+  @JsonIgnore
+  @Deprecated
+  @Value.Auxiliary
+  Optional<Hash256> ledgerHash();
+
+  /**
+   * Return transactions from the ledger with this index only.
+   *
+   * @return A {@link LedgerIndex} containing the ledger index, defaults to "current".
+   * @deprecated Ledger index and any shortcut values should be specified in {@link #ledgerSpecifier()}.
+   */
+  @JsonIgnore
+  @Deprecated
+  @Value.Auxiliary
+  Optional<LedgerIndex> ledgerIndex();
 
   /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
@@ -78,13 +137,34 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * <p>The only valid ledger index shortcut for this request object is
    * {@link org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut#VALIDATED}.</p>
    *
-   * <p>Setting this value will nullify and take precedence over{@link #ledgerIndexMin()}
-   * and {@link #ledgerIndexMax()}</p>
+   * <p>Setting this value will nullify and take precedence over {@link #ledgerIndexMinimum()}
+   * and {@link #ledgerIndexMaximum()}</p>
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
   @JsonUnwrapped
-  Optional<LedgerSpecifier> ledgerSpecifier();
+  @Value.Default // TODO: Make non-default once ledgerIndex and ledgerHash are gone
+  default Optional<LedgerSpecifier> ledgerSpecifier() {
+    // If either ledgerHash or ledgerIndex are specified, return a LedgerSpecifier with the present field,
+    // otherwise return empty
+    return ledgerHash()
+      .map(LedgerSpecifier::ledgerHash)
+      .map(Optional::of)
+      .orElseGet(() ->
+        ledgerIndex()
+          .map(ledgerIndex -> {
+            if (ledgerIndex.equals(LedgerIndex.VALIDATED)) {
+              return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED);
+            } else if (ledgerIndex.equals(LedgerIndex.CURRENT)) {
+              return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT);
+            } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
+              return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CLOSED);
+            } else {
+              return LedgerSpecifier.ledgerIndex(ledgerIndex);
+            }
+          })
+      );
+  }
 
   /**
    * Whether or not to return transactions as JSON or binary-encoded hex strings. Always {@code false}.
@@ -145,7 +225,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   }
 
   /**
-   * Nullifies {@link #ledgerIndexMin()} and {@link #ledgerIndexMax()} if {@link #ledgerSpecifier()} is present.
+   * Nullifies {@link #ledgerIndexMinimum()} and {@link #ledgerIndexMaximum()} if {@link #ledgerSpecifier()} is present.
    *
    * @return An {@link AccountTransactionsRequestParams}.
    */
@@ -153,11 +233,11 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   default AccountTransactionsRequestParams emptyBoundedParametersIfSpecifierPresent() {
     // If user included a ledgerSpecifier, this will blank out ledgerIndexMin and ledgerIndexMax
     // so that they do not override the ledgerSpecifier.
-    if (ledgerSpecifier().isPresent() && (ledgerIndexMin() != null || ledgerIndexMax() != null)) {
+    if (ledgerSpecifier().isPresent() && (ledgerIndexMinimum() != null || ledgerIndexMaximum() != null)) {
       return AccountTransactionsRequestParams.builder()
         .from(this)
-        .ledgerIndexMin(null)
-        .ledgerIndexMax(null)
+        .ledgerIndexMinimum(null)
+        .ledgerIndexMaximum(null)
         .build();
     } else {
       return this;

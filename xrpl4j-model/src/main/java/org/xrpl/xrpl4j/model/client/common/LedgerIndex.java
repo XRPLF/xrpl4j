@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.client.common;
 
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
@@ -90,7 +91,13 @@ public class LedgerIndex {
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
    * @throws NullPointerException if value is null
    */
+  @Deprecated
   public static LedgerIndex of(UnsignedLong value) {
+    Objects.requireNonNull(value);
+    return new LedgerIndex(value.toString());
+  }
+
+  public static LedgerIndex of(UnsignedInteger value) {
     Objects.requireNonNull(value);
     return new LedgerIndex(value.toString());
   }
@@ -132,8 +139,13 @@ public class LedgerIndex {
    *
    * @return The {@link UnsignedLong} representation of this {@link LedgerIndex}.
    */
+  @Deprecated
   public UnsignedLong unsignedLongValue() {
     return UnsignedLong.valueOf(value);
+  }
+
+  public UnsignedInteger unsignedIntegerValue() {
+    return UnsignedInteger.valueOf(value);
   }
 
   /**

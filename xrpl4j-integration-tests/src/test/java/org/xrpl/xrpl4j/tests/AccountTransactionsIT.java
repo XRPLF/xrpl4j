@@ -5,7 +5,7 @@ import static org.awaitility.Awaitility.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import com.google.common.primitives.UnsignedLong;
+import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -22,6 +22,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
+
+import java.util.Optional;
 
 public class AccountTransactionsIT {
 
@@ -48,8 +50,8 @@ public class AccountTransactionsIT {
     AccountTransactionsResult results = mainnetClient.accountTransactions(
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMin(minLedger)
-        .ledgerIndexMax(maxLedger)
+        .ledgerIndexMinimum(minLedger)
+        .ledgerIndexMaximum(maxLedger)
         .build()
     );
     assertThat(results.transactions()).isNotEmpty();
@@ -60,8 +62,8 @@ public class AccountTransactionsIT {
     while (results.marker().isPresent()) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMin(minLedger)
-        .ledgerIndexMax(maxLedger)
+        .ledgerIndexMinimum(minLedger)
+        .ledgerIndexMaximum(maxLedger)
         .marker(results.marker().get())
         .build());
       assertThat(results.transactions()).isNotEmpty();
@@ -84,19 +86,19 @@ public class AccountTransactionsIT {
     AccountTransactionsResult results = getAccountTransactions(
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMin(minLedger)
-        .ledgerIndexMax(maxLedger)
+        .ledgerIndexMinimum(minLedger)
+        .ledgerIndexMaximum(maxLedger)
         .build()
     );
 
-    assertThat(results.ledgerIndexMin()).isEqualTo(minLedger);
-    assertThat(results.ledgerIndexMax()).isEqualTo(maxLedger);
+    assertThat(results.ledgerIndexMinimum()).isEqualTo(minLedger);
+    assertThat(results.ledgerIndexMaximum()).isEqualTo(maxLedger);
     assertThat(results.transactions()).hasSize(16);
     // results are returned in descending sorted order by ledger index
     assertThat(results.transactions().get(0).transaction().ledgerIndex())
-      .contains(LedgerIndex.of(UnsignedLong.valueOf(61486994)));
+      .contains(LedgerIndex.of(UnsignedInteger.valueOf(61486994)));
     assertThat(results.transactions().get(15).transaction().ledgerIndex())
-      .contains(LedgerIndex.of(UnsignedLong.valueOf(61486026)));
+      .contains(LedgerIndex.of(UnsignedInteger.valueOf(61486026)));
   }
 
   @Test
@@ -104,7 +106,7 @@ public class AccountTransactionsIT {
     AccountTransactionsResult resultByShortcut = getAccountTransactions(
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
         .build()
     );
 
@@ -113,7 +115,7 @@ public class AccountTransactionsIT {
         .ledgerSpecifier(
           LedgerSpecifier.ledgerIndex(
             LedgerIndex.of(
-              UnsignedLong.valueOf(resultByShortcut.ledgerIndexMin().value()))
+              UnsignedInteger.valueOf(resultByShortcut.ledgerIndexMinimum().value()))
           )
         )
         .build()
@@ -128,7 +130,7 @@ public class AccountTransactionsIT {
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
         .ledgerSpecifier(
-          LedgerSpecifier.ledgerIndex(validatedLedgerIndex)
+          Optional.of(LedgerSpecifier.ledgerIndex(validatedLedgerIndex))
         )
         .build()
     );
@@ -136,12 +138,12 @@ public class AccountTransactionsIT {
     AccountTransactionsResult resultByLedgerHash = getAccountTransactions(
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(LedgerSpecifier.ledgerHash(validatedLedgerHash))
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerHash(validatedLedgerHash)))
         .build()
     );
 
-    assertThat(resultByShortcut.ledgerIndexMin()).isEqualTo(resultByShortcut.ledgerIndexMax());
-    assertThat(resultByShortcut.ledgerIndexMin().value())
+    assertThat(resultByShortcut.ledgerIndexMinimum()).isEqualTo(resultByShortcut.ledgerIndexMaximum());
+    assertThat(resultByShortcut.ledgerIndexMinimum().value())
       .isEqualTo(validatedLedgerIndex.unsignedLongValue().longValue());
 
     assertThat(resultByShortcut).isEqualTo(resultByLedgerIndex);

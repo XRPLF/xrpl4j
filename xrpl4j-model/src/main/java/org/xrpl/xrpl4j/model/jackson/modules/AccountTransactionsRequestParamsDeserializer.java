@@ -41,12 +41,12 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
 
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of(node.get("account").asText()))
-      .ledgerIndexMin(
+      .ledgerIndexMinimum(
         node.has("ledger_index_min") ?
           LedgerIndexBound.of(node.get("ledger_index_min").asLong()) :
           null
       )
-      .ledgerIndexMax(
+      .ledgerIndexMaximum(
         node.has("ledger_index_max") ?
           LedgerIndexBound.of(node.get("ledger_index_max").asLong()) :
           null

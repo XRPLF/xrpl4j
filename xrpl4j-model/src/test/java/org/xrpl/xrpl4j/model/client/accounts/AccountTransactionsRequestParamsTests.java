@@ -11,6 +11,8 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
+import java.util.Optional;
+
 public class AccountTransactionsRequestParamsTests {
 
   @Test
@@ -19,8 +21,8 @@ public class AccountTransactionsRequestParamsTests {
       .account(Address.of("foo"))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isEqualTo(LedgerIndexBound.of(-1));
-    assertThat(params.ledgerIndexMax()).isEqualTo(LedgerIndexBound.of(-1));
+    assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(-1));
+    assertThat(params.ledgerIndexMaximum()).isEqualTo(LedgerIndexBound.of(-1));
     assertThat(params.ledgerSpecifier()).isEmpty();
   }
 
@@ -28,23 +30,23 @@ public class AccountTransactionsRequestParamsTests {
   void constructWithLedgerIndexMax() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerIndexMax(LedgerIndexBound.of(12345))
+      .ledgerIndexMaximum(LedgerIndexBound.of(12345))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isEqualTo(LedgerIndexBound.of(-1));
-    assertThat(params.ledgerIndexMax()).isEqualTo(LedgerIndexBound.of(12345));
+    assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(-1));
+    assertThat(params.ledgerIndexMaximum()).isEqualTo(LedgerIndexBound.of(12345));
     assertThat(params.ledgerSpecifier()).isEmpty();
   }
 
   @Test
-  void constructWithLedgerIndexMin() {
+  void constructWithledgerIndexMinimum() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerIndexMin(LedgerIndexBound.of(12345))
+      .ledgerIndexMinimum(LedgerIndexBound.of(12345))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isEqualTo(LedgerIndexBound.of(12345));
-    assertThat(params.ledgerIndexMax()).isEqualTo(LedgerIndexBound.of(-1));
+    assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(12345));
+    assertThat(params.ledgerIndexMaximum()).isEqualTo(LedgerIndexBound.of(-1));
     assertThat(params.ledgerSpecifier()).isEmpty();
   }
 
@@ -52,11 +54,11 @@ public class AccountTransactionsRequestParamsTests {
   void constructWithLedgerSpecifier() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE)))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isNull();
-    assertThat(params.ledgerIndexMax()).isNull();
+    assertThat(params.ledgerIndexMinimum()).isNull();
+    assertThat(params.ledgerIndexMaximum()).isNull();
     assertThat(params.ledgerSpecifier()).isNotEmpty();
   }
 
@@ -66,7 +68,7 @@ public class AccountTransactionsRequestParamsTests {
       IllegalArgumentException.class,
       () -> AccountTransactionsRequestParams.builder()
         .account(Address.of("foo"))
-        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT))
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT)))
         .build()
     );
   }
@@ -75,33 +77,33 @@ public class AccountTransactionsRequestParamsTests {
   void constructWithLedgerSpecifierAndBounds() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerIndexMin(LedgerIndexBound.of(12345))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+      .ledgerIndexMinimum(LedgerIndexBound.of(12345))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isNull();
-    assertThat(params.ledgerIndexMax()).isNull();
+    assertThat(params.ledgerIndexMinimum()).isNull();
+    assertThat(params.ledgerIndexMaximum()).isNull();
     assertThat(params.ledgerSpecifier()).isNotEmpty();
 
     params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerIndexMax(LedgerIndexBound.of(12345))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+      .ledgerIndexMaximum(LedgerIndexBound.of(12345))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isNull();
-    assertThat(params.ledgerIndexMax()).isNull();
+    assertThat(params.ledgerIndexMinimum()).isNull();
+    assertThat(params.ledgerIndexMaximum()).isNull();
     assertThat(params.ledgerSpecifier()).isNotEmpty();
 
     params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
-      .ledgerIndexMax(LedgerIndexBound.of(12345))
-      .ledgerIndexMin(LedgerIndexBound.of(12345))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+      .ledgerIndexMaximum(LedgerIndexBound.of(12345))
+      .ledgerIndexMinimum(LedgerIndexBound.of(12345))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
       .build();
 
-    assertThat(params.ledgerIndexMin()).isNull();
-    assertThat(params.ledgerIndexMax()).isNull();
+    assertThat(params.ledgerIndexMinimum()).isNull();
+    assertThat(params.ledgerIndexMaximum()).isNull();
     assertThat(params.ledgerSpecifier()).isNotEmpty();
   }
 }

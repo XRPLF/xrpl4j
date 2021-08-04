@@ -28,7 +28,7 @@ public class AccountInfoResultJsonTests extends AbstractJsonTest {
         .sequence(UnsignedInteger.valueOf(6))
         .index(Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F"))
         .build())
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedLong.valueOf(4)))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(4)))
       .queueData(QueueData.builder()
         .authChangeQueued(true)
         .highestSequence(UnsignedInteger.valueOf(10))

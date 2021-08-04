@@ -5,7 +5,7 @@ import static org.awaitility.Awaitility.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import com.google.common.primitives.UnsignedLong;
+import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -14,8 +14,16 @@ import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
+
+import java.util.Optional;
 
 public class AccountTransactionsIT {
 
@@ -37,13 +45,15 @@ public class AccountTransactionsIT {
   public void listTransactionsPagination() throws JsonRpcClientErrorException {
     final int expectedTransactions = 748;
     // known ledger index range for this account that is known to have exactly 748 transactions
-    LedgerIndex minLedger = LedgerIndex.of(UnsignedLong.valueOf(61400000));
-    LedgerIndex maxLedger = LedgerIndex.of(UnsignedLong.valueOf(61487000));
-    AccountTransactionsResult results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
-      .account(MAINNET_ADDRESS)
-      .ledgerIndexMin(minLedger)
-      .ledgerIndexMax(maxLedger)
-      .build());
+    LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
+    LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
+    AccountTransactionsResult results = mainnetClient.accountTransactions(
+      AccountTransactionsRequestParams.builder()
+        .account(MAINNET_ADDRESS)
+        .ledgerIndexMinimum(minLedger)
+        .ledgerIndexMaximum(maxLedger)
+        .build()
+    );
     assertThat(results.transactions()).isNotEmpty();
     assertThat(results.marker()).isNotEmpty();
 
@@ -52,8 +62,8 @@ public class AccountTransactionsIT {
     while (results.marker().isPresent()) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMin(minLedger)
-        .ledgerIndexMax(maxLedger)
+        .ledgerIndexMinimum(minLedger)
+        .ledgerIndexMaximum(maxLedger)
         .marker(results.marker().get())
         .build());
       assertThat(results.transactions()).isNotEmpty();
@@ -68,21 +78,85 @@ public class AccountTransactionsIT {
   @Test
   public void listTransactionWithIndexRange() {
     // also arbitrary indexes chosen because they have known transaction results we can check
-    LedgerIndex minLedger = LedgerIndex.of(UnsignedLong.valueOf(61486000));
-    LedgerIndex maxLedger = LedgerIndex.of(UnsignedLong.valueOf(61487000));
+    LedgerIndexBound minLedger = LedgerIndexBound.of(61486000);
+    LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
 
     // Sometimes we will get a "server busy" error back in this test, so if we do get that, we should just wait
     // a few seconds until asking again.
-    AccountTransactionsResult results = given()
+    AccountTransactionsResult results = getAccountTransactions(
+      AccountTransactionsRequestParams.builder()
+        .account(MAINNET_ADDRESS)
+        .ledgerIndexMinimum(minLedger)
+        .ledgerIndexMaximum(maxLedger)
+        .build()
+    );
+
+    assertThat(results.ledgerIndexMinimum()).isEqualTo(minLedger);
+    assertThat(results.ledgerIndexMaximum()).isEqualTo(maxLedger);
+    assertThat(results.transactions()).hasSize(16);
+    // results are returned in descending sorted order by ledger index
+    assertThat(results.transactions().get(0).transaction().ledgerIndex())
+      .contains(LedgerIndex.of(UnsignedInteger.valueOf(61486994)));
+    assertThat(results.transactions().get(15).transaction().ledgerIndex())
+      .contains(LedgerIndex.of(UnsignedInteger.valueOf(61486026)));
+  }
+
+  @Test
+  void listTransactionsWithLedgerSpecifiers() throws JsonRpcClientErrorException {
+    AccountTransactionsResult resultByShortcut = getAccountTransactions(
+      AccountTransactionsRequestParams.builder()
+        .account(MAINNET_ADDRESS)
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
+        .build()
+    );
+
+    LedgerResult ledger = mainnetClient.ledger(
+      LedgerRequestParams.builder()
+        .ledgerSpecifier(
+          LedgerSpecifier.ledgerIndex(
+            LedgerIndex.of(
+              UnsignedInteger.valueOf(resultByShortcut.ledgerIndexMinimum().value()))
+          )
+        )
+        .build()
+    );
+
+    Hash256 validatedLedgerHash = ledger.ledgerHash()
+      .orElseThrow(() -> new RuntimeException("ledgerHash not present."));
+    LedgerIndex validatedLedgerIndex = ledger.ledgerIndex()
+      .orElseThrow(() -> new RuntimeException("ledgerIndex not present."));
+
+    AccountTransactionsResult resultByLedgerIndex = getAccountTransactions(
+      AccountTransactionsRequestParams.builder()
+        .account(MAINNET_ADDRESS)
+        .ledgerSpecifier(
+          Optional.of(LedgerSpecifier.ledgerIndex(validatedLedgerIndex))
+        )
+        .build()
+    );
+
+    AccountTransactionsResult resultByLedgerHash = getAccountTransactions(
+      AccountTransactionsRequestParams.builder()
+        .account(MAINNET_ADDRESS)
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerHash(validatedLedgerHash)))
+        .build()
+    );
+
+    assertThat(resultByShortcut.ledgerIndexMinimum()).isEqualTo(resultByShortcut.ledgerIndexMaximum());
+    assertThat(resultByShortcut.ledgerIndexMinimum().value())
+      .isEqualTo(validatedLedgerIndex.unsignedIntegerValue().longValue());
+
+    assertThat(resultByShortcut).isEqualTo(resultByLedgerIndex);
+    assertThat(resultByLedgerIndex).isEqualTo(resultByLedgerHash);
+  }
+
+  private AccountTransactionsResult getAccountTransactions(AccountTransactionsRequestParams params) {
+    return given()
       .pollInterval(Duration.FIVE_SECONDS)
       .await()
       .until(() -> {
         try {
-          return mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
-            .account(MAINNET_ADDRESS)
-            .ledgerIndexMin(minLedger)
-            .ledgerIndexMax(maxLedger)
-            .build());
+          return mainnetClient.accountTransactions(params);
         } catch (JsonRpcClientErrorException e) {
           if (e.getMessage().equals("The server is too busy to help you now.")) {
             return null;
@@ -90,15 +164,6 @@ public class AccountTransactionsIT {
             throw new RuntimeException(e);
           }
         }
-
       }, is(notNullValue()));
-
-    assertThat(results.ledgerIndexMin()).isEqualTo(minLedger);
-    assertThat(results.ledgerIndexMax()).isEqualTo(maxLedger);
-    assertThat(results.transactions()).hasSize(16);
-    // results are returned in descending sorted order by ledger index
-    assertThat(results.transactions().get(0).transaction().ledgerIndex()).contains(LedgerIndex.of("61486994"));
-    assertThat(results.transactions().get(15).transaction().ledgerIndex()).contains(LedgerIndex.of("61486026"));
   }
-
 }

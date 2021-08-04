@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -98,7 +99,10 @@ public class SubmitPaymentIT extends AbstractIT {
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
-      LedgerRequestParams.builder().ledgerIndex(validatedPayment.ledgerIndex().get()).build());
+        LedgerRequestParams.builder()
+          .ledgerSpecifier(LedgerSpecifier.ledgerIndex(validatedPayment.ledgerIndex().get()))
+          .build()
+    );
 
     assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
     assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();

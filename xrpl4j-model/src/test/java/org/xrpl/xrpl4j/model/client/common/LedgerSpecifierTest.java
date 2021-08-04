@@ -42,7 +42,7 @@ class LedgerSpecifierTest {
     );
 
     assertDoesNotThrow(
-      () -> LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
+      () -> LedgerSpecifier.VALIDATED
     );
   }
 
@@ -94,7 +94,7 @@ class LedgerSpecifierTest {
   void specifyUsingUtilityConstructors() {
     assertDoesNotThrow(() -> LedgerSpecifier.ledgerHash(LEDGER_HASH));
     assertDoesNotThrow(() -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)));
-    assertDoesNotThrow(() -> LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT));
+    assertDoesNotThrow(() -> LedgerSpecifier.CURRENT);
   }
 
   @Test
@@ -102,7 +102,7 @@ class LedgerSpecifierTest {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
       LedgerSpecifier.ledgerHash(LEDGER_HASH),
       LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)),
-      LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
+      LedgerSpecifier.VALIDATED
     );
 
     ledgerSpecifiers.forEach(this::assertHandlesCorrectly);
@@ -150,7 +150,7 @@ class LedgerSpecifierTest {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
       LedgerSpecifier.ledgerHash(LEDGER_HASH),
       LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)),
-      LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
+      LedgerSpecifier.VALIDATED
     );
 
     ledgerSpecifiers.forEach(
@@ -230,7 +230,7 @@ class LedgerSpecifierTest {
 
   @Test
   void testLedgerIndexShortcutJson() throws JsonProcessingException, JSONException {
-    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED);
+    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.VALIDATED;
     LedgerSpecifierWrapper wrapper = LedgerSpecifierWrapper.of(ledgerSpecifier);
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_index\": \"validated\"}";

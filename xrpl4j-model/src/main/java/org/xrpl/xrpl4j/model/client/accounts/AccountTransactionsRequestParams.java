@@ -154,11 +154,11 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
         ledgerIndex()
           .map(ledgerIndex -> {
             if (ledgerIndex.equals(LedgerIndex.VALIDATED)) {
-              return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED);
+              return LedgerSpecifier.VALIDATED;
             } else if (ledgerIndex.equals(LedgerIndex.CURRENT)) {
-              return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT);
+              return LedgerSpecifier.CURRENT;
             } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
-              return LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CLOSED);
+              return LedgerSpecifier.CLOSED;
             } else {
               return LedgerSpecifier.ledgerIndex(ledgerIndex);
             }

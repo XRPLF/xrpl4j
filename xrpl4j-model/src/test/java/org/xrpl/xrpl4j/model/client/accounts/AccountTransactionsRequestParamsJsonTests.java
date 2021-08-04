@@ -207,7 +207,7 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
   public void testJsonWithLedgerIndexShortcut() throws JsonProcessingException, JSONException {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
-      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
       .limit(UnsignedInteger.valueOf(2))
       .build();
 

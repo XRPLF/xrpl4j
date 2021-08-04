@@ -131,7 +131,7 @@ public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
   public void testWithLedgerIndexShortcut() throws JsonProcessingException, JSONException {
     AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()
         .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
-        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .type(AccountObjectsRequestParams.AccountObjectType.STATE)
         .deletionBlockersOnly(false)
         .limit(UnsignedInteger.valueOf(10))

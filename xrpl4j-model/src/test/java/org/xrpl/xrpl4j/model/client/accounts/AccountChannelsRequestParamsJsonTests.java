@@ -131,7 +131,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .destinationAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .limit(UnsignedInteger.valueOf(20))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .marker(Marker.of("marker1"))
       .build();
 

@@ -24,6 +24,31 @@ import java.util.function.Function;
 public interface LedgerSpecifier {
 
   /**
+   * Request information about a rippled server's current working version of the ledger.
+   */
+  LedgerSpecifier VALIDATED = ImmutableLedgerSpecifier
+    .builder()
+    .ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)
+    .build();
+
+  /**
+   * Request information about for the most recent ledger that has been validated by consensus.
+   */
+  LedgerSpecifier CURRENT = ImmutableLedgerSpecifier
+    .builder()
+    .ledgerIndexShortcut(LedgerIndexShortcut.CURRENT)
+    .build();
+
+  /**
+   * Request information about the most recent ledger that has been closed for modifications and proposed for
+   * validation.
+   */
+  LedgerSpecifier CLOSED = ImmutableLedgerSpecifier
+    .builder()
+    .ledgerIndexShortcut(LedgerIndexShortcut.CLOSED)
+    .build();
+
+  /**
    * Construct a {@link LedgerSpecifier} with a ledger hash.
    *
    * @param ledgerHash A {@link Hash256} containing the ledger hash of the desired ledger.
@@ -46,19 +71,6 @@ public interface LedgerSpecifier {
   static LedgerSpecifier ledgerIndex(LedgerIndex ledgerIndex) {
     return ImmutableLedgerSpecifier.builder()
       .ledgerIndex(ledgerIndex)
-      .build();
-  }
-
-  /**
-   * Construct a {@link LedgerSpecifier} with a ledger index shortcut.
-   *
-   * @param ledgerIndexShortcut A {@link LedgerIndexShortcut} specifying a ledger index shortcut.
-   *
-   * @return A {@link LedgerSpecifier} containing {@code ledgerIndexShortcut}.
-   */
-  static LedgerSpecifier ledgerIndexShortcut(LedgerIndexShortcut ledgerIndexShortcut) {
-    return ImmutableLedgerSpecifier.builder()
-      .ledgerIndexShortcut(ledgerIndexShortcut)
       .build();
   }
 

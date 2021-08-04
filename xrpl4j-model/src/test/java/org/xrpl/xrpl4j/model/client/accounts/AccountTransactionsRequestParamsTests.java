@@ -69,7 +69,7 @@ public class AccountTransactionsRequestParamsTests {
       IllegalArgumentException.class,
       () -> AccountTransactionsRequestParams.builder()
         .account(Address.of("foo"))
-        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.CURRENT)))
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.CURRENT))
         .build()
     );
   }
@@ -79,7 +79,7 @@ public class AccountTransactionsRequestParamsTests {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
       .ledgerIndexMinimum(LedgerIndexBound.of(12345))
-      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
       .build();
 
     assertThat(params.ledgerIndexMinimum()).isNull();
@@ -89,7 +89,7 @@ public class AccountTransactionsRequestParamsTests {
     params = AccountTransactionsRequestParams.builder()
       .account(Address.of("foo"))
       .ledgerIndexMaximum(LedgerIndexBound.of(12345))
-      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
       .build();
 
     assertThat(params.ledgerIndexMinimum()).isNull();
@@ -100,7 +100,7 @@ public class AccountTransactionsRequestParamsTests {
       .account(Address.of("foo"))
       .ledgerIndexMaximum(LedgerIndexBound.of(12345))
       .ledgerIndexMinimum(LedgerIndexBound.of(12345))
-      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
       .build();
 
     assertThat(params.ledgerIndexMinimum()).isNull();

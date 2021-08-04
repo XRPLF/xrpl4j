@@ -106,7 +106,7 @@ public class AccountTransactionsIT {
     AccountTransactionsResult resultByShortcut = getAccountTransactions(
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED)))
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
         .build()
     );
 

@@ -1,8 +1,11 @@
 package org.xrpl.xrpl4j.model.jackson.modules;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -44,9 +47,16 @@ public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier
       if (ledgerIndex.isNumber()) {
         return LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex.asInt())));
       } else {
-        return LedgerSpecifier.ledgerIndexShortcut(
-          objectMapper.readValue(ledgerIndex.toString(), LedgerIndexShortcut.class)
-        );
+        switch (ledgerIndex.asText()) {
+          case "validated":
+            return LedgerSpecifier.VALIDATED;
+          case "current":
+            return LedgerSpecifier.CURRENT;
+          case "closed":
+            return LedgerSpecifier.CLOSED;
+          default:
+            throw new JsonParseException(jsonParser, "Unrecognized LedgerIndex shortcut " + ledgerIndex.toString());
+        }
       }
     }
   }

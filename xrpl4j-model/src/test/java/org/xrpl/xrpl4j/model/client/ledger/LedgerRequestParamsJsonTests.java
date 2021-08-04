@@ -76,7 +76,7 @@ public class LedgerRequestParamsJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     LedgerRequestParams params = LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.ledgerIndexShortcut(LedgerIndexShortcut.VALIDATED))
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
 
     String json = "{\n" +

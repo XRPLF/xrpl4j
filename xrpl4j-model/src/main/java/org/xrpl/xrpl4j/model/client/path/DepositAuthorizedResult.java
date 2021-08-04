@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -17,6 +18,7 @@ import java.util.Optional;
  *
  * @see "https://xrpl.org/deposit_authorized.html"
  */
+@Value.Immutable
 @JsonSerialize(as = ImmutableDepositAuthorizedResult.class)
 @JsonDeserialize(as = ImmutableDepositAuthorizedResult.class)
 public interface DepositAuthorizedResult extends XrplResult {
@@ -30,6 +32,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return The unique {@link Address} of the source account.
    */
+  @JsonProperty("source_account")
   Address sourceAccount();
 
   /**
@@ -37,6 +40,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return An {@link Address}.
    */
+  @JsonProperty("destination_account")
   Address destinationAccount();
 
   /**
@@ -50,6 +54,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return {@code true} if the deposit is authorized; {@code false} otherwise.
    */
+  @JsonProperty("deposit_authorized")
   boolean depositAuthorized();
 
   /**
@@ -57,6 +62,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return An optionally-present {@link Hash256} containing the ledger hash.
    */
+  @JsonProperty("ledger_hash")
   Optional<Hash256> ledgerHash();
 
   /**
@@ -65,6 +71,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return An optionally-present {@link LedgerIndex}.
    */
+  @JsonProperty("ledger_index")
   Optional<LedgerIndex> ledgerIndex();
 
   /**
@@ -73,6 +80,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return An optionally-present {@link LedgerIndex}.
    */
+  @JsonProperty("ledger_current_index")
   Optional<LedgerIndex> ledgerCurrentIndex();
 
   /**
@@ -80,59 +88,24 @@ public interface DepositAuthorizedResult extends XrplResult {
    *
    * @return {@code true} if this data is from a validated ledger version, otherwise {@code false}.
    */
+  @Default
   default boolean validated() {
     return false;
   }
 
   /**
-   * To satisfy immutables.
+   * Exists only for immutables, but not generally useful for this interface.
    */
-  @Value.Immutable
-  @JsonSerialize(as = ImmutableDepositAuthorizedResult.class)
-  @JsonDeserialize(as = ImmutableDepositAuthorizedResult.class)
-  abstract class AbstractDepositAuthorizedResult implements DepositAuthorizedResult {
-
-    @JsonProperty("source_account")
-    @Override
-    public abstract Address sourceAccount();
-
-    @JsonProperty("destination_account")
-    @Override
-    public abstract Address destinationAccount();
-
-    @JsonProperty("deposit_authorized")
-    @Override
-    public abstract boolean depositAuthorized();
-
-    @JsonProperty("ledger_hash")
-    @Override
-    public abstract Optional<Hash256> ledgerHash();
-
-    @JsonProperty("ledger_index")
-    @Override
-    public abstract Optional<LedgerIndex> ledgerIndex();
-
-    @JsonProperty("ledger_current_index")
-    @Override
-    public abstract Optional<LedgerIndex> ledgerCurrentIndex();
-
-    @Value.Default
-    @Override
-    public boolean validated() {
-      return false;
-    }
-
-    @Value.Check
-    public void check() {
-      // ledger_hash may only exist when ledger_index is the default value.
-      ledgerHash().ifPresent(ledgerHash -> {
-        ledgerIndex().ifPresent(ledgerIndex -> {
-          Preconditions.checkArgument(
-            ledgerIndex.equals(LedgerIndex.CURRENT),
-            "Only specify a ledger_hash or a ledger_index, but not both."
-          );
-        });
+  @Value.Check
+  default void check() {
+    // ledger_hash may only exist when ledger_index is the default value.
+    ledgerHash().ifPresent(ledgerHash -> {
+      ledgerIndex().ifPresent(ledgerIndex -> {
+        Preconditions.checkArgument(
+          ledgerIndex.equals(LedgerIndex.CURRENT),
+          "Only specify a ledger_hash or a ledger_index, but not both."
+        );
       });
-    }
+    });
   }
 }

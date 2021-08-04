@@ -17,6 +17,9 @@ import java.util.Optional;
  *
  * @see "https://xrpl.org/deposit_authorized.html"
  */
+@Value.Immutable
+@JsonSerialize(as = ImmutableDepositAuthorizedRequestParams.class)
+@JsonDeserialize(as = ImmutableDepositAuthorizedRequestParams.class)
 public interface DepositAuthorizedRequestParams extends XrplRequestParams {
 
   static ImmutableDepositAuthorizedRequestParams.Builder builder() {
@@ -28,6 +31,7 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    *
    * @return The unique {@link Address} of the source account.
    */
+  @JsonProperty("source_account")
   Address sourceAccount();
 
   /**
@@ -35,6 +39,7 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    *
    * @return The unique {@link Address} of the destination account.
    */
+  @JsonProperty("destination_account")
   Address destinationAccount();
 
   /**
@@ -42,6 +47,7 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    *
    * @return An optionally-present {@link Hash256} containing the ledger hash.
    */
+  @JsonProperty("ledger_hash")
   Optional<Hash256> ledgerHash();
 
   /**
@@ -49,46 +55,23 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    *
    * @return A {@link LedgerIndex} representing the ledger index. Defaults to {@link LedgerIndex#CURRENT}.
    */
+  @JsonProperty("ledger_index")
+  @Value.Default
   default LedgerIndex ledgerIndex() {
     return LedgerIndex.CURRENT;
   }
 
   /**
-   * To satisfy immutables.
+   * Exists only for immutables, but not generally useful for this interface.
    */
-  @Value.Immutable
-  @JsonSerialize(as = ImmutableDepositAuthorizedRequestParams.class)
-  @JsonDeserialize(as = ImmutableDepositAuthorizedRequestParams.class)
-  abstract class AbstractDepositAuthorizedRequestParams implements DepositAuthorizedRequestParams {
-
-    @JsonProperty("source_account")
-    @Override
-    public abstract Address sourceAccount();
-
-    @JsonProperty("destination_account")
-    @Override
-    public abstract Address destinationAccount();
-
-    @JsonProperty("ledger_hash")
-    @Override
-    public abstract Optional<Hash256> ledgerHash();
-
-    @JsonProperty("ledger_index")
-    @Value.Default
-    @Override
-    public LedgerIndex ledgerIndex() {
-      return LedgerIndex.CURRENT;
-    }
-
-    @Value.Check
-    public void check() {
-      // ledger_hash may only exist when ledger_index is the default value.
-      ledgerHash().ifPresent($ -> {
-        Preconditions.checkArgument(
-          ledgerIndex().equals(LedgerIndex.CURRENT),
-          "Only specify a ledger_hash or a ledger_index, but not both."
-        );
-      });
-    }
+  @Value.Check
+  default void check() {
+    // ledger_hash may only exist when ledger_index is the default value.
+    ledgerHash().ifPresent($ -> {
+      Preconditions.checkArgument(
+        ledgerIndex().equals(LedgerIndex.CURRENT),
+        "Only specify a ledger_hash or a ledger_index, but not both."
+      );
+    });
   }
 }

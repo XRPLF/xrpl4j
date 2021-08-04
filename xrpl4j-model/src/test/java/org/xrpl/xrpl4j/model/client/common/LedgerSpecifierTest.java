@@ -206,6 +206,21 @@ class LedgerSpecifierTest {
   }
 
   @Test
+  void constructLedgerIndexWithAllConstructors() {
+    LedgerSpecifier fromLedgerIndex = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE));
+    LedgerSpecifier fromUnsignedInteger = LedgerSpecifier.ledgerIndex(UnsignedInteger.ONE);
+    LedgerSpecifier fromInt = LedgerSpecifier.ledgerIndex(1);
+
+    assertThat(fromLedgerIndex).isEqualTo(fromUnsignedInteger);
+    assertThat(fromLedgerIndex).isEqualTo(fromInt);
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> LedgerSpecifier.ledgerIndex(-1)
+    );
+  }
+
+  @Test
   void testLedgerHashJson() throws JsonProcessingException, JSONException {
     LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerHash(LEDGER_HASH);
     LedgerSpecifierWrapper wrapper = LedgerSpecifierWrapper.of(ledgerSpecifier);

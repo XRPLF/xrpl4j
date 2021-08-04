@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.common;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.jackson.modules.LedgerSpecifierDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -72,6 +73,28 @@ public interface LedgerSpecifier {
     return ImmutableLedgerSpecifier.builder()
       .ledgerIndex(ledgerIndex)
       .build();
+  }
+
+  /**
+   * Construct a {@link LedgerSpecifier} with a numerical ledger index.
+   *
+   * @param ledgerIndex The {@link UnsignedInteger} of the desired ledger.
+   *
+   * @return A {@link LedgerSpecifier} containing {@code ledgerIndex}.
+   */
+  static LedgerSpecifier ledgerIndex(UnsignedInteger ledgerIndex) {
+    return ledgerIndex(LedgerIndex.of(ledgerIndex));
+  }
+
+  /**
+   * Construct a {@link LedgerSpecifier} with a numerical ledger index.
+   *
+   * @param ledgerIndex The {@code int} of the desired ledger.
+   *
+   * @return A {@link LedgerSpecifier} containing {@code ledgerIndex}.
+   */
+  static LedgerSpecifier ledgerIndex(int ledgerIndex) {
+    return ledgerIndex(UnsignedInteger.valueOf(ledgerIndex));
   }
 
   /**

@@ -1,5 +1,8 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -204,7 +207,7 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
   }
 
   @Test
-  public void testJsonWithLedgerIndexShortcut() throws JsonProcessingException, JSONException {
+  public void testJsonWithValidatedLedgerIndexShortcut() throws JsonProcessingException, JSONException {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
       .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
@@ -220,5 +223,54 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testJsonWithCurrentLedgerIndexShortcut() throws JsonProcessingException, JSONException {
+    String json = "{\n" +
+      "            \"account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
+      "            \"binary\": false,\n" +
+      "            \"forward\": false,\n" +
+      "            \"ledger_index\": \"current\",\n" +
+      "            \"limit\": 2\n" +
+      "        }";
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> objectMapper.readValue(json, AccountTransactionsRequestParams.class)
+    );
+  }
+
+  @Test
+  public void testJsonWithClosedLedgerIndexShortcut() throws JsonProcessingException, JSONException {
+    String json = "{\n" +
+      "            \"account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
+      "            \"binary\": false,\n" +
+      "            \"forward\": false,\n" +
+      "            \"ledger_index\": \"closed\",\n" +
+      "            \"limit\": 2\n" +
+      "        }";
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> objectMapper.readValue(json, AccountTransactionsRequestParams.class)
+    );
+  }
+
+  @Test
+  void testJsonWithInvalidShortcut() {
+    String json = "{\n" +
+      "            \"account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
+      "            \"binary\": false,\n" +
+      "            \"forward\": false,\n" +
+      "            \"ledger_index\": \"never\",\n" +
+      "            \"limit\": 2\n" +
+      "        }";
+
+    assertThrows(
+      JsonParseException.class,
+      () -> objectMapper.readValue(json, AccountTransactionsRequestParams.class),
+      "Unrecognized LedgerIndex shortcut 'never'."
+    );
   }
 }

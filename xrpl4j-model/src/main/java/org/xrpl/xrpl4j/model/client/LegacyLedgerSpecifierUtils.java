@@ -27,19 +27,31 @@ public class LegacyLedgerSpecifierUtils {
       .map(LedgerSpecifier::ledgerHash)
       .orElseGet(() -> {
         if (ledgerIndex != null) {
-          if (ledgerIndex.equals(LedgerIndex.VALIDATED)) {
-            return LedgerSpecifier.VALIDATED;
-          } else if (ledgerIndex.equals(LedgerIndex.CURRENT)) {
-            return LedgerSpecifier.CURRENT;
-          } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
-            return LedgerSpecifier.CLOSED;
-          } else {
-            return LedgerSpecifier.ledgerIndex(ledgerIndex);
-          }
+          return computeLedgerSpecifierFromLedgerIndex(ledgerIndex);
         } else {
           return LedgerSpecifier.CURRENT;
         }
       });
+  }
+
+  /**
+   * Computes a {@link LedgerSpecifier} that either has a {@link LedgerSpecifier#ledgerIndex()} or
+   * {@link LedgerSpecifier#ledgerIndexShortcut()}.
+   *
+   * @param ledgerIndex A {@link LedgerIndex} potentially containing a shortcut.
+   *
+   * @return A {@link LedgerSpecifier} with the appropriate fields based on {@code ledgerIndex}.
+   */
+  public static LedgerSpecifier computeLedgerSpecifierFromLedgerIndex(LedgerIndex ledgerIndex) {
+    if (ledgerIndex.equals(LedgerIndex.VALIDATED)) {
+      return LedgerSpecifier.VALIDATED;
+    } else if (ledgerIndex.equals(LedgerIndex.CURRENT)) {
+      return LedgerSpecifier.CURRENT;
+    } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
+      return LedgerSpecifier.CLOSED;
+    } else {
+      return LedgerSpecifier.ledgerIndex(ledgerIndex);
+    }
   }
 
 }

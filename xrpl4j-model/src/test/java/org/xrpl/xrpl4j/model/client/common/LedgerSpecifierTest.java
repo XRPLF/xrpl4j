@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
@@ -242,10 +244,28 @@ class LedgerSpecifierTest {
 
   @Test
   void testLedgerIndexShortcutJson() throws JsonProcessingException, JSONException {
-    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.VALIDATED;
+    assertShortcutSerializesDeserializes(LedgerSpecifier.VALIDATED);
+    assertShortcutSerializesDeserializes(LedgerSpecifier.CURRENT);
+    assertShortcutSerializesDeserializes(LedgerSpecifier.CLOSED);
+  }
+
+  @Test
+  void unrecognizedShortcutThrowsWhenDeserializing() {
+    String json = "{\"ledger_index\": \"never\"}";
+    assertThrows(
+      JsonParseException.class,
+      () -> objectMapper.readValue(json, LedgerSpecifierWrapper.class)
+    );
+  }
+
+  private void assertShortcutSerializesDeserializes(
+    LedgerSpecifier ledgerSpecifier
+  ) throws JsonProcessingException, JSONException {
+    Preconditions.checkArgument(ledgerSpecifier.ledgerIndexShortcut().isPresent());
+
     LedgerSpecifierWrapper wrapper = LedgerSpecifierWrapper.of(ledgerSpecifier);
     final String serialized = objectMapper.writeValueAsString(wrapper);
-    String json = "{\"ledger_index\": \"validated\"}";
+    String json = "{\"ledger_index\": \"" + ledgerSpecifier.ledgerIndexShortcut().get() + "\"}";
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
     final LedgerSpecifierWrapper deserialized = objectMapper.readValue(json, LedgerSpecifierWrapper.class);
     assertThat(deserialized).isEqualTo(wrapper);

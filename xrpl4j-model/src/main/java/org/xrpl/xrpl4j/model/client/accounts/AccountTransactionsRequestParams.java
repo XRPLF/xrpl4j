@@ -1,7 +1,5 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
-import static org.xrpl.xrpl4j.model.client.LegacyLedgerSpecifierUtils.computeLedgerSpecifierFromLedgerIndex;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;

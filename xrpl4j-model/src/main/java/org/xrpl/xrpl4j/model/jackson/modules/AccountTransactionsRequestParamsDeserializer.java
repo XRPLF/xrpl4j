@@ -92,7 +92,10 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
             ledgerSpecifier =  LedgerSpecifier.CLOSED;
             break;
           default:
-            throw new JsonParseException(jsonParser, "Unrecognized LedgerIndex shortcut " + ledgerIndex.toString());
+            throw new JsonParseException(
+              jsonParser,
+              "Unrecognized LedgerIndex shortcut '" + ledgerIndex.toString() + "'."
+            );
         }
       }
     }

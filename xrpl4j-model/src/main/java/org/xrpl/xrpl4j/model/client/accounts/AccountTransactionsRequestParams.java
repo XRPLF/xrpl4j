@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import static org.xrpl.xrpl4j.model.client.LegacyLedgerSpecifierUtils.computeLedgerSpecifierFromLedgerIndex;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -8,6 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.LegacyLedgerSpecifierUtils;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
@@ -150,20 +153,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
     return ledgerHash()
       .map(LedgerSpecifier::ledgerHash)
       .map(Optional::of)
-      .orElseGet(() ->
-        ledgerIndex()
-          .map(ledgerIndex -> {
-            if (ledgerIndex.equals(LedgerIndex.VALIDATED)) {
-              return LedgerSpecifier.VALIDATED;
-            } else if (ledgerIndex.equals(LedgerIndex.CURRENT)) {
-              return LedgerSpecifier.CURRENT;
-            } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
-              return LedgerSpecifier.CLOSED;
-            } else {
-              return LedgerSpecifier.ledgerIndex(ledgerIndex);
-            }
-          })
-      );
+      .orElseGet(() -> ledgerIndex().map(LegacyLedgerSpecifierUtils::computeLedgerSpecifierFromLedgerIndex));
   }
 
   /**

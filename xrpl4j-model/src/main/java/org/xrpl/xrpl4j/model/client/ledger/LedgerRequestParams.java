@@ -70,7 +70,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
   }
 
   /**
-   * If true, return full information on the entire ledger. Ignored if you did not specify a {@code} ledgerHash in
+   * If true, return full information on the entire ledger. Ignored if you did not specify a {@code ledgerHash} in
    * {@link #ledgerSpecifier()}}.
    * Defaults to false. (Equivalent to enabling transactions, accounts, and expand.)
    *
@@ -87,7 +87,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
   }
 
   /**
-   * If true, return information on accounts in the ledger. Ignored if you did not specify a {@code} ledgerHash in
+   * If true, return information on accounts in the ledger. Ignored if you did not specify a {@code ledgerHash} in
    * {@link #ledgerSpecifier()}}.
    *
    * <p>Caution: This returns a very large amount of data!
@@ -104,7 +104,7 @@ public interface LedgerRequestParams extends XrplRequestParams {
 
   /**
    * If true, return information on transactions in the specified ledger version. Defaults to false.
-   * Ignored if you did not specify a {@code} ledgerHash in
+   * Ignored if you did not specify a {@code ledgerHash} in
    * {@link #ledgerSpecifier()}}.
    *
    * @return {@code true} if requesting transactions, otherwise {@code false}.

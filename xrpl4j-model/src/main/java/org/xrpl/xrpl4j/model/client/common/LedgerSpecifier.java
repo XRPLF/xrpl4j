@@ -194,5 +194,5 @@ public interface LedgerSpecifier {
       String.format("Only one Ledger specifier may be specified using one of ledgerHash, ledgerIndex or " +
         "ledgerIndexShortcut. %s were specified", numSpecified)
     );
-  }fi
+  }
 }

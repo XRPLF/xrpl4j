@@ -37,7 +37,7 @@ public class LedgerIndex {
    * and proposed for validation.
    *
    * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
-   * @deprecated Ledger index shortcut values should now be specified using {@link LedgerIndexShortcut}.
+   * @deprecated Ledger index shortcut values should now be specified using {@link LedgerIndexSpecifier}.
    */
   @Deprecated
   public static final LedgerIndex CLOSED = LedgerIndex.of("closed");

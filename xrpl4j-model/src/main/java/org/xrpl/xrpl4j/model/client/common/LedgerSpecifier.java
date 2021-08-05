@@ -191,7 +191,8 @@ public interface LedgerSpecifier {
 
     Preconditions.checkArgument(
       numSpecified == 1,
-      String.format("Only one Ledger specifier may be specified using one of ledgerHash, ledgerIndex or ledgerIndexShortcut. %s were specified", numSpecified)
+      String.format("Only one Ledger specifier may be specified using one of ledgerHash, ledgerIndex or " +
+        "ledgerIndexShortcut. %s were specified", numSpecified)
     );
-  }
+  }fi
 }

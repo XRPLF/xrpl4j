@@ -7,6 +7,8 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -21,8 +23,8 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
   public void testJson() throws JsonProcessingException, JSONException {
     AccountTransactionsResult result = AccountTransactionsResult.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
-      .ledgerIndexMax(LedgerIndex.of(UnsignedLong.valueOf(57112019)))
-      .ledgerIndexMin(LedgerIndex.of(UnsignedLong.valueOf(56248229)))
+      .ledgerIndexMaximum(LedgerIndexBound.of(57112019))
+      .ledgerIndexMinimum(LedgerIndexBound.of(56248229))
       .limit(UnsignedInteger.valueOf(2))
       .marker(Marker.of("{\"ledger\":57112007,\"seq\":13}"))
       .status("success")
@@ -43,7 +45,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                 "22024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576")
               .closeDate(UnsignedLong.valueOf(649200322))
               .hash(Hash256.of("08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C"))
-              .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(57112015)))
+              .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112015)))
               .build()
           )
           .metadata(
@@ -71,7 +73,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                 "ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7")
               .closeDate(UnsignedLong.valueOf(649200302))
               .hash(Hash256.of("7C031FD5B710E3C048EEF31254089BEEC505900BCC9A842257A0319453333998"))
-              .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(57112010)))
+              .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112010)))
               .build()
           )
           .metadata(

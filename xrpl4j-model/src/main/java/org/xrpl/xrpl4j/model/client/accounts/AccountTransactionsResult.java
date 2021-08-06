@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -7,12 +8,14 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * The result of an account_tx rippled call.
@@ -41,18 +44,46 @@ public interface AccountTransactionsResult extends XrplResult {
   /**
    * The ledger index of the earliest ledger actually searched for transactions.
    *
-   * @return The {@link LedgerIndex} of the earliest ledger searched.
+   * @return The {@link LedgerIndexBound} of the earliest ledger searched.
+   * @deprecated This field will be removed in favor of {@link #ledgerIndexMinimum()}.
    */
-  @JsonProperty("ledger_index_min")
-  LedgerIndex ledgerIndexMin();
+  @Deprecated
+  @Value.Auxiliary
+  @JsonIgnore
+  @Value.Default
+  default LedgerIndex ledgerIndexMin() {
+    return LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndexMinimum().value()));
+  }
 
   /**
    * The ledger index of the most recent ledger actually searched for transactions.
    *
-   * @return The {@link LedgerIndex} of the latest ledger searched.
+   * @return The {@link LedgerIndexBound} of the latest ledger searched.
+   * @deprecated This field will be removed in favor of {@link #ledgerIndexMaximum()}.
+   */
+  @Deprecated
+  @Value.Auxiliary
+  @JsonIgnore
+  @Value.Default
+  default LedgerIndex ledgerIndexMax() {
+    return LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndexMaximum().value()));
+  }
+
+  /**
+   * The ledger index of the earliest ledger actually searched for transactions.
+   *
+   * @return The {@link LedgerIndexBound} of the earliest ledger searched.
+   */
+  @JsonProperty("ledger_index_min")
+  LedgerIndexBound ledgerIndexMinimum();
+
+  /**
+   * The ledger index of the most recent ledger actually searched for transactions.
+   *
+   * @return The {@link LedgerIndexBound} of the latest ledger searched.
    */
   @JsonProperty("ledger_index_max")
-  LedgerIndex ledgerIndexMax();
+  LedgerIndexBound ledgerIndexMaximum();
 
   /**
    * The limit value used in the request. (This may differ from the actual limit value enforced by the server.)

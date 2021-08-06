@@ -22,7 +22,7 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
     LedgerResult result = LedgerResult.builder()
       .status("success")
       .ledgerHash(Hash256.of("3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A"))
-      .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(54300940)))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(54300940)))
       .validated(true)
       .ledger(
         LedgerHeader.builder()
@@ -34,7 +34,7 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
           .closeTimeResolution(UnsignedInteger.valueOf(10))
           .closed(true)
           .ledgerHash(Hash256.of("3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A"))
-          .ledgerIndex(LedgerIndex.of("54300940"))
+          .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(54300940)))
           .parentCloseTime(UnsignedLong.valueOf(638329270))
           .parentHash(Hash256.of("AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D"))
           .totalCoins(XrpCurrencyAmount.ofDrops(99991024049618156L))
@@ -73,11 +73,11 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
       .ledger(
         LedgerHeader.builder()
           .closed(false)
-          .ledgerIndex(LedgerIndex.of("4"))
+          .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(4)))
           .parentHash(Hash256.of("D2A87A6CA50F96068D0532C00EED693C631BFC03DD11D880E6157999A1C06538"))
           .build()
       )
-      .ledgerCurrentIndex(LedgerIndex.of("4"))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(4)))
       .status("success")
       .validated(false)
       .build();

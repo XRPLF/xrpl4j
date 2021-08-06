@@ -25,7 +25,7 @@ public class FeeResultJsonTests extends AbstractJsonTest {
           .build()
       )
       .expectedLedgerSize(UnsignedInteger.valueOf(55))
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedLong.valueOf(26575101)))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
       .levels(
         FeeLevels.builder()
           .medianLevel(XrpCurrencyAmount.ofDrops(256000))

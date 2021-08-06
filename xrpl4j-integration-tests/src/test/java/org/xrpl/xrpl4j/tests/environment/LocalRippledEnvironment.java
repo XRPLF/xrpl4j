@@ -8,7 +8,6 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -49,10 +48,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
 
   protected AccountInfoResult getCurrentAccountInfo(Address classicAddress) {
     try {
-      AccountInfoRequestParams params = AccountInfoRequestParams.builder()
-        .account(classicAddress)
-        .ledgerIndex(LedgerIndex.CURRENT)
-        .build();
+      AccountInfoRequestParams params = AccountInfoRequestParams.of(classicAddress);
       return getXrplClient().accountInfo(params);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);

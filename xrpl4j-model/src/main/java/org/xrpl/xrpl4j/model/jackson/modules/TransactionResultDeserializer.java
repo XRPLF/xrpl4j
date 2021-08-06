@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -42,8 +44,8 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     T transaction = objectMapper.convertValue(objectNode, javaType);
 
     LedgerIndex ledgerIndex = objectNode.has("ledger_index") ?
-      LedgerIndex.of(objectNode.get("ledger_index").asText()) :
-      null;
+        LedgerIndex.of(UnsignedInteger.valueOf(objectNode.get("ledger_index").asInt())) :
+        null;
     String status = objectNode.has("status") ? objectNode.get("status").asText() : null;
     boolean validated = objectNode.has("validated") && objectNode.get("validated").asBoolean();
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);

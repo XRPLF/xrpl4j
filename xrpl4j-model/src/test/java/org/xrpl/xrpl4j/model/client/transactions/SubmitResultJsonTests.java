@@ -51,7 +51,7 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
           .hash(Hash256.of("5B31A7518DC304D5327B4887CD1F7DC2C38D5F684170097020C7C9758B973847"))
           .build())
         .build())
-      .validatedLedgerIndex(LedgerIndex.of(UnsignedLong.valueOf(21184416)))
+      .validatedLedgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(21184416)))
       .build();
 
     String json = "{\n" +

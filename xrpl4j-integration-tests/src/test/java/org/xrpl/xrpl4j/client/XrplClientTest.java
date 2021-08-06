@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -34,7 +34,7 @@ public class XrplClientTest {
   @Test
   public void depositAuthorized() throws JsonRpcClientErrorException {
     DepositAuthorizedRequestParams depositAuthorized = DepositAuthorizedRequestParams.builder()
-      .ledgerIndex(LedgerIndex.CURRENT)
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .sourceAccount(Address.of("123"))
       .destinationAccount(Address.of("abc"))
       .build();

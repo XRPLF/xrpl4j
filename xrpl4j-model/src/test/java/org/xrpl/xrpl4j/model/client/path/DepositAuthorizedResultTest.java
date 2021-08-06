@@ -3,11 +3,13 @@ package org.xrpl.xrpl4j.model.client.path;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -22,6 +24,84 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
     .of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd");
 
   @Test
+  public void testJsonWithIndexAndCurrentIndex() throws JsonProcessingException, JSONException {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(DESTINATION_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .ledgerCurrentIndex(LedgerIndex.of("9"))
+      .status("success")
+      .depositAuthorized(true)
+      .validated(true)
+      .build();
+
+    String json = "{\n" +
+      " \"deposit_authorized\":true," +
+      " \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      " \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      " \"ledger_index\": 1," +
+      " \"ledger_current_index\":9," +
+      " \"status\":\"success\"," +
+      " \"deposit_authorized\": true," +
+      " \"validated\":true" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  public void testJsonWithIndexAndNoCurrentIndex() throws JsonProcessingException, JSONException {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(DESTINATION_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .status("success")
+      .depositAuthorized(true)
+      .validated(true)
+      .build();
+
+    String json = "{\n" +
+      " \"deposit_authorized\":true," +
+      " \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      " \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      " \"ledger_index\": 1," +
+      " \"status\":\"success\"," +
+      " \"deposit_authorized\": true," +
+      " \"validated\":true" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  public void testJsonWithNoIndexAndCurrentIndex() throws JsonProcessingException, JSONException {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(DESTINATION_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerCurrentIndex(LedgerIndex.of("9"))
+      .status("success")
+      .depositAuthorized(true)
+      .validated(true)
+      .build();
+
+    String json = "{\n" +
+      " \"deposit_authorized\":true," +
+      " \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      " \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      " \"ledger_current_index\":9," +
+      " \"status\":\"success\"," +
+      " \"deposit_authorized\": true," +
+      " \"validated\":true" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  /**
+   * @deprecated This test will be removed once {@link LedgerIndex#VALIDATED} is removed.
+   */
+  @Test
+  @Deprecated
   public void testToFromJsonWithLedgerIndexValidated() throws JSONException, JsonProcessingException {
     // With VALIDATED LedgerIndex
     DepositAuthorizedResult params = DepositAuthorizedResult.builder()
@@ -47,7 +127,11 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(params, json);
   }
 
+  /**
+   * @deprecated This test will be removed once {@link LedgerIndex#CURRENT} is removed.
+   */
   @Test
+  @Deprecated
   public void testToFromJsonWithLedgerIndexCurrent() throws JSONException, JsonProcessingException {
     // With VALIDATED LedgerIndex
     DepositAuthorizedResult params = DepositAuthorizedResult.builder()
@@ -55,7 +139,7 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .destinationAccount(DESTINATION_ACCOUNT)
       .ledgerIndex(LedgerIndex.CURRENT)
       .depositAuthorized(true)
-      .ledgerCurrentIndex(LedgerIndex.of("123"))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(123)))
       .validated(true)
       .build();
 
@@ -74,39 +158,13 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   }
 
   @Test
-  public void testToFromJsonWithLedgerIndexNumeric() throws JSONException, JsonProcessingException {
-    // With VALIDATED LedgerIndex
-    DepositAuthorizedResult params = DepositAuthorizedResult.builder()
-      .sourceAccount(SOURCE_ACCOUNT)
-      .destinationAccount(DESTINATION_ACCOUNT)
-      .ledgerIndex(LedgerIndex.of("987"))
-      .depositAuthorized(true)
-      .ledgerCurrentIndex(LedgerIndex.of("123"))
-      .validated(true)
-      .build();
-
-    assertThat(params.ledgerIndex().equals(LedgerIndex.of("987")));
-
-    String json = "{\n" +
-      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_index\": 987," +
-      "            \"deposit_authorized\": true," +
-      "            \"ledger_current_index\": 123," +
-      "            \"validated\": true" +
-      "        }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
   public void testToFromJsonWithLedgerHash() throws JSONException, JsonProcessingException {
     DepositAuthorizedResult params = DepositAuthorizedResult.builder()
       .sourceAccount(SOURCE_ACCOUNT)
       .destinationAccount(DESTINATION_ACCOUNT)
       .ledgerHash(LEDGER_HASH)
       .depositAuthorized(true)
-      .ledgerCurrentIndex(LedgerIndex.of("123"))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(123)))
       .validated(true)
       .build();
     assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
@@ -124,44 +182,6 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   }
 
   @Test
-  public void testToFromJsonWithBothLedgerHashAndLedgerIndex() throws JSONException, JsonProcessingException {
-    DepositAuthorizedResult params = DepositAuthorizedResult.builder()
-      .sourceAccount(SOURCE_ACCOUNT)
-      .destinationAccount(DESTINATION_ACCOUNT)
-      .ledgerIndex(LedgerIndex.CURRENT)
-      .ledgerHash(LEDGER_HASH)
-      .depositAuthorized(true)
-      .ledgerCurrentIndex(LedgerIndex.of("123"))
-      .validated(true)
-      .build();
-    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
-
-    String json = "{\n" +
-      "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
-      "            \"ledger_index\": \"current\"," +
-      "            \"ledger_hash\": \"abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\"," +
-      "            \"deposit_authorized\": true," +
-      "            \"ledger_current_index\": 123," +
-      "            \"validated\": true" +
-      "        }";
-
-    assertCanSerializeAndDeserialize(params, json);
-
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      DepositAuthorizedResult.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .ledgerIndex(LedgerIndex.VALIDATED)
-        .ledgerHash(LEDGER_HASH)
-        .depositAuthorized(true)
-        .ledgerCurrentIndex(LedgerIndex.of("123"))
-        .validated(true)
-        .build();
-    });
-  }
-
-  @Test
   public void testDefaultValues() {
     DepositAuthorizedResult params = DepositAuthorizedResult.builder()
       .sourceAccount(SOURCE_ACCOUNT)
@@ -170,7 +190,7 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .build();
     assertThat(params.sourceAccount().equals(DESTINATION_ACCOUNT));
     assertThat(params.destinationAccount().equals(DESTINATION_ACCOUNT));
-    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
+    assertThat(params.ledgerIndex().equals(LedgerSpecifier.CURRENT.ledgerIndex()));
     assertThat(params.ledgerHash()).isEmpty();
     assertThat(params.depositAuthorized()).isTrue();
   }
@@ -182,7 +202,7 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
         .sourceAccount(SOURCE_ACCOUNT)
         .destinationAccount(DESTINATION_ACCOUNT)
         .ledgerHash(LEDGER_HASH)
-        .ledgerIndex(LedgerIndex.VALIDATED)
+        .ledgerIndex(LedgerSpecifier.VALIDATED.ledgerIndex())
         .build();
     });
   }

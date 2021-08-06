@@ -3,11 +3,12 @@ package org.xrpl.xrpl4j.model.client.path;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -26,10 +27,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
       .sourceAccount(SOURCE_ACCOUNT)
       .destinationAccount(DESTINATION_ACCOUNT)
-      .ledgerIndex(LedgerIndex.VALIDATED)
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build();
 
-    assertThat(params.ledgerIndex().equals(LedgerIndex.VALIDATED));
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.VALIDATED));
 
     String json = "{\n" +
       "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
@@ -45,14 +46,33 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
       .sourceAccount(SOURCE_ACCOUNT)
       .destinationAccount(DESTINATION_ACCOUNT)
-      .ledgerIndex(LedgerIndex.CURRENT)
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
-    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
     String json = "{\n" +
       "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
       "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
       "            \"ledger_index\": \"current\"" +
+      "        }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testToFromJsonWithLedgerIndexClosed() throws JSONException, JsonProcessingException {
+    DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerSpecifier(LedgerSpecifier.CLOSED)
+      .build();
+
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CLOSED));
+
+    String json = "{\n" +
+      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "            \"ledger_index\": \"closed\"" +
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);
@@ -63,47 +83,35 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
       .sourceAccount(SOURCE_ACCOUNT)
       .destinationAccount(DESTINATION_ACCOUNT)
-      .ledgerHash(LEDGER_HASH)
+      .ledgerSpecifier(LedgerSpecifier.of(LEDGER_HASH))
       .build();
-    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
     String json = "{\n" +
       "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
       "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"," +
-      "            \"ledger_index\": \"current\"" +
+      "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"" +
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
 
   @Test
-  public void testToFromJsonWithBothLedgerHashAndLedgerIndex() throws JSONException, JsonProcessingException {
+  public void testToFromJsonWithLedgerIndex() throws JSONException, JsonProcessingException {
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
       .sourceAccount(SOURCE_ACCOUNT)
       .destinationAccount(DESTINATION_ACCOUNT)
-      .ledgerHash(LEDGER_HASH)
-      .ledgerIndex(LedgerIndex.CURRENT)
+      .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
       .build();
-    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
     String json = "{\n" +
       "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
       "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"," +
-      "            \"ledger_index\": \"current\"" +
+      "            \"ledger_index\": 1" +
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);
-
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      DepositAuthorizedRequestParams.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .ledgerHash(LEDGER_HASH)
-        .ledgerIndex(LedgerIndex.VALIDATED)
-        .build();
-    });
   }
 
   @Test
@@ -114,19 +122,6 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .build();
     assertThat(params.sourceAccount().equals(SOURCE_ACCOUNT));
     assertThat(params.destinationAccount().equals(DESTINATION_ACCOUNT));
-    assertThat(params.ledgerIndex().equals(LedgerIndex.CURRENT));
-    assertThat(params.ledgerHash()).isEmpty();
-  }
-
-  @Test
-  public void testParamsWithBothHashAndIndex() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      DepositAuthorizedRequestParams.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .ledgerHash(LEDGER_HASH)
-        .ledgerIndex(LedgerIndex.VALIDATED)
-        .build();
-    });
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
   }
 }

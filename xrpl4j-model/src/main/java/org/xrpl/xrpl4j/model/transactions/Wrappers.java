@@ -78,11 +78,13 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (!Hash256.class.isAssignableFrom(obj.getClass())) {
-        return false;
+      if (obj != null && obj instanceof Hash256) {
+        String otherValue = ((Hash256) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
       }
-
-      return this.value().toUpperCase(Locale.ENGLISH).equals(((Hash256) obj).value().toUpperCase(Locale.ENGLISH));
+      return false;
     }
 
     @Override

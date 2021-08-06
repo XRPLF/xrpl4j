@@ -2,16 +2,20 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -57,6 +61,15 @@ public class DepositPreAuthIT extends AbstractIT {
             ((DepositPreAuthObject) object).authorize().equals(senderWallet.classicAddress())
         )
     );
+
+    /////////////////////////
+    // Validate that the `deposit_authorized` client call is implemented properly by ensuring it aligns with the
+    // result found in the account object.
+    final boolean depositAuthorized = xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+      .sourceAccount(senderWallet.classicAddress())
+      .destinationAccount(receiverWallet.classicAddress())
+      .build()).depositAuthorized();
+    assertThat(depositAuthorized).isTrue();
 
     /////////////////////////
     // Send a Payment from the sender wallet to the receiver wallet
@@ -142,6 +155,42 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tecNO_PERMISSION");
   }
 
+  @Test
+  public void updateDepositPreAuthWithLedgerIndex() throws JsonRpcClientErrorException {
+    // Create random sender/receiver accounts
+    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccount();
+
+    assertThat(
+      xrplClient.depositAuthorized(
+        DepositAuthorizedRequestParams.builder()
+          .sourceAccount(senderWallet.classicAddress())
+          .destinationAccount(receiverWallet.classicAddress())
+          .ledgerSpecifier(LedgerSpecifier.CURRENT)
+          .build()
+      ).depositAuthorized()
+    ).isTrue();
+  }
+
+  @Test
+  public void updateDepositPreAuthWithLedgerHash() {
+    // Create random sender/receiver accounts
+    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccount();
+
+    Assertions.assertThrows(JsonRpcClientErrorException.class, () -> {
+        xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+          .sourceAccount(senderWallet.classicAddress())
+          .destinationAccount(receiverWallet.classicAddress())
+          .ledgerSpecifier(
+            LedgerSpecifier.of(Hash256.of("19DB20F9037D75361582E804233C517532C1DC5F3158845A9332190342009795"))
+          )
+          .build()).depositAuthorized();
+      },
+      "org.xrpl.xrpl4j.client.JsonRpcClientErrorException: ledgerNotFound"
+    );
+  }
+
   /**
    * Enable the lsfDepositPreauth flag on a given account by submitting an {@link AccountSet} transaction.
    *
@@ -149,6 +198,7 @@ public class DepositPreAuthIT extends AbstractIT {
    * @param fee    The {@link XrpCurrencyAmount} of the ledger fee for the AccountSet transaction.
    *
    * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
+   *
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */
   private AccountInfoResult enableDepositPreauth(

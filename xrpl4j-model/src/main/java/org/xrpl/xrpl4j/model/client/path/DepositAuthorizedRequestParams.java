@@ -1,16 +1,13 @@
 package org.xrpl.xrpl4j.model.client.path;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
-
-import java.util.Optional;
 
 /**
  * Request parameters for a "deposit_authorized" rippled API method call.
@@ -43,35 +40,14 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
   Address destinationAccount();
 
   /**
-   * A 20-byte hex string for the ledger version to use.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
    *
-   * @return An optionally-present {@link Hash256} containing the ledger hash.
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
-  @JsonProperty("ledger_hash")
-  Optional<Hash256> ledgerHash();
-
-  /**
-   * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   *
-   * @return A {@link LedgerIndex} representing the ledger index. Defaults to {@link LedgerIndex#CURRENT}.
-   */
-  @JsonProperty("ledger_index")
   @Value.Default
-  default LedgerIndex ledgerIndex() {
-    return LedgerIndex.CURRENT;
-  }
-
-  /**
-   * Exists only for immutables, but not generally useful for this interface.
-   */
-  @Value.Check
-  default void check() {
-    // ledger_hash may only exist when ledger_index is the default value.
-    ledgerHash().ifPresent($ -> {
-      Preconditions.checkArgument(
-        ledgerIndex().equals(LedgerIndex.CURRENT),
-        "Only specify a ledger_hash or a ledger_index, but not both."
-      );
-    });
+  @JsonUnwrapped
+  default LedgerSpecifier ledgerSpecifier() {
+    return LedgerSpecifier.CURRENT;
   }
 }

@@ -3,7 +3,6 @@ package org.xrpl.xrpl4j.model.client.path;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.client.XrplResult;
@@ -91,21 +90,5 @@ public interface DepositAuthorizedResult extends XrplResult {
   @Default
   default boolean validated() {
     return false;
-  }
-
-  /**
-   * Exists only for immutables, but not generally useful for this interface.
-   */
-  @Value.Check
-  default void check() {
-    // ledger_hash may only exist when ledger_index is the default value.
-    ledgerHash().ifPresent(ledgerHash -> {
-      ledgerIndex().ifPresent(ledgerIndex -> {
-        Preconditions.checkArgument(
-          ledgerIndex.equals(LedgerIndex.CURRENT),
-          "Only specify a ledger_hash or a ledger_index, but not both."
-        );
-      });
-    });
   }
 }

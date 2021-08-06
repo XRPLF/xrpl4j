@@ -99,11 +99,6 @@ public class LedgerIndex {
     return new LedgerIndex(value.toString());
   }
 
-  public static LedgerIndex of(UnsignedInteger value) {
-    Objects.requireNonNull(value);
-    return new LedgerIndex(value.toString());
-  }
-
   /**
    * Construct a {@link LedgerIndex} from an {@link UnsignedInteger}.
    *

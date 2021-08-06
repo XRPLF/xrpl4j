@@ -109,7 +109,7 @@ public class PaymentChannelIT extends AbstractIT {
         .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
         .equals(senderAccountInfo.ledgerIndex()
           .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-          .plus(UnsignedLong.ONE))
+          .plus(UnsignedInteger.ONE))
     );
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())

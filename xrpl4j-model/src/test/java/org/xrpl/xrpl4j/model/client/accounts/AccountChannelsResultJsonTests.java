@@ -19,7 +19,7 @@ public class AccountChannelsResultJsonTests extends AbstractJsonTest {
     AccountChannelsResult result = AccountChannelsResult.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerHash(Hash256.of("B9D3D80EDF4083A06B2D51202E0BFB63C46FC0985E015D06767C21A62853BF6D"))
-      .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(37230600)))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(37230600)))
       .status("success")
       .validated(true)
       .addChannels(
@@ -70,7 +70,7 @@ public class AccountChannelsResultJsonTests extends AbstractJsonTest {
     AccountChannelsResult result = AccountChannelsResult.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerHash(Hash256.of("B9D3D80EDF4083A06B2D51202E0BFB63C46FC0985E015D06767C21A62853BF6D"))
-      .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(37230600)))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(37230600)))
       .status("success")
       .limit(UnsignedInteger.valueOf(10))
       .marker(Marker.of("marker"))

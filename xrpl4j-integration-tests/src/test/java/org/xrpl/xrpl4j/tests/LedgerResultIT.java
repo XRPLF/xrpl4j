@@ -4,7 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 
@@ -17,7 +18,8 @@ public class LedgerResultIT extends AbstractIT {
   @Test
   void getValidatedLedgerResult() throws JsonRpcClientErrorException {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
-      .ledgerIndex(LedgerIndex.VALIDATED)
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build());
     assertThat(ledgerResult.ledgerIndex()).isNotEmpty();
     assertThat(ledgerResult.ledgerHash()).isNotEmpty();
@@ -29,7 +31,7 @@ public class LedgerResultIT extends AbstractIT {
   @Test
   void getCurrentLedgerResult() throws JsonRpcClientErrorException {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
-      .ledgerIndex(LedgerIndex.CURRENT)
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build());
     assertThat(ledgerResult.ledgerIndex()).isEmpty();
     assertThat(ledgerResult.ledgerHash()).isEmpty();
@@ -41,7 +43,7 @@ public class LedgerResultIT extends AbstractIT {
   @Test
   void getClosedLedgerResult() throws JsonRpcClientErrorException {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
-      .ledgerIndex(LedgerIndex.CLOSED)
+      .ledgerSpecifier(LedgerSpecifier.CLOSED)
       .build());
     assertThat(ledgerResult.ledgerIndex()).isNotEmpty();
     assertThat(ledgerResult.ledgerHash()).isNotEmpty();

@@ -23,7 +23,7 @@ public class AccountOffersResultJsonTests extends AbstractJsonTest {
     AccountOffersResult result = AccountOffersResult.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerHash(Hash256.of("B9D3D80EDF4083A06B2D51202E0BFB63C46FC0985E015D06767C21A62853BF6D"))
-      .ledgerIndex(LedgerIndex.of(UnsignedLong.valueOf(37230600)))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(37230600)))
       .status("success")
       .marker(Marker.of("marker"))
       .addOffers(
@@ -99,7 +99,7 @@ public class AccountOffersResultJsonTests extends AbstractJsonTest {
   public void testFullWithLedgerCurrentIndex() throws JsonProcessingException, JSONException {
     AccountOffersResult result = AccountOffersResult.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedLong.valueOf(37230600)))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(37230600)))
       .status("success")
       .build();
 

@@ -1,17 +1,23 @@
 package org.xrpl.xrpl4j.model.client.path;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.LegacyLedgerSpecifierUtils;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * Request parameters for a "ripple_path_find" rippled API method call.
@@ -84,20 +90,35 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   /**
    * A 20-byte hex string for the ledger version to use.
    *
-   * @return An optionally-present {@link Hash256} containing the ledger hash.
+   * @return An optionally-present {@link Hash256}.
+   * @deprecated Ledger hash should be specified in {@link #ledgerSpecifier()}.
    */
-  @JsonProperty("ledger_hash")
+  @JsonIgnore
+  @Deprecated
+  @Value.Auxiliary
   Optional<Hash256> ledgerHash();
 
   /**
    * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
    *
-   * @return A {@link LedgerIndex} representing the ledger index. Defaults to {@link LedgerIndex#CURRENT}.
+   * @return A {@link LedgerIndex}.  Defaults to {@link LedgerIndex#CURRENT}.
+   * @deprecated Ledger index and any shortcut values should be specified in {@link #ledgerSpecifier()}.
    */
-  @JsonProperty("ledger_index")
-  @Value.Default
-  default LedgerIndex ledgerIndex() {
-    return LedgerIndex.CURRENT;
-  }
+  @JsonIgnore
+  @Deprecated
+  @Nullable
+  @Value.Auxiliary
+  LedgerIndex ledgerIndex();
 
+  /**
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
+   * numerical ledger index, or a shortcut value.
+   *
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
+   */
+  @Value.Default
+  @JsonUnwrapped
+  default LedgerSpecifier ledgerSpecifier() {
+    return LegacyLedgerSpecifierUtils.computeLedgerSpecifier(ledgerHash(), ledgerIndex());
+  }
 }

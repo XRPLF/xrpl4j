@@ -105,6 +105,19 @@ public class LedgerIndex {
   }
 
   /**
+   * Construct a {@link LedgerIndex} from an {@link UnsignedInteger}.
+   *
+   * @param value An {@link UnsignedInteger} specifying a ledger index.
+   *
+   * @return A {@link LedgerIndex} with the given value.
+   * @throws NullPointerException if value is null
+   */
+  public static LedgerIndex of(UnsignedInteger value) {
+    Objects.requireNonNull(value);
+    return new LedgerIndex(value.toString());
+  }
+
+  /**
    * Checks to see if a given value is a valid ledger index shortcut.
    *
    * @param value A {@link String} containing the value to check.

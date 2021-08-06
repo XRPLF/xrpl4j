@@ -8,11 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -75,11 +73,11 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
 
     final JsonNode ledgerHash = node.get("ledger_hash");
     if (ledgerHash != null) {
-      ledgerSpecifier = LedgerSpecifier.ledgerHash(Hash256.of(ledgerHash.asText()));
+      ledgerSpecifier = LedgerSpecifier.of(Hash256.of(ledgerHash.asText()));
     } else if (node.has("ledger_index")) {
       final JsonNode ledgerIndex = node.get("ledger_index");
       if (ledgerIndex.isNumber()) {
-        ledgerSpecifier = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex.asInt())));
+        ledgerSpecifier = LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex.asInt())));
       } else {
         switch (ledgerIndex.asText()) {
           case "validated":

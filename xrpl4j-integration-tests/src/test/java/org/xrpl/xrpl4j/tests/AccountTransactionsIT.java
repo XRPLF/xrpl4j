@@ -15,7 +15,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -113,7 +112,7 @@ public class AccountTransactionsIT {
     LedgerResult ledger = mainnetClient.ledger(
       LedgerRequestParams.builder()
         .ledgerSpecifier(
-          LedgerSpecifier.ledgerIndex(
+          LedgerSpecifier.of(
             LedgerIndex.of(
               UnsignedInteger.valueOf(resultByShortcut.ledgerIndexMinimum().value()))
           )
@@ -130,7 +129,7 @@ public class AccountTransactionsIT {
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
         .ledgerSpecifier(
-          Optional.of(LedgerSpecifier.ledgerIndex(validatedLedgerIndex))
+          Optional.of(LedgerSpecifier.of(validatedLedgerIndex))
         )
         .build()
     );
@@ -138,7 +137,7 @@ public class AccountTransactionsIT {
     AccountTransactionsResult resultByLedgerHash = getAccountTransactions(
       AccountTransactionsRequestParams.builder()
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerHash(validatedLedgerHash)))
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.of(validatedLedgerHash)))
         .build()
     );
 

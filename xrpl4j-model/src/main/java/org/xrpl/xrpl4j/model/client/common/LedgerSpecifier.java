@@ -21,7 +21,6 @@ import java.util.function.Function;
 @Value.Immutable
 @JsonSerialize(as = ImmutableLedgerSpecifier.class)
 @JsonDeserialize(as = ImmutableLedgerSpecifier.class, using = LedgerSpecifierDeserializer.class)
-@SuppressWarnings("OverloadMethodsDeclarationOrder")
 public interface LedgerSpecifier {
 
   /**
@@ -56,7 +55,7 @@ public interface LedgerSpecifier {
    *
    * @return A {@link LedgerSpecifier} containing {@code ledgerHash}.
    */
-  static LedgerSpecifier ledgerHash(Hash256 ledgerHash) {
+  static LedgerSpecifier of(Hash256 ledgerHash) {
     return ImmutableLedgerSpecifier.builder()
       .ledgerHash(ledgerHash)
       .build();
@@ -69,7 +68,7 @@ public interface LedgerSpecifier {
    *
    * @return A {@link LedgerSpecifier} containing {@code ledgerIndex}.
    */
-  static LedgerSpecifier ledgerIndex(LedgerIndex ledgerIndex) {
+  static LedgerSpecifier of(LedgerIndex ledgerIndex) {
     return ImmutableLedgerSpecifier.builder()
       .ledgerIndex(ledgerIndex)
       .build();
@@ -82,8 +81,8 @@ public interface LedgerSpecifier {
    *
    * @return A {@link LedgerSpecifier} containing {@code ledgerIndex}.
    */
-  static LedgerSpecifier ledgerIndex(UnsignedInteger ledgerIndex) {
-    return ledgerIndex(LedgerIndex.of(ledgerIndex));
+  static LedgerSpecifier of(UnsignedInteger ledgerIndex) {
+    return of(LedgerIndex.of(ledgerIndex));
   }
 
   /**
@@ -93,8 +92,8 @@ public interface LedgerSpecifier {
    *
    * @return A {@link LedgerSpecifier} containing {@code ledgerIndex}.
    */
-  static LedgerSpecifier ledgerIndex(int ledgerIndex) {
-    return ledgerIndex(UnsignedInteger.valueOf(ledgerIndex));
+  static LedgerSpecifier of(int ledgerIndex) {
+    return of(UnsignedInteger.valueOf(ledgerIndex));
   }
 
   /**

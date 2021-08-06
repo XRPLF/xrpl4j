@@ -100,7 +100,7 @@ public class SubmitPaymentIT extends AbstractIT {
     throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
         LedgerRequestParams.builder()
-          .ledgerSpecifier(LedgerSpecifier.ledgerIndex(validatedPayment.ledgerIndex().get()))
+          .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
           .build()
     );
 

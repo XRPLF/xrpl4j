@@ -149,7 +149,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
     // If either ledgerHash or ledgerIndex are specified, return a LedgerSpecifier with the present field,
     // otherwise return empty
     return ledgerHash()
-      .map(LedgerSpecifier::ledgerHash)
+      .map(LedgerSpecifier::of)
       .map(Optional::of)
       .orElseGet(() -> ledgerIndex().map(LegacyLedgerSpecifierUtils::computeLedgerSpecifierFromLedgerIndex));
   }

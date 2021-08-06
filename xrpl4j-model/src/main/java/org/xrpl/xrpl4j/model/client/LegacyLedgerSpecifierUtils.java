@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.model.client;
 
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -24,7 +23,7 @@ public class LegacyLedgerSpecifierUtils {
    */
   public static LedgerSpecifier computeLedgerSpecifier(Optional<Hash256> ledgerHash, LedgerIndex ledgerIndex) {
     return ledgerHash
-      .map(LedgerSpecifier::ledgerHash)
+      .map(LedgerSpecifier::of)
       .orElseGet(() -> {
         if (ledgerIndex != null) {
           return computeLedgerSpecifierFromLedgerIndex(ledgerIndex);
@@ -50,7 +49,7 @@ public class LegacyLedgerSpecifierUtils {
     } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
       return LedgerSpecifier.CLOSED;
     } else {
-      return LedgerSpecifier.ledgerIndex(ledgerIndex);
+      return LedgerSpecifier.of(ledgerIndex);
     }
   }
 

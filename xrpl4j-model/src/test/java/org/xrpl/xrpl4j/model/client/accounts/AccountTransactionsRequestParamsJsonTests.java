@@ -5,13 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -170,7 +168,7 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
   public void testJsonWithLedgerIndex() throws JsonProcessingException, JSONException {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
-      .ledgerSpecifier(Optional.of(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))))
+      .ledgerSpecifier(Optional.of(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE))))
       .limit(UnsignedInteger.valueOf(2))
       .build();
 
@@ -190,7 +188,7 @@ public class AccountTransactionsRequestParamsJsonTests extends AbstractJsonTest 
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
       .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
       .ledgerSpecifier(Optional.of(
-        LedgerSpecifier.ledgerHash(Hash256.of("5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3"))
+        LedgerSpecifier.of(Hash256.of("5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3"))
       ))
       .limit(UnsignedInteger.valueOf(2))
       .build();

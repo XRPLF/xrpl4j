@@ -33,11 +33,11 @@ class LedgerSpecifierTest {
   @Test
   void specifyOneSpecifier() {
     assertDoesNotThrow(
-      () -> LedgerSpecifier.ledgerHash(LEDGER_HASH)
+      () -> LedgerSpecifier.of(LEDGER_HASH)
     );
 
     assertDoesNotThrow(
-      () -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      () -> LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE))
     );
 
     assertDoesNotThrow(
@@ -91,16 +91,16 @@ class LedgerSpecifierTest {
 
   @Test
   void specifyUsingUtilityConstructors() {
-    assertDoesNotThrow(() -> LedgerSpecifier.ledgerHash(LEDGER_HASH));
-    assertDoesNotThrow(() -> LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)));
+    assertDoesNotThrow(() -> LedgerSpecifier.of(LEDGER_HASH));
+    assertDoesNotThrow(() -> LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)));
     assertDoesNotThrow(() -> LedgerSpecifier.CURRENT);
   }
 
   @Test
   void handlesAllCorrectly() {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
-      LedgerSpecifier.ledgerHash(LEDGER_HASH),
-      LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)),
+      LedgerSpecifier.of(LEDGER_HASH),
+      LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)),
       LedgerSpecifier.VALIDATED
     );
 
@@ -109,7 +109,7 @@ class LedgerSpecifierTest {
 
   @Test
   void handleThrowsWithNullHandlers() {
-    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerHash(LEDGER_HASH);
+    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.of(LEDGER_HASH);
     assertThrows(
       NullPointerException.class,
       () -> ledgerSpecifier.handle(
@@ -147,8 +147,8 @@ class LedgerSpecifierTest {
   @Test
   void mapsAllCorrectly() {
     List<LedgerSpecifier> ledgerSpecifiers = Lists.newArrayList(
-      LedgerSpecifier.ledgerHash(LEDGER_HASH),
-      LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)),
+      LedgerSpecifier.of(LEDGER_HASH),
+      LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)),
       LedgerSpecifier.VALIDATED
     );
 
@@ -175,7 +175,7 @@ class LedgerSpecifierTest {
 
   @Test
   void mapThrowsWithNullMappers() {
-    final LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerHash(LEDGER_HASH);
+    final LedgerSpecifier ledgerSpecifier = LedgerSpecifier.of(LEDGER_HASH);
     assertThrows(
       NullPointerException.class,
       () -> ledgerSpecifier.map(
@@ -206,22 +206,22 @@ class LedgerSpecifierTest {
 
   @Test
   void constructLedgerIndexWithAllConstructors() {
-    LedgerSpecifier fromLedgerIndex = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE));
-    LedgerSpecifier fromUnsignedInteger = LedgerSpecifier.ledgerIndex(UnsignedInteger.ONE);
-    LedgerSpecifier fromInt = LedgerSpecifier.ledgerIndex(1);
+    LedgerSpecifier fromLedgerIndex = LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE));
+    LedgerSpecifier fromUnsignedInteger = LedgerSpecifier.of(UnsignedInteger.ONE);
+    LedgerSpecifier fromInt = LedgerSpecifier.of(1);
 
     assertThat(fromLedgerIndex).isEqualTo(fromUnsignedInteger);
     assertThat(fromLedgerIndex).isEqualTo(fromInt);
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerSpecifier.ledgerIndex(-1)
+      () -> LedgerSpecifier.of(-1)
     );
   }
 
   @Test
   void testLedgerHashJson() throws JsonProcessingException, JSONException {
-    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerHash(LEDGER_HASH);
+    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.of(LEDGER_HASH);
     LedgerSpecifierWrapper wrapper = LedgerSpecifierWrapper.of(ledgerSpecifier);
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_hash\": \"" + LEDGER_HASH + "\"}";
@@ -233,7 +233,7 @@ class LedgerSpecifierTest {
 
   @Test
   void testLedgerIndexJson() throws JsonProcessingException, JSONException {
-    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE));
+    LedgerSpecifier ledgerSpecifier = LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE));
     LedgerSpecifierWrapper wrapper = LedgerSpecifierWrapper.of(ledgerSpecifier);
     final String serialized = objectMapper.writeValueAsString(wrapper);
     String json = "{\"ledger_index\": 1}";

@@ -2,12 +2,10 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -104,7 +102,7 @@ public class AccountOffersRequestParamsJsonTests extends AbstractJsonTest {
   public void testWithLedgerHash() throws JsonProcessingException, JSONException {
     AccountOffersRequestParams params = AccountOffersRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .ledgerSpecifier(LedgerSpecifier.ledgerHash(HASH_256))
+      .ledgerSpecifier(LedgerSpecifier.of(HASH_256))
       .limit(UnsignedInteger.valueOf(100L))
       .marker(Marker.of("marker"))
       .build();
@@ -124,7 +122,7 @@ public class AccountOffersRequestParamsJsonTests extends AbstractJsonTest {
   public void testWithLedgerIndex() throws JsonProcessingException, JSONException {
     AccountOffersRequestParams params = AccountOffersRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .ledgerSpecifier(LedgerSpecifier.ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE)))
+      .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
       .limit(UnsignedInteger.valueOf(100L))
       .marker(Marker.of("marker"))
       .build();

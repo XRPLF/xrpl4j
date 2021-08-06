@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -156,19 +156,39 @@ public class DepositPreAuthIT extends AbstractIT {
   }
 
   @Test
-  public void updateDepositPreAuthWithLedgerIndexAndHash() {
+  public void updateDepositPreAuthWithLedgerIndex() throws JsonRpcClientErrorException {
+    // Create random sender/receiver accounts
+    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccount();
+
+    assertThat(
+      xrplClient.depositAuthorized(
+        DepositAuthorizedRequestParams.builder()
+          .sourceAccount(senderWallet.classicAddress())
+          .destinationAccount(receiverWallet.classicAddress())
+          .ledgerSpecifier(LedgerSpecifier.CURRENT)
+          .build()
+      ).depositAuthorized()
+    ).isTrue();
+  }
+
+  @Test
+  public void updateDepositPreAuthWithLedgerHash() {
     // Create random sender/receiver accounts
     Wallet receiverWallet = createRandomAccount();
     Wallet senderWallet = createRandomAccount();
 
     Assertions.assertThrows(JsonRpcClientErrorException.class, () -> {
-      xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
-        .sourceAccount(senderWallet.classicAddress())
-        .destinationAccount(receiverWallet.classicAddress())
-        .ledgerIndex(LedgerIndex.CURRENT)
-        .ledgerHash(Hash256.of("19DB20F9037D75361582E804233C517532C1DC5F3158845A9332190342009795"))
-        .build()).depositAuthorized();
-    });
+        xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+          .sourceAccount(senderWallet.classicAddress())
+          .destinationAccount(receiverWallet.classicAddress())
+          .ledgerSpecifier(
+            LedgerSpecifier.of(Hash256.of("19DB20F9037D75361582E804233C517532C1DC5F3158845A9332190342009795"))
+          )
+          .build()).depositAuthorized();
+      },
+      "org.xrpl.xrpl4j.client.JsonRpcClientErrorException: ledgerNotFound"
+    );
   }
 
   /**

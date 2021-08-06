@@ -98,6 +98,8 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   }
 
   /**
+   * Tests the json emission for {@link DepositAuthorizedResult} with a VALIDATED result.
+   *
    * @deprecated This test will be removed once {@link LedgerIndex#VALIDATED} is removed.
    */
   @Test
@@ -128,6 +130,8 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   }
 
   /**
+   * Tests the json emission for {@link DepositAuthorizedResult} with a CURRENT result.
+   *
    * @deprecated This test will be removed once {@link LedgerIndex#CURRENT} is removed.
    */
   @Test

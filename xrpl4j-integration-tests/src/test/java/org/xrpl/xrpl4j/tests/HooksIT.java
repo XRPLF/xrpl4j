@@ -37,14 +37,15 @@ public class HooksIT extends AbstractIT {
     String wasmHex = readHookToHex("hooks/carbon/carbon.wasm");
     createHook(hookedWallet, wasmHex);
 
-    sendPayment(randomWallet, hookedWallet.classicAddress(), XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100)));
+    sendPayment(hookedWallet, randomWallet.classicAddress(), XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100)));
 
-    XrpCurrencyAmount finalCarbonBalance = getAccountBalance(CARBON_ACCOUNT);
     // Carbon Hook sends 1% of payment to Carbon account. In this case 1 XRP.
     XrpCurrencyAmount expectedOffsetAmount = XrpCurrencyAmount.ofXrp(BigDecimal.ONE);
-    XrpCurrencyAmount expectedBalance = initialCarbonBalance.plus(expectedOffsetAmount);
+    XrpCurrencyAmount expectedBalance = initialCarbonBalance.plus(expectedOffsetAmount).minus(
+      XrpCurrencyAmount.ofDrops(1)
+    );
 
-    assertThat(finalCarbonBalance).isEqualTo(expectedBalance);
+    scanForResult(() -> getAccountBalance(CARBON_ACCOUNT), (amount) -> amount.equals(expectedBalance));
   }
 
   private void createHook(Wallet hookedWallet, String wasmHex) throws JsonRpcClientErrorException {

@@ -1,3 +1,6 @@
+/**
+ * This file contains programmatically generated sf field codes
+ */
 #define sfInvalid -1UL
 #define sfGeneric 0UL
 #define sfLedgerEntry 0x27120101UL

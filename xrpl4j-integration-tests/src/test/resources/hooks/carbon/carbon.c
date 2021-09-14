@@ -3,12 +3,12 @@
 
 int64_t cbak(int64_t reserved)
 {
-    accept(0,0,0);
     return 0;
 }
 
-// hook to send 1% of all received payments to a carbon offset account
 int64_t hook(int64_t reserved ) {
+
+    TRACESTR("Carbon: started");
 
     // before we start calling hook-api functions we should tell the hook how many tx we intend to create
     etxn_reserve(1); // we are going to emit 1 transaction
@@ -32,9 +32,9 @@ int64_t hook(int64_t reserved ) {
 
     // compare the "From Account" (sfAccount) on the transaction with the account the hook is running on
     int equal = 0; BUFFER_EQUAL(equal, hook_accid, account_field, 20);
-    if (equal)
+    if (!equal)
     {
-        // if the accounts are not equal (memcmp != 0) the otxn was initiated by the hook account
+        // if the accounts are not equal (memcmp != 0) the otxn was sent to the hook account by someone else
         // accept() it and end the hook execution here
         accept(SBUF("Carbon: Incoming transaction"), 2);
     }
@@ -52,15 +52,14 @@ int64_t hook(int64_t reserved ) {
     {
         // you can trace the behaviour of your hook using the trace(buf, size, as_hex) api
         // which will output to xrpld's trace log
-        trace(SBUF("Carbon: Non-xrp transaction detected, sending default 1000 drops to rfCarbon"), 0);
+        TRACESTR("Carbon: Non-xrp transaction detected, sending default 1000 drops to rfCarbon");
     } else
     {
-        trace(SBUF("Carbon: XRP transaction detected, computing 1% to send to rfCarbon"), 0);
+        TRACESTR("Carbon: XRP transaction detected, computing 1% to send to rfCarbon");
         int64_t otxn_drops = AMOUNT_TO_DROPS(amount_buffer);
         TRACEVAR(otxn_drops);
-        trace(SBUF(otxn_drops), 0);
         if (otxn_drops > 100000)   // if its less we send the default amount. or if there was an error we send default
-            drops_to_send = (int64_t)(otxn_drops / 100); // otherwise we send 1%
+            drops_to_send = (int64_t)((double)otxn_drops * 0.01f); // otherwise we send 1%
     }
 
     TRACEVAR(drops_to_send);
@@ -83,13 +82,14 @@ int64_t hook(int64_t reserved ) {
 
     // we will use an XRP payment macro, this will populate the buffer with a serialized binary transaction
     // Parameter list: ( buf_out, drops_amount, drops_fee, to_address, dest_tag, src_tag )
-    PREPARE_PAYMENT_SIMPLE(tx, drops_to_send, fee_base, carbon_accid, 0, 0);
+    PREPARE_PAYMENT_SIMPLE(tx, drops_to_send++, fee_base, carbon_accid, 0, 0);
 
     // emit the transaction
-    emit(SBUF(tx));
+    uint8_t emithash[32];
+    emit(SBUF(emithash), SBUF(tx));
 
     // accept and allow the original transaction through
-    accept(SBUF("Carbon: Emitted a transaction"), 0);
+    accept(SBUF("Carbon: Emitted transaction"), 0);
     return 0;
 
 }

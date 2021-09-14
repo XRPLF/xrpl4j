@@ -47,9 +47,9 @@ public class RippledContainer {
    */
   public RippledContainer() {
     // FIXME tech-preview needed for hooks tests
-    rippledContainer = new GenericContainer("richardah/xrpld-hooks-tech-preview")
+    rippledContainer = new GenericContainer("xrpllabsofficial/xrpld-hooks-testnet")
       .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-        cmd.withEntrypoint("/opt/rippled-hooks/rippled"))
+        cmd.withEntrypoint("/opt/xrpld-hooks/rippled"))
       .withCommand("-a --start --conf /config/rippled.cfg")
       .withExposedPorts(5005)
       .withClasspathResourceMapping("rippled",

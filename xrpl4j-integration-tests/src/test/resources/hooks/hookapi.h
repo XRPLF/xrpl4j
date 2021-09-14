@@ -1,11 +1,15 @@
 /**
- * Hook API include for Webassembly XRPLD Hooks
+ * Hook API include file
  *
  * Note to the reader:
  * This include defines two types of things: external functions and macros
  * Functions are used sparingly because a non-inlining compiler may produce
  * undesirable output.
+ *
+ * Find documentation here: https://xrpl-hooks.readme.io/reference/
  */
+
+
 
 #ifndef HOOKAPI_INCLUDED
 #define HOOKAPI_INCLUDED 1
@@ -29,7 +33,7 @@ extern int32_t _g                  (uint32_t id, uint32_t maxiter);
  * @param read_len The length of the string. May be 0.
  * @return Will never return, terminates the hook.
  */
-extern int64_t accept              (uint32_t read_ptr,  uint32_t read_len,   int32_t error_code);
+extern int64_t accept              (uint32_t read_ptr,  uint32_t read_len,   int64_t error_code);
 
 /**
  * Rollback the originating transaction, discard all hook state changes and emitted transactions.
@@ -37,7 +41,7 @@ extern int64_t accept              (uint32_t read_ptr,  uint32_t read_len,   int
  * @param read_len The length of the string. May be 0.
  * @return Will never return, terminates the hook.
  */
-extern int64_t rollback            (uint32_t read_ptr,  uint32_t read_len,   int32_t error_code);
+extern int64_t rollback            (uint32_t read_ptr,  uint32_t read_len,   int64_t error_code);
 
 /**
  * Read a 20 byte account-id from the memory pointed to by read_ptr of length read_len and encode it to a base58-check
@@ -77,6 +81,8 @@ extern int64_t util_accid          (uint32_t write_ptr, uint32_t write_len,
 extern int64_t util_verify         (uint32_t dread_ptr, uint32_t dread_len,
                                     uint32_t sread_ptr, uint32_t sread_len,
                                     uint32_t kread_ptr, uint32_t kread_len);
+
+
 /**
  * Compute the first half of a SHA512 checksum.
  * @param write_ptr The buffer to write the checksum into. Must be at least 32 bytes.
@@ -89,7 +95,7 @@ extern int64_t util_sha512h        (uint32_t write_ptr, uint32_t write_len,
                                     uint32_t read_ptr,  uint32_t read_len);
 /**
  * Index into a xrpld serialized object and return the location and length of a subfield. Except for Array subtypes
- * the offset and length refer to the **payload** of the subfield not the entire subfield. Use SUB_OFFSET and 
+ * the offset and length refer to the **payload** of the subfield not the entire subfield. Use SUB_OFFSET and
  * SUB_LENGTH macros to extract return value.
  * @param read_ptr The memory location of the stobject
  * @param read_len The length of the stobject
@@ -98,10 +104,10 @@ extern int64_t util_sha512h        (uint32_t write_ptr, uint32_t write_len,
  *         to read_ptr and the low-word (least significant 4 bytes) is its length. MSB is sign bit, if set (negative)
  *         return value indicates error (typically error means could not find.)
  */
-extern int64_t util_subfield       (uint32_t read_ptr,  uint32_t read_len, uint32_t field_id );
+extern int64_t sto_subfield       (uint32_t read_ptr,  uint32_t read_len, uint32_t field_id );
 
 /**
- * Index into a xrpld serialized array and return the location and length of an index. Unlike util_subfield this api
+ * Index into a xrpld serialized array and return the location and length of an index. Unlike sto_subfield this api
  * always returns the offset and length of the whole object at that index (not its payload.) Use SUB_OFFSET and
  * SUB_LENGTH macros to extract return value.
  * @param read_ptr The memory location of the stobject
@@ -111,12 +117,25 @@ extern int64_t util_subfield       (uint32_t read_ptr,  uint32_t read_len, uint3
  *         to read_ptr and the low-word (least significant 4 bytes) is its length. MSB is sign bit, if set (negative)
  *         return value indicates error (typically error means could not find.)
  */
-extern int64_t util_subarray       (uint32_t read_ptr,  uint32_t read_len, uint32_t array_id );
+extern int64_t sto_subarray       (uint32_t read_ptr,  uint32_t read_len, uint32_t array_id);
+
+extern int64_t sto_validate       (uint32_t read_ptr,  uint32_t read_len);
+
+extern int64_t sto_emplace        (uint32_t write_ptr, uint32_t write_len,
+                                   uint32_t sread_ptr, uint32_t sread_len,
+                                   uint32_t fread_ptr, uint32_t fread_len, uint32_t field_id);
+
+extern int64_t sto_erase          (uint32_t write_ptr,  uint32_t write_len,
+                                   uint32_t read_ptr,   uint32_t read_len, uint32_t field_id);
+
+extern int64_t util_keylet         (uint32_t write_ptr, uint32_t write_len, uint32_t keylet_type,
+                                    uint32_t a,         uint32_t b,         uint32_t c,
+                                    uint32_t d,         uint32_t e,         uint32_t f);
 
 /**
  * Compute burden for an emitted transaction.
  * @return the burden a theoretically emitted transaction would have.
- */ 
+ */
 extern int64_t etxn_burden         (void );
 
 /**
@@ -154,7 +173,7 @@ extern int64_t etxn_generation     (void);
  * @param read_len The length of the transaction.
  * @return A negative integer if the emission failed.
  */
-extern int64_t emit                (uint32_t read_ptr,   uint32_t read_len);
+extern int64_t emit                (uint32_t write_ptr, uint32_t write_len, uint32_t read_ptr, uint32_t read_len);
 
 /**
  * Retrieve the account the hook is running on.
@@ -182,28 +201,33 @@ extern int64_t fee_base            (void);
  */
 extern int64_t ledger_seq          (void);
 
+extern int64_t ledger_last_hash    (uint32_t write_ptr,  uint32_t write_len);
+
 /**
  * Retrieve a nonce for use in an emitted transaction (or another task). Can be called repeatedly for multiple nonces.
  * @param write_ptr A buffer of at least 32 bytes to write into.
  * @param write_len The length of that buffer
  * @return The number of bytes written into the buffer of a negative integer if an error occured.
- */ 
+ */
 extern int64_t nonce               (uint32_t write_ptr,  uint32_t write_len);
 
 
 /**
  * Slot functions have not been implemented yet and the api for them is subject to change
  */
+
+extern int64_t slot                (uint32_t write_ptr, uint32_t write_len, uint32_t slot);
 extern int64_t slot_clear          (uint32_t slot);
-extern int64_t slot_set            (uint32_t read_ptr,   uint32_t read_len,
-                                    uint32_t slot_type,  int32_t  slot);
-extern int64_t slot_field_txt      (uint32_t write_ptr,  uint32_t write_len,
-                                    uint32_t field_id,   uint32_t slot);
-extern int64_t slot_field          (uint32_t write_ptr,  uint32_t write_len,
-                                    uint32_t field_id,   uint32_t slot);
+extern int64_t slot_count          (uint32_t slot);
 extern int64_t slot_id             (uint32_t slot);
-extern int64_t slot_type           (uint32_t slot);
-extern int64_t trace_slot          (uint32_t slot);
+extern int64_t slot_set            (uint32_t read_ptr,   uint32_t read_len, int32_t  slot);
+extern int64_t slot_size           (uint32_t slot);
+extern int64_t slot_subarray       (uint32_t parent_slot, uint32_t array_id, uint32_t new_slot);
+extern int64_t slot_subfield       (uint32_t parent_slot, uint32_t field_id, uint32_t new_slot);
+extern int64_t slot_type           (uint32_t slot, uint32_t flags);
+extern int64_t slot_float          (uint32_t slot);
+extern int64_t trace_slot          (uint32_t mread_ptr, uint32_t mread_len, uint32_t slot);
+extern int64_t otxn_slot           (uint32_t slot);
 
 
 /**
@@ -249,7 +273,8 @@ extern int64_t state_foreign       (uint32_t write_ptr,  uint32_t write_len,
  * @param as_hex If 0 treat the read_ptr as pointing at a string of text, otherwise treat it as data and print hex
  * @return The number of bytes output or a negative integer if an error occured.
  */
-extern int64_t trace               (uint32_t read_ptr,   uint32_t read_len,   uint32_t as_hex);
+extern int64_t trace               (uint32_t mread_ptr, uint32_t mread_len,
+                                    uint32_t dread_ptr, uint32_t dread_len,   uint32_t as_hex);
 
 /**
  * Print some output to the trace log on xrpld along with a decimal number. Any xrpld instance set to "trace" log
@@ -302,8 +327,36 @@ extern int64_t otxn_id             (uint32_t write_ptr,  uint32_t write_len);
 /**
  * Retrieve the Transaction Type (e.g. ttPayment = 0) of the originating transaction.
  * @return The Transaction Type (tt-code)
- */ 
+ */
 extern int64_t otxn_type           (void);
+
+
+
+extern int64_t  float_set           (int32_t exponent,   int64_t mantissa );
+extern int64_t  float_multiply      (int64_t float1,     int64_t float2 );
+extern int64_t  float_mulratio      (int64_t float1,     uint32_t round_up,
+                                     uint32_t numerator, uint32_t denominator );
+extern int64_t  float_negate        (int64_t float1 );
+extern int64_t  float_compare       (int64_t float1,     int64_t float2, uint32_t mode );
+extern int64_t  float_sum           (int64_t float1,     int64_t float2 );
+extern int64_t  float_sto           (uint32_t write_ptr, uint32_t write_len,
+                                     uint32_t cread_ptr, uint32_t cread_len,
+                                     uint32_t iread_ptr, uint32_t iread_len,
+                                     int64_t float1,     uint32_t field_code);
+extern int64_t  float_sto_set       (uint32_t read_ptr,  uint32_t read_len );
+extern int64_t  float_invert        (int64_t float1 );
+extern int64_t  float_divide        (int64_t float1,     int64_t float2 );
+extern int64_t  float_one           ();
+
+extern int64_t  float_exponent      (int64_t float1 );
+extern int64_t  float_exponent_set  (int64_t float1,     int32_t exponent );
+extern int64_t  float_mantissa      (int64_t float1 );
+extern int64_t  float_mantissa_set  (int64_t float1,     int64_t mantissa );
+extern int64_t  float_sign          (int64_t float1 );
+extern int64_t  float_sign_set      (int64_t float1,     uint32_t negative );
+extern int64_t  float_int           (int64_t float1,     uint32_t decimal_places, uint32_t abs);
+extern int64_t  trace_float         (uint32_t mread_ptr, uint32_t mread_len, int64_t float1);
+
 
 
 #define SUCCESS  0                  // return codes > 0 are reserved for hook apis to return "success"
@@ -325,7 +378,38 @@ extern int64_t otxn_type           (void);
 #define GUARD_VIOLATION  -16        // a guarded loop or function iterated over its maximum
 #define INVALID_FIELD  -17          // the field requested is returning sfInvalid
 #define PARSE_ERROR  -18            // hook asked hookapi to parse something the contents of which was invalid
+#define RC_ROLLBACK -19             // used internally by hook api to indicate a rollback
+#define RC_ACCEPT -20               // used internally by hook api to indicate an accept
+#define NO_SUCH_KEYLET -21          // the specified keylet or keylet type does not exist or could not be computed
 
+#define INVALID_FLOAT -10024        // if the mantissa or exponent are outside normalized ranges
+
+#define KEYLET_HOOK 1
+#define KEYLET_HOOK_STATE 2
+#define KEYLET_ACCOUNT 3
+#define KEYLET_AMENDMENTS 4
+#define KEYLET_CHILD 5
+#define KEYLET_SKIP 6
+#define KEYLET_FEES 7
+#define KEYLET_NEGATIVE_UNL 8
+#define KEYLET_LINE 9
+#define KEYLET_OFFER 10
+#define KEYLET_QUALITY 11
+#define KEYLET_EMITTED_DIR 12
+#define KEYLET_TICKET 13
+#define KEYLET_SIGNERS 14
+#define KEYLET_CHECK 15
+#define KEYLET_DEPOSIT_PREAUTH 16
+#define KEYLET_UNCHECKED 17
+#define KEYLET_OWNER_DIR 18
+#define KEYLET_PAGE 19
+#define KEYLET_ESCROW 20
+#define KEYLET_PAYCHAN 21
+#define KEYLET_EMITTED 22
+
+#define COMPARE_EQUAL 1U
+#define COMPARE_LESS 2U
+#define COMPARE_GREATER 4U
 
 #include "sfcodes.h"
 #include "hookmacro.h"

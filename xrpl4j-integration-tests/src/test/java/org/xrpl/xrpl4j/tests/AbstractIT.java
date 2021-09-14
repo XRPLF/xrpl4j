@@ -49,11 +49,11 @@ public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
 
-  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+  protected static XrplEnvironment xrplEnvironment;
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
+  protected final XrplClient xrplClient = getXrplEnvironment().getXrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   protected Wallet createRandomAccount() {
@@ -82,7 +82,7 @@ public abstract class AbstractIT {
    * @param wallet
    */
   protected void fundAddress(Address address) {
-    xrplEnvironment.fundAccount(address);
+    getXrplEnvironment().fundAccount(address);
   }
 
 
@@ -242,5 +242,12 @@ public abstract class AbstractIT {
 
   protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
     return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
+  }
+
+  protected XrplEnvironment getXrplEnvironment() {
+    if (xrplEnvironment == null) {
+      xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+    }
+    return xrplEnvironment;
   }
 }

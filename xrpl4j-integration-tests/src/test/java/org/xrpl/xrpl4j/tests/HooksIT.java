@@ -21,7 +21,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-public class HooksIT extends AbstractIT {
+public class HooksIT extends AbstractHookIT {
 
   // account that hook is configured to send an offset payment to
   private static final Address CARBON_ACCOUNT = Address.of("rfCarbonVNTuXckX6x2qTMFmFSnm6dEWGX");
@@ -103,7 +103,7 @@ public class HooksIT extends AbstractIT {
   }
 
   private XrpCurrencyAmount getAccountBalance(Address address) {
-    return this.scanForResult(() -> this.getValidatedAccountInfo(CARBON_ACCOUNT)).accountData().balance();
+    return this.scanForResult(() -> this.getValidatedAccountInfo(address)).accountData().balance();
   }
 
 }

@@ -26,29 +26,21 @@ import java.util.function.Consumer;
 /**
  * Service to start rippled inside docker using testcontainers.
  */
-public class RippledContainer {
+public class RippledHooksContainer {
+
+  private static final Logger LOGGER = getLogger(RippledHooksContainer.class);
 
   // Seed for the Master/Root wallet in the rippled docker container.
   public static final String MASTER_WALLET_SEED = "snoPBrXtMeMyMHUVTgbuqAfg1SUTb";
-  private static final Logger LOGGER = getLogger(RippledContainer.class);
-  private static final Consumer<RippledContainer> LEDGER_ACCEPTOR = (rippledContainer) -> {
-    try {
-      rippledContainer.getXrplAdminClient().acceptLedger();
-    } catch (RuntimeException | JsonRpcClientErrorException e) {
-      LOGGER.warn("Ledger accept failed", e);
-    }
-  };
+
   private final GenericContainer rippledContainer;
   private final ScheduledExecutorService ledgerAcceptor;
   private boolean started;
 
-  /**
-   * No-args constructor.
-   */
-  public RippledContainer() {
-    rippledContainer = new GenericContainer("xrptipbot/rippled:latest")
+  public RippledHooksContainer() {
+    rippledContainer = new GenericContainer("xrpllabsofficial/xrpld-hooks-testnet")
       .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-        cmd.withEntrypoint("/opt/ripple/bin/rippled"))
+        cmd.withEntrypoint("/opt/xrpld-hooks/rippled"))
       .withCommand("-a --start --conf /config/rippled.cfg")
       .withExposedPorts(5005)
       .withClasspathResourceMapping("rippled",
@@ -59,31 +51,19 @@ public class RippledContainer {
   }
 
   /**
-   * Get the {@link Wallet} of the master account.
-   *
-   * @return The {@link Wallet} of the master account.
-   */
-  public static Wallet getMasterWallet() {
-    return DefaultWalletFactory.getInstance().fromSeed(MASTER_WALLET_SEED, false);
-  }
-
-  /**
    * Starts container with default interval (1s) for closing ledgers.
-   *
    * @return
    */
-  public RippledContainer start() {
+  public RippledHooksContainer start() {
     return this.start(1000);
   }
 
   /**
    * Start contain with given interval for closing ledgers.
-   *
    * @param acceptIntervalMillis
-   *
    * @return
    */
-  public RippledContainer start(int acceptIntervalMillis) {
+  public RippledHooksContainer start(int acceptIntervalMillis) {
     if (started) {
       throw new IllegalStateException("container already started");
     }
@@ -118,9 +98,6 @@ public class RippledContainer {
     }
   }
 
-  /**
-   * Shutdown all TestContainers.
-   */
   public void shutdown() {
     assertContainerStarted();
     ledgerAcceptor.shutdownNow();
@@ -136,7 +113,6 @@ public class RippledContainer {
 
   /**
    * Provides an instance of an {@link XrplAdminClient} that will connect to the rippled container.
-   *
    * @return
    */
   public XrplAdminClient getXrplAdminClient() {
@@ -145,20 +121,31 @@ public class RippledContainer {
 
   /**
    * Provides an instance of an {@link XrplClient} that will connect to the rippled container.
-   *
    * @return
    */
   public XrplClient getXrplClient() {
     return new XrplClient(this.getBaseUri());
   }
 
-  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
-    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
-  }
-
   public HttpUrl getBaseUri() {
     assertContainerStarted();
     return getBaseUri(rippledContainer);
+  }
+
+  public static Wallet getMasterWallet() {
+    return DefaultWalletFactory.getInstance().fromSeed(MASTER_WALLET_SEED, false);
+  }
+
+  private static final Consumer<RippledHooksContainer> LEDGER_ACCEPTOR = (rippledContainer) -> {
+    try {
+      rippledContainer.getXrplAdminClient().acceptLedger();
+    } catch (RuntimeException | JsonRpcClientErrorException e) {
+      LOGGER.warn("Ledger accept failed", e);
+    }
+  };
+
+  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
+    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
   }
 
 }

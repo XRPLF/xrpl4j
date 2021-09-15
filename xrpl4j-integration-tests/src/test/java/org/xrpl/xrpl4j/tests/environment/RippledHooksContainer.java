@@ -37,6 +37,9 @@ public class RippledHooksContainer {
   private final ScheduledExecutorService ledgerAcceptor;
   private boolean started;
 
+  /**
+   * No-args constructor.
+   */
   public RippledHooksContainer() {
     rippledContainer = new GenericContainer("xrpllabsofficial/xrpld-hooks-testnet")
       .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
@@ -60,8 +63,8 @@ public class RippledHooksContainer {
 
   /**
    * Start contain with given interval for closing ledgers.
-   * @param acceptIntervalMillis
-   * @return
+   * @param acceptIntervalMillis ledger accept interval in milliseconds.
+   * @return container.
    */
   public RippledHooksContainer start(int acceptIntervalMillis) {
     if (started) {
@@ -98,13 +101,6 @@ public class RippledHooksContainer {
     }
   }
 
-  public void shutdown() {
-    assertContainerStarted();
-    ledgerAcceptor.shutdownNow();
-    rippledContainer.stop();
-    started = false;
-  }
-
   private void assertContainerStarted() {
     if (!started) {
       throw new IllegalStateException("container not started");
@@ -132,6 +128,10 @@ public class RippledHooksContainer {
     return getBaseUri(rippledContainer);
   }
 
+  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
+    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
+  }
+
   public static Wallet getMasterWallet() {
     return DefaultWalletFactory.getInstance().fromSeed(MASTER_WALLET_SEED, false);
   }
@@ -143,9 +143,5 @@ public class RippledHooksContainer {
       LOGGER.warn("Ledger accept failed", e);
     }
   };
-
-  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
-    return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
-  }
 
 }

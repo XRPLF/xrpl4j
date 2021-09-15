@@ -9,8 +9,7 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 /**
- * An SetHook transaction creates a Hook
- *
+ * An SetHook transaction creates a Hook.
  */
 @Immutable
 @JsonSerialize(as = ImmutableSetHook.class)
@@ -24,7 +23,7 @@ public interface SetHook extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().fullyCanonicalSig(true).build();
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   @JsonProperty("HookOn")
@@ -34,7 +33,8 @@ public interface SetHook extends Transaction {
   }
 
   /**
-   * Hex-encoded binary of hook code
+   * Hex-encoded binary of hook code.
+   * @return Hex-encoded hook code.
    */
   @JsonProperty("CreateCode")
   String createCode();

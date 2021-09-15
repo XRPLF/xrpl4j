@@ -24,13 +24,14 @@ public interface HookObject extends LedgerObject {
 
   /**
    * Hex representation of the Hook WASM code.
-   * @return
+   * @return hex representation.
    */
   @JsonProperty("CreateCode")
   String createCode();
 
   /**
    * The type of ledger object. In this case, this is always "Hook".
+   * @return "Hook"
    */
   @JsonProperty("LedgerEntryType")
   @Value.Derived
@@ -41,24 +42,28 @@ public interface HookObject extends LedgerObject {
   /**
    * A set of boolean {@link Flags.RippleStateFlags} containing options
    * enabled for this object.
+   * @return state flags.
    */
   @JsonProperty("Flags")
   Flags.RippleStateFlags flags();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.
+   * @return previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
   Hash256 previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
+   * @return ledger sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
   UnsignedInteger previousTransactionLedgerSequence();
 
   /**
    * Unique identifier for this {@link HookObject}.
+   * @return index for hook.
    */
   Hash256 index();
 }

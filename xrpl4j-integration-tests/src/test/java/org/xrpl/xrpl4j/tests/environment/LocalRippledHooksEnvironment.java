@@ -8,7 +8,6 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -25,7 +24,7 @@ public class LocalRippledHooksEnvironment implements XrplEnvironment {
 
   private static final Logger LOGGER = getLogger(LocalRippledHooksEnvironment.class);
 
-  private static final RippledContainer rippledContainer = new RippledContainer().start();
+  private static final RippledHooksContainer rippledContainer = new RippledHooksContainer().start();
 
   @Override
   public XrplClient getXrplClient() {
@@ -36,7 +35,8 @@ public class LocalRippledHooksEnvironment implements XrplEnvironment {
   public void fundAccount(Address classicAddress) {
     // accounts are funded from the genesis account that holds all XRP when the ledger container starts.
     try {
-      sendPayment(rippledContainer.getMasterWallet(), classicAddress, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1000)));
+      BigDecimal oneThousand = BigDecimal.valueOf(1000);
+      sendPayment(rippledContainer.getMasterWallet(), classicAddress, XrpCurrencyAmount.ofXrp(oneThousand));
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException("could not fund account", e);
     }
@@ -45,12 +45,9 @@ public class LocalRippledHooksEnvironment implements XrplEnvironment {
 
   protected AccountInfoResult getCurrentAccountInfo(Address classicAddress) {
     try {
-      AccountInfoRequestParams params = AccountInfoRequestParams.builder()
-        .account(classicAddress)
-        .ledgerIndex(LedgerIndex.CURRENT)
-        .build();
+      AccountInfoRequestParams params = AccountInfoRequestParams.of(classicAddress);
       return getXrplClient().accountInfo(params);
-    } catch (Exception | JsonRpcClientErrorException e) {
+    } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
@@ -70,8 +67,8 @@ public class LocalRippledHooksEnvironment implements XrplEnvironment {
 
     SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString()
-      + result.transactionResult().transaction());
+    LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString() +
+      result.transactionResult().transaction());
   }
 
 }

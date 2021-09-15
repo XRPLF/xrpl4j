@@ -19,7 +19,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -79,7 +78,7 @@ public abstract class AbstractIT {
 
   /**
    * Funds an address with 1000 XRP.
-   * @param wallet
+   * @param address to be funded.
    */
   protected void fundAddress(Address address) {
     getXrplEnvironment().fundAccount(address);

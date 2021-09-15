@@ -29,7 +29,6 @@ public class HooksIT extends AbstractHookIT {
   @Test
   public void carbonHook() throws JsonRpcClientErrorException, IOException {
     Wallet hookedWallet = this.createRandomAccount();
-    Wallet randomWallet = this.createRandomAccount();
     fundAddress(CARBON_ACCOUNT);
     XrpCurrencyAmount initialCarbonBalance = getAccountBalance(CARBON_ACCOUNT);
     assertThat(initialCarbonBalance).isEqualTo(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1000)));
@@ -37,6 +36,7 @@ public class HooksIT extends AbstractHookIT {
     String wasmHex = readHookToHex("hooks/carbon/carbon.wasm");
     createHook(hookedWallet, wasmHex);
 
+    Wallet randomWallet = this.createRandomAccount();
     sendPayment(hookedWallet, randomWallet.classicAddress(), XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100)));
 
     // Carbon Hook sends 1% of payment to Carbon account. In this case 1 XRP.
@@ -62,7 +62,7 @@ public class HooksIT extends AbstractHookIT {
 
     SubmitResult<Transaction> result = xrplClient.submit(hookedWallet, hook);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
-    logger.info("SetHook successful: " + result.transactionResult().hash());
+    logger.info("SetHook successful: " + result.transactionResult().transaction());
 
     scanForHook(hookedWallet);
   }
@@ -85,7 +85,10 @@ public class HooksIT extends AbstractHookIT {
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
     this.scanForResult(
-      () -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class)
+      () -> this.getValidatedTransaction(
+        result.transactionResult().transaction().hash()
+          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        Payment.class)
     );
   }
 
@@ -94,6 +97,11 @@ public class HooksIT extends AbstractHookIT {
     return BaseEncoding.base16().encode(hook);
   }
 
+  /**
+   * Scans for HookObject on wallet.
+   * @param wallet to scan.
+   * @return found object or null.
+   */
   public HookObject scanForHook(Wallet wallet) {
     return this.scanForLedgerObject(
       () -> this.getValidatedAccountObjects(wallet.classicAddress(), HookObject.class)

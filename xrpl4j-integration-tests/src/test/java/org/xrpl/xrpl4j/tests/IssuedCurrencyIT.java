@@ -133,7 +133,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(
@@ -278,7 +278,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(
@@ -336,7 +336,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> setResult = xrplClient.submit(issuerWallet, setDefaultRipple);
-    assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
     logger.info(
@@ -388,7 +388,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(
@@ -441,7 +441,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
-    assertThat(trustSetSubmitResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
     logger.info(

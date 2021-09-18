@@ -34,25 +34,61 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return An optionally-present {@link String} containing the result of the submission.
+   * @deprecated Use {@link #result()} instead.
+   */
+  @Deprecated
+  @Value.Auxiliary
+  default Optional<String> engineResult() {
+    return Optional.of(result());
+  }
+
+  /**
+   * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
+   *
+   * @return A {@link String} containing the result of the submission.
    */
   @JsonProperty("engine_result")
-  Optional<String> engineResult();
+  String result();
 
   /**
    * Numeric code indicating the preliminary result of the transaction, directly correlated to {@link #engineResult()}.
    *
    * @return An optionally-present {@link String} containing the result code of the submission.
+   * @deprecated Use {@link #resultCode()} instead.
+   */
+  @Deprecated
+  @Value.Auxiliary
+  default Optional<String> engineResultCode() {
+    return Optional.of(resultCode().toString());
+  }
+
+  /**
+   * Numeric code indicating the preliminary result of the transaction, directly correlated to {@link #engineResult()}.
+   *
+   * @return An {@link Integer} containing the result code of the submission.
    */
   @JsonProperty("engine_result_code")
-  Optional<String> engineResultCode();
+  Integer resultCode();
 
   /**
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return An optionally-present {@link String} containing the result message of the submission.
+   * @deprecated Use {@link #resultMessage()} instead.
+   */
+  @Deprecated
+  @Value.Auxiliary
+  default Optional<String> engineResultMessage() {
+    return Optional.of(resultMessage());
+  }
+
+  /**
+   * Human-readable explanation of the transaction's preliminary result.
+   *
+   * @return A {@link String} containing the result message of the submission.
    */
   @JsonProperty("engine_result_message")
-  Optional<String> engineResultMessage();
+  String resultMessage();
 
   /**
    * The complete transaction in hex {@link String} format.

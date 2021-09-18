@@ -24,7 +24,7 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .applied(true)
       .broadcast(true)
       .result("tesSUCCESS")
-      .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
+      .resultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .kept(true)
       .openLedgerCost(XrpCurrencyAmount.ofDrops(10))

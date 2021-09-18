@@ -47,6 +47,13 @@ public interface AccountTransactionsTransactionResult<T extends Transaction> ext
     return resultTransaction().transaction();
   }
 
+  /**
+   * The {@link Transaction}, wrapped in a {@link AccountTransactionsTransaction}, which includes the transaction's
+   * ledger index and hash.
+   *
+   * @return A {@link AccountTransactionsTransaction} containing the {@link Transaction}, its hash, and the
+   *   ledger index that it was included in.
+   */
   @JsonProperty("tx")
   AccountTransactionsTransaction<T> resultTransaction();
 

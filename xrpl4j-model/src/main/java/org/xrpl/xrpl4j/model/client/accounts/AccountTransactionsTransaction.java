@@ -10,8 +10,11 @@ import org.xrpl.xrpl4j.model.jackson.modules.AccountTransactionsTransactionDeser
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
-import java.util.Optional;
-
+/**
+ * Represents a transaction that is returned as part of the result of an {@code account_tx} rippled method call.
+ *
+ * @param <T> The type of {@link Transaction} contained in this class.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountTransactionsTransaction.class)
 @JsonDeserialize(
@@ -20,6 +23,13 @@ import java.util.Optional;
 )
 public interface AccountTransactionsTransaction<T extends Transaction> {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @param <T> The type of {@link Transaction} to include in the builder.
+   *
+   * @return A new {@link ImmutableAccountTransactionsTransaction.Builder}.
+   */
   static <T extends Transaction> ImmutableAccountTransactionsTransaction.Builder<T> builder() {
     return ImmutableAccountTransactionsTransaction.builder();
   }

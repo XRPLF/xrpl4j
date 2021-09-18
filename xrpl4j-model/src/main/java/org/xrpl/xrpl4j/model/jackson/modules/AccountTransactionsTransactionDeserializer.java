@@ -14,8 +14,15 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson Deserializer for {@link AccountTransactionsTransaction}s. This is necessary because Jackson
+ * does not deserialize {@link com.fasterxml.jackson.annotation.JsonUnwrapped} fields intelligently.
+ */
 public class AccountTransactionsTransactionDeserializer extends StdDeserializer<AccountTransactionsTransaction<?>> {
 
+  /**
+   * No-args constructor.
+   */
   public AccountTransactionsTransactionDeserializer() {
     super(AccountTransactionsTransaction.class);
   }

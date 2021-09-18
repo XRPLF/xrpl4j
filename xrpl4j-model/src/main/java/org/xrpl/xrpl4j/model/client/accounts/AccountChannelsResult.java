@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * The result of an account_channels rippled call.
@@ -50,17 +51,37 @@ public interface AccountChannelsResult extends XrplResult {
    * The identifying Hash of the ledger version used to generate this response.
    *
    * @return A {@link Hash256} containing the ledger hash.
+   * @deprecated When requesting Account Channels from a non-validated ledger, the result will not contain this field.
+   *   To prevent this class from throwing an error when requesting Account Channels from a non-validated ledger, this
+   *   field is currently marked as {@link Nullable}. However, this field will be {@link Optional} in a future release.
    */
   @JsonProperty("ledger_hash")
+  @Nullable
+  @Deprecated
   Hash256 ledgerHash();
 
   /**
-   * The Ledger Index of the ledger version used to generate this response.
+   * The Ledger Index of the ledger version used to generate this response. Only present in responses to requests
+   * with ledger_index = "validated" or "closed".
    *
    * @return A {@link LedgerIndex}.
+   * @deprecated When requesting Account Channels from a non-validated ledger, the result will not contain this field.
+   *   To prevent this class from throwing an error when requesting Account Channels from a non-validated ledger, this
+   *   field is currently marked as {@link Nullable}. However, this field will be {@link Optional} in a future release.
    */
   @JsonProperty("ledger_index")
+  @Nullable
+  @Deprecated
   LedgerIndex ledgerIndex();
+
+  /**
+   * The ledger index of the current open ledger, which was used when retrieving this information. Only present
+   * in responses to requests with ledger_index = "current".
+   *
+   * @return An optionally-present {@link LedgerIndex} representing the current ledger index.
+   */
+  @JsonProperty("ledger_current_index")
+  Optional<LedgerIndex> ledgerCurrentIndex();
 
   /**
    * If true, the information in this response comes from a validated ledger version.

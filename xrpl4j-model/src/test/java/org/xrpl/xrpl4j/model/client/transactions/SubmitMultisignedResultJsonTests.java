@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -69,6 +71,10 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
         .hash(Hash256.of("81A477E2A362D171BB16BE17B4120D9F809A327FA00242ABCA867283BEA2F4F8"))
         .build())
       .build();
+
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(result.result());
+    assertThat(result.engineResultCode()).isNotEmpty().get().isEqualTo(result.resultCode().toString());
+    assertThat(result.engineResultMessage()).isNotEmpty().get().isEqualTo(result.resultMessage());
 
     String json = "{\n" +
       "        \"engine_result\": \"tesSUCCESS\",\n" +

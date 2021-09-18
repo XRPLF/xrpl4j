@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -54,6 +56,9 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
         .build())
       .validatedLedgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(21184416)))
       .build();
+
+    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo(paymentResult.result());
+    assertThat(paymentResult.engineResultMessage()).isNotEmpty().get().isEqualTo(paymentResult.resultMessage());
 
     String json = "{\n" +
       "        \"accepted\" : true,\n" +

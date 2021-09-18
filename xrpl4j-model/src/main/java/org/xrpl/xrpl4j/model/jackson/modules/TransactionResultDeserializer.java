@@ -11,6 +11,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
@@ -46,6 +47,7 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     LedgerIndex ledgerIndex = objectNode.has("ledger_index") ?
         LedgerIndex.of(UnsignedInteger.valueOf(objectNode.get("ledger_index").asInt())) :
         null;
+    Hash256 hash = Hash256.of(objectNode.get("hash").asText());
     String status = objectNode.has("status") ? objectNode.get("status").asText() : null;
     boolean validated = objectNode.has("validated") && objectNode.get("validated").asBoolean();
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);
@@ -53,6 +55,7 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     return TransactionResult.<T>builder()
       .transaction(transaction)
       .ledgerIndex(Optional.ofNullable(ledgerIndex))
+      .hash(hash)
       .status(Optional.ofNullable(status))
       .validated(validated)
       .metadata(metadata)

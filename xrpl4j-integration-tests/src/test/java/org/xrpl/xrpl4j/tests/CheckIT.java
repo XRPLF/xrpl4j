@@ -50,10 +50,11 @@ public class CheckIT extends AbstractIT {
 
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////
@@ -83,10 +84,11 @@ public class CheckIT extends AbstractIT {
       .build();
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
     assertThat(cashResponse.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cashResponse.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      cashResponse.transactionResult().hash()
     );
 
     //////////////////////
@@ -137,10 +139,11 @@ public class CheckIT extends AbstractIT {
 
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////
@@ -167,10 +170,11 @@ public class CheckIT extends AbstractIT {
 
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cancelResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      cancelResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -212,10 +216,11 @@ public class CheckIT extends AbstractIT {
     // it into the ledger
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
     assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     CheckObject checkObject = (CheckObject) this.scanForResult(
@@ -242,10 +247,11 @@ public class CheckIT extends AbstractIT {
 
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
     assertThat(cancelResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cancelResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      cancelResult.transactionResult().hash()
     );
 
     //////////////////////

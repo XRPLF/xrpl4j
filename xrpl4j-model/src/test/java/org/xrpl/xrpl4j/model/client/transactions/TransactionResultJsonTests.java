@@ -39,6 +39,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
           "39F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
         .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
         .build())
+      .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
       .metadata(TransactionMetadata.builder()
         .transactionResult("tesSUCCESS")
         .transactionIndex(UnsignedInteger.MAX_VALUE)

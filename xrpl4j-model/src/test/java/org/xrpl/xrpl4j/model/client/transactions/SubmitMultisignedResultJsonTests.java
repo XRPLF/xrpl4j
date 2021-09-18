@@ -65,6 +65,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
             .hash(Hash256.of("81A477E2A362D171BB16BE17B4120D9F809A327FA00242ABCA867283BEA2F4F8"))
             .build()
         )
+        .hash(Hash256.of("81A477E2A362D171BB16BE17B4120D9F809A327FA00242ABCA867283BEA2F4F8"))
         .build())
       .build();
 

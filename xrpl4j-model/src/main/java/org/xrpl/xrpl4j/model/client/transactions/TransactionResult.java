@@ -8,6 +8,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.TransactionResultDeserializer;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
@@ -49,6 +50,13 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    */
   @JsonProperty("ledger_index")
   Optional<LedgerIndex> ledgerIndex();
+
+  /**
+   * The identifying hash of the {@link Transaction}.
+   *
+   * @return The {@link Hash256} of {@link #transaction()}.
+   */
+  Hash256 hash();
 
   /**
    * {@code true} if this data is from a validated ledger version; If {@code false}, this data is not final.

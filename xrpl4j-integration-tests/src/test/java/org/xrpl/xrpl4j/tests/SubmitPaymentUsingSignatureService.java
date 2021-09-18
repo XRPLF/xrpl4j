@@ -79,15 +79,14 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(result.transactionResult().hash());
     logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash());
+      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult()
-          .transaction()
-          .hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        result.transactionResult().hash(),
         Payment.class)
     );
   }
@@ -113,16 +112,15 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(result.transactionResult().hash());
     logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash()
+      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash()
     );
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult()
-          .transaction()
-          .hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        result.transactionResult().hash(),
         Payment.class)
     );
   }

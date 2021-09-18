@@ -426,5 +426,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
 
     assertThat(accountChannelsResult.ledgerHash()).isNull();
+    assertThat(accountChannelsResult.ledgerIndex()).isNull();
+    assertThat(accountChannelsResult.ledgerCurrentIndex()).isNotEmpty();
   }
 }

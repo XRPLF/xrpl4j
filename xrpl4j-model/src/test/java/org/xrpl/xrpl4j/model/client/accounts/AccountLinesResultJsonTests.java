@@ -5,6 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 public class AccountLinesResultJsonTests extends AbstractJsonTest {
@@ -14,6 +15,7 @@ public class AccountLinesResultJsonTests extends AbstractJsonTest {
     AccountLinesResult result = AccountLinesResult.builder()
       .account(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .status("success")
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
       .addLines(
         TrustLine.builder()
           .account(Address.of("r3vi7mWxru9rJCxETCyA1CHvzL96eZWx5z"))
@@ -39,6 +41,7 @@ public class AccountLinesResultJsonTests extends AbstractJsonTest {
 
     String json = "{\n" +
       "        \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "        \"ledger_index\": 1,\n" +
       "        \"lines\": [\n" +
       "            {\n" +
       "                \"account\": \"r3vi7mWxru9rJCxETCyA1CHvzL96eZWx5z\",\n" +

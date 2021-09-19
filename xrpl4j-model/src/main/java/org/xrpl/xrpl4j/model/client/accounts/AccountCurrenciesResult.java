@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -10,6 +11,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * The result of an account_currencies rippled call.
@@ -35,9 +37,40 @@ public interface AccountCurrenciesResult extends XrplResult {
    * The Ledger Index of the ledger version used to generate this response.
    *
    * @return A {@link LedgerIndex}.
+   * @deprecated When requesting Account Channels from a non-validated ledger, the result will not contain this field.
+   *   To prevent this class from throwing an error when requesting Account Currencies from a non-validated ledger, this
+   *   field is currently marked as {@link Nullable}. However, this field will be {@link Optional} in a future release.
    */
+  @Deprecated
+  @Nullable
   @JsonProperty("ledger_index")
   LedgerIndex ledgerIndex();
+
+  /**
+   * The ledger index of the current open ledger, which was used when retrieving this information. Only present
+   * in responses to requests with ledger_index = "current".
+   *
+   * @return An optionally-present {@link LedgerIndex} representing the current ledger index.
+   */
+  @JsonProperty("ledger_current_index")
+  Optional<LedgerIndex> ledgerCurrentIndex();
+
+  /**
+   * The ledger index that was used when retrieving this result, regardless of whether the ledger has been validated,
+   * closed, or is still open.
+   *
+   * @return The {@link LedgerIndex} found in {@link #ledgerIndex()} or {@link #ledgerCurrentIndex()}, depending
+   *   on which one is present.
+   */
+  @JsonIgnore
+  @Value.Derived
+  default LedgerIndex ledgerIndexSafe() {
+    return Optional.ofNullable(ledgerIndex())
+      .orElseGet(() ->
+        ledgerCurrentIndex()
+          .orElseThrow(() -> new IllegalStateException("Result did not contain ledger_index or ledger_current_index."))
+      );
+  }
 
   /**
    * If true, the information in this response comes from a validated ledger version.

@@ -24,6 +24,8 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
     .of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd");
 
   /**
+   * Tests JSON serialization/deserialization when the result has both a ledger index and ledger current index.
+   *
    * @deprecated This test is unrealistic, because ledgerIndex and ledgerCurrentIndex will never be present
    *   at the same time.
    */

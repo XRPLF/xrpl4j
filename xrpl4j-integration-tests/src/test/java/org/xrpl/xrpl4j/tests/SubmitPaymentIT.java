@@ -104,9 +104,10 @@ public class SubmitPaymentIT extends AbstractIT {
           .build()
     );
 
-    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
+    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty()
+      .isEqualTo(validatedPayment.closeDateHuman());
     assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();
-    assertThat(validatedPayment.transaction().closeDateHuman().get())
+    assertThat(validatedPayment.closeDateHuman()).isNotEmpty().get()
       .isEqualTo(ledger.ledger().closeTimeHuman().get());
   }
 

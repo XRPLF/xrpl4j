@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -72,6 +73,23 @@ public interface AccountObjectsResult extends XrplResult {
    */
   @JsonProperty("ledger_current_index")
   Optional<LedgerIndex> ledgerCurrentIndex();
+
+  /**
+   * The ledger index that was used when retrieving this result, regardless of whether the ledger has been validated,
+   * closed, or is still open.
+   *
+   * @return The {@link LedgerIndex} found in {@link #ledgerIndex()} or {@link #ledgerCurrentIndex()}, depending
+   *   on which one is present.
+   */
+  @JsonIgnore
+  @Value.Derived
+  default LedgerIndex ledgerIndexSafe() {
+    return ledgerIndex()
+      .orElseGet(() ->
+        ledgerCurrentIndex()
+          .orElseThrow(() -> new IllegalStateException("Result did not contain ledger_index or ledger_current_index."))
+      );
+  }
 
   /**
    * The {@link AccountObjectsRequestParams#limit()} that was used in the corresponding request, if any.

@@ -1,9 +1,11 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -12,6 +14,9 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 /**
@@ -23,6 +28,12 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableTransactionResult.class)
 @JsonDeserialize(using = TransactionResultDeserializer.class)
 public interface TransactionResult<TxnType extends Transaction> extends XrplResult {
+
+  /**
+   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
+   * the start of that epoch.
+   */
+  long RIPPLE_EPOCH = 946684800;
 
   /**
    * Construct a builder for this class.
@@ -75,5 +86,28 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    */
   @JsonProperty("meta")
   Optional<TransactionMetadata> metadata();
+
+  /**
+   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
+   * This is an undocumented field.
+   *
+   * @return An optionally-present {@link UnsignedLong}.
+   */
+  @JsonProperty("date")
+  Optional<UnsignedLong> closeDate();
+
+  /**
+   * The approximate close time in UTC offset.
+   * This is derived from undocumented field.
+   *
+   * @return An optionally-present {@link ZonedDateTime}.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Optional<ZonedDateTime> closeDateHuman() {
+    return closeDate().map(secondsSinceRippleEpoch ->
+      Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
+    );
+  }
 
 }

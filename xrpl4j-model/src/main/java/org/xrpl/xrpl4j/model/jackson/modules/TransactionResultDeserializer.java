@@ -51,6 +51,7 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     String status = objectNode.has("status") ? objectNode.get("status").asText() : null;
     boolean validated = objectNode.has("validated") && objectNode.get("validated").asBoolean();
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);
+    UnsignedLong closeDate = objectNode.has("date") ? UnsignedLong.valueOf(objectNode.get("date").asLong()) : null;
 
     return TransactionResult.<T>builder()
       .transaction(transaction)
@@ -59,6 +60,7 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
       .status(Optional.ofNullable(status))
       .validated(validated)
       .metadata(metadata)
+      .closeDate(Optional.ofNullable(closeDate))
       .build();
   }
 

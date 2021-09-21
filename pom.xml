@@ -194,6 +194,16 @@
         <version>${feign.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-okhttp</artifactId>
+        <version>${feign.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-slf4j</artifactId>
+        <version>${feign.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk15to18</artifactId>
         <version>1.66</version>

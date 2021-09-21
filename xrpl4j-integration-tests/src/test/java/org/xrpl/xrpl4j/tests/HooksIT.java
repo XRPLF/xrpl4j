@@ -36,8 +36,8 @@ public class HooksIT extends AbstractHookIT {
     String wasmHex = readHookToHex("hooks/carbon/carbon.wasm");
     createHook(hookedWallet, wasmHex);
 
-    Wallet randomWallet = this.createRandomAccount();
-    sendPayment(hookedWallet, randomWallet.classicAddress(), XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100)));
+    Address randomWalletAddress = Address.of("rnwKZbegYC5svYhgBBsZo6M7VvgV7QMLM4");
+    sendPayment(hookedWallet, randomWalletAddress, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100)));
 
     // Carbon Hook sends 1% of payment to Carbon account. In this case 1 XRP.
     XrpCurrencyAmount expectedOffsetAmount = XrpCurrencyAmount.ofXrp(BigDecimal.ONE);

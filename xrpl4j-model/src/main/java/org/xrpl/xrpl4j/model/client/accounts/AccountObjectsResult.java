@@ -58,12 +58,38 @@ public interface AccountObjectsResult extends XrplResult {
   Optional<Hash256> ledgerHash();
 
   /**
+   * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
+   *
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
+  }
+
+  /**
    * The ledger index of the ledger version that was used to generate this {@link AccountObjectsResult}.
    *
    * @return An optionally-present {@link LedgerIndex}.
    */
   @JsonProperty("ledger_index")
   Optional<LedgerIndex> ledgerIndex();
+
+  /**
+   * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
+   *
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerIndexSafe() {
+    return ledgerIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+  }
 
   /**
    * The ledger index of the current in-progress ledger version, which was used to generate this
@@ -75,20 +101,17 @@ public interface AccountObjectsResult extends XrplResult {
   Optional<LedgerIndex> ledgerCurrentIndex();
 
   /**
-   * The ledger index that was used when retrieving this result, regardless of whether the ledger has been validated,
-   * closed, or is still open.
+   * Get {@link #ledgerCurrentIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerCurrentIndex()} is
+   * empty.
    *
-   * @return The {@link LedgerIndex} found in {@link #ledgerIndex()} or {@link #ledgerCurrentIndex()}, depending
-   *   on which one is present.
+   * @return The value of {@link #ledgerCurrentIndex()}.
+   * @throws IllegalStateException If {@link #ledgerCurrentIndex()} is empty.
    */
   @JsonIgnore
-  @Value.Derived
-  default LedgerIndex ledgerIndexSafe() {
-    return ledgerIndex()
-      .orElseGet(() ->
-        ledgerCurrentIndex()
-          .orElseThrow(() -> new IllegalStateException("Result did not contain ledger_index or ledger_current_index."))
-      );
+  @Value.Auxiliary
+  default LedgerIndex ledgerCurrentIndexSafe() {
+    return ledgerCurrentIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
   }
 
   /**

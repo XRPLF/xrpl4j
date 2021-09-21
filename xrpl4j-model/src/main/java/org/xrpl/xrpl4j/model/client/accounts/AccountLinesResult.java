@@ -47,12 +47,25 @@ public interface AccountLinesResult extends XrplResult {
   List<TrustLine> lines();
 
   /**
-   * The ledger index of the current open ledger, which was used when retrieving this information.
+   * The identifying hash the ledger version that was used when retrieving this data.
    *
-   * @return An optionally-present {@link LedgerIndex} representing the current ledger index.
+   * @return An optionally-present {@link org.xrpl.xrpl4j.model.transactions.Hash256}.
    */
-  @JsonProperty("ledger_current_index")
-  Optional<LedgerIndex> ledgerCurrentIndex();
+  @JsonProperty("ledger_hash")
+  Optional<Hash256> ledgerHash();
+
+  /**
+   * Get {@link #ledgerHash()}, or throw an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
+   *
+   * @return The value of {@link #ledgerHash()}.
+   * @throws IllegalStateException If {@link #ledgerHash()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
+  }
 
   /**
    * The ledger index of the ledger version that was used when retrieving this data.
@@ -63,29 +76,39 @@ public interface AccountLinesResult extends XrplResult {
   Optional<LedgerIndex> ledgerIndex();
 
   /**
-   * The ledger index that was used when retrieving this result, regardless of whether the ledger has been validated,
-   * closed, or is still open.
+   * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
    *
-   * @return The {@link LedgerIndex} found in {@link #ledgerIndex()} or {@link #ledgerCurrentIndex()}, depending
-   *   on which one is present.
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
    */
   @JsonIgnore
-  @Value.Derived
+  @Value.Auxiliary
   default LedgerIndex ledgerIndexSafe() {
     return ledgerIndex()
-      .orElseGet(() ->
-        ledgerCurrentIndex()
-          .orElseThrow(() -> new IllegalStateException("Result did not contain ledger_index or ledger_current_index."))
-      );
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
   }
 
   /**
-   * The identifying hash the ledger version that was used when retrieving this data.
+   * The ledger index of the current open ledger, which was used when retrieving this information.
    *
-   * @return An optionally-present {@link org.xrpl.xrpl4j.model.transactions.Hash256}.
+   * @return An optionally-present {@link LedgerIndex} representing the current ledger index.
    */
-  @JsonProperty("ledger_hash")
-  Optional<Hash256> ledgerHash();
+  @JsonProperty("ledger_current_index")
+  Optional<LedgerIndex> ledgerCurrentIndex();
+
+  /**
+   * Get {@link #ledgerCurrentIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerCurrentIndex()} is
+   * empty.
+   *
+   * @return The value of {@link #ledgerCurrentIndex()}.
+   * @throws IllegalStateException If {@link #ledgerCurrentIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerCurrentIndexSafe() {
+    return ledgerCurrentIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
+  }
 
   /**
    * Server-defined value indicating the response is paginated. Pass this to the next call to resume where this

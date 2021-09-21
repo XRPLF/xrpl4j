@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -20,9 +21,14 @@ public class LedgerResultIT extends AbstractIT {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build());
-    assertThat(ledgerResult.ledgerIndex()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerIndexSafe());;
-    assertThat(ledgerResult.ledgerHash()).isNotEmpty();
+
+    assertThat(ledgerResult.ledgerIndex()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerIndexSafe());
+    assertThat(ledgerResult.ledgerHash()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerHashSafe());
     assertThat(ledgerResult.ledgerCurrentIndex()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      ledgerResult::ledgerCurrentIndexSafe
+    );
     assertThat(ledgerResult.ledger().closeTimeHuman()).isNotEmpty();
     assertThat(ledgerResult.ledger().parentCloseTime()).isNotEmpty();
   }
@@ -32,9 +38,18 @@ public class LedgerResultIT extends AbstractIT {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build());
+
     assertThat(ledgerResult.ledgerIndex()).isEmpty();
     assertThat(ledgerResult.ledgerHash()).isEmpty();
-    assertThat(ledgerResult.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerIndexSafe());
+    assertThrows(
+      IllegalStateException.class,
+      ledgerResult::ledgerHashSafe
+    );
+    assertThrows(
+      IllegalStateException.class,
+      ledgerResult::ledgerIndexSafe
+    );
+    assertThat(ledgerResult.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerCurrentIndexSafe());
     assertThat(ledgerResult.ledger().closeTimeHuman()).isEmpty();
     assertThat(ledgerResult.ledger().parentCloseTime()).isEmpty();
   }
@@ -44,9 +59,14 @@ public class LedgerResultIT extends AbstractIT {
     final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CLOSED)
       .build());
+
     assertThat(ledgerResult.ledgerIndex()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerIndexSafe());
-    assertThat(ledgerResult.ledgerHash()).isNotEmpty();
+    assertThat(ledgerResult.ledgerHash()).isNotEmpty().get().isEqualTo(ledgerResult.ledgerHashSafe());
     assertThat(ledgerResult.ledgerCurrentIndex()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      ledgerResult::ledgerCurrentIndexSafe
+    );
     assertThat(ledgerResult.ledger().closeTimeHuman()).isNotEmpty();
     assertThat(ledgerResult.ledger().parentCloseTime()).isNotEmpty();
   }

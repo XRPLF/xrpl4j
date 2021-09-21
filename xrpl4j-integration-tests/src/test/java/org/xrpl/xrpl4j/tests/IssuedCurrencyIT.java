@@ -72,7 +72,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     assertThat(counterpartyCurrencies.sendCurrencies()).asList().containsOnly(xrpl4jCoin);
     assertThat(counterpartyCurrencies.ledgerCurrentIndex()).isNotEmpty().get()
-      .isEqualTo(counterpartyCurrencies.ledgerIndexSafe());
+      .isEqualTo(counterpartyCurrencies.ledgerCurrentIndexSafe());
   }
 
   @Test

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.primitives.UnsignedInteger;
@@ -20,8 +21,12 @@ class AccountInfoResultTest {
       .validated(true)
       .build();
 
-    assertThat(result.ledgerCurrentIndex()).isEmpty();
     assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
+    assertThat(result.ledgerCurrentIndex()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerCurrentIndexSafe
+    );
   }
 
   @Test
@@ -35,7 +40,11 @@ class AccountInfoResultTest {
       .build();
 
     assertThat(result.ledgerIndex()).isEmpty();
-    assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
+    assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerCurrentIndexSafe());
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerIndexSafe
+    );
   }
 
 }

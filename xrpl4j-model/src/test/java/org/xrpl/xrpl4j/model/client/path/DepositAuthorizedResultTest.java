@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.client.path;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -208,6 +209,35 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   }
 
   @Test
+  void testWithHash() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .ledgerHash(LEDGER_HASH)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(result.ledgerHash()).isNotEmpty().get().isEqualTo(result.ledgerHashSafe());
+  }
+
+  @Test
+  void testWithoutHash() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(result.ledgerHash()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerHashSafe
+    );
+  }
+
+  @Test
   void testWithLedgerIndex() {
     DepositAuthorizedResult result = DepositAuthorizedResult.builder()
       .sourceAccount(SOURCE_ACCOUNT)
@@ -215,8 +245,13 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .depositAuthorized(true)
       .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
       .build();
-    assertThat(result.ledgerCurrentIndex()).isEmpty();
+
     assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
+    assertThat(result.ledgerCurrentIndex()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerCurrentIndexSafe
+    );
   }
 
   @Test
@@ -229,6 +264,10 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .build();
 
     assertThat(result.ledgerIndex()).isEmpty();
-    assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
+    assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerCurrentIndexSafe());
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerIndexSafe
+    );
   }
 }

@@ -105,7 +105,7 @@ public class HooksIT extends AbstractHookIT {
 
     createDoublerHook(doublerWallet);
     logger.info("making bet");
-    makeBadBet(doublerWallet, gamblerWallet, XrpCurrencyAmount.ofXrp(new BigDecimal("100.1")));
+    makeBadBet(doublerWallet, gamblerWallet, XrpCurrencyAmount.ofXrp(new BigDecimal("200")));
   }
 
   private void createDoublerHook(Wallet doublerWallet) throws IOException, JsonRpcClientErrorException {

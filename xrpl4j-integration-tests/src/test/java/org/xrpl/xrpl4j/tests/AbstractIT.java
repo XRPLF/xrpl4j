@@ -90,8 +90,12 @@ public abstract class AbstractIT {
   //////////////////////
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
+    return scanForResult(resultSupplier, condition, Duration.ONE_MINUTE.divide(2));
+  }
+
+  protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition, Duration duration) {
     return given()
-      .atMost(Duration.ONE_MINUTE.divide(2))
+      .atMost(duration)
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {

@@ -78,7 +78,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo("tesSUCCESS");
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
     logger.info(
@@ -111,7 +111,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo("tesSUCCESS");
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
     logger.info(

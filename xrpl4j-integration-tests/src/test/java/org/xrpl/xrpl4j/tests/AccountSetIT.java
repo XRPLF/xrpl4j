@@ -50,12 +50,12 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
       "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
     ///////////////////////
     // Set flags one-by-one
@@ -109,7 +109,7 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -145,7 +145,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(

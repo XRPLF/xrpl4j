@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -19,8 +21,9 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     SubmitMultiSignedResult<TrustSet> result = SubmitMultiSignedResult.<TrustSet>builder()
-      .engineResult("tesSUCCESS")
-      .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
+      .result("tesSUCCESS")
+      .resultCode(0)
+      .resultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .transactionBlob("120014220004000024000000046380000000000000000000000000000000000000005553440000000000B" +
         "5F762798A53D543A014CAF8B297CFF8F2F937E868400000000000753073008114A3780F5CB5A44D366520FC44055E8ED44" +
@@ -69,8 +72,13 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
         .build())
       .build();
 
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(result.result());
+    assertThat(result.engineResultCode()).isNotEmpty().get().isEqualTo(result.resultCode().toString());
+    assertThat(result.engineResultMessage()).isNotEmpty().get().isEqualTo(result.resultMessage());
+
     String json = "{\n" +
       "        \"engine_result\": \"tesSUCCESS\",\n" +
+      "        \"engine_result_code\": 0,\n" +
       "        \"engine_result_message\": \"The transaction was applied. Only final in a validated ledger.\",\n" +
       "        \"status\": \"success\",\n" +
       "        \"tx_blob\": \"12001422000400002400000004638000000000000000000000000000000000000000555344000000" +

@@ -30,10 +30,10 @@ int64_t hook(int64_t reserved ) {
     if (amount_len != 8)
         rollback(SBUF("Vegas: Rejecting incoming non-XRP transaction"), 2);
 
-    int64_t amount_in_drops = AMOUNT_TO_DROPS(amount_buffer);
-    if (amount_in_drops > 100 * DROPS_PER_XRP)
+    int64_t received_drops = AMOUNT_TO_DROPS(amount_buffer);
+    if (received_drops > 100 * DROPS_PER_XRP)
         rollback(SBUF("Vegas: Rejecting bet greater than 100 XRP"), 3);
-    if (amount_in_drops < 1 * DROPS_PER_XRP)
+    if (received_drops < 1 * DROPS_PER_XRP)
         rollback(SBUF("Vegas: Rejecting bet for less than 1 XRP"), 3);
 
     // before we start calling hook-api functions we should tell the hook how many tx we intend to create
@@ -44,7 +44,9 @@ int64_t hook(int64_t reserved ) {
     uint8_t hash[32];
     util_sha512h(SBUF(hash), SBUF(next_nonce));
 
-    int64_t drops_to_send = (hash[0] % 2) * amount_in_drops * 2;
+    int64_t payment_multiplier = (hash[0] % 21);  // 0 to 20
+    int64_t payment_divisor = 10;
+    int64_t drops_to_send = received_drops * payment_multiplier / payment_divisor;
     // send back 1 drop if payout is zero. so you always know your bet was processed.
     if (drops_to_send == 0) drops_to_send = 1;
 

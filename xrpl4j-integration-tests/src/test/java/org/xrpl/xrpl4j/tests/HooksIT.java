@@ -57,7 +57,7 @@ public class HooksIT extends AbstractHookIT {
   }
 
   @Test
-  public void doublerEventuallyPays() throws JsonRpcClientErrorException, IOException {
+  public void doublerEventuallyPays() throws IOException {
     Wallet doublerWallet = this.createRandomAccount();
     fundAddress(doublerWallet.classicAddress());
 
@@ -108,9 +108,13 @@ public class HooksIT extends AbstractHookIT {
     makeBadBet(doublerWallet, gamblerWallet, XrpCurrencyAmount.ofXrp(new BigDecimal("200")));
   }
 
-  private void createDoublerHook(Wallet doublerWallet) throws IOException, JsonRpcClientErrorException {
+  private void createDoublerHook(Wallet doublerWallet) throws IOException {
     String wasmHex = readHookToHex("hooks/vegas/vegas.wasm");
-    createHook(doublerWallet, wasmHex);
+    try {
+      createHook(doublerWallet, wasmHex);
+    } catch (JsonRpcClientErrorException e) {
+      fail("Could not create hook", e);
+    }
   }
 
   private void makeBadBet(Wallet doublerWallet, Wallet gamblerWallet, XrpCurrencyAmount bet)
@@ -121,7 +125,7 @@ public class HooksIT extends AbstractHookIT {
   private void makeGoodBet(Wallet doublerWallet, Wallet gamblerWallet) throws JsonRpcClientErrorException {
     XrpCurrencyAmount startingBalance = getAccountBalance(gamblerWallet.classicAddress());
     logger.info("Starting balance {}", startingBalance.toXrp());
-    XrpCurrencyAmount betAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(110));
+    XrpCurrencyAmount betAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100));
     sendGoodPayment(gamblerWallet, doublerWallet.classicAddress(), betAmount);
 
     scanForResult(() -> getAccountBalance(gamblerWallet.classicAddress()),

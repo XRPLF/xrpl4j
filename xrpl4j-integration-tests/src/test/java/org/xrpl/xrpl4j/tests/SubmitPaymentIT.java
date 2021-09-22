@@ -39,16 +39,16 @@ public class SubmitPaymentIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(SUCCESS_STATUS);
+    assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
+    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(result.transactionResult().hash());
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
-      result.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      result.transactionResult().hash()
     );
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        result.transactionResult().hash(),
         Payment.class)
     );
 
@@ -82,16 +82,16 @@ public class SubmitPaymentIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(result.transactionResult().hash());
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
-      result.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      result.transactionResult().hash()
     );
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        result.transactionResult().hash(),
         Payment.class)
     );
   }
@@ -100,13 +100,14 @@ public class SubmitPaymentIT extends AbstractIT {
     throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
         LedgerRequestParams.builder()
-          .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
+          .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndexSafe()))
           .build()
     );
 
-    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
+    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty()
+      .isEqualTo(validatedPayment.closeDateHuman());
     assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();
-    assertThat(validatedPayment.transaction().closeDateHuman().get())
+    assertThat(validatedPayment.closeDateHuman()).isNotEmpty().get()
       .isEqualTo(ledger.ledger().closeTimeHuman().get());
   }
 

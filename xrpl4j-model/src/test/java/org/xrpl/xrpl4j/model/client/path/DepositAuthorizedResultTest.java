@@ -1,13 +1,14 @@
 package org.xrpl.xrpl4j.model.client.path;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -23,7 +24,14 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   public static final Hash256 LEDGER_HASH = Hash256
     .of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd");
 
+  /**
+   * Tests JSON serialization/deserialization when the result has both a ledger index and ledger current index.
+   *
+   * @deprecated This test is unrealistic, because ledgerIndex and ledgerCurrentIndex will never be present
+   *   at the same time.
+   */
   @Test
+  @Deprecated
   public void testJsonWithIndexAndCurrentIndex() throws JsonProcessingException, JSONException {
     DepositAuthorizedResult result = DepositAuthorizedResult.builder()
       .sourceAccount(DESTINATION_ACCOUNT)
@@ -187,27 +195,79 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
 
   @Test
   public void testDefaultValues() {
-    DepositAuthorizedResult params = DepositAuthorizedResult.builder()
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
       .sourceAccount(SOURCE_ACCOUNT)
       .destinationAccount(DESTINATION_ACCOUNT)
       .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
       .build();
-    assertThat(params.sourceAccount().equals(DESTINATION_ACCOUNT));
-    assertThat(params.destinationAccount().equals(DESTINATION_ACCOUNT));
-    assertThat(params.ledgerIndex().equals(LedgerSpecifier.CURRENT.ledgerIndex()));
-    assertThat(params.ledgerHash()).isEmpty();
-    assertThat(params.depositAuthorized()).isTrue();
+    assertThat(result.sourceAccount().equals(DESTINATION_ACCOUNT));
+    assertThat(result.destinationAccount().equals(DESTINATION_ACCOUNT));
+    assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.ONE));
+    assertThat(result.ledgerHash()).isEmpty();
+    assertThat(result.depositAuthorized()).isTrue();
   }
 
   @Test
-  public void testParamsWithBothHashAndIndex() {
-    Assertions.assertThrows(IllegalStateException.class, () -> {
-      DepositAuthorizedResult.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .ledgerHash(LEDGER_HASH)
-        .ledgerIndex(LedgerSpecifier.VALIDATED.ledgerIndex())
-        .build();
-    });
+  void testWithHash() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .ledgerHash(LEDGER_HASH)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(result.ledgerHash()).isNotEmpty().get().isEqualTo(result.ledgerHashSafe());
+  }
+
+  @Test
+  void testWithoutHash() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(result.ledgerHash()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerHashSafe
+    );
+  }
+
+  @Test
+  void testWithLedgerIndex() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
+    assertThat(result.ledgerCurrentIndex()).isEmpty();
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerCurrentIndexSafe
+    );
+  }
+
+  @Test
+  void testWithLedgerCurrentIndex() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .depositAuthorized(true)
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(result.ledgerIndex()).isEmpty();
+    assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerCurrentIndexSafe());
+    assertThrows(
+      IllegalStateException.class,
+      result::ledgerIndexSafe
+    );
   }
 }

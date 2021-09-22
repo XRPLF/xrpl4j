@@ -50,12 +50,12 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        response.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
 
     ///////////////////////
     // Set flags one-by-one
@@ -109,11 +109,12 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////
@@ -144,11 +145,12 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////

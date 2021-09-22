@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -24,7 +26,7 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .applied(true)
       .broadcast(true)
       .result("tesSUCCESS")
-      .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
+      .resultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .kept(true)
       .openLedgerCost(XrpCurrencyAmount.ofDrops(10))
@@ -50,9 +52,13 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
             "02203B61DEE4AC027C5743A1B56AF568D1E2B8E79BB9E9E14744AC87F38375C3C2F1")
           .hash(Hash256.of("5B31A7518DC304D5327B4887CD1F7DC2C38D5F684170097020C7C9758B973847"))
           .build())
+        .hash(Hash256.of("5B31A7518DC304D5327B4887CD1F7DC2C38D5F684170097020C7C9758B973847"))
         .build())
       .validatedLedgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(21184416)))
       .build();
+
+    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo(paymentResult.result());
+    assertThat(paymentResult.engineResultMessage()).isNotEmpty().get().isEqualTo(paymentResult.resultMessage());
 
     String json = "{\n" +
       "        \"accepted\" : true,\n" +

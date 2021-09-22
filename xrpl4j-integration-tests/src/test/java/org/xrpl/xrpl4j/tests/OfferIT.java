@@ -76,11 +76,12 @@ public class OfferIT extends AbstractIT {
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
     usdIssued = true;
   }
@@ -124,11 +125,12 @@ public class OfferIT extends AbstractIT {
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////
@@ -165,7 +167,7 @@ public class OfferIT extends AbstractIT {
       .build();
 
     SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(purchaser, offerCancel);
-    assertThat(cancelResponse.engineResult()).isNotEmpty().get().isEqualTo(expectedResult);
+    assertThat(cancelResponse.result()).isEqualTo(expectedResult);
 
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), RippleStateObject.class));
@@ -207,11 +209,10 @@ public class OfferIT extends AbstractIT {
       .build();
 
     SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////
@@ -264,11 +265,12 @@ public class OfferIT extends AbstractIT {
       .build();
 
     SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
-    assertThat(response.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(response.transactionResult().hash());
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////

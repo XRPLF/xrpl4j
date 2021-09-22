@@ -41,10 +41,11 @@ public class SetRegularKeyIT extends AbstractIT {
       .build();
 
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
-    assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(setResult.transactionResult().hash());
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      setResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -97,10 +98,11 @@ public class SetRegularKeyIT extends AbstractIT {
       .build();
 
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
-    assertThat(setResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(setResult.transactionResult().hash());
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      setResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -133,10 +135,11 @@ public class SetRegularKeyIT extends AbstractIT {
       .build();
 
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
-    assertThat(removeResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(removeResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(removeResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(removeResult.transactionResult().hash());
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      removeResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      removeResult.transactionResult().hash()
     );
 
     scanForResult(

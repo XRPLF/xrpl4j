@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -35,9 +36,26 @@ public interface AccountTransactionsTransactionResult<T extends Transaction> ext
    * The {@link Transaction}.
    *
    * @return A {@link T} with the transaction fields.
+   * @deprecated This field will be removed in a future release. The {@link Transaction} can be found in {@link
+   *   #resultTransaction()}, and the transaction's {@code hash} and {@code ledgerIndex} can be found in
+   *   {@code resultTransaction().hash()} and {@code resultTransaction().ledgerIndex()}, respectively.
+   */
+  @Deprecated
+  @Value.Derived
+  @JsonIgnore
+  default T transaction() {
+    return resultTransaction().transaction();
+  }
+
+  /**
+   * The {@link Transaction}, wrapped in a {@link AccountTransactionsTransaction}, which includes the transaction's
+   * ledger index and hash.
+   *
+   * @return A {@link AccountTransactionsTransaction} containing the {@link Transaction}, its hash, and the
+   *   ledger index that it was included in.
    */
   @JsonProperty("tx")
-  T transaction();
+  AccountTransactionsTransaction<T> resultTransaction();
 
   /**
    * Metadata about the transaction if this data is from a validated ledger version.

@@ -109,11 +109,7 @@ public class PaymentChannelIT extends AbstractIT {
     // accounts XRP balance
     AccountInfoResult senderAccountInfoAfterCreate = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
-      accountInfo -> accountInfo.ledgerIndex()
-        .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-        .equals(senderAccountInfo.ledgerIndex()
-          .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-          .plus(UnsignedInteger.ONE))
+      accountInfo -> accountInfo.ledgerIndexSafe().equals(senderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.ONE))
     );
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())

@@ -127,8 +127,7 @@ public class AccountTransactionsIT {
 
     Hash256 validatedLedgerHash = ledger.ledgerHash()
       .orElseThrow(() -> new RuntimeException("ledgerHash not present."));
-    LedgerIndex validatedLedgerIndex = ledger.ledgerIndex()
-      .orElseThrow(() -> new RuntimeException("ledgerIndex not present."));
+    LedgerIndex validatedLedgerIndex = ledger.ledgerIndexSafe();
 
     AccountTransactionsResult resultByLedgerIndex = getAccountTransactions(
       AccountTransactionsRequestParams.builder()

@@ -319,7 +319,7 @@
 
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
     <jackson.version>2.11.2</jackson.version>
-    <feign.version>11.0</feign.version>
+    <feign.version>11.6</feign.version>
     <slf4j.version>1.7.30</slf4j.version>
     <junit-jupiter.version>5.7.1</junit-jupiter.version>
     <guava.version>29.0-jre</guava.version>
@@ -422,7 +422,7 @@
         <!-- org.apache.maven.plugins:maven-javadoc-plugin -->
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.3.1</version>
           <configuration>
             <sourceFileExcludes>
               <sourceFileExclude>**/generated-sources/**/*</sourceFileExclude>

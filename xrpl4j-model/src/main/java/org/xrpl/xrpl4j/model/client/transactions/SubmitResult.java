@@ -58,9 +58,21 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return An optionally-present {@link String} containing the result message of the submission.
+   * @deprecated Use {@link #resultMessage()} instead.
+   */
+  @Deprecated
+  @Value.Auxiliary
+  default Optional<String> engineResultMessage() {
+    return Optional.of(resultMessage());
+  }
+
+  /**
+   * Human-readable explanation of the transaction's preliminary result.
+   *
+   * @return A {@link String} containing the result message of the submission.
    */
   @JsonProperty("engine_result_message")
-  Optional<String> engineResultMessage();
+  String resultMessage();
 
   /**
    * The complete transaction in hex {@link String} format.

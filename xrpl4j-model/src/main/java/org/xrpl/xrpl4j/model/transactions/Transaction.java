@@ -26,7 +26,10 @@ public interface Transaction {
   /**
    * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
    * the start of that epoch.
+   *
+   * @deprecated This will be unnecessary once {@link #closeDateHuman()} is removed.
    */
+  @Deprecated
   long RIPPLE_EPOCH = 946684800;
 
   /**
@@ -190,8 +193,11 @@ public interface Transaction {
    * This is an undocumented field.
    *
    * @return An optionally-present {@link UnsignedLong}.
+   * @deprecated This field will be removed in favor of {@link
+   *    org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
    */
   @JsonProperty("date")
+  @Deprecated
   Optional<UnsignedLong> closeDate();
 
   /**
@@ -199,9 +205,12 @@ public interface Transaction {
    * This is derived from undocumented field.
    *
    * @return An optionally-present {@link ZonedDateTime}.
+   * @deprecated This field will be removed in favor of {@link
+   *   org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
    */
   @JsonIgnore
   @Auxiliary
+  @Deprecated
   default Optional<ZonedDateTime> closeDateHuman() {
     return closeDate().map(secondsSinceRippleEpoch ->
       Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
@@ -212,7 +221,11 @@ public interface Transaction {
    * The transaction hash of this transaction.  Only present in responses to {@code account_tx} rippled calls.
    *
    * @return An optionally present {@link Hash256} containing the transaction hash.
+   * @deprecated This field will be removed in a future release. Instead, use
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in {@link
+   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
+  @Deprecated
   Optional<Hash256> hash();
 
   /**
@@ -220,7 +233,11 @@ public interface Transaction {
    * rippled calls.
    *
    * @return An optionally-present {@link LedgerIndex}.
+   * @deprecated This field will be removed in a future release. Instead, use
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in {@link
+   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
+  @Deprecated
   @JsonProperty("ledger_index")
   Optional<LedgerIndex> ledgerIndex();
 

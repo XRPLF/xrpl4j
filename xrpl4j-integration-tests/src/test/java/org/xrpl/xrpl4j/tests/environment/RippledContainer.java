@@ -46,7 +46,7 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    rippledContainer = new GenericContainer("xrptipbot/rippled:latest")
+    rippledContainer = new GenericContainer("xrpllabsofficial/xrpld:latest")
       .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
         cmd.withEntrypoint("/opt/ripple/bin/rippled"))
       .withCommand("-a --start --conf /config/rippled.cfg")

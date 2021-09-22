@@ -87,11 +87,12 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Validate that the transaction was submitted successfully
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
-    assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
+        .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+        signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -158,11 +159,12 @@ public class SignerListSetIT extends AbstractIT {
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transaction().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+        paymentResult.transaction().hash()
     );
   }
 
@@ -214,11 +216,12 @@ public class SignerListSetIT extends AbstractIT {
     ////////////////////////////
     // Validate that the transaction was submitted successfully
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
-    assertThat(signerListSetResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+        signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -251,11 +254,12 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Submit it and validate that it was successful
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(sourceWallet, deleteSignerList);
-    assertThat(signerListDeleteResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(signerListDeleteResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListDeleteResult.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+        signerListDeleteResult.transactionResult().hash()
     );
 
     /////////////////////////////

@@ -63,6 +63,19 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   Optional<LedgerIndex> ledgerIndex();
 
   /**
+   * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
+   *
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerIndexSafe() {
+    return ledgerIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+  }
+
+  /**
    * The identifying hash of the {@link Transaction}.
    *
    * @return The {@link Hash256} of {@link #transaction()}.

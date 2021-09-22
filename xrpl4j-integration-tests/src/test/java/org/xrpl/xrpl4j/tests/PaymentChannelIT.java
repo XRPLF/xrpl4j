@@ -11,10 +11,13 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.PaymentChannelResultObject;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -106,11 +109,7 @@ public class PaymentChannelIT extends AbstractIT {
     // accounts XRP balance
     AccountInfoResult senderAccountInfoAfterCreate = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
-      accountInfo -> accountInfo.ledgerIndex()
-        .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-        .equals(senderAccountInfo.ledgerIndex()
-          .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-          .plus(UnsignedInteger.ONE))
+      accountInfo -> accountInfo.ledgerIndexSafe().equals(senderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.ONE))
     );
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())
@@ -365,5 +364,65 @@ public class PaymentChannelIT extends AbstractIT {
               channel.expiration().get().equals(newExpiry)
         )
     );
+  }
+
+  @Test
+  void testCurrentAccountChannels() throws JsonRpcClientErrorException {
+    //////////////////////////
+    // Create source and destination accounts on ledger
+    Wallet sourceWallet = createRandomAccount();
+    Wallet destinationWallet = createRandomAccount();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+    );
+
+    //////////////////////////
+    // Submit a PaymentChannelCreate transaction to create a payment channel between
+    // the source and destination accounts
+    PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(destinationWallet.classicAddress())
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey(sourceWallet.publicKey())
+      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(createResult.transactionResult().hash());
+    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
+    );
+
+    //////////////////////////
+    // Wait for the payment channel to exist in a validated ledger
+    // and validate its fields
+    AccountChannelsResult accountChannelsResult = scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountChannels(AccountChannelsRequestParams.builder()
+            .account(sourceWallet.classicAddress())
+            .ledgerSpecifier(LedgerSpecifier.CURRENT)
+            .build());
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      channels -> channels.channels().stream()
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
+    );
+
+    assertThat(accountChannelsResult.ledgerHash()).isNull();
+    assertThat(accountChannelsResult.ledgerIndex()).isNull();
+    assertThat(accountChannelsResult.ledgerCurrentIndex()).isNotEmpty();
   }
 }

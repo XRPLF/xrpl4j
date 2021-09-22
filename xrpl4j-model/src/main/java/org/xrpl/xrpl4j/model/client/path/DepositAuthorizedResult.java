@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.path;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -65,6 +66,19 @@ public interface DepositAuthorizedResult extends XrplResult {
   Optional<Hash256> ledgerHash();
 
   /**
+   * Get {@link #ledgerHash()}, or throw an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
+   *
+   * @return The value of {@link #ledgerHash()}.
+   * @throws IllegalStateException If {@link #ledgerHash()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
+  }
+
+  /**
    * (Omitted if ledger_current_index is provided instead) The ledger index of the ledger version used when retrieving
    * this information. The information does not contain any changes from ledger versions newer than this one.
    *
@@ -74,6 +88,19 @@ public interface DepositAuthorizedResult extends XrplResult {
   Optional<LedgerIndex> ledgerIndex();
 
   /**
+   * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
+   *
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerIndexSafe() {
+    return ledgerIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+  }
+
+  /**
    * (Omitted if ledger_index is provided instead) The ledger index of the current in-progress ledger, which was used
    * when retrieving this information.
    *
@@ -81,6 +108,20 @@ public interface DepositAuthorizedResult extends XrplResult {
    */
   @JsonProperty("ledger_current_index")
   Optional<LedgerIndex> ledgerCurrentIndex();
+
+  /**
+   * Get {@link #ledgerCurrentIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerCurrentIndex()} is
+   * empty.
+   *
+   * @return The value of {@link #ledgerCurrentIndex()}.
+   * @throws IllegalStateException If {@link #ledgerCurrentIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerCurrentIndexSafe() {
+    return ledgerCurrentIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
+  }
 
   /**
    * True if this data is from a validated ledger version; if false, this data is not final.

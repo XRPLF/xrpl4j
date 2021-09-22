@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -42,13 +43,25 @@ public interface AccountOffersResult extends XrplResult {
   List<OfferResultObject> offers();
 
   /**
-   * Omitted if ledger_hash or ledger_index provided. The ledger index
-   * of the current in-progress ledger version, which was used when retrieving this data.
+   * The identifying Hash of the ledger version used to generate this response.
    *
-   * @return A {@link LedgerIndex}.
+   * @return A {@link Hash256} containing the ledger hash.
    */
-  @JsonProperty("ledger_current_index")
-  Optional<LedgerIndex> ledgerCurrentIndex();
+  @JsonProperty("ledger_hash")
+  Optional<Hash256> ledgerHash();
+
+  /**
+   * Get {@link #ledgerHash()}, or throw an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
+   *
+   * @return The value of {@link #ledgerHash()}.
+   * @throws IllegalStateException If {@link #ledgerHash()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
+  }
 
   /**
    * The Ledger Index of the ledger version used to generate this response.
@@ -59,12 +72,40 @@ public interface AccountOffersResult extends XrplResult {
   Optional<LedgerIndex> ledgerIndex();
 
   /**
-   * The identifying Hash of the ledger version used to generate this response.
+   * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
    *
-   * @return A {@link Hash256} containing the ledger hash.
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
    */
-  @JsonProperty("ledger_hash")
-  Optional<Hash256> ledgerHash();
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerIndexSafe() {
+    return ledgerIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+  }
+
+  /**
+   * Omitted if ledger_hash or ledger_index provided. The ledger index
+   * of the current in-progress ledger version, which was used when retrieving this data.
+   *
+   * @return A {@link LedgerIndex}.
+   */
+  @JsonProperty("ledger_current_index")
+  Optional<LedgerIndex> ledgerCurrentIndex();
+
+  /**
+   * Get {@link #ledgerCurrentIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerCurrentIndex()} is
+   * empty.
+   *
+   * @return The value of {@link #ledgerCurrentIndex()}.
+   * @throws IllegalStateException If {@link #ledgerCurrentIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerCurrentIndexSafe() {
+    return ledgerCurrentIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
+  }
 
   /**
    * Server-defined value for pagination. Pass this to the next call to resume getting results where this

@@ -6,8 +6,11 @@ import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -56,6 +59,20 @@ public class IssuedCurrencyIT extends AbstractIT {
       linesResult -> linesResult.lines().stream()
         .anyMatch(line -> line.balance().equals("-" + trustLine.limitPeer()))
     );
+
+    ///////////////////////////
+    // We can also retrieve the currencies that the counterparty can send/recieve using the accountCurrencies
+    // method.
+    AccountCurrenciesResult counterpartyCurrencies = xrplClient.accountCurrencies(
+      AccountCurrenciesRequestParams.builder()
+        .account(counterpartyWallet.classicAddress())
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
+        .build()
+    );
+
+    assertThat(counterpartyCurrencies.sendCurrencies()).asList().containsOnly(xrpl4jCoin);
+    assertThat(counterpartyCurrencies.ledgerCurrentIndex()).isNotEmpty().get()
+      .isEqualTo(counterpartyCurrencies.ledgerCurrentIndexSafe());
   }
 
   @Test

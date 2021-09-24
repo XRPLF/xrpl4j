@@ -88,7 +88,7 @@ public class HooksIT extends AbstractHookIT {
     fundAddress(doublerWallet.classicAddress());
 
     Wallet gamblerWallet = this.createRandomAccount();
-    fundAddress(doublerWallet.classicAddress());
+    fundAddress(gamblerWallet.classicAddress());
 
     createDoublerHook(doublerWallet);
     logger.info("making bet");
@@ -101,7 +101,7 @@ public class HooksIT extends AbstractHookIT {
     fundAddress(doublerWallet.classicAddress());
 
     Wallet gamblerWallet = this.createRandomAccount();
-    fundAddress(doublerWallet.classicAddress());
+    fundAddress(gamblerWallet.classicAddress());
 
     createDoublerHook(doublerWallet);
     logger.info("making bet");
@@ -137,6 +137,7 @@ public class HooksIT extends AbstractHookIT {
    * Scans for HookObject on wallet.
    *
    * @param wallet to scan.
+   *
    * @return found object or null.
    */
   public HookObject scanForHook(Wallet wallet) {

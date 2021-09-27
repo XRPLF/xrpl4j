@@ -19,7 +19,7 @@ To use this bom in your project, add the following to the `<dependencyManamgemen
             <dependency>
                 <groupId>org.xrpl.xrpl4j</groupId>
                 <artifactId>xrpl4j-bom</artifactId>
-                <version>1.0.1</version>
+                <version>2.1.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

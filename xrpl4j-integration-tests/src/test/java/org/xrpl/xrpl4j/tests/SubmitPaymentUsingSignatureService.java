@@ -8,33 +8,28 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.bc.DerivedKeyDelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils.DefaultAddressService;
-import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.ServerSecret;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.JavaKeystoreLoader;
+import org.xrpl.xrpl4j.crypto.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.DerivedKeysSignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SignedTransaction;
+import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
+import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.Objects;
 
 /**
- * Integration tests for submitting payment transactions to the XRPL using a {@link DelegatedSignatureService} for all
+ * Integration tests for submitting payment transactions to the XRPL using a {@link DerivedKeysSignatureService} for all
  * signing operations.
  */
 public class SubmitPaymentUsingSignatureService extends AbstractIT {
@@ -43,11 +38,9 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
   private static Wallet destinationWallet;
 
   private static AddressCodec addressCodec;
-  private static Ed25519KeyPairService ed25519KeyPairService;
-  private static Secp256k1KeyPairService secp256k1KeyPairService;
+  private static KeyPairService keyPairService;
 
-  private static AddressUtils addressService;
-  private static DelegatedSignatureService signatureService;
+  private static SignatureService signatureService;
 
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   @BeforeEach
@@ -56,14 +49,9 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     final char[] jksPassword = "password".toCharArray();
     final KeyStore keyStore = JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
     final Key secretKey = keyStore.getKey("secret0", "password".toCharArray());
-    signatureService = new DerivedKeyDelegatedSignatureService(
-      () -> ServerSecret.of(secretKey.getEncoded()), VersionType.ED25519
-    );
+    signatureService = new DerivedKeysSignatureService(secretKey::getEncoded, VersionType.ED25519);
 
-    ed25519KeyPairService = Ed25519KeyPairService.getInstance();
-    secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
-    addressService = new DefaultAddressService();
-
+    keyPairService = new DefaultKeyPairService();
     addressCodec = new AddressCodec();
 
     // sourceWallet is created in each unit test...
@@ -76,30 +64,29 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this
-      .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.address()));
+      .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWallet.publicKey().hexValue())
+      .signingPublicKey(sourceWallet.publicKey())
       .build();
 
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
-    SingleSingedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
+    SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(result.transactionResult().hash());
     logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash());
+      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult()
-          .transaction()
-          .hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        result.transactionResult().hash(),
         Payment.class)
     );
   }
@@ -110,31 +97,30 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this
-      .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.address()));
+      .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWallet.publicKey().hexValue())
+      .signingPublicKey(sourceWallet.publicKey())
       .build();
 
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
-    SingleSingedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
+    SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(result.transactionResult().hash());
     logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash()
+      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash()
     );
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
-        result.transactionResult()
-          .transaction()
-          .hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
+        result.transactionResult().hash(),
         Payment.class)
     );
   }
@@ -143,42 +129,38 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
   // Private Helpers
   //////////////////
 
-  private Wallet newEd25519WalletFromSignatureService(
-    final DelegatedSignatureService signatureService, final String walletId
-  ) {
+  private Wallet newEd25519WalletFromSignatureService(final SignatureService signatureService, final String walletId) {
     Objects.requireNonNull(signatureService);
     Objects.requireNonNull(walletId);
 
-    final Seed seed = Seed.ed25519SeedFromPassphrase(Passphrase.of(walletId));
-    final KeyPair keyPair = ed25519KeyPairService.deriveKeyPair(seed);
-    final Address classicAddress = addressService.deriveAddress(keyPair.publicKey());
-
-    return Wallet.builder()
-      .privateKey(keyPair.privateKey())
-      .publicKey(keyPair.publicKey())
-      .isTest(true)
-      .classicAddress(classicAddress)
-      .xAddress(addressCodec.classicAddressToXAddress(classicAddress, true))
-      .build();
+    final PublicKey publicKey = signatureService.getPublicKey(keyMetadata(walletId));
+    return newWalletFromSignatureService(publicKey);
   }
 
   private Wallet newSecp256k1WalletFromSignatureService(
-    final DelegatedSignatureService signatureService, final String walletId
+    final SignatureService signatureService, final String walletId
   ) {
     Objects.requireNonNull(signatureService);
     Objects.requireNonNull(walletId);
 
-    final Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of(walletId));
-    final KeyPair keyPair = secp256k1KeyPairService.deriveKeyPair(seed);
-    final Address classicAddress = addressService.deriveAddress(keyPair.publicKey());
+    final PublicKey publicKey = signatureService.getPublicKey(keyMetadata(walletId));
+    return newWalletFromSignatureService(publicKey);
+  }
 
-    return Wallet.builder()
-      .privateKey(keyPair.privateKey())
-      .publicKey(keyPair.publicKey())
+  private Wallet newWalletFromSignatureService(final PublicKey publicKey) {
+    Objects.requireNonNull(publicKey);
+
+    final Address classicAddress = keyPairService.deriveAddress(publicKey.value());
+    final Wallet wallet = Wallet.builder()
+      .publicKey(publicKey.base16Encoded())
       .isTest(true)
       .classicAddress(classicAddress)
       .xAddress(addressCodec.classicAddressToXAddress(classicAddress, true))
       .build();
+
+    this.fundAccount(wallet);
+
+    return wallet;
   }
 
   private KeyMetadata keyMetadata(final String walletId) {

@@ -24,7 +24,6 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 
 import java.util.Optional;
 
-@Deprecated
 public class AccountTransactionsIT {
 
   // an arbitrary address on xrpl mainnet that has a decent amount of transaction history
@@ -95,10 +94,15 @@ public class AccountTransactionsIT {
     assertThat(results.ledgerIndexMaximum()).isEqualTo(maxLedger);
     assertThat(results.transactions()).hasSize(16);
     // results are returned in descending sorted order by ledger index
-    assertThat(results.transactions().get(0).transaction().ledgerIndex())
-      .contains(LedgerIndex.of(UnsignedInteger.valueOf(61486994)));
-    assertThat(results.transactions().get(15).transaction().ledgerIndex())
-      .contains(LedgerIndex.of(UnsignedInteger.valueOf(61486026)));
+    assertThat(results.transactions().get(0).transaction().ledgerIndex()).isNotEmpty().get()
+      .isEqualTo(results.transactions().get(0).resultTransaction().ledgerIndex());
+    assertThat(results.transactions().get(0).resultTransaction().ledgerIndex())
+      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486994)));
+
+    assertThat(results.transactions().get(15).transaction().ledgerIndex()).isNotEmpty().get()
+      .isEqualTo(results.transactions().get(15).resultTransaction().ledgerIndex());
+    assertThat(results.transactions().get(15).resultTransaction().ledgerIndex())
+      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486026)));
   }
 
   @Test
@@ -123,8 +127,7 @@ public class AccountTransactionsIT {
 
     Hash256 validatedLedgerHash = ledger.ledgerHash()
       .orElseThrow(() -> new RuntimeException("ledgerHash not present."));
-    LedgerIndex validatedLedgerIndex = ledger.ledgerIndex()
-      .orElseThrow(() -> new RuntimeException("ledgerIndex not present."));
+    LedgerIndex validatedLedgerIndex = ledger.ledgerIndexSafe();
 
     AccountTransactionsResult resultByLedgerIndex = getAccountTransactions(
       AccountTransactionsRequestParams.builder()

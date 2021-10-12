@@ -9,9 +9,9 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
- * A payment channel claim that can be signed by the source account of a payment channel
- * and presented to the destination account. Once the destination account has this information, as well
- * as the signature, it can submit a {@link PaymentChannelClaim} to claim their XRP.
+ * A payment channel claim that can be signed by the source account of a payment channel and presented to the
+ * destination account. Once the destination account has this information, as well as the signature, it can submit a
+ * {@link PaymentChannelClaim} to claim their XRP.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableUnsignedClaim.class)

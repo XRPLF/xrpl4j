@@ -6,10 +6,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.DerivedKeyDelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
@@ -24,7 +22,6 @@ import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -41,11 +38,9 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
   private static Wallet sourceWallet;
   private static Wallet destinationWallet;
 
-  private static AddressCodec addressCodec;
   private static Ed25519KeyPairService ed25519KeyPairService;
   private static Secp256k1KeyPairService secp256k1KeyPairService;
 
-  private static AddressUtils addressService;
   private static DelegatedSignatureService signatureService;
 
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
@@ -61,9 +56,6 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     ed25519KeyPairService = Ed25519KeyPairService.getInstance();
     secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
-    addressService = new DefaultAddressService();
-
-    addressCodec = new AddressCodec();
 
     // sourceWallet is created in each unit test...
     destinationWallet = this.newSecp256k1WalletFromSignatureService(signatureService, "destinationWallet");
@@ -150,14 +142,10 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     final Seed seed = Seed.ed25519SeedFromPassphrase(Passphrase.of(walletId));
     final KeyPair keyPair = ed25519KeyPairService.deriveKeyPair(seed);
-    final Address classicAddress = addressService.deriveAddress(keyPair.publicKey());
 
     return Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
-      .isTest(true)
-      .classicAddress(classicAddress)
-      .xAddress(addressCodec.classicAddressToXAddress(classicAddress, true))
       .build();
   }
 
@@ -169,14 +157,10 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     final Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of(walletId));
     final KeyPair keyPair = secp256k1KeyPairService.deriveKeyPair(seed);
-    final Address classicAddress = addressService.deriveAddress(keyPair.publicKey());
 
     return Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
-      .isTest(true)
-      .classicAddress(classicAddress)
-      .xAddress(addressCodec.classicAddressToXAddress(classicAddress, true))
       .build();
   }
 

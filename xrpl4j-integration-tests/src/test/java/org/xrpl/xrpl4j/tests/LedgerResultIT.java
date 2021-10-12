@@ -4,14 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 
 /**
- * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses
- * rippled sends back.
+ * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses rippled sends
+ * back.
  */
 public class LedgerResultIT extends AbstractIT {
 

@@ -7,6 +7,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -43,7 +44,19 @@ public abstract class AbstractSignatureService implements SignatureService {
     Objects.requireNonNull(transaction);
 
     final UnsignedByteArray signableTransactionBytes = signatureUtils.toSignableBytes(transaction);
-    return this.signHelper(privateKey, transaction, signableTransactionBytes);
+    return this.signHelper(privateKey, signableTransactionBytes, transaction);
+  }
+
+  // TODO: fix test coverage.
+  @Override
+  public Signature sign(final PrivateKey privateKey, final UnsignedClaim unsignedClaim) {
+    Objects.requireNonNull(privateKey);
+    Objects.requireNonNull(unsignedClaim);
+
+    final UnsignedByteArray signedClaimBytes = signatureUtils.toSignableBytes(unsignedClaim);
+    return Signature.builder()
+      .value(signedClaimBytes)
+      .build();
   }
 
   @Override
@@ -56,24 +69,42 @@ public abstract class AbstractSignatureService implements SignatureService {
     final Address signerAddress = addressUtils.deriveAddress(this.derivePublicKey(privateKey));
     final UnsignedByteArray signableTransactionBytes = signatureUtils.toMultiSignableBytes(transaction, signerAddress);
 
-    return this.signHelper(privateKey, transaction, signableTransactionBytes).signature();
+    return this.signHelper(privateKey, signableTransactionBytes, transaction).signature();
+  }
+
+  /**
+   * Helper to sign a set of transaction bytes, and then add the signature to the supplied transaction.
+   *
+   * @param <T>                      A type of {@link Transaction}.
+   * @param privateKey               A {@link PrivateKey} used for signing.
+   * @param signableTransactionBytes The actual binary bytes of the transaction to sign.
+   * @param transaction              The {@link Transaction} to sign.
+   *
+   * @return A {@link SingleSingedTransaction}.
+   */
+  private <T extends Transaction> SingleSingedTransaction<T> signHelper(
+    final PrivateKey privateKey, final UnsignedByteArray signableTransactionBytes, final T transaction
+  ) {
+    Objects.requireNonNull(privateKey);
+    Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signableTransactionBytes);
+
+    final Signature signature = signHelper(privateKey, signableTransactionBytes);
+    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
   }
 
   /**
    * Helper to sign a pre-assembled set of transaction bytes.
    *
    * @param privateKey               A {@link PrivateKey} used for signing.
-   * @param transaction              The {@link Transaction} to sign.
    * @param signableTransactionBytes The actual binary bytes of the transaction to sign.
-   * @param <T>                      A type of {@link Transaction}.
    *
    * @return A {@link SingleSingedTransaction}.
    */
-  private <T extends Transaction> SingleSingedTransaction<T> signHelper(
-    final PrivateKey privateKey, final T transaction, final UnsignedByteArray signableTransactionBytes
+  private Signature signHelper(
+    final PrivateKey privateKey, final UnsignedByteArray signableTransactionBytes
   ) {
     Objects.requireNonNull(privateKey);
-    Objects.requireNonNull(transaction);
     Objects.requireNonNull(signableTransactionBytes);
 
     final Signature signature;
@@ -91,7 +122,7 @@ public abstract class AbstractSignatureService implements SignatureService {
       }
     }
 
-    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
+    return signature;
   }
 
   @Override

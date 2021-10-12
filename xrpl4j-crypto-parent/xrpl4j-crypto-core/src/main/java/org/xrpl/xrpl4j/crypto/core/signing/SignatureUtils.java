@@ -6,6 +6,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -75,6 +76,26 @@ public class SignatureUtils {
     try {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Helper method to convert an {@link UnsignedClaim} into bytes that can be used directly for signing.
+   *
+   * @param unsignedClaim An {@link UnsignedClaim} to be signed.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  // TODO: Add test coverage.
+  // TODO: Add to derived key signer.
+  public UnsignedByteArray toSignableBytes(final UnsignedClaim unsignedClaim) {
+    Objects.requireNonNull(unsignedClaim);
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(unsignedClaim);
+      final String unsignedBinaryHex = binaryCodec.encodeForSigningClaim(unsignedJson);
       return UnsignedByteArray.fromHex(unsignedBinaryHex);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e.getMessage(), e);

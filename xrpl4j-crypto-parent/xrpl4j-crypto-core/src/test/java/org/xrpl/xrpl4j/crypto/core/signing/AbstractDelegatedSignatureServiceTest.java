@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
@@ -83,7 +84,7 @@ class AbstractDelegatedSignatureServiceTest {
 
     when(addressServiceMock.deriveAddress(any())).thenReturn(ed25519SignerAddress);
 
-    when(signatureUtilsMock.toSignableBytes(any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     when(signatureWithKeyMetaMock.signingKeyMetadata()).thenReturn(keyMetadataMock);

@@ -200,12 +200,10 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
     Preconditions.checkArgument(minSigners > 0);
 
     final long numValidSignatures = signatureWithKeyMetadataSet.stream()
+      // Check signature against all public keys, hoping for a valid verification against one.
       .map(signatureWithKeyMetadata -> {
-        //final PublicKey publicKey = this.getPublicKey(signatureWithKeyMetadata.signingKeyMetadata());
-        // Check signature against all public keys, hoping for a valid verification against one.
-//        final UnsignedByteArray unsignedTransactionBytes =
-//          signatureUtils.toMultiSignableBytes(unsignedTransaction, addressUtils.deriveAddress(publicKey));
-        final boolean oneValidSignature = this.getSignatureServiceSafe(signatureWithKeyMetadata.signingKeyMetadata())
+        final boolean oneValidSignature = this
+          .getSignatureServiceSafe(signatureWithKeyMetadata.signingKeyMetadata())
           .verify(signatureWithKeyMetadata, unsignedTransaction);
         return oneValidSignature;
       })

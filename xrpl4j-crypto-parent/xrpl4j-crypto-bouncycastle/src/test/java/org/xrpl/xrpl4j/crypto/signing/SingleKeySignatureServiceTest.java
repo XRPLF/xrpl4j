@@ -41,7 +41,6 @@ class SingleKeySignatureServiceTest {
   // Source ed25519 Key
   // 32 Bytes (no XRPL prefix here)
   private static final String ED_PRIVATE_KEY_HEX = "B224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
-//  private static final String ED_PRIVATE_KEY_HEX = "60F72F359647AD376D2CB783340CD843BD57CCD46093AA16B0C4D3A5143BADC5";
   private static final String sourceClassicAddressED = "rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466";
   // Source secp256k1 Key
   // 33 Bytes
@@ -49,9 +48,10 @@ class SingleKeySignatureServiceTest {
   private static final String sourceClassicAddressEC = "rDt78kzcAfRf5NwmwL4f3E5pK14iM4CxRi";
   // Dest address
   private static final String destinationClassicAddress = "rD8ATvjj9mfnFuYYTGRNb9DygnJW9JNN1C";
+
   private ECPrivateKeyParameters knownEcPrivateKeyParameters;
   private Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters;
-  // private static final String destinationSecret = "snvSCVszQz3bLfPaGNqcU2bM7PsVR";
+
   private SingleKeySignatureService edSignatureService;
   private SingleKeySignatureService ecSignatureService;
 
@@ -93,7 +93,7 @@ class SingleKeySignatureServiceTest {
     final PublicKey publicKey = this.edSignatureService.getPublicKey(keyMetadata);
     assertThat(publicKey.base16Encoded())
       .isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-      // 94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE
+    // 94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE
     final Payment paymentTransaction = Payment.builder()
       .account(Address.of(sourceClassicAddressED))
       .fee(XrpCurrencyAmount.ofDrops(10L))

@@ -96,7 +96,7 @@ public class SignatureUtilsTest {
 
   @Test
   public void toSignableBytesWithNullTransaction() {
-    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toSignableBytes(null));
+    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toSignableBytes((Transaction) null));
   }
 
   @Test
@@ -416,6 +416,7 @@ public class SignatureUtilsTest {
     Assertions.assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
 
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   private void addSignatureToTransactionHelper(final Transaction transaction) {
     Objects.requireNonNull(transaction);
     when(signatureMock.base16Value()).thenReturn("ED");

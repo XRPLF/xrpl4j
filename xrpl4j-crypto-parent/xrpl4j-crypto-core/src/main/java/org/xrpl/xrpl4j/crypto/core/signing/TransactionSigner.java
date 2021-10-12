@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 /**
@@ -18,6 +19,17 @@ public interface TransactionSigner {
    * @return A {@link SingleSingedTransaction} of type {@link T} containing everything related to a signed transaction.
    */
   <T extends Transaction> SingleSingedTransaction<T> sign(PrivateKey privateKey, T transaction);
+
+  /**
+   * Signs a claim for usage in a Payment Channel.
+   *
+   * @param privateKey    A {@link PrivateKey} used for signing.
+   * @param unsignedClaim An {@link UnsignedClaim}.
+   *
+   * @return A {@link Signature}.
+   */
+  // TODO: Add test coverage.
+  Signature sign(PrivateKey privateKey, UnsignedClaim unsignedClaim);
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link PrivateKey}. The primary reason

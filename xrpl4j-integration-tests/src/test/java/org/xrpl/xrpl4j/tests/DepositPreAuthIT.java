@@ -22,6 +22,9 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+/**
+ * An Integration Test to validate submission of DepositPreAuth transactions.
+ */
 public class DepositPreAuthIT extends AbstractIT {
 
   @Test

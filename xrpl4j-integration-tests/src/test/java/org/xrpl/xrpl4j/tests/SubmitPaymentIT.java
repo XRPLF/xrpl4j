@@ -2,14 +2,8 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.codec.addresses.Base58;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -19,37 +13,33 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.Wallet;
 
-/**
- * Integration test to validate submission of Payment transactions.
- */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class SubmitPaymentIT extends AbstractIT {
 
   public static final String SUCCESS_STATUS = "tesSUCCESS";
 
   @Test
-  public void sendPayment() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void sendPayment() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .amount(amount)
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SingleSingedTransaction<Payment> signedPayment = signatureService.sign(sourceWallet.privateKey(), payment);
-    SubmitResult<Payment> result = xrplClient.submit(signedPayment);
-    assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
+    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(SUCCESS_STATUS);
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
       result.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -62,7 +52,6 @@ public class SubmitPaymentIT extends AbstractIT {
         Payment.class)
     );
 
-    // TODO: Use flatMap?
     assertThat(validatedPayment.metadata().get().deliveredAmount()).hasValue(amount);
     assertThat(validatedPayment.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
 
@@ -70,10 +59,9 @@ public class SubmitPaymentIT extends AbstractIT {
   }
 
   @Test
-  public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    UnsignedByteArray seedBytes = UnsignedByteArray.of(Base58.decode("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
-    Wallet senderWallet = walletFactory.fromSeed(new Seed(seedBytes));
-    logger.info("Generated source testnet wallet with address " + senderWallet.address());
+  public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException {
+    Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
+    logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
 
     fundAccount(senderWallet);
 
@@ -81,21 +69,20 @@ public class SubmitPaymentIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address())
+      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
 
     Payment payment = Payment.builder()
-      .account(senderWallet.address())
+      .account(senderWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SingleSingedTransaction<Payment> signedPayment = signatureService.sign(senderWallet.privateKey(), payment);
-    SubmitResult<Payment> result = xrplClient.submit(signedPayment);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
       result.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -112,9 +99,9 @@ public class SubmitPaymentIT extends AbstractIT {
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
-      LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
-        .build()
+        LedgerRequestParams.builder()
+          .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
+          .build()
     );
 
     assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();

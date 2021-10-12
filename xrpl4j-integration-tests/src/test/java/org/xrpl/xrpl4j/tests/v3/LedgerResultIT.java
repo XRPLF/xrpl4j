@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests.deprecated;
+package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,8 +9,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 
 /**
- * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses
- * rippled sends back.
+ * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses rippled sends
+ * back.
  */
 public class LedgerResultIT extends AbstractIT {
 

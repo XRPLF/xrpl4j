@@ -88,7 +88,7 @@ class BouncyCastleSignatureServiceTest {
 
     when(addressServiceMock.deriveAddress(any())).thenReturn(ed25519SignerAddress);
     when(signedTransactionMock.unsignedTransaction()).thenReturn(transactionMock);
-    when(signatureUtilsMock.toSignableBytes(any())).thenReturn(UnsignedByteArray.empty());
+    when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.addSignatureToTransaction(Mockito.<AccountSet>any(), any()))
       .thenReturn(signedTransactionMock);
@@ -143,7 +143,8 @@ class BouncyCastleSignatureServiceTest {
 
   @Test
   public void signWithNullTransaction() {
-    Assertions.assertThrows(NullPointerException.class, () -> signatureService.sign(ed25519KeyPair.privateKey(), null));
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.sign(ed25519KeyPair.privateKey(), (Transaction) null));
   }
 
   @Test

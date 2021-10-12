@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests.deprecated;
+package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +41,6 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-@Deprecated
 public class BinarySerializationTests {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();

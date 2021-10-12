@@ -24,9 +24,7 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 
 import java.util.Optional;
 
-/**
- * An Integration Test to validate submission of Account transactions.
- */
+@Deprecated
 public class AccountTransactionsIT {
 
   // an arbitrary address on xrpl mainnet that has a decent amount of transaction history

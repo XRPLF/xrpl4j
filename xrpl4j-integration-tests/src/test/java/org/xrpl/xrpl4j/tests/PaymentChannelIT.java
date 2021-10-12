@@ -3,36 +3,39 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
+import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.PaymentChannelResultObject;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.time.Duration;
 import java.time.Instant;
 
-/**
- * An Integration Test to validate submission of PaymentChannel transactions.
- */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class PaymentChannelIT extends AbstractIT {
 
+  private final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
+  private final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
+  private final ObjectMapper objectMapper = ObjectMapperFactory.create();
+
   @Test
-  public void createPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void createPaymentChannel() throws JsonRpcClientErrorException {
     //////////////////////////
     // Create source and destination accounts on ledger
     Wallet sourceWallet = createRandomAccount();
@@ -40,30 +43,28 @@ public class PaymentChannelIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
 
     //////////////////////////
     // Submit a PaymentChannelCreate transaction to create a payment channel between
     // the source and destination accounts
-    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
-      .account(sourceWallet.address())
+    PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
-      .publicKey(sourceWallet.publicKey().base16Value())
+      .publicKey(sourceWallet.publicKey())
       .cancelAfter(UnsignedLong.valueOf(533171558))
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceWallet.publicKey())
       .build();
-    SingleSingedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
-      sourceWallet.privateKey(), paymentChannelCreate
-    );
+
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -73,36 +74,37 @@ public class PaymentChannelIT extends AbstractIT {
     // Wait for the payment channel to exist in a validated ledger
     // and validate its fields
     PaymentChannelResultObject paymentChannel = scanForResult(
-      () -> getValidatedAccountChannels(sourceWallet.address()),
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
       channels -> channels.channels().stream()
-        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
     )
       .channels().stream()
-      .filter(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+      .filter(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
       .findFirst()
       .orElseThrow(() -> new RuntimeException("Could not find payment channel for destination address."));
 
-    assertThat(paymentChannel.amount()).isEqualTo(paymentChannelCreate.amount());
-    assertThat(paymentChannel.settleDelay()).isEqualTo(paymentChannelCreate.settleDelay());
-    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(paymentChannelCreate.publicKey());
-    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(paymentChannelCreate.cancelAfter().get());
+    assertThat(paymentChannel.amount()).isEqualTo(createPaymentChannel.amount());
+    assertThat(paymentChannel.settleDelay()).isEqualTo(createPaymentChannel.settleDelay());
+    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(createPaymentChannel.publicKey());
+    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(createPaymentChannel.cancelAfter().get());
 
     //////////////////////////
     // Also validate that the channel exists in the account's objects
     scanForResult(
-      () -> getValidatedAccountObjects(sourceWallet.address()),
+      () -> getValidatedAccountObjects(sourceWallet.classicAddress()),
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-            ((PayChannelObject) object).destination().equals(destinationWallet.address())
+            ((PayChannelObject) object).destination().equals(destinationWallet.classicAddress())
         )
     );
+
 
     //////////////////////////
     // Validate that the amount of the payment channel was deducted from the source
     // accounts XRP balance
     AccountInfoResult senderAccountInfoAfterCreate = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address()),
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
       accountInfo -> accountInfo.ledgerIndex()
         .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
         .equals(senderAccountInfo.ledgerIndex()
@@ -112,8 +114,8 @@ public class PaymentChannelIT extends AbstractIT {
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())
       .isEqualTo(senderAccountInfo.accountData().balance()
-        .minus(paymentChannelCreate.amount())
-        .minus(paymentChannelCreate.fee())
+        .minus(createPaymentChannel.amount())
+        .minus(createPaymentChannel.fee())
       );
   }
 
@@ -126,31 +128,28 @@ public class PaymentChannelIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
 
     //////////////////////////
     // Submit a PaymentChannelCreate transaction to create a payment channel between
     // the source and destination accounts
-    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
-      .account(sourceWallet.address())
+    PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
-      .publicKey(sourceWallet.publicKey().base16Value())
+      .publicKey(sourceWallet.publicKey())
       .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceWallet.publicKey())
       .build();
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
-      sourceWallet.privateKey(), paymentChannelCreate
-    );
-    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -160,22 +159,22 @@ public class PaymentChannelIT extends AbstractIT {
     // Wait for the payment channel to exist in a validated ledger
     // and validate its fields
     PaymentChannelResultObject paymentChannel = scanForResult(
-      () -> getValidatedAccountChannels(sourceWallet.address()),
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
       channels -> channels.channels().stream()
-        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
     )
       .channels().stream()
-      .filter(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+      .filter(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
       .findFirst()
       .orElseThrow(() -> new RuntimeException("Could not find payment channel for destination address."));
 
-    assertThat(paymentChannel.amount()).isEqualTo(paymentChannelCreate.amount());
-    assertThat(paymentChannel.settleDelay()).isEqualTo(paymentChannelCreate.settleDelay());
-    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(paymentChannelCreate.publicKey());
-    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(paymentChannelCreate.cancelAfter().get());
+    assertThat(paymentChannel.amount()).isEqualTo(createPaymentChannel.amount());
+    assertThat(paymentChannel.settleDelay()).isEqualTo(createPaymentChannel.settleDelay());
+    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(createPaymentChannel.publicKey());
+    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(createPaymentChannel.cancelAfter().get());
 
     AccountInfoResult destinationAccountInfo = scanForResult(
-      () -> getValidatedAccountInfo(destinationWallet.address())
+      () -> getValidatedAccountInfo(destinationWallet.classicAddress())
     );
 
     //////////////////////////
@@ -185,37 +184,42 @@ public class PaymentChannelIT extends AbstractIT {
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .build();
 
-    Signature signedClaim = signatureService.sign(sourceWallet.privateKey(), unsignedClaim);
+    String signature = keyPairService.sign(
+      binaryCodec.encodeForSigningClaim(
+        objectMapper.writeValueAsString(unsignedClaim)
+      ),
+      sourceWallet.privateKey()
+        .orElseThrow(
+          () -> new IllegalArgumentException("Cannot sign claim because source wallet does not have private key.")
+        )
+    );
 
     //////////////////////////
     // Destination account verifies the claim signature
     ChannelVerifyResult channelVerifyResult = xrplClient.channelVerify(
       paymentChannel.channelId(),
       unsignedClaim.amount(),
-      signedClaim.base16Value(),
-      sourceWallet.publicKey().base16Value()
+      signature,
+      sourceWallet.publicKey()
     );
     assertThat(channelVerifyResult.signatureVerified()).isTrue();
 
     //////////////////////////
     // Destination account submits the signed claim to the ledger to get their XRP
-    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
-      .account(destinationWallet.address())
+    PaymentChannelClaim signedClaim = PaymentChannelClaim.builder()
+      .account(destinationWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(destinationAccountInfo.accountData().sequence())
       .channel(paymentChannel.channelId())
       .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
       .amount(unsignedClaim.amount())
-      .signature(signedClaim.base16Value())
-      .publicKey(sourceWallet.publicKey().base16Value())
-      .signingPublicKey(destinationWallet.publicKey().base16Value())
+      .signature(signature)
+      .publicKey(sourceWallet.publicKey())
+      .signingPublicKey(destinationWallet.publicKey())
       .build();
 
-    SingleSingedTransaction<PaymentChannelClaim> signedPaymentChannelClaim = signatureService.sign(
-      destinationWallet.privateKey(), paymentChannelClaim
-    );
-    SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
-    assertThat(claimResult.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(destinationWallet, signedClaim);
+    assertThat(claimResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
       claimResult.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -224,17 +228,17 @@ public class PaymentChannelIT extends AbstractIT {
     //////////////////////////
     // Validate that the destination account balance has gone up by the claim amount
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.address()),
+      () -> this.getValidatedAccountInfo(destinationWallet.classicAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         destinationAccountInfo.accountData().balance()
-          .minus(paymentChannelClaim.fee())
-          .plus(paymentChannelClaim.balance().get())
+          .minus(signedClaim.fee())
+          .plus(signedClaim.balance().get())
       )
     );
   }
 
   @Test
-  void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException {
     //////////////////////////
     // Create source and destination accounts on ledger
     Wallet sourceWallet = createRandomAccount();
@@ -242,31 +246,28 @@ public class PaymentChannelIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
 
     //////////////////////////
     // Submit a PaymentChannelCreate transaction to create a payment channel between
     // the source and destination accounts
-    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
-      .account(sourceWallet.address())
+    PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
-      .destination(destinationWallet.address())
+      .destination(destinationWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
-      .publicKey(sourceWallet.publicKey().base16Value())
+      .publicKey(sourceWallet.publicKey())
       .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceWallet.publicKey())
       .build();
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
-      sourceWallet.privateKey(), paymentChannelCreate
-    );
-    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    assertThat(createResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -276,36 +277,33 @@ public class PaymentChannelIT extends AbstractIT {
     // Wait for the payment channel to exist in a validated ledger
     // and validate its fields
     PaymentChannelResultObject paymentChannel = scanForResult(
-      () -> getValidatedAccountChannels(sourceWallet.address()),
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
       channels -> channels.channels().stream()
-        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
     )
       .channels().stream()
-      .filter(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+      .filter(channel -> channel.destinationAccount().equals(destinationWallet.classicAddress()))
       .findFirst()
       .orElseThrow(() -> new RuntimeException("Could not find payment channel for destination address."));
 
-    assertThat(paymentChannel.amount()).isEqualTo(paymentChannelCreate.amount());
-    assertThat(paymentChannel.settleDelay()).isEqualTo(paymentChannelCreate.settleDelay());
-    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(paymentChannelCreate.publicKey());
-    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(paymentChannelCreate.cancelAfter().get());
+    assertThat(paymentChannel.amount()).isEqualTo(createPaymentChannel.amount());
+    assertThat(paymentChannel.settleDelay()).isEqualTo(createPaymentChannel.settleDelay());
+    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(createPaymentChannel.publicKey());
+    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(createPaymentChannel.cancelAfter().get());
 
-    PaymentChannelFund paymentChannelFund = PaymentChannelFund.builder()
-      .account(sourceWallet.address())
+    PaymentChannelFund addFunds = PaymentChannelFund.builder()
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .build();
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelFund> signedPaymentChannelFund = signatureService.sign(
-      sourceWallet.privateKey(), paymentChannelFund
-    );
-    SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(signedPaymentChannelFund);
-    assertThat(fundResult.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(sourceWallet, addFunds);
+    assertThat(fundResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
       fundResult.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -314,12 +312,12 @@ public class PaymentChannelIT extends AbstractIT {
     //////////////////////////
     // Validate that the amount in the channel increased by the fund amount
     scanForResult(
-      () -> getValidatedAccountChannels(sourceWallet.address()),
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
       channelsResult -> channelsResult.channels().stream()
         .anyMatch(
           channel ->
             channel.channelId().equals(paymentChannel.channelId()) &&
-              channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()))
+              channel.amount().equals(paymentChannel.amount().plus(addFunds.amount()))
         )
     );
 
@@ -330,11 +328,11 @@ public class PaymentChannelIT extends AbstractIT {
       .plus(UnsignedLong.valueOf(paymentChannel.settleDelay().longValue()))
       .plus(UnsignedLong.valueOf(30));
 
-    PaymentChannelFund paymentChannelFundWithNewExpiry = PaymentChannelFund.builder()
-      .account(sourceWallet.address())
+    PaymentChannelFund setExpiry = PaymentChannelFund.builder()
+      .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
       .amount(XrpCurrencyAmount.ofDrops(1))
       .expiration(newExpiry)
@@ -342,11 +340,8 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelFund> signedPaymentChannelFundWithExpiry = signatureService.sign(
-      sourceWallet.privateKey(), paymentChannelFundWithNewExpiry
-    );
-    SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(signedPaymentChannelFundWithExpiry);
-    assertThat(expiryResult.result()).isEqualTo("tesSUCCESS");
+    SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(sourceWallet, setExpiry);
+    assertThat(expiryResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
     logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
       expiryResult.transactionResult().transaction().hash()
         .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
@@ -355,7 +350,7 @@ public class PaymentChannelIT extends AbstractIT {
     //////////////////////////
     // Validate that the expiration was set properly
     scanForResult(
-      () -> getValidatedAccountChannels(sourceWallet.address()),
+      () -> getValidatedAccountChannels(sourceWallet.classicAddress()),
       channelsResult -> channelsResult.channels().stream()
         .anyMatch(
           channel ->

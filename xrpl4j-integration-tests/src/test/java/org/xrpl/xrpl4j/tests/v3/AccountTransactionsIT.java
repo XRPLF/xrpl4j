@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests.deprecated;
+package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
@@ -24,7 +24,9 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 
 import java.util.Optional;
 
-@Deprecated
+/**
+ * An Integration Test to validate submission of Account transactions.
+ */
 public class AccountTransactionsIT {
 
   // an arbitrary address on xrpl mainnet that has a decent amount of transaction history

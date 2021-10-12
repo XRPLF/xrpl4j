@@ -33,8 +33,8 @@ class SignedTransactionTest {
 
     final Signature signature = Signature.builder().value(
       UnsignedByteArray.of(BaseEncoding.base16()
-        .decode("304402207B82800C3289427D6F60421CDF88545BEFC6A7C9CED15A2C53E39994E52BCED402204"
-          + "43865800626F7FD02B369A875FA449E6204A46C5910E406018776CC08C948CA"))
+        .decode("304402207B82800C3289427D6F60421CDF88545BEFC6A7C9CED15A2C53E39994E52BCED402204"+
+           "43865800626F7FD02B369A875FA449E6204A46C5910E406018776CC08C948CA"))
     ).build();
 
     SingleSingedTransaction<Payment> signedTransaction = SingleSingedTransaction.<Payment>builder()

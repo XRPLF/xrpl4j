@@ -20,8 +20,8 @@ public interface DelegatedTransactionSigner {
    * @param transaction The {@link Transaction} to sign.
    * @param <T>         The type of the transaction to be signed.
    *
-   * @return A {@link SingleSingedTransaction} containing binary data that can be submitted to the XRP Ledger in order to
-   *   effect a transaction.
+   * @return A {@link SingleSingedTransaction} containing binary data that can be submitted to the XRP Ledger in order
+   *   to effect a transaction.
    */
   <T extends Transaction> SingleSingedTransaction<T> sign(final KeyMetadata keyMetadata, final T transaction);
 

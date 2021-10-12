@@ -47,12 +47,6 @@ class Secp256k1KeyPairServiceTest {
   public void deriveKeyPair() {
     Seed seed = new Seed(UnsignedByteArray.of(Base58.decode("sp5fghtJtpUorTwvof1NpDXAzNwf5")));
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
-
-    //    org.xrpl.xrpl4j.crypto.Seed oldSeed = org.xrpl.xrpl4j.crypto.Seed.builder().value("sp5fghtJtpUorTwvof1NpDXAzNwf5")
-    //      .build();
-    //    org.xrpl.xrpl4j.keypairs.KeyPairService oldKeyPairService = org.xrpl.xrpl4j.keypairs.Secp256k1KeyPairService.getInstance();
-    //    oldKeyPairService.deriveKeyPair(oldSeed.value());
-
     KeyPair expectedKeyPair = KeyPair.builder()
       .privateKey(PrivateKey.of(UnsignedByteArray.of(
         BaseEncoding.base16().decode("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23"

@@ -19,6 +19,14 @@ public class TransactionHashUtils {
    */
   private static final String SIGNED_TRANSACTION_HASH_PREFIX = "54584E00";
 
+  /**
+   * Computes the SHA-256 hash of the supplied bytes.
+   *
+   * @param signedTransactionBytes An {@link UnsignedByteArray} to be hashed.
+   * @param <T>                    A type {@link T}.
+   *
+   * @return A {@link Hash256}.
+   */
   public static <T extends Transaction> Hash256 computeHash(final UnsignedByteArray signedTransactionBytes) {
     Objects.requireNonNull(signedTransactionBytes);
 

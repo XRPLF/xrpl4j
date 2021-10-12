@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.crypto.bc.BouncyCastleSignatureService;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.EcDsaSignature;
 import org.xrpl.xrpl4j.keypairs.HashUtils;
@@ -33,7 +34,11 @@ import java.util.Objects;
  *
  * <p>WARNING: This implementation _might_ be appropriate for Android use, but should likely not be used in a
  * server-side context. In general, prefer an implementation that offers a higher level of security.</p>
+ *
+ * @deprecated This class will go away in a future release. Consider using {@link BouncyCastleSignatureService} instead
+ *   and manage a single private key in your application.
  */
+@Deprecated
 public class SingleKeySignatureService extends AbstractSignatureService implements SignatureService {
 
   private static final KeyStoreType KEY_STORE_TYPE = KeyStoreType.fromKeystoreTypeId("in-memory-single-key");

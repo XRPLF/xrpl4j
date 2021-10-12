@@ -18,6 +18,7 @@ import java.util.Objects;
  *
  * @see "https://xrpl.org/cryptographic-keys.html#seed"
  */
+@Deprecated
 public interface Seed {
 
   /**

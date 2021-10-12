@@ -8,7 +8,10 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
  * Hashing utilities for XRPL related hashing algorithms.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
+@Deprecated
 public class HashUtils {
 
   /**

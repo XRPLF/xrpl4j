@@ -133,7 +133,6 @@ public class SignerListSetIT extends AbstractIT {
       .map(wallet -> {
           try {
             String unsignedJson = objectMapper.writeValueAsString(unsignedPayment);
-
             String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, wallet.classicAddress().value());
             String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
               .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));

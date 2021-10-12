@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
 /**
  * Unit tests for {@link DerivedKeysSignatureService}.
  */
+@Deprecated
 class DerivedKeysSignatureServiceTest {
 
   private static final String SECP256K1 = "secp256k1";

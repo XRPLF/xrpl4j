@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 /**
- * Represents a signer for a multi-signature XRPL Transaction.
+ * Represents a signer for a multi-signature XRPL Transaction for purposes of deserializing response from an xrpld
+ * server.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableSigner.class)

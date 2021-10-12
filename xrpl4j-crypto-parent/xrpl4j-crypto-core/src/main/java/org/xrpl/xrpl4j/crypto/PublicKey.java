@@ -16,7 +16,10 @@ import java.util.Objects;
 
 /**
  * A typed instance of an XRPL Seed, which can be decoded into an instance of {@link Decoded}.
+ *
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public interface PublicKey {
 
   /**
@@ -114,6 +117,5 @@ public interface PublicKey {
       return base58Encoded();
     }
   }
-
 
 }

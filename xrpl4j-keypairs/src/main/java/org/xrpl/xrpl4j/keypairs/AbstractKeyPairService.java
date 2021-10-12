@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.keypairs;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
-import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -12,10 +11,12 @@ import java.security.SecureRandom;
 
 /**
  * An abstract implementation of {@link KeyPairService} which handles common behavior among concrete implementations.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
+@Deprecated
 public abstract class AbstractKeyPairService implements KeyPairService {
 
-  protected Signer signer;
   protected AddressCodec addressCodec = AddressCodec.getInstance();
 
   @Override
@@ -52,8 +53,11 @@ public abstract class AbstractKeyPairService implements KeyPairService {
    * @param publicKey The public key that should be hashed.
    *
    * @return An {@link UnsignedByteArray} containing the non-encoded XRPL address derived from the public key.
+   *
+   * @deprecated Will be replaced by AddressService.
    */
   @SuppressWarnings("UnstableApiUsage")
+  @Deprecated
   private UnsignedByteArray computePublicKeyHash(UnsignedByteArray publicKey) {
     byte[] sha256 = Hashing.sha256().hashBytes(publicKey.toByteArray()).asBytes();
     RIPEMD160Digest digest = new RIPEMD160Digest();

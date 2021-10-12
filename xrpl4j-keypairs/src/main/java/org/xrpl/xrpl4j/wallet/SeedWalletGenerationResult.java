@@ -6,6 +6,7 @@ import org.immutables.value.Value;
  * The result of generating a {@link Wallet} from a seed value.
  */
 @Value.Immutable
+@Deprecated
 public interface SeedWalletGenerationResult {
 
   static ImmutableSeedWalletGenerationResult.Builder builder() {

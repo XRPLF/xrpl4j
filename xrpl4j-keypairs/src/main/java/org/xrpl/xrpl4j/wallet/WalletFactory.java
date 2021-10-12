@@ -4,7 +4,11 @@ import org.xrpl.xrpl4j.keypairs.KeyPair;
 
 /**
  * Interface for constructing XRPL wallets.
+ *
+ * @deprecated This class will be removed in a future version. Consider using classes from org.xrpl.xrpl4j.core.wallet
+ *   instead.
  */
+@Deprecated
 public interface WalletFactory {
 
   /**

@@ -10,6 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.bc.BouncyCastleSignatureService;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
+import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -19,7 +25,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -33,10 +38,6 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
-import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
-import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
-import org.xrpl.xrpl4j.wallet.Wallet;
-import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -45,6 +46,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/**
+ * An abstract class that contains helper functionality to support all ITs.
+ */
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
@@ -53,15 +57,26 @@ public abstract class AbstractIT {
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
-  protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+  protected final XrplClient xrplClient;
+  protected final WalletFactory walletFactory;
+  protected final SignatureService signatureService;
+
+  /**
+   * No-args Constructor.
+   */
+  protected AbstractIT() {
+    this.xrplClient = xrplEnvironment.getXrplClient();
+    this.walletFactory = DefaultWalletFactory.getInstance();
+    this.signatureService = new BouncyCastleSignatureService();
+  }
+
 
   protected Wallet createRandomAccount() {
     ///////////////////////
     // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
+    SeedWalletGenerationResult seedResult = walletFactory.randomWallet();
     final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
+    logger.info("Generated testnet wallet with ClassicAddress={})", wallet.address());
 
     fundAccount(wallet);
 
@@ -74,7 +89,7 @@ public abstract class AbstractIT {
    * @param wallet The {@link Wallet} to fund.
    */
   protected void fundAccount(Wallet wallet) {
-    xrplEnvironment.fundAccount(wallet.classicAddress());
+    xrplEnvironment.fundAccount(wallet.address());
   }
 
   //////////////////////
@@ -201,8 +216,8 @@ public abstract class AbstractIT {
   ) {
     try {
       RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
-        .sourceAccount(sourceWallet.classicAddress())
-        .destinationAccount(destinationWallet.classicAddress())
+        .sourceAccount(sourceWallet.address())
+        .destinationAccount(destinationWallet.address())
         .destinationAmount(destinationAmount)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();

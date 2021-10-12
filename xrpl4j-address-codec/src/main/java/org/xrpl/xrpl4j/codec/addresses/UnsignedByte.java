@@ -5,16 +5,18 @@ import com.google.common.io.BaseEncoding;
 
 import java.math.BigInteger;
 import java.util.Objects;
+import javax.security.auth.Destroyable;
 
 /**
  * Unsigned byte where value can be 0 to 255.
  */
-public class UnsignedByte {
+public class UnsignedByte implements Destroyable {
 
   // since Java byte is signed need to use int to handle max value 255
-  private final int value;
+  private int value;
+  private boolean destroyed;
 
-  private UnsignedByte(int value) {
+  private UnsignedByte(final int value) {
     Preconditions.checkArgument(value >= 0);
     Preconditions.checkArgument(value <= 255);
     this.value = value;
@@ -27,7 +29,7 @@ public class UnsignedByte {
    *
    * @return An {@link UnsignedByte}.
    */
-  public static UnsignedByte of(int value) {
+  public static UnsignedByte of(final int value) {
     return new UnsignedByte(value);
   }
 
@@ -38,7 +40,7 @@ public class UnsignedByte {
    *
    * @return An {@link UnsignedByte}.
    */
-  public static UnsignedByte of(byte value) {
+  public static UnsignedByte of(final byte value) {
     return new UnsignedByte(value & 0xff);
   }
 
@@ -50,7 +52,7 @@ public class UnsignedByte {
    *
    * @return An {@link UnsignedByte}.
    */
-  public static UnsignedByte of(byte highBits, byte lowBits) {
+  public static UnsignedByte of(final byte highBits, final byte lowBits) {
     return new UnsignedByte((highBits << 4) + lowBits);
   }
 
@@ -61,15 +63,16 @@ public class UnsignedByte {
    *
    * @return An {@link UnsignedByte}.
    */
-  public static UnsignedByte of(String hex) {
+  public static UnsignedByte of(final String hex) {
+    Objects.requireNonNull(hex);
     byte highBits = new BigInteger(hex.substring(0, 1), 16).byteValue();
     byte lowBits = new BigInteger(hex.substring(1, 2), 16).byteValue();
     return UnsignedByte.of(highBits, lowBits);
   }
 
   /**
-   * Converts the {@link UnsignedByte} to a signed int. Necessary if the {@link UnsignedByte} has a value greater
-   * than 127 and the result needs to be used for numeric purposes.
+   * Converts the {@link UnsignedByte} to a signed int. Necessary if the {@link UnsignedByte} has a value greater than
+   * 127 and the result needs to be used for numeric purposes.
    *
    * @return This {@link UnsignedByte}'s value as a signed int.
    */
@@ -78,9 +81,8 @@ public class UnsignedByte {
   }
 
   /**
-   * Converts the {@link UnsignedByte} to a signed byte. Note that this can be unsafe to do if the underlying value
-   * is greater than 127 which is the max value for signed byte in Java AND the byte is being used for
-   * numerical purposes.
+   * Converts the {@link UnsignedByte} to a signed byte. Note that this can be unsafe to do if the underlying value is
+   * greater than 127 which is the max value for signed byte in Java AND the byte is being used for numerical purposes.
    *
    * @return This {@link UnsignedByte}'s value as a signed byte.
    */
@@ -113,20 +115,20 @@ public class UnsignedByte {
    *
    * @return {@code true} if the nth bit is set, otherwise {@code false}.
    */
-  public boolean isNthBitSet(int nth) {
+  public boolean isNthBitSet(final int nth) {
     Preconditions.checkArgument(nth >= 1 && nth <= 8);
     return ((value >> (8 - nth)) & 1) == 1;
   }
 
   /**
-   * Does a bitwise OR on this {@link UnsignedByte} and the given {@link UnsignedByte}, and returns a new
-   * {@link UnsignedByte} as the result.
+   * Does a bitwise OR on this {@link UnsignedByte} and the given {@link UnsignedByte}, and returns a new {@link
+   * UnsignedByte} as the result.
    *
    * @param unsignedByte The {@link UnsignedByte} to perform a bitwise OR on.
    *
    * @return The result of the bitwise OR operation.
    */
-  public UnsignedByte or(UnsignedByte unsignedByte) {
+  public UnsignedByte or(final UnsignedByte unsignedByte) {
     return UnsignedByte.of(value | unsignedByte.value);
   }
 
@@ -140,7 +142,7 @@ public class UnsignedByte {
   }
 
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(final Object object) {
     if (this == object) {
       return true;
     }
@@ -154,5 +156,16 @@ public class UnsignedByte {
   @Override
   public int hashCode() {
     return Objects.hash(value);
+  }
+
+  @Override
+  public void destroy() {
+    this.value = 0;
+    this.destroyed = true;
+  }
+
+  @Override
+  public boolean isDestroyed() {
+    return this.destroyed;
   }
 }

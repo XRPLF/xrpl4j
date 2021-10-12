@@ -7,7 +7,10 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 /**
  * Represents a digital signature for a transaction that can be submitted to the XRP Ledger.
+ *
+ * @deprecated Prefer the variant found in {@link org.xrpl.xrpl4j.crypto.core} instead.
  */
+@Deprecated
 @Value.Immutable
 public interface Signature {
 

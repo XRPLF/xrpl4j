@@ -11,7 +11,10 @@ import java.util.Objects;
 
 /**
  * A class that assists in loading {@link KeyStore} objects from the classpath.
+ *
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public final class JavaKeystoreLoader {
 
   /**

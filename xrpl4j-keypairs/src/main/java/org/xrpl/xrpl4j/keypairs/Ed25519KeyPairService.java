@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.keypairs;
 
 import com.google.common.io.BaseEncoding;
 import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
@@ -17,10 +18,14 @@ import org.xrpl.xrpl4j.keypairs.exceptions.SigningException;
 import java.util.Objects;
 
 /**
- * Implementation of {@link KeyPairService} which uses the ED25519 algorithm to derive keys and sign/verify
- * signatures.
+ * Implementation of {@link KeyPairService} which uses the ED25519 algorithm to derive keys and sign/verify signatures.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
+@Deprecated
 public class Ed25519KeyPairService extends AbstractKeyPairService {
+
+  private final Signer signer;
 
   private static final Ed25519KeyPairService INSTANCE = new Ed25519KeyPairService(AddressCodec.getInstance());
 

@@ -12,6 +12,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
+/**
+ * An EcDsa Signature.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
+ */
+@Deprecated
 @Value.Immutable
 @SuppressWarnings( {"LocalVariableName", "MethodName"})
 public interface EcDsaSignature {

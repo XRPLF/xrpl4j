@@ -322,6 +322,7 @@
     <module>xrpl4j-keypairs</module>
     <module>xrpl4j-crypto-parent</module>
     <module>xrpl4j-integration-tests</module>
+    <module>xrpl4j-utils</module>
     <module>xrpl4j-client</module>
     <module>xrpl4j-bom</module>
   </modules>

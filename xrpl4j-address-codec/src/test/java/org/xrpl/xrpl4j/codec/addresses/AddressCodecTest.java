@@ -4,22 +4,17 @@ package org.xrpl.xrpl4j.codec.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
-import java.util.function.Function;
-
-public class AddressCodecTest {
+/**
+ * Unit tests for {@link AddressCodec}.
+ */
+public class AddressCodecTest extends AbstractCodecTest {
 
   AddressCodec addressCodec;
-
-  private static UnsignedByteArray unsignedByteArrayFromHex(String hexValue) {
-    byte[] decodedHex = BaseEncoding.base16().decode(hexValue);
-    return UnsignedByteArray.of(decodedHex);
-  }
 
   @BeforeEach
   public void setUp() {
@@ -151,18 +146,5 @@ public class AddressCodecTest {
       unsignedByteArrayFromHex("023693F15967AE357D0327974AD46FE3C127113B1110D6044FD41E723689F81CC6"),
       "aB44YfzW24VDEJQ2UuLPV2PvqcPCSoLnL7y5M1EzhdW4LnK5xMS3"
     );
-  }
-
-  private void testEncodeDecode(
-    Function<UnsignedByteArray, String> encoder,
-    Function<String, UnsignedByteArray> decoder,
-    UnsignedByteArray bytes,
-    String base58
-  ) {
-    String encoded = encoder.apply(bytes);
-    assertThat(encoded).isEqualTo(base58);
-
-    UnsignedByteArray decoded = decoder.apply(base58);
-    assertThat(decoded).isEqualTo(bytes);
   }
 }

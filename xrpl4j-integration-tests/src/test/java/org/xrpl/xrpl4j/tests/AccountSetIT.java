@@ -25,7 +25,6 @@ public class AccountSetIT extends AbstractIT {
 
   // TODO: Make an IT that sets all flags, and unsets only 1, and validate that only that 1 single flag was cleared.
 
-
   @Test
   public void disableAndEnableAllFlags() throws JsonRpcClientErrorException {
 

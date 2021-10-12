@@ -6,7 +6,10 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 /**
  * Interface of a service that can perform the crypto operations necessary to create a wallet,
  * sign and verify XRPL transactions, and derive XRPL addresses.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
+@Deprecated
 public interface KeyPairService {
 
   /**

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
@@ -20,7 +19,6 @@ import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
@@ -94,14 +92,12 @@ class DerivedKeyDelegatedSignatureServiceTest {
       null
     ));
 
-    // 7-arg Constructor
+    // 5-arg Constructor
     assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
       null,
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class),
-      mock(AddressUtils.class),
-      mock(SignatureUtils.class),
       CaffeineSpec.parse("")
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
@@ -109,8 +105,6 @@ class DerivedKeyDelegatedSignatureServiceTest {
       null,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class),
-      mock(AddressUtils.class),
-      mock(SignatureUtils.class),
       CaffeineSpec.parse("")
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
@@ -118,34 +112,12 @@ class DerivedKeyDelegatedSignatureServiceTest {
       VersionType.ED25519,
       null,
       mock(Secp256k1KeyPairService.class),
-      mock(AddressUtils.class),
-      mock(SignatureUtils.class),
       CaffeineSpec.parse("")
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
-      null,
-      mock(AddressUtils.class),
-      mock(SignatureUtils.class),
-      CaffeineSpec.parse("")
-    ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
-      () -> ServerSecret.of(new byte[32]),
-      VersionType.ED25519,
-      mock(Ed25519KeyPairService.class),
-      mock(Secp256k1KeyPairService.class),
-      null,
-      mock(SignatureUtils.class),
-      CaffeineSpec.parse("")
-    ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
-      () -> ServerSecret.of(new byte[32]),
-      VersionType.ED25519,
-      mock(Ed25519KeyPairService.class),
-      mock(Secp256k1KeyPairService.class),
-      mock(AddressUtils.class),
       null,
       CaffeineSpec.parse("")
     ));
@@ -154,8 +126,6 @@ class DerivedKeyDelegatedSignatureServiceTest {
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class),
-      mock(AddressUtils.class),
-      mock(SignatureUtils.class),
       null
     ));
 
@@ -169,8 +139,6 @@ class DerivedKeyDelegatedSignatureServiceTest {
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class),
-      mock(AddressUtils.class),
-      mock(SignatureUtils.class),
       CaffeineSpec.parse("maximumSize=200,expireAfterWrite=300s")
     );
   }

@@ -68,8 +68,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   private final VersionType versionType;
   private final Ed25519KeyPairService ed25519KeyPairService;
   private final Secp256k1KeyPairService secp256k1KeyPairService;
-  private final AddressUtils addressUtils;
-  private final SignatureUtils signatureUtils;
 
   private final LoadingCache<KeyMetadata, SingleKeySignatureService> keyMetadataLoadingCache;
 
@@ -113,8 +111,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
       versionType,
       ed25519KeyPairService,
       secp256k1KeyPairService,
-      AddressUtils.getInstance(),
-      SignatureUtils.getInstance(),
       CaffeineSpec.parse("maximumSize=10000,expireAfterWrite=30s")
     );
   }
@@ -126,8 +122,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
    * @param versionType             A {@link VersionType} that defines which type of key this signature service uses.
    * @param ed25519KeyPairService   An {@link Ed25519KeyPairService}.
    * @param secp256k1KeyPairService A {@link Secp256k1KeyPairService}.
-   * @param addressUtils            An {@link AddressUtils}.
-   * @param signatureUtils          A {@link SignatureUtils}.
    * @param caffeineSpec            A {@link CaffeineSpec} that can be initialized externally to configure the Caffeine
    *                                cache constructed by this service.
    */
@@ -136,16 +130,12 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
     final VersionType versionType,
     final Ed25519KeyPairService ed25519KeyPairService,
     final Secp256k1KeyPairService secp256k1KeyPairService,
-    final AddressUtils addressUtils,
-    final SignatureUtils signatureUtils,
     final CaffeineSpec caffeineSpec
   ) {
     this.serverSecretSupplier = Objects.requireNonNull(serverSecretSupplier);
     this.versionType = Objects.requireNonNull(versionType);
     this.ed25519KeyPairService = Objects.requireNonNull(ed25519KeyPairService);
     this.secp256k1KeyPairService = Objects.requireNonNull(secp256k1KeyPairService);
-    this.addressUtils = Objects.requireNonNull(addressUtils);
-    this.signatureUtils = Objects.requireNonNull(signatureUtils);
     this.keyMetadataLoadingCache = Caffeine
       .from(Objects.requireNonNull(caffeineSpec))
       .build(this::constructSignatureService);
@@ -361,8 +351,9 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
 
       ed25519Signer.reset();
       ed25519Signer.init(true, privateKeyParameters);
-      ed25519Signer.update(signableTransactionBytes.toByteArray(), 0,
-        signableTransactionBytes.getUnsignedBytes().size());
+      ed25519Signer.update(
+        signableTransactionBytes.toByteArray(), 0, signableTransactionBytes.getUnsignedBytes().size()
+      );
 
       final UnsignedByteArray sigBytes = UnsignedByteArray.of(ed25519Signer.generateSignature());
       return Signature.builder()

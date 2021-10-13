@@ -8,20 +8,17 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.DerivedKeyDelegatedSignatureService;
+import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -35,154 +32,119 @@ import java.util.Objects;
  */
 public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
-  private static Wallet sourceWallet;
-  private static Wallet destinationWallet;
-
-  private static Ed25519KeyPairService ed25519KeyPairService;
-  private static Secp256k1KeyPairService secp256k1KeyPairService;
-
-  private static DelegatedSignatureService signatureService;
-
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   @BeforeEach
-  public void setUp() throws Exception {
-    final String jksFileName = "crypto/crypto.p12";
-    final char[] jksPassword = "password".toCharArray();
-    final KeyStore keyStore = JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
-    final Key secretKey = keyStore.getKey("secret0", "password".toCharArray());
-    signatureService = new DerivedKeyDelegatedSignatureService(
-      () -> ServerSecret.of(secretKey.getEncoded()), VersionType.ED25519
-    );
-
-    ed25519KeyPairService = Ed25519KeyPairService.getInstance();
-    secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
-
-    // sourceWallet is created in each unit test...
-    destinationWallet = this.newSecp256k1WalletFromSignatureService(signatureService, "destinationWallet");
-    this.fundAccount(destinationWallet);
+  public void setUp() {
   }
 
   @Test
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    sourceWallet = this.newEd25519WalletFromSignatureService(signatureService, "sourceWallet");
-    this.fundAccount(sourceWallet);
+    final DelegatedSignatureService delegatedSignatureService = this.constructSignatureServiceEd25519();
+
+    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
+    final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
+    final Address sourceWalletAddress = AddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    this.fundAccount(sourceWalletAddress);
+
+    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
+    final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
+    final Address destinationWalletAddress = AddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult accountInfo = this
-      .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.address()));
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWalletAddress));
     Payment payment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceWalletAddress)
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWallet.publicKey().hexValue())
+      .signingPublicKey(sourceWalletPublicKey.hexValue())
       .build();
 
-    final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
-
-    SingleSingedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
+    SingleSingedTransaction<Payment> signedTransaction = delegatedSignatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash());
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
-    this.scanForResult(
-      () -> this.getValidatedTransaction(
-        result.transactionResult()
-          .transaction()
-          .hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-        Payment.class)
-    );
+    this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    sourceWallet = this.newSecp256k1WalletFromSignatureService(signatureService, "sourceWallet");
+    final DelegatedSignatureService delegatedSignatureService = this.constructSignatureServiceSecp256k1();
+
+    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
+    final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
+    final Address sourceWalletAddress = AddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    this.fundAccount(sourceWalletAddress);
+
+    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
+    final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
+    final Address destinationWalletAddress = AddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this
-      .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.address()));
+      .scanForResult(() -> this.getValidatedAccountInfo(sourceWalletAddress));
     Payment payment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceWalletAddress)
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWallet.publicKey().hexValue())
+      .signingPublicKey(sourceWalletPublicKey.hexValue())
       .build();
 
-    final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
-
-    SingleSingedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
+    SingleSingedTransaction<Payment> transactionWithSignature = delegatedSignatureService
+      .sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().transaction().hash()
-    );
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
-    this.scanForResult(
-      () -> this.getValidatedTransaction(
-        result.transactionResult()
-          .transaction()
-          .hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-        Payment.class)
-    );
+    this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }
 
   //////////////////
   // Private Helpers
   //////////////////
 
-  private Wallet newEd25519WalletFromSignatureService(
-    final DelegatedSignatureService signatureService, final String walletId
-  ) {
-    Objects.requireNonNull(signatureService);
-    Objects.requireNonNull(walletId);
-
-    final Seed seed = Seed.ed25519SeedFromPassphrase(Passphrase.of(walletId));
-    final KeyPair keyPair = ed25519KeyPairService.deriveKeyPair(seed);
-
-    final Wallet wallet = Wallet.builder()
-      .privateKey(keyPair.privateKey())
-      .publicKey(keyPair.publicKey())
-      .build();
-
-    this.fundAccount(wallet);
-
-    return wallet;
-  }
-
-  private Wallet newSecp256k1WalletFromSignatureService(
-    final DelegatedSignatureService signatureService, final String walletId
-  ) {
-    Objects.requireNonNull(signatureService);
-    Objects.requireNonNull(walletId);
-
-    final Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of(walletId));
-    final KeyPair keyPair = secp256k1KeyPairService.deriveKeyPair(seed);
-
-    final Wallet wallet = Wallet.builder()
-      .privateKey(keyPair.privateKey())
-      .publicKey(keyPair.publicKey())
-      .build();
-
-    this.fundAccount(wallet);
-
-    return wallet;
-  }
-
-  private KeyMetadata keyMetadata(final String walletId) {
-    Objects.requireNonNull(walletId);
-
+  private KeyMetadata constructKeyMetadata(final String keyIdentifier) {
+    Objects.requireNonNull(keyIdentifier);
     return KeyMetadata.builder()
       .platformIdentifier("jks")
       .keyringIdentifier("n/a")
-      .keyIdentifier(walletId)
+      .keyIdentifier(keyIdentifier)
       .keyVersion("1")
       .keyPassword("password")
       .build();
+  }
+
+  private DelegatedSignatureService constructSignatureServiceSecp256k1() {
+    try {
+      final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
+      return new DerivedKeyDelegatedSignatureService(
+        () -> ServerSecret.of(secretKey.getEncoded()), VersionType.SECP256K1
+      );
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  private DelegatedSignatureService constructSignatureServiceEd25519() {
+    try {
+      final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
+      return new DerivedKeyDelegatedSignatureService(
+        () -> ServerSecret.of(secretKey.getEncoded()), VersionType.ED25519
+      );
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  private KeyStore loadKeyStore() {
+    final String jksFileName = "crypto/crypto.p12";
+    final char[] jksPassword = "password".toCharArray();
+    return JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
   }
 }

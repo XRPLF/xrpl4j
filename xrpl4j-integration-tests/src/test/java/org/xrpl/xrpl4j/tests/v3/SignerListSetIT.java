@@ -43,7 +43,7 @@ public class SignerListSetIT extends AbstractIT {
     Wallet destinationWallet = createRandomAccount();
 
     /////////////////////////////
-    // Wait for all of the accounts to show up in a validated ledger
+    // Wait for all accounts to show up in a validated ledger
     final AccountInfoResult sourceAccountInfo = scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.address())
     );
@@ -86,9 +86,8 @@ public class SignerListSetIT extends AbstractIT {
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -147,11 +146,10 @@ public class SignerListSetIT extends AbstractIT {
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transaction().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
+      paymentResult.transaction().hash()
     );
   }
 
@@ -164,7 +162,7 @@ public class SignerListSetIT extends AbstractIT {
     Wallet bobWallet = createRandomAccount();
 
     /////////////////////////////
-    // Wait for all of the accounts to show up in a validated ledger
+    // Wait for all accounts to show up in a validated ledger
     AccountInfoResult sourceAccountInfo = scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.address())
     );
@@ -206,9 +204,8 @@ public class SignerListSetIT extends AbstractIT {
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -244,9 +241,8 @@ public class SignerListSetIT extends AbstractIT {
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(signedDeleteSignerList);
     assertThat(signerListDeleteResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListDeleteResult.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      signerListDeleteResult.transactionResult().hash()
     );
 
     /////////////////////////////

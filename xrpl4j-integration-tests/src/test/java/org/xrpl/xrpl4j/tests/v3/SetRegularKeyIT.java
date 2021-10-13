@@ -50,9 +50,9 @@ public class SetRegularKeyIT extends AbstractIT {
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
     assertThat(setResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+      setResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -111,9 +111,9 @@ public class SetRegularKeyIT extends AbstractIT {
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
     assertThat(setResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+      setResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -151,9 +151,9 @@ public class SetRegularKeyIT extends AbstractIT {
     );
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(signedRemoveRegularKey);
     assertThat(removeResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
-      removeResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+      removeResult.transactionResult().hash()
     );
 
     scanForResult(

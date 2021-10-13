@@ -10,8 +10,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 
 /**
- * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses rippled sends
- * back.
+ * These tests ensure {@link LedgerResult}s can be constructed from any JSON responses rippled sends back.
  */
 public class LedgerResultIT extends AbstractIT {
 

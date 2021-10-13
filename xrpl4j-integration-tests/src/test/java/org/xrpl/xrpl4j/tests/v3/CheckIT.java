@@ -61,14 +61,14 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    CheckObject checkObject = (CheckObject) this.scanForResult(
+    CheckObject checkObject = (CheckObject) this
+      .scanForResult(
         () -> this.getValidatedAccountObjects(sourceWallet.address()),
         result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
       )
@@ -97,8 +97,7 @@ public class CheckIT extends AbstractIT {
     assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cashResponse.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      cashResponse.transactionResult().hash()
     );
 
     //////////////////////
@@ -154,15 +153,14 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    CheckObject checkObject = (CheckObject) this.scanForResult(
-        () -> this.getValidatedAccountObjects(sourceWallet.address()),
+    CheckObject checkObject = (CheckObject) this
+      .scanForResult(() -> this.getValidatedAccountObjects(sourceWallet.address()),
         result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
       )
       .accountObjects().stream()
@@ -187,8 +185,7 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cancelResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      cancelResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -235,11 +232,11 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      response.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      response.transactionResult().hash()
     );
 
-    CheckObject checkObject = (CheckObject) this.scanForResult(
+    CheckObject checkObject = (CheckObject) this
+      .scanForResult(
         () -> this.getValidatedAccountObjects(sourceWallet.address()),
         result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
       )
@@ -268,8 +265,7 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cancelResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+      cancelResult.transactionResult().hash()
     );
 
     //////////////////////

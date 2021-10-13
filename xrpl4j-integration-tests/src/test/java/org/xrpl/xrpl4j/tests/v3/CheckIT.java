@@ -91,7 +91,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();
     SingleSingedTransaction<CheckCash> signedCheckCash = signatureService.sign(
-      sourceWallet.privateKey(), checkCash
+      destinationWallet.privateKey(), checkCash
     );
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(signedCheckCash);
     assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");

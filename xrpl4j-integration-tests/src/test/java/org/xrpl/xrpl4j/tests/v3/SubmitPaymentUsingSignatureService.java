@@ -59,11 +59,13 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     // sourceWallet is created in each unit test...
     destinationWallet = this.newSecp256k1WalletFromSignatureService(signatureService, "destinationWallet");
+    this.fundAccount(destinationWallet);
   }
 
   @Test
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     sourceWallet = this.newEd25519WalletFromSignatureService(signatureService, "sourceWallet");
+    this.fundAccount(sourceWallet);
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this
@@ -143,10 +145,14 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     final Seed seed = Seed.ed25519SeedFromPassphrase(Passphrase.of(walletId));
     final KeyPair keyPair = ed25519KeyPairService.deriveKeyPair(seed);
 
-    return Wallet.builder()
+    final Wallet wallet = Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
       .build();
+
+    this.fundAccount(wallet);
+
+    return wallet;
   }
 
   private Wallet newSecp256k1WalletFromSignatureService(
@@ -158,10 +164,14 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     final Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of(walletId));
     final KeyPair keyPair = secp256k1KeyPairService.deriveKeyPair(seed);
 
-    return Wallet.builder()
+    final Wallet wallet = Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
       .build();
+
+    this.fundAccount(wallet);
+
+    return wallet;
   }
 
   private KeyMetadata keyMetadata(final String walletId) {

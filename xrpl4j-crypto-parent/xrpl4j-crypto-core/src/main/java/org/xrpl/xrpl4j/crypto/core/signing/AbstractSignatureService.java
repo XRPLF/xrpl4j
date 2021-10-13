@@ -53,10 +53,8 @@ public abstract class AbstractSignatureService implements SignatureService {
     Objects.requireNonNull(privateKey);
     Objects.requireNonNull(unsignedClaim);
 
-    final UnsignedByteArray signedClaimBytes = signatureUtils.toSignableBytes(unsignedClaim);
-    return Signature.builder()
-      .value(signedClaimBytes)
-      .build();
+    final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
+    return signHelper(privateKey, signableBytes);
   }
 
   @Override

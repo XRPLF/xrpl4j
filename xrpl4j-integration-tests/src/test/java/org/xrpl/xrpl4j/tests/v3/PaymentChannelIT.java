@@ -188,14 +188,14 @@ public class PaymentChannelIT extends AbstractIT {
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .build();
 
-    Signature signedClaim = signatureService.sign(sourceWallet.privateKey(), unsignedClaim);
+    Signature signedClaimSignature = signatureService.sign(sourceWallet.privateKey(), unsignedClaim);
 
     //////////////////////////
     // Destination account verifies the claim signature
     ChannelVerifyResult channelVerifyResult = xrplClient.channelVerify(
       paymentChannel.channelId(),
       unsignedClaim.amount(),
-      signedClaim.base16Value(),
+      signedClaimSignature.base16Value(),
       sourceWallet.publicKey().base16Value()
     );
     assertThat(channelVerifyResult.signatureVerified()).isTrue();
@@ -209,7 +209,7 @@ public class PaymentChannelIT extends AbstractIT {
       .channel(paymentChannel.channelId())
       .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
       .amount(unsignedClaim.amount())
-      .signature(signedClaim.base16Value())
+      .signature(signedClaimSignature.base16Value())
       .publicKey(sourceWallet.publicKey().base16Value())
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();

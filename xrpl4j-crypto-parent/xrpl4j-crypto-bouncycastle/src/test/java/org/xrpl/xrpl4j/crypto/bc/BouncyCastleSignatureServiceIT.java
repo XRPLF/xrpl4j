@@ -77,7 +77,6 @@ class BouncyCastleSignatureServiceIT {
     secp256k1Wallet = DefaultWalletFactory.getInstance().fromKeyPair(secp256k1KeyPair);
     secp256k1WalletOther = DefaultWalletFactory.getInstance().fromKeyPair(secp256k1KeyPairOther);
 
-    // TODO: Change to PublicKey on Payment.
     this.payment = Payment.builder()
       .account(ed25519Wallet.address())
       .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(10L)))

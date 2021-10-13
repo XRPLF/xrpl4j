@@ -18,6 +18,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
@@ -50,20 +51,13 @@ public class SubmitPaymentIT extends AbstractIT {
     SingleSingedTransaction<Payment> signedPayment = signatureService.sign(sourceWallet.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
-      result.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
-    );
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
-      () -> this.getValidatedTransaction(
-        result.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-        Payment.class)
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class)
     );
 
-    // TODO: Use flatMap?
-    assertThat(validatedPayment.metadata().get().deliveredAmount()).hasValue(amount);
+    assertThat(validatedPayment.metadata().flatMap(TransactionMetadata::deliveredAmount)).hasValue(amount);
     assertThat(validatedPayment.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
 
     assertPaymentCloseTimeMatchesLedgerCloseTime(validatedPayment);
@@ -96,17 +90,9 @@ public class SubmitPaymentIT extends AbstractIT {
     SingleSingedTransaction<Payment> signedPayment = signatureService.sign(senderWallet.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
-      result.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
-    );
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
-    this.scanForResult(
-      () -> this.getValidatedTransaction(
-        result.transactionResult().transaction().hash()
-          .orElseThrow(() -> new RuntimeException("Result didn't have hash.")),
-        Payment.class)
-    );
+    this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }
 
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
@@ -117,10 +103,9 @@ public class SubmitPaymentIT extends AbstractIT {
         .build()
     );
 
-    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty();
+    assertThat(validatedPayment.closeDateHuman()).isNotEmpty();
     assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();
-    assertThat(validatedPayment.transaction().closeDateHuman().get())
-      .isEqualTo(ledger.ledger().closeTimeHuman().get());
+    assertThat(validatedPayment.closeDateHuman()).isEqualTo(ledger.ledger().closeTimeHuman());
   }
 
 }

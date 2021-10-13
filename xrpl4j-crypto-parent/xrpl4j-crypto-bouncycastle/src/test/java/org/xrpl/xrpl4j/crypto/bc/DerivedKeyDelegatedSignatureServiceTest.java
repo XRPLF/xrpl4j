@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.KeyStoreType;
@@ -20,7 +23,6 @@ import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -304,10 +306,10 @@ class DerivedKeyDelegatedSignatureServiceTest {
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
 
-      SignatureWithPublicKey signedTx = this.ecSignatureService.multiSign(keyMetadata, paymentTransaction);
+      SingleSingedTransaction<Payment> signedTx = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
       return this.ecSignatureService.verify(
         SignatureWithKeyMetadata.builder()
-          .transactionSignature(signedTx.transactionSignature())
+          .transactionSignature(signedTx.signature())
           .signingKeyMetadata(keyMetadata)
           .build(),
         paymentTransaction
@@ -366,8 +368,18 @@ class DerivedKeyDelegatedSignatureServiceTest {
           throw new RuntimeException(e.getMessage(), e);
         }
       })
-      .forEach(
-        seed -> assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("sEd7sYDb1EARo6GFwHFnW3ShnefjGKW"));
+      .forEach(seed -> {
+        // Expect 16 bytes for the bytes()
+        assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("7D4F3F711A719BDA9FEC7359DA96D0F7");
+
+        UnsignedByteArray entropy = seed.decodedSeed().bytes();
+        String expectedBase58 = AddressBase58.encode(
+          entropy,
+          Lists.newArrayList(Version.ED25519_SEED),
+          UnsignedInteger.valueOf(entropy.length())
+        );
+        assertThat(expectedBase58).isEqualTo("sEd7sYDb1EARo6GFwHFnW3ShnefjGKW");
+      });
   }
 
   @Test
@@ -388,7 +400,19 @@ class DerivedKeyDelegatedSignatureServiceTest {
           throw new RuntimeException(e.getMessage(), e);
         }
       })
-      .forEach(seed -> assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("shSZD6BGMy5Pv8RhtvDuVXZGGjt9m"));
+      //.forEach(seed -> assertThat(seed.value()).isEqualTo("shSZD6BGMy5Pv8RhtvDuVXZGGjt9m"));
+      .forEach(seed -> {
+        // Expect 16 bytes for the bytes()
+        assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("7D4F3F711A719BDA9FEC7359DA96D0F7");
+
+        UnsignedByteArray entropy = seed.decodedSeed().bytes();
+        String expectedBase58 = AddressBase58.encode(
+          entropy,
+          Lists.newArrayList(Version.FAMILY_SEED),
+          UnsignedInteger.valueOf(entropy.length())
+        );
+        assertThat(expectedBase58).isEqualTo("shSZD6BGMy5Pv8RhtvDuVXZGGjt9m");
+      });
   }
 
   //////////////////

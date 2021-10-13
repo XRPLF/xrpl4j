@@ -10,10 +10,13 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.PaymentChannelResultObject;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
@@ -64,9 +67,9 @@ public class PaymentChannelIT extends AbstractIT {
     // Validate that the transaction was submitted successfully
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -151,9 +154,9 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -216,9 +219,9 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
     assertThat(claimResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
-      claimResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
+      claimResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -267,9 +270,9 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -306,9 +309,9 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(signedPaymentChannelFund);
     assertThat(fundResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
-      fundResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+      fundResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -347,9 +350,9 @@ public class PaymentChannelIT extends AbstractIT {
     );
     SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(signedPaymentChannelFundWithExpiry);
     assertThat(expiryResult.result()).isEqualTo("tesSUCCESS");
-    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
-      expiryResult.transactionResult().transaction().hash()
-        .orElseThrow(() -> new RuntimeException("Result didn't have hash."))
+    logger.info(
+      "PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+      expiryResult.transactionResult().hash()
     );
 
     //////////////////////////
@@ -364,5 +367,68 @@ public class PaymentChannelIT extends AbstractIT {
               channel.expiration().get().equals(newExpiry)
         )
     );
+  }
+
+  @Test
+  void testCurrentAccountChannels() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////////
+    // Create source and destination accounts on ledger
+    Wallet sourceWallet = createRandomAccount();
+    Wallet destinationWallet = createRandomAccount();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceWallet.address())
+    );
+
+    //////////////////////////
+    // Submit a PaymentChannelCreate transaction to create a payment channel between
+    // the source and destination accounts
+    PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
+      .account(sourceWallet.address())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(destinationWallet.address())
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey(sourceWallet.publicKey().base16Value())
+      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SingleSingedTransaction<PaymentChannelCreate> signedCreatePaymentChannel = signatureService.sign(
+      sourceWallet.privateKey(), createPaymentChannel
+    );
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedCreatePaymentChannel);
+    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
+    );
+
+    //////////////////////////
+    // Wait for the payment channel to exist in a validated ledger
+    // and validate its fields
+    AccountChannelsResult accountChannelsResult = scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountChannels(AccountChannelsRequestParams.builder()
+            .account(sourceWallet.address())
+            .ledgerSpecifier(LedgerSpecifier.CURRENT)
+            .build());
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      channels -> channels.channels().stream()
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationWallet.address()))
+    );
+
+    // TODO
+    assertThat(accountChannelsResult.ledgerHash()).isNull();
+    assertThat(accountChannelsResult.ledgerIndex()).isNull();
+    assertThat(accountChannelsResult.ledgerCurrentIndex()).isNotEmpty();
   }
 }

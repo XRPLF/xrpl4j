@@ -62,7 +62,7 @@ public interface AccountTransactionsTransactionResult<T extends Transaction> ext
    *
    * @return {@link TransactionMetadata} or empty for non-validated transactions.
    */
-  @JsonProperty("meta")
+  @JsonProperty("metaData")
   Optional<TransactionMetadata> metadata();
 
   /**

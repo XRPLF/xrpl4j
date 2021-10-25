@@ -97,7 +97,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    *
    * @return metadata or empty for non-validated transactions.
    */
-  @JsonProperty("meta")
+  @JsonProperty("metaData")
   Optional<TransactionMetadata> metadata();
 
   /**

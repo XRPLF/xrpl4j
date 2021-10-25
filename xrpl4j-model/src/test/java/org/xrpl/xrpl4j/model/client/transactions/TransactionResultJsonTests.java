@@ -71,7 +71,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
       "4EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD\",\n" +
       "                    \"validated\": false,\n" +
       "                    \"hash\": \"E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8\",\n" +
-      "                    \"meta\": {" +
+      "                    \"metaData\": {" +
       "                        \"TransactionIndex\": 4294967295,\n" +
       "                        \"TransactionResult\": \"tesSUCCESS\",\n" +
       "                        \"delivered_amount\": \"1000000000\"\n" +
@@ -124,7 +124,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
       "4EE4C639F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD\",\n" +
       "                    \"validated\": false,\n" +
       "                    \"hash\": \"E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8\",\n" +
-      "                    \"meta\": {" +
+      "                    \"metaData\": {" +
       "                        \"TransactionIndex\": 4294967295,\n" +
       "                        \"TransactionResult\": \"tesSUCCESS\",\n" +
       "                        \"delivered_amount\": \"1000000000\"\n" +

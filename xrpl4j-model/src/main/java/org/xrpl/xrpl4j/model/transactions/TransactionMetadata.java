@@ -58,7 +58,7 @@ public interface TransactionMetadata {
   Optional<CurrencyAmount> deliveredAmount();
 
   @JsonProperty("AffectedNodes")
-  Optional<List<AffectedNode>> affectedNodes();
+  List<AffectedNode> affectedNodes();
 
 
 }

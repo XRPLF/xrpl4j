@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
-import java.util.Optional;
-
 @JsonTypeInfo(use = Id.NAME,
               include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
@@ -18,9 +16,9 @@ import java.util.Optional;
 public interface AffectedNode {
     
   @JsonProperty("LedgerEntryType")
-  Optional<String> ledgerEntryType();
+  String ledgerEntryType();
     
   @JsonProperty("LedgerIndex")
-  Optional<String> ledgerIndex();
+  Hash256 ledgerIndex();
     
 }

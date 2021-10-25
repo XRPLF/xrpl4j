@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -59,10 +60,11 @@ public interface AccountTransactionsTransactionResult<T extends Transaction> ext
 
   /**
    * Metadata about the transaction if this data is from a validated ledger version.
-   *
+   * Earlier ledgers refer to metaData instead of meta, hence the JsonAlias.
    * @return {@link TransactionMetadata} or empty for non-validated transactions.
    */
-  @JsonProperty("metaData")
+  @JsonProperty("meta")
+  @JsonAlias("metaData")
   Optional<TransactionMetadata> metadata();
 
   /**

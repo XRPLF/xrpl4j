@@ -107,7 +107,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "        \"status\": \"success\",\n" +
       "        \"transactions\": [\n" +
       "            {\n" +
-      "                \"metaData\": {\n" +
+      "                \"meta\": {\n" +
       "                    \"TransactionIndex\": 12,\n" +
       "                    \"TransactionResult\": \"tesSUCCESS\",\n" +
       "                    \"delivered_amount\": \"455643030\"\n" +
@@ -133,7 +133,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                \"validated\": true\n" +
       "            },\n" +
       "            {\n" +
-      "                \"metaData\": {\n" +
+      "                \"meta\": {\n" +
       "                    \"TransactionIndex\": 33,\n" +
       "                    \"TransactionResult\": \"tesSUCCESS\",\n" +
       "                    \"delivered_amount\": \"499500387\"\n" +

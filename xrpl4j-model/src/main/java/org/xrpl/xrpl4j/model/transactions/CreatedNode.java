@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
 @Value.Immutable
 @JsonSerialize(as = ImmutableCreatedNode.class)
 @JsonDeserialize(as = ImmutableCreatedNode.class)
@@ -15,6 +13,6 @@ import java.util.Optional;
 public interface CreatedNode extends AffectedNode {
 
   @JsonProperty("NewFields") 
-  Optional<NewFields> newFields();
+  NewFields newFields();
 
 }

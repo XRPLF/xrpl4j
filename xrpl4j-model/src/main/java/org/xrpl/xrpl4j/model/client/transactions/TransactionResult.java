@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.transactions;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -94,10 +95,11 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
 
   /**
    * Metadata about the transaction if this data is from a validated ledger version.
-   *
+   * Earlier ledgers refer to metaData, not meta.
    * @return metadata or empty for non-validated transactions.
    */
-  @JsonProperty("metaData")
+  @JsonProperty("meta")
+  @JsonAlias(value = "metaData")
   Optional<TransactionMetadata> metadata();
 
   /**

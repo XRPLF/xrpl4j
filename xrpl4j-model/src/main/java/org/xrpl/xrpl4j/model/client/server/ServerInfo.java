@@ -305,7 +305,7 @@ public interface ServerInfo {
    *
    * @return A {@link ZonedDateTime} denoting the server clock time.
    */
-  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSS z")
+  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSS z", locale = "en_US")
   ZonedDateTime time();
 
   /**

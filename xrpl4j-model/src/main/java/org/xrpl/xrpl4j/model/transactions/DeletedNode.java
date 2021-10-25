@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @JsonSerialize(as = ImmutableDeletedNode.class)
 @JsonDeserialize(as = ImmutableDeletedNode.class)
@@ -13,6 +15,6 @@ import org.immutables.value.Value;
 public interface DeletedNode extends AffectedNode {
     
   @JsonProperty("FinalFields")
-  FinalFields finalFields();
+  Optional<FinalFields> finalFields();
 
 }

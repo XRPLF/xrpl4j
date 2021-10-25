@@ -102,7 +102,6 @@ public class NonUsLocaleServerInfoResultTests {
       "  }\n" +
       "}";
 
-    this.objectMapper = ObjectMapperFactory.create();
     assertDoesNotThrow(() -> objectMapper.readValue(json, ServerInfoResult.class));
   }
 }

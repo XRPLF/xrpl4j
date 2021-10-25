@@ -92,4 +92,4 @@ jobs:
           restore-keys: ${{ env.cache-name }}-
       # Maven install with JVM locale = de_DE
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -Duser.language=de_DE
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -Duser.language=de -Duser.country=DE

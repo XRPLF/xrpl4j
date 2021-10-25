@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
 import java.util.Optional;
 
@@ -16,5 +17,14 @@ public interface ModifiedNode extends AffectedNode {
 
   @JsonProperty("FinalFields")
   Optional<FinalFields> finalFields();
+  
+  @JsonProperty("PreviousFields")
+  Optional<PreviousFields> previousFields();
+  
+  @JsonProperty("PreviousTxnID")
+  Optional<Hash256> previousTxnId();
+  
+  @JsonProperty("PreviousTxnLgrSeq")
+  Optional<LedgerIndex> previousTxnLgrSeq();
 
 }

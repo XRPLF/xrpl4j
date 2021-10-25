@@ -390,7 +390,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       .serverState("proposing")
       .serverStateDurationUs("1850969666")
       .time(ZonedDateTime.parse("2020-Mar-24 01:27:42.147330 UTC",
-        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z")).withZoneSameLocal(ZoneId.of("UTC")))
+        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
       .upTime(UnsignedLong.valueOf(1984))
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(2))
@@ -429,7 +429,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       .serverState("full")
       .serverStateDurationUs("2274468435925")
       .time(ZonedDateTime.parse("2021-Mar-30 15:37:51.486384 UTC",
-        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z")).withZoneSameLocal(ZoneId.of("UTC")))
+        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
       .upTime(UnsignedLong.valueOf(2274704))
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(4))

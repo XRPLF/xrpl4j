@@ -31,7 +31,7 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
           .accountHash(Hash256.of("B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1"))
           .closeTime(UnsignedLong.valueOf(638329271))
           .closeTimeHuman(ZonedDateTime.parse("2020-Mar-24 01:41:11.000000000 UTC",
-            DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z"))
+            DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
             .withZoneSameLocal(ZoneId.of("UTC")))
           .closeTimeResolution(UnsignedInteger.valueOf(10))
           .closed(true)

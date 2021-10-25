@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Optional;
 
@@ -17,8 +15,6 @@ import java.util.Optional;
     @Type(value = ModifiedNode.class, name = "ModifiedNode"),
     @Type(value = DeletedNode.class, name = "DeletedNode")}
 )
-//@JsonSerialize(as = ImmutableAffectedNode.class)
-//@JsonDeserialize(as = ImmutableAffectedNode.class)
 public interface AffectedNode {
     
   @JsonProperty("LedgerEntryType")
@@ -26,11 +22,5 @@ public interface AffectedNode {
     
   @JsonProperty("LedgerIndex")
   Optional<String> ledgerIndex();
-    
-  //@JsonProperty("PreviousTxnID")
-  //String previousTxnID();
-    
-  //@JsonProperty("PreviousTxnLgrSeq")
-  //String previousTxnLgrSeq();
     
 }

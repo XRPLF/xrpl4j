@@ -14,11 +14,13 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class LedgerResultJsonTests extends AbstractJsonTest {
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
+    logger.info("Default Locale: {}", Locale.getDefault());
     LedgerResult result = LedgerResult.builder()
       .status("success")
       .ledgerHash(Hash256.of("3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A"))

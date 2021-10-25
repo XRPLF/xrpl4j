@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -26,6 +27,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
+    logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult result = ServerInfoResult.builder()
       .status("success")
       .info(serverInfo("54300020-54300729"))
@@ -113,7 +115,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
 
   @Test
   public void testJsonDeserialization() throws JsonProcessingException, JSONException {
-
+    logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult result = ServerInfoResult.builder().info(updatedServerInfo()).build();
 
     String json = "{\n" +

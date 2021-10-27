@@ -22,9 +22,9 @@ public interface ModifiedNode extends AffectedNode {
   Optional<PreviousFields> previousFields();
   
   @JsonProperty("PreviousTxnID")
-  Optional<Hash256> previousTxnId();
+  Optional<Hash256> previousTransactionId();
   
   @JsonProperty("PreviousTxnLgrSeq")
-  Optional<LedgerIndex> previousTxnLgrSeq();
+  Optional<LedgerIndex> previousTransactionLedgerSequence();
 
 }

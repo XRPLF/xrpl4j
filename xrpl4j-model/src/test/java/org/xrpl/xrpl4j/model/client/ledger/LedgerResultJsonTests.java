@@ -14,11 +14,13 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class LedgerResultJsonTests extends AbstractJsonTest {
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
+    logger.info("Default Locale: {}", Locale.getDefault());
     LedgerResult result = LedgerResult.builder()
       .status("success")
       .ledgerHash(Hash256.of("3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A"))
@@ -29,7 +31,7 @@ public class LedgerResultJsonTests extends AbstractJsonTest {
           .accountHash(Hash256.of("B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1"))
           .closeTime(UnsignedLong.valueOf(638329271))
           .closeTimeHuman(ZonedDateTime.parse("2020-Mar-24 01:41:11.000000000 UTC",
-            DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z"))
+            DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
             .withZoneSameLocal(ZoneId.of("UTC")))
           .closeTimeResolution(UnsignedInteger.valueOf(10))
           .closed(true)

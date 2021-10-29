@@ -335,7 +335,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
   @Test
   void objectMapperThrowsWithNonUsLocaleAndNoLocaleOnJsonFormatField() {
     Locale defaultLocale = Locale.getDefault();
-    if (!defaultLocale.equals(Locale.US)) {
+    if (!defaultLocale.getLanguage().equals(Locale.US.getLanguage())) {
       logger.info("Default locale = {}, running negative deserialization test.", defaultLocale);
       String timeAsString = "2021-Sep-27 11:43:47.464662 UTC";
       String json = "{" +

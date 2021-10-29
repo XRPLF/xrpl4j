@@ -1,10 +1,12 @@
-package org.xrpl.xrpl4j.crypto.core.keys;
+package org.xrpl.xrpl4j.crypto.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
+import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 

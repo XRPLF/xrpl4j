@@ -89,8 +89,6 @@ public class SignatureUtils {
    *
    * @return An {@link UnsignedByteArray}.
    */
-  // TODO: Add test coverage.
-  // TODO: Add to derived key signer.
   public UnsignedByteArray toSignableBytes(final UnsignedClaim unsignedClaim) {
     Objects.requireNonNull(unsignedClaim);
     try {

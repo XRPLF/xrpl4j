@@ -25,6 +25,8 @@ public interface DelegatedTransactionSigner {
    */
   <T extends Transaction> SingleSingedTransaction<T> sign(final KeyMetadata keyMetadata, final T transaction);
 
+  // TODO: Add ability to sign a claim.
+
   /**
    * Obtain a signature for the supplied transaction using {@code privateKey}.
    *

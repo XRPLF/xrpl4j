@@ -27,6 +27,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -91,7 +92,7 @@ public class SignatureUtilsTest {
   }
 
   //////////////////
-  // toSignableBytes
+  // toSignableBytes (Transaction)
   //////////////////
 
   @Test
@@ -138,6 +139,45 @@ public class SignatureUtilsTest {
     verify(xrplBinaryCodecMock).encodeForSigning(anyString());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
+
+  //////////////////
+  // toSignableBytes (UnsignedClaim)
+  //////////////////
+
+  @Test
+  void unsignedClaimToSignableBytesWhenNull() {
+    Assertions.assertThrows(NullPointerException.class, () -> signatureUtils.toSignableBytes((UnsignedClaim) null));
+  }
+
+  @Test
+  void unsignedClaimToSignableBytes() throws JsonProcessingException {
+    when(xrplBinaryCodecMock.encodeForSigningClaim(any())).thenReturn("ABCD1234");
+    UnsignedClaim unsignedClaim = UnsignedClaim.builder()
+      .amount(XrpCurrencyAmount.of(UnsignedLong.ONE))
+      .channel(Hash256.of("ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD"))
+      .build();
+    assertThat(signatureUtils.toSignableBytes(unsignedClaim).hexValue()).isEqualTo("ABCD1234");
+
+    verify(objectMapperMock).writeValueAsString(any());
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForSigningClaim(any());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  void unsignedClaimToSignableBytesActual() {
+    UnsignedClaim unsignedClaim = UnsignedClaim.builder()
+      .amount(XrpCurrencyAmount.of(UnsignedLong.ONE))
+      .channel(Hash256.of("ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD"))
+      .build();
+    assertThat(SignatureUtils.getInstance().toSignableBytes(unsignedClaim).hexValue())
+      .isEqualTo("434C4D00ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD0000000000000001");
+  }
+
+  //////////////////
+  // toMultiSignableBytes
+  //////////////////
+
 
   @Test
   public void toMultiSignableBytes() throws JsonProcessingException {

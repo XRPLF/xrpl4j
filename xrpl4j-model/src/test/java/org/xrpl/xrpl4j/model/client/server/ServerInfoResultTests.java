@@ -331,6 +331,9 @@ public class ServerInfoResultTests extends AbstractJsonTest {
    * Negative test to show that when the default Locale is not en_US and an object's {@link ZonedDateTime}
    * field is not annotated with a {@link JsonFormat} with locale = en_US, then deserializing JSON with an
    * english date to that object fails.
+   *
+   * <p>This test will only run if the default locale language is not equal to "en", as is the case
+   * in the final step of our CI.</p>
    */
   @Test
   void objectMapperThrowsWithNonUsLocaleAndNoLocaleOnJsonFormatField() {

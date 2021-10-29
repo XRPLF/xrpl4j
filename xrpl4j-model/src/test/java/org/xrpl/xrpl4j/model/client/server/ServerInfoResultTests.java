@@ -1,11 +1,20 @@
 package org.xrpl.xrpl4j.model.client.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -319,6 +328,28 @@ public class ServerInfoResultTests extends AbstractJsonTest {
   }
 
   /**
+   * Negative test to show that when the default Locale is not en_US and an object's {@link ZonedDateTime}
+   * field is not annotated with a {@link JsonFormat} with locale = en_US, then deserializing JSON with an
+   * english date to that object fails.
+   */
+  @Test
+  void objectMapperThrowsWithNonUsLocaleAndNoLocaleOnJsonFormatField() {
+    Locale defaultLocale = Locale.getDefault();
+    if (!defaultLocale.equals(Locale.US)) {
+      logger.info("Default locale = {}, running negative deserialization test.", defaultLocale);
+      String timeAsString = "2021-Sep-27 11:43:47.464662 UTC";
+      String json = "{" +
+        "\"time\":\"" + timeAsString + "\"" +
+        "}";
+
+      assertThrows(
+        InvalidFormatException.class,
+        () -> objectMapper.readValue(json, ZoneDateTimeHolder.class)
+      );
+    }
+  }
+
+  /**
    * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in {@link
    * ServerInfo#completeLedgers()}.
    *
@@ -441,5 +472,19 @@ public class ServerInfoResultTests extends AbstractJsonTest {
         .build())
       .validationQuorum(UnsignedInteger.valueOf(31))
       .build();
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableZoneDateTimeHolder.class)
+  @JsonDeserialize(as = ImmutableZoneDateTimeHolder.class)
+  interface ZoneDateTimeHolder {
+
+    /**
+     * The current time in UTC, according to the server's clock.
+     *
+     * @return A {@link ZonedDateTime} denoting the server clock time.
+     */
+    @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSS z")
+    ZonedDateTime time();
   }
 }

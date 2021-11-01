@@ -30,7 +30,7 @@ public interface TransactionSigner {
    */
   // TODO: Add test coverage.
   Signature sign(PrivateKey privateKey, UnsignedClaim unsignedClaim);
- // TODO: Add to delegated signer.
+  // TODO: Add to delegated signer.
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link PrivateKey}. The primary reason

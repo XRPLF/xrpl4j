@@ -9,7 +9,8 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  */
 public class MainnetEnvironment implements XrplEnvironment {
 
-  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s1.ripple.com:51234"));
+  // s2 is the Full-history node operated by Ripple.
+  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s2.ripple.com:51234"));
 
   @Override
   public XrplClient getXrplClient() {

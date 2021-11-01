@@ -47,7 +47,6 @@ public abstract class AbstractSignatureService implements SignatureService {
     return this.signHelper(privateKey, signableTransactionBytes, transaction);
   }
 
-  // TODO: fix test coverage.
   @Override
   public Signature sign(final PrivateKey privateKey, final UnsignedClaim unsignedClaim) {
     Objects.requireNonNull(privateKey);

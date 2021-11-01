@@ -24,6 +24,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -190,7 +191,30 @@ public class AbstractSignatureServiceTest {
   ///////////////////
   // Sign (privateKey, UnsignedClaim)
   ///////////////////
-  // TODO: FIXME
+
+  @Test
+  public void signUnsignedClaimWithNullPrivateKey() {
+    Assertions.assertThrows(NullPointerException.class, () -> signatureService.sign(null, mock(UnsignedClaim.class)));
+  }
+
+  @Test
+  public void signUnsignedClaimWithNullUnsignedClaim() {
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.sign(ed25519KeyPair.privateKey(), (UnsignedClaim) null));
+  }
+
+  @Test
+  public void signUnsignedClaimEd25519() {
+    UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
+    when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
+
+    Signature actualSignature = signatureService.sign(ed25519KeyPair.privateKey(), unsignedClaimMock);
+
+    verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
+    verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+    assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
+  }
 
   ///////////////////
   // verify

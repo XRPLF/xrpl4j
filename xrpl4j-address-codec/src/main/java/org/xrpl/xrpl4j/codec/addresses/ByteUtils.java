@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Utilities to work with bytes in an XRPL context.
+ *
  * @deprecated Prefer the version in the xrpl4j-core module instead.
  */
 public class ByteUtils {

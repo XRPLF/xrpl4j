@@ -19,7 +19,7 @@ public class UnsignedByteArrayDeserializer extends StdDeserializer<UnsignedByteA
   }
 
   @Override
-  public UnsignedByteArray deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    return UnsignedByteArray.fromHex(p.getValueAsString());
+  public UnsignedByteArray deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+    return UnsignedByteArray.fromHex(jsonParser.getValueAsString());
   }
 }

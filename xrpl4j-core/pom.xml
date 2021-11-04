@@ -23,13 +23,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.immutables</groupId>
-      <artifactId>value</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

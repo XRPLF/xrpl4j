@@ -5,6 +5,7 @@ package org.xrpl.xrpl4j.model.immutables;
  * someValue.compareTo(someOtherValue) <= 0} you can write {@code is(someValue).lessThanOrEqualTo(someOtherValue) }.
  * Also provides stronger type safety so you can't accidentally compare apples to oranges.
  */
+// TODO: Add test coverage (see https://github.com/XRPLF/xrpl4j/issues/171)
 public class FluentCompareTo<T extends Comparable<? super T>> {
 
   private final T value;
@@ -102,8 +103,6 @@ public class FluentCompareTo<T extends Comparable<? super T>> {
   public boolean notLessThanOrEqualTo(T other) {
     return !lessThanOrEqualTo(other);
   }
-
-  // TODO: Check with coverage and add more unit tests.
 
   /**
    * Checks if wrapped value is greater than than the given one.

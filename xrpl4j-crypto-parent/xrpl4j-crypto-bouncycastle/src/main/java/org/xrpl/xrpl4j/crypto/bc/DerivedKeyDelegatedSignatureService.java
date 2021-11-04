@@ -7,6 +7,7 @@ import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -39,8 +40,8 @@ import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -152,7 +153,14 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   }
 
   @Override
-  public <T extends Transaction> SignatureWithPublicKey multiSign(final KeyMetadata keyMetadata, final T transaction) {
+  public Signature sign(KeyMetadata keyMetadata, UnsignedClaim unsignedClaim) {
+    return getSignatureServiceSafe(keyMetadata).sign(keyMetadata, unsignedClaim);
+  }
+
+  @Override
+  public <T extends Transaction> SignatureWithKeyMetadata multiSign(
+    final KeyMetadata keyMetadata, final T transaction
+  ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
     return getSignatureServiceSafe(keyMetadata).multiSign(keyMetadata, transaction);
@@ -170,7 +178,7 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   }
 
   @Override
-  public <T extends Transaction> boolean verify(
+  public <T extends Transaction> boolean verifySingleSigned(
     final SignatureWithKeyMetadata signatureWithKeyMetadata, final T unsignedTransaction
   ) {
     Objects.requireNonNull(signatureWithKeyMetadata);
@@ -178,23 +186,23 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
 
     return this
       .getSignatureServiceSafe(signatureWithKeyMetadata.signingKeyMetadata())
-      .verify(signatureWithKeyMetadata, unsignedTransaction);
+      .verifySingleSigned(signatureWithKeyMetadata, unsignedTransaction);
   }
 
   @Override
-  public <T extends Transaction> boolean verify(
+  public <T extends Transaction> boolean verifyMultiSigned(
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet, final T unsignedTransaction, final int minSigners
   ) {
     Objects.requireNonNull(signatureWithKeyMetadataSet);
     Objects.requireNonNull(unsignedTransaction);
-    Preconditions.checkArgument(minSigners > 0);
+    Preconditions.checkArgument(minSigners > 0, "Valid multisigned transactions must have at least 1 signer");
 
     final long numValidSignatures = signatureWithKeyMetadataSet.stream()
       // Check signature against all public keys, hoping for a valid verification against one.
       .map(signatureWithKeyMetadata -> {
         final boolean oneValidSignature = this
           .getSignatureServiceSafe(signatureWithKeyMetadata.signingKeyMetadata())
-          .verify(signatureWithKeyMetadata, unsignedTransaction);
+          .verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), unsignedTransaction, 1);
         return oneValidSignature;
       })
       .filter($ -> $) // Only count it if it's 'true'

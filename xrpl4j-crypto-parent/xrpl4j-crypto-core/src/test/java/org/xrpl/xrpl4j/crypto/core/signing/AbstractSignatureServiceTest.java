@@ -209,11 +209,11 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
 
     Signature actualSignature = signatureService.sign(ed25519KeyPair.privateKey(), unsignedClaimMock);
+    assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
     verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
     verifyNoMoreInteractions(signatureUtilsMock);
-    assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
   }
 
   ///////////////////

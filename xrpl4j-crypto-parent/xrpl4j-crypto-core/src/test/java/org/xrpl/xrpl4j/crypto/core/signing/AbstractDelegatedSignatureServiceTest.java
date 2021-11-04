@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.crypto.core.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -25,6 +26,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -137,7 +139,7 @@ class AbstractDelegatedSignatureServiceTest {
   }
 
   ///////////////////
-  // Sign
+  // Sign (Transaction)
   ///////////////////
 
   @Test
@@ -147,7 +149,8 @@ class AbstractDelegatedSignatureServiceTest {
 
   @Test
   void signWithNullTransaction() {
-    Assertions.assertThrows(NullPointerException.class, () -> signatureService.sign(keyMetadataMock, null));
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.sign(keyMetadataMock, (Transaction) null));
   }
 
   @Test
@@ -172,6 +175,48 @@ class AbstractDelegatedSignatureServiceTest {
   }
 
   ///////////////////
+  // Sign (UnsignedClaim)
+  ///////////////////
+
+  @Test
+  void signUnsignedClaimWithNullMetadata() {
+    UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
+    Assertions.assertThrows(NullPointerException.class, () -> signatureService.sign(null, unsignedClaimMock));
+  }
+
+  @Test
+  void signUnsignedClaimWithNullTransaction() {
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.sign(keyMetadataMock, (UnsignedClaim) null));
+  }
+
+  @Test
+  void signUnsignedClaimEd25519() {
+    keyType = VersionType.ED25519;
+    UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
+    when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
+
+    Signature actual = signatureService.sign(keyMetadataMock, unsignedClaimMock);
+
+    verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+    assertThat(actual).isEqualTo(ed25519SignatureMock);
+  }
+
+  @Test
+  void signUnsignedClaimSecp256k1() {
+    keyType = VersionType.SECP256K1;
+    UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
+    when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
+
+    Signature actual = signatureService.sign(keyMetadataMock, unsignedClaimMock);
+
+    verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+    assertThat(actual).isEqualTo(secp256k1SignatureMock);
+  }
+
+  ///////////////////
   // MultiSign
   ///////////////////
 
@@ -189,11 +234,13 @@ class AbstractDelegatedSignatureServiceTest {
   void multiSignEd25519() {
     keyType = VersionType.ED25519;
     when(addressServiceMock.deriveAddress(any())).thenReturn(ed25519SignerAddress);
-    final SignatureWithPublicKey signedTransaction = signatureService.multiSign(
+
+    SignatureWithKeyMetadata signatureWithKeyMetadata = signatureService.multiSign(
       keyMetadataMock,
       transactionMock
     );
-    assertThat(signedTransaction.transactionSignature()).isEqualTo(ed25519SignatureMock);
+    assertThat(signatureWithKeyMetadata.transactionSignature()).isEqualTo(ed25519SignatureMock);
+    assertThat(signatureWithKeyMetadata.signingKeyMetadata()).isEqualTo(keyMetadataMock);
 
     verify(addressServiceMock).deriveAddress(any());
     verifyNoMoreInteractions(addressServiceMock);
@@ -206,11 +253,14 @@ class AbstractDelegatedSignatureServiceTest {
   void multiSignSecp256k1() {
     keyType = VersionType.SECP256K1;
     when(addressServiceMock.deriveAddress(any())).thenReturn(secp256k1SignerAddress);
-    final SignatureWithPublicKey signedTransaction = signatureService.multiSign(
+
+    SignatureWithKeyMetadata signatureWithKeyMetadata = signatureService.multiSign(
       keyMetadataMock,
       transactionMock
     );
-    assertThat(signedTransaction.transactionSignature()).isEqualTo(secp256k1SignatureMock);
+
+    assertThat(signatureWithKeyMetadata.transactionSignature()).isEqualTo(secp256k1SignatureMock);
+    assertThat(signatureWithKeyMetadata.signingKeyMetadata()).isEqualTo(keyMetadataMock);
 
     verify(addressServiceMock).deriveAddress(any());
     verifyNoMoreInteractions(addressServiceMock);
@@ -226,18 +276,19 @@ class AbstractDelegatedSignatureServiceTest {
   @Test
   void verifyWithNullMetadata() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verify((SignatureWithKeyMetadata) null, transactionMock));
+      () -> signatureService.verifySingleSigned(null, transactionMock));
   }
 
   @Test
   void verifyWithNullTransaction() {
-    Assertions.assertThrows(NullPointerException.class, () -> signatureService.verify(signatureWithKeyMetaMock, null));
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.verifySingleSigned(signatureWithKeyMetaMock, null));
   }
 
   @Test
   void verifyEd25519() {
     keyType = VersionType.ED25519;
-    boolean actual = signatureService.verify(signatureWithKeyMetaMock, transactionMock);
+    boolean actual = signatureService.verifySingleSigned(signatureWithKeyMetaMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -249,7 +300,7 @@ class AbstractDelegatedSignatureServiceTest {
   @Test
   void verifySecp256k1() {
     keyType = VersionType.SECP256K1;
-    boolean actual = signatureService.verify(signatureWithKeyMetaMock, transactionMock);
+    boolean actual = signatureService.verifySingleSigned(signatureWithKeyMetaMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();
@@ -264,20 +315,20 @@ class AbstractDelegatedSignatureServiceTest {
 
   @Test
   void verifyMultiWithNullSet() {
-    Assertions.assertThrows(NullPointerException.class, () -> signatureService.verify(
-      (Set<SignatureWithKeyMetadata>) null, transactionMock
-    ));
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.verifyMultiSigned(null, transactionMock));
   }
 
   @Test
   void verifyMultiWithNullTransaction() {
-    Assertions.assertThrows(NullPointerException.class, () -> signatureService.verify(Sets.newHashSet(), null));
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.verifyMultiSigned(Sets.newHashSet(), null));
   }
 
   @Test
   void verifyMultiWithEmptySet() {
     Assertions.assertThrows(IllegalArgumentException.class,
-      () -> signatureService.verify(Sets.newHashSet(), transactionMock));
+      () -> signatureService.verifyMultiSigned(Sets.newHashSet(), transactionMock));
   }
 
   @Test
@@ -286,7 +337,7 @@ class AbstractDelegatedSignatureServiceTest {
     when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet = Sets.newLinkedHashSet(signatureWithKeyMetaMock);
-    boolean actual = signatureService.verify(signatureWithKeyMetadataSet, transactionMock, 1);
+    boolean actual = signatureService.verifyMultiSigned(signatureWithKeyMetadataSet, transactionMock, 1);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -303,7 +354,7 @@ class AbstractDelegatedSignatureServiceTest {
     when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(secp256k1SignatureMock);
 
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet = Sets.newLinkedHashSet(signatureWithKeyMetaMock);
-    boolean actual = signatureService.verify(signatureWithKeyMetadataSet, transactionMock, 1);
+    boolean actual = signatureService.verifyMultiSigned(signatureWithKeyMetadataSet, transactionMock, 1);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();

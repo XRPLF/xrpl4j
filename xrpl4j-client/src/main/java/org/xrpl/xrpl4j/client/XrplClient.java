@@ -246,7 +246,6 @@ public class XrplClient {
    *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  // TODO: Change this to accept MultigSignedTransaction
   public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(
     T transaction
   ) throws JsonRpcClientErrorException {

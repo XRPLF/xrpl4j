@@ -44,7 +44,7 @@ public abstract class AbstractSignatureService implements SignatureService {
     Objects.requireNonNull(transaction);
 
     final UnsignedByteArray signableTransactionBytes = signatureUtils.toSignableBytes(transaction);
-    return this.signHelper(privateKey, signableTransactionBytes, transaction);
+    return this.signingHelper(privateKey, signableTransactionBytes, transaction);
   }
 
   @Override
@@ -53,7 +53,7 @@ public abstract class AbstractSignatureService implements SignatureService {
     Objects.requireNonNull(unsignedClaim);
 
     final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
-    return signHelper(privateKey, signableBytes);
+    return signingHelper(privateKey, signableBytes);
   }
 
   @Override
@@ -66,7 +66,7 @@ public abstract class AbstractSignatureService implements SignatureService {
     final Address signerAddress = addressUtils.deriveAddress(this.derivePublicKey(privateKey));
     final UnsignedByteArray signableTransactionBytes = signatureUtils.toMultiSignableBytes(transaction, signerAddress);
 
-    return this.signHelper(privateKey, signableTransactionBytes, transaction).signature();
+    return this.signingHelper(privateKey, signableTransactionBytes, transaction).signature();
   }
 
   /**
@@ -79,14 +79,14 @@ public abstract class AbstractSignatureService implements SignatureService {
    *
    * @return A {@link SingleSingedTransaction}.
    */
-  private <T extends Transaction> SingleSingedTransaction<T> signHelper(
+  private <T extends Transaction> SingleSingedTransaction<T> signingHelper(
     final PrivateKey privateKey, final UnsignedByteArray signableTransactionBytes, final T transaction
   ) {
     Objects.requireNonNull(privateKey);
     Objects.requireNonNull(transaction);
     Objects.requireNonNull(signableTransactionBytes);
 
-    final Signature signature = signHelper(privateKey, signableTransactionBytes);
+    final Signature signature = signingHelper(privateKey, signableTransactionBytes);
     return this.signatureUtils.addSignatureToTransaction(transaction, signature);
   }
 
@@ -98,7 +98,7 @@ public abstract class AbstractSignatureService implements SignatureService {
    *
    * @return A {@link SingleSingedTransaction}.
    */
-  private Signature signHelper(
+  private Signature signingHelper(
     final PrivateKey privateKey, final UnsignedByteArray signableTransactionBytes
   ) {
     Objects.requireNonNull(privateKey);

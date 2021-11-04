@@ -23,7 +23,9 @@ public interface DelegatedTransactionVerifier {
    *
    * @return {@code true} if the signature is valid and verified; {@code false} otherwise.
    */
-  <T extends Transaction> boolean verify(SignatureWithKeyMetadata signatureWithKeyMetadata, T unsignedTransaction);
+  <T extends Transaction> boolean verifySingleSigned(
+    SignatureWithKeyMetadata signatureWithKeyMetadata, T unsignedTransaction
+  );
 
   /**
    * Verify that all signers have properly signed the {@code unsignedTransaction}.
@@ -35,10 +37,10 @@ public interface DelegatedTransactionVerifier {
    * @return {@code true} if a minimum number of signatures are valid for the supplied transaction; {@code false}
    *   otherwise.
    */
-  default <T extends Transaction> boolean verify(
+  default <T extends Transaction> boolean verifyMultiSigned(
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet, final T unsignedTransaction
   ) {
-    return verify(signatureWithKeyMetadataSet, unsignedTransaction, signatureWithKeyMetadataSet.size());
+    return verifyMultiSigned(signatureWithKeyMetadataSet, unsignedTransaction, signatureWithKeyMetadataSet.size());
   }
 
   /**
@@ -53,7 +55,7 @@ public interface DelegatedTransactionVerifier {
    * @return {@code true} if a minimum number of signatures are valid for the supplied transaction; {@code false}
    *   otherwise.
    */
-  <T extends Transaction> boolean verify(
+  <T extends Transaction> boolean verifyMultiSigned(
     Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet, T unsignedTransaction, int minSigners
   );
 }

@@ -8,6 +8,7 @@ import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -56,13 +57,21 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
     Objects.requireNonNull(transaction);
 
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
-    final SignatureWithPublicKey signatureWithPublicKey = this.signingHelper(keyMetadata, signableTransactionBytes);
-
-    return this.signatureUtils.addSignatureToTransaction(transaction, signatureWithPublicKey.transactionSignature());
+    final Signature signature = this.signingHelper(keyMetadata, signableTransactionBytes).transactionSignature();
+    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
   }
 
   @Override
-  public <T extends Transaction> SignatureWithPublicKey multiSign(KeyMetadata keyMetadata, T transaction) {
+  public Signature sign(final KeyMetadata keyMetadata, final UnsignedClaim unsignedClaim) {
+    Objects.requireNonNull(keyMetadata);
+    Objects.requireNonNull(unsignedClaim);
+
+    final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
+    return this.signingHelper(keyMetadata, signableBytes).transactionSignature();
+  }
+
+  @Override
+  public <T extends Transaction> SignatureWithKeyMetadata multiSign(KeyMetadata keyMetadata, T transaction) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
 
@@ -80,7 +89,7 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
    *
    * @return A {@link SignatureWithPublicKey}.
    */
-  private SignatureWithPublicKey signingHelper(
+  private SignatureWithKeyMetadata signingHelper(
     final KeyMetadata keyMetadata, final UnsignedByteArray signableTransactionBytes
   ) {
     Objects.requireNonNull(keyMetadata);
@@ -102,14 +111,14 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
       }
     }
 
-    return SignatureWithPublicKey.builder()
-      .signingPublicKey(getPublicKey(keyMetadata))
+    return SignatureWithKeyMetadata.builder()
+      .signingKeyMetadata(keyMetadata)
       .transactionSignature(signature)
       .build();
   }
 
   @Override
-  public <T extends Transaction> boolean verify(
+  public <T extends Transaction> boolean verifySingleSigned(
     final SignatureWithKeyMetadata signatureWithKeyMetadata, final T unsignedTransaction
   ) {
     Objects.requireNonNull(signatureWithKeyMetadata);
@@ -144,12 +153,12 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
    * @return {@code true} if a minimum number of signatures are valid for the supplied transaction; {@code false}
    *   otherwise.
    */
-  public <T extends Transaction> boolean verify(
+  public <T extends Transaction> boolean verifyMultiSigned(
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet, final T unsignedTransaction
   ) {
     Objects.requireNonNull(signatureWithKeyMetadataSet);
     Objects.requireNonNull(unsignedTransaction);
-    return verify(signatureWithKeyMetadataSet, unsignedTransaction, signatureWithKeyMetadataSet.size());
+    return verifyMultiSigned(signatureWithKeyMetadataSet, unsignedTransaction, signatureWithKeyMetadataSet.size());
   }
 
   /**
@@ -164,7 +173,7 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
    * @return {@code true} if a minimum number of signatures are valid for the supplied transaction; {@code false}
    *   otherwise.
    */
-  public <T extends Transaction> boolean verify(
+  public <T extends Transaction> boolean verifyMultiSigned(
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet, T unsignedTransaction, int minSigners
   ) {
     Objects.requireNonNull(signatureWithKeyMetadataSet);

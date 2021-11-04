@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.crypto.core;
 
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.crypto.core.ImmutableKeyMetadata;
 
 import java.util.Optional;
 
@@ -15,7 +14,7 @@ import java.util.Optional;
 public interface KeyMetadata {
 
   /**
-   * Any empty instance that conformas to this interface but is otherwise empty. The purpose of this instance is to
+   * Any empty instance that conforms to this interface but is otherwise empty. The purpose of this instance is to
    * enable the signing interface to work with implementations that don't have more than a single private key internally
    * without having to introduce null values into the API.
    */

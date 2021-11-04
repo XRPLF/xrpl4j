@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.codec.addresses;
+package org.xrpl.xrpl4j.core;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @deprecated Prefer the version in the xrpl4j-core module instead.
- */
 public class ByteUtils {
 
   /**
@@ -76,8 +73,8 @@ public class ByteUtils {
   }
 
   /**
-   * Checks that the given {@link BigInteger} value has a bitsize (binary) less than or equal to the {@code
-   * expectedBits}.
+   * Checks that the given {@link BigInteger} value has a bitsize (binary) less than or equal to the
+   * {@code expectedBits}.
    *
    * <p>This is used to make sure a value can fit in a field with a fixed bit size.</p>
    *
@@ -115,8 +112,8 @@ public class ByteUtils {
   }
 
   /**
-   * Pads a hex string to one that has an even number of characters. For example "F" becomes "0F" and "FF" remains "FF"
-   * since it already as an even number.
+   * Pads a hex string to one that has an even number of characters. For example "F" becomes "0F" and
+   * "FF" remains "FF" since it already as an even number.
    *
    * @param hex The hex {@link String} to pad.
    *

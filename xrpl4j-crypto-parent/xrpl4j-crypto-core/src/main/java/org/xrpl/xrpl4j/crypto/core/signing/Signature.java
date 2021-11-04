@@ -1,5 +1,8 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Lazy;
@@ -9,6 +12,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  * Represents a digital signature for a transaction that can be submitted to the XRP Ledger.
  */
 @Value.Immutable
+@JsonSerialize(as = ImmutableSignature.class)
+@JsonDeserialize(as = ImmutableSignature.class)
 public interface Signature {
 
   /**
@@ -25,6 +30,8 @@ public interface Signature {
    *
    * @return A {@link UnsignedByteArray}.
    */
+  @JsonSerialize(using = UnsignedByteArraySerializer.class)
+  @JsonDeserialize  (using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray value();
 
   /**
@@ -33,6 +40,7 @@ public interface Signature {
    * @return A {@link String}.
    */
   @Lazy
+  @JsonIgnore
   default String base16Value() {
     return BaseEncoding.base16().encode(value().toByteArray());
   }
@@ -43,6 +51,7 @@ public interface Signature {
    * @return A {@link String}.
    */
   @Lazy
+  @JsonIgnore
   default String hexValue() {
     return base16Value();
   }

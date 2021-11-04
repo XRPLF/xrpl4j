@@ -2,11 +2,13 @@ package org.xrpl.xrpl4j.crypto.core.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**
  * Unit tests for {@link PublicKey}.
@@ -150,5 +152,19 @@ public class PublicKeyTest {
   void testToString() {
     assertThat(edPublicKey.toString()).isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
     assertThat(ecPublicKey.toString()).isEqualTo("027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
+  }
+
+  @Test
+  void jsonSerializeAndDeserializeEd() throws JsonProcessingException {
+    String json = ObjectMapperFactory.create().writeValueAsString(edPublicKey);
+    PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
+    assertThat(actual.base16Value()).isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
+  }
+
+  @Test
+  void jsonSerializeAndDeserializeEc() throws JsonProcessingException {
+    String json = ObjectMapperFactory.create().writeValueAsString(ecPublicKey);
+    PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
+    assertThat(actual.base16Value()).isEqualTo("027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
   }
 }

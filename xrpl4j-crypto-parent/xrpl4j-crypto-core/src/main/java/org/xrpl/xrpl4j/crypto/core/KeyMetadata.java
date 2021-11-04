@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 
@@ -11,6 +13,8 @@ import java.util.Optional;
  * running program, but also allows the API to operate on keys that exist outside of the JVM, such as in an external
  * key-store like an HSM or other hardware wallet.
  */
+@JsonSerialize(as = ImmutableKeyMetadata.class)
+@JsonDeserialize(as = ImmutableKeyMetadata.class)
 public interface KeyMetadata {
 
   /**
@@ -73,6 +77,8 @@ public interface KeyMetadata {
    * To satisfy immutables.
    */
   @Value.Immutable
+  @JsonSerialize(as = ImmutableKeyMetadata.class)
+  @JsonDeserialize(as = ImmutableKeyMetadata.class)
   abstract class AbstractKeyMetadata implements KeyMetadata {
 
     /**

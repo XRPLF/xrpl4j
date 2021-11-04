@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -8,6 +10,8 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
  * Holds both binary and typed manifestations of an XRPL transaction (unsigned), for purposes of signing.
  */
 @Value.Immutable
+@JsonSerialize(as = ImmutableSignableTransaction.class)
+@JsonDeserialize(as = ImmutableSignableTransaction.class)
 public interface SignableTransaction {
 
   /**
@@ -31,5 +35,7 @@ public interface SignableTransaction {
    *
    * @return An {@link UnsignedByteArray}.
    */
+  @JsonSerialize(using = UnsignedByteArraySerializer.class)
+  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray signableTransactionBytes();
 }

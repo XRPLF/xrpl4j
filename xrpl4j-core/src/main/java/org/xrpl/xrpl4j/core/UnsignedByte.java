@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.codec.addresses;
+package org.xrpl.xrpl4j.core;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -10,8 +10,6 @@ import javax.security.auth.Destroyable;
 
 /**
  * Unsigned byte where value can be 0 to 255.
- *
- * @deprecated Prefer the version in the xrpl4j-core module instead.
  */
 public class UnsignedByte implements Destroyable {
 

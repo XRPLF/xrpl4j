@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.codec.addresses;
+package org.xrpl.xrpl4j.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,8 +13,6 @@ import javax.security.auth.Destroyable;
  * arrays on unsigned bytes.</p>
  *
  * <p>Note: several of the methods in this class mutate the underlying value.</p>
- *
- * @deprecated Prefer the version in the xrpl4j-core module instead.
  */
 public class UnsignedByteArray implements Destroyable {
 
@@ -129,6 +127,15 @@ public class UnsignedByteArray implements Destroyable {
    * @return This {@link UnsignedByteArray} as a hex encoded {@link String}.
    */
   public String hexValue() {
+    return base16Value();
+  }
+
+  /**
+   * Get this {@link UnsignedByteArray} as an upper-cased Hex-encoded {@link String}.
+   *
+   * @return This {@link UnsignedByteArray} as a hex encoded {@link String}.
+   */
+  public String base16Value() {
     return ByteUtils.toHex(unsignedBytes).toUpperCase(Locale.ENGLISH);
   }
 

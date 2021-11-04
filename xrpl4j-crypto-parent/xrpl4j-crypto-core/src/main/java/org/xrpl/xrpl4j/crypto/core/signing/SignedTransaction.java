@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.core.TransactionHashUtils;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -31,6 +33,8 @@ public interface SignedTransaction<T extends Transaction> {
    *
    * @return A byte-array containing the signed transaction blob.
    */
+  @JsonSerialize(using = UnsignedByteArraySerializer.class)
+  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray signedTransactionBytes();
 
   /**

@@ -32,6 +32,7 @@ import java.util.Objects;
  * DelegatedSignatureService} for improved security.</p>
  *
  * @see "https://www.bouncycastle.org/java.html"
+ * @see "https://www.bouncycastle.org/fips-java/BCFipsIn100.pdf"
  */
 public class BouncyCastleSignatureService extends AbstractSignatureService implements SignatureService {
 

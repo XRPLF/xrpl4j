@@ -15,8 +15,10 @@ public class TransactionUtils {
     return null; // Is this possible?
   }
 
-  // TODO: Create a new IT that is overtly called "MultisigngedPaymentIT" so it's easier to find and also see how the API is.
-  // i.e., Given a set of SignatureWithPublicKey (or whatever) construct a MultisignTransaction that can be submitted to the
+  // TODO: Create a new IT that is overtly called "MultisigngedPaymentIT" so it's easier to find and also see how the
+  //  API is.
+  // i.e., Given a set of SignatureWithPublicKey (or whatever) construct a MultisignTransaction that can be submitted
+  // to the
   // the ledger (is this obvious?)
 
   // Thought 2

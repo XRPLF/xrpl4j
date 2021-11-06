@@ -37,10 +37,10 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Create four accounts, one for the multisign account owner, one for their two friends,
     // and one to send a Payment to.
-    Wallet sourceWallet = createRandomAccount();
-    Wallet aliceWallet = createRandomAccount();
-    Wallet bobWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet aliceWallet = createRandomAccountEd25519();
+    Wallet bobWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     /////////////////////////////
     // Wait for all accounts to show up in a validated ledger
@@ -157,9 +157,9 @@ public class SignerListSetIT extends AbstractIT {
   void addSignersToSignerListThenDeleteSignerList() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////////
     // Create three accounts, one for the multisign account owner, one for their two friends
-    Wallet sourceWallet = createRandomAccount();
-    Wallet aliceWallet = createRandomAccount();
-    Wallet bobWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet aliceWallet = createRandomAccountEd25519();
+    Wallet bobWallet = createRandomAccountEd25519();
 
     /////////////////////////////
     // Wait for all accounts to show up in a validated ledger

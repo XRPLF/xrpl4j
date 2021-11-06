@@ -34,8 +34,8 @@ public class IssuedCurrencyIT extends AbstractIT {
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////
     // Create random accounts for the issuer and the counterparty
-    Wallet issuerWallet = createRandomAccount();
-    Wallet counterpartyWallet = createRandomAccount();
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet counterpartyWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
 
@@ -82,9 +82,9 @@ public class IssuedCurrencyIT extends AbstractIT {
   public void sendSimpleRipplingIssuedCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////
     // Create a gateway (issuer) account and two normal accounts
-    Wallet issuerWallet = createRandomAccount();
-    Wallet aliceWallet = createRandomAccount();
-    Wallet bobWallet = createRandomAccount();
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet aliceWallet = createRandomAccountEd25519();
+    Wallet bobWallet = createRandomAccountEd25519();
 
     ///////////////////////////
     // Set the DefaultRipple account flag on the issuer wallet, so that
@@ -190,11 +190,11 @@ public class IssuedCurrencyIT extends AbstractIT {
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////
     // Create two issuer wallets and three non-issuer wallets
-    final Wallet issuerAWallet = createRandomAccount();
-    final Wallet issuerBWallet = createRandomAccount();
-    final Wallet charlieWallet = createRandomAccount();
-    final Wallet danielWallet = createRandomAccount();
-    final Wallet emilyWallet = createRandomAccount();
+    final Wallet issuerAWallet = createRandomAccountEd25519();
+    final Wallet issuerBWallet = createRandomAccountEd25519();
+    final Wallet charlieWallet = createRandomAccountEd25519();
+    final Wallet danielWallet = createRandomAccountEd25519();
+    final Wallet emilyWallet = createRandomAccountEd25519();
 
     ///////////////////////////
     // Set the lsfDefaultRipple AccountRoot flag so that all trustlines in this topography allow rippling

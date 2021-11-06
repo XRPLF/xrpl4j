@@ -10,7 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.BouncyCastleSignatureService;
+import org.xrpl.xrpl4j.crypto.bc.DerivedKeyDelegatedSignatureService;
+import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
+import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.ServerSecret;
+import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
@@ -39,6 +45,8 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
+import java.security.Key;
+import java.security.KeyStore;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -60,6 +68,8 @@ public abstract class AbstractIT {
   protected final XrplClient xrplClient;
   protected final WalletFactory walletFactory;
   protected final SignatureService signatureService;
+  protected final DelegatedSignatureService delegatedSignatureServiceEd25519;
+  protected final DelegatedSignatureService delegatedSignatureServiceSecp256k1;
 
   /**
    * No-args Constructor.
@@ -67,14 +77,27 @@ public abstract class AbstractIT {
   protected AbstractIT() {
     this.xrplClient = xrplEnvironment.getXrplClient();
     this.walletFactory = DefaultWalletFactory.getInstance();
-    this.signatureService = new BouncyCastleSignatureService();
+    this.signatureService = this.constructSignatureService();
+    this.delegatedSignatureServiceEd25519 = this.constructDelegatedSignatureServiceEd25519();
+    this.delegatedSignatureServiceSecp256k1 = this.constructDelegatedSignatureServiceSecp256k1();
   }
 
-
-  protected Wallet createRandomAccount() {
+  protected Wallet createRandomAccountEd25519() {
     ///////////////////////
     // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet();
+    SeedWalletGenerationResult seedResult = walletFactory.randomWalletEd25519();
+    final Wallet wallet = seedResult.wallet();
+    logger.info("Generated testnet wallet with ClassicAddress={})", wallet.address());
+
+    fundAccount(wallet);
+
+    return wallet;
+  }
+
+  protected Wallet createRandomAccountSecp256k1() {
+    ///////////////////////
+    // Create the account
+    SeedWalletGenerationResult seedResult = walletFactory.randomWalletSecp256k1();
     final Wallet wallet = seedResult.wallet();
     logger.info("Generated testnet wallet with ClassicAddress={})", wallet.address());
 
@@ -259,5 +282,52 @@ public abstract class AbstractIT {
 
   protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
     return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
+  }
+
+  //////////////////
+  // Private Helpers
+  //////////////////
+
+  protected KeyMetadata constructKeyMetadata(final String keyIdentifier) {
+    Objects.requireNonNull(keyIdentifier);
+    return KeyMetadata.builder()
+      .platformIdentifier("jks")
+      .keyringIdentifier("n/a")
+      .keyIdentifier(keyIdentifier)
+      .keyVersion("1")
+      .keyPassword("password")
+      .build();
+  }
+
+  protected DelegatedSignatureService constructDelegatedSignatureServiceEd25519() {
+    try {
+      final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
+      return new DerivedKeyDelegatedSignatureService(
+        () -> ServerSecret.of(secretKey.getEncoded()), VersionType.ED25519
+      );
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected DelegatedSignatureService constructDelegatedSignatureServiceSecp256k1() {
+    try {
+      final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
+      return new DerivedKeyDelegatedSignatureService(
+        () -> ServerSecret.of(secretKey.getEncoded()), VersionType.SECP256K1
+      );
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected SignatureService constructSignatureService() {
+    return new BouncyCastleSignatureService();
+  }
+
+  private KeyStore loadKeyStore() {
+    final String jksFileName = "crypto/crypto.p12";
+    final char[] jksPassword = "password".toCharArray();
+    return JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
   }
 }

@@ -23,7 +23,7 @@ public class SetRegularKeyIT extends AbstractIT {
   void setRegularKeyOnAccount() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create a random account
-    Wallet wallet = createRandomAccount();
+    Wallet wallet = createRandomAccountEd25519();
 
     //////////////////////////
     // Wait for the account to show up on ledger
@@ -84,7 +84,7 @@ public class SetRegularKeyIT extends AbstractIT {
   void removeRegularKeyFromAccount() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create a random account
-    Wallet wallet = createRandomAccount();
+    Wallet wallet = createRandomAccountEd25519();
 
     //////////////////////////
     // Wait for the account to show up on ledger

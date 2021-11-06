@@ -38,8 +38,8 @@ public class PaymentChannelIT extends AbstractIT {
   public void createPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
@@ -124,8 +124,8 @@ public class PaymentChannelIT extends AbstractIT {
   void createAndClaimPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
@@ -240,8 +240,8 @@ public class PaymentChannelIT extends AbstractIT {
   void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
@@ -373,8 +373,8 @@ public class PaymentChannelIT extends AbstractIT {
   void testCurrentAccountChannels() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(

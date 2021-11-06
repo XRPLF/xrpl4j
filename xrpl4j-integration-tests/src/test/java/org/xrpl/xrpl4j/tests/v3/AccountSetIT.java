@@ -30,7 +30,7 @@ public class AccountSetIT extends AbstractIT {
   @Test
   public void disableAndEnableAllFlags() throws JsonRpcClientErrorException, JsonProcessingException {
 
-    Wallet wallet = createRandomAccount();
+    Wallet wallet = createRandomAccountEd25519();
 
     ///////////////////////
     // Get validated account info and validate account state

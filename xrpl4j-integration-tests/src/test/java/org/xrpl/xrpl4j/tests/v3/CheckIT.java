@@ -33,8 +33,8 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
@@ -125,8 +125,8 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
@@ -201,8 +201,8 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification

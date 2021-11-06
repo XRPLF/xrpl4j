@@ -34,8 +34,8 @@ public class EscrowIT extends AbstractIT {
   public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccount();
-    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccountEd25519();
+    Wallet receiverWallet = createRandomAccountEd25519();
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
@@ -132,8 +132,8 @@ public class EscrowIT extends AbstractIT {
   public void createAndCancelTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccount();
-    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccountEd25519();
+    Wallet receiverWallet = createRandomAccountEd25519();
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
@@ -234,8 +234,8 @@ public class EscrowIT extends AbstractIT {
   public void createAndFinishCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccount();
-    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccountEd25519();
+    Wallet receiverWallet = createRandomAccountEd25519();
 
     //////////////////////
     // Create Secret Escrow CryptoCondition/Fulfillment Pair.
@@ -342,8 +342,8 @@ public class EscrowIT extends AbstractIT {
   public void createAndCancelCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccount();
-    Wallet receiverWallet = createRandomAccount();
+    Wallet senderWallet = createRandomAccountEd25519();
+    Wallet receiverWallet = createRandomAccountEd25519();
 
     //////////////////////
     // Create Secret Escrow CryptoCondition/Fulfillment Pair.

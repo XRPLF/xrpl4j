@@ -47,8 +47,19 @@ public class DefaultWalletFactory implements WalletFactory {
   }
 
   @Override
-  public SeedWalletGenerationResult randomWallet() {
+  public SeedWalletGenerationResult randomWalletEd25519() {
     Seed seed = ed25519KeyPairService.generateSeed();
+    Wallet wallet = this.fromSeed(seed);
+
+    return SeedWalletGenerationResult.builder()
+      .seed(seed)
+      .wallet(wallet)
+      .build();
+  }
+
+  @Override
+  public SeedWalletGenerationResult randomWalletSecp256k1() {
+    Seed seed = secp256k1KeyPairService.generateSeed();
     Wallet wallet = this.fromSeed(seed);
 
     return SeedWalletGenerationResult.builder()

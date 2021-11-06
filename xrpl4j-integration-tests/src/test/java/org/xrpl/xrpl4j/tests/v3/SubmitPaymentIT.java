@@ -31,8 +31,8 @@ public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPayment() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    Wallet sourceWallet = createRandomAccountEd25519();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
@@ -71,7 +71,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     fundAccount(senderWallet);
 
-    Wallet destinationWallet = createRandomAccount();
+    Wallet destinationWallet = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(

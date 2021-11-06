@@ -51,7 +51,7 @@ public class OfferIT extends AbstractIT {
     if (usdIssued) {
       return;
     }
-    issuerWallet = createRandomAccount();
+    issuerWallet = createRandomAccountEd25519();
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
       this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.address()));
@@ -99,7 +99,7 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund purchaser's account
-    Wallet purchaser = createRandomAccount();
+    Wallet purchaser = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
@@ -190,7 +190,7 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund purchaser's account
-    Wallet purchaser = createRandomAccount();
+    Wallet purchaser = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
@@ -252,7 +252,7 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund purchaser's account
-    Wallet purchaser = createRandomAccount();
+    Wallet purchaser = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
@@ -304,7 +304,7 @@ public class OfferIT extends AbstractIT {
 
   @Test
   public void cancelNonExistentOffer() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet purchaser = createRandomAccount();
+    Wallet purchaser = createRandomAccountEd25519();
     UnsignedInteger nonExistentOfferSequence = UnsignedInteger.valueOf(111111111);
     // cancel offer does the assertions
     cancelOffer(purchaser, nonExistentOfferSequence, "temBAD_SEQUENCE");

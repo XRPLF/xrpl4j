@@ -14,8 +14,32 @@ public interface WalletFactory {
    *
    * @return A {@link SeedWalletGenerationResult}, which contains the seed that was generated, as well as the {@link
    *   Wallet}.
+   *
+   * @deprecated This method will be removed in a future release. Prefer {@link #randomWalletEd25519()} or {@link
+   *   #randomWalletSecp256k1()} instead.
    */
-  SeedWalletGenerationResult randomWallet();
+  @Deprecated
+  default SeedWalletGenerationResult randomWallet() {
+    return randomWalletEd25519();
+  }
+
+  /**
+   * Generate a {@link Wallet} by generating a random seed and deriving an Ed25519 public/private key pair, XRPL
+   * address, and {@link Wallet}.
+   *
+   * @return A {@link SeedWalletGenerationResult}, which contains the seed that was generated, as well as the {@link
+   *   Wallet}.
+   */
+  SeedWalletGenerationResult randomWalletEd25519();
+
+  /**
+   * Generate a {@link Wallet} by generating a random seed and deriving a Secp256k1 public/private key pair, XRPL
+   * address, and {@link Wallet}.
+   *
+   * @return A {@link SeedWalletGenerationResult}, which contains the seed that was generated, as well as the {@link
+   *   Wallet}.
+   */
+  SeedWalletGenerationResult randomWalletSecp256k1();
 
   /**
    * Generate a {@link Wallet} from a Base58Check encoded seed value.

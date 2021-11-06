@@ -31,8 +31,8 @@ public class DepositPreAuthIT extends AbstractIT {
   public void preauthorizeAccountAndReceivePayment() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
     // Create random sender/receiver accounts
-    Wallet receiverWallet = createRandomAccount();
-    Wallet senderWallet = createRandomAccount();
+    Wallet receiverWallet = createRandomAccountEd25519();
+    Wallet senderWallet = createRandomAccountEd25519();
 
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
@@ -129,8 +129,8 @@ public class DepositPreAuthIT extends AbstractIT {
     throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
     // Create random sender/receiver accounts
-    Wallet receiverWallet = createRandomAccount();
-    Wallet senderWallet = createRandomAccount();
+    Wallet receiverWallet = createRandomAccountEd25519();
+    Wallet senderWallet = createRandomAccountEd25519();
 
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
@@ -173,8 +173,8 @@ public class DepositPreAuthIT extends AbstractIT {
   @Test
   public void updateDepositPreAuthWithLedgerIndex() throws JsonRpcClientErrorException {
     // Create random sender/receiver accounts
-    Wallet receiverWallet = createRandomAccount();
-    Wallet senderWallet = createRandomAccount();
+    Wallet receiverWallet = createRandomAccountEd25519();
+    Wallet senderWallet = createRandomAccountEd25519();
 
     assertThat(
       xrplClient.depositAuthorized(
@@ -190,8 +190,8 @@ public class DepositPreAuthIT extends AbstractIT {
   @Test
   public void updateDepositPreAuthWithLedgerHash() {
     // Create random sender/receiver accounts
-    Wallet receiverWallet = createRandomAccount();
-    Wallet senderWallet = createRandomAccount();
+    Wallet receiverWallet = createRandomAccountEd25519();
+    Wallet senderWallet = createRandomAccountEd25519();
 
     Assertions.assertThrows(JsonRpcClientErrorException.class,
       () -> xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()

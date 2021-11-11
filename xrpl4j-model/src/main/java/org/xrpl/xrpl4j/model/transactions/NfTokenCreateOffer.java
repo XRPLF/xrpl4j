@@ -41,7 +41,7 @@ public interface NfTokenCreateOffer extends Transaction {
    * Identifies the TokenID of the NfToken object that the
    * offer references.
    *
-   * @return Offer is created for the token with {@link TokenID} TokenID.
+   * @return Offer is created for the token with TokenID.
    */
   @JsonProperty("TokenID")
   String tokenID();

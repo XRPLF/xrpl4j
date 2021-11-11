@@ -33,7 +33,7 @@ public interface NfTokenBurn extends Transaction {
    * Indicates the {@link Address} of the account that submitted this transaction. The account MUST
    * be either the present owner of the token or, if the lsfBurnable flag is set
    * in the NfToken, either the issuer account or an account authorized by the
-   * issuer, i.e. {@link Minter} field in {@link AccountSet} set as the address of the issuer.
+   * issuer, i.e. Minter field in {@link AccountSet} set as the address of the issuer.
    *
    * @return An {@link Address} of the account initiating the burning of the NfToken.
    */
@@ -43,7 +43,7 @@ public interface NfTokenBurn extends Transaction {
   /**
    * Identifies the NfToken object to be removed by the transaction.
    *
-   * @return The {@link TokenID} of the NfToken to be burned.
+   * @return The TokenID of the NfToken to be burned.
    */
   @JsonProperty("TokenID")
   String tokenId();

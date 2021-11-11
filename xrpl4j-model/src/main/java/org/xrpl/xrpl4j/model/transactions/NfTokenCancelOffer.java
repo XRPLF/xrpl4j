@@ -8,7 +8,6 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The {@link NfTokenCancelOffer} transaction creates an NfToken object and adds it to the

@@ -43,8 +43,8 @@ public interface NfTokenMint extends Transaction {
   /**
    * Indicates the account that should be the issuer of this token. This value
    * is optional and should only be specified if the account executing the
-   * transaction is not the {@link Issuer} of the `NfToken` object. If it is
-   * present, the {@link MintAccount} field in the {@link AccountRoot} of the `Issuer`
+   * transaction is not the Issuer of the `NfToken` object. If it is
+   * present, the MintAccount field in the AccountRoot of the `Issuer`
    * field must match the `Account`, otherwise the transaction will fail.
    *
    * @return An {@link Optional} field Issuer of type {@link Address}.
@@ -65,7 +65,7 @@ public interface NfTokenMint extends Transaction {
   Optional<CurrencyAmount> transferFee();
 
   /**
-   * {@link URI} that points to the data and/or metadata associated with the NfT.
+   * URI that points to the data and/or metadata associated with the NfT.
    * This field need not be an HTTP or HTTPS URL; it could be an IPFS URI, a
    * magnet link, immediate data encoded as an RFC2379 "data" URL, or even an
    * opaque issuer-specific encoding. The URI is NOT checked for validity, but

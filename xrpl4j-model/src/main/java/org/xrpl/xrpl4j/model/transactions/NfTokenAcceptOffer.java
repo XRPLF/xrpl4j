@@ -40,7 +40,7 @@ public interface NfTokenAcceptOffer extends Transaction {
   Optional<String> sellOffer();
 
   /**
-   * Identifies the {@link NfTOffer} that offers to buy the NfT.
+   * Identifies the NfTOffer that offers to buy the NfT.
    *
    * <p>In direct mode this field is optional, but either SellOffer or
    * BuyOffer must be specified. In brokered mode, both SellOffer

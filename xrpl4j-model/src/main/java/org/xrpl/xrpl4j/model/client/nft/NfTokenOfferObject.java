@@ -2,8 +2,8 @@ package org.xrpl.xrpl4j.model.client.nft;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.UnsignedInteger;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Optional;
 

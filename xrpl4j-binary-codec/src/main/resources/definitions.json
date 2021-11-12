@@ -1920,6 +1920,10 @@
     "tecKILLED": 150,
     "tecHAS_OBLIGATIONS": 151,
     "tecTOO_SOON": 152,
+<<<<<<< HEAD
+=======
+
+>>>>>>> 14d0101 (nit cleanpackage issues and add new objects to `definitions.json`)
     "tecMAX_SEQUENCE_REACHED": 154,
     "tecNO_SUITABLE_PAGE": 155,
     "tecBUY_SELL_MISMATCH": 156,

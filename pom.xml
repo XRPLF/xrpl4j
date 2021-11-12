@@ -308,7 +308,7 @@
 
 
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
-    <jackson.version>2.11.2</jackson.version>
+    <jackson.version>2.13.0</jackson.version>
     <feign.version>11.6</feign.version>
     <slf4j.version>1.7.30</slf4j.version>
     <junit-jupiter.version>5.7.1</junit-jupiter.version>

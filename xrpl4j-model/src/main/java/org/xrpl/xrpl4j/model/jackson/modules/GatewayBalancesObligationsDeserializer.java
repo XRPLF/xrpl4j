@@ -7,20 +7,21 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesIssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesObligations;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesObligations;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class GatewayBalancesObligationsDeserializer extends StdDeserializer<GatewayBalancesObligations> {
+public class GatewayBalancesObligationsDeserializer extends StdDeserializer<ImmutableGatewayBalancesObligations> {
 
   public GatewayBalancesObligationsDeserializer() {
     super(GatewayBalancesObligations.class);
   }
 
   @Override
-  public GatewayBalancesObligations deserialize(
+  public ImmutableGatewayBalancesObligations deserialize(
     JsonParser jsonParser,
     DeserializationContext deserializationContext
   ) throws IOException, JsonProcessingException {
@@ -37,7 +38,7 @@ public class GatewayBalancesObligationsDeserializer extends StdDeserializer<Gate
       )
       .collect(Collectors.toList());
 
-    return GatewayBalancesObligations
+    return ImmutableGatewayBalancesObligations
       .builder()
       .balances(balances)
       .build();

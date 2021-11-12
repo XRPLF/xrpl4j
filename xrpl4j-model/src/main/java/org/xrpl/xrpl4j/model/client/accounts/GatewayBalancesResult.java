@@ -42,7 +42,10 @@ public interface GatewayBalancesResult extends XrplResult {
    *
    * @return The {@link GatewayBalancesAssets} issued to this account by others.
    */
-  GatewayBalancesAssets assets();
+  @Value.Default
+  default GatewayBalancesAssets assets() {
+    return GatewayBalancesAssets.builder().build();
+  }
 
   /**
    * Amounts issued to the hotwallet addresses from the request. In the original JSON entity, the keys are addresses
@@ -51,7 +54,10 @@ public interface GatewayBalancesResult extends XrplResult {
    *
    * @return The balances of the hotwallets field wrapped in a {@link GatewayBalancesHotWallets} instance.
    */
-  GatewayBalancesHotWallets balances();
+  @Value.Default
+  default GatewayBalancesHotWallets balances() {
+    return GatewayBalancesHotWallets.builder().build();
+  }
 
   /**
    * Total amounts issued to addresses not included in hotwallets. In the original JSON entity, this is presented
@@ -61,7 +67,10 @@ public interface GatewayBalancesResult extends XrplResult {
    * @return The balances for obligations from this issuer to accounts not included in the hotwallets request
    *   field, wrapped in a {@link GatewayBalancesObligations} instance.
    */
-  GatewayBalancesObligations obligations();
+  @Value.Default
+  default GatewayBalancesObligations obligations() {
+    return GatewayBalancesObligations.builder().build();
+  }
 
   /**
    * The identifying hash the ledger version that was used when retrieving this data.

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Total amounts held that are issued by others. In the recommended configuration, the issuing address
@@ -25,17 +27,14 @@ public interface GatewayBalancesAssets {
   }
 
   /**
-   * Address of the issuer account.
+   * The balances of issued currencies issued by the address which is the key of this map.
    *
-   * @return The {@link Address} of the issuer account.
+   * @return A map of issued currencies, keyed by the issuer {@link Address} to a list of
+   *   {@link GatewayBalancesIssuedCurrencyAmount}s of currencies issued
    */
-  Address issuer();
-
-  /**
-   * The balances of issued currencies issued by others to the account specified in {{@link #issuer()}}.
-   *
-   * @return A list of {@link GatewayBalancesIssuedCurrencyAmount}s of currencies issued by others.
-   */
-  List<GatewayBalancesIssuedCurrencyAmount> balances();
+  @Value.Default
+  default Map<Address, List<GatewayBalancesIssuedCurrencyAmount>> balancesByIssuer() {
+    return Collections.emptyMap();
+  }
 
 }

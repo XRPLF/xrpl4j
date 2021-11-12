@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,5 +31,8 @@ public interface GatewayBalancesObligations {
    * @return A list of {@link GatewayBalancesIssuedCurrencyAmount}s for issued currencies not
    *   included in the hotwallet balances.
    */
-  List<GatewayBalancesIssuedCurrencyAmount> balances();
+  @Value.Default
+  default List<GatewayBalancesIssuedCurrencyAmount> balances() {
+    return Collections.emptyList();
+  }
 }

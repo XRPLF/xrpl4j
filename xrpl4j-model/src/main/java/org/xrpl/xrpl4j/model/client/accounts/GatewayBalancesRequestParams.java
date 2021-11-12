@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
@@ -10,6 +11,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * Request parameters for the gateway_balances rippled method.
@@ -52,7 +54,9 @@ public interface GatewayBalancesRequestParams extends XrplRequestParams {
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
-  Optional<LedgerSpecifier> ledgerSpecifier();
+  @JsonUnwrapped
+  @Nullable
+  LedgerSpecifier ledgerSpecifier();
 
   /**
    * If true, only accept an address or public key for the account parameter. Defaults to false.

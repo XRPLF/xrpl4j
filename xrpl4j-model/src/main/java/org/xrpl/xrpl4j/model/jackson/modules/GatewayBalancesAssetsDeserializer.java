@@ -5,32 +5,34 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesAssets;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesIssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesAssets;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
-public class GatewayBalancesAssetsDeserializer extends StdDeserializer<GatewayBalancesAssets> {
+public class GatewayBalancesAssetsDeserializer extends StdDeserializer<ImmutableGatewayBalancesAssets> {
 
   public GatewayBalancesAssetsDeserializer() {
-    super(GatewayBalancesAssets.class);
+    super(ImmutableGatewayBalancesAssets.class);
   }
 
   @Override
-  public GatewayBalancesAssets deserialize(
+  public ImmutableGatewayBalancesAssets deserialize(
     JsonParser jsonParser,
     DeserializationContext context
   ) throws IOException, JsonProcessingException {
-    String address = jsonParser.currentName();
-    List<GatewayBalancesIssuedCurrencyAmount> balances = jsonParser
-      .readValueAs(new TypeReference<List<GatewayBalancesIssuedCurrencyAmount>>() {});
+    Map<Address, List<GatewayBalancesIssuedCurrencyAmount>> balances = jsonParser
+      .readValueAs(new TypeReference<Map<Address, List<GatewayBalancesIssuedCurrencyAmount>>>() {});
 
-    GatewayBalancesAssets assets = GatewayBalancesAssets.builder()
-      .issuer(Address.of(address))
-      .balances(balances)
+    ImmutableGatewayBalancesAssets assets = GatewayBalancesAssets.builder()
+      .balancesByIssuer(balances)
       .build();
     return assets;
   }
+
 }

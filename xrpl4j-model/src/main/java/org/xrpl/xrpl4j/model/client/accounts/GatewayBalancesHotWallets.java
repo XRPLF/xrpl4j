@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Amounts issued to the hotwallet addresses from the request.
@@ -25,18 +27,14 @@ public interface GatewayBalancesHotWallets {
   }
 
   /**
-   * Address of the holder of the balances.
+   * Map of addresses of currencies holders to the balances of the currencies held as issued by the
+   * issuer in the full response.
    *
-   * @return An {@link Address} of the holder of the balances.
+   * @return A map of the {@link Address}es of holders of issued currencies to a list of
+   *   {@link GatewayBalancesIssuedCurrencyAmount}s specifying balances of issued currencies from the issuer.
    */
-  Address holder();
-
-  /**
-   * The balances of currencies issued to the account specified in {@link #holder()} from the issuer
-   * specified in the results.
-   *
-   * @return A list of {@link GatewayBalancesIssuedCurrencyAmount}s specifying balances of issued currencies
-   *   from the issuer.
-   */
-  List<GatewayBalancesIssuedCurrencyAmount> balances();
+  @Value.Default
+  default Map<Address, List<GatewayBalancesIssuedCurrencyAmount>> balancesByHolder() {
+    return Collections.emptyMap();
+  }
 }

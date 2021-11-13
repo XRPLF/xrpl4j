@@ -28,6 +28,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -493,6 +495,24 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, ChannelVerifyResult.class);
+  }
+
+  /**
+   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled
+   * API method call.
+   *
+   * @param params The {@link GatewayBalancesRequestParams} to send in the request.
+   * @return The result of the request, as a {@link GatewayBalancesResult}.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  public GatewayBalancesResult gatewayBalances(
+    GatewayBalancesRequestParams params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.GATEWAY_BALANCES)
+      .addParams(params)
+      .build();
+    return jsonRpcClient.send(request, GatewayBalancesResult.class);
   }
 
   /**

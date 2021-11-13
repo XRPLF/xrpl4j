@@ -14,8 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Custom Jackson deserializer for {@link GatewayBalancesObligations}.
+ */
 public class GatewayBalancesObligationsDeserializer extends StdDeserializer<ImmutableGatewayBalancesObligations> {
 
+  /**
+   * No-args constructor.
+   */
   public GatewayBalancesObligationsDeserializer() {
     super(GatewayBalancesObligations.class);
   }

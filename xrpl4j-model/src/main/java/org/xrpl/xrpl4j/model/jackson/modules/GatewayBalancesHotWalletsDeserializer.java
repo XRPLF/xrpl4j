@@ -15,8 +15,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Custom Jackson deserializer for {@link GatewayBalancesHotWallets}.
+ */
 public class GatewayBalancesHotWalletsDeserializer extends StdDeserializer<ImmutableGatewayBalancesHotWallets> {
 
+  /**
+   * No-args constructor.
+   */
   public GatewayBalancesHotWalletsDeserializer() {
     super(ImmutableGatewayBalancesHotWallets.class);
   }

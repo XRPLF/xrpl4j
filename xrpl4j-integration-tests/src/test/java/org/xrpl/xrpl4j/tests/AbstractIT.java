@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
@@ -19,19 +20,24 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
@@ -233,5 +239,112 @@ public abstract class AbstractIT {
 
   protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
     return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
+  }
+
+  /**
+   * Create a trustline between the given issuer and counterparty accounts for the given currency code and
+   * with the given limit.
+   *
+   * @param currency           The currency code of the trustline to create.
+   * @param value              The trustline limit of the trustline to create.
+   * @param issuerWallet       The {@link Wallet} of the issuer account.
+   * @param counterpartyWallet The {@link Wallet} of the counterparty account.
+   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
+   *
+   * @return The {@link TrustLine} that gets created.
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  public TrustLine createTrustLine(
+    String currency,
+    String value,
+    Wallet issuerWallet,
+    Wallet counterpartyWallet,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException {
+    AccountInfoResult counterpartyAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(counterpartyWallet.classicAddress())
+    );
+
+    TrustSet trustSet = TrustSet.builder()
+      .account(counterpartyWallet.classicAddress())
+      .fee(fee)
+      .sequence(counterpartyAccountInfo.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency(currency)
+        .issuer(issuerWallet.classicAddress())
+        .value(value)
+        .build())
+      .signingPublicKey(counterpartyWallet.publicKey())
+      .build();
+
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
+    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(trustSetSubmitResult.transactionResult().hash());
+    logger.info(
+      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        trustSetSubmitResult.transactionResult().hash()
+    );
+
+    return scanForResult(
+      () ->
+        getValidatedAccountLines(issuerWallet.classicAddress(), counterpartyWallet.classicAddress()),
+      linesResult -> !linesResult.lines().isEmpty()
+    )
+      .lines().get(0);
+  }
+
+  /**
+   * Send issued currency funds from an issuer to a counterparty.
+   *
+   * @param currency           The currency code to send.
+   * @param value              The amount of currency to send.
+   * @param issuerWallet       The {@link Wallet} of the issuer account.
+   * @param counterpartyWallet The {@link Wallet} of the counterparty account.
+   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  public void issueBalance(
+    String currency,
+    String value,
+    Wallet issuerWallet,
+    Wallet counterpartyWallet,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException {
+    ///////////////////////////
+    // Issuer sends a payment with the issued currency to the counterparty
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> getValidatedAccountInfo(issuerWallet.classicAddress())
+    );
+
+    Payment fundCounterparty = Payment.builder()
+      .account(issuerWallet.classicAddress())
+      .fee(fee)
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .destination(counterpartyWallet.classicAddress())
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(issuerWallet.classicAddress())
+        .currency(currency)
+        .value(value)
+        .build())
+      .signingPublicKey(issuerWallet.publicKey())
+      .build();
+
+    SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(paymentResult.transactionResult().hash());
+    logger.info(
+      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
+        paymentResult.transactionResult().hash()
+    );
+
+    this.scanForResult(
+      () -> getValidatedTransaction(
+        paymentResult.transactionResult().hash(),
+        Payment.class)
+    );
+
   }
 }

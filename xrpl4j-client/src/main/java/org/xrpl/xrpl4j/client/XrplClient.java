@@ -502,6 +502,7 @@ public class XrplClient {
    * API method call.
    *
    * @param params The {@link GatewayBalancesRequestParams} to send in the request.
+   *
    * @return The result of the request, as a {@link GatewayBalancesResult}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */

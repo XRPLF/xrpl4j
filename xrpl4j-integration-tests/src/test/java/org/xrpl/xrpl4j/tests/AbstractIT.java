@@ -305,7 +305,7 @@ public abstract class AbstractIT {
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
-  public void issueBalance(
+  public void sendIssuedCurrency(
     String currency,
     String value,
     Wallet issuerWallet,

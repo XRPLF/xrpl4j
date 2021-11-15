@@ -27,12 +27,11 @@ public class GatewayBalancesRequestParamsJsonTest extends AbstractJsonTest {
       .ledgerSpecifier(
         LedgerSpecifier.of(Hash256.of("5DB01B7FFED6B67E6B0414DED11E051D2EE2B7619CE0EAA6286D67A3A4D5BDB3"))
       )
-      .hotwallet(
+      .hotWallets(
         Lists.newArrayList(
           Address.of("rKm4uWpg9tfwbVSeATv4KxDe6mpE9yPkgJ"),
           Address.of("ra7JkEzrgeKHdzKgo4EUUVBnxggY4z37kt"))
       )
-      .strict(true)
       .build();
 
     assertCanSerializeAndDeserialize(params, json);
@@ -54,12 +53,11 @@ public class GatewayBalancesRequestParamsJsonTest extends AbstractJsonTest {
       .builder()
       .account(Address.of("rMwjYedjc7qqtKYVLiAccJSmCwih4LnE2q"))
       .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-      .hotwallet(
+      .hotWallets(
         Lists.newArrayList(
           Address.of("rKm4uWpg9tfwbVSeATv4KxDe6mpE9yPkgJ"),
           Address.of("ra7JkEzrgeKHdzKgo4EUUVBnxggY4z37kt"))
       )
-      .strict(true)
       .build();
 
     assertCanSerializeAndDeserialize(params, json);

@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -40,11 +41,13 @@ public interface GatewayBalancesRequestParams extends XrplRequestParams {
   /**
    * An optional set of addresses of operational accounts that should not be included in the
    * balances field of the response. Defaults to an empty set.
+   * balances field of the response. Defaults to an empty set.
    *
    * @return An optionally specified set of operational address balances to exclude.
    */
   @Value.Default
-  default Set<Address> hotwallet() {
+  @JsonProperty("hotwallet")
+  default Set<Address> hotWallets() {
     return Collections.emptySet();
   }
 
@@ -59,13 +62,15 @@ public interface GatewayBalancesRequestParams extends XrplRequestParams {
   LedgerSpecifier ledgerSpecifier();
 
   /**
-   * If true, only accept an address or public key for the account parameter. Defaults to false.
+   * Forcibly set to true as true implies either a public key or address is being specified as the
+   * account. Setting this field to false allows for secrets to be passed in which this API explictly
+   * discourages.
    *
-   * @return true if only accepting an address or public key for the account parameter, false otherwise.
+   * @return true to force usage of either a public key or address and not a secret.
    */
-  @Value.Default
+  @Value.Derived
   default boolean strict() {
-    return false;
+    return true;
   }
 
 }

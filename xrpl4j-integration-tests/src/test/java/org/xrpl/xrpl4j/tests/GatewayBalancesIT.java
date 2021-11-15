@@ -43,7 +43,13 @@ public class GatewayBalancesIT extends AbstractIT {
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
-    issueBalance(xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      xrpl4jCoin,
+      trustLine.limitPeer(),
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
@@ -57,7 +63,7 @@ public class GatewayBalancesIT extends AbstractIT {
     GatewayBalancesResult result = xrplClient.gatewayBalances(GatewayBalancesRequestParams
       .builder()
       .account(issuerWallet.classicAddress())
-      .addHotwallet(counterpartyWallet.classicAddress())
+      .addHotWallets(counterpartyWallet.classicAddress())
       .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build()
     );

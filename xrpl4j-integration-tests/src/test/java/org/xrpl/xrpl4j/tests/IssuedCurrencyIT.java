@@ -17,8 +17,6 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
@@ -49,7 +47,13 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
-    issueBalance(xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      xrpl4jCoin,
+      trustLine.limitPeer(),
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
@@ -111,11 +115,11 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    issueBalance("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    issueBalance("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -235,22 +239,22 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    issueBalance("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    issueBalance("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    issueBalance("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    issueBalance("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.

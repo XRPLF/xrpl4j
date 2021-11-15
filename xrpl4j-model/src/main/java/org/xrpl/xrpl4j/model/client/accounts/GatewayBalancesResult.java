@@ -123,6 +123,20 @@ public interface GatewayBalancesResult extends XrplResult {
   Optional<LedgerIndex> ledgerCurrentIndex();
 
   /**
+   * Get {@link #ledgerCurrentIndex()}, or throw an {@link IllegalStateException} if
+   * {@link #ledgerCurrentIndex()} is empty.
+   *
+   * @return The value of {@link #ledgerIndex()}.
+   * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default LedgerIndex ledgerCurrentIndexSafe() {
+    return ledgerCurrentIndex()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+  }
+
+  /**
    * Whether or not the information in this response comes from a validated ledger version.
    *
    * @return {@code true} if the information is from a validated ledger, otherwise {@code false}.

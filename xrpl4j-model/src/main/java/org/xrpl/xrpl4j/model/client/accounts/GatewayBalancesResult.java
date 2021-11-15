@@ -133,7 +133,7 @@ public interface GatewayBalancesResult extends XrplResult {
   @Value.Auxiliary
   default LedgerIndex ledgerCurrentIndexSafe() {
     return ledgerCurrentIndex()
-      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
   }
 
   /**

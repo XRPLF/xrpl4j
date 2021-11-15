@@ -17,8 +17,6 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
@@ -49,7 +47,13 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
-    issueBalance(xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      xrpl4jCoin,
+      trustLine.limitPeer(),
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
@@ -111,11 +115,11 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    issueBalance("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    issueBalance("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -235,22 +239,22 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    issueBalance("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    issueBalance("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    issueBalance("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    issueBalance("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
@@ -365,113 +369,6 @@ public class IssuedCurrencyIT extends AbstractIT {
       () -> getValidatedAccountInfo(issuerWallet.classicAddress()),
       info -> info.accountData().flags().lsfDefaultRipple()
     );
-  }
-
-  /**
-   * Send issued currency funds from an issuer to a counterparty.
-   *
-   * @param currency           The currency code to send.
-   * @param value              The amount of currency to send.
-   * @param issuerWallet       The {@link Wallet} of the issuer account.
-   * @param counterpartyWallet The {@link Wallet} of the counterparty account.
-   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  public void issueBalance(
-    String currency,
-    String value,
-    Wallet issuerWallet,
-    Wallet counterpartyWallet,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException {
-    ///////////////////////////
-    // Issuer sends a payment with the issued currency to the counterparty
-    AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> getValidatedAccountInfo(issuerWallet.classicAddress())
-    );
-
-    Payment fundCounterparty = Payment.builder()
-      .account(issuerWallet.classicAddress())
-      .fee(fee)
-      .sequence(issuerAccountInfo.accountData().sequence())
-      .destination(counterpartyWallet.classicAddress())
-      .amount(IssuedCurrencyAmount.builder()
-        .issuer(issuerWallet.classicAddress())
-        .currency(currency)
-        .value(value)
-        .build())
-      .signingPublicKey(issuerWallet.publicKey())
-      .build();
-
-    SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
-    assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
-    );
-
-    this.scanForResult(
-      () -> getValidatedTransaction(
-        paymentResult.transactionResult().hash(),
-        Payment.class)
-    );
-
-  }
-
-  /**
-   * Create a trustline between the given issuer and counterparty accounts for the given currency code and
-   * with the given limit.
-   *
-   * @param currency           The currency code of the trustline to create.
-   * @param value              The trustline limit of the trustline to create.
-   * @param issuerWallet       The {@link Wallet} of the issuer account.
-   * @param counterpartyWallet The {@link Wallet} of the counterparty account.
-   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
-   *
-   * @return The {@link TrustLine} that gets created.
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  public TrustLine createTrustLine(
-    String currency,
-    String value,
-    Wallet issuerWallet,
-    Wallet counterpartyWallet,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException {
-    AccountInfoResult counterpartyAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(counterpartyWallet.classicAddress())
-    );
-
-    TrustSet trustSet = TrustSet.builder()
-      .account(counterpartyWallet.classicAddress())
-      .fee(fee)
-      .sequence(counterpartyAccountInfo.accountData().sequence())
-      .limitAmount(IssuedCurrencyAmount.builder()
-        .currency(currency)
-        .issuer(issuerWallet.classicAddress())
-        .value(value)
-        .build())
-      .signingPublicKey(counterpartyWallet.publicKey())
-      .build();
-
-    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
-    assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(trustSetSubmitResult.transactionResult().hash());
-    logger.info(
-      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        trustSetSubmitResult.transactionResult().hash()
-    );
-
-    return scanForResult(
-      () ->
-        getValidatedAccountLines(issuerWallet.classicAddress(), counterpartyWallet.classicAddress()),
-      linesResult -> !linesResult.lines().isEmpty()
-    )
-      .lines().get(0);
   }
 
 }

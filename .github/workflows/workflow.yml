@@ -71,3 +71,25 @@ jobs:
           restore-keys: ${{ env.cache-name }}-
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
+
+  build_open_jdk_non_us:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # Set up Adopt OpenJDK Hotspot 16
+      - name: Set up OpenJDK 16
+        uses: actions/setup-java@v1
+        with:
+          distribution: adopt
+          java-version: 16
+      - name: Cache mvn dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: mvn-deps
+        with:
+          path: ~/.m2
+          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
+          restore-keys: ${{ env.cache-name }}-
+      # Maven install with JVM locale = de_DE
+      - name: Build
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"

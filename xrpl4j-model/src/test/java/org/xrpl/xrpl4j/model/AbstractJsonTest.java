@@ -8,6 +8,8 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -16,6 +18,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 public class AbstractJsonTest {
 
+  protected Logger logger = LoggerFactory.getLogger(this.getClass());
   protected ObjectMapper objectMapper;
 
   @BeforeEach

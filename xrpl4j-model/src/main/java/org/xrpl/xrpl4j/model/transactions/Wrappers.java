@@ -25,7 +25,7 @@ public class Wrappers {
   /**
    * A wrapped {@link String} representing an address on the XRPL.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = Address.class)
   @JsonDeserialize(as = Address.class)
@@ -41,7 +41,7 @@ public class Wrappers {
   /**
    * A wrapped {@link String} representing an X-Address on the XRPL.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = XAddress.class)
   @JsonDeserialize(as = XAddress.class)
@@ -97,7 +97,7 @@ public class Wrappers {
    * A {@link CurrencyAmount} for the XRP currency (non-issued). {@link XrpCurrencyAmount}s are a {@link String}
    * representation of an unsigned integer representing the amount in XRP drops.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = XrpCurrencyAmount.class)
   @JsonDeserialize(as = XrpCurrencyAmount.class)

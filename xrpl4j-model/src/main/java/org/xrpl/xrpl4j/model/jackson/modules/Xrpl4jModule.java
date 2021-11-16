@@ -4,6 +4,12 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesAssets;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesHotWallets;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesObligations;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesAssets;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesHotWallets;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesObligations;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
@@ -64,5 +70,10 @@ public class Xrpl4jModule extends SimpleModule {
 
     addDeserializer(AccountTransactionsRequestParams.class, new AccountTransactionsRequestParamsDeserializer());
     addDeserializer(AccountTransactionsTransaction.class, new AccountTransactionsTransactionDeserializer());
+
+    addDeserializer(GatewayBalancesAssets.class, new GatewayBalancesAssetsDeserializer());
+    addDeserializer(ImmutableGatewayBalancesAssets.class, new GatewayBalancesAssetsDeserializer());
+    addDeserializer(ImmutableGatewayBalancesHotWallets.class, new GatewayBalancesHotWalletsDeserializer());
+    addDeserializer(ImmutableGatewayBalancesObligations.class, new GatewayBalancesObligationsDeserializer());
   }
 }

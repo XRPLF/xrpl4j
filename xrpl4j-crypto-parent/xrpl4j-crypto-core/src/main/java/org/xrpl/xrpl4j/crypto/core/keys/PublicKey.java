@@ -1,7 +1,12 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
@@ -13,16 +18,17 @@ import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArrayDeserializer;
-import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArraySerializer;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeyDeserializer;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeySerializer;
 
+import java.io.IOException;
 import java.util.Objects;
 
 /**
  * A typed instance of an XRPL Seed, which can be decoded into an instance of {@link Decoded}.
  */
-@JsonSerialize(as = ImmutableDefaultPublicKey.class)
-@JsonDeserialize(as = ImmutableDefaultPublicKey.class)
+@JsonSerialize(using = PublicKeySerializer.class)
+@JsonDeserialize(using = PublicKeyDeserializer.class)
 public interface PublicKey {
 
   /**
@@ -67,8 +73,6 @@ public interface PublicKey {
    *
    * @return An instance of {@link UnsignedByteArray}.
    */
-  @JsonSerialize(using = UnsignedByteArraySerializer.class)
-  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray value();
 
   /**
@@ -107,8 +111,8 @@ public interface PublicKey {
    * Abstract implementation for immutables.
    */
   @Value.Immutable
-  @JsonSerialize(as = ImmutableDefaultPublicKey.class)
-  @JsonDeserialize(as = ImmutableDefaultPublicKey.class)
+  @JsonSerialize(using = PublicKeySerializer.class)
+  @JsonDeserialize(using = PublicKeyDeserializer.class)
   abstract class DefaultPublicKey implements PublicKey {
 
     @Override
@@ -141,4 +145,45 @@ public interface PublicKey {
     }
   }
 
+  /**
+   * A custom Jackson serializer that serializes a {@link PublicKey} to a hex-string.
+   */
+  class PublicKeySerializer extends StdSerializer<PublicKey> {
+
+    /**
+     * No-args Constructor.
+     */
+    public PublicKeySerializer() {
+      super(PublicKey.class, false);
+    }
+
+    @Override
+    public void serialize(PublicKey value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+      gen.writeString(this.valueToString(value));
+    }
+
+    private String valueToString(final PublicKey publicKey) {
+      Objects.requireNonNull(publicKey);
+      return publicKey.base16Value();
+    }
+  }
+
+  /**
+   * A custom Jackson deserializer to deserialize {@link PublicKey}s from a hex string in JSON.
+   */
+  class PublicKeyDeserializer extends FromStringDeserializer<PublicKey> {
+
+    /**
+     * No-args constructor.
+     */
+    public PublicKeyDeserializer() {
+      super(PublicKey.class);
+    }
+
+    @Override
+    protected PublicKey _deserialize(String publicKey, DeserializationContext deserializationContext) {
+      return PublicKey.fromBase16EncodedPublicKey(publicKey);
+    }
+
+  }
 }

@@ -157,6 +157,8 @@ public class PublicKeyTest {
   @Test
   void jsonSerializeAndDeserializeEd() throws JsonProcessingException {
     String json = ObjectMapperFactory.create().writeValueAsString(edPublicKey);
+    assertThat(json).isEqualTo("\"ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE\"");
+
     PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
     assertThat(actual.base16Value()).isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
   }
@@ -164,6 +166,8 @@ public class PublicKeyTest {
   @Test
   void jsonSerializeAndDeserializeEc() throws JsonProcessingException {
     String json = ObjectMapperFactory.create().writeValueAsString(ecPublicKey);
+    assertThat(json).isEqualTo("\"027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9\"");
+
     PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
     assertThat(actual.base16Value()).isEqualTo("027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
   }

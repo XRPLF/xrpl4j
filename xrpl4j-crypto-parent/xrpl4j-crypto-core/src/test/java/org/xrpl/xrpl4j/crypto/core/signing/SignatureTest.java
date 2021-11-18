@@ -58,11 +58,6 @@ class SignatureTest {
   }
 
   @Test
-  void fromHex() {
-    assertThat(Signature.fromHex(HEX_32_BYTES)).isEqualTo(signature);
-  }
-
-  @Test
   void fromBase16() {
     assertThat(Signature.fromBase16(HEX_32_BYTES)).isEqualTo(signature);
   }

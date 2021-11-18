@@ -17,6 +17,28 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 public interface Signature {
 
   /**
+   * Static builder.
+   *
+   * @param unsignedByteArray A {@link UnsignedByteArray}.
+   *
+   * @return A {@link Signature}.
+   */
+  static Signature of(final UnsignedByteArray unsignedByteArray) {
+    return Signature.builder().value(unsignedByteArray).build();
+  }
+
+  /**
+   * Static builder.
+   *
+   * @param signatureBytesBase16 A base16-encoded {@link String} containing the bytes of a signature.
+   *
+   * @return A {@link Signature}.
+   */
+  static Signature fromBase16(final String signatureBytesBase16) {
+    return Signature.builder().value(UnsignedByteArray.fromHex(signatureBytesBase16)).build();
+  }
+
+  /**
    * Instantiates a new builder.
    *
    * @return A {@link ImmutableSignature.Builder}.
@@ -31,7 +53,7 @@ public interface Signature {
    * @return A {@link UnsignedByteArray}.
    */
   @JsonSerialize(using = UnsignedByteArraySerializer.class)
-  @JsonDeserialize  (using = UnsignedByteArrayDeserializer.class)
+  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray value();
 
   /**

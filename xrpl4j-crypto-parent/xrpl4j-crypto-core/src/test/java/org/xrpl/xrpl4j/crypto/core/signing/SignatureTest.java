@@ -51,4 +51,19 @@ class SignatureTest {
     Signature actual = ObjectMapperFactory.create().readValue(json, Signature.class);
     assertThat(actual).isEqualTo(signature);
   }
+
+  @Test
+  void of() {
+    assertThat(Signature.of(signature.value())).isEqualTo(signature);
+  }
+
+  @Test
+  void fromHex() {
+    assertThat(Signature.fromHex(HEX_32_BYTES)).isEqualTo(signature);
+  }
+
+  @Test
+  void fromBase16() {
+    assertThat(Signature.fromBase16(HEX_32_BYTES)).isEqualTo(signature);
+  }
 }

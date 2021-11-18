@@ -56,7 +56,7 @@ public class PublicKeyTest {
     final String expectedBase16EncodedPublicKey = "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE";
 
     assertThat(publicKey.base58Value()).isEqualTo(expectedBase58EncodedPublicKey);
-    assertThat(publicKey.hexValue()).isEqualTo(expectedBase16EncodedPublicKey);
+    assertThat(publicKey.base16Value()).isEqualTo(expectedBase16EncodedPublicKey);
     assertThat(AddressCodec.getInstance().encodeAccountPublicKey(publicKey.value()))
       .isEqualTo(expectedBase58EncodedPublicKey);
   }
@@ -70,7 +70,7 @@ public class PublicKeyTest {
     final String expectedBase16EncodedPublicKey = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
 
     assertThat(keyPair.publicKey().base58Value()).isEqualTo(expectedBase58EncodedPublicKey);
-    assertThat(keyPair.publicKey().hexValue()).isEqualTo(expectedBase16EncodedPublicKey);
+    assertThat(keyPair.publicKey().base16Value()).isEqualTo(expectedBase16EncodedPublicKey);
     assertThat(AddressCodec.getInstance().encodeAccountPublicKey(keyPair.publicKey().value()))
       .isEqualTo(expectedBase58EncodedPublicKey);
   }
@@ -95,8 +95,10 @@ public class PublicKeyTest {
       "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
     assertThat(edPublicKey.base16Value()).isEqualTo(
       "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-    assertThat(edPublicKey.hexValue()).isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-    assertThat(ecPublicKey.hexValue()).isEqualTo("027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
+    assertThat(edPublicKey.base16Value()).isEqualTo(
+      "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
+    assertThat(ecPublicKey.base16Value()).isEqualTo(
+      "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
   }
 
   @Test
@@ -123,7 +125,7 @@ public class PublicKeyTest {
       }
     };
 
-    assertThat(publicKey.hexValue()).isEqualTo("ABCD");
+    assertThat(publicKey.base16Value()).isEqualTo("ABCD");
   }
 
   @Test
@@ -150,8 +152,19 @@ public class PublicKeyTest {
 
   @Test
   void testToString() {
-    assertThat(edPublicKey.toString()).isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-    assertThat(ecPublicKey.toString()).isEqualTo("027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
+    assertThat(edPublicKey.toString()).isEqualTo(
+      "PublicKey{value=UnsignedByteArray{" +
+        "unsignedBytes=List(size=33)}, " +
+        "base58Value=aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B, " +
+        "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE, " +
+        "versionType=ED25519" +
+        "}");
+    assertThat(ecPublicKey.toString()).isEqualTo("PublicKey{value=UnsignedByteArray{" +
+      "unsignedBytes=List(size=33)}, " +
+      "base58Value=aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk, " +
+      "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " +
+      "versionType=SECP256K1" +
+      "}");
   }
 
   @Test

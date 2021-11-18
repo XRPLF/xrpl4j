@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
-import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
+import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
@@ -29,15 +29,16 @@ import java.util.Objects;
  */
 @JsonSerialize(using = PublicKeySerializer.class)
 @JsonDeserialize(using = PublicKeyDeserializer.class)
+@Immutable
 public interface PublicKey {
 
   /**
    * Instantiates a new builder.
    *
-   * @return A {@link ImmutableDefaultPublicKey.Builder}.
+   * @return A {@link ImmutablePublicKey.Builder}.
    */
-  static ImmutableDefaultPublicKey.Builder builder() {
-    return ImmutableDefaultPublicKey.builder();
+  static ImmutablePublicKey.Builder builder() {
+    return ImmutablePublicKey.builder();
   }
 
   /**
@@ -80,7 +81,11 @@ public interface PublicKey {
    *
    * @return A {@link String}.
    */
-  String base58Value();
+  @Derived
+  default String base58Value() {
+    return AddressBase58.encode(value(), Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
+  }
+
 
   /**
    * The private-key value, as a Base16-encoded (i.e., HEX) string. Note that if this is an Ed25519 private-key, then
@@ -88,16 +93,9 @@ public interface PublicKey {
    *
    * @return A {@link String}.
    */
-  String base16Value();
-
-  /**
-   * The private-key value, as a Base16-encoded (i.e., HEX) string. Note that if this is an Ed25519 private-key, then
-   * this value contains a leading prefix of `ED`, in hex.
-   *
-   * @return A {@link String}.
-   */
-  default String hexValue() {
-    return base16Value();
+  @Derived
+  default String base16Value() {
+    return this.value().hexValue();
   }
 
   /**
@@ -105,44 +103,9 @@ public interface PublicKey {
    *
    * @return A {@link VersionType}.
    */
-  VersionType versionType();
-
-  /**
-   * Abstract implementation for immutables.
-   */
-  @Value.Immutable
-  @JsonSerialize(using = PublicKeySerializer.class)
-  @JsonDeserialize(using = PublicKeyDeserializer.class)
-  abstract class DefaultPublicKey implements PublicKey {
-
-    @Override
-    @Derived
-    public String base58Value() {
-      return AddressBase58.encode(value(), Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
-    }
-
-    @Override
-    @Derived
-    public String base16Value() {
-      return this.value().hexValue();
-    }
-
-    @Override
-    @Derived
-    public String hexValue() {
-      return base16Value();
-    }
-
-    @Derived
-    @Override
-    public VersionType versionType() {
-      return this.hexValue().startsWith("ED") ? VersionType.ED25519 : VersionType.SECP256K1;
-    }
-
-    @Override
-    public String toString() {
-      return hexValue();
-    }
+  @Derived
+  default VersionType versionType() {
+    return this.base16Value().startsWith("ED") ? VersionType.ED25519 : VersionType.SECP256K1;
   }
 
   /**

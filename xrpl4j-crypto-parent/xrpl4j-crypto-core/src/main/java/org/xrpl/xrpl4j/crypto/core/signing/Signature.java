@@ -30,7 +30,7 @@ public interface Signature {
   /**
    * Static builder.
    *
-   * @param signatureBytesBase16 A base64-encoded {@link String} containing the bytes of a signature.
+   * @param signatureBytesBase16 A base16-encoded {@link String} containing the bytes of a signature.
    *
    * @return A {@link Signature}.
    */

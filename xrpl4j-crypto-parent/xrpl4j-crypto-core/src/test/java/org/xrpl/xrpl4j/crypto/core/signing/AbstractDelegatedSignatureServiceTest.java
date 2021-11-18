@@ -93,7 +93,6 @@ class AbstractDelegatedSignatureServiceTest {
     when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
     this.signatureService = new AbstractDelegatedSignatureService(
-      KeyStoreType.DERIVED_SERVER_SECRET,
       signatureUtilsMock,
       addressServiceMock
     ) {
@@ -127,15 +126,6 @@ class AbstractDelegatedSignatureServiceTest {
         return secp256k1VerifyCalled.get();
       }
     };
-  }
-
-  ///////////////////
-  // KeyStoreType
-  ///////////////////
-
-  @Test
-  void keyStoreType() {
-    assertThat(signatureService.keyStoreType()).isEqualTo(KeyStoreType.DERIVED_SERVER_SECRET);
   }
 
   ///////////////////

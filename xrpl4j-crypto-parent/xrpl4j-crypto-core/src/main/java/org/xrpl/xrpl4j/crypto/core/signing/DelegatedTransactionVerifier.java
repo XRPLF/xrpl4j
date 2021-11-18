@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
+import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Set;
@@ -11,6 +13,17 @@ import java.util.Set;
  * by deriving it from a secret value).
  */
 public interface DelegatedTransactionVerifier {
+
+  /**
+   * Accessor for the public-key corresponding to the supplied key meta-data. This method exists to support
+   * implementations that hold private-key material internally, yet need a way for external callers to determine the
+   * actual public key for signature verification or other purposes.
+   *
+   * @param keyMetadata A {@link KeyMetadata} for a key-pair.
+   *
+   * @return A {@link PublicKey}.
+   */
+  PublicKey getPublicKey(KeyMetadata keyMetadata);
 
   /**
    * TransactionVerifier the supplied digital-signature to ensure that it was constructed using the private-key

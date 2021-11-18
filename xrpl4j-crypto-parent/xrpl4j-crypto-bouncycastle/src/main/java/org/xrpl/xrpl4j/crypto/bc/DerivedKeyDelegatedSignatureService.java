@@ -167,11 +167,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   }
 
   @Override
-  public KeyStoreType keyStoreType() {
-    return DERIVED_SERVER_SECRET;
-  }
-
-  @Override
   public PublicKey getPublicKey(final KeyMetadata keyMetadata) {
     Objects.requireNonNull(keyMetadata);
     return getSignatureServiceSafe(keyMetadata).getPublicKey(keyMetadata);
@@ -320,8 +315,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   private static class SingleKeySignatureService
     extends AbstractDelegatedSignatureService implements DelegatedSignatureService {
 
-    private static final KeyStoreType KEY_STORE_TYPE = KeyStoreType.fromKeystoreTypeId("in-memory-single-key");
-
     private final Ed25519Signer ed25519Signer;
     private final ECDSASigner ecdsaSigner;
     private final PrivateKey privateKey;
@@ -333,7 +326,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
      */
     private SingleKeySignatureService(final PrivateKey privateKey) {
       super(
-        KEY_STORE_TYPE,
         new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
         AddressUtils.getInstance()
       );

@@ -171,7 +171,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.hexValue())
+      .signingPublicKey(publicKey.base16Value())
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -341,7 +341,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.hexValue())
+      .signingPublicKey(publicKey.base16Value())
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -376,7 +376,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
   @Test
   void getPublicKeyEd() {
     PublicKey actualEcPublicKey = this.edSignatureService.getPublicKey(keyMetadata("ec_key"));
-    assertThat(actualEcPublicKey.hexValue())
+    assertThat(actualEcPublicKey.base16Value())
       .isEqualTo("EDFB5C6D87DACC6DCD852D7F1CE6914EDD2A82C1D7ECB9AF866E48A01D45E9E6DD");
     assertThat(actualEcPublicKey.base58Value()).isEqualTo("aKGg99sHNs3Vs5nUXKyjiv2ED73izdrDR2Pjy1mRY54WmxAkusZZ");
     assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.ED25519);
@@ -385,7 +385,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
   @Test
   void getPublicKeyEc() {
     PublicKey actualEcPublicKey = this.ecSignatureService.getPublicKey(keyMetadata("ed_key"));
-    assertThat(actualEcPublicKey.hexValue())
+    assertThat(actualEcPublicKey.base16Value())
       .isEqualTo("0308C7F864BB4CA1B6598BF9BB0B538AB58AAB9B4E42E5C1A2A95136125711ACB2");
     assertThat(actualEcPublicKey.base58Value()).isEqualTo("aBPyf7q6qWdDbSWEvm47oQTotG7qtKPVFebfbR1u4aY73Z6roFCH");
     assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.SECP256K1);

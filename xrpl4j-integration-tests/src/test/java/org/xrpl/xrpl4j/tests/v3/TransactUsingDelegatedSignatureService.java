@@ -58,7 +58,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.hexValue())
+      .signingPublicKey(sourceWalletPublicKey.base16Value())
       .build();
 
     SingleSingedTransaction<Payment> signedTransaction = delegatedSignatureServiceEd25519.sign(sourceKeyMetadata,
@@ -92,7 +92,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.hexValue())
+      .signingPublicKey(sourceWalletPublicKey.base16Value())
       .build();
 
     SingleSingedTransaction<Payment> transactionWithSignature = delegatedSignatureServiceSecp256k1

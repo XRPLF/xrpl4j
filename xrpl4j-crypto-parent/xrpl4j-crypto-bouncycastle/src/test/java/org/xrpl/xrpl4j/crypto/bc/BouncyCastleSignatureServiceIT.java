@@ -83,7 +83,7 @@ class BouncyCastleSignatureServiceIT {
       .sequence(UnsignedInteger.ONE)
       .destination(secp256k1Wallet.address())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(ed25519Wallet.publicKey().hexValue())
+      .signingPublicKey(ed25519Wallet.publicKey().base16Value())
       .build();
 
     this.signatureService = new BouncyCastleSignatureService();

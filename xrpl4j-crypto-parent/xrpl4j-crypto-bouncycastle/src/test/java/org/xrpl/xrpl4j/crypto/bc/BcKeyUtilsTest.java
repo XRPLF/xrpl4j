@@ -71,7 +71,7 @@ class BcKeyUtilsTest {
     ).generatePublicKey();
 
     PublicKey publicKey = BcKeyUtils.toPublicKey(ed25519PublicKeyParameters);
-    assertThat(publicKey.hexValue()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
+    assertThat(publicKey.base16Value()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
 
     Ed25519PublicKeyParameters converted = BcKeyUtils.toEd25519PublicKeyParameters(publicKey);
     assertThat(converted).isEqualToComparingFieldByField(ed25519PublicKeyParameters);
@@ -86,7 +86,7 @@ class BcKeyUtilsTest {
     ECPublicKeyParameters ecPublicKeyParameters = new ECPublicKeyParameters(ecPoint, BcKeyUtils.PARAMS);
 
     PublicKey publicKey = BcKeyUtils.toPublicKey(ecPublicKeyParameters);
-    assertThat(publicKey.hexValue()).isEqualTo(EC_PUBLIC_KEY_HEX);
+    assertThat(publicKey.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
 
     ECPublicKeyParameters converted = BcKeyUtils.toEcPublicKeyParameters(publicKey);
     assertThat(converted).isEqualToComparingFieldByField(ecPublicKeyParameters);
@@ -101,7 +101,7 @@ class BcKeyUtilsTest {
 
     // To Public Key
     PublicKey publicKey = BcKeyUtils.toPublicKey(ecPrivateKey);
-    assertThat(publicKey.hexValue()).isEqualTo(EC_PUBLIC_KEY_HEX);
+    assertThat(publicKey.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
   }
 
   @Test
@@ -113,7 +113,7 @@ class BcKeyUtilsTest {
 
     // To Public Key
     PublicKey publicKey = BcKeyUtils.toPublicKey(edPrivateKey);
-    assertThat(publicKey.hexValue()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
+    assertThat(publicKey.base16Value()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
   }
 
 }

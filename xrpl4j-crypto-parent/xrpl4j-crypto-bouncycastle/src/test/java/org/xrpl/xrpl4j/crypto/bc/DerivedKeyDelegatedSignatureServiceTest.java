@@ -368,6 +368,14 @@ class DerivedKeyDelegatedSignatureServiceTest {
   }
 
   @Test
+  void createKeyPair() {
+    KeyMetadata keyMetadata = keyMetadata("ed_key");
+    PublicKey publicKey = this.edSignatureService.getPublicKey(keyMetadata);
+    PublicKey created = this.edSignatureService.createKeyPair(keyMetadata);
+    assertThat(created).isEqualTo(publicKey);
+  }
+
+  @Test
   void getPublicKeyEd() {
     PublicKey actualEcPublicKey = this.edSignatureService.getPublicKey(keyMetadata("ec_key"));
     assertThat(actualEcPublicKey.base16Value())

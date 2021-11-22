@@ -36,7 +36,6 @@ import org.xrpl.xrpl4j.crypto.core.signing.AbstractDelegatedTransactionVerifier;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.EcDsaSignature;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
@@ -163,6 +162,11 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
     return getSignatureServiceSafe(keyMetadata).multiSign(keyMetadata, transaction);
+  }
+
+  @Override
+  public PublicKey createKeyPair(KeyMetadata keyMetadata) {
+    return getSignatureServiceSafe(keyMetadata).createKeyPair(keyMetadata);
   }
 
   @Override
@@ -418,6 +422,11 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
         return Signature.builder()
           .value(sigBytes)
           .build();
+      }
+
+      @Override
+      public PublicKey createKeyPair(KeyMetadata keyMetadata) {
+        return getPublicKey(keyMetadata);
       }
 
       @Override

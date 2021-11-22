@@ -63,7 +63,18 @@ class AbstractDelegatedSignatureServiceTest {
     this.delegatedSignatureService = new AbstractDelegatedSignatureService(
       delegatedTransactionSignerMock,
       delegatedTransactionVerifierMock
-    ) { };
+    ) {
+      @Override
+      public PublicKey createKeyPair(KeyMetadata keyMetadata) {
+        return getPublicKey(keyMetadata);
+      }
+    };
+  }
+
+  @Test
+  void createKeyPair() {
+    PublicKey actual = delegatedSignatureService.createKeyPair(keyMetadataMock);
+    assertThat(actual).isEqualTo(publicKeyMock);
   }
 
   @Test

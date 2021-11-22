@@ -1,11 +1,10 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 
 public interface DelegatedKeyPairService {
 
-  PublicKey createKeyPair(KeyMetadata keyMetadata, VersionType versionType);
+  PublicKey createKeyPair(KeyMetadata keyMetadata);
 
   /**
    * Accessor for the public-key corresponding to the supplied key meta-data. This method exists to support

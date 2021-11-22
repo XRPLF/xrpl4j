@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.keys.DelegatedKeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -11,7 +12,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
  * private-key material. Alternatively, an implementation may use key meta-data to lookup key material in some custom
  * manner (e.g., by deriving it from a secret value).
  */
-public interface DelegatedTransactionSigner {
+public interface DelegatedTransactionSigner extends DelegatedKeyPairService {
 
   /**
    * Accessor for the public-key corresponding to the supplied key meta-data. This method exists to support

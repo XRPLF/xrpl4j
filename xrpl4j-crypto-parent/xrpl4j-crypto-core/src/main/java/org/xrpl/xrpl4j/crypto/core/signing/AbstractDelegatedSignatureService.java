@@ -37,6 +37,11 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
 
 
   @Override
+  public PublicKey createKeyPair(KeyMetadata keyMetadata) {
+    return delegatedTransactionSigner.createKeyPair(keyMetadata);
+  }
+
+  @Override
   public PublicKey getPublicKey(KeyMetadata keyMetadata) {
     return delegatedTransactionSigner.getPublicKey(keyMetadata);
   }

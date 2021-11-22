@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
+import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Set;
@@ -10,7 +12,7 @@ import java.util.Set;
  * Alternatively, an implementation may use supplied key meta-data to lookup key material in some custom manner (e.g.,
  * by deriving it from a secret value).
  */
-public interface DelegatedTransactionVerifier {
+public interface DelegatedTransactionVerifier extends DelegatedPublicKeyProvider {
 
   /**
    * TransactionVerifier the supplied digital-signature to ensure that it was constructed using the private-key

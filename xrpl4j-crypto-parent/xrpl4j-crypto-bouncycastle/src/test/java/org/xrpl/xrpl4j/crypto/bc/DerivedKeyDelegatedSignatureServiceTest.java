@@ -151,12 +151,6 @@ class DerivedKeyDelegatedSignatureServiceTest {
     );
   }
 
-  @Test
-  void keyStoreType() {
-    assertThat(edSignatureService.keyStoreType()).isEqualTo(KeyStoreType.DERIVED_SERVER_SECRET);
-    assertThat(ecSignatureService.keyStoreType()).isEqualTo(KeyStoreType.DERIVED_SERVER_SECRET);
-  }
-
   /**
    * Note: this test runs in a loop solely to exercise concurrent correctness.
    */

@@ -12,18 +12,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
  * private-key material. Alternatively, an implementation may use key meta-data to lookup key material in some custom
  * manner (e.g., by deriving it from a secret value).
  */
-public interface DelegatedTransactionSigner {
-
-  /**
-   * Accessor for the public-key corresponding to the supplied key meta-data. This method exists to support
-   * implementations that hold private-key material internally, yet need a way for external callers to determine the
-   * actual public key for signature verification or other purposes.
-   *
-   * @param keyMetadata A {@link KeyMetadata} for a key-pair.
-   *
-   * @return A {@link PublicKey}.
-   */
-  PublicKey getPublicKey(KeyMetadata keyMetadata);
+public interface DelegatedTransactionSigner extends DelegatedPublicKeyProvider {
 
   /**
    * Obtain a signature for the supplied transaction using the private-key that corresponds to {@code keyMetadata}.

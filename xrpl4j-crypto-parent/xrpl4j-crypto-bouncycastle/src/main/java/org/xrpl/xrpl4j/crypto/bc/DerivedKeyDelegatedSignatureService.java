@@ -165,11 +165,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   }
 
   @Override
-  public PublicKey createKeyPair(KeyMetadata keyMetadata) {
-    return getSignatureServiceSafe(keyMetadata).createKeyPair(keyMetadata);
-  }
-
-  @Override
   public PublicKey getPublicKey(final KeyMetadata keyMetadata) {
     Objects.requireNonNull(keyMetadata);
     return getSignatureServiceSafe(keyMetadata).getPublicKey(keyMetadata);
@@ -422,11 +417,6 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
         return Signature.builder()
           .value(sigBytes)
           .build();
-      }
-
-      @Override
-      public PublicKey createKeyPair(KeyMetadata keyMetadata) {
-        return getPublicKey(keyMetadata);
       }
 
       @Override

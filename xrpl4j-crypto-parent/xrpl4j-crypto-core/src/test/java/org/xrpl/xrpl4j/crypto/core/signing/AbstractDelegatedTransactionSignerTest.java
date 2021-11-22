@@ -103,11 +103,6 @@ public class AbstractDelegatedTransactionSignerTest {
       }
 
       @Override
-      public PublicKey createKeyPair(KeyMetadata keyMetadata) {
-        return this.getPublicKey(keyMetadata);
-      }
-
-      @Override
       public PublicKey getPublicKey(KeyMetadata keyMetadata) {
         return keyType == VersionType.ED25519 ? ed25519KeyPair.publicKey() : secp256k1KeyPair.publicKey();
       }

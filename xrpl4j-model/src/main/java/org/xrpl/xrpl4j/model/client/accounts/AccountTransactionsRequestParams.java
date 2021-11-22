@@ -38,8 +38,52 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
+  @Deprecated
   static ImmutableAccountTransactionsRequestParams.Builder builder() {
     return ImmutableAccountTransactionsRequestParams.builder();
+  }
+
+  /**
+   * Construct a builder for this class with {@link LedgerIndex} field set.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
+  static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerIndex ledgerIndex) {
+    return ImmutableAccountTransactionsRequestParams.builder().ledgerIndex(ledgerIndex);
+  }
+
+  /**
+   * Construct a builder for this class with {@link LedgerSpecifier} field set.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
+  static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerSpecifier ledgerSpecifier) {
+    return ImmutableAccountTransactionsRequestParams.builder().ledgerSpecifier(Optional.ofNullable(ledgerSpecifier));
+  }
+
+  /**
+   * Construct a builder for this class with ledgerHash field set.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
+  static ImmutableAccountTransactionsRequestParams.Builder builder(Hash256 ledgerHash) {
+    return ImmutableAccountTransactionsRequestParams.builder().ledgerHash(Optional.ofNullable(ledgerHash));
+  }
+
+  /**
+   * Construct a builder for this class with ledgerIndexRange field set.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
+  static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerIndexBound ledgerIndexMinimum, LedgerIndexBound ledgerIndexMaximum) {
+    LedgerIndexBound ledgerIndexMin = ledgerIndexMinimum, ledgerIndexMax = ledgerIndexMaximum;
+
+    if (ledgerIndexMin == null) ledgerIndexMin = LedgerIndexBound.of(-1);
+    if (ledgerIndexMax == null) ledgerIndexMax = LedgerIndexBound.of(-1);
+
+    return ImmutableAccountTransactionsRequestParams.builder()
+        .ledgerIndexMinimum(ledgerIndexMin)
+        .ledgerIndexMaximum(ledgerIndexMax);
   }
 
   /**

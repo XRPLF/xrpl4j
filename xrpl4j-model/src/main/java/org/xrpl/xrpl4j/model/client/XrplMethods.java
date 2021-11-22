@@ -28,6 +28,11 @@ public class XrplMethods {
   public static final String ACCOUNT_LINES = "account_lines";
 
   /**
+   * Constant for the account_nfts rippled API method.
+   */
+  public static final String ACCOUNT_NFTS = "account_nfts";
+
+  /**
    * Constant for the <a href="https://xrpl.org/account_objects.html">account_objects</a> rippled API method.
    */
   public static final String ACCOUNT_OBJECTS = "account_objects";

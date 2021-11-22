@@ -49,7 +49,10 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerIndex ledgerIndex) {
-    return ImmutableAccountTransactionsRequestParams.builder().ledgerIndex(ledgerIndex);
+    return ImmutableAccountTransactionsRequestParams.builder()
+        .ledgerSpecifier(
+        Optional.of(LedgerSpecifier.of(ledgerIndex))
+    );
   }
 
   /**
@@ -67,7 +70,8 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(Hash256 ledgerHash) {
-    return ImmutableAccountTransactionsRequestParams.builder().ledgerHash(Optional.ofNullable(ledgerHash));
+    return ImmutableAccountTransactionsRequestParams.builder()
+        .ledgerSpecifier(Optional.of(LedgerSpecifier.of(ledgerHash)));
   }
 
   /**

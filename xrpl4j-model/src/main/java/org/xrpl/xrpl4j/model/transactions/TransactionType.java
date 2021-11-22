@@ -53,6 +53,11 @@ public enum TransactionType {
   ESCROW_FINISH("EscrowFinish"),
 
   /**
+   * The {@link TransactionType} for the {@link NfTokenMint} transaction.
+   */
+  NFTOKEN_MINT("NFTokenMint"),
+
+  /**
    * The {@link TransactionType} for the {@link OfferCancel} transaction.
    */
   OFFER_CANCEL("OfferCancel"),

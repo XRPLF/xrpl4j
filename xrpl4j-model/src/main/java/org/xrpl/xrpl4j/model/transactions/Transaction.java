@@ -49,6 +49,7 @@ public interface Transaction {
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
       .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
       .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
+      .put(ImmutableNfTokenMint.class, TransactionType.NFTOKEN_MINT)
       .put(ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL)
       .put(ImmutableOfferCreate.class, TransactionType.OFFER_CREATE)
       .put(ImmutablePayment.class, TransactionType.PAYMENT)

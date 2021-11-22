@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountNftsRequestParams.class)
 @JsonDeserialize(as = ImmutableAccountNftsRequestParams.class)
-public interface AccountNftsRequestParams {
+public interface AccountNftsRequestParams extends XrplRequestParams {
 
   /**
    * Construct a builder for this class.

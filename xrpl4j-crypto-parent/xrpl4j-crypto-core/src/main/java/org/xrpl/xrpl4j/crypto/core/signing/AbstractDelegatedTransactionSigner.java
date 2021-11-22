@@ -10,6 +10,10 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
 
+/**
+ * An abstract implementation of {@link DelegatedTransactionSigner} with common functionality that sub-classes can
+ * utilize.
+ */
 public abstract class AbstractDelegatedTransactionSigner implements DelegatedTransactionSigner {
 
   private final SignatureUtils signatureUtils;
@@ -19,7 +23,7 @@ public abstract class AbstractDelegatedTransactionSigner implements DelegatedTra
    * Required-args Constructor.
    *
    * @param signatureUtils An {@link SignatureUtils} for help with signing.
-   * @param addressService A {@link AddressUtils}.
+   * @param addressService An {@link AddressUtils}.
    */
   public AbstractDelegatedTransactionSigner(
     final SignatureUtils signatureUtils,

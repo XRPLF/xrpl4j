@@ -108,7 +108,7 @@ public class AccountTransactionsRequestParamsTests {
   }
 
   @Test
-  void builderWithLedgerSpecifier(){
+  void builderWithLedgerSpecifier() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerSpecifier.VALIDATED)
         .account(Address.of("foo"))
@@ -120,29 +120,30 @@ public class AccountTransactionsRequestParamsTests {
   }
 
   @Test
-  void builderWithLedgerIndex(){
+  void builderWithLedgerIndex() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
-        .builder(LedgerIndex.of(UnsignedInteger.ONE))
+        .builder(LedgerSpecifier.of(UnsignedInteger.ONE))
         .account(Address.of("foo"))
         .build();
 
-    assertThat(params.ledgerIndex()).isEqualTo(Optional.of(LedgerIndex.of(UnsignedInteger.ONE)));
+    System.out.print(params);
+    assertThat(params.ledgerSpecifier()).isEqualTo(Optional.of(LedgerSpecifier.of(UnsignedInteger.ONE)));
   }
 
   @Test
-  void builderWithLedgerHash(){
+  void builderWithLedgerHash() {
     String random = "qmHJUF3lNC6rfEkZa3URngmwIRYU7bKMYKPz4er7UJKnWUItKuBCN9qKqXt8YYJ8";
 
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
-        .builder(Hash256.of(random))
+        .builder(LedgerSpecifier.of(Hash256.of(random)))
         .account(Address.of("foo"))
         .build();
 
-    assertThat(params.ledgerHash()).isEqualTo(Optional.of(Hash256.of(random)));
+    assertThat(params.ledgerSpecifier()).isEqualTo(Optional.of(LedgerSpecifier.of(Hash256.of(random))));
   }
 
   @Test
-  void builderWithLedgerIndexRange(){
+  void builderWithLedgerIndexRange() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerIndexBound.of(12345), LedgerIndexBound.of(12347))
         .account(Address.of("foo"))
@@ -153,7 +154,7 @@ public class AccountTransactionsRequestParamsTests {
   }
 
   @Test
-  void builderWithLedgerIndexMin(){
+  void builderWithLedgerIndexMin() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerIndexBound.of(12345), null)
         .account(Address.of("foo"))
@@ -164,7 +165,7 @@ public class AccountTransactionsRequestParamsTests {
   }
 
   @Test
-  void builderWithLedgerIndexMax(){
+  void builderWithLedgerIndexMax() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(null, LedgerIndexBound.of(12345))
         .account(Address.of("foo"))

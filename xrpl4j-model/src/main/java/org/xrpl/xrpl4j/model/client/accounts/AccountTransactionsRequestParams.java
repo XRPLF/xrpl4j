@@ -79,11 +79,18 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
-  static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerIndexBound ledgerIndexMinimum, LedgerIndexBound ledgerIndexMaximum) {
-    LedgerIndexBound ledgerIndexMin = ledgerIndexMinimum, ledgerIndexMax = ledgerIndexMaximum;
+  static ImmutableAccountTransactionsRequestParams.Builder builder(
+      LedgerIndexBound ledgerIndexMinimum,
+      LedgerIndexBound ledgerIndexMaximum) {
+    LedgerIndexBound ledgerIndexMin = ledgerIndexMinimum;
+    LedgerIndexBound ledgerIndexMax = ledgerIndexMaximum;
 
-    if (ledgerIndexMin == null) ledgerIndexMin = LedgerIndexBound.of(-1);
-    if (ledgerIndexMax == null) ledgerIndexMax = LedgerIndexBound.of(-1);
+    if (ledgerIndexMin == null) {
+      ledgerIndexMin = LedgerIndexBound.of(-1);
+    }
+    if (ledgerIndexMax == null) {
+      ledgerIndexMax = LedgerIndexBound.of(-1);
+    }
 
     return ImmutableAccountTransactionsRequestParams.builder()
         .ledgerIndexMinimum(ledgerIndexMin)

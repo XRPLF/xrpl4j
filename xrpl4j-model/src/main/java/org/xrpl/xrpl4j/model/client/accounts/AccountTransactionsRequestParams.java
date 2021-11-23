@@ -46,6 +46,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   /**
    * Construct a builder for this class with {@link LedgerIndex} field set.
    *
+   * @param ledgerIndex An index of type {@link LedgerIndex} to specify a particular ledger.
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerIndex ledgerIndex) {
@@ -58,6 +59,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   /**
    * Construct a builder for this class with {@link LedgerSpecifier} field set.
    *
+   * @param ledgerSpecifier A specifier of type {@link LedgerSpecifier} to specify a ledger.
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerSpecifier ledgerSpecifier) {
@@ -67,6 +69,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   /**
    * Construct a builder for this class with ledgerHash field set.
    *
+   * @param ledgerHash Hash of type {@link Hash256} of a specific ledger.
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(Hash256 ledgerHash) {
@@ -77,6 +80,8 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   /**
    * Construct a builder for this class with ledgerIndexRange field set.
    *
+   * @param ledgerIndexMinimum A lower bound of ledgerIndex of type {@link LedgerIndexBound}.
+   * @param ledgerIndexMaximum An upper bound of ledgerIndex of type {@link LedgerIndexBound}.
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(

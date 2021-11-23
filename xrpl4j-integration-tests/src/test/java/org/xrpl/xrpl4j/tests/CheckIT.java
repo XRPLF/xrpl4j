@@ -49,7 +49,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -83,7 +83,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey())
       .build();
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
-    assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(cashResponse.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -138,7 +138,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -169,7 +169,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -215,7 +215,7 @@ public class CheckIT extends AbstractIT {
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -246,7 +246,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(

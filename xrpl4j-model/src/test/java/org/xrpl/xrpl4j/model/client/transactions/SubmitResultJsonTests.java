@@ -15,6 +15,8 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.util.Optional;
+
 public class SubmitResultJsonTests extends AbstractJsonTest {
 
   @Test
@@ -25,8 +27,8 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .accountSequenceNext(UnsignedInteger.valueOf(362))
       .applied(true)
       .broadcast(true)
-      .result("tesSUCCESS")
-      .resultMessage("The transaction was applied. Only final in a validated ledger.")
+      .engineResult("tesSUCCESS")
+      .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .kept(true)
       .openLedgerCost(XrpCurrencyAmount.ofDrops(10))
@@ -57,8 +59,8 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .validatedLedgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(21184416)))
       .build();
 
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo(paymentResult.result());
-    assertThat(paymentResult.engineResultMessage()).isNotEmpty().get().isEqualTo(paymentResult.resultMessage());
+    assertThat(paymentResult.result()).isNotEmpty().get().isEqualTo(paymentResult.engineResult());
+    assertThat(paymentResult.resultMessage()).isNotEmpty().isEqualTo(Optional.of(paymentResult.engineResultMessage()));
 
     String json = "{\n" +
       "        \"accepted\" : true,\n" +

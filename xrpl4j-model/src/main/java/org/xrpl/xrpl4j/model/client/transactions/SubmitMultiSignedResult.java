@@ -34,32 +34,33 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return An optionally-present {@link String} containing the result of the submission.
-   * @deprecated Use {@link #result()} instead.
    */
-  @Deprecated
-  @Value.Auxiliary
-  default Optional<String> engineResult() {
-    return Optional.of(result());
-  }
+  @JsonProperty("engine_result")
+  String engineResult();
 
   /**
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return A {@link String} containing the result of the submission.
+   * @deprecated Use {@link #engineResult()} instead.
    */
-  @JsonProperty("engine_result")
-  String result();
+
+  @Deprecated
+  @Value.Auxiliary
+  default Optional<String> result() {
+    return Optional.of(engineResult());
+  }
 
   /**
    * Numeric code indicating the preliminary result of the transaction, directly correlated to {@link #engineResult()}.
    *
    * @return An optionally-present {@link String} containing the result code of the submission.
-   * @deprecated Use {@link #resultCode()} instead.
+   * @deprecated Use {@link #engineResultCode()} instead.
    */
   @Deprecated
   @Value.Auxiliary
-  default Optional<String> engineResultCode() {
-    return Optional.of(resultCode().toString());
+  default Optional<String> resultCode() {
+    return Optional.of(engineResultCode().toString());
   }
 
   /**
@@ -68,7 +69,7 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * @return An {@link Integer} containing the result code of the submission.
    */
   @JsonProperty("engine_result_code")
-  Integer resultCode();
+  Integer engineResultCode();
 
   /**
    * Human-readable explanation of the transaction's preliminary result.

@@ -47,7 +47,7 @@ public class AccountSetIT extends AbstractIT {
         .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -71,13 +71,13 @@ public class AccountSetIT extends AbstractIT {
     sequence = sequence.plus(UnsignedInteger.ONE);
 
     AccountRootFlags flags1 = this.scanForResult(
-        () -> this.getValidatedAccountInfo(wallet.classicAddress())
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
     ).accountData().flags();
 
     assertClearFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
 
     AccountRootFlags flags2 = this.scanForResult(
-        () -> this.getValidatedAccountInfo(wallet.classicAddress())
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
     ).accountData().flags();
 
     assertThat(flags1.getValue() - flags2.getValue())

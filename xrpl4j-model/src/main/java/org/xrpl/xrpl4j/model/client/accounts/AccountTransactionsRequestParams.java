@@ -50,8 +50,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerIndex ledgerIndex) {
-    return ImmutableAccountTransactionsRequestParams.builder()
-        .ledgerSpecifier(
+    return ImmutableAccountTransactionsRequestParams.builder().ledgerSpecifier(
         Optional.of(LedgerSpecifier.of(ledgerIndex))
     );
   }

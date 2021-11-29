@@ -156,7 +156,7 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void builderWithLedgerIndexMin() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
-        .builder(LedgerIndexBound.of(12345), null)
+        .builder(LedgerIndexBound.of(12345), LedgerIndexBound.of(-1))
         .account(Address.of("foo"))
         .build();
 
@@ -167,35 +167,11 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void builderWithLedgerIndexMax() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
-        .builder(null, LedgerIndexBound.of(12345))
+        .builder(LedgerIndexBound.of(-1), LedgerIndexBound.of(12345))
         .account(Address.of("foo"))
         .build();
 
     assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(-1));
     assertThat(params.ledgerIndexMaximum()).isEqualTo(LedgerIndexBound.of(12345));
-  }
-
-  @Test
-  void builderWithLedgerIndexEnforced() {
-    AccountTransactionsRequestParams params = AccountTransactionsRequestParams
-        .builder(LedgerIndex.of(UnsignedInteger.ONE))
-        .account(Address.of("foo"))
-        .build();
-
-    System.out.print(params);
-    assertThat(params.ledgerSpecifier()).isEqualTo(
-        Optional.of(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE))));
-  }
-
-  @Test
-  void builderWithLedgerHashEnforced() {
-    String random = "qmHJUF3lNC6rfEkZa3URngmwIRYU7bKMYKPz4er7UJKnWUItKuBCN9qKqXt8YYJ8";
-
-    AccountTransactionsRequestParams params = AccountTransactionsRequestParams
-        .builder(Hash256.of(random))
-        .account(Address.of("foo"))
-        .build();
-    System.out.print(params);
-    assertThat(params.ledgerSpecifier()).isEqualTo(Optional.of(LedgerSpecifier.of(Hash256.of(random))));
   }
 }

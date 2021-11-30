@@ -37,13 +37,13 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
   /**
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
-   * @return An optionally-present {@link String} containing the result of the submission.
+   * @return {@link String} containing the result of the submission.
    * @deprecated use {@link #result()} instead.
    */
   @Deprecated
   @Value.Auxiliary
-  default Optional<String> engineResult() {
-    return Optional.of(result());
+  default String engineResult() {
+    return result();
   }
 
   /**
@@ -51,7 +51,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    *
    * @return {@link String} containing the result of the submission.
    * @deprecated This will be removed in a future version and replaced by a field of the same type called
-   *     {@link #engineResult()}.
+   *   {@link #engineResult()}.
    */
   @Deprecated
   @JsonProperty("engine_result")
@@ -132,7 +132,7 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * {@code false} indicates the transaction was not broadcast to any other servers.
    *
    * @return {@code true} if this transaction was broadcast to peer servers in the peer-to-peer XRP Ledger network,
-   *     otherwise {@code false}.
+   *   otherwise {@code false}.
    */
   boolean broadcast();
 

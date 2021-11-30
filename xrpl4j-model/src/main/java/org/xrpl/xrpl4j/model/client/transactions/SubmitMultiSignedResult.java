@@ -38,8 +38,8 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    */
   @Deprecated
   @Value.Auxiliary
-  default Optional<String> engineResult() {
-    return Optional.of(result());
+  default String engineResult() {
+    return result();
   }
 
   /**
@@ -47,7 +47,7 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    *
    * @return A {@link String} containing the result of the submission.
    * @deprecated This will be removed in a future version and replaced by a field of the same type called
-   *     {@link #engineResult()}.
+   *   {@link #engineResult()}.
    */
   @Deprecated
   @JsonProperty("engine_result")

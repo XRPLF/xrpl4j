@@ -69,7 +69,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
       .build();
 
     SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isNotEmpty().isEqualTo("tesSUCCESS");
     LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString() +
       result.transactionResult().transaction());
   }

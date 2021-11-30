@@ -42,8 +42,8 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    */
   @Deprecated
   @Value.Auxiliary
-  default String engineResult() {
-    return result();
+  default Optional<String> engineResult() {
+    return Optional.of(result());
   }
 
   /**

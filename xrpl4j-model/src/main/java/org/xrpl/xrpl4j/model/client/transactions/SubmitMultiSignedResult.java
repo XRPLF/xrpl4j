@@ -38,8 +38,8 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    */
   @Deprecated
   @Value.Auxiliary
-  default String engineResult() {
-    return result();
+  default Optional<String> engineResult() {
+    return Optional.of(result());
   }
 
   /**

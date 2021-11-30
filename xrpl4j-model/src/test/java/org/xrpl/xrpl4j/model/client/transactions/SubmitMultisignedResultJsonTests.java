@@ -72,7 +72,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
         .build())
       .build();
 
-    assertThat(result.engineResult()).isNotEmpty().isEqualTo(result.result());
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(result.result());
     assertThat(result.engineResultCode()).isNotEmpty().get().isEqualTo(result.resultCode().toString());
     assertThat(result.engineResultMessage()).isNotEmpty().get().isEqualTo(result.resultMessage());
 

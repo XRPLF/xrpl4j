@@ -57,7 +57,7 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .validatedLedgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(21184416)))
       .build();
 
-    assertThat(paymentResult.engineResult()).isNotEmpty().isEqualTo(paymentResult.result());
+    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo(paymentResult.result());
     assertThat(paymentResult.engineResultMessage()).isNotEmpty().get().isEqualTo(paymentResult.resultMessage());
 
     String json = "{\n" +

@@ -39,7 +39,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    * @deprecated Prefer one of the other defined builders so that you are overtly
-   * specifying which ledger index or type you want.
+   *     specifying which ledger index or type you want.
    */
   @Deprecated
   static ImmutableAccountTransactionsRequestParams.Builder builder() {
@@ -207,7 +207,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * ordered.)
    *
    * @return {@code true} if values should be indexed with the oldest ledger first, otherwise {@code false}. Defaults
-   * to {@code false}.
+   *     to {@code false}.
    */
   @Value.Default
   default boolean forward() {
@@ -243,7 +243,8 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
             },
             ledgerIndexShortcut -> Preconditions.checkArgument(
                 ledgerIndexShortcut.equals(LedgerIndexShortcut.VALIDATED),
-                "Invalid LedgerIndexShortcut. The account_tx API method only accepts 'validated' when specifying a shortcut."
+                "Invalid LedgerIndexShortcut. The account_tx API method only accepts 'validated' when specifying " +
+                    "a shortcut."
             )
         )
     );

@@ -278,7 +278,7 @@ public abstract class AbstractIT {
       .build();
 
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
-    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
     logger.info(
@@ -332,7 +332,7 @@ public abstract class AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
-    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(

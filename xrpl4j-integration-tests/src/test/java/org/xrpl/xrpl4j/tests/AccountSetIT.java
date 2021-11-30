@@ -50,7 +50,7 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -109,7 +109,7 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -145,7 +145,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(

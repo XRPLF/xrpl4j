@@ -236,17 +236,16 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   @Value.Check
   default void validateSpecifierNotCurrentOrClosed() {
     ledgerSpecifier().ifPresent(
-        ledgerSpecifier -> ledgerSpecifier.handle(
-            ledgerHash -> {
-            },
-            ledgerIndex -> {
-            },
-            ledgerIndexShortcut -> Preconditions.checkArgument(
-                ledgerIndexShortcut.equals(LedgerIndexShortcut.VALIDATED),
-                "Invalid LedgerIndexShortcut. The account_tx API method only accepts 'validated' when specifying " +
-                    "a shortcut."
-            )
+      ledgerSpecifier -> ledgerSpecifier.handle(
+        ledgerHash -> {
+        },
+        ledgerIndex -> {
+        },
+        ledgerIndexShortcut -> Preconditions.checkArgument(
+          ledgerIndexShortcut.equals(LedgerIndexShortcut.VALIDATED),
+          "Invalid LedgerIndexShortcut. The account_tx API method only accepts 'validated' when specifying a shortcut."
         )
+      )
     );
   }
 

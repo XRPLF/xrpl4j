@@ -62,7 +62,8 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return An optionally-present {@link String} containing the result message of the submission.
-   * @deprecated Use {@link #resultMessage()} instead.
+   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
+   *   {@link #resultMessage()}.
    */
   @Deprecated
   @Value.Auxiliary
@@ -74,7 +75,10 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return A {@link String} containing the result message of the submission.
+   * @deprecated This will be removed in a future version and replaced by a field of the same type called
+   *   {@link #engineResultMessage()}.
    */
+  @Deprecated
   @JsonProperty("engine_result_message")
   String resultMessage();
 

@@ -38,7 +38,8 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return {@link String} containing the result of the submission.
-   * @deprecated use {@link #result()} instead.
+   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
+   *   {@link #result()}.
    */
   @Deprecated
   @Value.Auxiliary

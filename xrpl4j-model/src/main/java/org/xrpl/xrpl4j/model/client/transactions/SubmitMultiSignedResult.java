@@ -34,7 +34,8 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return An optionally-present {@link String} containing the result of the submission.
-   * @deprecated Use {@link #result()} instead.
+   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
+   *   {@link #result()}.
    */
   @Deprecated
   @Value.Auxiliary

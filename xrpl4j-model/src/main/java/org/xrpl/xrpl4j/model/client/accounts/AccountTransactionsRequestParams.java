@@ -29,8 +29,8 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountTransactionsRequestParams.class)
 @JsonDeserialize(
-    as = ImmutableAccountTransactionsRequestParams.class,
-    using = AccountTransactionsRequestParamsDeserializer.class
+  as = ImmutableAccountTransactionsRequestParams.class,
+  using = AccountTransactionsRequestParamsDeserializer.class
 )
 public interface AccountTransactionsRequestParams extends XrplRequestParams {
 
@@ -39,7 +39,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    *
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    * @deprecated Prefer one of the other defined builders so that you are overtly
-   *     specifying which ledger index or type you want.
+   *   specifying which ledger index or type you want.
    */
   @Deprecated
   static ImmutableAccountTransactionsRequestParams.Builder builder() {
@@ -58,7 +58,8 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   }
 
   /**
-   * Construct a builder for this class with ledgerIndexRange field set.
+   * Construct a builder for this class with {@link LedgerIndexBound}s specified for the
+   * {@link #ledgerIndexMinimum} and {@link #ledgerIndexMaximum} fields.
    *
    * @param ledgerIndexMinimum A lower bound of ledgerIndex of type {@link LedgerIndexBound}.
    * @param ledgerIndexMaximum An upper bound of ledgerIndex of type {@link LedgerIndexBound}.
@@ -66,17 +67,15 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(
-      LedgerIndexBound ledgerIndexMinimum,
-      LedgerIndexBound ledgerIndexMaximum) {
-    LedgerIndexBound ledgerIndexMin = ledgerIndexMinimum;
-    LedgerIndexBound ledgerIndexMax = ledgerIndexMaximum;
-
+    LedgerIndexBound ledgerIndexMinimum,
+    LedgerIndexBound ledgerIndexMaximum
+  ) {
     Objects.requireNonNull(ledgerIndexMinimum);
     Objects.requireNonNull(ledgerIndexMaximum);
 
     return ImmutableAccountTransactionsRequestParams.builder()
-        .ledgerIndexMinimum(ledgerIndexMin)
-        .ledgerIndexMaximum(ledgerIndexMax);
+      .ledgerIndexMinimum(ledgerIndexMinimum)
+      .ledgerIndexMaximum(ledgerIndexMaximum);
   }
 
   /**
@@ -122,10 +121,10 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   default LedgerIndexBound ledgerIndexMinimum() {
     // Gives deprecated field precedence
     return ledgerIndexMin()
-        .map(LedgerIndex::unsignedIntegerValue)
-        .map(UnsignedInteger::intValue)
-        .map(LedgerIndexBound::of)
-        .orElse(LedgerIndexBound.of(-1));
+      .map(LedgerIndex::unsignedIntegerValue)
+      .map(UnsignedInteger::intValue)
+      .map(LedgerIndexBound::of)
+      .orElse(LedgerIndexBound.of(-1));
   }
 
   /**
@@ -140,10 +139,10 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
   default LedgerIndexBound ledgerIndexMaximum() {
     // Gives deprecated field precedence
     return ledgerIndexMax()
-        .map(LedgerIndex::unsignedIntegerValue)
-        .map(UnsignedInteger::intValue)
-        .map(LedgerIndexBound::of)
-        .orElse(LedgerIndexBound.of(-1));
+      .map(LedgerIndex::unsignedIntegerValue)
+      .map(UnsignedInteger::intValue)
+      .map(LedgerIndexBound::of)
+      .orElse(LedgerIndexBound.of(-1));
   }
 
   /**
@@ -186,9 +185,9 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
     // If either ledgerHash or ledgerIndex are specified, return a LedgerSpecifier with the present field,
     // otherwise return empty
     return ledgerHash()
-        .map(LedgerSpecifier::of)
-        .map(Optional::of)
-        .orElseGet(() -> ledgerIndex().map(LegacyLedgerSpecifierUtils::computeLedgerSpecifierFromLedgerIndex));
+      .map(LedgerSpecifier::of)
+      .map(Optional::of)
+      .orElseGet(() -> ledgerIndex().map(LegacyLedgerSpecifierUtils::computeLedgerSpecifierFromLedgerIndex));
   }
 
   /**
@@ -207,7 +206,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * ordered.)
    *
    * @return {@code true} if values should be indexed with the oldest ledger first, otherwise {@code false}. Defaults
-   *     to {@code false}.
+   *   to {@code false}.
    */
   @Value.Default
   default boolean forward() {
@@ -260,10 +259,10 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
     // so that they do not override the ledgerSpecifier.
     if (ledgerSpecifier().isPresent() && (ledgerIndexMinimum() != null || ledgerIndexMaximum() != null)) {
       return AccountTransactionsRequestParams.builder()
-          .from(this)
-          .ledgerIndexMinimum(null)
-          .ledgerIndexMaximum(null)
-          .build();
+        .from(this)
+        .ledgerIndexMinimum(null)
+        .ledgerIndexMaximum(null)
+        .build();
     } else {
       return this;
     }

@@ -43,8 +43,8 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    */
   static AccountInfoRequestParams of(Address account) {
     return builder()
-        .account(account)
-        .build();
+      .account(account)
+      .build();
   }
 
   /**
@@ -94,7 +94,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    * Always true, as {@link #account()} is always an {@link Address}.
    *
    * @return {@code true} if the account field only accepts a public key or XRP Ledger address, otherwise {@code false}.
-   *     Defaults to {@code true}.
+   *   Defaults to {@code true}.
    */
   @Value.Derived
   default boolean strict() {
@@ -107,7 +107,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
    * querying for the data from the current open ledger.
    *
    * @return {@code true} if queue transactions should be returned in the response, {@code false} if not.
-   *     Defaults to {@code false}.
+   *   Defaults to {@code false}.
    */
   @Value.Default
   default boolean queue() {

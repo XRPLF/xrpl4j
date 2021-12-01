@@ -34,7 +34,8 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return An optionally-present {@link String} containing the result of the submission.
-   * @deprecated Use {@link #result()} instead.
+   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
+   *   {@link #result()}.
    */
   @Deprecated
   @Value.Auxiliary
@@ -46,7 +47,10 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
    * @return A {@link String} containing the result of the submission.
+   * @deprecated This will be removed in a future version and replaced by a field of the same type called
+   *   {@link #engineResult()}.
    */
+  @Deprecated
   @JsonProperty("engine_result")
   String result();
 
@@ -54,7 +58,8 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Numeric code indicating the preliminary result of the transaction, directly correlated to {@link #engineResult()}.
    *
    * @return An optionally-present {@link String} containing the result code of the submission.
-   * @deprecated Use {@link #resultCode()} instead.
+   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
+   *   {@link #resultCode()}.
    */
   @Deprecated
   @Value.Auxiliary
@@ -66,7 +71,10 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Numeric code indicating the preliminary result of the transaction, directly correlated to {@link #engineResult()}.
    *
    * @return An {@link Integer} containing the result code of the submission.
+   * @deprecated This will be removed in a future version and replaced by a field of the same type called
+   *   {@link #engineResultCode()}.
    */
+  @Deprecated
   @JsonProperty("engine_result_code")
   Integer resultCode();
 
@@ -74,7 +82,8 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return An optionally-present {@link String} containing the result message of the submission.
-   * @deprecated Use {@link #resultMessage()} instead.
+   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
+   *   {@link #resultMessage()}.
    */
   @Deprecated
   @Value.Auxiliary
@@ -86,7 +95,10 @@ public interface SubmitMultiSignedResult<TxnType extends Transaction> extends Xr
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return A {@link String} containing the result message of the submission.
+   * @deprecated This will be removed in a future version and replaced by a field of the same type called
+   *   {@link #engineResultMessage()}.
    */
+  @Deprecated
   @JsonProperty("engine_result_message")
   String resultMessage();
 

@@ -23,7 +23,66 @@ import java.util.Objects;
  */
 public class AccountSetIT extends AbstractIT {
 
-  // TODO: Make an IT that sets all flags, and unsets only 1, and validate that only that 1 single flag was cleared.
+  @Test
+  public void enableAllAndDisableOne() throws JsonRpcClientErrorException {
+
+    Wallet wallet = createRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
+    assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
+
+    UnsignedInteger sequence = accountInfo.accountData().sequence();
+    //////////////////////
+    // Set asfAccountTxnID (no corresponding ledger flag)
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet accountSet = AccountSet.builder()
+        .account(wallet.classicAddress())
+        .fee(feeResult.drops().openLedgerFee())
+        .sequence(accountInfo.accountData().sequence())
+        .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+        .signingPublicKey(wallet.publicKey())
+        .build();
+
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
+        .isEqualTo(response.transactionResult().hash());
+    logger.info(
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    );
+
+    ///////////////////////
+    // Set flags one-by-one
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(wallet, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(wallet, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(wallet, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(wallet, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(wallet, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+
+    AccountRootFlags flags1 = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+    ).accountData().flags();
+
+    assertClearFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
+
+    AccountRootFlags flags2 = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+    ).accountData().flags();
+
+    assertThat(flags1.getValue() - flags2.getValue())
+        .isEqualTo(AccountRootFlags.GLOBAL_FREEZE.getValue());
+  }
 
 
   @Test

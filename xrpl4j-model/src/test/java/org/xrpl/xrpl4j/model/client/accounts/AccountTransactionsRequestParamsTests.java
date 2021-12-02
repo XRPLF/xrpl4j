@@ -18,7 +18,7 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void constructDefaultParams() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .build();
 
     assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(-1));
@@ -29,7 +29,7 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void constructWithLedgerIndexMax() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerIndexMaximum(LedgerIndexBound.of(12345))
       .build();
 
@@ -41,7 +41,7 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void constructWithledgerIndexMinimum() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerIndexMinimum(LedgerIndexBound.of(12345))
       .build();
 
@@ -53,7 +53,7 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void constructWithLedgerSpecifier() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerSpecifier(Optional.of(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE))))
       .build();
 
@@ -67,7 +67,7 @@ public class AccountTransactionsRequestParamsTests {
     assertThrows(
       IllegalArgumentException.class,
       () -> AccountTransactionsRequestParams.builder()
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .ledgerSpecifier(Optional.of(LedgerSpecifier.CURRENT))
         .build()
     );
@@ -76,7 +76,7 @@ public class AccountTransactionsRequestParamsTests {
   @Test
   void constructWithLedgerSpecifierAndBounds() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerIndexMinimum(LedgerIndexBound.of(12345))
       .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
       .build();
@@ -86,7 +86,7 @@ public class AccountTransactionsRequestParamsTests {
     assertThat(params.ledgerSpecifier()).isNotEmpty();
 
     params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerIndexMaximum(LedgerIndexBound.of(12345))
       .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
       .build();
@@ -96,7 +96,7 @@ public class AccountTransactionsRequestParamsTests {
     assertThat(params.ledgerSpecifier()).isNotEmpty();
 
     params = AccountTransactionsRequestParams.builder()
-      .account(Address.of("foo"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .ledgerIndexMaximum(LedgerIndexBound.of(12345))
       .ledgerIndexMinimum(LedgerIndexBound.of(12345))
       .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
@@ -111,7 +111,7 @@ public class AccountTransactionsRequestParamsTests {
   void builderWithLedgerSpecifier() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerSpecifier.VALIDATED)
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
     System.out.println(params);
@@ -123,7 +123,7 @@ public class AccountTransactionsRequestParamsTests {
   void builderWithLedgerIndex() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerSpecifier.of(UnsignedInteger.ONE))
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
     System.out.print(params);
@@ -136,7 +136,7 @@ public class AccountTransactionsRequestParamsTests {
 
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerSpecifier.of(Hash256.of(random)))
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
     assertThat(params.ledgerSpecifier()).isEqualTo(Optional.of(LedgerSpecifier.of(Hash256.of(random))));
@@ -146,7 +146,7 @@ public class AccountTransactionsRequestParamsTests {
   void builderWithLedgerIndexRange() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerIndexBound.of(12345), LedgerIndexBound.of(12347))
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
     assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(12345));
@@ -157,7 +157,7 @@ public class AccountTransactionsRequestParamsTests {
   void builderWithLedgerIndexMin() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerIndexBound.of(12345), LedgerIndexBound.of(-1))
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
     assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(12345));
@@ -168,7 +168,7 @@ public class AccountTransactionsRequestParamsTests {
   void builderWithLedgerIndexMax() {
     AccountTransactionsRequestParams params = AccountTransactionsRequestParams
         .builder(LedgerIndexBound.of(-1), LedgerIndexBound.of(12345))
-        .account(Address.of("foo"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
     assertThat(params.ledgerIndexMinimum()).isEqualTo(LedgerIndexBound.of(-1));

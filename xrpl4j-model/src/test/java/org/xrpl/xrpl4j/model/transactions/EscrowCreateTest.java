@@ -17,9 +17,9 @@ public class EscrowCreateTest {
     EscrowCreate.builder()
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .account(Address.of("account"))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .amount(XrpCurrencyAmount.ofDrops(1))
-      .destination(Address.of("destination"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .build();
   }
 
@@ -30,9 +30,9 @@ public class EscrowCreateTest {
       () -> EscrowCreate.builder()
         .sequence(UnsignedInteger.ONE)
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
+        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
         .amount(XrpCurrencyAmount.ofDrops(1))
-        .destination(Address.of("destination"))
+        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .cancelAfter(UnsignedLong.ONE)
         .finishAfter(UnsignedLong.valueOf(2L))
         .build(),
@@ -45,9 +45,9 @@ public class EscrowCreateTest {
     EscrowCreate.builder()
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .account(Address.of("account"))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .amount(XrpCurrencyAmount.ofDrops(1))
-      .destination(Address.of("destination"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .cancelAfter(UnsignedLong.valueOf(2L))
       .finishAfter(UnsignedLong.ONE)
       .build();
@@ -60,9 +60,9 @@ public class EscrowCreateTest {
       () -> EscrowCreate.builder()
         .sequence(UnsignedInteger.ONE)
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
+        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
         .amount(XrpCurrencyAmount.ofDrops(1))
-        .destination(Address.of("destination"))
+        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .cancelAfter(UnsignedLong.ONE)
         .finishAfter(UnsignedLong.ONE)
         .build(),

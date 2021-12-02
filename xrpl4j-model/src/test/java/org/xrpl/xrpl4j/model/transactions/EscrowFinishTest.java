@@ -18,18 +18,18 @@ public class EscrowFinishTest {
   public void testNormalizeWithNoFulfillmentNoCondition() {
     EscrowFinish actual = EscrowFinish.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .account(Address.of("account"))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .sequence(UnsignedInteger.ONE)
-      .owner(Address.of("owner"))
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .offerSequence(UnsignedInteger.ZERO)
       .build();
 
     assertThat(actual.condition()).isNotPresent();
     assertThat(actual.fulfillment()).isNotPresent();
     assertThat(actual.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(1));
-    assertThat(actual.account()).isEqualTo(Address.of("account"));
+    assertThat(actual.account()).isEqualTo(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"));
     assertThat(actual.sequence()).isEqualTo(UnsignedInteger.ONE);
-    assertThat(actual.owner()).isEqualTo(Address.of("owner"));
+    assertThat(actual.owner()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"));
     assertThat(actual.offerSequence()).isEqualTo(UnsignedInteger.ZERO);
   }
 
@@ -41,9 +41,9 @@ public class EscrowFinishTest {
       IllegalStateException.class,
       () -> EscrowFinish.builder()
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .sequence(UnsignedInteger.ONE)
-        .owner(Address.of("owner"))
+        .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .offerSequence(UnsignedInteger.ZERO)
         .fulfillment(fulfillment)
         .build(),
@@ -59,9 +59,9 @@ public class EscrowFinishTest {
       IllegalStateException.class,
       () -> EscrowFinish.builder()
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .sequence(UnsignedInteger.ONE)
-        .owner(Address.of("owner"))
+        .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .offerSequence(UnsignedInteger.ZERO)
         .condition(fulfillment.getDerivedCondition())
         .build(),
@@ -77,18 +77,18 @@ public class EscrowFinishTest {
 
     EscrowFinish actual = EscrowFinish.builder()
       .fee(XrpCurrencyAmount.ofDrops(330))
-      .account(Address.of("account"))
+      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .sequence(UnsignedInteger.ONE)
-      .owner(Address.of("owner"))
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .offerSequence(UnsignedInteger.ZERO)
       .fulfillment(fulfillment)
       .condition(fulfillment.getDerivedCondition())
       .build();
 
     assertThat(actual.condition()).isPresent();
-    assertThat(actual.account()).isEqualTo(Address.of("account"));
+    assertThat(actual.account()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"));
     assertThat(actual.sequence()).isEqualTo(UnsignedInteger.ONE);
-    assertThat(actual.owner()).isEqualTo(Address.of("owner"));
+    assertThat(actual.owner()).isEqualTo(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"));
     assertThat(actual.offerSequence()).isEqualTo(UnsignedInteger.ZERO);
 
     assertThat(actual.fulfillment()).isPresent();
@@ -104,9 +104,9 @@ public class EscrowFinishTest {
       IllegalStateException.class,
       () -> EscrowFinish.builder()
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("account"))
+        .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .sequence(UnsignedInteger.ONE)
-        .owner(Address.of("owner"))
+        .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .offerSequence(UnsignedInteger.ZERO)
         .fulfillment(fulfillment)
         .condition(fulfillment.getDerivedCondition())
@@ -119,9 +119,9 @@ public class EscrowFinishTest {
   public void testNormalizeWithVariousFulfillmentSizes() {
     Builder builder = EscrowFinish.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .account(Address.of("account"))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .sequence(UnsignedInteger.ONE)
-      .owner(Address.of("owner"))
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .offerSequence(UnsignedInteger.ZERO);
 
     // 0 bytes

@@ -10,13 +10,20 @@ import org.xrpl.xrpl4j.crypto.core.signing.DelegatedPublicKeyProvider;
 public interface DelegatedKeyPairService extends DelegatedPublicKeyProvider {
 
   /**
-   * Create a new delegated key pair. Because private keys managed by a {@link DelegatedKeyPairService} are
-   * assumed to be inaccessible to this runtime, this method simply returns the public key of the key pair.
+   * Create a new delegated key pair.
+   *
+   * <p>There is often some inherent latency with creating new key pairs on external systems such as an HSM or
+   * a cloud based key management system. In some cases, those external APIs will eagerly return a successful
+   * result before the key pair has actually been generated. Therefore, this method does not return anything,
+   * and callers should not expect that a key pair has been generated on the external system yet just
+   * because this method did not throw an exception.</p>
+   *
+   * <p>With this in mind, users should call this method to create a key pair, then call
+   * {@link #getPublicKey(KeyMetadata)} until it returns a result. Alternatively, the implementation of {@link
+   * #getPublicKey(KeyMetadata)} could poll until it receives a successful result containing a public key.</p>
    *
    * @param keyMetadata The {@link KeyMetadata} identifying the key pair to create.
-   *
-   * @return The {@link PublicKey} of the newly created key pair.
    */
-  PublicKey createKeyPair(KeyMetadata keyMetadata);
+  void createKeyPair(KeyMetadata keyMetadata);
 
 }

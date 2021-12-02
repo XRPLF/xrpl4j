@@ -30,17 +30,17 @@ public class RipplePathFindResultJsonTests extends AbstractJsonTest {
                 .account(Address.of("rfDeu7TPUmyvUrffexjMjq3mMcSQHZSYyA"))
                 .build(),
               PathStep.builder()
-                .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
+                .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
                 .build()
             ),
 
             Lists.newArrayList(
               PathStep.builder()
                 .currency("USD")
-                .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
+                .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
                 .build(),
               PathStep.builder()
-                .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
+                .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
                 .build()
             )
           )
@@ -77,16 +77,16 @@ public class RipplePathFindResultJsonTests extends AbstractJsonTest {
       "                            \"account\": \"rfDeu7TPUmyvUrffexjMjq3mMcSQHZSYyA\"\n" +
       "                        },\n" +
       "                        {\n" +
-      "                            \"account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
+      "                            \"account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\"\n" +
       "                        }\n" +
       "                    ],\n" +
       "                    [\n" +
       "                        {\n" +
       "                            \"currency\": \"USD\",\n" +
-      "                            \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
+      "                            \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\"\n" +
       "                        },\n" +
       "                        {\n" +
-      "                            \"account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
+      "                            \"account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\"\n" +
       "                        }\n" +
       "                    ]\n" +
       "                ],\n" +

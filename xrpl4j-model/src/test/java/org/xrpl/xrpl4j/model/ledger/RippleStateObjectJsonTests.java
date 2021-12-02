@@ -17,7 +17,7 @@ public class RippleStateObjectJsonTests extends AbstractJsonTest {
     RippleStateObject object = RippleStateObject.builder()
       .balance(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
+        .issuer(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .value("-10")
         .build())
       .flags(Flags.RippleStateFlags.of(393216))
@@ -41,7 +41,7 @@ public class RippleStateObjectJsonTests extends AbstractJsonTest {
     String json = "{\n" +
       "    \"Balance\": {\n" +
       "        \"currency\": \"USD\",\n" +
-      "        \"issuer\": \"rrrrrrrrrrrrrrrrrrrrBZbvji\",\n" +
+      "        \"issuer\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
       "        \"value\": \"-10\"\n" +
       "    },\n" +
       "    \"Flags\": 393216,\n" +

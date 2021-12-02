@@ -24,7 +24,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
         RippleStateObject.builder()
           .balance(IssuedCurrencyAmount.builder()
             .currency("ASP")
-            .issuer(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
+            .issuer(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
             .value("0")
             .build())
           .flags(Flags.RippleStateFlags.of(65536))
@@ -47,7 +47,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
         RippleStateObject.builder()
           .balance(IssuedCurrencyAmount.builder()
             .currency("XAU")
-            .issuer(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
+            .issuer(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
             .value("0")
             .build())
           .flags(Flags.RippleStateFlags.of(3342336))
@@ -84,7 +84,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
       "            {\n" +
       "                \"Balance\": {\n" +
       "                    \"currency\": \"ASP\",\n" +
-      "                    \"issuer\": \"rrrrrrrrrrrrrrrrrrrrBZbvji\",\n" +
+      "                    \"issuer\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
       "                    \"value\": \"0\"\n" +
       "                },\n" +
       "                \"Flags\": 65536,\n" +
@@ -108,7 +108,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
       "            {\n" +
       "                \"Balance\": {\n" +
       "                    \"currency\": \"XAU\",\n" +
-      "                    \"issuer\": \"rrrrrrrrrrrrrrrrrrrrBZbvji\",\n" +
+      "                    \"issuer\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
       "                    \"value\": \"0\"\n" +
       "                },\n" +
       "                \"Flags\": 3342336,\n" +

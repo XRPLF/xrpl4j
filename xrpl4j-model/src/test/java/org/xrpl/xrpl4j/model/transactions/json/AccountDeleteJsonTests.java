@@ -14,7 +14,7 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     AccountDelete accountDelete = AccountDelete.builder()
-      .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXma"))
       .fee(XrpCurrencyAmount.ofDrops(5000000))
       .sequence(UnsignedInteger.valueOf(2470665))
       .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
@@ -23,7 +23,7 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
 
     String json = "{\n" +
       "    \"TransactionType\": \"AccountDelete\",\n" +
-      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXma\",\n" +
       "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
       "    \"DestinationTag\": 13,\n" +
       "    \"Fee\": \"5000000\",\n" +

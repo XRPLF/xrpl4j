@@ -17,7 +17,7 @@ public class SetRegularKeyJsonTest extends AbstractJsonTest {
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
-      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
+      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwDa"))
       .build();
 
     String json = "{\n" +
@@ -26,7 +26,7 @@ public class SetRegularKeyJsonTest extends AbstractJsonTest {
       "    \"TransactionType\": \"SetRegularKey\",\n" +
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"12\",\n" +
-      "    \"RegularKey\": \"rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD\"\n" +
+      "    \"RegularKey\": \"rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwDa\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(setRegularKey, json);

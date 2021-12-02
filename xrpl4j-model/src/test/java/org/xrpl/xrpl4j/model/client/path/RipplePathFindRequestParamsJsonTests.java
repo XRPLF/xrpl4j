@@ -23,7 +23,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .destinationAmount(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
         .value("0.001")
         .build())
       .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
@@ -38,7 +38,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
       "            \"destination_amount\": {\n" +
       "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
+      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\",\n" +
       "                \"value\": \"0.001\"\n" +
       "            },\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
@@ -63,7 +63,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .destinationAmount(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
         .value("0.001")
         .build())
       .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
@@ -78,7 +78,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
       "            \"destination_amount\": {\n" +
       "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
+      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\",\n" +
       "                \"value\": \"0.001\"\n" +
       "            },\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
@@ -103,7 +103,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .destinationAmount(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
         .value("0.001")
         .build())
       .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
@@ -118,7 +118,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
       "            \"destination_amount\": {\n" +
       "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
+      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\",\n" +
       "                \"value\": \"0.001\"\n" +
       "            },\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
@@ -141,7 +141,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       .destinationAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .destinationAmount(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
         .value("0.001")
         .build())
       .sourceAccount(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
@@ -156,7 +156,7 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
       "            \"destination_amount\": {\n" +
       "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
+      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\",\n" +
       "                \"value\": \"0.001\"\n" +
       "            },\n" +
       "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +

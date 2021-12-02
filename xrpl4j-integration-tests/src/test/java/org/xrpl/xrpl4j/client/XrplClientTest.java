@@ -35,8 +35,8 @@ public class XrplClientTest {
   public void depositAuthorized() throws JsonRpcClientErrorException {
     DepositAuthorizedRequestParams depositAuthorized = DepositAuthorizedRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
-      .sourceAccount(Address.of("123"))
-      .destinationAccount(Address.of("abc"))
+      .sourceAccount(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .destinationAccount(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .build();
     xrplClient.depositAuthorized(depositAuthorized);
 

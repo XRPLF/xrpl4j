@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
+import org.checkerframework.checker.nullness.Opt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -13,11 +15,12 @@ import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.XAddress;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Optional;
 
 @SuppressWarnings( {"ParameterName", "MethodName", "LocalVariableName"})
-public class XAddressTest {
+public class AddressTest {
 
   private final AddressCodec addressCodec = new AddressCodec();
 
@@ -250,6 +253,32 @@ public class XAddressTest {
       DecodeException.class,
       () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Unsupported X-Address: 64-bit tags are not supported"
+    );
+  }
+
+
+  @Test
+  public void addressWithBadChecksum() {
+    Address address = Address.of("r9cZA1mLK5R5am25ArfXFmqgNwjZgnfk59");
+
+    assertThrows(
+      EncodingFormatException.class,
+      () -> addressCodec.classicAddressToXAddress(address, true),
+      "Checksum does not validate"
+    );
+  }
+
+
+  @Test
+  public void addressWithBadPrefix() {
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> {
+        Address address = Address.of("c9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+        addressCodec.classicAddressToXAddress(address, true);
+      },
+      "Invalid Address: Bad Prefix"
     );
   }
 

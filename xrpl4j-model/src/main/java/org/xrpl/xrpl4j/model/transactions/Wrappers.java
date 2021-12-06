@@ -43,7 +43,7 @@ public class Wrappers {
     public void validateAddress() {
       Preconditions.checkArgument(this.value().startsWith("r"),"Invalid Address: Bad Prefix");
       Preconditions.checkArgument(this.value().length() >= 25 && this.value().length() <= 35,
-        "Classic Addresses must be 34 characters long.");
+        "Classic Addresses must be (25,35) characters long inclusive.");
     }
 
   }

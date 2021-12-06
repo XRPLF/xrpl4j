@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
-import org.checkerframework.checker.nullness.Opt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,7 +13,6 @@ import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.XAddress;
 
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -279,6 +276,27 @@ public class AddressTest {
         addressCodec.classicAddressToXAddress(address, true);
       },
       "Invalid Address: Bad Prefix"
+    );
+  }
+
+  @Test
+  public void addressOfIncorrectLength() {
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> {
+        Address address = Address.of("r9cZA1mLK5R");
+        addressCodec.classicAddressToXAddress(address, true);
+      },
+      "Classic Addresses must be (25,35) characters long inclusive."
+    );
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> {
+        Address address = Address.of("rAJYB9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+        addressCodec.classicAddressToXAddress(address, true);
+      },
+      "Classic Addresses must be (25,35) characters long inclusive."
     );
   }
 

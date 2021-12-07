@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.model.transactions.XAddress;
 
 import java.util.function.Function;
 
+@SuppressWarnings( {"ParameterName", "MethodName", "LocalVariableName"})
 public class AddressCodecTest {
 
   AddressCodec addressCodec;

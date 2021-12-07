@@ -219,23 +219,23 @@ public class XAddressTest {
   }
 
   @Test
-  public void xAddressWithBadPrefix() {
-    XAddress xAddress = XAddress.of("dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g");
+  public void xaddressWithBadPrefix() {
+    XAddress xaddress = XAddress.of("dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g");
 
     assertThrows(
       DecodeException.class,
-      () -> addressCodec.xAddressToClassicAddress(xAddress),
+      () -> addressCodec.xAddressToClassicAddress(xaddress),
       "Invalid X-Address: Bad Prefix"
     );
   }
 
   @Test
-  public void xAddressWith64BitTag() {
-    XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh");
+  public void xaddressWith64BitTag() {
+    XAddress xaddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh");
 
     assertThrows(
       DecodeException.class,
-      () -> addressCodec.xAddressToClassicAddress(xAddress),
+      () -> addressCodec.xAddressToClassicAddress(xaddress),
       "Unsupported X-Address: 64-bit tags are not supported"
     );
   }

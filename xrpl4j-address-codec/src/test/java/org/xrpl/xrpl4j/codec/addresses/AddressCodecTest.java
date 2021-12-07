@@ -177,7 +177,6 @@ public class AddressCodecTest {
     );
   }
 
-
   private void testEncodeDecode(
     Function<UnsignedByteArray, String> encoder,
     Function<String, UnsignedByteArray> decoder,

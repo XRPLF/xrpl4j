@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.codec.addresses;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -39,5 +40,13 @@ public class AddressTest {
       },
       "Classic Addresses must be (25,35) characters long inclusive."
     );
+  }
+
+  @Test
+  public void useValidateAddress() {
+    Address address1 = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+    assertDoesNotThrow(() -> {
+      address1.validateAddress();
+    });
   }
 }

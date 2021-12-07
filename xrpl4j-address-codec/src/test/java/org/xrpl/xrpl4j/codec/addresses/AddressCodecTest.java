@@ -8,7 +8,9 @@ import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.XAddress;
 
 import java.util.function.Function;
 
@@ -152,6 +154,29 @@ public class AddressCodecTest {
       "aB44YfzW24VDEJQ2UuLPV2PvqcPCSoLnL7y5M1EzhdW4LnK5xMS3"
     );
   }
+
+  @Test
+  public void addressWithBadChecksum() {
+    Address address = Address.of("r9cZA1mLK5R5am25ArfXFmqgNwjZgnfk59");
+
+    assertThrows(
+      EncodingFormatException.class,
+      () -> addressCodec.classicAddressToXAddress(address, true),
+      "Checksum does not validate"
+    );
+  }
+
+  @Test
+  public void xAddressWithBadChecksum() {
+    XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV5fdx1mHp98tDMoQXa");
+
+    assertThrows(
+      EncodingFormatException.class,
+      () -> addressCodec.xAddressToClassicAddress(xAddress),
+      "Checksum does not validate"
+    );
+  }
+
 
   private void testEncodeDecode(
     Function<UnsignedByteArray, String> encoder,

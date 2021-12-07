@@ -219,23 +219,23 @@ public class XAddressTest {
   }
 
   @Test
-  public void xaddressWithBadPrefix() {
-    XAddress xaddress = XAddress.of("dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g");
+  public void xAddressWithBadPrefix() {
+    XAddress xAddress = XAddress.of("dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g");
 
     org.junit.jupiter.api.Assertions.assertThrows(
       DecodeException.class,
-      () -> addressCodec.xAddressToClassicAddress(xaddress),
+      () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Invalid X-Address: Bad Prefix"
     );
   }
 
   @Test
-  public void xaddressWith64BitTag() {
-    XAddress xaddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh");
+  public void xAddressWith64BitTag() {
+    XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh");
 
     org.junit.jupiter.api.Assertions.assertThrows(
       DecodeException.class,
-      () -> addressCodec.xAddressToClassicAddress(xaddress),
+      () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Unsupported X-Address: 64-bit tags are not supported"
     );
   }

@@ -167,12 +167,12 @@ public class AddressCodecTest {
   }
 
   @Test
-  public void xaddressWithBadChecksum() {
-    XAddress xaddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV5fdx1mHp98tDMoQXa");
+  public void xAddressWithBadChecksum() {
+    XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV5fdx1mHp98tDMoQXa");
 
     assertThrows(
       EncodingFormatException.class,
-      () -> addressCodec.xAddressToClassicAddress(xaddress),
+      () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Checksum does not validate"
     );
   }

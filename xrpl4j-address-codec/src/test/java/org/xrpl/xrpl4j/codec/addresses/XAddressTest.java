@@ -1,10 +1,10 @@
 package org.xrpl.xrpl4j.codec.addresses;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -177,7 +177,7 @@ public class XAddressTest {
       .test(false)
       .build();
 
-    Assertions.assertThat(fromXAddress).isEqualTo(classicAddress);
+    assertThat(fromXAddress).isEqualTo(classicAddress);
 
     XAddress xAddress = addressCodec.classicAddressToXAddress(
       classicAddressAccountId,
@@ -186,8 +186,8 @@ public class XAddressTest {
     );
     assertThat(xAddress).isEqualTo(mainnetXAddress);
 
-    Assertions.assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
-    Assertions.assertThat(addressCodec.isValidXAddress(xAddress));
+    assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
+    assertThat(addressCodec.isValidXAddress(xAddress));
   }
 
   @ParameterizedTest
@@ -205,7 +205,7 @@ public class XAddressTest {
       .test(true)
       .build();
 
-    Assertions.assertThat(fromXAddress).isEqualTo(classicAddress);
+    assertThat(fromXAddress).isEqualTo(classicAddress);
 
     XAddress xAddress = addressCodec.classicAddressToXAddress(
       classicAddressAccountId,
@@ -214,15 +214,15 @@ public class XAddressTest {
     );
     assertThat(xAddress).isEqualTo(testnetXAddress);
 
-    Assertions.assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
-    Assertions.assertThat(addressCodec.isValidXAddress(xAddress));
+    assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
+    assertThat(addressCodec.isValidXAddress(xAddress));
   }
 
   @Test
   public void xAddressWithBadPrefix() {
     XAddress xAddress = XAddress.of("dGzKGt8CVpWoa8aWL1k18tAdy9Won3PxynvbbpkAqp3V47g");
 
-    org.junit.jupiter.api.Assertions.assertThrows(
+    assertThrows(
       DecodeException.class,
       () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Invalid X-Address: Bad Prefix"
@@ -233,7 +233,7 @@ public class XAddressTest {
   public void xAddressWith64BitTag() {
     XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8zeUygYrCgrPh");
 
-    org.junit.jupiter.api.Assertions.assertThrows(
+    assertThrows(
       DecodeException.class,
       () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Unsupported X-Address: 64-bit tags are not supported"

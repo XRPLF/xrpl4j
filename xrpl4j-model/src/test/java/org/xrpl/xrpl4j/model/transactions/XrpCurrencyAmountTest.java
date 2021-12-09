@@ -10,11 +10,14 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 /**
  * Unit tests for {@link XrpCurrencyAmount}.
  */
 public class XrpCurrencyAmountTest {
+
+  private static final long HALF_XRP_IN_DROPS = 500_000L;
 
   @Test
   public void ofDropsLong() {
@@ -64,4 +67,38 @@ public class XrpCurrencyAmountTest {
     assertThat(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS - 1).toXrp()).isEqualTo(new BigDecimal("99999999999.999999"));
   }
 
+  @Test
+  public void plusXrp() {
+    assertThat(
+      XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
+      .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS));
+
+    assertThat(
+      XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(1L).toXrp())
+      .plus(XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(0L).toXrp()))
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(1L));
+  }
+
+  @Test
+  public void minusXrp() {
+    assertThat(
+      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+  }
+
+  @Test
+  public void timesXrp() {
+    final long TWO_XRP_IN_DROPS = 2_000_000L;
+    assertThat(
+      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
+        .times(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS))
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS*ONE_XRP_IN_DROPS));
+
+    assertThat(
+      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
+        .times(XrpCurrencyAmount.ofDrops(0L))
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+  }
 }

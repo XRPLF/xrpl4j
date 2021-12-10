@@ -68,7 +68,7 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     when(publicKeyMock.value()).thenReturn(UnsignedByteArray.empty());
-    signerAddress = Address.of("");
+    signerAddress = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
     when(keyPairServiceMock.deriveAddress(publicKeyMock.value())).thenReturn(signerAddress);
 
     this.signatureService = new AbstractSignatureService(

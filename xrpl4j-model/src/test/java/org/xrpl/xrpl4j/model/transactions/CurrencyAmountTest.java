@@ -43,7 +43,7 @@ public class CurrencyAmountTest {
   @Test
   public void handleIssuance() {
     final IssuedCurrencyAmount issuedCurrencyAmount = IssuedCurrencyAmount.builder()
-      .issuer(Address.of("foo"))
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .currency("USD")
       .value("100")
       .build();
@@ -93,7 +93,7 @@ public class CurrencyAmountTest {
   @Test
   public void mapIssuance() {
     final IssuedCurrencyAmount issuedCurrencyAmount = IssuedCurrencyAmount.builder()
-      .issuer(Address.of("foo"))
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .currency("USD")
       .value("100")
       .build();

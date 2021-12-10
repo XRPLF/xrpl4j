@@ -25,7 +25,7 @@ public class Wrappers {
   /**
    * A wrapped {@link String} representing an address on the XRPL.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = Address.class)
   @JsonDeserialize(as = Address.class)
@@ -36,12 +36,22 @@ public class Wrappers {
       return this.value();
     }
 
+    /**
+     * Validates that a {@link Address}'s value's length is equal to 34 characters and starts with `r`.
+     */
+    @Value.Check
+    public void validateAddress() {
+      Preconditions.checkArgument(this.value().startsWith("r"),"Invalid Address: Bad Prefix");
+      Preconditions.checkArgument(this.value().length() >= 25 && this.value().length() <= 35,
+        "Classic Addresses must be (25,35) characters long inclusive.");
+    }
+
   }
 
   /**
    * A wrapped {@link String} representing an X-Address on the XRPL.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = XAddress.class)
   @JsonDeserialize(as = XAddress.class)
@@ -97,7 +107,7 @@ public class Wrappers {
    * A {@link CurrencyAmount} for the XRP currency (non-issued). {@link XrpCurrencyAmount}s are a {@link String}
    * representation of an unsigned integer representing the amount in XRP drops.
    */
-  @Value.Immutable(intern = true)
+  @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
   @JsonSerialize(as = XrpCurrencyAmount.class)
   @JsonDeserialize(as = XrpCurrencyAmount.class)

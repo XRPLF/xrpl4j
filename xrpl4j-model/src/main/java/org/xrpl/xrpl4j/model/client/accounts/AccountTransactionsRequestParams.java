@@ -19,6 +19,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
@@ -37,9 +38,44 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * Construct a builder for this class.
    *
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   * @deprecated Prefer one of the other defined builders so that you are overtly
+   *   specifying which ledger index or type you want.
    */
+  @Deprecated
   static ImmutableAccountTransactionsRequestParams.Builder builder() {
     return ImmutableAccountTransactionsRequestParams.builder();
+  }
+
+  /**
+   * Construct a builder for this class with {@link LedgerSpecifier} field set.
+   *
+   * @param ledgerSpecifier A specifier of type {@link LedgerSpecifier} to specify a ledger.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
+  static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerSpecifier ledgerSpecifier) {
+    return ImmutableAccountTransactionsRequestParams.builder().ledgerSpecifier(Optional.ofNullable(ledgerSpecifier));
+  }
+
+  /**
+   * Construct a builder for this class with {@link LedgerIndexBound}s specified for the
+   * {@link #ledgerIndexMinimum} and {@link #ledgerIndexMaximum} fields.
+   *
+   * @param ledgerIndexMinimum A lower bound of ledgerIndex of type {@link LedgerIndexBound}.
+   * @param ledgerIndexMaximum An upper bound of ledgerIndex of type {@link LedgerIndexBound}.
+   *
+   * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
+   */
+  static ImmutableAccountTransactionsRequestParams.Builder builder(
+    LedgerIndexBound ledgerIndexMinimum,
+    LedgerIndexBound ledgerIndexMaximum
+  ) {
+    Objects.requireNonNull(ledgerIndexMinimum);
+    Objects.requireNonNull(ledgerIndexMaximum);
+
+    return ImmutableAccountTransactionsRequestParams.builder()
+      .ledgerIndexMinimum(ledgerIndexMinimum)
+      .ledgerIndexMaximum(ledgerIndexMaximum);
   }
 
   /**

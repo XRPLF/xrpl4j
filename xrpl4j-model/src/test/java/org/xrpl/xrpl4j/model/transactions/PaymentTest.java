@@ -33,8 +33,8 @@ public class PaymentTest {
   private Payment xrpPayment() {
     return Payment.builder()
       .sequence(UnsignedInteger.ONE)
-      .account(Address.of("foo"))
-      .destination(Address.of("dest"))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(1000L))
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();
@@ -43,10 +43,11 @@ public class PaymentTest {
   private Payment issuedCurrencyPayment() {
     return Payment.builder()
       .sequence(UnsignedInteger.ONE)
-      .account(Address.of("foo"))
-      .destination(Address.of("dest"))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(Address.of("foo")).value("500").build())
-      .build();
+      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(
+        Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba")).value("500").build()
+      ).build();
   }
 }

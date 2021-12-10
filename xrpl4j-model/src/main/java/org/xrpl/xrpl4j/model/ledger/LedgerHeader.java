@@ -76,7 +76,7 @@ public interface LedgerHeader {
    * @return A {@link ZonedDateTime} representing the {@link #closeTime()} in human-readable format.
    */
   @JsonProperty("close_time_human")
-  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z")
+  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
   Optional<ZonedDateTime> closeTimeHuman();
 
   /**

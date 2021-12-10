@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP_IN_DROPS;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.ONE_XRP_IN_DROPS;
+import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.TWO_XRP_IN_DROPS;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 
 /**
  * Unit tests for {@link XrpCurrencyAmount}.
@@ -71,12 +71,12 @@ public class XrpCurrencyAmountTest {
   public void plusXrp() {
     assertThat(
       XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
-      .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
+        .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
     ).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS));
 
     assertThat(
       XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(1L).toXrp())
-      .plus(XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(0L).toXrp()))
+        .plus(XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(0L).toXrp()))
     ).isEqualTo(XrpCurrencyAmount.ofDrops(1L));
   }
 
@@ -90,11 +90,11 @@ public class XrpCurrencyAmountTest {
 
   @Test
   public void timesXrp() {
-    final long TWO_XRP_IN_DROPS = 2_000_000L;
+
     assertThat(
       XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
         .times(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS*ONE_XRP_IN_DROPS));
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS * ONE_XRP_IN_DROPS));
 
     assertThat(
       XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)

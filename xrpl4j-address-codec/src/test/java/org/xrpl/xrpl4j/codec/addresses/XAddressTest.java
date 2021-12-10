@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
-import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.XAddress;
 
@@ -218,18 +217,6 @@ public class XAddressTest {
     assertThat(addressCodec.isValidClassicAddress(fromXAddress.classicAddress()));
     assertThat(addressCodec.isValidXAddress(xAddress));
   }
-
-  @Test
-  public void xAddressWithBadChecksum() {
-    XAddress xAddress = XAddress.of("XVLhHMPHU98es4dbozjVtdWzVrDjtV5fdx1mHp98tDMoQXa");
-
-    assertThrows(
-      EncodingFormatException.class,
-      () -> addressCodec.xAddressToClassicAddress(xAddress),
-      "Checksum does not validate"
-    );
-  }
-
 
   @Test
   public void xAddressWithBadPrefix() {

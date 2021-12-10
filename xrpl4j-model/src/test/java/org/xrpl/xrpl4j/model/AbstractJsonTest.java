@@ -69,4 +69,12 @@ public class AbstractJsonTest {
     LedgerObject deserialized = objectMapper.readValue(serialized, LedgerObject.class);
     assertThat(deserialized).isEqualTo(ledgerObject);
   }
+
+  protected void assertCanDeserialize(
+    String json,
+    XrplResult result
+  ) throws JsonProcessingException {
+    XrplResult deserialized = objectMapper.readValue(json, result.getClass());
+    assertThat(deserialized).isEqualTo(result);
+  }
 }

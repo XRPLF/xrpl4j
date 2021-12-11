@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,16 +7,17 @@ import com.google.common.primitives.UnsignedLong;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.signing.BouncyCastleSignatureService;
+import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.bc.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;

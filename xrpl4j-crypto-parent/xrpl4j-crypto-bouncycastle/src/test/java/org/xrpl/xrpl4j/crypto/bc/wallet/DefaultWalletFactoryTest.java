@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.wallet;
+package org.xrpl.xrpl4j.crypto.bc.wallet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +9,9 @@ import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
+import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 
 /**
  * Unit tests for {@link DefaultWalletFactory}.

@@ -1,18 +1,23 @@
-package org.xrpl.xrpl4j.crypto.core.wallet;
+package org.xrpl.xrpl4j.crypto.bc.wallet;
 
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
+import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 
 import java.util.Objects;
 
 /**
  * Default implementation of {@link WalletFactory}.
  */
+// TODO: Call this BcWalletFactory
 public class DefaultWalletFactory implements WalletFactory {
 
   private static final WalletFactory INSTANCE = new DefaultWalletFactory(
@@ -87,6 +92,7 @@ public class DefaultWalletFactory implements WalletFactory {
     return Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
+      .address(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()))
       .build();
   }
 

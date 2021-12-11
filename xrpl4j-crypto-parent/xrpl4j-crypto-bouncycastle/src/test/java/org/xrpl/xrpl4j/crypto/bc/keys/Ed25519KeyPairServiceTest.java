@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.keys;
+package org.xrpl.xrpl4j.crypto.bc.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,6 +7,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 
 /**
  * Unit tests for {@link Ed25519KeyPairService}.

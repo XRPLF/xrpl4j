@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.keys;
+package org.xrpl.xrpl4j.crypto.bc.keys;
 
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
@@ -8,6 +8,12 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
+import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPairService;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 
 import java.util.Objects;
 

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,13 +16,13 @@ import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.signing.DerivedKeyDelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;

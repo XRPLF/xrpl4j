@@ -8,7 +8,7 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
@@ -52,12 +52,12 @@ public class TransactUsingSignatureService extends AbstractIT {
 
     final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
     final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
-    final Address sourceWalletAddress = AddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
     this.fundAccount(sourceWalletAddress);
 
     final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
     final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
-    final Address destinationWalletAddress = AddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
     this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
@@ -85,12 +85,12 @@ public class TransactUsingSignatureService extends AbstractIT {
 
     final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
     final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
-    final Address sourceWalletAddress = AddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
     this.fundAccount(sourceWalletAddress);
 
     final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
     final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
-    final Address destinationWalletAddress = AddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
     this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();

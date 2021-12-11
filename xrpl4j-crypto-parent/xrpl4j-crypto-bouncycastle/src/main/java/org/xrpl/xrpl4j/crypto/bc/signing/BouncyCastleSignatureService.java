@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -10,13 +10,14 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.EcDsaSignature;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
@@ -45,7 +46,7 @@ public class BouncyCastleSignatureService extends AbstractSignatureService imple
   public BouncyCastleSignatureService() {
     this(
       new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
-      AddressUtils.getInstance(),
+      BcAddressUtils.getInstance(),
       new Ed25519Signer(),
       new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()))
     );

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
@@ -18,23 +18,24 @@ import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractDelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractDelegatedTransactionSigner;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractDelegatedTransactionVerifier;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.EcDsaSignature;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
@@ -60,11 +61,15 @@ import java.util.Set;
  * requirements, consider a different implementation of {@link DelegatedSignatureService}.</p>
  */
 @SuppressWarnings("UnstableApiUsage")
+// TODO: Make Ed25519KeyPairService and Secp256k1KeyPairService and interface, and move back to core. Then this class can
+// be moved to core also. Plus, Ed25519KeyPairService should be BcEd25519KeyPairService so that it can coexist with
+// some other type in the future.
 public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureService {
 
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   private final VersionType versionType;
+  // TODO: Maybe just make this a KeyPairService?
   private final Ed25519KeyPairService ed25519KeyPairService;
   private final Secp256k1KeyPairService secp256k1KeyPairService;
 
@@ -341,7 +346,7 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
       this(
         privateKey,
         new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
-        AddressUtils.getInstance()
+        BcAddressUtils.getInstance()
       );
     }
 

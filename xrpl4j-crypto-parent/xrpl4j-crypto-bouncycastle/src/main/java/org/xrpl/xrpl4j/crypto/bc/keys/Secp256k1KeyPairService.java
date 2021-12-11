@@ -1,6 +1,6 @@
-package org.xrpl.xrpl4j.crypto.core.keys;
+package org.xrpl.xrpl4j.crypto.bc.keys;
 
-import static org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService.Secp256k1.EC_DOMAIN_PARAMETERS;
+import static org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService.Secp256k1.EC_DOMAIN_PARAMETERS;
 
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -8,6 +8,12 @@ import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
+import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPairService;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 
 import java.math.BigInteger;
 import java.util.Objects;

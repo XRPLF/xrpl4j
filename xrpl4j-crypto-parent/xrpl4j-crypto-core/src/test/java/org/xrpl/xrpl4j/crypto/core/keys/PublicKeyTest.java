@@ -1,11 +1,15 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_PUBLIC_KEY;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_PUBLIC_KEY_B58;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_PUBLIC_KEY_HEX;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY_B58;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY_HEX;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -15,90 +19,45 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class PublicKeyTest {
 
-  private Ed25519KeyPairService ed25519KeyPairService;
-  private Secp256k1KeyPairService secp256k1KeyPairService;
-
-  private PublicKey edPublicKey;
-  private PublicKey ecPublicKey;
-
-  @BeforeEach
-  public void setUp() {
-    this.ed25519KeyPairService = Ed25519KeyPairService.getInstance();
-    this.secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
-
-    this.edPublicKey = ed25519KeyPairService
-      .deriveKeyPair(Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))).publicKey();
-    this.ecPublicKey = secp256k1KeyPairService
-      .deriveKeyPair(Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))).publicKey();
-  }
-
   @Test
   public void fromBase58EncodedStringEd25519() {
-    final String base58EncodedPublicKey = "aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B";
-    assertThat(PublicKey.fromBase58EncodedPublicKey(base58EncodedPublicKey).base58Value())
-      .isEqualTo(base58EncodedPublicKey);
+    assertThat(PublicKey.fromBase58EncodedPublicKey(ED_PUBLIC_KEY_B58).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase58EncodedStringSecp256k1() {
-    final String base58EncodedPublicKey = "aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk";
-    assertThat(PublicKey.fromBase58EncodedPublicKey(base58EncodedPublicKey).base58Value())
-      .isEqualTo(base58EncodedPublicKey);
+    assertThat(PublicKey.fromBase58EncodedPublicKey(EC_PUBLIC_KEY_B58).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase16EncodedStringEd25519() {
-    final Seed seed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
-    final KeyPair keyPair = ed25519KeyPairService.deriveKeyPair(seed);
-    final PublicKey publicKey = keyPair.publicKey();
-
-    final String expectedBase58EncodedPublicKey = "aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B";
-    final String expectedBase16EncodedPublicKey = "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE";
-
-    assertThat(publicKey.base58Value()).isEqualTo(expectedBase58EncodedPublicKey);
-    assertThat(publicKey.base16Value()).isEqualTo(expectedBase16EncodedPublicKey);
-    assertThat(AddressCodec.getInstance().encodeAccountPublicKey(publicKey.value()))
-      .isEqualTo(expectedBase58EncodedPublicKey);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase16EncodedStringSecp256k1() {
-    final Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
-    final KeyPair keyPair = secp256k1KeyPairService.deriveKeyPair(seed);
-
-    final String expectedBase58EncodedPublicKey = "aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk";
-    final String expectedBase16EncodedPublicKey = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
-
-    assertThat(keyPair.publicKey().base58Value()).isEqualTo(expectedBase58EncodedPublicKey);
-    assertThat(keyPair.publicKey().base16Value()).isEqualTo(expectedBase16EncodedPublicKey);
-    assertThat(AddressCodec.getInstance().encodeAccountPublicKey(keyPair.publicKey().value()))
-      .isEqualTo(expectedBase58EncodedPublicKey);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
   }
 
   @Test
   public void versionTypeSecp256k1() {
-    final Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
-    final PublicKey publicKey = secp256k1KeyPairService.deriveKeyPair(seed).publicKey();
-    assertThat(publicKey.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(EC_PUBLIC_KEY.versionType()).isEqualTo(VersionType.SECP256K1);
   }
 
   @Test
   public void versionTypeEd25519() {
-    final Seed seed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
-    final PublicKey publicKey = ed25519KeyPairService.deriveKeyPair(seed).publicKey();
-    assertThat(publicKey.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(ED_PUBLIC_KEY.versionType()).isEqualTo(VersionType.ED25519);
   }
 
   @Test
   void hexValue() {
-    assertThat(edPublicKey.base16Value()).isEqualTo(
-      "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-    assertThat(edPublicKey.base16Value()).isEqualTo(
-      "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-    assertThat(edPublicKey.base16Value()).isEqualTo(
-      "ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
-    assertThat(ecPublicKey.base16Value()).isEqualTo(
-      "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
+    // Call this multiple times to ensure immutability...
+    assertThat(ED_PUBLIC_KEY.base16Value()).isEqualTo(ED_PUBLIC_KEY_HEX);
+    assertThat(ED_PUBLIC_KEY.base16Value()).isEqualTo(ED_PUBLIC_KEY_HEX);
+
+    // Call this multiple times to ensure immutability...
+    assertThat(EC_PUBLIC_KEY.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
+    assertThat(EC_PUBLIC_KEY.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
   }
 
   @Test
@@ -130,46 +89,47 @@ public class PublicKeyTest {
 
   @Test
   void base58Value() {
-    assertThat(edPublicKey.base58Value()).isEqualTo("aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B");
-    assertThat(ecPublicKey.base58Value()).isEqualTo("aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk");
+    assertThat(ED_PUBLIC_KEY.base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
+    assertThat(EC_PUBLIC_KEY.base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
   }
 
   @Test
   void testEquals() {
-    assertThat(edPublicKey).isEqualTo(edPublicKey);
-    assertThat(ecPublicKey).isEqualTo(ecPublicKey);
-    assertThat(edPublicKey).isNotEqualTo(ecPublicKey);
-    assertThat(ecPublicKey).isNotEqualTo(edPublicKey);
-    assertThat(ecPublicKey).isNotEqualTo(new Object());
+    assertThat(ED_PUBLIC_KEY).isEqualTo(ED_PUBLIC_KEY);
+    assertThat(ED_PUBLIC_KEY).isNotEqualTo(EC_PUBLIC_KEY);
+    assertThat(ED_PUBLIC_KEY).isNotEqualTo(new Object());
+
+    assertThat(EC_PUBLIC_KEY).isEqualTo(EC_PUBLIC_KEY);
+    assertThat(EC_PUBLIC_KEY).isNotEqualTo(ED_PUBLIC_KEY);
+    assertThat(EC_PUBLIC_KEY).isNotEqualTo(new Object());
   }
 
   @Test
   void testHashCode() {
-    assertThat(edPublicKey.hashCode()).isEqualTo(edPublicKey.hashCode());
-    assertThat(ecPublicKey.hashCode()).isEqualTo(ecPublicKey.hashCode());
-    assertThat(edPublicKey.hashCode()).isNotEqualTo(ecPublicKey.hashCode());
+    assertThat(ED_PUBLIC_KEY.hashCode()).isEqualTo(ED_PUBLIC_KEY.hashCode());
+    assertThat(ED_PUBLIC_KEY.hashCode()).isNotEqualTo(EC_PUBLIC_KEY.hashCode());
+
+    assertThat(EC_PUBLIC_KEY.hashCode()).isEqualTo(EC_PUBLIC_KEY.hashCode());
+    assertThat(EC_PUBLIC_KEY.hashCode()).isNotEqualTo(ED_PUBLIC_KEY.hashCode());
   }
 
   @Test
   void testToString() {
-    assertThat(edPublicKey.toString()).isEqualTo(
-      "PublicKey{value=UnsignedByteArray{" +
-        "unsignedBytes=List(size=33)}, " +
-        "base58Value=aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B, " +
-        "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE, " +
-        "versionType=ED25519" +
-        "}");
-    assertThat(ecPublicKey.toString()).isEqualTo("PublicKey{value=UnsignedByteArray{" +
-      "unsignedBytes=List(size=33)}, " +
-      "base58Value=aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk, " +
-      "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " +
-      "versionType=SECP256K1" +
-      "}");
+    assertThat(ED_PUBLIC_KEY.toString()).isEqualTo(
+      "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, "
+        + "base58Value=aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B, "
+        + "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE, " + "versionType=ED25519"
+        + "}");
+    assertThat(EC_PUBLIC_KEY.toString()).isEqualTo(
+      "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, "
+        + "base58Value=aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk, "
+        + "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " + "versionType=SECP256K1"
+        + "}");
   }
 
   @Test
   void jsonSerializeAndDeserializeEd() throws JsonProcessingException {
-    String json = ObjectMapperFactory.create().writeValueAsString(edPublicKey);
+    String json = ObjectMapperFactory.create().writeValueAsString(ED_PUBLIC_KEY);
     assertThat(json).isEqualTo("\"ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE\"");
 
     PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
@@ -178,7 +138,7 @@ public class PublicKeyTest {
 
   @Test
   void jsonSerializeAndDeserializeEc() throws JsonProcessingException {
-    String json = ObjectMapperFactory.create().writeValueAsString(ecPublicKey);
+    String json = ObjectMapperFactory.create().writeValueAsString(EC_PUBLIC_KEY);
     assertThat(json).isEqualTo("\"027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9\"");
 
     PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);

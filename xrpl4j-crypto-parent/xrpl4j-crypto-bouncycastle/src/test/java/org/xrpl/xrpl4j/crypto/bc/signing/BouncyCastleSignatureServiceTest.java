@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,11 +22,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
@@ -73,7 +74,7 @@ class BouncyCastleSignatureServiceTest {
   public void setUp() {
     MockitoAnnotations.openMocks(this);
 
-    AddressUtils addressUtils = AddressUtils.getInstance();
+    AddressUtils addressUtils = BcAddressUtils.getInstance();
     Ed25519KeyPairService ed25519KeyPairService = Ed25519KeyPairService.getInstance();
     this.ed25519KeyPair = ed25519KeyPairService.deriveKeyPair(
       Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))

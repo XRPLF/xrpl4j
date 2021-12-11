@@ -16,7 +16,7 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
-import org.xrpl.xrpl4j.crypto.bc.BouncyCastleSignatureService;
+import org.xrpl.xrpl4j.crypto.bc.signing.BouncyCastleSignatureService;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.EcDsaSignature;
 import org.xrpl.xrpl4j.keypairs.HashUtils;

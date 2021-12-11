@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.crypto.core.jackson.modules;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY_HEX;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -17,7 +18,7 @@ import java.io.IOException;
  */
 class PublicKeySerializerTest {
 
-  private static final String HEX_PUBLIC_KEY = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
+
   private PublicKeySerializer serializer;
 
   @BeforeEach
@@ -28,9 +29,9 @@ class PublicKeySerializerTest {
   @Test
   void testDeserialize() throws IOException {
     JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
-    PublicKey expected = PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY);
+    PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
 
     serializer.serialize(expected, jsonGeneratorMock, mock(SerializerProvider.class));
-    verify(jsonGeneratorMock).writeString(HEX_PUBLIC_KEY);
+    verify(jsonGeneratorMock).writeString(ED_PUBLIC_KEY_HEX);
   }
 }

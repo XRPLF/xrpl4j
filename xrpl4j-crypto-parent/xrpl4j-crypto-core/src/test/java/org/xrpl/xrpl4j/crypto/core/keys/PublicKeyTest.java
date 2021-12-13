@@ -116,14 +116,16 @@ public class PublicKeyTest {
   @Test
   void testToString() {
     assertThat(ED_PUBLIC_KEY.toString()).isEqualTo(
-      "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, "
-        + "base58Value=aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B, "
-        + "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE, " + "versionType=ED25519"
-        + "}");
+      "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, " +
+        "base58Value=aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B, " +
+        "base16Value=ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE, " +
+        "versionType=ED25519" +
+        "}");
     assertThat(EC_PUBLIC_KEY.toString()).isEqualTo(
-      "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, "
-        + "base58Value=aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk, "
-        + "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " + "versionType=SECP256K1"
+      "PublicKey{value=UnsignedByteArray{" + "unsignedBytes=List(size=33)}, " +
+        "base58Value=aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk, " +
+        "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " +
+        "versionType=SECP256K1"
         + "}");
   }
 

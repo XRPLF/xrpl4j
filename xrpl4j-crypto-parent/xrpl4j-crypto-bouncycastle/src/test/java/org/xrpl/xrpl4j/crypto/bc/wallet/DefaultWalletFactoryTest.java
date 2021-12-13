@@ -14,11 +14,11 @@ import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 
 /**
- * Unit tests for {@link DefaultWalletFactory}.
+ * Unit tests for {@link BcWalletFactory}.
  */
 class DefaultWalletFactoryTest {
 
-  private final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+  private final WalletFactory walletFactory = BcWalletFactory.getInstance();
 
   @SuppressWarnings("checkstyle:LocalVariableName")
   @Test

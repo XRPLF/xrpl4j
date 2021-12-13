@@ -13,7 +13,7 @@ import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.signing.BouncyCastleSignatureService;
 import org.xrpl.xrpl4j.crypto.bc.signing.DerivedKeyDelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.bc.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
@@ -76,7 +76,7 @@ public abstract class AbstractIT {
    */
   protected AbstractIT() {
     this.xrplClient = xrplEnvironment.getXrplClient();
-    this.walletFactory = DefaultWalletFactory.getInstance();
+    this.walletFactory = BcWalletFactory.getInstance();
     this.signatureService = this.constructSignatureService();
     this.delegatedSignatureServiceEd25519 = this.constructDelegatedSignatureServiceEd25519();
     this.delegatedSignatureServiceSecp256k1 = this.constructDelegatedSignatureServiceSecp256k1();

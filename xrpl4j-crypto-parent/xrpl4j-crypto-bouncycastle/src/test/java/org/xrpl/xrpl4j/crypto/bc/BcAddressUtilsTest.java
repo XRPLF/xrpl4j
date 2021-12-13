@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.bc.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
@@ -22,7 +22,7 @@ class BcAddressUtilsTest {
 
   @Test
   public void deriveAddress() {
-    PublicKey publicKey = DefaultWalletFactory.getInstance()
+    PublicKey publicKey = BcWalletFactory.getInstance()
       .fromSeed(Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))).publicKey();
     Address address = BcAddressUtils.getInstance().deriveAddress(publicKey);
     assertThat(address.value()).isEqualTo("rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466");

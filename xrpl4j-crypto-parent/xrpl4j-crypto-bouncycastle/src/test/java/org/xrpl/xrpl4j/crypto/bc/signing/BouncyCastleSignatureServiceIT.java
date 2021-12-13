@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.bc.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
@@ -72,10 +72,10 @@ class BouncyCastleSignatureServiceIT {
     assertThat(secp256k1KeyPairOther.publicKey().base16Value())
       .isEqualTo("02576CB07495A6A03F1B5BD812721E2358304A6FA31ADF7781B8A0F9F59D3726DC");
 
-    ed25519Wallet = DefaultWalletFactory.getInstance().fromKeyPair(ed25519KeyPair);
-    ed25519WalletOther = DefaultWalletFactory.getInstance().fromKeyPair(ed25519KeyPairOther);
-    secp256k1Wallet = DefaultWalletFactory.getInstance().fromKeyPair(secp256k1KeyPair);
-    secp256k1WalletOther = DefaultWalletFactory.getInstance().fromKeyPair(secp256k1KeyPairOther);
+    ed25519Wallet = BcWalletFactory.getInstance().fromKeyPair(ed25519KeyPair);
+    ed25519WalletOther = BcWalletFactory.getInstance().fromKeyPair(ed25519KeyPairOther);
+    secp256k1Wallet = BcWalletFactory.getInstance().fromKeyPair(secp256k1KeyPair);
+    secp256k1WalletOther = BcWalletFactory.getInstance().fromKeyPair(secp256k1KeyPairOther);
 
     this.payment = Payment.builder()
       .account(ed25519Wallet.address())

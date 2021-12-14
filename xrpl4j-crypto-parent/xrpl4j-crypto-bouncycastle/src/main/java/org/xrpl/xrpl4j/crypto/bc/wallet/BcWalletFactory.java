@@ -32,8 +32,10 @@ public class BcWalletFactory implements WalletFactory {
    * @param ed25519KeyPairService   An {@link Ed25519KeyPairService}.
    * @param secp256k1KeyPairService A {@link Secp256k1KeyPairService}.
    */
-  public BcWalletFactory(final Ed25519KeyPairService ed25519KeyPairService,
-    final Secp256k1KeyPairService secp256k1KeyPairService) {
+  public BcWalletFactory(
+    final Ed25519KeyPairService ed25519KeyPairService,
+    final Secp256k1KeyPairService secp256k1KeyPairService
+  ) {
     this.ed25519KeyPairService = Objects.requireNonNull(ed25519KeyPairService);
     this.secp256k1KeyPairService = Objects.requireNonNull(secp256k1KeyPairService);
   }
@@ -69,8 +71,7 @@ public class BcWalletFactory implements WalletFactory {
 
     return seed.decodedSeed().type()
       .map(versionType -> versionType.equals(VersionType.ED25519) ?
-        this.ed25519KeyPairService : this.secp256k1KeyPairService
-      )
+        this.ed25519KeyPairService : this.secp256k1KeyPairService)
       .map(service -> service.deriveKeyPair(seed))
       .map(this::fromKeyPair)
       .orElseThrow(() -> new IllegalArgumentException("Unsupported seed type."));

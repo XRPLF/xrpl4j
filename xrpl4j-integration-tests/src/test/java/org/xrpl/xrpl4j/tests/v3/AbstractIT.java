@@ -325,6 +325,18 @@ public abstract class AbstractIT {
     return new BcSignatureService();
   }
 
+  protected Wallet constructRandomAccount() {
+    ///////////////////////
+    // Create the account
+    SeedWalletGenerationResult seedResult = walletFactory.randomWallet();
+    final Wallet wallet = seedResult.wallet();
+    logger.info("Generated testnet wallet with Address={}", wallet.address());
+
+    fundAccount(wallet);
+
+    return wallet;
+  }
+
   private KeyStore loadKeyStore() {
     final String jksFileName = "crypto/crypto.p12";
     final char[] jksPassword = "password".toCharArray();

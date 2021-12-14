@@ -36,6 +36,16 @@ public class Wrappers {
       return this.value();
     }
 
+    /**
+     * Validates that a {@link Address}'s value's length is equal to 34 characters and starts with `r`.
+     */
+    @Value.Check
+    public void validateAddress() {
+      Preconditions.checkArgument(this.value().startsWith("r"),"Invalid Address: Bad Prefix");
+      Preconditions.checkArgument(this.value().length() >= 25 && this.value().length() <= 35,
+        "Classic Addresses must be (25,35) characters long inclusive.");
+    }
+
   }
 
   /**

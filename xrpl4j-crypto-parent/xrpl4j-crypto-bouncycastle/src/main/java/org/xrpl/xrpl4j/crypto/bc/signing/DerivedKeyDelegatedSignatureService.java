@@ -158,9 +158,7 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   }
 
   @Override
-  public <T extends Transaction> SignatureWithKeyMetadata multiSign(
-    final KeyMetadata keyMetadata, final T transaction
-  ) {
+  public <T extends Transaction> Signature multiSign(final KeyMetadata keyMetadata, final T transaction) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
     return getSignatureServiceSafe(keyMetadata).multiSign(keyMetadata, transaction);

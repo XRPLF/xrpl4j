@@ -39,7 +39,7 @@ public abstract class AbstractDelegatedTransactionSigner implements DelegatedTra
     Objects.requireNonNull(transaction);
 
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
-    final Signature signature = this.signingHelper(keyMetadata, signableTransactionBytes).transactionSignature();
+    final Signature signature = this.signingHelper(keyMetadata, signableTransactionBytes);
     return this.signatureUtils.addSignatureToTransaction(transaction, signature);
   }
 
@@ -49,11 +49,11 @@ public abstract class AbstractDelegatedTransactionSigner implements DelegatedTra
     Objects.requireNonNull(unsignedClaim);
 
     final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
-    return this.signingHelper(keyMetadata, signableBytes).transactionSignature();
+    return this.signingHelper(keyMetadata, signableBytes);
   }
 
   @Override
-  public <T extends Transaction> SignatureWithKeyMetadata multiSign(KeyMetadata keyMetadata, T transaction) {
+  public <T extends Transaction> Signature multiSign(KeyMetadata keyMetadata, T transaction) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transaction);
 
@@ -71,32 +71,24 @@ public abstract class AbstractDelegatedTransactionSigner implements DelegatedTra
    *
    * @return A {@link SignatureWithPublicKey}.
    */
-  private SignatureWithKeyMetadata signingHelper(
+  private Signature signingHelper(
     final KeyMetadata keyMetadata, final UnsignedByteArray signableTransactionBytes
   ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(signableTransactionBytes);
 
     final PublicKey publicKey = this.getPublicKey(keyMetadata);
-    final Signature signature;
     switch (publicKey.versionType()) {
       case ED25519: {
-        signature = this.edDsaSign(keyMetadata, signableTransactionBytes);
-        break;
+        return this.edDsaSign(keyMetadata, signableTransactionBytes);
       }
       case SECP256K1: {
-        signature = this.ecDsaSign(keyMetadata, signableTransactionBytes);
-        break;
+        return this.ecDsaSign(keyMetadata, signableTransactionBytes);
       }
       default: {
         throw new IllegalArgumentException("Unhandled PrivateKey VersionType: {}" + keyMetadata);
       }
     }
-
-    return SignatureWithKeyMetadata.builder()
-      .signingKeyMetadata(keyMetadata)
-      .transactionSignature(signature)
-      .build();
   }
 
   /**

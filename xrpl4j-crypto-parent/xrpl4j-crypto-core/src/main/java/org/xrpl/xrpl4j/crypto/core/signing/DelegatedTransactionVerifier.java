@@ -1,7 +1,5 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Set;

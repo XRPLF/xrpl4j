@@ -41,7 +41,7 @@ import java.math.BigInteger;
 import java.util.Set;
 
 /**
- * Unit tests for {@link BouncyCastleSignatureService}.
+ * Unit tests for {@link BcSignatureService}.
  */
 class BouncyCastleSignatureServiceTest {
 
@@ -68,7 +68,7 @@ class BouncyCastleSignatureServiceTest {
   private KeyPair secp256k1KeyPair;
   private Address secp256k1SignerAddress;
 
-  private BouncyCastleSignatureService signatureService;
+  private BcSignatureService signatureService;
 
   @BeforeEach
   public void setUp() {
@@ -111,7 +111,7 @@ class BouncyCastleSignatureServiceTest {
     }
     when(ecdsaSignerMock.generateSignature(any())).thenReturn(bigInts);
 
-    this.signatureService = new BouncyCastleSignatureService(
+    this.signatureService = new BcSignatureService(
       signatureUtilsMock, addressServiceMock, ed25519SignerMock, ecdsaSignerMock
     );
   }
@@ -119,16 +119,16 @@ class BouncyCastleSignatureServiceTest {
   @Test
   void constructorWithNulls() {
     // 4-arg Constructor
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       null, addressServiceMock, ed25519SignerMock, ecdsaSignerMock
     ));
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       signatureUtilsMock, null, ed25519SignerMock, ecdsaSignerMock
     ));
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       signatureUtilsMock, addressServiceMock, null, ecdsaSignerMock
     ));
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       signatureUtilsMock, addressServiceMock, ed25519SignerMock, null
     ));
   }

@@ -35,7 +35,7 @@ import java.util.Objects;
  * @see "https://www.bouncycastle.org/java.html"
  * @see "https://www.bouncycastle.org/fips-java/BCFipsIn100.pdf"
  */
-public class BouncyCastleSignatureService extends AbstractSignatureService implements SignatureService {
+public class BcSignatureService extends AbstractSignatureService implements SignatureService {
 
   private final Ed25519Signer ed25519Signer;
   private final ECDSASigner ecdsaSigner;
@@ -43,7 +43,7 @@ public class BouncyCastleSignatureService extends AbstractSignatureService imple
   /**
    * Required-args Constructor for use in development mode.
    */
-  public BouncyCastleSignatureService() {
+  public BcSignatureService() {
     this(
       new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
       BcAddressUtils.getInstance(),
@@ -60,7 +60,7 @@ public class BouncyCastleSignatureService extends AbstractSignatureService imple
    * @param ed25519Signer  An {@link Ed25519Signer}.
    * @param ecdsaSigner    An {@link ECDSASigner}.
    */
-  public BouncyCastleSignatureService(
+  public BcSignatureService(
     final SignatureUtils signatureUtils,
     final AddressUtils addressService,
     final Ed25519Signer ed25519Signer,

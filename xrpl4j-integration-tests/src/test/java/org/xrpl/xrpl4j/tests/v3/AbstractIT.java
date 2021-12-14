@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.bc.signing.BouncyCastleSignatureService;
+import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.bc.signing.DerivedKeyDelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
@@ -322,7 +322,7 @@ public abstract class AbstractIT {
   }
 
   protected SignatureService constructSignatureService() {
-    return new BouncyCastleSignatureService();
+    return new BcSignatureService();
   }
 
   private KeyStore loadKeyStore() {

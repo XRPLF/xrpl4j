@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * An Integration Test for {@link BouncyCastleSignatureService} that use actual implementations.
+ * An Integration Test for {@link BcSignatureService} that use actual implementations.
  */
 class BouncyCastleSignatureServiceIT {
 
@@ -43,7 +43,7 @@ class BouncyCastleSignatureServiceIT {
 
   private Payment payment;
 
-  private BouncyCastleSignatureService signatureService;
+  private BcSignatureService signatureService;
 
   @BeforeEach
   public void setUp() {
@@ -86,7 +86,7 @@ class BouncyCastleSignatureServiceIT {
       .signingPublicKey(ed25519Wallet.publicKey().base16Value())
       .build();
 
-    this.signatureService = new BouncyCastleSignatureService();
+    this.signatureService = new BcSignatureService();
   }
 
   ////////////////

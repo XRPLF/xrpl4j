@@ -215,11 +215,11 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
   //////////////////
 
   /**
-   * Construct a new {@link BouncyCastleSignatureService} using the provided {@code privateKeyMetadata}.
+   * Construct a new {@link BcSignatureService} using the provided {@code privateKeyMetadata}.
    *
    * @param privateKeyMetadata A {@link KeyMetadata} with information about a private key.
    *
-   * @return A {@link BouncyCastleSignatureService}.
+   * @return A {@link BcSignatureService}.
    */
   @VisibleForTesting
   protected SingleKeyDelegatedSignatureService constructSignatureService(final KeyMetadata privateKeyMetadata) {

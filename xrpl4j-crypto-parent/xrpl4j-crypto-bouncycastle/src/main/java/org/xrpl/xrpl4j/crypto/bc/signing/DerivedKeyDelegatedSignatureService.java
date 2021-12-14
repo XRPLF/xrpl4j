@@ -61,10 +61,6 @@ import java.util.Set;
  * requirements, consider a different implementation of {@link DelegatedSignatureService}.</p>
  */
 @SuppressWarnings("UnstableApiUsage")
-// TODO: Make Ed25519KeyPairService and Secp256k1KeyPairService and interface, and move back to core. Then this class
-//  can
-// be moved to core also. Plus, Ed25519KeyPairService should be BcEd25519KeyPairService so that it can coexist with
-// some other type in the future.
 public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureService {
 
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];

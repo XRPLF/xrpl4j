@@ -19,8 +19,9 @@ import java.util.Objects;
  */
 public class BcWalletFactory implements WalletFactory {
 
-  private static final WalletFactory INSTANCE = new BcWalletFactory(Ed25519KeyPairService.getInstance(),
-    Secp256k1KeyPairService.getInstance());
+  private static final WalletFactory INSTANCE = new BcWalletFactory(
+    Ed25519KeyPairService.getInstance(), Secp256k1KeyPairService.getInstance()
+  );
 
   private final Ed25519KeyPairService ed25519KeyPairService;
   private final Secp256k1KeyPairService secp256k1KeyPairService;
@@ -66,9 +67,12 @@ public class BcWalletFactory implements WalletFactory {
   public Wallet fromSeed(final Seed seed) {
     Objects.requireNonNull(seed);
 
-    return seed.decodedSeed().type().map(
-        versionType -> versionType.equals(VersionType.ED25519) ? this.ed25519KeyPairService
-          : this.secp256k1KeyPairService).map(service -> service.deriveKeyPair(seed)).map(this::fromKeyPair)
+    return seed.decodedSeed().type()
+      .map(versionType -> versionType.equals(VersionType.ED25519) ?
+        this.ed25519KeyPairService : this.secp256k1KeyPairService
+      )
+      .map(service -> service.deriveKeyPair(seed))
+      .map(this::fromKeyPair)
       .orElseThrow(() -> new IllegalArgumentException("Unsupported seed type."));
   }
 
@@ -76,8 +80,11 @@ public class BcWalletFactory implements WalletFactory {
   public Wallet fromKeyPair(final KeyPair keyPair) {
     Objects.requireNonNull(keyPair);
 
-    return Wallet.builder().privateKey(keyPair.privateKey()).publicKey(keyPair.publicKey())
-      .address(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey())).build();
+    return Wallet.builder()
+      .privateKey(keyPair.privateKey())
+      .publicKey(keyPair.publicKey())
+      .address(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()))
+      .build();
   }
 
 }

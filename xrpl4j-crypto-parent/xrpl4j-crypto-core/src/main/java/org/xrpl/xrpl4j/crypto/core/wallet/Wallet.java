@@ -1,10 +1,9 @@
 package org.xrpl.xrpl4j.crypto.core.wallet;
 
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.core.wallet.ImmutableWallet;
 import org.xrpl.xrpl4j.crypto.core.wallet.ImmutableWallet.Builder;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
@@ -43,9 +42,6 @@ public interface Wallet {
    *
    * @return The classic {@link Address} of this wallet.
    */
-  @Derived
-  default Address address() {
-    return AddressUtils.getInstance().deriveAddress(publicKey());
-  }
+  Address address();
 
 }

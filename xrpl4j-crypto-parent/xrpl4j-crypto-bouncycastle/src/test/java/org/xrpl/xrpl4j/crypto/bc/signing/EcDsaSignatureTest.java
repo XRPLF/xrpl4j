@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.signing;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

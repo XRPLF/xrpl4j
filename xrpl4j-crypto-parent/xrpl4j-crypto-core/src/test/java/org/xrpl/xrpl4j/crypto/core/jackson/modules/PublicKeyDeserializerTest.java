@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.crypto.core.jackson.modules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY_HEX;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.google.common.annotations.VisibleForTesting;
@@ -15,7 +16,6 @@ import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeyDeserializer;
  */
 class PublicKeyDeserializerTest {
 
-  private static final String HEX_PUBLIC_KEY = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
   private PublicKeyDeserializerForTesting deserializer;
 
   @BeforeEach
@@ -25,8 +25,8 @@ class PublicKeyDeserializerTest {
 
   @Test
   void testDeserialize() {
-    PublicKey expected = PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY);
-    PublicKey publicKey = deserializer._deserialize(HEX_PUBLIC_KEY, mock(DeserializationContext.class));
+    PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
+    PublicKey publicKey = deserializer._deserialize(ED_PUBLIC_KEY_HEX, mock(DeserializationContext.class));
     assertThat(publicKey).isEqualTo(expected);
   }
 

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -10,13 +10,14 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.EcDsaSignature;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
@@ -34,7 +35,7 @@ import java.util.Objects;
  * @see "https://www.bouncycastle.org/java.html"
  * @see "https://www.bouncycastle.org/fips-java/BCFipsIn100.pdf"
  */
-public class BouncyCastleSignatureService extends AbstractSignatureService implements SignatureService {
+public class BcSignatureService extends AbstractSignatureService implements SignatureService {
 
   private final Ed25519Signer ed25519Signer;
   private final ECDSASigner ecdsaSigner;
@@ -42,10 +43,10 @@ public class BouncyCastleSignatureService extends AbstractSignatureService imple
   /**
    * Required-args Constructor for use in development mode.
    */
-  public BouncyCastleSignatureService() {
+  public BcSignatureService() {
     this(
       new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
-      AddressUtils.getInstance(),
+      BcAddressUtils.getInstance(),
       new Ed25519Signer(),
       new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()))
     );
@@ -59,7 +60,7 @@ public class BouncyCastleSignatureService extends AbstractSignatureService imple
    * @param ed25519Signer  An {@link Ed25519Signer}.
    * @param ecdsaSigner    An {@link ECDSASigner}.
    */
-  public BouncyCastleSignatureService(
+  public BcSignatureService(
     final SignatureUtils signatureUtils,
     final AddressUtils addressService,
     final Ed25519Signer ed25519Signer,

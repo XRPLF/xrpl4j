@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.bc.BouncyCastleSignatureService;
-import org.xrpl.xrpl4j.crypto.bc.DerivedKeyDelegatedSignatureService;
+import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
+import org.xrpl.xrpl4j.crypto.bc.signing.DerivedKeyDelegatedSignatureService;
+import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
-import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
@@ -76,7 +76,7 @@ public abstract class AbstractIT {
    */
   protected AbstractIT() {
     this.xrplClient = xrplEnvironment.getXrplClient();
-    this.walletFactory = DefaultWalletFactory.getInstance();
+    this.walletFactory = BcWalletFactory.getInstance();
     this.signatureService = this.constructSignatureService();
     this.delegatedSignatureServiceEd25519 = this.constructDelegatedSignatureServiceEd25519();
     this.delegatedSignatureServiceSecp256k1 = this.constructDelegatedSignatureServiceSecp256k1();
@@ -322,7 +322,7 @@ public abstract class AbstractIT {
   }
 
   protected SignatureService constructSignatureService() {
-    return new BouncyCastleSignatureService();
+    return new BcSignatureService();
   }
 
   private KeyStore loadKeyStore() {

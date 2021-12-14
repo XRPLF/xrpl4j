@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,15 +7,15 @@ import com.google.common.primitives.UnsignedLong;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * An Integration Test for {@link BouncyCastleSignatureService} that use actual implementations.
+ * An Integration Test for {@link BcSignatureService} that use actual implementations.
  */
 class BouncyCastleSignatureServiceIT {
 
@@ -43,7 +43,7 @@ class BouncyCastleSignatureServiceIT {
 
   private Payment payment;
 
-  private BouncyCastleSignatureService signatureService;
+  private BcSignatureService signatureService;
 
   @BeforeEach
   public void setUp() {
@@ -72,10 +72,10 @@ class BouncyCastleSignatureServiceIT {
     assertThat(secp256k1KeyPairOther.publicKey().base16Value())
       .isEqualTo("02576CB07495A6A03F1B5BD812721E2358304A6FA31ADF7781B8A0F9F59D3726DC");
 
-    ed25519Wallet = DefaultWalletFactory.getInstance().fromKeyPair(ed25519KeyPair);
-    ed25519WalletOther = DefaultWalletFactory.getInstance().fromKeyPair(ed25519KeyPairOther);
-    secp256k1Wallet = DefaultWalletFactory.getInstance().fromKeyPair(secp256k1KeyPair);
-    secp256k1WalletOther = DefaultWalletFactory.getInstance().fromKeyPair(secp256k1KeyPairOther);
+    ed25519Wallet = BcWalletFactory.getInstance().fromKeyPair(ed25519KeyPair);
+    ed25519WalletOther = BcWalletFactory.getInstance().fromKeyPair(ed25519KeyPairOther);
+    secp256k1Wallet = BcWalletFactory.getInstance().fromKeyPair(secp256k1KeyPair);
+    secp256k1WalletOther = BcWalletFactory.getInstance().fromKeyPair(secp256k1KeyPairOther);
 
     this.payment = Payment.builder()
       .account(ed25519Wallet.address())
@@ -86,7 +86,7 @@ class BouncyCastleSignatureServiceIT {
       .signingPublicKey(ed25519Wallet.publicKey().base16Value())
       .build();
 
-    this.signatureService = new BouncyCastleSignatureService();
+    this.signatureService = new BcSignatureService();
   }
 
   ////////////////

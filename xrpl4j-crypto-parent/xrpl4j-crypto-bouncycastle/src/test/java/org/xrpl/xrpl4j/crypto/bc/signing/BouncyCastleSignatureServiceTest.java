@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc;
+package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,11 +22,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
@@ -40,7 +41,7 @@ import java.math.BigInteger;
 import java.util.Set;
 
 /**
- * Unit tests for {@link BouncyCastleSignatureService}.
+ * Unit tests for {@link BcSignatureService}.
  */
 class BouncyCastleSignatureServiceTest {
 
@@ -67,13 +68,13 @@ class BouncyCastleSignatureServiceTest {
   private KeyPair secp256k1KeyPair;
   private Address secp256k1SignerAddress;
 
-  private BouncyCastleSignatureService signatureService;
+  private BcSignatureService signatureService;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
 
-    AddressUtils addressUtils = AddressUtils.getInstance();
+    AddressUtils addressUtils = BcAddressUtils.getInstance();
     Ed25519KeyPairService ed25519KeyPairService = Ed25519KeyPairService.getInstance();
     this.ed25519KeyPair = ed25519KeyPairService.deriveKeyPair(
       Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))
@@ -110,7 +111,7 @@ class BouncyCastleSignatureServiceTest {
     }
     when(ecdsaSignerMock.generateSignature(any())).thenReturn(bigInts);
 
-    this.signatureService = new BouncyCastleSignatureService(
+    this.signatureService = new BcSignatureService(
       signatureUtilsMock, addressServiceMock, ed25519SignerMock, ecdsaSignerMock
     );
   }
@@ -118,16 +119,16 @@ class BouncyCastleSignatureServiceTest {
   @Test
   void constructorWithNulls() {
     // 4-arg Constructor
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       null, addressServiceMock, ed25519SignerMock, ecdsaSignerMock
     ));
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       signatureUtilsMock, null, ed25519SignerMock, ecdsaSignerMock
     ));
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       signatureUtilsMock, addressServiceMock, null, ecdsaSignerMock
     ));
-    assertThrows(NullPointerException.class, () -> new BouncyCastleSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcSignatureService(
       signatureUtilsMock, addressServiceMock, ed25519SignerMock, null
     ));
   }

@@ -14,16 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.keys.Ed25519KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
+import org.xrpl.xrpl4j.crypto.core.TestConstants;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Set;
@@ -32,27 +26,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AbstractDelegatedTransactionVerifierTest {
 
   @Mock
-  private SignatureUtils signatureUtilsMock;
+  SignatureUtils signatureUtilsMock;
   @Mock
-  private Signature ed25519SignatureMock;
+  Signature ed25519SignatureMock;
   @Mock
-  private Signature secp256k1SignatureMock;
+  Signature secp256k1SignatureMock;
   @Mock
-  private KeyMetadata keyMetadataMock;
+  KeyMetadata keyMetadataMock;
   @Mock
-  private Transaction transactionMock;
+  Transaction transactionMock;
   @Mock
-  private AddressUtils addressServiceMock;
+  AddressUtils addressUtilsMock;
   @Mock
-  private SignatureWithKeyMetadata signatureWithKeyMetaMock;
-
-  private KeyPair ed25519KeyPair;
-
-  private KeyPair secp256k1KeyPair;
+  SignatureWithKeyMetadata signatureWithKeyMetaMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
-  private VersionType keyType;
 
   private AbstractDelegatedTransactionVerifier transactionVerifier;
 
@@ -63,35 +52,16 @@ public class AbstractDelegatedTransactionVerifierTest {
     ed25519VerifyCalled = new AtomicBoolean(false);
     secp256k1VerifyCalled = new AtomicBoolean(false);
 
-    AddressUtils addressService = AddressUtils.getInstance();
-    Ed25519KeyPairService ed25519KeyPairService = Ed25519KeyPairService.getInstance();
-    this.ed25519KeyPair = ed25519KeyPairService.deriveKeyPair(
-      Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))
-    );
-    Address ed25519SignerAddress = addressService.deriveAddress(ed25519KeyPair.publicKey());
-
-    Secp256k1KeyPairService secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
-    this.secp256k1KeyPair = secp256k1KeyPairService.deriveKeyPair(
-      Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"))
-    );
-
-    when(addressServiceMock.deriveAddress(any())).thenReturn(ed25519SignerAddress);
-
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
     when(signatureWithKeyMetaMock.signingKeyMetadata()).thenReturn(keyMetadataMock);
     when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
-    this.transactionVerifier = new AbstractDelegatedTransactionVerifier(
-      signatureUtilsMock,
-      addressServiceMock
-    ) {
+    this.transactionVerifier = new AbstractDelegatedTransactionVerifier(signatureUtilsMock, addressUtilsMock) {
       @Override
       protected boolean edDsaVerify(
-        KeyMetadata keyMetadata,
-        UnsignedByteArray signableTransactionBytes,
-        Signature transactionSignature
+        KeyMetadata keyMetadata, UnsignedByteArray signableTransactionBytes, Signature transactionSignature
       ) {
         ed25519VerifyCalled.set(true);
         return ed25519VerifyCalled.get();
@@ -99,9 +69,7 @@ public class AbstractDelegatedTransactionVerifierTest {
 
       @Override
       protected boolean ecDsaVerify(
-        KeyMetadata keyMetadata,
-        UnsignedByteArray signableTransactionBytes,
-        Signature transactionSignature
+        KeyMetadata keyMetadata, UnsignedByteArray signableTransactionBytes, Signature transactionSignature
       ) {
         secp256k1VerifyCalled.set(true);
         return secp256k1VerifyCalled.get();
@@ -109,7 +77,7 @@ public class AbstractDelegatedTransactionVerifierTest {
 
       @Override
       public PublicKey getPublicKey(KeyMetadata keyMetadata) {
-        return keyType == VersionType.ED25519 ? ed25519KeyPair.publicKey() : secp256k1KeyPair.publicKey();
+        return keyMetadata.keyIdentifier().equals("EC") ? TestConstants.EC_PUBLIC_KEY : TestConstants.ED_PUBLIC_KEY;
       }
     };
   }
@@ -132,7 +100,8 @@ public class AbstractDelegatedTransactionVerifierTest {
 
   @Test
   void verifyEd25519() {
-    keyType = VersionType.ED25519;
+    when(keyMetadataMock.keyIdentifier()).thenReturn("ED");
+
     boolean actual = transactionVerifier.verifySingleSigned(signatureWithKeyMetaMock, transactionMock);
 
     assertThat(actual).isTrue();
@@ -144,7 +113,7 @@ public class AbstractDelegatedTransactionVerifierTest {
 
   @Test
   void verifySecp256k1() {
-    keyType = VersionType.SECP256K1;
+    when(keyMetadataMock.keyIdentifier()).thenReturn("EC");
     boolean actual = transactionVerifier.verifySingleSigned(signatureWithKeyMetaMock, transactionMock);
 
     assertThat(actual).isTrue();
@@ -178,7 +147,7 @@ public class AbstractDelegatedTransactionVerifierTest {
 
   @Test
   void verifyMultiEd25519() {
-    keyType = VersionType.ED25519;
+    when(keyMetadataMock.keyIdentifier()).thenReturn("ED");
     when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet = Sets.newLinkedHashSet(signatureWithKeyMetaMock);
@@ -187,15 +156,15 @@ public class AbstractDelegatedTransactionVerifierTest {
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isFalse();
-    verify(addressServiceMock).deriveAddress(ed25519KeyPair.publicKey());
-    verifyNoMoreInteractions(addressServiceMock);
+    verify(addressUtilsMock).deriveAddress(TestConstants.ED_PUBLIC_KEY);
+    verifyNoMoreInteractions(addressUtilsMock);
     verify(signatureUtilsMock).toMultiSignableBytes(any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void verifyMultiSecp256k1() {
-    keyType = VersionType.SECP256K1;
+    when(keyMetadataMock.keyIdentifier()).thenReturn("EC");
     when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(secp256k1SignatureMock);
 
     final Set<SignatureWithKeyMetadata> signatureWithKeyMetadataSet = Sets.newLinkedHashSet(signatureWithKeyMetaMock);
@@ -204,8 +173,8 @@ public class AbstractDelegatedTransactionVerifierTest {
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();
     assertThat(ed25519VerifyCalled.get()).isFalse();
-    verify(addressServiceMock).deriveAddress(secp256k1KeyPair.publicKey());
-    verifyNoMoreInteractions(addressServiceMock);
+    verify(addressUtilsMock).deriveAddress(TestConstants.EC_PUBLIC_KEY);
+    verifyNoMoreInteractions(addressUtilsMock);
     verify(signatureUtilsMock).toMultiSignableBytes(any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
@@ -216,11 +185,8 @@ public class AbstractDelegatedTransactionVerifierTest {
 
   @Test
   void edDsaVerify() {
-    this.keyType = VersionType.ED25519;
-
-    boolean actual = transactionVerifier.edDsaVerify(
-      keyMetadataMock, UnsignedByteArray.empty(), ed25519SignatureMock
-    );
+    when(keyMetadataMock.keyIdentifier()).thenReturn("ED");
+    boolean actual = transactionVerifier.edDsaVerify(keyMetadataMock, UnsignedByteArray.empty(), ed25519SignatureMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -234,8 +200,7 @@ public class AbstractDelegatedTransactionVerifierTest {
 
   @Test
   void ecDsaVerify() {
-    this.keyType = VersionType.SECP256K1;
-
+    when(keyMetadataMock.keyIdentifier()).thenReturn("EC");
     boolean actual = transactionVerifier.ecDsaVerify(
       keyMetadataMock, UnsignedByteArray.empty(), secp256k1SignatureMock
     );

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.wallet;
+package org.xrpl.xrpl4j.crypto.bc.wallet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,13 +9,16 @@ import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
+import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 
 /**
- * Unit tests for {@link DefaultWalletFactory}.
+ * Unit tests for {@link BcWalletFactory}.
  */
-class DefaultWalletFactoryTest {
+class BcWalletFactoryTest {
 
-  private final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+  private final WalletFactory walletFactory = BcWalletFactory.getInstance();
 
   @SuppressWarnings("checkstyle:LocalVariableName")
   @Test
@@ -40,6 +43,20 @@ class DefaultWalletFactoryTest {
     assertThat(wallet.privateKey().value().hexValue()).isEqualTo(
       "27690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438");
     assertThat(wallet.address().value()).isEqualTo("rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2");
+  }
+
+  @Test
+  public void randomMainnetEdWalletCanBeRegenerated() {
+    SeedWalletGenerationResult randomWallet = walletFactory.randomWalletEd25519();
+    Wallet restoredWallet = walletFactory.fromSeed(randomWallet.seed());
+    assertThat(randomWallet.wallet()).isEqualTo(restoredWallet);
+  }
+
+  @Test
+  public void randomMainnetEcWalletCanBeRegenerated() {
+    SeedWalletGenerationResult randomWallet = walletFactory.randomWalletSecp256k1();
+    Wallet restoredWallet = walletFactory.fromSeed(randomWallet.seed());
+    assertThat(randomWallet.wallet()).isEqualTo(restoredWallet);
   }
 
   @Test

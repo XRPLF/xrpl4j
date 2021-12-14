@@ -51,7 +51,7 @@ public abstract class AbstractDelegatedSignatureService implements DelegatedSign
   }
 
   @Override
-  public <T extends Transaction> SignatureWithKeyMetadata multiSign(KeyMetadata keyMetadata, T transaction) {
+  public <T extends Transaction> Signature multiSign(KeyMetadata keyMetadata, T transaction) {
     return delegatedTransactionSigner.multiSign(keyMetadata, transaction);
   }
 

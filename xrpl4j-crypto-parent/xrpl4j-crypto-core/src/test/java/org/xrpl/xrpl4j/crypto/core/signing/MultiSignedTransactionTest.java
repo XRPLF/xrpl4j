@@ -1,6 +1,8 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_ADDRESS;
+import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_ADDRESS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -28,20 +29,20 @@ class MultiSignedTransactionTest {
   void setUp() {
     multiSignedTransaction = MultiSignedTransaction.builder()
       .signedTransaction(Payment.builder()
-        .account(Address.of(""))
+        .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
         .sequence(UnsignedInteger.ONE)
         .signingPublicKey("")
         .amount(XrpCurrencyAmount.ofDrops(12345))
-        .destination(Address.of(""))
+        .destination(EC_ADDRESS)
         .build())
       .unsignedTransaction(Payment.builder()
-        .account(Address.of(""))
+        .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
         .sequence(UnsignedInteger.ONE)
         .signingPublicKey("")
         .amount(XrpCurrencyAmount.ofDrops(12345))
-        .destination(Address.of(""))
+        .destination(EC_ADDRESS)
         .build())
       .signedTransactionBytes(UnsignedByteArray.fromHex(HEX_32_BYTES))
       .signatureWithPublicKeySet(Sets.newHashSet(SignatureWithPublicKey.builder()

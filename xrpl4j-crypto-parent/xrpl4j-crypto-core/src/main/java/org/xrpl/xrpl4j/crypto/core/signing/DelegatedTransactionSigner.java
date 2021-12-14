@@ -1,8 +1,6 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
-import org.xrpl.xrpl4j.crypto.core.keys.DelegatedKeyPairService;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -49,5 +47,5 @@ public interface DelegatedTransactionSigner extends DelegatedPublicKeyProvider {
    *
    * @return A {@link SingleSingedTransaction} of type {@link T} containing everything related to a signed transaction.
    */
-  <T extends Transaction> SignatureWithKeyMetadata multiSign(KeyMetadata keyMetadata, T transaction);
+  <T extends Transaction> Signature multiSign(KeyMetadata keyMetadata, T transaction);
 }

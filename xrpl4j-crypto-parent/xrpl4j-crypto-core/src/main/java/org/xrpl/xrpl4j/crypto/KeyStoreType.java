@@ -14,7 +14,7 @@ import java.util.Optional;
  * key would be stored in the key-store, and the encrypted database password would be stored in some other system in
  * encrypted form.</p>
  *
- * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
+ * @deprecated This class will be removed once crypto-core is the primary mechanism for signing.
  */
 @Deprecated
 public interface KeyStoreType {

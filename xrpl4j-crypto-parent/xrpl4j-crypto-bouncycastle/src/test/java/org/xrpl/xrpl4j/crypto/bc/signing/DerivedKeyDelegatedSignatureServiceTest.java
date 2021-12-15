@@ -257,7 +257,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
       boolean result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadataFoo)
+          .signingKeyMetadata(keyMetadataBar)
           .build()),
         payment,
         1);
@@ -265,7 +265,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
       result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadataFoo)
+          .signingKeyMetadata(keyMetadataBar)
           .build()),
         payment,
         2

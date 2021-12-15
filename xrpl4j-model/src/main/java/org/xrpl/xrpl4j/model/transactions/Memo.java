@@ -90,20 +90,13 @@ public abstract class Memo {
    */
   private static boolean isHex(final String input) {
     Objects.requireNonNull(input);
-    boolean isHex = true;
-    try {
-      for (char c : input.toCharArray()) {
-        if (!isHex(c)) {
-          isHex = false;
-          break;
-        }
+    for (char c : input.toCharArray()) {
+      if (!isHex(c)) {
+        return false;
       }
-    } catch (NumberFormatException e) {
-      e.printStackTrace();
-      // parsing failed, string is not a valid hex number
-      isHex = false;
     }
-    return isHex;
+
+    return true;
   }
 
   /**

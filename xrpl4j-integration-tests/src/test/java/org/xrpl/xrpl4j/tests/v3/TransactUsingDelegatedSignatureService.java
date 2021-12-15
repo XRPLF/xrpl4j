@@ -11,7 +11,7 @@ import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -236,12 +236,11 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
     List<SignerWrapper> signers = Lists.newArrayList(aliceKeyMetadata, bobKeyMetadata).stream()
       .map(keyMetadata -> {
-          SignatureWithKeyMetadata signatureWithKeyMetadata = delegatedSignatureService.multiSign(keyMetadata,
-            unsignedPayment);
+          Signature signatureWithKeyMetadata = delegatedSignatureService.multiSign(keyMetadata, unsignedPayment);
           return SignerWrapper.of(Signer.builder()
             .account(toAddress(keyMetadata, delegatedSignatureService))
             .signingPublicKey(toPublicKey(keyMetadata, delegatedSignatureService).base16Value())
-            .transactionSignature(signatureWithKeyMetadata.transactionSignature().base16Value())
+            .transactionSignature(signatureWithKeyMetadata.base16Value())
             .build()
           );
         }

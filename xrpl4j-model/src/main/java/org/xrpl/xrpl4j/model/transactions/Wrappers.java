@@ -114,7 +114,6 @@ public class Wrappers {
   abstract static class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
 
     static final long ONE_XRP_IN_DROPS = 1_000_000L;
-    static final long TWO_XRP_IN_DROPS = 2_000_000L;
     static final long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
     static final long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
     static final BigDecimal SMALLEST_XRP = new BigDecimal("0.000001");

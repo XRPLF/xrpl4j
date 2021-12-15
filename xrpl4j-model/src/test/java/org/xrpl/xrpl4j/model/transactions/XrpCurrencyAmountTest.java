@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.MAX_XRP_IN_DROPS;
 import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.ONE_XRP_IN_DROPS;
-import static org.xrpl.xrpl4j.model.transactions.Wrappers._XrpCurrencyAmount.TWO_XRP_IN_DROPS;
 
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
@@ -18,6 +17,7 @@ import java.math.BigDecimal;
 public class XrpCurrencyAmountTest {
 
   private static final long HALF_XRP_IN_DROPS = 500_000L;
+  private static final long TWO_XRP_IN_DROPS = 2_000_000L;
 
   @Test
   public void ofDropsLong() {
@@ -75,9 +75,9 @@ public class XrpCurrencyAmountTest {
     ).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS));
 
     assertThat(
-      XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(1L).toXrp())
-        .plus(XrpCurrencyAmount.ofXrp(XrpCurrencyAmount.ofDrops(0L).toXrp()))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(1L));
+      XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
+        .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001")))
+    ).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
   }
 
   @Test
@@ -86,6 +86,16 @@ public class XrpCurrencyAmountTest {
       XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
         .minus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
     ).isEqualTo(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+
+    assertThat(
+      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS))
+    ).isEqualTo((XrpCurrencyAmount.ofDrops(0L)));
+
+    assertThrows(IllegalStateException.class,
+      () -> XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS))
+    );
   }
 
   @Test
@@ -100,5 +110,13 @@ public class XrpCurrencyAmountTest {
       XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
         .times(XrpCurrencyAmount.ofDrops(0L))
     ).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+  }
+
+  @Test
+  public void toStringXrp() {
+    assertThat(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS).toString()).isEqualTo("1000000");
+    assertThat(XrpCurrencyAmount.ofDrops(1L).toString()).isEqualTo("1");
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("1")).toString()).isEqualTo("1000000");
+    assertThat(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(123456789L)).toString()).isEqualTo("123456789");
   }
 }

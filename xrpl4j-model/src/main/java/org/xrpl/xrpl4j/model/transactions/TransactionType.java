@@ -117,7 +117,7 @@ public enum TransactionType {
       }
     }
 
-    throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
+    throw new IllegalArgumentException("No matching TransactionType enum value for String value " + value);
   }
 
   /**

@@ -18,7 +18,6 @@ import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.bc.signing.DerivedKeyDelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
@@ -221,32 +220,56 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallableFoo = () -> {
-      SignatureWithKeyMetadata signatureWithKeyMetadata = this.edSignatureService.multiSign(keyMetadataFoo, payment);
-      assertThat(signatureWithKeyMetadata.transactionSignature().base16Value()).isEqualTo(
+      Signature signature = this.edSignatureService.multiSign(keyMetadataFoo, payment);
+      assertThat(signature.base16Value()).isEqualTo(
         "E2ACD61C90D93433402B1F704DA38DF72876B6788C2C05B3196E14BC711AECFF14A7D6276439A198D8B4880EE2DB544CF351A8CE23" +
           "1B3340F42F9BF1EDBF5104"
       );
 
-      boolean result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), payment, 1);
+      boolean result = this.edSignatureService.verifyMultiSigned(
+        Sets.newHashSet(SignatureWithKeyMetadata.builder()
+          .transactionSignature(signature)
+          .signingKeyMetadata(keyMetadataFoo)
+          .build()),
+        payment,
+        1
+      );
       assertThat(result).isTrue();
 
-      result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), payment, 2);
+      result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+          .transactionSignature(signature)
+          .signingKeyMetadata(keyMetadataFoo)
+          .build()),
+        payment,
+        2
+      );
       assertThat(result).isFalse();
 
       return true;
     };
 
     final Callable<Boolean> signedTxCallableBar = () -> {
-      SignatureWithKeyMetadata signatureWithKeyMetadata = this.edSignatureService.multiSign(keyMetadataBar, payment);
-      assertThat(signatureWithKeyMetadata.transactionSignature().base16Value()).isEqualTo(
+      Signature signature = this.edSignatureService.multiSign(keyMetadataBar, payment);
+      assertThat(signature.base16Value()).isEqualTo(
         "55A7B3AD35E01774A85BBB81958F505C1AF8DB67318420239AAEA32AD4A9D6B6AF920159314D5A5C93490C696C7F2BB3CEA76A4" +
           "6FDF4E03514070FB994EFFF08"
       );
 
-      boolean result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), payment, 1);
+      boolean result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+          .transactionSignature(signature)
+          .signingKeyMetadata(keyMetadataBar)
+          .build()),
+        payment,
+        1);
       assertThat(result).isTrue();
 
-      result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), payment, 2);
+      result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+          .transactionSignature(signature)
+          .signingKeyMetadata(keyMetadataBar)
+          .build()),
+        payment,
+        2
+      );
       assertThat(result).isFalse();
 
       return true;
@@ -292,17 +315,25 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      SignatureWithKeyMetadata signatureWithKeyMetadata = this.ecSignatureService.multiSign(keyMetadata, payment);
+      Signature signature = this.ecSignatureService.multiSign(keyMetadata, payment);
 
-      assertThat(signatureWithKeyMetadata.transactionSignature().base16Value()).isEqualTo(
+      assertThat(signature.base16Value()).isEqualTo(
         "3045022100ED9BF3764ACF7AFC39E75AEDC5825EF667B498305A469CFCE3CF76E7580CC2F902204A4B1317103459EE777B0406D04ED" +
           "5C60942D962B6FB60BB589E15636817086E"
       );
 
-      boolean result = this.ecSignatureService.verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), payment, 1);
+      boolean result = this.ecSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+        .transactionSignature(signature)
+        .signingKeyMetadata(keyMetadata)
+        .build()), payment, 1);
       assertThat(result).isTrue();
 
-      result = this.ecSignatureService.verifyMultiSigned(Sets.newHashSet(signatureWithKeyMetadata), payment, 2);
+      result = this.ecSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+          .transactionSignature(signature)
+          .signingKeyMetadata(keyMetadata)
+          .build()),
+        payment,
+        2);
       assertThat(result).isFalse();
 
       return true;

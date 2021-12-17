@@ -57,8 +57,7 @@ class AbstractDelegatedSignatureServiceTest {
     when(delegatedTransactionSignerMock.getPublicKey(keyMetadataMock)).thenReturn(publicKeyMock);
     when(delegatedTransactionSignerMock.sign(keyMetadataMock, transactionMock)).thenReturn(singleSignedTransactionMock);
     when(delegatedTransactionSignerMock.sign(eq(keyMetadataMock), any(UnsignedClaim.class))).thenReturn(signatureMock);
-    when(delegatedTransactionSignerMock.multiSign(keyMetadataMock, transactionMock))
-      .thenReturn(signatureWithKeyMetaMock);
+    when(delegatedTransactionSignerMock.multiSign(keyMetadataMock, transactionMock)).thenReturn(signatureMock);
 
     this.delegatedSignatureService = new AbstractDelegatedSignatureService(
       delegatedTransactionSignerMock,
@@ -90,8 +89,8 @@ class AbstractDelegatedSignatureServiceTest {
 
   @Test
   void multiSignTransaction() {
-    SignatureWithKeyMetadata actual = delegatedSignatureService.multiSign(keyMetadataMock, transactionMock);
-    assertThat(actual).isEqualTo(signatureWithKeyMetaMock);
+    Signature actual = delegatedSignatureService.multiSign(keyMetadataMock, transactionMock);
+    assertThat(actual).isEqualTo(signatureMock);
     verify(delegatedTransactionSignerMock).multiSign(keyMetadataMock, transactionMock);
   }
 

@@ -177,9 +177,8 @@ public class AbstractDelegatedTransactionSignerTest {
     keyType = VersionType.ED25519;
     when(addressServiceMock.deriveAddress(any())).thenReturn(TestConstants.ED_ADDRESS);
 
-    SignatureWithKeyMetadata signatureWithKeyMetadata = transactionSigner.multiSign(keyMetadataMock, transactionMock);
-    assertThat(signatureWithKeyMetadata.transactionSignature()).isEqualTo(ed25519SignatureMock);
-    assertThat(signatureWithKeyMetadata.signingKeyMetadata()).isEqualTo(keyMetadataMock);
+    Signature signature = transactionSigner.multiSign(keyMetadataMock, transactionMock);
+    assertThat(signature).isEqualTo(ed25519SignatureMock);
 
     verify(addressServiceMock).deriveAddress(any());
     verifyNoMoreInteractions(addressServiceMock);
@@ -193,10 +192,9 @@ public class AbstractDelegatedTransactionSignerTest {
     keyType = VersionType.SECP256K1;
     when(addressServiceMock.deriveAddress(any())).thenReturn(TestConstants.EC_ADDRESS);
 
-    SignatureWithKeyMetadata signatureWithKeyMetadata = transactionSigner.multiSign(keyMetadataMock, transactionMock);
+    Signature signature = transactionSigner.multiSign(keyMetadataMock, transactionMock);
 
-    assertThat(signatureWithKeyMetadata.transactionSignature()).isEqualTo(secp256k1SignatureMock);
-    assertThat(signatureWithKeyMetadata.signingKeyMetadata()).isEqualTo(keyMetadataMock);
+    assertThat(signature).isEqualTo(secp256k1SignatureMock);
 
     verify(addressServiceMock).deriveAddress(any());
     verifyNoMoreInteractions(addressServiceMock);

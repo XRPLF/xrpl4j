@@ -112,7 +112,7 @@ public class Seed implements javax.security.auth.Destroyable {
    *
    * @see "https://xrpl.org/xrp-testnet-faucet.html"
    */
-  public static Seed seedFromBase58EncodedSecret(final String base58EncodedSecret) {
+  public static Seed fromBase58EncodedSecret(final String base58EncodedSecret) {
     Objects.requireNonNull(base58EncodedSecret);
 
     final byte[] base58EncodedSeed = AddressBase58.decode(base58EncodedSecret);

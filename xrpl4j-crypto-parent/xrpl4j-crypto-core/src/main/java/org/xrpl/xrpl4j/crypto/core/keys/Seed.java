@@ -101,6 +101,25 @@ public class Seed implements javax.security.auth.Destroyable {
   }
 
   /**
+   * Construct a {@link Seed} from the supplied {@code base58EncodedSecret}. Values for this function are most commonly
+   * found from an XRP Faucet, for example for the XRP devnet or testnet. On the xrpl.org documentation page, this value
+   * is often referred to as an account "secret", but it is actually just a base58-encoded string that contains an
+   * encoded 16-bytes of entropy, in addition to other binary padding and identification data.
+   *
+   * @param base58EncodedSecret A {@link Entropy} to generate a {@link Seed} from.
+   *
+   * @return A {@link Seed}.
+   *
+   * @see "https://xrpl.org/xrp-testnet-faucet.html"
+   */
+  public static Seed seedFromBase58EncodedSecret(final String base58EncodedSecret) {
+    Objects.requireNonNull(base58EncodedSecret);
+
+    final byte[] base58EncodedSeed = AddressBase58.decode(base58EncodedSecret);
+    return new Seed(UnsignedByteArray.of(base58EncodedSeed));
+  }
+
+  /**
    * Required-args Constructor. Purposefully package-private (use a static method instead for construction).
    *
    * @param value This seed's full binary value (including the entropy bytes and versionType).

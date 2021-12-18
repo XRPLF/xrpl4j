@@ -81,6 +81,13 @@ public class SeedTest {
   }
 
   @Test
+  void seedFromBase58EncodedSecretWithNull() {
+    Assertions.assertThrows(NullPointerException.class, () -> {
+      Seed.seedFromBase58EncodedSecret(null);
+    });
+  }
+
+  @Test
   void testEquals() {
     assertThat(edSeed).isEqualTo(edSeed);
     assertThat(ecSeed).isEqualTo(ecSeed);

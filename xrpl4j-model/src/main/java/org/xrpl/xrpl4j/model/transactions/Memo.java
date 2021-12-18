@@ -27,10 +27,17 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableMemo.class)
 public abstract class Memo {
 
-  static ImmutableMemo.Builder withPlainText(final String plainText) {
+  /**
+   * Construct a {@link ImmutableMemo.Builder} by properly hex-encoding {@code plaintext}.
+   *
+   * @param plaintext A UTF-8 {@link String}.
+   *
+   * @return A {@link ImmutableMemo.Builder}.
+   */
+  public static ImmutableMemo.Builder withPlaintext(final String plaintext) {
     return builder()
       .memoFormat(BaseEncoding.base16().encode("text/plain".getBytes(StandardCharsets.UTF_8)))
-      .memoData(BaseEncoding.base16().encode(plainText.getBytes(StandardCharsets.UTF_8)));
+      .memoData(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
   }
 
   /**
@@ -38,7 +45,7 @@ public abstract class Memo {
    *
    * @return An {@link ImmutableMemo.Builder}.
    */
-  static ImmutableMemo.Builder builder() {
+  public static ImmutableMemo.Builder builder() {
     return ImmutableMemo.builder();
   }
 
@@ -106,7 +113,6 @@ public abstract class Memo {
    *
    * @return {@code true} if {@code input} is hex-encoded; {@code false} otherwise.
    */
-
   private static boolean isHex(final char input) {
     return (input >= '0' && input <= '9') || (input >= 'a' && input <= 'f') || (input >= 'A' && input <= 'F');
   }

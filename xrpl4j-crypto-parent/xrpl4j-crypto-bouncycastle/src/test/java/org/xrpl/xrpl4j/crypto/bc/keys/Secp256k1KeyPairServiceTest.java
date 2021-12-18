@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
@@ -60,5 +61,7 @@ class Secp256k1KeyPairServiceTest {
       )
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
+    assertThat(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()).value())
+      .isEqualTo("rU6K7V3Po4snVhBBaU29sesqs2qTQJWDw1");
   }
 }

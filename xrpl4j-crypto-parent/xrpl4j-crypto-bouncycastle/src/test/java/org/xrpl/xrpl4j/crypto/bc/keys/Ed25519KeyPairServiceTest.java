@@ -61,5 +61,7 @@ class Ed25519KeyPairServiceTest {
       )
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
+    assertThat(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()).value())
+      .isEqualTo("rpsAiz1JjunVeGk5QipvZt8QxY3hRcmKRR");
   }
 }

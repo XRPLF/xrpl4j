@@ -124,7 +124,8 @@ public class Seed implements javax.security.auth.Destroyable {
    *
    * @param value This seed's full binary value (including the entropy bytes and versionType).
    */
-  public Seed(final UnsignedByteArray value) {
+  @VisibleForTesting
+  Seed(final UnsignedByteArray value) {
     this.value = Objects.requireNonNull(value);
   }
 
@@ -135,6 +136,7 @@ public class Seed implements javax.security.auth.Destroyable {
    */
   @VisibleForTesting
   Seed(final Seed seed) {
+    Objects.requireNonNull(seed);
     this.value = Objects.requireNonNull(seed.decodedSeed().bytes());
   }
 

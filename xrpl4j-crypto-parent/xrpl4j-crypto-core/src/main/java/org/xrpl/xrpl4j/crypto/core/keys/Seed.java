@@ -106,7 +106,7 @@ public class Seed implements javax.security.auth.Destroyable {
    * is often referred to as an account "secret", but it is actually just a base58-encoded string that contains an
    * encoded 16-bytes of entropy, in addition to other binary padding and identification data.
    *
-   * @param base58EncodedSecret A {@link Entropy} to generate a {@link Seed} from.
+   * @param base58EncodedSecret A base58-encoded {@link String} that represents an encoded seed.
    *
    * @return A {@link Seed}.
    *
@@ -136,8 +136,8 @@ public class Seed implements javax.security.auth.Destroyable {
    */
   @VisibleForTesting
   Seed(final Seed seed) {
-    Objects.requireNonNull(seed);
-    this.value = Objects.requireNonNull(seed.decodedSeed().bytes());
+    this.value = Objects.requireNonNull(seed)
+      .decodedSeed().bytes();
   }
 
   /**

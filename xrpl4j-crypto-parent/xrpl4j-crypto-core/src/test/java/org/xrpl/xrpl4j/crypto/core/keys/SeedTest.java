@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Assertions;
@@ -30,14 +29,6 @@ public class SeedTest {
     Assertions.assertThrows(NullPointerException.class, () -> {
       UnsignedByteArray nullUba = null;
       new Seed(nullUba);
-    });
-  }
-
-  @Test
-  void constructorWithNullEncodedSeed() {
-    Seed seedMock = mock(Seed.class);
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      new Seed(seedMock);
     });
   }
 

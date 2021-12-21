@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
@@ -50,18 +50,18 @@ class Ed25519KeyPairServiceTest {
 
   @Test
   public void deriveKeyPair() {
-    Seed seed
-      = Seed.ed25519SeedFromEntropy(Entropy.of(BaseEncoding.base16().decode("074AEBCFD2F78FB9803E490DFFB7D1BB")));
+    Seed seed = Seed.fromBase58EncodedSecret("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    KeyPair keyPair = keyPairService.deriveKeyPair(seed);
     KeyPair expectedKeyPair = KeyPair.builder()
       .privateKey(PrivateKey.of(UnsignedByteArray.of(
-        BaseEncoding.base16().decode("ED0B7F52B4463290DFE757C1D346509C4B4E2A428F1A84B9CC36B55FA6CF5CEC9F"
+        BaseEncoding.base16().decode("ED2F1185B6F5525D7A7D2A22C1D8BAEEBEEFFE597C9010AF916EBB9447BECC5BE6"
         ))))
       .publicKey(
-        PublicKey.fromBase16EncodedPublicKey("EDCFF30C9352EE9D605ACC0305B9281517ED55A3B4C037F2EA6F2D2201E1C36CC5")
+        PublicKey.fromBase16EncodedPublicKey("EDFC76D20CCC92FB18CC280C27EECEFB652749C7B090BA12CF30D4F35BE0009191")
       )
       .build();
-
-    KeyPair keyPair = keyPairService.deriveKeyPair(seed);
     assertThat(keyPair).isEqualTo(expectedKeyPair);
+    assertThat(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()).value())
+      .isEqualTo("rpsAiz1JjunVeGk5QipvZt8QxY3hRcmKRR");
   }
 }

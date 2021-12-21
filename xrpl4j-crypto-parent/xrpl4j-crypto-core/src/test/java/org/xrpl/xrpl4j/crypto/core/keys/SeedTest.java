@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
@@ -30,6 +31,22 @@ public class SeedTest {
       UnsignedByteArray nullUba = null;
       new Seed(nullUba);
     });
+  }
+
+  @Test
+  void constructorWithUnsignedByteArray() {
+    Seed originalSeed = Seed.fromBase58EncodedSecret("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    byte[] originalSeedBytes = Base58.decode("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    assertThat(new Seed(UnsignedByteArray.of(originalSeedBytes))).isEqualTo(originalSeed);
+  }
+
+  @Test
+  void constructorWithSeed() {
+    final Seed originalSeed = Seed.fromBase58EncodedSecret("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    final Seed copiedSeed = new Seed(originalSeed);
+    assertThat(originalSeed).isEqualTo(copiedSeed);
+    assertThat(copiedSeed).isEqualTo(originalSeed);
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
   }
 
   @Test
@@ -78,6 +95,25 @@ public class SeedTest {
     assertThat(ecSeed.isDestroyed()).isFalse();
     ecSeed.destroy();
     assertThat(ecSeed.isDestroyed()).isTrue();
+  }
+
+  @Test
+  void seedFromBase58EncodedSecretWithNull() {
+    Assertions.assertThrows(NullPointerException.class, () -> {
+      Seed.fromBase58EncodedSecret(null);
+    });
+  }
+
+  @Test
+  void seedFromBase58EncodedSecretEd25519() {
+    Seed seed = Seed.fromBase58EncodedSecret("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("2C74FD17EDAFD80E8447B0D46741EE24");
+  }
+
+  @Test
+  void seedFromBase58EncodedSecretSecp256k1() {
+    Seed seed = Seed.fromBase58EncodedSecret("sp5fghtJtpUorTwvof1NpDXAzNwf5");
+    assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("0102030405060708090A0B0C0D0E0F10");
   }
 
   @Test

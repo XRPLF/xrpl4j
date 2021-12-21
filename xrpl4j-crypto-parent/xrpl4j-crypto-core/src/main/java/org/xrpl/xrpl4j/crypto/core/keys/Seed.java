@@ -15,6 +15,8 @@ import java.util.Objects;
 
 /**
  * A compact value that is used to derive the actual private and public keys for an account.
+ *
+ * @see "https://xrpl.org/cryptographic-keys.html#seed"
  */
 public class Seed implements javax.security.auth.Destroyable {
 
@@ -101,11 +103,31 @@ public class Seed implements javax.security.auth.Destroyable {
   }
 
   /**
+   * Construct a {@link Seed} from the supplied {@code base58EncodedSecret}. Values for this function are most commonly
+   * found from an XRP Faucet, for example for the XRP devnet or testnet. On the xrpl.org documentation page, this value
+   * is often referred to as an account "secret", but it is actually just a base58-encoded string that contains an
+   * encoded 16-bytes of entropy, in addition to other binary padding and identification data.
+   *
+   * @param base58EncodedSecret A base58-encoded {@link String} that represents an encoded seed.
+   *
+   * @return A {@link Seed}.
+   *
+   * @see "https://xrpl.org/xrp-testnet-faucet.html"
+   */
+  public static Seed fromBase58EncodedSecret(final String base58EncodedSecret) {
+    Objects.requireNonNull(base58EncodedSecret);
+
+    final byte[] base58EncodedSeed = AddressBase58.decode(base58EncodedSecret);
+    return new Seed(UnsignedByteArray.of(base58EncodedSeed));
+  }
+
+  /**
    * Required-args Constructor. Purposefully package-private (use a static method instead for construction).
    *
    * @param value This seed's full binary value (including the entropy bytes and versionType).
    */
-  public Seed(final UnsignedByteArray value) {
+  @VisibleForTesting
+  Seed(final UnsignedByteArray value) {
     this.value = Objects.requireNonNull(value);
   }
 
@@ -116,7 +138,8 @@ public class Seed implements javax.security.auth.Destroyable {
    */
   @VisibleForTesting
   Seed(final Seed seed) {
-    this.value = Objects.requireNonNull(seed.decodedSeed().bytes());
+    Objects.requireNonNull(seed);
+    this.value = UnsignedByteArray.of(seed.value.toByteArray());
   }
 
   /**

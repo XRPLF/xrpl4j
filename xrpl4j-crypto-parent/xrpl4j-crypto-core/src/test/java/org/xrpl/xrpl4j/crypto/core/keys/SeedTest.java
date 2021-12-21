@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
@@ -30,6 +31,22 @@ public class SeedTest {
       UnsignedByteArray nullUba = null;
       new Seed(nullUba);
     });
+  }
+
+  @Test
+  void constructorWithUnsignedByteArray() {
+    Seed originalSeed = Seed.fromBase58EncodedSecret("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    byte[] originalSeedBytes = Base58.decode("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    assertThat(new Seed(UnsignedByteArray.of(originalSeedBytes))).isEqualTo(originalSeed);
+  }
+
+  @Test
+  void constructorWithSeed() {
+    final Seed originalSeed = Seed.fromBase58EncodedSecret("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM");
+    final Seed copiedSeed = new Seed(originalSeed);
+    assertThat(originalSeed).isEqualTo(copiedSeed);
+    assertThat(copiedSeed).isEqualTo(originalSeed);
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
   }
 
   @Test

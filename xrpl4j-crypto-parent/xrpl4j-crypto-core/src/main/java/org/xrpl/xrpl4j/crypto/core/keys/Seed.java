@@ -15,6 +15,8 @@ import java.util.Objects;
 
 /**
  * A compact value that is used to derive the actual private and public keys for an account.
+ *
+ * @see "https://xrpl.org/cryptographic-keys.html#seed"
  */
 public class Seed implements javax.security.auth.Destroyable {
 
@@ -136,8 +138,8 @@ public class Seed implements javax.security.auth.Destroyable {
    */
   @VisibleForTesting
   Seed(final Seed seed) {
-    this.value = Objects.requireNonNull(seed)
-      .decodedSeed().bytes();
+    Objects.requireNonNull(seed);
+    this.value = UnsignedByteArray.of(seed.value.toByteArray());
   }
 
   /**

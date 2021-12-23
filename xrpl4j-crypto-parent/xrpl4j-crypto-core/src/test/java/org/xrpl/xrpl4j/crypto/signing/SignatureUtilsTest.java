@@ -45,6 +45,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -400,6 +401,19 @@ public class SignatureUtilsTest {
       .signerQuorum(UnsignedInteger.ONE)
       .build();
     addSignatureToTransactionHelper(signerListSet);
+  }
+
+  @Test
+  void addSignatureToTicketCreate() {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.ONE)
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    addSignatureToTransactionHelper(ticketCreate);
   }
 
   @Test

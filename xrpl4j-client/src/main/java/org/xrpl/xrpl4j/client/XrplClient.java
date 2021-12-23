@@ -68,6 +68,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -639,6 +640,10 @@ public class XrplClient {
         .build();
     } else if (SignerListSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return SignerListSet.builder().from((SignerListSet) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (TicketCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return TicketCreate.builder().from((TicketCreate) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     }

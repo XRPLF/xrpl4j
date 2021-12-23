@@ -57,6 +57,7 @@ public interface Transaction {
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
+      .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .build();
 
   /**

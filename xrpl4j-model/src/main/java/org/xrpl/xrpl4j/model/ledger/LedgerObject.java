@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
   @JsonSubTypes.Type(value = ImmutablePayChannelObject.class, name = "PayChannel"),
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
   @JsonSubTypes.Type(value = ImmutableSignerListObject.class, name = "SignerList"),
+  @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -99,7 +100,12 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code SignerList} ledger objects.
      */
-    SIGNER_LIST("SignerList");
+    SIGNER_LIST("SignerList"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code TicketObject} ledger objects.
+     */
+    TICKET("Ticket");
 
     private final String value;
 

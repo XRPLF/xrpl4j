@@ -611,7 +611,7 @@
     },
     {
       "type_name": "Blob",
-      "name": "Generator",
+      "name": "URI",
       "nth_of_type": 5,
       "type": 7,
       "expected_hex": "75"
@@ -3436,21 +3436,6 @@
       "type_specialisation_field": "LedgerEntryType",
       "type": "UInt16",
       "expected_hex": "0064"
-    },
-    {
-      "test_json": "GeneratorMap",
-      "type_id": 1,
-      "type_specialisation_field": "LedgerEntryType",
-      "type": "UInt16",
-      "expected_hex": "0067"
-    },
-    {
-      "test_json": 103,
-      "canonical_json": "GeneratorMap",
-      "type_id": 1,
-      "type_specialisation_field": "LedgerEntryType",
-      "type": "UInt16",
-      "expected_hex": "0067"
     },
     {
       "test_json": "RippleState",

@@ -7,6 +7,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
@@ -57,6 +58,7 @@ public interface Transaction {
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
+      .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .build();
 
   /**
@@ -120,8 +122,21 @@ public interface Transaction {
    * @return An {@link UnsignedInteger} representing the sequence of the transaction.
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
+  @Value.Default
   @JsonProperty("Sequence")
-  UnsignedInteger sequence();
+  default UnsignedInteger sequence() {
+    return UnsignedInteger.ZERO;
+  }
+
+  /**
+   * The sequence number of the {@link org.xrpl.xrpl4j.model.ledger.TicketObject} to use in place of a {@link
+   * #sequence()} number. If this is provided, {@link #sequence()} must be 0. Cannot be used with {@link
+   * #accountTransactionId()}.
+   *
+   * @return An {@link UnsignedInteger} representing the ticket sequence of the transaction.
+   */
+  @JsonProperty("TicketSequence")
+  Optional<UnsignedInteger> ticketSequence();
 
   /**
    * Hash value identifying another transaction. If provided, this {@link Transaction} is only valid if the sending

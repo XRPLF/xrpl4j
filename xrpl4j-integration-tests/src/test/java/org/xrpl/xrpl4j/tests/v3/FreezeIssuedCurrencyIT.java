@@ -18,6 +18,7 @@ import org.xrpl.xrpl4j.model.flags.Flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.flags.Flags.TrustSetFlags.Builder;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
+import org.xrpl.xrpl4j.model.transactions.ImmutableAccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
@@ -531,13 +532,17 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerWallet.address())
     );
 
-    AccountSet accountSet = AccountSet.builder()
+    ImmutableAccountSet.Builder builder = AccountSet.builder()
       .account(issuerWallet.address())
       .fee(fee)
-      .setFlag(freeze ? AccountSetFlag.GLOBAL_FREEZE : AccountSetFlag.NO_FREEZE)
       .sequence(issuerAccountInfo.accountData().sequence())
-      .signingPublicKey(issuerWallet.publicKey().base16Value())
-      .build();
+      .signingPublicKey(issuerWallet.publicKey().base16Value());
+    if (freeze) {
+      builder.setFlag(AccountSetFlag.GLOBAL_FREEZE);
+    } else {
+      builder.clearFlag(AccountSetFlag.GLOBAL_FREEZE);
+    }
+    AccountSet accountSet = builder.build();
 
     SingleSingedTransaction<AccountSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), accountSet);
     SubmitResult<AccountSet> transactionResult = xrplClient.submit(signedTrustSet);

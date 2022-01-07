@@ -458,7 +458,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @param freeze             A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and {@code
    *                           true} to freeze).
    *
-   * @return The {@link TrustLine} that was frozed or unfrozen.
+   * @return The {@link TrustLine} that was frozen or unfrozen.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    * @throws JsonProcessingException     If there are any problems parsing JSON.

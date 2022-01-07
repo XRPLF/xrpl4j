@@ -116,7 +116,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     // Individual-Freeze the trustline between the issuer and bad actor.
-    badActorTrustLine = this.freezeTrustline(
+    badActorTrustLine = this.adjustTrustlineFreeze(
       issuerWallet,
       badActorWallet,
       feeResult.drops().minimumFee(),
@@ -152,11 +152,11 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     // Unfreeze the bad actor.
-    badActorTrustLine = this.freezeTrustline(
+    badActorTrustLine = this.adjustTrustlineFreeze(
       issuerWallet,
       badActorWallet,
       feeResult.drops().minimumFee(),
-      UNFREEZE
+      UN_FREEZE
     );
     assertThat(badActorTrustLine.freeze()).isTrue();
     assertThat(badActorTrustLine.freezePeer()).isFalse();
@@ -229,9 +229,10 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     // Global-Freeze the trustline for the issuer.
-    AccountInfoResult issuerAccountInfo = this.globalFreezeTrustline(
+    AccountInfoResult issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
       issuerWallet,
-      feeResult.drops().minimumFee()
+      feeResult.drops().minimumFee(),
+      FREEZE
     );
     assertThat(issuerAccountInfo.accountData().flags().lsfGlobalFreeze()).isTrue();
 
@@ -277,6 +278,13 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       FIVE_THOUSAND, goodActorWallet, issuerWallet, feeResult.drops().minimumFee()
     );
 
+    // Unfreeze the bad actor.
+    issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
+      issuerWallet,
+      feeResult.drops().minimumFee(),
+      UN_FREEZE
+    );
+    assertThat(issuerAccountInfo.accountData().flags().lsfGlobalFreeze()).isFalse();
   }
 
   /**
@@ -288,6 +296,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @param fee       The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
    */
   private void sendFunds(
     String value,
@@ -308,6 +317,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @param expectedResultCode The expected result code after submitting a payment transaction.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
    */
   private void sendFunds(
     String valueToSend,
@@ -356,6 +366,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @return The {@link TrustLine} that gets created.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
    */
   private TrustLine createTrustLine(
     Wallet issuerWallet,
@@ -400,6 +411,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
   /**
    * Set the `asfRequireAuth` AccountSet flag so that only approved counterparties can hold currency from the issuer.
    *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
    * @see "https://xrpl.org/become-an-xrp-ledger-gateway.html#default-ripple"
    */
   protected void enableDefaultRipple(final Wallet wallet)
@@ -433,11 +446,24 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
   }
 
   private static final boolean FREEZE = true;
-  private static final boolean UNFREEZE = false;
+  private static final boolean UN_FREEZE = false;
 
-  // TODO: Javadoc
-
-  private TrustLine freezeTrustline(
+  /**
+   * Freeze an individual trustline that exists between the specified issuer and the specified counterparty for the
+   * {@link #ISSUED_CURRENCY_CODE} (which is the only currency code this test uses).
+   *
+   * @param issuerWallet       The {@link Wallet} of the trustline issuer.
+   * @param counterpartyWallet The {@link Wallet} of the trustline counterparty.
+   * @param fee                The fee to spend to get the "freeze" transaction into the ledger.
+   * @param freeze             A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and {@code
+   *                           true} to freeze).
+   *
+   * @return The {@link TrustLine} that was frozed or unfrozen.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
+   */
+  private TrustLine adjustTrustlineFreeze(
     Wallet issuerWallet,
     Wallet counterpartyWallet,
     XrpCurrencyAmount fee,
@@ -483,9 +509,23 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
   }
 
-  private AccountInfoResult globalFreezeTrustline(
+  /**
+   * Globally freeze all trustlines that exists between the specified issuer and any counterparty.
+   *
+   * @param issuerWallet The {@link Wallet} of the trustline issuer.
+   * @param fee          The fee to spend to get the "freeze" transaction into the ledger.
+   * @param freeze       A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and {@code true}
+   *                     to freeze).
+   *
+   * @return The {@link AccountInfoResult} of the issuer account after the operation has been validated by the ledger.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
+   */
+  private AccountInfoResult adjustGlobalTrustlineFreeze(
     Wallet issuerWallet,
-    XrpCurrencyAmount fee
+    XrpCurrencyAmount fee,
+    boolean freeze
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult issuerAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(issuerWallet.address())
@@ -494,7 +534,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     AccountSet accountSet = AccountSet.builder()
       .account(issuerWallet.address())
       .fee(fee)
-      .setFlag(AccountSetFlag.GLOBAL_FREEZE)
+      .setFlag(freeze ? AccountSetFlag.GLOBAL_FREEZE : AccountSetFlag.NO_FREEZE)
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey().base16Value())
       .build();

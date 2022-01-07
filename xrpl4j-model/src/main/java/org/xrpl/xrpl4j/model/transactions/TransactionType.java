@@ -95,7 +95,12 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link TrustSet} transaction.
    */
-  TRUST_SET("TrustSet");
+  TRUST_SET("TrustSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link TicketCreate} transaction.
+   */
+  TICKET_CREATE("TicketCreate");
 
   private final String value;
 
@@ -117,7 +122,7 @@ public enum TransactionType {
       }
     }
 
-    throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
+    throw new IllegalArgumentException("No matching TransactionType enum value for String value " + value);
   }
 
   /**

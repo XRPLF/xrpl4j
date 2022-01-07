@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractIT {
 
+  public static final String SUCCESS_STATUS = "tesSUCCESS";
   public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();

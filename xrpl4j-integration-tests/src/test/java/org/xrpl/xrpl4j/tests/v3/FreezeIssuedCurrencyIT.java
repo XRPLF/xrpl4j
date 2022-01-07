@@ -554,7 +554,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     return scanForResult(
       () -> getValidatedAccountInfo(issuerWallet.address()),
-      accountInfoResult -> accountInfoResult.accountData().flags().lsfGlobalFreeze()
+      accountInfoResult -> accountInfoResult.accountData().flags().lsfGlobalFreeze() == freeze
     );
 
   }

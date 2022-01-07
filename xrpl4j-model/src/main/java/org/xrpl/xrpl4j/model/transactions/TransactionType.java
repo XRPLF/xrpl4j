@@ -95,7 +95,12 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link TrustSet} transaction.
    */
-  TRUST_SET("TrustSet");
+  TRUST_SET("TrustSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link TicketCreate} transaction.
+   */
+  TICKET_CREATE("TicketCreate");
 
   private final String value;
 

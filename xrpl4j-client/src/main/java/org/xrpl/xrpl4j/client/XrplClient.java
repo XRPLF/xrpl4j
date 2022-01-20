@@ -62,6 +62,10 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -629,6 +633,22 @@ public class XrplClient {
         .build();
     } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenAcceptOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenBurn.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenBurn.builder().from((NfTokenBurn) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenCancelOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenCancelOffer.builder().from((NfTokenCancelOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenCreateOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenCreateOffer.builder().from((NfTokenCreateOffer) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     } else if (NfTokenMint.class.isAssignableFrom(unsignedTransaction.getClass())) {

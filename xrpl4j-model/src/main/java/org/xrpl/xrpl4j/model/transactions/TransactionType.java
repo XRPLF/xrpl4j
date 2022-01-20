@@ -55,7 +55,27 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link NfTokenMint} transaction.
    */
-  NFTOKEN_MINT("NFTokenMint"),
+  NFTOKEN_MINT("NfTokenMint"),
+  
+  /**
+   * The {@link TransactionType} for the {@link NfTokenBurn} transaction.
+   */
+  NFTOKEN_BURN("NfTokenBurn"),
+
+  /**
+   * The {@link TransactionType} for the {@link NfTokenAcceptOffer} transaction.
+   */
+  NFTOKEN_ACCEPT_OFFER("NfTokenAcceptOffer"),
+
+  /**
+   * The {@link TransactionType} for the {@link NfTokenCancelOffer} transaction.
+   */
+  NFTOKEN_CANCEL_OFFER("NfTokenCancelOffer"),
+
+  /**
+   * The {@link TransactionType} for the {@link NfTokenCreateOffer} transaction.
+   */
+  NFTOKEN_CREATE_OFFER("NfTokenCreateOffer"),
 
   /**
    * The {@link TransactionType} for the {@link OfferCancel} transaction.

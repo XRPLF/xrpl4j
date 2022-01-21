@@ -43,6 +43,9 @@ public interface NfTokenCancelOffer extends Transaction {
   @JsonProperty("TokenIDs")
   String[] tokenIds();
 
+  /**
+   * Token Ids array should have atleast one value.
+   */
   @Value.Check
   default void nonEmptyTokenIds() {
 

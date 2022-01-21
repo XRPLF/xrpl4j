@@ -3,7 +3,9 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+
 
 /**
  * The {@link NfTokenBurn} transaction is used to remove an NfToken object from the
@@ -47,4 +49,16 @@ public interface NfTokenBurn extends Transaction {
    */
   @JsonProperty("TokenID")
   String tokenId();
+
+  /**
+   * Check email hash length.
+   */
+  @Value.Check
+  default void checkTokenIdLength() {
+
+    Preconditions.checkArgument(
+      tokenId().length() == 64,
+      String.format("tokenId must be 64 characters (256 bits), but was %s characters long.", tokenId().length())
+    );
+  }
 }

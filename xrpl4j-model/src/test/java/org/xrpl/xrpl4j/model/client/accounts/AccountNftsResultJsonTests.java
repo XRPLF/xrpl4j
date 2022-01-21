@@ -15,8 +15,8 @@ public class AccountNftsResultJsonTests extends AbstractJsonTest {
   public void testMinimalJson() throws JsonProcessingException, JSONException {
 
     NfTokenObject obj = NfTokenObject.builder()
-    .tokenId("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007")
-    .build();
+      .tokenId("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007")
+      .build();
 
     List<NfTokenObject> list = new ArrayList<>();
     list.add(obj);

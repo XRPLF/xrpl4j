@@ -17,7 +17,7 @@ public class NfTokenCreateOfferTest {
       .tokenId(id)
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();
-
+    
     assertThat(id.equals(nfTokenCreateOffer.tokenId()));
     assertThat(nfTokenCreateOffer.tokenId()).isEqualTo(id);
   }

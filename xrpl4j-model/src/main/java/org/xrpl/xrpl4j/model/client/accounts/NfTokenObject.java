@@ -1,11 +1,9 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
-//import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-//import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedLong;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 
 import java.util.Optional;
 
@@ -13,15 +11,25 @@ import java.util.Optional;
  * Structure of an NFToken stored on the ledger.
  */
 @Value.Immutable
-//@JsonSerialize(as = ImmutableNfToken.class)
-//@JsonDeserialize(as = ImmutableNfToken.class)
+@JsonSerialize(as = ImmutableNfTokenObject.class)
+@JsonDeserialize(as = ImmutableNfTokenObject.class)
 public interface NfTokenObject {
+
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableNfTokenObject.Builder}.
+   */
+  static ImmutableNfTokenObject.Builder builder() {
+    return ImmutableNfTokenObject.builder();
+  }
 
   /**
    * The unique TokenID of the token.
    *
    * @return The unique TokenID of the token.
    */
+  @JsonProperty("tokenid")
   String tokenId();
 
   /**
@@ -29,5 +37,6 @@ public interface NfTokenObject {
    *
    * @return The URI for the data of the token.
    */
+  @JsonProperty("uri")
   Optional<String> uri();
 }

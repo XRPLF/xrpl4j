@@ -51,7 +51,7 @@ public interface NfTokenBurn extends Transaction {
   String tokenId();
 
   /**
-   * Check email hash length.
+   * Check token id length.
    */
   @Value.Check
   default void checkTokenIdLength() {

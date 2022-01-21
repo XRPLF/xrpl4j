@@ -42,7 +42,6 @@ public class NfTokenBurnTest {
         .build(),
       "tokenId must be 64 characters (256 bits), but was 6 characters long."
     );
-
   }
 }
 

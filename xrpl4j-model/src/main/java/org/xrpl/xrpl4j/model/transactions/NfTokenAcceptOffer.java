@@ -3,6 +3,8 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -84,4 +86,33 @@ public interface NfTokenAcceptOffer extends Transaction {
    */
   @JsonProperty("BrokerFee")
   Optional<CurrencyAmount> brokerFee();
+
+  /**
+   * Check buy offer length.
+   */
+  @Value.Check
+  default void checkBuyOfferLength() {
+    buyOffer()
+      .ifPresent(buyOffer ->
+        Preconditions.checkArgument(
+          buyOffer.length() == 64,
+          String.format("buyOffer must be 64 characters (256 bits), but was %s characters long.", buyOffer.length())
+        )
+      );
+  }
+
+  /**
+   * Check sell offer length.
+   */
+  @Value.Check
+  default void checkSellOfferLength() {
+    sellOffer()
+      .ifPresent(sellOffer ->
+        Preconditions.checkArgument(
+          sellOffer.length() == 64,
+          String.format("sellOffer must be 64 characters (256 bits), but was %s characters long.", sellOffer.length())
+        )
+      );
+  }
+
 }

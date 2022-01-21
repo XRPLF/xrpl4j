@@ -1,13 +1,27 @@
 package org.xrpl.xrpl4j.model.client.nft;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Optional;
 
+/**
+ * An Offer returned in an {@link NfTokenOfferObject} list.
+ * Note that this object is NOT the same as the Offer ledger object.
+ */
+@Value.Immutable
+@JsonSerialize(as = ImmutableNfTokenOfferObject.class)
+@JsonDeserialize(as = ImmutableNfTokenOfferObject.class)
 public interface NfTokenOfferObject {
+
+  static ImmutableNfTokenOfferObject.Builder builder() {
+    return ImmutableNfTokenOfferObject.builder();
+  }
 
   /**
    * The amount of XRP, in drops, expected or offered for the token.

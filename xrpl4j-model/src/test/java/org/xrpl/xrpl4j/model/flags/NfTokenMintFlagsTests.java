@@ -1,3 +1,5 @@
+
+
 package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,3 +72,4 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
       (tfTransferable ? Flags.NfTokenMintFlags.TRANSFERABLE.getValue() : 0L);
   }
 }
+

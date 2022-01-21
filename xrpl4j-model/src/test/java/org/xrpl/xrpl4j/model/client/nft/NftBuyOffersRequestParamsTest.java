@@ -2,8 +2,8 @@ package org.xrpl.xrpl4j.model.client.nft;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
-import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.AbstractJsonTest;
 
 public class NftBuyOffersRequestParamsTest extends AbstractJsonTest {
 

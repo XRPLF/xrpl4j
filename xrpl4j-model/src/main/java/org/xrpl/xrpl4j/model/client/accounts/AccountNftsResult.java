@@ -19,7 +19,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccountNftsResult.class)
 @JsonDeserialize(as = ImmutableAccountNftsResult.class)
-public interface AccountNftsResult  extends XrplResult {
+public interface AccountNftsResult extends XrplResult {
   /**
    * Construct a builder for this class.
    *

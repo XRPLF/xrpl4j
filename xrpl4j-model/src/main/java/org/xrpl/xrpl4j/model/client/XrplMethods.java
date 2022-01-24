@@ -28,11 +28,6 @@ public class XrplMethods {
   public static final String ACCOUNT_LINES = "account_lines";
 
   /**
-   * Constant for the account_nfts rippled API method.
-   */
-  public static final String ACCOUNT_NFTS = "account_nfts";
-
-  /**
    * Constant for the <a href="https://xrpl.org/account_objects.html">account_objects</a> rippled API method.
    */
   public static final String ACCOUNT_OBJECTS = "account_objects";
@@ -85,12 +80,17 @@ public class XrplMethods {
 
   // NFT methods
   /**
-   * Constant for the <a href="https://xrpl.org/ledger_entry.html">ledger_entry</a> rippled API method.
+   * Constant for the account_nfts rippled API method.
+   */
+  public static final String ACCOUNT_NFTS = "account_nfts";
+
+  /**
+   * Constant for the nft_buy_offers rippled API method.
    */
   public static final String NFT_BUY_OFFERS = "nft_buy_offers";
 
   /**
-   * Constant for the <a href="https://xrpl.org/ledger_entry.html">ledger_entry</a> rippled API method.
+   * Constant for the nft_sell_offers rippled API method.
    */
   public static final String NFT_SELL_OFFERS = "nft_sell_offers";
 

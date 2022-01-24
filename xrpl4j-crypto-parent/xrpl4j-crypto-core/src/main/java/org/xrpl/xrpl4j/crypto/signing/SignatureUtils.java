@@ -15,6 +15,11 @@ import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -159,6 +164,26 @@ public class SignatureUtils {
         .build();
     } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
       signedTransaction = TrustSet.builder().from((TrustSet) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenAcceptOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenBurn.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = NfTokenBurn.builder().from((NfTokenBurn) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenCancelOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = NfTokenCancelOffer.builder().from((NfTokenCancelOffer) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenCreateOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = NfTokenCreateOffer.builder().from((NfTokenCreateOffer) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenMint.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = NfTokenMint.builder().from((NfTokenMint) unsignedTransaction)
         .transactionSignature(signature.base16Value())
         .build();
     } else if (OfferCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {

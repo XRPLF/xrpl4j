@@ -231,4 +231,44 @@ public class Wrappers {
     }
 
   }
+
+  /**
+   * A wrapped {@link String} containing the NFT Id.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = NfTokenId.class)
+  @JsonDeserialize(as = NfTokenId.class)
+  abstract static class _NfTokenId extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    /**
+     * Validates that a NfTokenId value's length is equal to 64 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(this.value().length() == 64, "TokenId must be 64 characters long.");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && obj instanceof NfTokenId) {
+        String otherValue = ((NfTokenId) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+  }
+
 }

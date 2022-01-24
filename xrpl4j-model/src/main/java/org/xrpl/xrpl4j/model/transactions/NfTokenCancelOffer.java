@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -41,7 +42,7 @@ public interface NfTokenCancelOffer extends Transaction {
    * @return Array of TokenIDs, each identifying a unique NfToken object, to cancel the offers for.
    */
   @JsonProperty("TokenIDs")
-  String[] tokenIds();
+  List<NfTokenId> tokenIds();
 
   /**
    * Token Ids array should have atleast one value.
@@ -50,7 +51,7 @@ public interface NfTokenCancelOffer extends Transaction {
   default void nonEmptyTokenIds() {
 
     Preconditions.checkArgument(
-      tokenIds().length > 0,
+      tokenIds().size() > 0,
       String.format("List of tokenIds must be non-empty.")
     );
   }

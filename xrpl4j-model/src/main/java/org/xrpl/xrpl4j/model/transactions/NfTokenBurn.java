@@ -48,17 +48,5 @@ public interface NfTokenBurn extends Transaction {
    * @return The TokenID of the NfToken to be burned.
    */
   @JsonProperty("TokenID")
-  String tokenId();
-
-  /**
-   * Check token id length.
-   */
-  @Value.Check
-  default void checkTokenIdLength() {
-
-    Preconditions.checkArgument(
-      tokenId().length() == 64,
-      String.format("tokenId must be 64 characters (256 bits), but was %s characters long.", tokenId().length())
-    );
-  }
+  NfTokenId tokenId();
 }

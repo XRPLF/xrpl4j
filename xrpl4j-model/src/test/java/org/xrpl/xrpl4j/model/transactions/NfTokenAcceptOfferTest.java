@@ -11,7 +11,7 @@ public class NfTokenAcceptOfferTest {
 
   @Test
   public void buildTx() {
-
+    
     Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
     NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

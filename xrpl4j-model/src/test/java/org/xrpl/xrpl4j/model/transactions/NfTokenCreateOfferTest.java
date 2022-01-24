@@ -10,7 +10,7 @@ public class NfTokenCreateOfferTest {
   @Test
   public void buildTx() {
 
-    String id = "000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65";
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(1))
@@ -18,6 +18,7 @@ public class NfTokenCreateOfferTest {
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();
 
+    assertThat(id.equals(nfTokenCreateOffer.tokenId()));
     assertThat(nfTokenCreateOffer.tokenId()).isEqualTo(id);
   }
 

@@ -17,6 +17,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -48,6 +49,9 @@ public class Xrpl4jModule extends SimpleModule {
 
     addSerializer(Hash256.class, new Hash256Serializer());
     addDeserializer(Hash256.class, new Hash256Deserializer());
+
+    addSerializer(NfTokenId.class, new NfTokenIdSerializer());
+    addDeserializer(NfTokenId.class, new NfTokenIdDeserializer());
 
     addSerializer(XrpCurrencyAmount.class, new XrpCurrencyAmountSerializer());
     addDeserializer(XrpCurrencyAmount.class, new XrpCurrencyAmountDeserializer());

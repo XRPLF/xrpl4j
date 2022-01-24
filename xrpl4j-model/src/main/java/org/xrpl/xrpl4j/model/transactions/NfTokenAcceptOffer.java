@@ -39,7 +39,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    * @return An {@link Optional} NfTOffer of type {@link String} that offers to sell the NfT.
    */
   @JsonProperty("SellOffer")
-  Optional<String> sellOffer();
+  Optional<NfTokenId> sellOffer();
 
   /**
    * Identifies the NfTOffer that offers to buy the NfT.
@@ -51,7 +51,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    * @return An {@link Optional} NfTOffer of type {@link String} that offers to buy the NfT.
    */
   @JsonProperty("BuyOffer")
-  Optional<String> buyOffer();
+  Optional<NfTokenId> buyOffer();
 
   /**
    * <p>This field is only valid in brokered mode and specifies the
@@ -86,33 +86,5 @@ public interface NfTokenAcceptOffer extends Transaction {
    */
   @JsonProperty("BrokerFee")
   Optional<CurrencyAmount> brokerFee();
-
-  /**
-   * Check buy offer length.
-   */
-  @Value.Check
-  default void checkBuyOfferLength() {
-    buyOffer()
-      .ifPresent(buyOffer ->
-        Preconditions.checkArgument(
-          buyOffer.length() == 64,
-          String.format("buyOffer must be 64 characters (256 bits), but was %s characters long.", buyOffer.length())
-        )
-      );
-  }
-
-  /**
-   * Check sell offer length.
-   */
-  @Value.Check
-  default void checkSellOfferLength() {
-    sellOffer()
-      .ifPresent(sellOffer ->
-        Preconditions.checkArgument(
-          sellOffer.length() == 64,
-          String.format("sellOffer must be 64 characters (256 bits), but was %s characters long.", sellOffer.length())
-        )
-      );
-  }
 
 }

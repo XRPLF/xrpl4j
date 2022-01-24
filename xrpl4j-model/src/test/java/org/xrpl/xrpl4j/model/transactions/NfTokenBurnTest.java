@@ -10,12 +10,14 @@ public class NfTokenBurnTest {
   @Test
   public void buildTx() {
 
-    String id = "000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65";
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .tokenId(id)
       .build();
+
+    assertThat(id.equals(nfTokenBurn.tokenId()));
     assertThat(nfTokenBurn.tokenId()).isEqualTo(id);
   }
 
@@ -33,12 +35,13 @@ public class NfTokenBurnTest {
 
   @Test
   public void tokenIdTooShort() {
+
     assertThrows(
       IllegalArgumentException.class,
       () -> NfTokenBurn.builder()
         .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .tokenId("random")
+        .tokenId(NfTokenId.of("random"))
         .build(),
       "tokenId must be 64 characters (256 bits), but was 6 characters long."
     );

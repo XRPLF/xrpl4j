@@ -87,7 +87,7 @@ public interface NfTokenMint extends Transaction {
   default Flags.NfTokenMintFlags flags() {
     return Flags.NfTokenMintFlags.builder().tfFullyCanonicalSig(true).build();
   }
-
+  
   /**
    * For secondary sale/brokered mode, tfTransferable flag must be set.
    */

@@ -88,6 +88,9 @@ public interface NfTokenMint extends Transaction {
     return Flags.NfTokenMintFlags.builder().tfFullyCanonicalSig(true).build();
   }
 
+  /**
+   * For secondary sale/brokered mode, tfTransferable flag must be set.
+   */
   @Value.Check
   default void checkIfFlagIsSet() {
     if (transferFee().isPresent()) {

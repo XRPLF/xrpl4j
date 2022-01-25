@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 public class NfTokenIdTest {
 
   @Test
-  public void NFTokenEquality() {
+  public void nfTokenEquality() {
     assertThat(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65")
       .equals(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65")));
 
@@ -20,7 +20,7 @@ public class NfTokenIdTest {
   }
 
   @Test
-  public void NFTokenHashcode() {
+  public void nfTokenHashcode() {
     assertThat(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65").hashCode())
       .isEqualTo(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65").hashCode());
   }

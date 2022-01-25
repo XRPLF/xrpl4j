@@ -37,6 +37,12 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -51,6 +57,8 @@ import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -314,6 +322,70 @@ public class SignatureUtilsTest {
         .build())
       .build();
     addSignatureToTransactionHelper(trustSet);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenAcceptOffer() {
+
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .signingPublicKey(sourceWallet.publicKey())
+      .buyOffer(offer)
+      .build();
+    addSignatureToTransactionHelper(nfTokenAcceptOffer);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenBurn() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourceWallet.classicAddress())
+      .signingPublicKey(sourceWallet.publicKey())
+      .tokenId(id)
+      .build();
+    addSignatureToTransactionHelper(nfTokenBurn);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenCancelOffer() {
+    NfTokenId offer = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<NfTokenId> offers = new ArrayList<>();
+    offers.add(offer);
+    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
+      .account(sourceWallet.classicAddress())
+      .signingPublicKey(sourceWallet.publicKey())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenIds(offers)
+      .build();
+    addSignatureToTransactionHelper(nfTokenCancelOffer);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenCreateOffer() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(sourceWallet.classicAddress())
+      .signingPublicKey(sourceWallet.publicKey())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .build();
+    addSignatureToTransactionHelper(nfTokenCreateOffer);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenMint() {
+    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourceWallet.classicAddress())
+      .signingPublicKey(sourceWallet.publicKey())
+      .tokenTaxon(taxon)
+      .build();
+    addSignatureToTransactionHelper(nfTokenMint);
   }
 
   @Test

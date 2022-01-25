@@ -313,11 +313,6 @@ public class Wrappers {
   @JsonDeserialize(as = TransferFee.class)
   abstract static class _TransferFee extends Wrapper<UnsignedInteger> implements Serializable {
 
-    @Override
-    public String toString() {
-      return this.value().toString();
-    }
-
     /**
      * Construct {@link TransferFee} as a percentage value.
      *

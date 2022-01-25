@@ -12,7 +12,7 @@ public class TransferFeeTest {
 
   @Test
   public void transferFeeEquality() {
-
+    
     assertThat(TransferFee.of(UnsignedInteger.ONE)).isEqualTo(TransferFee.of(UnsignedInteger.ONE));
     assertThat(TransferFee.of(UnsignedInteger.valueOf(10)))
       .isEqualTo(TransferFee.of(UnsignedInteger.valueOf(10)));

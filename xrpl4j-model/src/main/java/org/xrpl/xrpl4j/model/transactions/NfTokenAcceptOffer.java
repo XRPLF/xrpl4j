@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -39,7 +38,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    * @return An {@link Optional} NfTOffer of type {@link String} that offers to sell the NfT.
    */
   @JsonProperty("SellOffer")
-  Optional<NfTokenId> sellOffer();
+  Optional<Hash256> sellOffer();
 
   /**
    * Identifies the NfTOffer that offers to buy the NfT.
@@ -51,7 +50,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    * @return An {@link Optional} NfTOffer of type {@link String} that offers to buy the NfT.
    */
   @JsonProperty("BuyOffer")
-  Optional<NfTokenId> buyOffer();
+  Optional<Hash256> buyOffer();
 
   /**
    * <p>This field is only valid in brokered mode and specifies the
@@ -86,5 +85,21 @@ public interface NfTokenAcceptOffer extends Transaction {
    */
   @JsonProperty("BrokerFee")
   Optional<CurrencyAmount> brokerFee();
+
+  /**
+   * Validate that either {@link NfTokenAcceptOffer#buyOffer()} or {@link NfTokenAcceptOffer#sellOffer()} is present
+   * for direct mode and both are present for brokered mode.
+   */
+  @Value.Check
+  default void atleastOneOfferPresent() {
+    if(brokerFee().isPresent()){
+      Preconditions.checkState( buyOffer().isPresent() && sellOffer().isPresent(),
+        "In brokered mode, you must specify both the SellOffer and the BuyOffer.");
+    } else {
+      Preconditions.checkState( (buyOffer().isPresent() || sellOffer().isPresent()) &&
+        !(buyOffer().isPresent() && sellOffer().isPresent()),
+        "In direct mode, you must specify either the SellOffer or the BuyOffer.");
+    }
+  }
 
 }

@@ -19,6 +19,11 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableNfTokenOfferObject.class)
 public interface NfTokenOfferObject {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableNfTokenOfferObject.Builder}.
+   */
   static ImmutableNfTokenOfferObject.Builder builder() {
     return ImmutableNfTokenOfferObject.builder();
   }
@@ -26,7 +31,7 @@ public interface NfTokenOfferObject {
   /**
    * The amount of XRP, in drops, expected or offered for the token.
    *
-   * @return the xrp currency amount
+   * @return The {@link XrpCurrencyAmount}.
    */
   @JsonProperty("Amount")
   XrpCurrencyAmount amount();

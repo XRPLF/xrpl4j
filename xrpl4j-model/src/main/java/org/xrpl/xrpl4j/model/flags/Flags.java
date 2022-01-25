@@ -1495,11 +1495,6 @@ public class Flags {
   public static class NfTokenCreateOfferFlags extends Flags {
 
     /**
-     * Constant for an unset flag.
-     */
-    //    public static final NfTokenCreateOfferFlags UNSET = new NfTokenCreateOfferFlags(0);
-
-    /**
      * Constant {@link NfTokenCreateOfferFlags} for the {@code lsfOneOwner} flag.
      */
     public static final NfTokenCreateOfferFlags SELL_TOKEN = new NfTokenCreateOfferFlags(0x00000001);

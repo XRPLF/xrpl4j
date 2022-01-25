@@ -7,7 +7,6 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 
-
 /**
  * The {@link NfTokenBurn} transaction is used to remove an NfToken object from the
  * NfTokenPage in which it is being held, effectively removing the token from

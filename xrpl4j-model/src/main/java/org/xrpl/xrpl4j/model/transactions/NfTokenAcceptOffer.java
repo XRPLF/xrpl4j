@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.util.Optional;
 
@@ -92,7 +93,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    */
   @Value.Check
   default void atleastOneOfferPresent() {
-    if(brokerFee().isPresent()){
+    if (brokerFee().isPresent()) {
       Preconditions.checkState( buyOffer().isPresent() && sellOffer().isPresent(),
         "In brokered mode, you must specify both the SellOffer and the BuyOffer.");
     } else {
@@ -100,6 +101,21 @@ public interface NfTokenAcceptOffer extends Transaction {
         !(buyOffer().isPresent() && sellOffer().isPresent()),
         "In direct mode, you must specify either the SellOffer or the BuyOffer.");
     }
+  }
+
+  /**
+   * Set of {@link Flags.TransactionFlags}s for this {@link NfTokenAcceptOffer}, which only allows
+   * {@code tfFullyCanonicalSig} flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   */
+  @JsonProperty("Flags")
+  @Value.Derived
+  default Flags.TransactionFlags flags() {
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
 }

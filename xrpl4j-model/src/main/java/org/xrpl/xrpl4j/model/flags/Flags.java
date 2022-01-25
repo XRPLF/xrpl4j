@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.flags;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
@@ -1495,12 +1496,30 @@ public class Flags {
   public static class NfTokenCreateOfferFlags extends Flags {
 
     /**
-     * Constant {@link NfTokenCreateOfferFlags} for the {@code lsfOneOwner} flag.
+     * Constant {@link NfTokenCreateOfferFlags} for the {@code tfSellToken} flag.
      */
     public static final NfTokenCreateOfferFlags SELL_TOKEN = new NfTokenCreateOfferFlags(0x00000001);
 
     private NfTokenCreateOfferFlags(long value) {
       super(value);
+    }
+
+    /**
+     * Create a new {@link NfTokenCreateOfferFlags.Builder}.
+     *
+     * @return A new {@link NfTokenCreateOfferFlags.Builder}.
+     */
+    public static NfTokenCreateOfferFlags.Builder builder() {
+      return new NfTokenCreateOfferFlags.Builder();
+    }
+
+    private static NfTokenCreateOfferFlags of(boolean tfFullyCanonicalSig, boolean tfSellToken) {
+      return new NfTokenCreateOfferFlags(
+        TransactionFlags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfSellToken ? SELL_TOKEN : UNSET
+        ).getValue()
+      );
     }
 
     /**
@@ -1515,13 +1534,64 @@ public class Flags {
     }
 
     /**
-     * If set, indicates that the offer is a sell offer.
-     * Otherwise, it is a buy offer.
+     * Require a fully canonical transaction signature.
      *
-     *  @return {@code true} if {@code tfSellToken} is set, otherwise {@code false}.
+     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
+     */
+    public boolean tfFullyCanonicalSig() {
+      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
+    }
+
+    /**
+     * If set, indicates that the minted token may be burned by the issuer even
+     * if the issuer does not currently hold the token. The current holder of
+     * the token may always burn it.
+     *
+     * @return {@code true} if {@code tfBurnable} is set, otherwise {@code false}.
      */
     public boolean tfSellToken() {
-      return this.isSet(NfTokenCreateOfferFlags.SELL_TOKEN);
+      return this.isSet(SELL_TOKEN);
+    }
+
+    /**
+     * A builder class for {@link NfTokenCreateOfferFlags}.
+     */
+    public static class Builder {
+      boolean tfFullyCanonicalSig = true;
+      boolean tfSellToken = false;
+
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenCreateOfferFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
+        return this;
+      }
+
+      /**
+       * Set {@code tfSellToken} to the given value.
+       *
+       * @param tfSellToken A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenCreateOfferFlags.Builder tfSellToken(boolean tfSellToken) {
+        this.tfSellToken = tfSellToken;
+        return this;
+      }
+
+      /**
+       * Build a new {@link NfTokenCreateOfferFlags} from the current boolean values.
+       *
+       * @return A new {@link NfTokenCreateOfferFlags}.
+       */
+      public NfTokenCreateOfferFlags build() {
+        return NfTokenCreateOfferFlags.of(tfFullyCanonicalSig, tfSellToken);
+      }
     }
   }
 }

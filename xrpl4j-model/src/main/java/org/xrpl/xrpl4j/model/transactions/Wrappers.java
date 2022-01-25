@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
@@ -269,6 +270,48 @@ public class Wrappers {
     public int hashCode() {
       return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = TransferFee.class)
+  @JsonDeserialize(as = TransferFee.class)
+  abstract static class _TransferFee extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Construct {@link TransferFee} as a percentage value.
+     *
+     * @param percent of type {@link BigDecimal}
+     * @return {@link TransferFee}
+     */
+    static TransferFee ofPercent(BigDecimal percent) {
+      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
+    }
+
+
+    /**
+     * Validates that a NfTokenId value's length is equal to 64 characters.
+     */
+    @Value.Check
+    public void validateBounds() {
+      Preconditions.checkArgument(
+        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(9999)) &&
+          FluentCompareTo.is(value()).greaterThanEqualTo(UnsignedInteger.valueOf(0)),
+        "TransferFee should be in the range 0 to 9999.");
+    }
+
+    public boolean equals(UnsignedInteger obj) {
+      return FluentCompareTo.is(value()).equalTo(obj);
+    }
+
   }
 
 }

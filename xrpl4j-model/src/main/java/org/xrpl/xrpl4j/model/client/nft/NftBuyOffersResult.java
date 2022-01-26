@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 
 import java.util.List;
 
@@ -30,7 +32,7 @@ public interface NftBuyOffersResult extends XrplResult {
    * @return the TokenID of the {@link org.xrpl.xrpl4j.model.client.accounts.NfTokenObject} object.
    */
   @JsonProperty("TokenID")
-  String tokenId();
+  NfTokenId tokenId();
 
   /**
    * List of buy offers for a particular NFToken.

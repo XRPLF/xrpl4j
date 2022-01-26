@@ -1,9 +1,9 @@
 package org.xrpl.xrpl4j.model.flags;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
-import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
@@ -1361,15 +1361,6 @@ public class Flags {
     }
 
     /**
-     * Require a fully canonical transaction signature.
-     *
-     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
-     */
-    public boolean tfFullyCanonicalSig() {
-      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
-    }
-
-    /**
      * If set, indicates that the minted token may be burned by the issuer even
      * if the issuer does not currently hold the token. The current holder of
      * the token may always burn it.
@@ -1493,7 +1484,7 @@ public class Flags {
   /**
    * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer}s.
    */
-  public static class NfTokenCreateOfferFlags extends Flags {
+  public static class NfTokenCreateOfferFlags extends TransactionFlags {
 
     /**
      * Constant {@link NfTokenCreateOfferFlags} for the {@code tfSellToken} flag.
@@ -1531,15 +1522,6 @@ public class Flags {
      */
     public static NfTokenCreateOfferFlags of(long value) {
       return new NfTokenCreateOfferFlags(value);
-    }
-
-    /**
-     * Require a fully canonical transaction signature.
-     *
-     * @return {@code true} if {@code tfFullyCanonicalSig} is set, otherwise {@code false}.
-     */
-    public boolean tfFullyCanonicalSig() {
-      return this.isSet(TransactionFlags.FULLY_CANONICAL_SIG);
     }
 
     /**
@@ -1596,7 +1578,7 @@ public class Flags {
   }
 
   /**
-   * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.ledger.RippleStateObject}s.
+   * A set of static {@link Flags} which can be set on {@link NfTokenOfferObject}s.
    */
   public static class NfTokenOfferFlags extends Flags {
 

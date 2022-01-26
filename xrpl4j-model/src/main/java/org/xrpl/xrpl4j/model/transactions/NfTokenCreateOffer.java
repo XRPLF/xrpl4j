@@ -105,7 +105,7 @@ public interface NfTokenCreateOffer extends Transaction {
    * @return The {@link org.xrpl.xrpl4j.model.flags.Flags.NfTokenCreateOfferFlags} for this transaction.
    */
   @JsonProperty("Flags")
-  @Value.Derived
+  @Value.Default
   default Flags.NfTokenCreateOfferFlags flags() {
     return new Flags.NfTokenCreateOfferFlags.Builder().tfFullyCanonicalSig(true).build();
   }

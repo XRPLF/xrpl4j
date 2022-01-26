@@ -286,7 +286,7 @@ public class Wrappers {
       Preconditions.checkArgument(
         Math.max(0, percent.stripTrailingZeros().scale()) <= 2,
         "Percent value should have a maximum of 2 decimal places."
-        );
+      );
       return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
     }
 

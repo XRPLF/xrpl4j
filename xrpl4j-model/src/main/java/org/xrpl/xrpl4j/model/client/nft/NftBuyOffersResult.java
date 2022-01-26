@@ -29,6 +29,7 @@ public interface NftBuyOffersResult extends XrplResult {
 
   /**
    *  The TokenID of the NFToken object.
+   *
    * @return the TokenID of the {@link org.xrpl.xrpl4j.model.client.accounts.NfTokenObject} object.
    */
   @JsonProperty("TokenID")

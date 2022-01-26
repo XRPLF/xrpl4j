@@ -335,10 +335,6 @@ public class Wrappers {
         "TransferFee should be in the range 0 to 9999.");
     }
 
-    public boolean equals(UnsignedInteger obj) {
-      return FluentCompareTo.is(value()).equalTo(obj);
-    }
-
   }
 
 }

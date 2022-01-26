@@ -15,7 +15,7 @@ public class TransferFeeTest {
     assertThat(TransferFee.of(UnsignedInteger.ONE).equals(TransferFee.of(UnsignedInteger.ONE)));
     assertThat(TransferFee.of(UnsignedInteger.valueOf(10)).equals(TransferFee.of(UnsignedInteger.valueOf(10))));
 
-    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.99))
-      .equals(TransferFee.ofPercent(BigDecimal.valueOf(99.99))));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.99)))
+      .isEqualTo(TransferFee.ofPercent(BigDecimal.valueOf(99.99)));
   }
 }

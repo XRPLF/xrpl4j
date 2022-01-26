@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 
 /**
  * Request params for "nft_sell_offers" rippled API method call.
@@ -29,5 +30,5 @@ public interface NftSellOffersRequestParams extends XrplRequestParams {
    * @return the TokenID of the {@link org.xrpl.xrpl4j.model.client.accounts.NfTokenObject} object.
    */
   @JsonProperty("TokenID")
-  String tokenId();
+  NfTokenId tokenId();
 }

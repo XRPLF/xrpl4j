@@ -9,7 +9,7 @@ import org.xrpl.xrpl4j.model.transactions.TransferFee;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link UnsignedInteger}s.
+ * Custom Jackson deserializer for {@link TransferFee}s.
  */
 public class TransferFeeDeserializer  extends StdDeserializer<TransferFee> {
 

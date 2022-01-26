@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.xrpl.xrpl4j.model.client.nft.ImmutableNfTokenOfferObject;
 
 /**
  * Market interface for XRP Ledger Objects.

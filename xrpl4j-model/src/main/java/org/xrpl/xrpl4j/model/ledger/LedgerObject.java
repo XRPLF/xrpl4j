@@ -86,7 +86,7 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code NFTokenOffer} ledger objects.
      */
-    NFTOKEN_OFFER("NFTokenOffer"),
+    NFTOKEN_OFFER("NfTokenOffer"),
 
     /**
      * The {@link LedgerEntryType} for {@code Offer} ledger objects.

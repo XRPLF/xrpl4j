@@ -43,7 +43,7 @@ public interface NfTokenCreateOffer extends Transaction {
    *
    * @return Offer is created for the token with TokenID.
    */
-  @JsonProperty("TokenId")
+  @JsonProperty("TokenID")
   NfTokenId tokenId();
 
   /**

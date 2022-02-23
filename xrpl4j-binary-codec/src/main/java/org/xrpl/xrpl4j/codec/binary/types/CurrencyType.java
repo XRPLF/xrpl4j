@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("AbbreviationAsWordInName")
 public class CurrencyType extends Hash160Type {
 
-  private static final Pattern ISO_REGEX = Pattern.compile("^[A-Z0-9]{3}$");
+  private static final Pattern ISO_REGEX = Pattern.compile("^[a-zA-Z0-9]{3}$");
 
   private final Optional<String> iso;
 

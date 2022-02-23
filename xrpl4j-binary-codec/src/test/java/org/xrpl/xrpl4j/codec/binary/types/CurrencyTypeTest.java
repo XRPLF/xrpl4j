@@ -14,6 +14,7 @@ class CurrencyTypeTest {
   void decodeIso3() {
     assertThat(codec.fromHex("0000000000000000000000000000000000000000").toJson().asText()).isEqualTo("XRP");
     assertThat(codec.fromHex("0000000000000000000000005553440000000000").toJson().asText()).isEqualTo("USD");
+    assertThat(codec.fromHex("0000000000000000000000007853440000000000").toJson().asText()).isEqualTo("xSD");
   }
 
   @Test
@@ -22,6 +23,8 @@ class CurrencyTypeTest {
       .isEqualTo("0000000000000000000000000000000000000000");
     assertThat(codec.fromJson(DOUBLE_QUOTE + "USD" + DOUBLE_QUOTE).toHex())
       .isEqualTo("0000000000000000000000005553440000000000");
+    assertThat(codec.fromJson(DOUBLE_QUOTE + "xSD" + DOUBLE_QUOTE).toHex())
+      .isEqualTo("0000000000000000000000007853440000000000");
   }
 
   @Test

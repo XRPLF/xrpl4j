@@ -29,6 +29,12 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -39,7 +45,11 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.Uri;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BinarySerializationTests {
 
@@ -383,6 +393,107 @@ public class BinarySerializationTests {
       "000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C8114BE6C30732AE33CF2AF3344CE8172A6B9300183E3";
     assertSerializesAndDeserializes(trustSet, expectedBinary);
   }
+
+  @Test
+  public void serializeNfTokenAcceptOffer() throws JsonProcessingException {
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .buyOffer(offer)
+      .build();
+
+    String expectedBinary = "12001D2280000000240000000C501C000B013A95F14B0044F78A264E41713C64B5F89242540EE208" +
+      "C3098E00000D6568400000000000000C8114832297BEF589D59F9C03A84F920F8D9128CC1CE4";
+    assertSerializesAndDeserializes(nfTokenAcceptOffer, expectedBinary);
+  }
+
+  @Test
+  public void serializeNfTokenBurn() throws JsonProcessingException {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .tokenId(id)
+      .build();
+
+    String expectedBinary = "12001A2280000000240000000C5A000B013A95F14B0044F78A264E41713C64B5F8924254" +
+      "0EE208C3098E00000D6568400000000000000C8114832297BEF589D59F9C03A84F920F8D9128CC1CE4";
+    assertSerializesAndDeserializes(nfTokenBurn, expectedBinary);
+  }
+
+  @Test
+  public void serializeNfTokenCancelOffer() throws JsonProcessingException {
+    NfTokenId offer = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<NfTokenId> offers = new ArrayList<>();
+    offers.add(offer);
+    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenIds(offers)
+      .build();
+
+    String expectedBinary = "12001C2280000000240000000068400000000000000181144B4E9C06F24296074F7BC48F" +
+      "92A97916C6DC5EA9041320000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65";
+    assertSerializesAndDeserializes(nfTokenCancelOffer, expectedBinary);
+  }
+
+  @Test
+  public void serializeNfTokenCreateOffer() throws JsonProcessingException {
+
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .build();
+
+    String expectedBinary = "12001B228000000024000000005A000B013A95F14B0044F78A264E41713C64B5F8924254" +
+      "0EE208C3098E00000D656140000000000007D068400000000000000181144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
+    assertSerializesAndDeserializes(nfTokenCreateOffer, expectedBinary);
+  }
+
+  @Test
+  public void serializeNfTokenMintWithStringUri() throws JsonProcessingException {
+
+    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .uri(Uri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
+      .tokenTaxon(taxon)
+      .build();
+
+    String expectedBinary = "12001922800000002400000000202A08C3098E6840000000000000017542697066733A2F2F6261667" +
+      "9626569676479727A74357366703775646D37687537367568377932366E6634646675796C71616266336F636C67747179353566" +
+      "627A646981144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
+    assertSerializesAndDeserializes(nfTokenMint, expectedBinary);
+
+  }
+
+  @Test
+  public void serializeNfTokenMintWithHexUri() throws JsonProcessingException {
+
+    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    String uri = "697066733A2F2F62616679626569676479727A74357366703775646D37687537367568377932366E6634646675796" +
+      "C71616266336F636C67747179353566627A6469";
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .uri(Uri.of(uri))
+      .tokenTaxon(taxon)
+      .build();
+
+    String expectedBinary = "12001922800000002400000000202A08C3098E6840000000000000017542697066733A2F2F6261667" +
+      "9626569676479727A74357366703775646D37687537367568377932366E6634646675796C71616266336F636C67747179353566" +
+      "627A646981144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
+    assertSerializesAndDeserializes(nfTokenMint, expectedBinary);
+
+  }
+
 
   @Test
   public void serializeOfferCreate() throws JsonProcessingException {

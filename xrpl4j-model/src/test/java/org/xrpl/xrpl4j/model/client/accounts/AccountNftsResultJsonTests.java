@@ -32,7 +32,7 @@ public class AccountNftsResultJsonTests extends AbstractJsonTest {
     String json = "{\n" +
       "        \"account\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
       "        \"account_nfts\": [{\n" +
-      "            \"tokenid\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
+      "            \"TokenID\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "        }],\n" +
       "        \"status\": \"success\",\n" +
       "        \"validated\": true\n" +

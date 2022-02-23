@@ -22,6 +22,9 @@ public class TransferFeeTest {
 
     assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.9)))
       .isEqualTo(TransferFee.ofPercent(BigDecimal.valueOf(99.90)));
+
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.9)).value())
+      .isEqualTo(UnsignedInteger.valueOf(9990));
   }
 
   @Test

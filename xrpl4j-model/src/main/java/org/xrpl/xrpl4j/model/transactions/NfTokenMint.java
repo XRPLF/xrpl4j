@@ -75,7 +75,7 @@ public interface NfTokenMint extends Transaction {
    * @return An {@link Optional} field URI of type {@link String}.
    */
   @JsonProperty("URI")
-  Optional<String> uri();
+  Optional<Uri> uri();
 
   /**
    * Set of {@link Flags.NfTokenMintFlags}s for this {@link NfTokenMint}.

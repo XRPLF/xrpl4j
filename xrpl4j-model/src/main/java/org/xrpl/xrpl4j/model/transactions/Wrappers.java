@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
+import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
@@ -14,6 +15,7 @@ import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
@@ -268,6 +270,43 @@ public class Wrappers {
   }
 
   /**
+   * A wrapped {@link String} containing the Uri.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = Uri.class)
+  @JsonDeserialize(as = Uri.class)
+  abstract static class _Uri extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    /**
+     * Constructs an {@link Uri} using a String value.
+     *
+     * @param plaintext A string value representing the Uri in plaintext.
+     *
+     * @return An {@link Uri} of plaintext.
+     */
+    public static Uri ofPlainText(String plaintext) {
+      return Uri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && obj instanceof Uri) {
+        String otherValue = ((Uri) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
+      }
+      return false;
+    }
+  }
+
+  /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    */
   @Value.Immutable
@@ -275,6 +314,11 @@ public class Wrappers {
   @JsonSerialize(as = TransferFee.class)
   @JsonDeserialize(as = TransferFee.class)
   abstract static class _TransferFee extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
 
     /**
      * Construct {@link TransferFee} as a percentage value.
@@ -287,39 +331,6 @@ public class Wrappers {
         Math.max(0, percent.stripTrailingZeros().scale()) <= 2,
         "Percent value should have a maximum of 2 decimal places."
       );
-      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
-    }
-
-
-    /**
-     * Validates that a NfTokenId value's length is equal to 64 characters.
-     */
-    @Value.Check
-    public void validateBounds() {
-      Preconditions.checkArgument(
-        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(9999)) &&
-          FluentCompareTo.is(value()).greaterThanEqualTo(UnsignedInteger.valueOf(0)),
-        "TransferFee should be in the range 0 to 9999.");
-    }
-
-  }
-
-  /**
-   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
-   */
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = TransferFee.class)
-  @JsonDeserialize(as = TransferFee.class)
-  abstract static class _TransferFee extends Wrapper<UnsignedInteger> implements Serializable {
-
-    /**
-     * Construct {@link TransferFee} as a percentage value.
-     *
-     * @param percent of type {@link BigDecimal}
-     * @return {@link TransferFee}
-     */
-    static TransferFee ofPercent(BigDecimal percent) {
       return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
     }
 

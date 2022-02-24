@@ -57,7 +57,6 @@ public class Xrpl4jModule extends SimpleModule {
     addDeserializer(TransferFee.class, new TransferFeeDeserializer());
 
     addSerializer(Uri.class, new UriSerializer());
-    addDeserializer(Uri.class, new UriDeserializer());
 
     addSerializer(XrpCurrencyAmount.class, new XrpCurrencyAmountSerializer());
     addDeserializer(XrpCurrencyAmount.class, new XrpCurrencyAmountDeserializer());

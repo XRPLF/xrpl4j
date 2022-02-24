@@ -21,7 +21,7 @@ public class UriSerializer extends StdScalarSerializer<Uri> {
 
   @Override
   public void serialize(Uri uri, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(uri.toString());
+    gen.writeString(uri.value());
   }
 
 }

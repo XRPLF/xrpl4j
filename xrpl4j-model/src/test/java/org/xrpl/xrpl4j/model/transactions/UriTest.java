@@ -22,6 +22,8 @@ public class UriTest {
       .isNotEqualTo(new Object());
 
     assertThat(Uri.ofPlainText(plaintextUri).equals(Uri.of(hexUri)));
+
+    assertThat(Uri.ofPlainText(plaintextUri).value().equals(Uri.of(hexUri).value()));
   }
 
 }

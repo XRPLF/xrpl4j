@@ -278,11 +278,6 @@ public class Wrappers {
   @JsonDeserialize(as = Uri.class)
   abstract static class _Uri extends Wrapper<String> implements Serializable {
 
-    @Override
-    public String toString() {
-      return this.value();
-    }
-
     /**
      * Constructs an {@link Uri} using a String value.
      *

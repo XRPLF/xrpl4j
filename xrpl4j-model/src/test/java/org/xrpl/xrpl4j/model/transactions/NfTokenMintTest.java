@@ -3,12 +3,14 @@ package org.xrpl.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class NfTokenMintTest {
@@ -99,6 +101,24 @@ public class NfTokenMintTest {
       .build();
 
     assertThat(nfTokenMint.transferFee().equals(Optional.of(9999)));
+  }
+
+  @Test
+  public void txWithUri() {
+
+
+    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    String uri = "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi";
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .tokenTaxon(taxon)
+      .uri(Uri.ofPlainText(uri))
+      .build();
+
+    String expected = BaseEncoding.base16().encode(uri.getBytes(StandardCharsets.UTF_8));
+    assertThat(nfTokenMint.tokenTaxon()).isEqualTo(taxon);
+    assertThat(nfTokenMint.uri()).isEqualTo(Optional.of(Uri.of(expected)));
   }
 
 }

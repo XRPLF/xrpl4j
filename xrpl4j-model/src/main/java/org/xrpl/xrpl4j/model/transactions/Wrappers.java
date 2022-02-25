@@ -274,25 +274,25 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = Uri.class)
-  @JsonDeserialize(as = Uri.class)
-  abstract static class _Uri extends Wrapper<String> implements Serializable {
+  @JsonSerialize(as = NfTokenUri.class)
+  @JsonDeserialize(as = NfTokenUri.class)
+  abstract static class _NfTokenUri extends Wrapper<String> implements Serializable {
 
     /**
-     * Constructs an {@link Uri} using a String value.
+     * Constructs an {@link NfTokenUri} using a String value.
      *
      * @param plaintext A string value representing the Uri in plaintext.
      *
-     * @return An {@link Uri} of plaintext.
+     * @return An {@link NfTokenUri} of plaintext.
      */
-    public static Uri ofPlainText(String plaintext) {
-      return Uri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    public static NfTokenUri ofPlainText(String plaintext) {
+      return NfTokenUri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof Uri) {
-        String otherValue = ((Uri) obj).value();
+      if (obj != null && obj instanceof NfTokenUri) {
+        String otherValue = ((NfTokenUri) obj).value();
         if (otherValue != null) {
           return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
         }

@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -45,7 +46,6 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.Uri;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.ArrayList;
@@ -463,7 +463,7 @@ public class BinarySerializationTests {
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .uri(Uri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
+      .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(taxon)
       .build();
 
@@ -483,7 +483,7 @@ public class BinarySerializationTests {
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .uri(Uri.of(uri))
+      .uri(NfTokenUri.of(uri))
       .tokenTaxon(taxon)
       .build();
 

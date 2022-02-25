@@ -9,8 +9,8 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
-import org.xrpl.xrpl4j.model.transactions.Uri;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class NfTokenMintJsonTests extends AbstractJsonTest {
@@ -51,7 +51,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
       .sequence(UnsignedInteger.valueOf(12))
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(1000)))
-      .uri(Uri.ofPlainText(uri))
+      .uri(NfTokenUri.ofPlainText(uri))
       .flags(Flags.NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())

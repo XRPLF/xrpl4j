@@ -113,12 +113,12 @@ public class NfTokenMintTest {
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .tokenTaxon(taxon)
-      .uri(Uri.ofPlainText(uri))
+      .uri(NfTokenUri.ofPlainText(uri))
       .build();
 
     String expected = BaseEncoding.base16().encode(uri.getBytes(StandardCharsets.UTF_8));
     assertThat(nfTokenMint.tokenTaxon()).isEqualTo(taxon);
-    assertThat(nfTokenMint.uri()).isEqualTo(Optional.of(Uri.of(expected)));
+    assertThat(nfTokenMint.uri()).isEqualTo(Optional.of(NfTokenUri.of(expected)));
   }
 
 }

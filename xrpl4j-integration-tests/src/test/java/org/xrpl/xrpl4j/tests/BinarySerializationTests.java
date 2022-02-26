@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,8 +10,20 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.der.DerEncodingException;
+import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.PrivateKey;
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SingleKeySignatureService;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -47,6 +60,9 @@ import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.wallet.Wallet;
+import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -457,7 +473,7 @@ public class BinarySerializationTests {
   }
 
   @Test
-  public void serializeNfTokenMintWithStringUri() throws JsonProcessingException {
+  public void serializeNfTokenMintWithStringUri() throws JsonRpcClientErrorException, JsonProcessingException {
 
     UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
     NfTokenMint nfTokenMint = NfTokenMint.builder()
@@ -471,6 +487,70 @@ public class BinarySerializationTests {
       "9626569676479727A74357366703775646D37687537367568377932366E6634646675796C71616266336F636C67747179353566" +
       "627A646981144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
     assertSerializesAndDeserializes(nfTokenMint, expectedBinary);
+
+
+    WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+    Wallet testWallet = walletFactory.fromSeed("shhf1NSyjZw1JLj9Y67XdiAeaqDou", true);
+
+    // Get the Classic address from testWallet
+    Address classicAddress = testWallet.classicAddress();
+    System.out.println(classicAddress); // "rMCcNuTcajgw7YTgBy1sys3b89QqjUrMpH"
+
+    // Connect --------------------------------------------------------------------
+    HttpUrl rippledUrl = HttpUrl.get("http://xls20-sandbox.rippletest.net:51234");
+    XrplClient xrplClient = new XrplClient(rippledUrl);
+
+    // Prepare transaction --------------------------------------------------------
+    // Look up your Account Info
+    AccountInfoRequestParams requestParams = AccountInfoRequestParams.builder()
+      .ledgerIndex(LedgerIndex.VALIDATED)
+      .account(classicAddress)
+      .build();
+    AccountInfoResult accountInfoResult = xrplClient.accountInfo(requestParams);
+    UnsignedInteger sequence = accountInfoResult.accountData().sequence();
+
+    // Request current fee information from rippled
+    FeeResult feeResult = xrplClient.fee();
+    XrpCurrencyAmount openLedgerFee = feeResult.drops().openLedgerFee();
+
+    // Get the latest validated ledger index
+    LedgerIndex validatedLedger = xrplClient.ledger(
+        LedgerRequestParams.builder()
+          .ledgerIndex(LedgerIndex.VALIDATED)
+          .build()
+      )
+      .ledgerIndex()
+      .orElseThrow(() -> new RuntimeException("LedgerIndex not available."));
+
+    UnsignedInteger lastLedgerSequence = UnsignedInteger.valueOf(
+      validatedLedger.plus(UnsignedLong.valueOf(4)).unsignedLongValue().intValue()
+    );
+
+    NfTokenMint nfTokenMint2 = NfTokenMint.builder()
+      .account(classicAddress)
+      .sequence(sequence)
+      .fee(openLedgerFee)
+      .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
+      .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .signingPublicKey(testWallet.publicKey())
+      .lastLedgerSequence(lastLedgerSequence)
+      .build();
+
+    // Sign transaction -----------------------------------------------------------
+    // Construct a SignatureService to sign the Payment
+    PrivateKey privateKey = PrivateKey.fromBase16EncodedPrivateKey(
+      testWallet.privateKey().get()
+    );
+    SignatureService signatureService = new SingleKeySignatureService(privateKey);
+
+    // Sign the tx
+    assertDoesNotThrow(
+      () -> signatureService.sign(
+        KeyMetadata.EMPTY,
+        nfTokenMint2
+      )
+    );
 
   }
 

@@ -75,11 +75,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.xrpl</groupId>
-      <artifactId>xrpl4j-crypto-bouncycastle</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
 </project>

@@ -496,37 +496,6 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  void addSignatureUsingSingleKeySignatureService() {
-
-    WalletFactory walletFactory = DefaultWalletFactory.getInstance();
-    Wallet testWallet = walletFactory.fromSeed("shhf1NSyjZw1JLj9Y67XdiAeaqDou", true);
-
-    NfTokenMint nfTokenMint2 = NfTokenMint.builder()
-      .account(testWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
-      .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
-      .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .signingPublicKey(testWallet.publicKey())
-      .build();
-
-    // Sign transaction -----------------------------------------------------------
-    // Construct a SignatureService to sign the NfTokenMint
-    PrivateKey privateKey = PrivateKey.fromBase16EncodedPrivateKey(
-      testWallet.privateKey().get()
-    );
-    SignatureService signatureService = new SingleKeySignatureService(privateKey);
-
-    // Sign the tx
-    assertDoesNotThrow(
-      () -> signatureService.sign(
-        KeyMetadata.EMPTY,
-        nfTokenMint2
-      )
-    );
-  }
-
-  @Test
   public void addSignatureToTransactionUnsupported() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }

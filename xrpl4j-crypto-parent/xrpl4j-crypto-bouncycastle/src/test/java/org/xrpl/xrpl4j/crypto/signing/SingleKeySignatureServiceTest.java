@@ -1,9 +1,11 @@
 package org.xrpl.xrpl4j.crypto.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -14,10 +16,17 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.wallet.Wallet;
+import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.math.BigInteger;
 import java.util.Objects;
@@ -105,6 +114,22 @@ class SingleKeySignatureServiceTest {
 
     final boolean signatureResult = edSignatureService.verify(keyMetadata, transactionWithSignature);
     assertThat(signatureResult).isTrue();
+
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .account(Address.of(sourceClassicAddressED))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
+      .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .signingPublicKey(publicKey.base16Encoded())
+      .build();
+
+    SignedTransaction<NfTokenMint> mintTxWithSignature = this.edSignatureService.sign(keyMetadata, nfTokenMint);
+    assertThat(mintTxWithSignature).isNotNull();
+    assertThat(mintTxWithSignature.unsignedTransaction()).isEqualTo(nfTokenMint);
+
+    assertThat(edSignatureService.verify(keyMetadata, mintTxWithSignature)).isTrue();
   }
 
   @Test
@@ -127,6 +152,37 @@ class SingleKeySignatureServiceTest {
 
     final boolean signatureResult = ecSignatureService.verify(keyMetadata, transactionWithSignature);
     assertThat(signatureResult).isTrue();
+  }
+
+  @Test
+  void addSignatureUsingSingleKeySignatureService() {
+
+    WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+    Wallet testWallet = walletFactory.fromSeed("shhf1NSyjZw1JLj9Y67XdiAeaqDou", true);
+
+    NfTokenMint nfTokenMint2 = NfTokenMint.builder()
+      .account(testWallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
+      .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .signingPublicKey(testWallet.publicKey())
+      .build();
+
+    // Sign transaction -----------------------------------------------------------
+    // Construct a SignatureService to sign the NfTokenMint
+    PrivateKey privateKey = PrivateKey.fromBase16EncodedPrivateKey(
+      testWallet.privateKey().get()
+    );
+    SignatureService signatureService = new SingleKeySignatureService(privateKey);
+
+    // Sign the tx
+    assertDoesNotThrow(
+      () -> signatureService.sign(
+        KeyMetadata.EMPTY,
+        nfTokenMint2
+      )
+    );
   }
 
   //////////////////

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.crypto.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -23,8 +24,11 @@ import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -43,6 +47,7 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -55,7 +60,9 @@ import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.Wallet;
+import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.util.ArrayList;
 import java.util.List;

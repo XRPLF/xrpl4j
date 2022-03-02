@@ -121,6 +121,23 @@ class XrplBinaryCodecTest {
   }
 
   @Test
+  void encodeUnlModify() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+
+    String expected = "120066240000000026040B52006840000000000000007300701321EDB6FC8E803EE8EDC2793F1EC9" +
+      "17B2EE41D35255618DEB91D3F9B1FC89B75D453900101101";
+    assertThat(expected).isEqualTo(encoder.encode(json));
+  }
+
+  @Test
   void encodeForSigning() throws JsonProcessingException {
     String json =
       "{\"Account\":\"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\",\"TransactionType\":\"Payment\",\"Fee\":\"789\"," +

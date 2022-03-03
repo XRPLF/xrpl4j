@@ -13,28 +13,28 @@ public class FluentCompareToTest {
 
   @Test
   public void simpleTest() {
-    assert(FluentCompareTo.is(SMALLER).equalTo(SMALLER));
-    assert(FluentCompareTo.is(BIGGER).equalTo(BIGGER));
-    assert(FluentCompareTo.is(SMALLER).notEqualTo(BIGGER));
-    assert(FluentCompareTo.isNot(SMALLER).notEqualTo(BIGGER));
-    assert(FluentCompareTo.isNot(SMALLER).equalTo(SMALLER));
+    assert (FluentCompareTo.is(SMALLER).equalTo(SMALLER));
+    assert (FluentCompareTo.is(BIGGER).equalTo(BIGGER));
+    assert (FluentCompareTo.is(SMALLER).notEqualTo(BIGGER));
+    assert (FluentCompareTo.isNot(SMALLER).notEqualTo(BIGGER));
+    assert (FluentCompareTo.isNot(SMALLER).equalTo(SMALLER));
 
-    assert(FluentCompareTo.is(SMALLER).lessThanOrEqualTo(SMALLER));
-    assert(FluentCompareTo.is(SMALLER).lessThanOrEqualTo(BIGGER));
-    assert(FluentCompareTo.is(SMALLER).lessThan(BIGGER));
-    assert(FluentCompareTo.is(SMALLER).notGreaterThan(BIGGER));
-    assert(FluentCompareTo.is(SMALLER).notGreaterThanEqualTo(BIGGER));
+    assert (FluentCompareTo.is(SMALLER).lessThanOrEqualTo(SMALLER));
+    assert (FluentCompareTo.is(SMALLER).lessThanOrEqualTo(BIGGER));
+    assert (FluentCompareTo.is(SMALLER).lessThan(BIGGER));
+    assert (FluentCompareTo.is(SMALLER).notGreaterThan(BIGGER));
+    assert (FluentCompareTo.is(SMALLER).notGreaterThanEqualTo(BIGGER));
 
-    assert(FluentCompareTo.is(BIGGER).greaterThanEqualTo(BIGGER));
-    assert(FluentCompareTo.is(BIGGER).greaterThanEqualTo(SMALLER));
-    assert(FluentCompareTo.is(BIGGER).greaterThan(SMALLER));
-    assert(FluentCompareTo.is(BIGGER).notLessThan(SMALLER));
-    assert(FluentCompareTo.is(BIGGER).notLessThanOrEqualTo(SMALLER));
+    assert (FluentCompareTo.is(BIGGER).greaterThanEqualTo(BIGGER));
+    assert (FluentCompareTo.is(BIGGER).greaterThanEqualTo(SMALLER));
+    assert (FluentCompareTo.is(BIGGER).greaterThan(SMALLER));
+    assert (FluentCompareTo.is(BIGGER).notLessThan(SMALLER));
+    assert (FluentCompareTo.is(BIGGER).notLessThanOrEqualTo(SMALLER));
 
-    assert(FluentCompareTo.is(SMALLER).between(SMALLER, MAX_UINT));
-    assert(!FluentCompareTo.is(BIGGER).betweenExclusive(SMALLER, BIGGER));
-    assert(FluentCompareTo.is(MAX_UINT).notBetween(SMALLER, BIGGER));
-    assert(!FluentCompareTo.is(BIGGER).notBetweenExclusive(SMALLER, MAX_UINT));
+    assert (FluentCompareTo.is(SMALLER).between(SMALLER, MAX_UINT));
+    assert (!FluentCompareTo.is(BIGGER).betweenExclusive(SMALLER, BIGGER));
+    assert (FluentCompareTo.is(MAX_UINT).notBetween(SMALLER, BIGGER));
+    assert (!FluentCompareTo.is(BIGGER).notBetweenExclusive(SMALLER, MAX_UINT));
 
     assertThat(FluentCompareTo.is(SMALLER).getValue()).isEqualTo(UnsignedInteger.valueOf(1));
     assertThat(FluentCompareTo.is(BIGGER).getValue()).isEqualTo(UnsignedInteger.valueOf(100));

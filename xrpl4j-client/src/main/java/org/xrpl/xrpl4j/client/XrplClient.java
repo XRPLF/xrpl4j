@@ -233,6 +233,27 @@ public class XrplClient {
   }
 
   /**
+   * Check if the transaction is final on the ledger or not.
+   *
+   * @param transactionHash Hash of the submitted transaction to check the status for.
+   * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  public boolean isFinal(Hash256 transactionHash) throws JsonRpcClientErrorException {
+    TransactionRequestParams params = TransactionRequestParams.builder()
+      .transaction(transactionHash)
+      .build();
+
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.TX)
+      .addParams(params)
+      .build();
+
+    TransactionResult response = jsonRpcClient.send(request, TransactionResult.class);
+    return response.validated();
+  }
+
+  /**
    * Get the "server_info" for the rippled node.
    *
    * @return A {@link ServerInfo} containing information about the server.

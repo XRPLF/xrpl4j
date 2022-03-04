@@ -74,7 +74,7 @@ public class STObjectType extends SerializedType<STObjectType> {
       /**
        * The Account field must not be a part of the UNLModify pseudotransaction encoding, due to a bug in rippled.
        */
-      if (isUNLModify && "Account".equals(fieldName)) {
+      if (isUNLModify && fieldName.equals("Account")) {
         continue;
       }
 

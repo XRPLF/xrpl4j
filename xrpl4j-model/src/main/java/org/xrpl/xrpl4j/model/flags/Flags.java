@@ -721,12 +721,12 @@ public class Flags {
      */
     public static class Builder {
       private boolean tfFullyCanonicalSig = true;
-      boolean tfRequireDestTag = false;
-      boolean tfOptionalDestTag = false;
-      boolean tfRequireAuth = false;
-      boolean tfOptionalAuth = false;
-      boolean tfDisallowXrp = false;
-      boolean tfAllowXrp = false;
+      private boolean tfRequireDestTag = false;
+      private boolean tfOptionalDestTag = false;
+      private boolean tfRequireAuth = false;
+      private boolean tfOptionalAuth = false;
+      private boolean tfDisallowXrp = false;
+      private boolean tfAllowXrp = false;
 
       /**
        * Set {@code tfFullyCanonicalSig} to the given value.

@@ -72,14 +72,14 @@ public class EcDsaSignatureTest {
   }
 
   @Test
-  public  void rValueZero() {
+  public  void valueZeroForR() {
     int[] mySign = { 48, 6, 2, 1, 0, 2, 1, 1};
     assertThrows(IllegalArgumentException.class, () -> EcDsaSignature.fromDer(toByte(mySign)),
       "r cannot be 0.");
   }
 
   @Test
-  public  void sValueZero() {
+  public  void valueZeroForS() {
     int[] mySign = { 48, 6, 2, 1, 1, 2, 1, 0};
     assertThrows(IllegalArgumentException.class, () -> EcDsaSignature.fromDer(toByte(mySign)),
       "s cannot be 0.");

@@ -228,6 +228,33 @@ public class AccountSetIT extends AbstractIT {
       });
   }
 
+  @Test
+  void disableMasterFailsWithNoSignerList() throws JsonRpcClientErrorException {
+    Wallet wallet = createRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
+
+    UnsignedInteger sequence = accountInfo.accountData().sequence();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet enableAccountSet = AccountSet.builder()
+      .account(wallet.classicAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sequence)
+      .signingPublicKey(wallet.publicKey())
+      .setFlag(AccountSetFlag.DISABLE_MASTER)
+      .build();
+
+    SubmitResult<AccountSet> enableResponse = xrplClient.submit(wallet, enableAccountSet);
+    assertThat(enableResponse.result()).isEqualTo("tecNO_ALTERNATIVE_KEY");
+    assertThat(enableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(enableResponse.transactionResult().hash());
+    logger.info("AccountSet SetFlag transaction failed successfully:");
+  }
+
   //////////////////////
   // Test Helpers
   //////////////////////

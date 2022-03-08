@@ -111,7 +111,6 @@ class XrplBinaryCodecTest {
       "{\"Fee\":{\"currency\":\"USD\",\"value\":\"123\",\"issuer\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"}}";
     String hex = "68D5045EADB112E00000000000000000000000000055534400000000005E7B112523F68D2F5E879DB4EAC51C6698A69304";
     assertThat(encoder.encode(json)).isEqualTo(hex);
-    System.out.println(encoder.decode(hex) + " " + json);
     assertThat(encoder.decode(hex)).isEqualTo(json);
   }
 
@@ -150,6 +149,17 @@ class XrplBinaryCodecTest {
       "\"UNLModifyDisabling\":1," +
       "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
     // Results with and without `Account` are same since it is skipped while decoding.
+    assertThat(encoder.encode(jsonWithoutAccount)).isEqualTo(expected);
+
+    String jsonDisablingUNLModify = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":0," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
     assertThat(encoder.encode(jsonWithoutAccount)).isEqualTo(expected);
   }
 

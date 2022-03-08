@@ -86,7 +86,7 @@ public class EcDsaSignatureTest {
   }
 
   @Test
-  public void negativeR() {
+  public void negativeValues() {
     int[] mySign = {
       48,
       68,

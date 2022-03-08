@@ -151,7 +151,10 @@ class XrplBinaryCodecTest {
     // Results with and without `Account` are same since it is skipped while decoding.
     assertThat(encoder.encode(jsonWithoutAccount)).isEqualTo(expected);
 
-    String jsonDisablingUNLModify = "{" +
+    String expectedDisabledUnlModify = "120066240000000026040B52006840000000000000007300701321EDB6FC8E" +
+      "803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D453900101100";
+
+    String jsonDisablingUnlModify = "{" +
       "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
       "\"Fee\":\"0\"," +
       "\"LedgerSequence\":67850752," +
@@ -160,7 +163,7 @@ class XrplBinaryCodecTest {
       "\"TransactionType\":\"UNLModify\"," +
       "\"UNLModifyDisabling\":0," +
       "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
-    assertThat(encoder.encode(jsonWithoutAccount)).isEqualTo(expected);
+    assertThat(encoder.encode(jsonDisablingUnlModify)).isEqualTo(expectedDisabledUnlModify);
   }
 
   @Test

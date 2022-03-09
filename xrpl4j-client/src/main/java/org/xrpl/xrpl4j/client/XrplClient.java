@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Range;
+import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -32,6 +35,8 @@ import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -48,6 +53,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -74,7 +80,9 @@ import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing
@@ -233,24 +241,74 @@ public class XrplClient {
   }
 
   /**
+   * Get the ledger index of a tx result response. If not present, throw an exception.
+   *
+   * @return A string containing value of last validated ledger index.
+   */
+  private UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.LEDGER)
+      .addParams(LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build())
+      .build();
+    return jsonRpcClient.send(request, LedgerResult.class).ledgerIndexSafe().unsignedIntegerValue();
+  }
+
+  /**
    * Check if the transaction is final on the ledger or not.
    *
    * @param transactionHash Hash of the submitted transaction to check the status for.
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   * @throws InterruptedException if {@link Thread} is interrupted.
    */
-  public boolean isFinal(Hash256 transactionHash) throws JsonRpcClientErrorException {
-    TransactionRequestParams params = TransactionRequestParams.builder()
-      .transaction(transactionHash)
-      .build();
-
+  public boolean isFinal(Hash256 transactionHash) throws JsonRpcClientErrorException, InterruptedException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.TX)
-      .addParams(params)
+      .addParams(TransactionRequestParams.of(transactionHash))
       .build();
 
     TransactionResult response = jsonRpcClient.send(request, TransactionResult.class);
-    return response.validated();
+    UnsignedInteger lastLedgerSequence = response.transaction().lastLedgerSequence()
+      .orElseThrow(() -> new IllegalStateException("Ledger result did not contain LastLedgerSequence"));
+
+    // condition 1: validated = true
+    if (response.validated()) {
+      if (response.status().get().equals("success")) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
+      // condition 2: last ledger seq hasn't passed yet
+      Thread.sleep(4000);
+      return isFinal(transactionHash);
+    } else {
+      // condition 3: last ledger seq has passed.
+
+      LedgerIndex submittedOn = response.ledgerIndexSafe();
+      Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOn.toString()),
+        UnsignedLong.valueOf(lastLedgerSequence.toString()));
+      boolean ledgerGapExists = this.serverInfo().completeLedgerRanges().stream()
+        .noneMatch(range -> range.encloses(submittedToLast));
+
+      if (ledgerGapExists) {
+        // wait to acquire the missing ledgers
+        Thread.sleep(4000);
+        return isFinal(transactionHash);
+      } else {
+        AccountInfoResult accountInfoResult = this.accountInfo(
+          AccountInfoRequestParams.of(response.transaction().account())
+        );
+        UnsignedInteger accountSequence = accountInfoResult.accountData().sequence();
+        if (FluentCompareTo.is(response.transaction().sequence()).lessThan(accountSequence)) {
+          // a different transaction with this sequence has a final outcome.
+          // this represents an unexpected case
+          throw new IllegalStateException("Something unexpected happened. Tx not final.");
+        } else {
+          return false;
+        }
+      }
+    }
   }
 
   /**

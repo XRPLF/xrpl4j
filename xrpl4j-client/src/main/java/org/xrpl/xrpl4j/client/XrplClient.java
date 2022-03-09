@@ -80,9 +80,7 @@ import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing

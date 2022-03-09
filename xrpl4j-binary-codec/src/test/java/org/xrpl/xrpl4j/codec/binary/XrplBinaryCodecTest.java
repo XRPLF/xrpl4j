@@ -3,11 +3,15 @@ package org.xrpl.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.codec.binary.types.STObjectType;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
 
@@ -118,6 +122,48 @@ class XrplBinaryCodecTest {
     String hex = "031340" + amendmentHex1 + amendmentHex2;
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeUnlModify() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+
+    String expected = "120066240000000026040B52006840000000000000007300701321EDB6FC8E803EE8EDC2793F1EC9" +
+      "17B2EE41D35255618DEB91D3F9B1FC89B75D453900101101";
+    assertThat(expected).isEqualTo(encoder.encode(json));
+
+    String jsonWithoutAccount = "{" +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+    // Results with and without `Account` are same since it is skipped while decoding.
+    assertThat(encoder.encode(jsonWithoutAccount)).isEqualTo(expected);
+
+    String expectedDisabledUnlModify = "120066240000000026040B52006840000000000000007300701321EDB6FC8E" +
+      "803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D453900101100";
+
+    String jsonDisablingUnlModify = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":0," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+    assertThat(encoder.encode(jsonDisablingUnlModify)).isEqualTo(expectedDisabledUnlModify);
   }
 
   @Test

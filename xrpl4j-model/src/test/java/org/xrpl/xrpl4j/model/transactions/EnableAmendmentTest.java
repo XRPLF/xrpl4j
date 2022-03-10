@@ -30,7 +30,8 @@ public class EnableAmendmentTest {
     assertThat(enableAmendment.account()).isEqualTo(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"));
     assertThat(enableAmendment.fee().value()).isEqualTo(UnsignedLong.valueOf(12));
     assertThat(enableAmendment.sequence()).isEqualTo(UnsignedInteger.valueOf(2470665));
-    assertThat(enableAmendment.ledgerSequence()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(67850752)));
+    assertThat(enableAmendment.ledgerSequence()).isNotEmpty().get()
+      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(67850752)));
     assertThat(enableAmendment.amendment()).isEqualTo(amendment);
   }
 }

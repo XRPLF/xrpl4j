@@ -9,7 +9,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import java.util.Optional;
 
 /**
- * An {@link EnableAmendment} pseudo-transaction marks a change in status of an amendment
+ * An {@link EnableAmendment} pseudo-transaction marks a change in status of an amendment.
  * to the XRP Ledger protocol
  *
  * @see "https://xrpl.org/enableamendment.html"

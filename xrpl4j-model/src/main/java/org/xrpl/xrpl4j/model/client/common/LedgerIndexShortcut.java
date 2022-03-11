@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
 
 /**
- * A String wrapping class that defines three static constants representing shortcut values
- * which can be used to specify a ledger index in a rippled API request.
+ * A String wrapping class that defines three static constants representing shortcut values which can be used to specify
+ * a ledger index in a rippled API request.
  */
 public class LedgerIndexShortcut {
 
@@ -33,6 +33,11 @@ public class LedgerIndexShortcut {
     this.value = value;
   }
 
+  /**
+   * Accessor for the value of this shortcut.
+   *
+   * @return {@link String}
+   */
   public String getValue() {
     return value;
   }

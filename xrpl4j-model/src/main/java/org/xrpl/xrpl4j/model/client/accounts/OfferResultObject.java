@@ -12,14 +12,19 @@ import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import java.util.Optional;
 
 /**
- * An Offer returned in an {@link AccountOffersResult#offers()} list.
- * Note that this object is NOT the same as the Offer ledger object.
+ * An Offer returned in an {@link AccountOffersResult#offers()} list. Note that this object is NOT the same as the Offer
+ * ledger object.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableOfferResultObject.class)
 @JsonDeserialize(as = ImmutableOfferResultObject.class)
 public interface OfferResultObject extends XrplResult {
 
+  /**
+   * Construct a builder.
+   *
+   * @return {@link ImmutableOfferResultObject.Builder}
+   */
   static ImmutableOfferResultObject.Builder builder() {
     return ImmutableOfferResultObject.builder();
   }
@@ -32,16 +37,16 @@ public interface OfferResultObject extends XrplResult {
   Flags.OfferCreateFlags flags();
 
   /**
-   * Sequence number of the transaction that created this entry. (Transaction sequence
-   * numbers are relative to accounts.)
+   * Sequence number of the transaction that created this entry. (Transaction sequence numbers are relative to
+   * accounts.)
    *
    * @return The sequence number of the transaction that created this offer.
    */
   UnsignedInteger seq();
 
   /**
-   * The amount the account accepting the offer receives, as a String representing an
-   * amount in XRP, or a currency specification object.
+   * The amount the account accepting the offer receives, as a String representing an amount in XRP, or a currency
+   * specification object.
    *
    * @return A {@link CurrencyAmount} representing the amount being offered.
    */
@@ -58,18 +63,16 @@ public interface OfferResultObject extends XrplResult {
   CurrencyAmount takerPays();
 
   /**
-   * The exchange rate of the offer, as the ratio of the original taker_pays divided
-   * by the original taker_gets. When executing offers, the offer with the most favorable
-   * (lowest) quality is consumed first; offers with the same quality are executed from
-   * oldest to newest.
+   * The exchange rate of the offer, as the ratio of the original taker_pays divided by the original taker_gets. When
+   * executing offers, the offer with the most favorable (lowest) quality is consumed first; offers with the same
+   * quality are executed from oldest to newest.
    *
    * @return The offer's quality.
    */
   String quality();
 
   /**
-   * A time after which this offer is considered unfunded, as the number of seconds since
-   * the Ripple Epoch.
+   * A time after which this offer is considered unfunded, as the number of seconds since the Ripple Epoch.
    *
    * @return The offer's expiration.
    */

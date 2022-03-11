@@ -20,12 +20,15 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Custom deserializer for {@link AccountTransactionsRequestParams}. This is needed because Jackson cannot
- * deserialize {@link com.fasterxml.jackson.annotation.JsonUnwrapped} values if they are wrapped in an {@link Optional},
- * as is the case with {@link AccountTransactionsRequestParams#ledgerSpecifier()}.
+ * Custom deserializer for {@link AccountTransactionsRequestParams}. This is needed because Jackson cannot deserialize
+ * {@link com.fasterxml.jackson.annotation.JsonUnwrapped} values if they are wrapped in an {@link Optional}, as is the
+ * case with {@link AccountTransactionsRequestParams#ledgerSpecifier()}.
  */
 public class AccountTransactionsRequestParamsDeserializer extends StdDeserializer<AccountTransactionsRequestParams> {
 
+  /**
+   * No-args constructor.
+   */
   public AccountTransactionsRequestParamsDeserializer() {
     super(AccountTransactionsRequestParams.class);
   }
@@ -84,10 +87,10 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
             ledgerSpecifier = LedgerSpecifier.VALIDATED;
             break;
           case "current":
-            ledgerSpecifier =  LedgerSpecifier.CURRENT;
+            ledgerSpecifier = LedgerSpecifier.CURRENT;
             break;
           case "closed":
-            ledgerSpecifier =  LedgerSpecifier.CLOSED;
+            ledgerSpecifier = LedgerSpecifier.CLOSED;
             break;
           default:
             throw new JsonParseException(

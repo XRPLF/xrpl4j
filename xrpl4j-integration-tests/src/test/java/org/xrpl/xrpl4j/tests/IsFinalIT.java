@@ -53,6 +53,6 @@ public class IsFinalIT extends AbstractIT {
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
-    assertThat(xrplClient.isFinal(response.transactionResult().hash())).isTrue();
+    assertThat(xrplClient.isFinal(response.transactionResult().hash(), response.validatedLedgerIndex())).isFalse();
   }
 }

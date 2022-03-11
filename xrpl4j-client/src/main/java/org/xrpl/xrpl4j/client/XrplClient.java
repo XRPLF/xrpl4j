@@ -76,6 +76,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -254,12 +255,14 @@ public class XrplClient {
   /**
    * Check if the transaction is final on the ledger or not.
    *
-   * @param transactionHash Hash of the submitted transaction to check the status for.
+   * @param transactionHash {@link Hash256} of the submitted transaction to check the status for.
+   * @param submittedOnLedgerIndex {@link LedgerIndex} on which the transaction with hash transactionHash
+   *        was submitted. This can be obtained from submit() response of the tx as validatedLedgerIndex.
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
-   * @throws InterruptedException if {@link Thread} is interrupted.
    */
-  public boolean isFinal(Hash256 transactionHash) throws JsonRpcClientErrorException, InterruptedException {
+  public boolean isFinal(Hash256 transactionHash, LedgerIndex submittedOnLedgerIndex)
+    throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.TX)
       .addParams(TransactionRequestParams.of(transactionHash))
@@ -271,28 +274,29 @@ public class XrplClient {
 
     // condition 1: validated = true
     if (response.validated()) {
-      if (response.status().get().equals("success")) {
+      String txResult = ((TransactionMetadata) response.metadata().get()).transactionResult();
+      if (txResult.equals("tesSUCCESS")) {
         return true;
       } else {
         return false;
       }
     } else if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
       // condition 2: last ledger seq hasn't passed yet
-      Thread.sleep(4000);
-      return isFinal(transactionHash);
+      // possible solution would be to check again after a while to get the updated validation status.
+      return false;
     } else {
       // condition 3: last ledger seq has passed.
-
-      LedgerIndex submittedOn = response.ledgerIndexSafe();
-      Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOn.toString()),
+      Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
         UnsignedLong.valueOf(lastLedgerSequence.toString()));
       boolean ledgerGapExists = this.serverInfo().completeLedgerRanges().stream()
         .noneMatch(range -> range.encloses(submittedToLast));
 
       if (ledgerGapExists) {
         // wait to acquire the missing ledgers
-        Thread.sleep(4000);
-        return isFinal(transactionHash);
+        // there is a possibility that the transaction with hash transactionHash exists on the missing ledgers
+        // possible solution would be to wait and query the missing ledgers once acquired, resubmit with
+        // updated fee and lastLedgerSequence if not found.
+        return false;
       } else {
         AccountInfoResult accountInfoResult = this.accountInfo(
           AccountInfoRequestParams.of(response.transaction().account())

@@ -21,6 +21,9 @@ import java.io.IOException;
  */
 public class LedgerSpecifierDeserializer extends StdDeserializer<LedgerSpecifier> {
 
+  /**
+   * No-args constructor.
+   */
   protected LedgerSpecifierDeserializer() {
     super(LedgerSpecifier.class);
   }

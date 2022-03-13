@@ -60,9 +60,24 @@ public class STObjectType extends SerializedType<STObjectType> {
   public STObjectType fromJson(JsonNode node) {
     UnsignedByteArray byteList = UnsignedByteArray.empty();
     BinarySerializer serializer = new BinarySerializer(byteList);
+    boolean isUNLModify;
+    try {
+      isUNLModify = "UNLModify".equals(node.get("TransactionType").asText());
+    } catch (Exception e) {
+      isUNLModify = false;
+    }
+
 
     List<FieldWithValue<JsonNode>> fields = new ArrayList<>();
     for (String fieldName : Lists.newArrayList(node.fieldNames())) {
+
+      /**
+       * The Account field must not be a part of the UNLModify pseudotransaction encoding, due to a bug in rippled.
+       */
+      if (isUNLModify && fieldName.equals("Account")) {
+        continue;
+      }
+
       JsonNode fieldNode = node.get(fieldName);
       definitionsService.getFieldInstance(fieldName)
         .filter(FieldInstance::isSerialized)

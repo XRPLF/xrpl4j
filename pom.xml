@@ -414,10 +414,11 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.3.1</version>
           <configuration>
-            <sourceFileExcludes>
-              <sourceFileExclude>**/generated-sources/**/*</sourceFileExclude>
-            </sourceFileExcludes>
-            <failOnWarnings>true</failOnWarnings>
+            <excludes>
+              <exclude>**/generated-sources/**/*.java,**/generated-test-sources/**/*.java</exclude>
+            </excludes>
+            <failOnWarnings>false</failOnWarnings>
+            <failOnError>true</failOnError>
             <source>8</source>
           </configuration>
           <executions>

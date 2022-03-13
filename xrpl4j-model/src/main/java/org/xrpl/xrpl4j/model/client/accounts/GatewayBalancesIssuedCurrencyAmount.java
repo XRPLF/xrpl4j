@@ -8,16 +8,21 @@ import org.immutables.value.Value;
  * <p>Similar to, but deliberately different from {@code IssuedCurrencyAmount}.</p>
  *
  * <p>A type for handling balances of an issued currency that may or may not have information available
- * in the object being deserialized as to the owner address or issuer address. The
- * gateway_balances method returns one set of values specifying the issuer but as a string based
- * key to the array of values this type can deserialize to, and another set of values specifying the holder
- * but as a string based key to the array of values this type can deserialize to.</p>
+ * in the object being deserialized as to the owner address or issuer address. The gateway_balances method returns one
+ * set of values specifying the issuer but as a string based key to the array of values this type can deserialize to,
+ * and another set of values specifying the holder but as a string based key to the array of values this type can
+ * deserialize to.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableGatewayBalancesIssuedCurrencyAmount.class)
 @JsonDeserialize(as = ImmutableGatewayBalancesIssuedCurrencyAmount.class)
 public interface GatewayBalancesIssuedCurrencyAmount {
 
+  /**
+   * Construct a builder.
+   *
+   * @return {@link ImmutableGatewayBalancesIssuedCurrencyAmount.Builder}
+   */
   static ImmutableGatewayBalancesIssuedCurrencyAmount.Builder builder() {
     return ImmutableGatewayBalancesIssuedCurrencyAmount.builder();
   }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
@@ -19,6 +20,11 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 @JsonDeserialize(as = ImmutableDepositAuthorizedRequestParams.class)
 public interface DepositAuthorizedRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder.
+   *
+   * @return {@link ImmutableDepositAuthorizedRequestParams.Builder}
+   */
   static ImmutableDepositAuthorizedRequestParams.Builder builder() {
     return ImmutableDepositAuthorizedRequestParams.builder();
   }

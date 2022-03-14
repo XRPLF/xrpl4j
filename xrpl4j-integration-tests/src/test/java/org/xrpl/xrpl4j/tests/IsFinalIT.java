@@ -54,5 +54,7 @@ public class IsFinalIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
     assertThat(xrplClient.isFinal(response.transactionResult().hash(), response.validatedLedgerIndex())).isFalse();
+    Thread.sleep(4000);
+    assertThat(xrplClient.isFinal(response.transactionResult().hash(), response.validatedLedgerIndex())).isTrue();
   }
 }

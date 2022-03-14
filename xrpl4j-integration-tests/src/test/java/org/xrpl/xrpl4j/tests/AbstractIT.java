@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final String SUCCESS_STATUS = "tesSUCCESS";
-  public static final long POLL_INTERVAL = 100;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
 
@@ -90,7 +89,7 @@ public abstract class AbstractIT {
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
       .atMost(30, TimeUnit.SECONDS)
-      .pollInterval(POLL_INTERVAL, TimeUnit.MILLISECONDS)
+      .pollInterval(100, TimeUnit.MILLISECONDS)
       .await()
       .until(() -> {
         T result = resultSupplier.get();
@@ -104,7 +103,7 @@ public abstract class AbstractIT {
   protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()
-      .pollInterval(POLL_INTERVAL, TimeUnit.MILLISECONDS)
+      .pollInterval(100, TimeUnit.MILLISECONDS)
       .atMost(30, TimeUnit.SECONDS)
       .ignoreException(RuntimeException.class)
       .await()
@@ -114,7 +113,7 @@ public abstract class AbstractIT {
   protected <T extends LedgerObject> T scanForLedgerObject(Supplier<T> ledgerObjectSupplier) {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
-      .pollInterval(POLL_INTERVAL, TimeUnit.MILLISECONDS)
+      .pollInterval(100, TimeUnit.MILLISECONDS)
       .atMost(30, TimeUnit.SECONDS)
       .ignoreException(RuntimeException.class)
       .await()

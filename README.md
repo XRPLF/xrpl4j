@@ -44,7 +44,7 @@ You can use one or more xrpl4j modules in your Maven project by using the curren
         <dependency>
             <groupId>org.xrpl4j</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>2.1.1</version>
+            <version>2.3.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

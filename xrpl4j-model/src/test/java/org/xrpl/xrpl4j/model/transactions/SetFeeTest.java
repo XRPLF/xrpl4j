@@ -2,10 +2,8 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
@@ -14,7 +12,7 @@ import java.util.Optional;
 public class SetFeeTest {
 
   @Test
-  public void testJson() throws JsonProcessingException, JSONException {
+  public void testBuilder() {
     SetFee setFee = SetFee.builder()
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
       .fee(XrpCurrencyAmount.ofDrops(12))

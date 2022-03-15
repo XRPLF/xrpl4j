@@ -2,10 +2,8 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
@@ -14,7 +12,7 @@ import java.util.Optional;
 public class EnableAmendmentTest {
 
   @Test
-  public void testJson() throws JsonProcessingException, JSONException {
+  public void testBuilder() {
 
     Hash256 amendment = Hash256.of("42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE");
     EnableAmendment enableAmendment = EnableAmendment.builder()

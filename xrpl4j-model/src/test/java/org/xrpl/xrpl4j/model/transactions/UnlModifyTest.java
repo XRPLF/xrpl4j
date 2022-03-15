@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 public class UnlModifyTest {
 
   @Test
-  public void simpleUnlModify() {
+  public void testBuilder() {
     String validator = "EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539";
     UnlModify unlModify = UnlModify.builder()
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))

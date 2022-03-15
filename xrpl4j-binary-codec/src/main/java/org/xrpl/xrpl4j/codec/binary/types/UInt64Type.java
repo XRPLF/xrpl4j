@@ -24,7 +24,7 @@ public class UInt64Type extends UIntType<UInt64Type> {
 
   @Override
   public UInt64Type fromJson(JsonNode value) {
-    return new UInt64Type(UnsignedLong.valueOf(value.asText(), 16));
+    return new UInt64Type(UnsignedLong.valueOf(value.asText()));
   }
 
 }

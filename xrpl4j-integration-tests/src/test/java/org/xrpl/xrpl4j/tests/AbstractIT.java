@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedLong;
-import org.awaitility.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -21,7 +20,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -47,6 +45,7 @@ import org.xrpl.xrpl4j.wallet.WalletFactory;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -54,7 +53,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final String SUCCESS_STATUS = "tesSUCCESS";
-  public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
 
@@ -90,8 +88,8 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Duration.ONE_MINUTE.divide(2))
-      .pollInterval(POLL_INTERVAL)
+      .atMost(30, TimeUnit.SECONDS)
+      .pollInterval(100, TimeUnit.MILLISECONDS)
       .await()
       .until(() -> {
         T result = resultSupplier.get();
@@ -105,8 +103,8 @@ public abstract class AbstractIT {
   protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()
-      .pollInterval(POLL_INTERVAL)
-      .atMost(Duration.ONE_MINUTE.divide(2))
+      .pollInterval(100, TimeUnit.MILLISECONDS)
+      .atMost(30, TimeUnit.SECONDS)
       .ignoreException(RuntimeException.class)
       .await()
       .until(resultSupplier::get, is(notNullValue()));
@@ -115,8 +113,8 @@ public abstract class AbstractIT {
   protected <T extends LedgerObject> T scanForLedgerObject(Supplier<T> ledgerObjectSupplier) {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
-      .pollInterval(POLL_INTERVAL)
-      .atMost(Duration.ONE_MINUTE.divide(2))
+      .pollInterval(100, TimeUnit.MILLISECONDS)
+      .atMost(30, TimeUnit.SECONDS)
       .ignoreException(RuntimeException.class)
       .await()
       .until(ledgerObjectSupplier::get, is(notNullValue()));

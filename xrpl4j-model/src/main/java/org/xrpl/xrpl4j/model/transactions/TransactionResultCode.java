@@ -1,8 +1,12 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+/**
+ * The rippled server summarizes transaction results with result codes, which appear
+ * in fields such as engine_result and meta.TransactionResult.
+ */
 public class TransactionResultCode {
 
-  // tec
+  // tec codes
   public static String TEC = "tec";
   public static String TEC_CLAIM = TEC + "CLAIM";
   public static String TEC_CRYPTOCONDITION_ERROR = TEC + "CRYPTOCONDITION_ERROR";

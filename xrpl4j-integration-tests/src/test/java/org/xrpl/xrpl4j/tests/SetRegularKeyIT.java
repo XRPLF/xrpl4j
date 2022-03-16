@@ -42,7 +42,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .build();
 
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
-    assertThat(setResult.engineResult()).isEqualTo(TransactionResultCode.TES_SUCCESS);
+    assertThat(setResult.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
     logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",

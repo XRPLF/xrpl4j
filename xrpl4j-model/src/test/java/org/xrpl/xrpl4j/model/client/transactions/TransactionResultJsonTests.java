@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.time.LocalDateTime;
@@ -42,7 +43,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
       .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
       .closeDate(UnsignedLong.valueOf(666212460))
       .metadata(TransactionMetadata.builder()
-        .transactionResult("tesSUCCESS")
+        .transactionResult(TransactionResultCode.TES_SUCCESS)
         .transactionIndex(UnsignedInteger.MAX_VALUE)
         .deliveredAmount(amount)
         .build()
@@ -100,7 +101,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .build())
       .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
       .metadata(TransactionMetadata.builder()
-        .transactionResult("tesSUCCESS")
+        .transactionResult(TransactionResultCode.TES_SUCCESS)
         .transactionIndex(UnsignedInteger.MAX_VALUE)
         .deliveredAmount(amount)
         .build()

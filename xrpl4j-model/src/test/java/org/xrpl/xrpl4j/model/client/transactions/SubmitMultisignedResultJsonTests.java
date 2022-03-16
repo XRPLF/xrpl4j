@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -21,7 +22,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     SubmitMultiSignedResult<TrustSet> result = SubmitMultiSignedResult.<TrustSet>builder()
-      .result("tesSUCCESS")
+      .result(TransactionResultCode.TES_SUCCESS)
       .resultCode(0)
       .resultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")

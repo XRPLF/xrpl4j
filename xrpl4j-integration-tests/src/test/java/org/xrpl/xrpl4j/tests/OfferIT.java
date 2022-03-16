@@ -18,6 +18,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -76,7 +77,7 @@ public class OfferIT extends AbstractIT {
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -125,7 +126,7 @@ public class OfferIT extends AbstractIT {
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -139,7 +140,7 @@ public class OfferIT extends AbstractIT {
     assertThat(offerObject.takerGets()).isEqualTo(offerCreate.takerGets());
     assertThat(offerObject.takerPays()).isEqualTo(offerCreate.takerPays());
 
-    cancelOffer(purchaser, offerObject.sequence(), "tesSUCCESS");
+    cancelOffer(purchaser, offerObject.sequence(), TransactionResultCode.TES_SUCCESS);
   }
 
   /**
@@ -209,7 +210,7 @@ public class OfferIT extends AbstractIT {
       .build();
 
     SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -265,7 +266,7 @@ public class OfferIT extends AbstractIT {
       .build();
 
     SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(

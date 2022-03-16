@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
@@ -52,7 +53,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractIT {
 
-  public static final String SUCCESS_STATUS = "tesSUCCESS";
+  public static final String SUCCESS_STATUS = TransactionResultCode.TES_SUCCESS;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
 
@@ -277,7 +278,7 @@ public abstract class AbstractIT {
       .build();
 
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
     logger.info(
@@ -331,7 +332,7 @@ public abstract class AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(

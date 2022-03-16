@@ -17,6 +17,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
@@ -154,7 +155,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(
@@ -299,7 +300,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(
@@ -357,7 +358,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> setResult = xrplClient.submit(issuerWallet, setDefaultRipple);
-    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(setResult.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
     logger.info(

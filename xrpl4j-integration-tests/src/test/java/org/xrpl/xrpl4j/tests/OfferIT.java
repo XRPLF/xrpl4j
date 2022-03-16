@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Awaitility;
-import org.awaitility.Duration;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +23,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class OfferIT extends AbstractIT {
@@ -228,7 +228,7 @@ public class OfferIT extends AbstractIT {
    */
   private void assertEmptyResults(Supplier<Collection<?>> supplier) {
     Awaitility.await()
-      .atMost(Duration.TEN_SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .until(() -> supplier.get(), Matchers.empty());
   }
 

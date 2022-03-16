@@ -105,8 +105,8 @@ public class RippledContainer {
    */
   private void waitForLedgerTimeToSync() {
     Awaitility.await()
-      .pollDelay(org.awaitility.Duration.ONE_SECOND)
-      .atMost(org.awaitility.Duration.TEN_SECONDS)
+      .pollDelay(1, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
   }
 

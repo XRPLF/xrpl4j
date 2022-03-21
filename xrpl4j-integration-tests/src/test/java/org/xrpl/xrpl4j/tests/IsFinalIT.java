@@ -6,6 +6,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
@@ -53,8 +54,16 @@ public class IsFinalIT extends AbstractIT {
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
-    assertThat(xrplClient.isFinal(response.transactionResult().hash(), response.validatedLedgerIndex())).isFalse();
+    assertThat(xrplClient.isFinal(
+      response.transactionResult().hash(),
+      response.validatedLedgerIndex(),
+      lastLedgerSequence
+    )).isEqualTo(XrplClient.FinalStatus.NOT_FINAL);
     Thread.sleep(4000);
-    assertThat(xrplClient.isFinal(response.transactionResult().hash(), response.validatedLedgerIndex())).isTrue();
+    assertThat(xrplClient.isFinal(
+      response.transactionResult().hash(),
+      response.validatedLedgerIndex(),
+      lastLedgerSequence
+    )).isEqualTo(XrplClient.FinalStatus.VALIDATED_SUCCESS);
   }
 }

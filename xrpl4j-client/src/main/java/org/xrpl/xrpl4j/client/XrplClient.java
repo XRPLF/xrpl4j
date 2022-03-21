@@ -253,6 +253,31 @@ public class XrplClient {
   }
 
   /**
+   * Enumeration of the types of responses from isFinal function.
+   */
+  public enum FinalStatus {
+    /**
+     * Transaction has not been validated until this moment, which means it could be validated in the
+     * following closed ledgers, or, the XRPL peer you are connected to could be missing the ledgers
+     * it would have been validated on.
+     */
+    NOT_FINAL,
+    /**
+     * Transaction is final/validated on the ledger successfully.
+     */
+    VALIDATED_SUCCESS,
+    /**
+     * Transaction is final/validated on the ledger with some failure.
+     */
+    VALIDATED_FAILURE,
+    /**
+     * The lastLedgerSequence of the tx has passed, i.e., transaction was not included in any closed
+     * ledgers ranging from the one it was submitted on to the lastLedgerSequence.
+     */
+    EXPIRED
+  }
+
+  /**
    * Check if the transaction is final on the ledger or not.
    *
    * @param transactionHash {@link Hash256} of the submitted transaction to check the status for.
@@ -261,29 +286,26 @@ public class XrplClient {
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  public boolean isFinal(Hash256 transactionHash, LedgerIndex submittedOnLedgerIndex)
-    throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.TX)
-      .addParams(TransactionRequestParams.of(transactionHash))
-      .build();
+  public FinalStatus isFinal(
+    Hash256 transactionHash,
+    LedgerIndex submittedOnLedgerIndex,
+    UnsignedInteger lastLedgerSequence
+  ) throws JsonRpcClientErrorException {
 
-    TransactionResult response = jsonRpcClient.send(request, TransactionResult.class);
-    UnsignedInteger lastLedgerSequence = response.transaction().lastLedgerSequence()
-      .orElseThrow(() -> new IllegalStateException("Ledger result did not contain LastLedgerSequence"));
+    TransactionResult response = this.transaction(TransactionRequestParams.of(transactionHash), Transaction.class);
 
     // condition 1: validated = true
     if (response.validated()) {
       String txResult = ((TransactionMetadata) response.metadata().get()).transactionResult();
       if (txResult.equals("tesSUCCESS")) {
-        return true;
+        return FinalStatus.VALIDATED_SUCCESS;
       } else {
-        return false;
+        return FinalStatus.VALIDATED_FAILURE;
       }
     } else if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
       // condition 2: last ledger seq hasn't passed yet
       // possible solution would be to check again after a while to get the updated validation status.
-      return false;
+      return FinalStatus.NOT_FINAL;
     } else {
       // condition 3: last ledger seq has passed.
       Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
@@ -296,7 +318,7 @@ public class XrplClient {
         // there is a possibility that the transaction with hash transactionHash exists on the missing ledgers
         // possible solution would be to wait and query the missing ledgers once acquired, resubmit with
         // updated fee and lastLedgerSequence if not found.
-        return false;
+        return FinalStatus.NOT_FINAL;
       } else {
         AccountInfoResult accountInfoResult = this.accountInfo(
           AccountInfoRequestParams.of(response.transaction().account())
@@ -307,7 +329,7 @@ public class XrplClient {
           // this represents an unexpected case
           throw new IllegalStateException("Something unexpected happened. Tx not final.");
         } else {
-          return false;
+          return FinalStatus.EXPIRED;
         }
       }
     }

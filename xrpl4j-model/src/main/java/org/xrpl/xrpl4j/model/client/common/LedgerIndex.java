@@ -33,8 +33,8 @@ public class LedgerIndex {
   public static final LedgerIndex VALIDATED = LedgerIndex.of("validated");
 
   /**
-   * Constant shortcut value to request a the most recent ledger that has been closed for modifications
-   * and proposed for validation.
+   * Constant shortcut value to request a the most recent ledger that has been closed for modifications and proposed for
+   * validation.
    *
    * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
    * @deprecated Ledger index shortcut values should now be specified using {@link LedgerSpecifier}.
@@ -49,10 +49,9 @@ public class LedgerIndex {
    *
    * @param value The ledger index value as a {@link String}.
    *
-   * @deprecated Does not check if the given value is a valid index.
-   *   This constructor should be made private in the future.
-   *   Only the {@link #of(String value)} and {@link #of(UnsignedInteger value)}
-   *   factory methods should be used to construct {@link LedgerIndex} objects.
+   * @deprecated Does not check if the given value is a valid index. This constructor should be made private in the
+   *   future. Only the {@link #of(String value)} and {@link #of(UnsignedInteger value)} factory methods should be used
+   *   to construct {@link LedgerIndex} objects.
    */
   @Deprecated
   public LedgerIndex(String value) {
@@ -65,11 +64,12 @@ public class LedgerIndex {
    * @param value A {@link String} containing either an integer or a shortcut.
    *
    * @return A {@link LedgerIndex} with the given value.
+   *
    * @throws NullPointerException  if value is null
    * @throws NumberFormatException if value is an invalid index
-   * @deprecated Ledger index shortcuts will not be specified using this class in the future. Instead,
-   *   use {@link LedgerIndexShortcut} to specify shortcut values,
-   *   and use the {@link UnsignedLong} static constructor for numerical {@link LedgerIndex}es.
+   * @deprecated Ledger index shortcuts will not be specified using this class in the future. Instead, use {@link
+   *   LedgerIndexShortcut} to specify shortcut values, and use the {@link UnsignedLong} static constructor for
+   *   numerical {@link LedgerIndex}es.
    */
   @Deprecated
   public static LedgerIndex of(String value)
@@ -89,6 +89,7 @@ public class LedgerIndex {
    * @param value An {@link UnsignedLong} specifying a ledger index.
    *
    * @return A {@link LedgerIndex} with the given value as a {@link String}.
+   *
    * @throws NullPointerException if value is null
    * @deprecated In the future, LedgerIndex will wrap an {@link UnsignedInteger}. Use {@link #of(UnsignedInteger)}
    *   instead.
@@ -105,6 +106,7 @@ public class LedgerIndex {
    * @param value An {@link UnsignedInteger} specifying a ledger index.
    *
    * @return A {@link LedgerIndex} with the given value.
+   *
    * @throws NullPointerException if value is null
    */
   public static LedgerIndex of(UnsignedInteger value) {
@@ -136,8 +138,9 @@ public class LedgerIndex {
    * Get the value of this {@link LedgerIndex} as a {@link String}.
    *
    * @return The underlying {@code value} of this {@link LedgerIndex}.
-   * @deprecated In the future, the underlying value of a {@link LedgerIndex} will be an {@link UnsignedLong}.
-   *   The {@code value()} method will therefore return an {@link UnsignedLong} in the future.
+   *
+   * @deprecated In the future, the underlying value of a {@link LedgerIndex} will be an {@link UnsignedLong}. The
+   *   {@code value()} method will therefore return an {@link UnsignedLong} in the future.
    */
   @Deprecated
   public String value() {
@@ -154,6 +157,11 @@ public class LedgerIndex {
     return UnsignedLong.valueOf(value);
   }
 
+  /**
+   * Accessor for an unsigned integer value.
+   *
+   * @return A {@link UnsignedInteger}.
+   */
   public UnsignedInteger unsignedIntegerValue() {
     return UnsignedInteger.valueOf(value);
   }
@@ -164,6 +172,7 @@ public class LedgerIndex {
    * @param other The {@link UnsignedLong} to add to this {@link LedgerIndex}.
    *
    * @return The sum of the {@link UnsignedLong} and this {@link LedgerIndex}'s {@link UnsignedLong} value.
+   *
    * @deprecated LedgerIndex will only wrap an {@link UnsignedInteger} in the future, so this method will be removed.
    *   Please use {@link #plus(UnsignedInteger)} instead.
    */
@@ -200,8 +209,8 @@ public class LedgerIndex {
    *
    * @param other Another {@link LedgerIndex} to subtract.
    *
-   * @return A {@link LedgerIndex} wrapping the difference of the two wrapped {@link UnsignedLong} values of
-   *   this {@link LedgerIndex} and {@code other}.
+   * @return A {@link LedgerIndex} wrapping the difference of the two wrapped {@link UnsignedLong} values of this {@link
+   *   LedgerIndex} and {@code other}.
    */
   public LedgerIndex minus(LedgerIndex other) {
     return minus(other.unsignedIntegerValue());

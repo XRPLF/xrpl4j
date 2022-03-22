@@ -201,13 +201,13 @@
       <dependency>
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
-        <version>3.0.0</version>
+        <version>4.2.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility-proxy</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.6</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -217,8 +217,8 @@
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
-        <artifactId>java-hamcrest</artifactId>
-        <version>2.0.0.0</version>
+        <artifactId>hamcrest</artifactId>
+        <version>2.2</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -414,10 +414,11 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.3.1</version>
           <configuration>
-            <sourceFileExcludes>
-              <sourceFileExclude>**/generated-sources/**/*</sourceFileExclude>
-            </sourceFileExcludes>
-            <failOnWarnings>true</failOnWarnings>
+            <excludes>
+              <exclude>**/generated-sources/**/*.java,**/generated-test-sources/**/*.java</exclude>
+            </excludes>
+            <failOnWarnings>false</failOnWarnings>
+            <failOnError>true</failOnError>
             <source>8</source>
           </configuration>
           <executions>
@@ -526,7 +527,7 @@
         <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.8</version>
+          <version>1.6.12</version>
           <extensions>true</extensions>
           <configuration>
             <serverId>ossrh-snapshots</serverId>

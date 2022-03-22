@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
+  /**
+   * No-args constructor.
+   */
   public LedgerIndexSerializer() {
     super(LedgerIndex.class, false);
   }

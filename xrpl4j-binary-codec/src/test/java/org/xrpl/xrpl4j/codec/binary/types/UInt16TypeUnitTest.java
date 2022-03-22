@@ -2,12 +2,11 @@ package org.xrpl.xrpl4j.codec.binary.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class UIntTypeTest {
+class UInt16TypeUnitTest {
 
   private final UInt16Type codec = new UInt16Type();
 
@@ -19,7 +18,7 @@ class UIntTypeTest {
   }
 
   @Test
-  void encode() throws JsonProcessingException {
+  void encode() {
     assertThat(codec.fromJson("0").toHex()).isEqualTo("0000");
     assertThat(codec.fromJson("15").toHex()).isEqualTo("000F");
     assertThat(codec.fromJson("65535").toHex()).isEqualTo("FFFF");

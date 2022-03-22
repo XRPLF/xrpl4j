@@ -5,6 +5,8 @@ import static org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray.of;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 
 public class UnsignedByteArrayTest {
 
@@ -58,6 +60,7 @@ public class UnsignedByteArrayTest {
     assertThat(array1.equals(array4)).isTrue();
     assertThat(array1.equals(array2)).isFalse();
     assertThat(array1.equals(array3)).isTrue();
+    assertThat(Arrays.equals(array1.toByteArray(), array3.toByteArray())).isTrue();
   }
 
 }

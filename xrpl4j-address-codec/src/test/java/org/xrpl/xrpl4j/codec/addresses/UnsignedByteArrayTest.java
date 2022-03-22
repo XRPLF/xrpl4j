@@ -41,4 +41,23 @@ public class UnsignedByteArrayTest {
     assertThat(UnsignedByteArray.fromHex("abcdef0123").hexValue()).isEqualTo("ABCDEF0123");
   }
 
+  @Test
+  public void unsignedByteArrayEqualsTest() {
+    UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, MAX_BYTE});
+    UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {MAX_BYTE, 0});
+    UnsignedByteArray array3 = UnsignedByteArray.of(new byte[] {0, MAX_BYTE});
+    UnsignedByteArray array4 = array1;
+
+    assertThat(array1.equals(array1)).isTrue();
+    assertThat(array1.equals(array2)).isFalse();
+    assertThat(array1.equals(array3)).isTrue();
+    assertThat(array1 == array3).isFalse();
+    assertThat(array1.toByteArray() == array3.toByteArray()).isFalse();
+    assertThat(array1.getUnsignedBytes() == array3.getUnsignedBytes()).isFalse();
+    assertThat(array1.equals(array3)).isTrue();
+    assertThat(array1.equals(array4)).isTrue();
+    assertThat(array1.equals(array2)).isFalse();
+    assertThat(array1.equals(array3)).isTrue();
+  }
+
 }

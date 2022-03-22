@@ -57,13 +57,17 @@ public class IsFinalIT extends AbstractIT {
     assertThat(xrplClient.isFinal(
       response.transactionResult().hash(),
       response.validatedLedgerIndex(),
-      lastLedgerSequence
+      lastLedgerSequence,
+      accountInfo.accountData().sequence(),
+      wallet.classicAddress()
     )).isEqualTo(XrplClient.FinalStatus.NOT_FINAL);
     Thread.sleep(4000);
     assertThat(xrplClient.isFinal(
       response.transactionResult().hash(),
       response.validatedLedgerIndex(),
-      lastLedgerSequence
+      lastLedgerSequence,
+      accountInfo.accountData().sequence(),
+      wallet.classicAddress()
     )).isEqualTo(XrplClient.FinalStatus.VALIDATED_SUCCESS);
   }
 }

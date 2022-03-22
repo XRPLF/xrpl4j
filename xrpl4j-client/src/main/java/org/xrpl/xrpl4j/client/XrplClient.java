@@ -252,6 +252,12 @@ public class XrplClient {
     return jsonRpcClient.send(request, LedgerResult.class).ledgerIndexSafe().unsignedIntegerValue();
   }
 
+  /**
+   * Get the {@link TransactionResult} for the transaction with the hash transactionHash.
+   * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
+   * @return the {@link TransactionResult} for a validated transaction and empty response for a
+   *        {@link Transaction} that is expired or not found.
+   */
   protected Optional<? extends TransactionResult<? extends Transaction>> getValidatedTransaction(
     final Hash256 transactionHash
   ) {
@@ -300,8 +306,13 @@ public class XrplClient {
    * @param transactionHash {@link Hash256} of the submitted transaction to check the status for.
    * @param submittedOnLedgerIndex {@link LedgerIndex} on which the transaction with hash transactionHash
    *        was submitted. This can be obtained from submit() response of the tx as validatedLedgerIndex.
+   * @param lastLedgerSequence The ledger index/sequence of type {@link UnsignedInteger} after which the
+   *        transaction will expire and won't be applied to the ledger.
+   * @param sequence The sequence number of the account submitting the {@link Transaction}. A {@link Transaction}
+   *        is only valid if the Sequence number is exactly 1 greater than the previous transaction
+   *        from the same account.
+   * @param account The unique {@link Address} of the account that initiated this transaction.
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
-   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public FinalStatus isFinal(
     Hash256 transactionHash,
@@ -322,44 +333,44 @@ public class XrplClient {
         } else {
           return FinalStatus.VALIDATED_FAILURE;
         }
-      }).orElseGet(() ->{
-      try {
-        //Figure out if it's expired or that other account thing happened and return a FinalityStatus
-        if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
-          // condition 2: last ledger seq hasn't passed yet
-          // possible solution would be to check again after a while to get the updated validation status.
-          return FinalStatus.NOT_FINAL;
-        } else {
-          // condition 3: last ledger seq has passed.
-          Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
-            UnsignedLong.valueOf(lastLedgerSequence.toString()));
-          boolean ledgerGapExists = this.serverInfo().completeLedgerRanges().stream()
-            .noneMatch(range -> range.encloses(submittedToLast));
-
-          if (ledgerGapExists) {
-            // wait to acquire the missing ledgers
-            // there is a possibility that the transaction with hash transactionHash exists on the missing ledgers
-            // possible solution would be to wait and query the missing ledgers once acquired, resubmit with
-            // updated fee and lastLedgerSequence if not found.
+      }).orElseGet(() -> {
+        try {
+          //Figure out if it's expired or that other account thing happened and return a FinalityStatus
+          if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
+            // condition 2: last ledger seq hasn't passed yet
+            // possible solution would be to check again after a while to get the updated validation status.
             return FinalStatus.NOT_FINAL;
           } else {
-            AccountInfoResult accountInfoResult = this.accountInfo(
-              AccountInfoRequestParams.of(account)
-            );
-            UnsignedInteger accountSequence = accountInfoResult.accountData().sequence();
-            if (FluentCompareTo.is(sequence).lessThan(accountSequence)) {
-              // a different transaction with this sequence has a final outcome.
-              // this represents an unexpected case
-              throw new IllegalStateException("Something unexpected happened. Tx not final.");
+            // condition 3: last ledger seq has passed.
+            Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
+              UnsignedLong.valueOf(lastLedgerSequence.toString()));
+            boolean ledgerGapExists = this.serverInfo().completeLedgerRanges().stream()
+              .noneMatch(range -> range.encloses(submittedToLast));
+
+            if (ledgerGapExists) {
+              // wait to acquire the missing ledgers
+              // there is a possibility that the transaction with hash transactionHash exists on the missing ledgers
+              // possible solution would be to wait and query the missing ledgers once acquired, resubmit with
+              // updated fee and lastLedgerSequence if not found.
+              return FinalStatus.NOT_FINAL;
             } else {
-              return FinalStatus.EXPIRED;
+              AccountInfoResult accountInfoResult = this.accountInfo(
+                AccountInfoRequestParams.of(account)
+              );
+              UnsignedInteger accountSequence = accountInfoResult.accountData().sequence();
+              if (FluentCompareTo.is(sequence).lessThan(accountSequence)) {
+                // a different transaction with this sequence has a final outcome.
+                // this represents an unexpected case
+                throw new IllegalStateException("Something unexpected happened. Tx not final.");
+              } else {
+                return FinalStatus.EXPIRED;
+              }
             }
           }
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
         }
-      } catch (JsonRpcClientErrorException e) {
-        throw new RuntimeException(e);
-      }
-    });
+      });
   }
 
   /**

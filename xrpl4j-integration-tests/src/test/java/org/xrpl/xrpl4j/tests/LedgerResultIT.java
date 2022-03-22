@@ -79,7 +79,7 @@ public class LedgerResultIT extends AbstractIT {
     final XrplClient mainnetClient = new MainnetEnvironment().getXrplClient();
     final LedgerResult ledgerResult = mainnetClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-        .transactions(true)
+      .transactions(true)
       .build());
 
     assertThat(ledgerResult.ledger().transactions().stream().map(TransactionResult::metadata)

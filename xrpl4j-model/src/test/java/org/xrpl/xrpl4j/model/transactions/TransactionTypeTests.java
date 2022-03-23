@@ -23,7 +23,6 @@ public class TransactionTypeTests {
   @ArgumentsSource(value = TransactionTypeValidArgumentProvider.class)
   public void shouldReturnTransactionTypeForValidValues(String value) {
     TransactionType transactionType = TransactionType.forValue(value);
-    System.out.println(transactionType + "" + value);
     assertNotNull(transactionType);
     assertTrue(transactionType instanceof TransactionType);
   }

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,8 @@ import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.math.BigDecimal;
 
 public class BinarySerializationTests {
 
@@ -382,6 +385,184 @@ public class BinarySerializationTests {
     String expectedBinary = "1200142200020000240000002C63D6438D7EA4C680000000000000000000000000005743470000" +
       "000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C8114BE6C30732AE33CF2AF3344CE8172A6B9300183E3";
     assertSerializesAndDeserializes(trustSet, expectedBinary);
+  }
+
+  @Test
+  void serializeTrustSetWithMaxValue() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rBZwgHHifSeFmf2btuubr6YUhZ3FfW47XE"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(5))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("7872706C346A436F696E00000000000000000000")
+        .issuer(Address.of("rwk7evAoUG1YoH1k3KVps3Zm1MtHuwHadj"))
+        .value(IssuedCurrencyAmount.MAX_VALUE)
+        .build())
+      .signingPublicKey("EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156")
+      .build();
+
+    String expectedBinary = "1200142280000000240000000563EC6386F26FC0FFFF7872706C346A436F696E00000000000000000000" +
+      "6AF21A4FCA7AF4F62AA88E72CA923CDAE72FBC1668400000000000000A7321EDD299D60BCE7980F6082945B5597FFFD35223F19506" +
+      "73BFA4D4AED6FDE5097156811473C6A5937EB779F5CF33600DB0ADB8556A497318";
+    String transactionJson = objectMapper.writeValueAsString(trustSet);
+    String transactionBinary = binaryCodec.encode(transactionJson);
+    assertThat(transactionBinary).isEqualTo(expectedBinary);
+
+    String decodedBinary = binaryCodec.decode(transactionBinary);
+    TrustSet deserialized = objectMapper.readValue(
+      decodedBinary,
+      objectMapper.getTypeFactory().constructType(TrustSet.class)
+    );
+
+    assertThat(deserialized).usingRecursiveComparison().ignoringFields("limitAmount").isEqualTo(trustSet);
+    BigDecimal deserializedValue = new BigDecimal(deserialized.limitAmount().value());
+    BigDecimal originalValue = new BigDecimal(trustSet.limitAmount().value());
+    assertThat(deserializedValue.toPlainString()).isEqualTo(originalValue.toPlainString());
+  }
+
+  @Test
+  void serializeTrustSetWithMaxValueMinusOnePowerOfTen() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("r4V5fhT5KPCdhUanXCMpPUHiM4s6bXDVDH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(5))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("7872706C346A436F696E00000000000000000000")
+        .issuer(Address.of("rUcccYgErfgMifUHYDHed4ibTArjqfkU5R"))
+        .value(new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toString())
+        .build())
+      .signingPublicKey("ED930B5CBBBCA68DE43CC928E4F3860151E1E5F10D52478B38512651363F4DE8D0")
+      .build();
+
+    String expectedBinary = "1200142280000000240000000563EC2386F26FC0FFFF7872706C346A436F696E00000000000000000000" +
+      "7F65AB9FC20D6D3140698670A12869D6A7D9EE9568400000000000000A7321ED930B5CBBBCA68DE43CC928E4F3860151E1E5F10D52" +
+      "478B38512651363F4DE8D08114EBC899C616EE2D4765C3CBBEB51E6131F701537C";
+    String transactionJson = objectMapper.writeValueAsString(trustSet);
+    String transactionBinary = binaryCodec.encode(transactionJson);
+    assertThat(transactionBinary).isEqualTo(expectedBinary);
+
+    String decodedBinary = binaryCodec.decode(transactionBinary);
+    TrustSet deserialized = objectMapper.readValue(
+      decodedBinary,
+      objectMapper.getTypeFactory().constructType(TrustSet.class)
+    );
+
+    assertThat(deserialized).usingRecursiveComparison().ignoringFields("limitAmount").isEqualTo(trustSet);
+    BigDecimal deserializedValue = new BigDecimal(deserialized.limitAmount().value());
+    BigDecimal originalValue = new BigDecimal(trustSet.limitAmount().value());
+    assertThat(deserializedValue.toPlainString()).isEqualTo(originalValue.toPlainString());
+  }
+
+  @Test
+  void serializeTrustSetWithMaxValuePlusOnePowerOfTenThrows() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .flags(Flags.TrustSetFlags.builder()
+        .tfSetNoRipple()
+        .tfFullyCanonicalSig(false)
+        .build())
+      .sequence(UnsignedInteger.valueOf(44))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("WCG")
+        .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+        .value(new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(1).toEngineeringString())
+        .build())
+      .build();
+
+    String transactionJson = objectMapper.writeValueAsString(trustSet);
+    assertThatThrownBy(() -> binaryCodec.encode(transactionJson))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("exponent out of range");
+  }
+
+  @Test
+  void serializeTrustSetWithMinValue() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rh1rPh2khx3P1JDfiTKTHjYLAfB1F6WK4L"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(5))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("7872706C346A436F696E00000000000000000000")
+        .issuer(Address.of("rpcbpbQcPMtpErrjuqUJLrnziddRcbwpaC"))
+        .value(IssuedCurrencyAmount.MIN_VALUE)
+        .build())
+      .signingPublicKey("ED098F41A252D4427DEDBF4FDF8268F1707FAE31EDF92015AFB38E24D6BFBD815A")
+      .build();
+
+    String expectedBinary = "1200142280000000240000000563C0438D7EA4C680007872706C346A436F696E00000000000000000000" +
+      "11B316D25D54DA539D1E583FEB9D047236C23BEC68400000000000000A7321ED098F41A252D4427DEDBF4FDF8268F1707FAE31EDF9" +
+      "2015AFB38E24D6BFBD815A81142A5D7E32C0A7D03A0C006CE53E3F0A12E088C156";
+    String transactionJson = objectMapper.writeValueAsString(trustSet);
+    String transactionBinary = binaryCodec.encode(transactionJson);
+    assertThat(transactionBinary).isEqualTo(expectedBinary);
+
+    String decodedBinary = binaryCodec.decode(transactionBinary);
+    TrustSet deserialized = objectMapper.readValue(
+      decodedBinary,
+      objectMapper.getTypeFactory().constructType(TrustSet.class)
+    );
+
+    assertThat(deserialized).usingRecursiveComparison().ignoringFields("limitAmount").isEqualTo(trustSet);
+    BigDecimal deserializedValue = new BigDecimal(deserialized.limitAmount().value()).stripTrailingZeros();
+    BigDecimal originalValue = new BigDecimal(trustSet.limitAmount().value()).stripTrailingZeros();
+    assertThat(deserializedValue.toPlainString()).isEqualTo(originalValue.toPlainString());
+  }
+
+  @Test
+  void serializeTrustSetWithMinValuePlusOnePowerOfTen() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rhp1HchT6WhuNVt6riUs5YgacR2xnkrZEp"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(5))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("7872706C346A436F696E00000000000000000000")
+        .issuer(Address.of("r4zJti2TLz8VeLrqaxWjsF52cTco9wBqJY"))
+        .value(new BigDecimal(IssuedCurrencyAmount.MIN_VALUE).scaleByPowerOfTen(1).toString())
+        .build())
+      .signingPublicKey("EDCDEE026B5D5D53D920FD2A8D681E81A901CFC0F3FEE274860AAF60BC5607AB61")
+      .build();
+
+    String expectedBinary = "1200142280000000240000000563C0838D7EA4C680007872706C346A436F696E00000000000000000000" +
+      "F13149D9D671FA4D78AA270D698F390A815C96DB68400000000000000A7321EDCDEE026B5D5D53D920FD2A8D681E81A901CFC0F3FE" +
+      "E274860AAF60BC5607AB6181142142C52B1D7BE25DAD12F2ADEEB009E060429D11";
+    String transactionJson = objectMapper.writeValueAsString(trustSet);
+    String transactionBinary = binaryCodec.encode(transactionJson);
+    assertThat(transactionBinary).isEqualTo(expectedBinary);
+
+    String decodedBinary = binaryCodec.decode(transactionBinary);
+    TrustSet deserialized = objectMapper.readValue(
+      decodedBinary,
+      objectMapper.getTypeFactory().constructType(TrustSet.class)
+    );
+
+    assertThat(deserialized).usingRecursiveComparison().ignoringFields("limitAmount").isEqualTo(trustSet);
+    BigDecimal deserializedValue = new BigDecimal(deserialized.limitAmount().value()).stripTrailingZeros();
+    BigDecimal originalValue = new BigDecimal(trustSet.limitAmount().value()).stripTrailingZeros();
+    assertThat(deserializedValue.toPlainString()).isEqualTo(originalValue.toPlainString());
+  }
+
+  @Test
+  void serializeTrustSetWithMinValueMinusOnePowerOfTenThrows() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .flags(Flags.TrustSetFlags.builder()
+        .tfSetNoRipple()
+        .tfFullyCanonicalSig(false)
+        .build())
+      .sequence(UnsignedInteger.valueOf(44))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("WCG")
+        .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+        .value(new BigDecimal(IssuedCurrencyAmount.MIN_VALUE).scaleByPowerOfTen(-1).toEngineeringString())
+        .build())
+      .build();
+
+    String transactionJson = objectMapper.writeValueAsString(trustSet);
+    assertThatThrownBy(() -> binaryCodec.encode(transactionJson))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("exponent out of range");
   }
 
   @Test

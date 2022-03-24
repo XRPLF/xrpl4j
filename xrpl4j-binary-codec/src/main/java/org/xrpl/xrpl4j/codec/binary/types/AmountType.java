@@ -13,7 +13,6 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 
 /**
  * Codec for XRPL Amount type.
@@ -28,8 +27,8 @@ class AmountType extends SerializedType<AmountType> {
   public static final int NATIVE_AMOUNT_BYTE_LENGTH = 8;
   public static final int CURRENCY_AMOUNT_BYTE_LENGTH = 48;
   private static final int MAX_IOU_PRECISION = 16;
-  private static final int MIN_IOU_EXPONENT = -96;
-  private static final int MAX_IOU_EXPONENT = 80;
+  private static final int MIN_IOU_EXPONENT = -81;
+  private static final int MAX_IOU_EXPONENT = 95;
 
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
@@ -138,7 +137,7 @@ class AmountType extends SerializedType<AmountType> {
     }
 
     int exponent = MathUtils.getExponent(number);
-    if (exponent > 95 || exponent < -81) {
+    if (exponent > MAX_IOU_EXPONENT || exponent < MIN_IOU_EXPONENT) {
       throw new IllegalArgumentException("exponent out of range");
     }
     UnsignedByte exponentByte = UnsignedByte.of(97 + exponent - 15);

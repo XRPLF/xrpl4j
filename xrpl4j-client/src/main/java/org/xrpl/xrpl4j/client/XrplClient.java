@@ -244,7 +244,7 @@ public class XrplClient {
    *
    * @return A string containing value of last validated ledger index.
    */
-  private UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
+  protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.LEDGER)
       .addParams(LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build())

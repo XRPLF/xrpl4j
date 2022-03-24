@@ -30,6 +30,55 @@ import java.util.List;
  */
 public class IssuedCurrencyIT extends AbstractIT {
 
+  // Test cases: MAX, MAX - 1, MAX + 1 (fail), MIN, MIN + 1, MIN - 1 (fail), 0, 1, -1
+  @Test
+  void createMaxTrustline() throws JsonRpcClientErrorException, JsonProcessingException {
+    ///////////////////////////
+    // Create random accounts for the issuer and the counterparty
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet counterpartyWallet = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and counterparty denominated in a custom currency
+    // by submitting a TrustSet transaction
+    String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+
+    AccountInfoResult counterpartyAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(counterpartyWallet.address())
+    );
+
+    TrustSet trustSet = TrustSet.builder()
+      .account(counterpartyWallet.address())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(counterpartyAccountInfo.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency(xrpl4jCoin)
+        .issuer(issuerWallet.address())
+        .value("9999999999999999e80")
+        .build())
+      .signingPublicKey(counterpartyWallet.publicKey().base16Value())
+      .build();
+
+    SingleSingedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartyWallet.privateKey(), trustSet);
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
+//    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      trustSetSubmitResult.transactionResult().hash()
+    );
+
+    TrustLine trustLine = scanForResult(
+      () ->
+        getValidatedAccountLines(issuerWallet.address(), counterpartyWallet.address()),
+      linesResult -> !linesResult.lines().isEmpty()
+    )
+      .lines().get(0);
+
+    logger.info("Trustline: {}", trustLine);
+  }
+
   @Test
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////

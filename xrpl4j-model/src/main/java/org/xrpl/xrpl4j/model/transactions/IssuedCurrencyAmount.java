@@ -1,8 +1,13 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Formatter;
 
 /**
  * A {@link CurrencyAmount} for Issued Currencies on the XRP Ledger.
@@ -13,6 +18,8 @@ import org.immutables.value.Value;
 @JsonSerialize(as = ImmutableIssuedCurrencyAmount.class)
 @JsonDeserialize(as = ImmutableIssuedCurrencyAmount.class)
 public interface IssuedCurrencyAmount extends CurrencyAmount {
+
+  BigDecimal MAX_VALUE = new BigDecimal("9999999999999999e80");
 
   /**
    * Construct a builder for this class.
@@ -32,7 +39,16 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
    *
    * @return A {@link String} containing the amount of this issued currency.
    */
-  String value();
+  @Value.Default
+  default String value() {
+    return bigDecimalValue().toEngineeringString();
+  }
+
+  @JsonIgnore
+  @Value.Default
+  default BigDecimal bigDecimalValue() {
+    return new BigDecimal(value());
+  }
 
   /**
    * Arbitrary code for currency to issue. Cannot be XRP.

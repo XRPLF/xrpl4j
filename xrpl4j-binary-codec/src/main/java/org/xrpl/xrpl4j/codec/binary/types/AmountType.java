@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 /**
  * Codec for XRPL Amount type.
@@ -137,7 +138,7 @@ class AmountType extends SerializedType<AmountType> {
     }
 
     int exponent = MathUtils.getExponent(number);
-    if (exponent > 80 || exponent < -96) {
+    if (exponent > 95 || exponent < -81) {
       throw new IllegalArgumentException("exponent out of range");
     }
     UnsignedByte exponentByte = UnsignedByte.of(97 + exponent - 15);

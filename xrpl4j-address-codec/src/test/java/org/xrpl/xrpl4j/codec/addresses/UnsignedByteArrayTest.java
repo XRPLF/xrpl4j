@@ -47,7 +47,9 @@ public class UnsignedByteArrayTest {
     assertThat(UnsignedByteArray.of(new byte[] {0}).empty()).isEqualTo(UnsignedByteArray.of(new byte[] {}));
     assertThat(UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).empty()).isEqualTo(UnsignedByteArray.of(new byte[] {}));
     assertThat(UnsignedByteArray.of(new byte[] {MAX_BYTE, MAX_BYTE}).empty().length()).isEqualTo(0);
-    assertThat(UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).empty().equals(UnsignedByteArray.of(new byte[] {}))).isTrue();
+    assertThat(
+      UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).empty().equals(UnsignedByteArray.of(new byte[] {}))
+    ).isTrue();
   }
 
   @Test

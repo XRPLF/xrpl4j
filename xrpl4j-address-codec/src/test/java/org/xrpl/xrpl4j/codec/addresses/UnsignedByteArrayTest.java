@@ -56,7 +56,7 @@ public class UnsignedByteArrayTest {
   public void simpleLength() {
     final int size = 2;
     assertThat(UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).length()).isEqualTo(size);
-    assertThat(UnsignedByteArray.fill(size).size()).isEqualTo(UnsignedByteArray.ofSize(size).length());
+    assertThat(UnsignedByteArray.of(new byte[] {0, 1}).length()).isEqualTo(UnsignedByteArray.ofSize(size).length());
     assertThat(UnsignedByteArray.ofSize(size).length()).isEqualTo(size);
   }
 

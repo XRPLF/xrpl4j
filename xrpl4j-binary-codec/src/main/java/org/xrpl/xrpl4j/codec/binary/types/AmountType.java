@@ -27,7 +27,21 @@ class AmountType extends SerializedType<AmountType> {
   public static final int NATIVE_AMOUNT_BYTE_LENGTH = 8;
   public static final int CURRENCY_AMOUNT_BYTE_LENGTH = 48;
   private static final int MAX_IOU_PRECISION = 16;
+
+  /**
+   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>,
+   * the minimum token value exponent is -96. However, because the value field is converted from a {@link String}
+   * to a {@link BigDecimal} when encoding/decoding, and because {@link BigDecimal} defaults to using single
+   * digit number, the minimum exponent in this context is -96 + 15, as XRPL amounts have a precision of 15 digits.
+   */
   private static final int MIN_IOU_EXPONENT = -81;
+
+  /**
+   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>,
+   * the maximum token value exponent is 80. However, because the value field is converted from a {@link String}
+   * to a {@link BigDecimal} when encoding/decoding, and because {@link BigDecimal} defaults to using single
+   * digit number, the maximum exponent in this context is 80 + 15, as XRPL amounts have a precision of 15 digits.
+   */
   private static final int MAX_IOU_EXPONENT = 95;
 
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();

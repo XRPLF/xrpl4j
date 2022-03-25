@@ -41,6 +41,8 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.math.BigDecimal;
+
 public class BinarySerializationTests {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();

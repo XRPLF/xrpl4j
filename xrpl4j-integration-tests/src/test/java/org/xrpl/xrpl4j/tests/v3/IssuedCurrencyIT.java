@@ -83,7 +83,7 @@ public class IssuedCurrencyIT extends AbstractIT {
   }
 
   @Test
-  void createTrustlineWithMinLimit() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createTrustlineWithSmallestPositiveLimit() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////
     // Create random accounts for the issuer and the counterparty
     Wallet issuerWallet = createRandomAccountEd25519();
@@ -98,7 +98,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     TrustLine trustLine = createTrustLine(
       xrpl4jCoin,
-      IssuedCurrencyAmount.MIN_VALUE,
+      IssuedCurrencyAmount.MIN_POSITIVE_VALUE,
       issuerWallet,
       counterpartyWallet,
       feeResult.drops().minimumFee()
@@ -108,7 +108,7 @@ public class IssuedCurrencyIT extends AbstractIT {
   }
 
   @Test
-  void createTrustlineWithMinLimitPlusOnePowerOfTen() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createTrustlineWithSmalletPositiveLimitPlusOne() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////
     // Create random accounts for the issuer and the counterparty
     Wallet issuerWallet = createRandomAccountEd25519();
@@ -121,15 +121,17 @@ public class IssuedCurrencyIT extends AbstractIT {
     // by submitting a TrustSet transaction
     String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
+    BigDecimal limitValue = new BigDecimal(IssuedCurrencyAmount.MIN_POSITIVE_VALUE)
+      .add(new BigDecimal(IssuedCurrencyAmount.MIN_POSITIVE_VALUE).scaleByPowerOfTen(-1));
     TrustLine trustLine = createTrustLine(
       xrpl4jCoin,
-      new BigDecimal(IssuedCurrencyAmount.MIN_VALUE).scaleByPowerOfTen(1).toEngineeringString(),
+      limitValue.toString(),
       issuerWallet,
       counterpartyWallet,
       feeResult.drops().minimumFee()
     );
 
-    assertThat(trustLine.limitPeer()).isEqualTo("1000000000000000e-95");
+    assertThat(trustLine.limitPeer()).isEqualTo("1100000000000000e-96");
   }
 
   @Test

@@ -22,7 +22,19 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
   /**
    * The minimum value that an {@link IssuedCurrencyAmount} can have.
    */
-  String MIN_VALUE = "1000000000000000e-96";
+  String MIN_VALUE = "-9999999999999999e80";
+
+  /**
+   * The smallest possible positive value that an {@link IssuedCurrencyAmount} can have. Put another way,
+   * this value is the closest an {@link IssuedCurrencyAmount}'s {@link #value()} can be to zero if it is positive.
+   */
+  String MIN_POSITIVE_VALUE = "1000000000000000e-96";
+
+  /**
+   * The largest possible negative value that an {@link IssuedCurrencyAmount} can have. Put another way,
+   * this value is the closest an {@link IssuedCurrencyAmount}'s {@link #value()} can be to zero if it is negative.
+   */
+  String MAX_NEGATIVE_VALUE = "-1000000000000000e-96";
 
   /**
    * Construct a builder for this class.

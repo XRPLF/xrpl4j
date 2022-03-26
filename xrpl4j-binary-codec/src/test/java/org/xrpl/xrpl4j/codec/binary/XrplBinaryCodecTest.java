@@ -187,6 +187,44 @@ class XrplBinaryCodecTest {
   }
 
   @Test
+  void encodeDecodeEnableAmendment() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A\"," +
+      "\"TransactionType\":\"EnableAmendment\"," +
+      "\"Amendment\":\"42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE\"}";
+
+    String expected = "120064240025B30926040B5200501342426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369" +
+      "F97ABF044EE68400000000000000C7321ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A" +
+      "81140000000000000000000000000000000000000000";
+    assertThat(encoder.encode(json)).isEqualTo(expected);
+
+  }
+
+  @Test
+  void encodeDecodeSetFee() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":\"000000000000000A\"}";
+
+    String expected = "120065240025B30926040B5200201E0000000A201F01312D002020004C4B4035000000000000000A" +
+      "68400000000000000C7321ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A8114" +
+      "0000000000000000000000000000000000000000";
+    assertThat(encoder.encode(json)).isEqualTo(expected);
+  }
+
+  @Test
   void encodeForSigning() throws JsonProcessingException {
     String json =
       "{\"Account\":\"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\",\"TransactionType\":\"Payment\",\"Fee\":\"789\"," +

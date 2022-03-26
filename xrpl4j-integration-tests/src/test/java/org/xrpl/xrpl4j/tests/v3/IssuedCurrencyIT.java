@@ -23,12 +23,116 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * An Integration Test to validate submission of issued currency transactions.
  */
 public class IssuedCurrencyIT extends AbstractIT {
+
+  // Test cases: MAX, MAX - 1, MAX + 1 (fail), MIN, MIN + 1, MIN - 1 (fail), 0, 1, -1
+  @Test
+  void createTrustlineWithMaxLimit() throws JsonRpcClientErrorException, JsonProcessingException {
+    ///////////////////////////
+    // Create random accounts for the issuer and the counterparty
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet counterpartyWallet = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and counterparty denominated in a custom currency
+    // by submitting a TrustSet transaction
+    String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+
+    TrustLine trustLine = createTrustLine(
+      xrpl4jCoin,
+      IssuedCurrencyAmount.MAX_VALUE,
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
+
+    assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e80");
+  }
+
+  @Test
+  void createTrustlineWithMaxLimitMinusOneExponent() throws JsonRpcClientErrorException, JsonProcessingException {
+    ///////////////////////////
+    // Create random accounts for the issuer and the counterparty
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet counterpartyWallet = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and counterparty denominated in a custom currency
+    // by submitting a TrustSet transaction
+    String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+
+    TrustLine trustLine = createTrustLine(
+      xrpl4jCoin,
+      new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toEngineeringString(),
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
+
+    assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e79");
+  }
+
+  @Test
+  void createTrustlineWithSmallestPositiveLimit() throws JsonRpcClientErrorException, JsonProcessingException {
+    ///////////////////////////
+    // Create random accounts for the issuer and the counterparty
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet counterpartyWallet = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and counterparty denominated in a custom currency
+    // by submitting a TrustSet transaction
+    String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+
+    TrustLine trustLine = createTrustLine(
+      xrpl4jCoin,
+      IssuedCurrencyAmount.MIN_POSITIVE_VALUE,
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
+
+    assertThat(trustLine.limitPeer()).isEqualTo("1000000000000000e-96");
+  }
+
+  @Test
+  void createTrustlineWithSmalletPositiveLimitPlusOne() throws JsonRpcClientErrorException, JsonProcessingException {
+    ///////////////////////////
+    // Create random accounts for the issuer and the counterparty
+    Wallet issuerWallet = createRandomAccountEd25519();
+    Wallet counterpartyWallet = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and counterparty denominated in a custom currency
+    // by submitting a TrustSet transaction
+    String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+
+    BigDecimal limitValue = new BigDecimal(IssuedCurrencyAmount.MIN_POSITIVE_VALUE)
+      .add(new BigDecimal(IssuedCurrencyAmount.MIN_POSITIVE_VALUE).scaleByPowerOfTen(-1));
+    TrustLine trustLine = createTrustLine(
+      xrpl4jCoin,
+      limitValue.toString(),
+      issuerWallet,
+      counterpartyWallet,
+      feeResult.drops().minimumFee()
+    );
+
+    assertThat(trustLine.limitPeer()).isEqualTo("1100000000000000e-96");
+  }
 
   @Test
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException, JsonProcessingException {

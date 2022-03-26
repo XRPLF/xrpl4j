@@ -1,13 +1,37 @@
 package org.xrpl.xrpl4j.codec.binary;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: binary-codec
+ * %%
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.codec.binary.types.STObjectType;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
 
@@ -118,6 +142,86 @@ class XrplBinaryCodecTest {
     String hex = "031340" + amendmentHex1 + amendmentHex2;
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeUnlModify() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+
+    String expected = "120066240000000026040B52006840000000000000007300701321EDB6FC8E803EE8EDC2793F1EC9" +
+      "17B2EE41D35255618DEB91D3F9B1FC89B75D453900101101";
+    assertThat(expected).isEqualTo(encoder.encode(json));
+
+    String jsonWithoutAccount = "{" +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+    // Results with and without `Account` are same since it is skipped while decoding.
+    assertThat(encoder.encode(jsonWithoutAccount)).isEqualTo(expected);
+
+    String expectedDisabledUnlModify = "120066240000000026040B52006840000000000000007300701321EDB6FC8E" +
+      "803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D453900101100";
+
+    String jsonDisablingUnlModify = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"0\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":0," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":0," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+    assertThat(encoder.encode(jsonDisablingUnlModify)).isEqualTo(expectedDisabledUnlModify);
+  }
+
+  @Test
+  void encodeDecodeEnableAmendment() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A\"," +
+      "\"TransactionType\":\"EnableAmendment\"," +
+      "\"Amendment\":\"42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE\"}";
+
+    String expected = "120064240025B30926040B5200501342426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369" +
+      "F97ABF044EE68400000000000000C7321ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A" +
+      "81140000000000000000000000000000000000000000";
+    assertThat(encoder.encode(json)).isEqualTo(expected);
+
+  }
+
+  @Test
+  void encodeDecodeSetFee() throws JsonProcessingException {
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":\"000000000000000A\"}";
+
+    String expected = "120065240025B30926040B5200201E0000000A201F01312D002020004C4B4035000000000000000A" +
+      "68400000000000000C7321ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A8114" +
+      "0000000000000000000000000000000000000000";
+    assertThat(encoder.encode(json)).isEqualTo(expected);
   }
 
   @Test

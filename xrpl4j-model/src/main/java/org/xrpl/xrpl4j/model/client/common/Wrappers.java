@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.model.client.common;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: model
+ * %%
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
@@ -11,6 +31,9 @@ import org.xrpl.xrpl4j.model.immutables.Wrapper;
 
 import java.io.Serializable;
 
+/**
+ * Definitions for immutable wrappers.
+ */
 @SuppressWarnings("TypeName")
 public class Wrappers {
 
@@ -26,6 +49,13 @@ public class Wrappers {
   @JsonDeserialize(as = LedgerIndexBound.class)
   abstract static class _LedgerIndexBound extends Wrapper<Long> implements Serializable {
 
+    /**
+     * Static constructor.
+     *
+     * @param ledgerIndexBound An integer representing the ledger-index bound.
+     *
+     * @return A {@link LedgerIndexBound}.
+     */
     public static LedgerIndexBound of(int ledgerIndexBound) {
       return LedgerIndexBound.of(Integer.valueOf(ledgerIndexBound).longValue());
     }
@@ -40,8 +70,8 @@ public class Wrappers {
      *
      * @param other Another {@link LedgerIndexBound} to add.
      *
-     * @return A {@link LedgerIndexBound} wrapping the sum of the two wrapped {@link Long} values of
-     *   this {@link LedgerIndexBound} and {@code other}.
+     * @return A {@link LedgerIndexBound} wrapping the sum of the two wrapped {@link Long} values of this {@link
+     *   LedgerIndexBound} and {@code other}.
      */
     public LedgerIndexBound plus(LedgerIndexBound other) {
       checkAdditionOverflow(other.value());
@@ -53,8 +83,8 @@ public class Wrappers {
      *
      * @param ledgerIndex A {@link LedgerIndex} to add to this {@link LedgerIndexBound}.
      *
-     * @return A {@link LedgerIndexBound} wrapping the sum of the two values of this {@link LedgerIndexBound} and
-     *   {@code ledgerIndex}.
+     * @return A {@link LedgerIndexBound} wrapping the sum of the two values of this {@link LedgerIndexBound} and {@code
+     *   ledgerIndex}.
      */
     public LedgerIndexBound plus(LedgerIndex ledgerIndex) {
       checkAdditionOverflow(ledgerIndex.unsignedIntegerValue().longValue());
@@ -89,8 +119,8 @@ public class Wrappers {
      *
      * @param other Another {@link LedgerIndexBound} to subtract.
      *
-     * @return A {@link LedgerIndexBound} wrapping the difference of the two wrapped {@link Long} values of
-     *   this {@link LedgerIndexBound} and {@code other}.
+     * @return A {@link LedgerIndexBound} wrapping the difference of the two wrapped {@link Long} values of this {@link
+     *   LedgerIndexBound} and {@code other}.
      */
     public LedgerIndexBound minus(LedgerIndexBound other) {
       checkSubtractionInBounds(other.value());
@@ -115,8 +145,8 @@ public class Wrappers {
      *
      * @param value A {@link Long} to subtract.
      *
-     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and
-     *   {@code value}.
+     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and {@code
+     *   value}.
      */
     public LedgerIndexBound minus(Long value) {
       checkSubtractionInBounds(value);
@@ -128,8 +158,8 @@ public class Wrappers {
      *
      * @param value An {@link Integer} to subtract.
      *
-     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and
-     *   {@code value}.
+     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and {@code
+     *   value}.
      */
     public LedgerIndexBound minus(Integer value) {
       return minus(value.longValue());

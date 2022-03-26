@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: model
+ * %%
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,6 +66,7 @@ public interface Transaction {
       .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
       .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
       .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
+      .put(ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT)
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
       .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
       .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
@@ -55,10 +76,12 @@ public interface Transaction {
       .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+      .put(ImmutableSetFee.class, TransactionType.SET_FEE)
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
+      .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
       .build();
 
   /**

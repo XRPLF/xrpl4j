@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.model.client.accounts;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: model
+ * %%
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -9,7 +29,6 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.LegacyLedgerSpecifierUtils;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndexShortcut;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -26,6 +45,11 @@ import javax.annotation.Nullable;
 @JsonDeserialize(as = ImmutableAccountOffersRequestParams.class)
 public interface AccountOffersRequestParams extends XrplRequestParams {
 
+  /**
+   * Construct a builder.
+   *
+   * @return {@link ImmutableAccountOffersRequestParams.Builder}
+   */
   static ImmutableAccountOffersRequestParams.Builder builder() {
     return ImmutableAccountOffersRequestParams.builder();
   }
@@ -41,6 +65,7 @@ public interface AccountOffersRequestParams extends XrplRequestParams {
    * A 20-byte hex string for the ledger version to use.
    *
    * @return An optionally-present {@link Hash256}.
+   *
    * @deprecated Ledger hash should be specified in {@link #ledgerSpecifier()}.
    */
   @JsonIgnore
@@ -52,6 +77,7 @@ public interface AccountOffersRequestParams extends XrplRequestParams {
    * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
    *
    * @return A {@link LedgerIndex}.  Defaults to {@link LedgerIndex#CURRENT}.
+   *
    * @deprecated Ledger index and any shortcut values should be specified in {@link #ledgerSpecifier()}.
    */
   @JsonIgnore
@@ -61,8 +87,8 @@ public interface AccountOffersRequestParams extends XrplRequestParams {
   LedgerIndex ledgerIndex();
 
   /**
-   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
-   * numerical ledger index, or a shortcut value.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
@@ -85,8 +111,8 @@ public interface AccountOffersRequestParams extends XrplRequestParams {
   }
 
   /**
-   * Limit the number of transactions to retrieve. Cannot be less than 10 or more than 400.
-   * The server is not required to honor this value and the default varies.
+   * Limit the number of transactions to retrieve. Cannot be less than 10 or more than 400. The server is not required
+   * to honor this value and the default varies.
    *
    * @return An optionally-present {@link UnsignedInteger}.
    */

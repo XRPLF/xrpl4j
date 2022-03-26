@@ -55,6 +55,7 @@ public abstract class SerializedType<T extends SerializedType<T>> {
       .put("UInt8", () -> new UInt8Type())
       .put("UInt16", () -> new UInt16Type())
       .put("UInt32", () -> new UInt32Type())
+      .put("UInt64", () -> new UInt64Type())
       .put("Vector256", () -> new Vector256Type())
       .build();
   private final UnsignedByteArray bytes;

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Awaitility;
-import org.awaitility.Duration;
+import org.awaitility.Durations;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -241,7 +241,7 @@ public class OfferIT extends AbstractIT {
    */
   private void assertEmptyResults(Supplier<Collection<?>> supplier) {
     Awaitility.await()
-      .atMost(Duration.TEN_SECONDS)
+      .atMost(Durations.TEN_SECONDS)
       .until(supplier::get, Matchers.empty());
   }
 

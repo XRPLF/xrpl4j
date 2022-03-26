@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.primitives.UnsignedInteger;
-import org.awaitility.Duration;
+import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -154,7 +154,7 @@ public class AccountTransactionsIT {
 
   private AccountTransactionsResult getAccountTransactions(AccountTransactionsRequestParams params) {
     return given()
-      .pollInterval(Duration.FIVE_SECONDS)
+      .pollInterval(Durations.FIVE_SECONDS)
       .await()
       .until(() -> {
         try {

@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedLong;
-import org.awaitility.Duration;
+import org.awaitility.Durations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -47,6 +47,7 @@ import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
 import java.security.Key;
 import java.security.KeyStore;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractIT {
 
-  public static final Duration POLL_INTERVAL = Duration.ONE_HUNDRED_MILLISECONDS;
+  public static final Duration POLL_INTERVAL = Durations.ONE_HUNDRED_MILLISECONDS;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
 
@@ -132,7 +133,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Duration.ONE_MINUTE.divide(2))
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {
@@ -148,7 +149,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(resultSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Duration.ONE_MINUTE.divide(2))
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
       .ignoreException(RuntimeException.class)
       .await()
       .until(resultSupplier::get, is(notNullValue()));
@@ -158,7 +159,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Duration.ONE_MINUTE.divide(2))
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
       .ignoreException(RuntimeException.class)
       .await()
       .until(ledgerObjectSupplier::get, is(notNullValue()));

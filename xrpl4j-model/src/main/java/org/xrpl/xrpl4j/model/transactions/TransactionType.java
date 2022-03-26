@@ -58,6 +58,11 @@ public enum TransactionType {
   DEPOSIT_PRE_AUTH("DepositPreauth"),
 
   /**
+   * The {@link TransactionType} for the {@link EnableAmendment} transaction.
+   */
+  ENABLE_AMENDMENT("EnableAmendment"),
+
+  /**
    * The {@link TransactionType} for the {@link EscrowCancel} transaction.
    */
   ESCROW_CANCEL("EscrowCancel"),
@@ -128,6 +133,11 @@ public enum TransactionType {
   PAYMENT_CHANNEL_FUND("PaymentChannelFund"),
 
   /**
+   * The {@link TransactionType} for the {@link SetFee} transaction.
+   */
+  SET_FEE("SetFee"),
+
+  /**
    * The {@link TransactionType} for the {@link SetRegularKey} transaction.
    */
   SET_REGULAR_KEY("SetRegularKey"),
@@ -145,7 +155,12 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link TicketCreate} transaction.
    */
-  TICKET_CREATE("TicketCreate");
+  TICKET_CREATE("TicketCreate"),
+
+  /**
+   * The {@link TransactionType} for the {@link UnlModify} transaction.
+   */
+  UNL_MODIFY("UNLModify");
 
   private final String value;
 

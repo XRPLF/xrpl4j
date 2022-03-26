@@ -66,6 +66,7 @@ public interface Transaction {
       .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
       .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
       .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
+      .put(ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT)
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
       .put(ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE)
       .put(ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH)
@@ -75,10 +76,12 @@ public interface Transaction {
       .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+      .put(ImmutableSetFee.class, TransactionType.SET_FEE)
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
+      .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
       .build();
 
   /**

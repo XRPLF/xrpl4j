@@ -298,7 +298,7 @@ public class XrplClient {
   /**
    * Enumeration of the types of responses from isFinal function.
    */
-  public enum FinalStatus {
+  public enum FinalityStatus {
     /**
      * Transaction has not been validated until this moment, which means it could be validated in the
      * following closed ledgers, or, the XRPL peer you are connected to could be missing the ledgers

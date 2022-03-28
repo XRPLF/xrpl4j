@@ -156,7 +156,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       )
-    ).isEqualTo(XrplClient.FinalStatus.VALIDATED_SUCCESS);
+    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_SUCCESS);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -193,7 +193,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       )
-    ).isEqualTo(XrplClient.FinalStatus.VALIDATED_FAILURE);
+    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_FAILURE);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -226,7 +226,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       )
-    ).isEqualTo(XrplClient.FinalStatus.NOT_FINAL);
+    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -290,7 +290,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       )
-    ).isEqualTo(XrplClient.FinalStatus.NOT_FINAL);
+    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -374,7 +374,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       )
-    ).isEqualTo(XrplClient.FinalStatus.EXPIRED);
+    ).isEqualTo(XrplClient.FinalityStatus.EXPIRED);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }

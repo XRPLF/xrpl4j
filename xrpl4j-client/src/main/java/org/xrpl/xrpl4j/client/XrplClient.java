@@ -334,7 +334,7 @@ public class XrplClient {
    * @param account The unique {@link Address} of the account that initiated this transaction.
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    */
-  public FinalStatus isFinal(
+  public FinalityStatus isFinal(
     Hash256 transactionHash,
     LedgerIndex submittedOnLedgerIndex,
     UnsignedInteger lastLedgerSequence,
@@ -344,14 +344,13 @@ public class XrplClient {
 
     return getValidatedTransaction(transactionHash)
       .map(transactionResult -> {
-        //Do some stuff with transactionResult and return a FinalityStatus
         String resultCode = transactionResult.metadata()
           .orElseThrow(() -> new RuntimeException("Metadata not found in the validated transaction."))
           .transactionResult();
         if (resultCode.equals("tesSUCCESS")) {
-          return FinalStatus.VALIDATED_SUCCESS;
+          return FinalityStatus.VALIDATED_SUCCESS;
         } else {
-          return FinalStatus.VALIDATED_FAILURE;
+          return FinalityStatus.VALIDATED_FAILURE;
         }
       }).orElseGet(() -> {
         try {
@@ -359,7 +358,7 @@ public class XrplClient {
           if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
             // condition 2: last ledger seq hasn't passed yet
             // possible solution would be to check again after a while to get the updated validation status.
-            return FinalStatus.NOT_FINAL;
+            return FinalityStatus.NOT_FINAL;
           } else {
             // condition 3: last ledger seq has passed.
             Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
@@ -372,7 +371,7 @@ public class XrplClient {
               // there is a possibility that the transaction with hash transactionHash exists on the missing ledgers
               // possible solution would be to wait and query the missing ledgers once acquired, resubmit with
               // updated fee and lastLedgerSequence if not found.
-              return FinalStatus.NOT_FINAL;
+              return FinalityStatus.NOT_FINAL;
             } else {
               AccountInfoResult accountInfoResult = this.accountInfo(
                 AccountInfoRequestParams.of(account)
@@ -383,7 +382,7 @@ public class XrplClient {
                 // this represents an unexpected case
                 throw new IllegalStateException("Something unexpected happened. Tx not final.");
               } else {
-                return FinalStatus.EXPIRED;
+                return FinalityStatus.EXPIRED;
               }
             }
           }

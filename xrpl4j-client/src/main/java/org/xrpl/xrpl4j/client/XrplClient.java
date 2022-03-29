@@ -96,6 +96,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -296,6 +297,27 @@ public class XrplClient {
   }
 
   /**
+   * Check if there missing ledgers in rippled in the given range.
+   * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
+   * @param lastLedgerSequence he ledger index/sequence of type {@link UnsignedInteger} after which the
+   *        transaction will expire and won't be applied to the ledger.
+   * @return {@link Boolean} to indicate if there are gaps in the ledger range.
+   */
+  protected boolean ledgerGapsExistBetween(UnsignedLong submittedLedgerSequence, UnsignedLong lastLedgerSequence) {
+    final ServerInfo serverInfo;
+    try {
+      serverInfo = this.serverInfo();
+    } catch (JsonRpcClientErrorException e) {
+      LOGGER.error(e.getMessage(), e);
+      return true; // Assume ledger gaps exist so this can be retried.
+    }
+
+    Range<UnsignedLong> submittedToLast = Range.closed(submittedLedgerSequence, lastLedgerSequence);
+    return serverInfo.completeLedgerRanges().stream()
+      .noneMatch(range -> range.encloses(submittedToLast));
+  }
+
+  /**
    * Enumeration of the types of responses from isFinal function.
    */
   public enum FinalityStatus {
@@ -313,6 +335,11 @@ public class XrplClient {
      * Transaction is final/validated on the ledger with some failure.
      */
     VALIDATED_FAILURE,
+    /**
+     * In the past, the XRP Ledger supported transactions without metadata. While uncommon, this is a
+     * potential state for older transactions.
+     */
+    VALIDATED_UNKNOWN,
     /**
      * The lastLedgerSequence of the tx has passed, i.e., transaction was not included in any closed
      * ledgers ranging from the one it was submitted on to the lastLedgerSequence.
@@ -334,44 +361,56 @@ public class XrplClient {
    * @param account The unique {@link Address} of the account that initiated this transaction.
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    */
-  public FinalityStatus isFinal(
+  public Finality isFinal(
     Hash256 transactionHash,
     LedgerIndex submittedOnLedgerIndex,
     UnsignedInteger lastLedgerSequence,
     UnsignedInteger sequence,
     Address account
   ) {
-
     return getValidatedTransaction(transactionHash)
       .map(transactionResult -> {
-        String resultCode = transactionResult.metadata()
-          .orElseThrow(() -> new RuntimeException("Metadata not found in the validated transaction."))
-          .transactionResult();
-        if (resultCode.equals("tesSUCCESS")) {
-          return FinalityStatus.VALIDATED_SUCCESS;
+        // Note from https://xrpl.org/transaction-metadata.html#transaction-metadata:
+        // "Any transaction that gets included in a ledger has metadata, regardless of whether it is
+        // successful." However, we handle missing metadata as a failure, just in case rippled doesn't perfectly
+        // conform
+        final boolean isTesSuccess = transactionResult.metadata()
+          .map(TransactionMetadata::transactionResult)
+          .filter("tesSUCCESS"::equals)
+          .map($ -> true)
+          .isPresent();
+
+        final boolean metadataExists = transactionResult.metadata().isPresent();
+
+        if (isTesSuccess) {
+          LOGGER.debug("Transaction with hash: {} was validated with success", transactionHash);
+          return Finality.builder()
+            .finalityStatus(FinalityStatus.VALIDATED_SUCCESS)
+            .resultCode(transactionResult.metadata().get().transactionResult())
+            .build();
+        } else if (!metadataExists) {
+          return Finality.builder().finalityStatus(FinalityStatus.VALIDATED_UNKNOWN).build();
         } else {
-          return FinalityStatus.VALIDATED_FAILURE;
+          LOGGER.debug("Transaction with hash: {} was validated with failure", transactionHash);
+          return Finality.builder()
+            .finalityStatus(FinalityStatus.VALIDATED_FAILURE)
+            .resultCode(transactionResult.metadata().get().transactionResult())
+            .build();
         }
       }).orElseGet(() -> {
         try {
-          //Figure out if it's expired or that other account thing happened and return a FinalityStatus
-          if (FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex()).lessThan(lastLedgerSequence)) {
-            // condition 2: last ledger seq hasn't passed yet
-            // possible solution would be to check again after a while to get the updated validation status.
-            return FinalityStatus.NOT_FINAL;
+          final boolean isTransactionExpired = FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex())
+            .greaterThan(lastLedgerSequence);
+          if (!isTransactionExpired) {
+            LOGGER.debug("Transaction with hash: {} has not expired yet, check again", transactionHash);
+            return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
           } else {
-            // condition 3: last ledger seq has passed.
-            Range<UnsignedLong> submittedToLast = Range.closed(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
+            boolean isMissingLedgers = ledgerGapsExistBetween(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
               UnsignedLong.valueOf(lastLedgerSequence.toString()));
-            boolean ledgerGapExists = this.serverInfo().completeLedgerRanges().stream()
-              .noneMatch(range -> range.encloses(submittedToLast));
-
-            if (ledgerGapExists) {
-              // wait to acquire the missing ledgers
-              // there is a possibility that the transaction with hash transactionHash exists on the missing ledgers
-              // possible solution would be to wait and query the missing ledgers once acquired, resubmit with
-              // updated fee and lastLedgerSequence if not found.
-              return FinalityStatus.NOT_FINAL;
+            if (isMissingLedgers) {
+              LOGGER.debug("Transaction with hash: {} has expired and rippled is missing some to confirm if it" +
+                " was validated", transactionHash);
+              return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
             } else {
               AccountInfoResult accountInfoResult = this.accountInfo(
                 AccountInfoRequestParams.of(account)
@@ -382,12 +421,15 @@ public class XrplClient {
                 // this represents an unexpected case
                 throw new IllegalStateException("Something unexpected happened. Tx not final.");
               } else {
-                return FinalityStatus.EXPIRED;
+                LOGGER.debug("Transaction with hash: {} has expired, consider resubmitting with updated" +
+                  " lastledgersequence and fee", transactionHash);
+                return Finality.builder().finalityStatus(FinalityStatus.EXPIRED).build();
               }
             }
           }
         } catch (JsonRpcClientErrorException e) {
-          throw new RuntimeException(e);
+          LOGGER.warn(e.getMessage(), e);
+          return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
         }
       });
   }

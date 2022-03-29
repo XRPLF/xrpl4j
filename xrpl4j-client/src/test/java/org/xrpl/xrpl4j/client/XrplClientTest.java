@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -92,7 +93,62 @@ public class XrplClientTest {
   }
 
   @Test
-  void isFinalForValidatedTransactionWithoutMetadata_ThrowsException() {
+  void isFinalThrowsForNullParams() {
+    assertThrows(
+      RuntimeException.class,
+      () -> xrplClient.isFinal(
+        null,
+        LedgerIndex.of(UnsignedInteger.ONE),
+        UnsignedInteger.ONE,
+        UnsignedInteger.ONE,
+        Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
+      )
+    );
+    Hash256 transactionHash = Hash256.of(Strings.repeat("0", 64));
+    assertThrows(
+      RuntimeException.class,
+      () -> xrplClient.isFinal(
+        transactionHash,
+        LedgerIndex.of(UnsignedInteger.ONE),
+        null,
+        UnsignedInteger.ONE,
+        Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
+      )
+    );
+    assertThrows(
+      RuntimeException.class,
+      () -> xrplClient.isFinal(
+        transactionHash,
+        null,
+        UnsignedInteger.ONE,
+        UnsignedInteger.ONE,
+        Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
+      )
+    );
+    assertThrows(
+      RuntimeException.class,
+      () -> xrplClient.isFinal(
+        transactionHash,
+        LedgerIndex.of(UnsignedInteger.ONE),
+        UnsignedInteger.ONE,
+        null,
+        Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
+      )
+    );
+    assertThrows(
+      RuntimeException.class,
+      () -> xrplClient.isFinal(
+        transactionHash,
+        LedgerIndex.of(UnsignedInteger.ONE),
+        UnsignedInteger.ONE,
+        UnsignedInteger.ONE,
+        null
+      )
+    );
+  }
+
+  @Test
+  void isFinalForValidatedTransactionWithoutMetadata_ReturnsValidatedUnknown() {
     TransactionResult<? extends TransactionResult<? extends Transaction>> mockTransactionResult = mock(
       TransactionResult.class
     );
@@ -110,16 +166,15 @@ public class XrplClientTest {
     };
 
     Hash256 transactionHash = Hash256.of(Strings.repeat("0", 64));
-    assertThatThrownBy(
-      () -> xrplClient.isFinal(
+    assertThat(
+      xrplClient.isFinal(
         transactionHash,
         LedgerIndex.of(UnsignedInteger.ONE),
         UnsignedInteger.ONE,
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
-    ).isInstanceOf(RuntimeException.class)
-      .hasMessage("Metadata not found in the validated transaction.");
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_UNKNOWN);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -155,7 +210,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
+      ).finalityStatus()
     ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_SUCCESS);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
@@ -192,7 +247,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
+      ).finalityStatus()
     ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_FAILURE);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
@@ -225,7 +280,7 @@ public class XrplClientTest {
         UnsignedInteger.valueOf(2),
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
+      ).finalityStatus()
     ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
@@ -289,7 +344,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
+      ).finalityStatus()
     ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
@@ -309,7 +364,7 @@ public class XrplClientTest {
 
       @Override
       protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() {
-        return UnsignedInteger.ONE;
+        return UnsignedInteger.valueOf(2);
       }
 
       @Override
@@ -373,14 +428,14 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
+      ).finalityStatus()
     ).isEqualTo(XrplClient.FinalityStatus.EXPIRED);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
 
   @Test
-  void isFinalForNoLedgerGapAndLastLedgerSequencePassedTransaction_ReturnsExpired() {
+  void isFinalForNoLedgerGapAndLastLedgerSequencePassedTransaction_ReturnsExpired() throws JsonRpcClientErrorException {
     AtomicReference<Hash256> calledWithHash = new AtomicReference<>();
     xrplClient = new XrplClient(jsonRpcClientMock) {
       @Override
@@ -393,7 +448,7 @@ public class XrplClientTest {
 
       @Override
       protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() {
-        return UnsignedInteger.ONE;
+        return UnsignedInteger.valueOf(2);
       }
 
       @Override

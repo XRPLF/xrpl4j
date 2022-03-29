@@ -2,42 +2,37 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.checkerframework.checker.units.qual.A;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.JsonRpcRequest;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.XAddress;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class IsFinalIT extends AbstractIT {
 
   Wallet wallet = createRandomAccount();
 
-  @Test
-  public void simpleIsFinalTest() throws JsonRpcClientErrorException, InterruptedException {
+  ImmutablePayment.Builder payment;
+  UnsignedInteger lastLedgerSequence;
+  AccountInfoResult accountInfo;
 
+  @BeforeEach
+  void setup() throws JsonRpcClientErrorException {
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -50,140 +45,107 @@ public class IsFinalIT extends AbstractIT {
       .ledgerIndexSafe();
 
 
-    UnsignedInteger lastLedgerSequence = UnsignedInteger.valueOf(
-      validatedLedger.plus(UnsignedLong.valueOf(4)).unsignedLongValue().intValue()
+    lastLedgerSequence = UnsignedInteger.valueOf(
+      validatedLedger.plus(UnsignedLong.valueOf(1)).unsignedLongValue().intValue()
     );
 
-    AccountSet accountSet = AccountSet.builder()
+    Wallet destinationWallet = createRandomAccount();
+    payment = Payment.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(accountInfo.accountData().sequence())
-      .setFlag(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID)
-      .lastLedgerSequence(lastLedgerSequence)
-      .signingPublicKey(wallet.publicKey())
-      .build();
+      .destination(destinationWallet.classicAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(wallet.publicKey());
+  }
 
-    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
+  @Test
+  public void simpleIsFinalTest() throws JsonRpcClientErrorException, InterruptedException {
+
+    Payment builtPayment = payment.build();
+    SubmitResult response = xrplClient.submit(wallet, builtPayment);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
-    assertThat(xrplClient.isFinal(
-      response.transactionResult().hash(),
-      response.validatedLedgerIndex(),
-      lastLedgerSequence,
-      accountInfo.accountData().sequence(),
-      wallet.classicAddress()
-    )).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    assertThat(
+      xrplClient.isFinal(
+        response.transactionResult().hash(),
+        response.validatedLedgerIndex(),
+        lastLedgerSequence,
+        accountInfo.accountData().sequence(),
+        wallet.classicAddress()
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
     Thread.sleep(4000);
-    assertThat(xrplClient.isFinal(
-      response.transactionResult().hash(),
-      response.validatedLedgerIndex(),
-      lastLedgerSequence,
-      accountInfo.accountData().sequence(),
-      wallet.classicAddress()
-    )).isEqualTo(XrplClient.FinalityStatus.VALIDATED_SUCCESS);
+    assertThat(
+      xrplClient.isFinal(
+        response.transactionResult().hash(),
+        response.validatedLedgerIndex(),
+        lastLedgerSequence,
+        accountInfo.accountData().sequence(),
+        wallet.classicAddress()
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_SUCCESS);
   }
 
   @Test
   public void isFinalExpiredTxTest() throws JsonRpcClientErrorException, InterruptedException {
 
-    ///////////////////////
-    // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
-    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
-    assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
-
-    FeeResult feeResult = xrplClient.fee();
-
-    LedgerIndex validatedLedger = xrplClient.ledger(
-        LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .build()
-      )
-      .ledgerIndexSafe();
-
-
-    UnsignedInteger lastLedgerSequence = UnsignedInteger.valueOf(
-      validatedLedger.plus(UnsignedLong.valueOf(1)).unsignedLongValue().intValue()
-    );
-
-    AccountSet accountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+    Payment builtPayment = payment
       .sequence(accountInfo.accountData().sequence().minus(UnsignedInteger.ONE))
-      .setFlag(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID)
-      .lastLedgerSequence(lastLedgerSequence)
-      .signingPublicKey(wallet.publicKey())
       .build();
+    SubmitResult response = xrplClient.submit(wallet, builtPayment);
 
-    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-
-    assertThat(xrplClient.isFinal(
-      response.transactionResult().hash(),
-      response.validatedLedgerIndex(),
-      lastLedgerSequence,
-      accountInfo.accountData().sequence(),
-      wallet.classicAddress()
-    )).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    assertThat(
+      xrplClient.isFinal(
+        response.transactionResult().hash(),
+        response.validatedLedgerIndex(),
+        lastLedgerSequence.minus(UnsignedInteger.ONE),
+        accountInfo.accountData().sequence(),
+        wallet.classicAddress()
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
     Thread.sleep(1000);
 
-    assertThat(xrplClient.isFinal(
-      response.transactionResult().hash(),
-      response.validatedLedgerIndex(),
-      lastLedgerSequence,
-      accountInfo.accountData().sequence(),
-      wallet.classicAddress()
-    )).isEqualTo(XrplClient.FinalityStatus.EXPIRED);
+    assertThat(
+      xrplClient.isFinal(
+        response.transactionResult().hash(),
+        response.validatedLedgerIndex(),
+        lastLedgerSequence.minus(UnsignedInteger.ONE),
+        accountInfo.accountData().sequence(),
+        wallet.classicAddress()
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.EXPIRED);
   }
 
   @Test
-  public void isFinalValidatedFailureResponseTest() throws JsonRpcClientErrorException, InterruptedException {
+  public void isFinalNoTrustlineIouPayment_ValidatedFailureResponse()
+    throws JsonRpcClientErrorException, InterruptedException {
 
-    ///////////////////////
-    // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
-    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
-    assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
-
-    FeeResult feeResult = xrplClient.fee();
-
-    LedgerIndex validatedLedger = xrplClient.ledger(
-        LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .build()
-      )
-      .ledgerIndexSafe();
-
-
-    UnsignedInteger lastLedgerSequence = UnsignedInteger.valueOf(
-      validatedLedger.plus(UnsignedLong.valueOf(1)).unsignedLongValue().intValue()
-    );
-
-    Wallet destinationWallet = createRandomAccount();
-    Payment payment = Payment.builder()
-      .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
-      .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+    Payment builtPayment = payment
       .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(
-      wallet.classicAddress()).value("500").build()
-      ).signingPublicKey(wallet.publicKey())
-      .build();
+        wallet.classicAddress()).value("500").build()
+      ).build();
+    SubmitResult response = xrplClient.submit(wallet, builtPayment);
 
-    SubmitResult<Payment> response = xrplClient.submit(wallet, payment);
-
-    assertThat(xrplClient.isFinal(
-      response.transactionResult().hash(),
-      response.validatedLedgerIndex(),
-      lastLedgerSequence,
-      accountInfo.accountData().sequence(),
-      wallet.classicAddress()
-    )).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    assertThat(
+      xrplClient.isFinal(
+        response.transactionResult().hash(),
+        response.validatedLedgerIndex(),
+        lastLedgerSequence,
+        accountInfo.accountData().sequence(),
+        wallet.classicAddress()
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
     Thread.sleep(1000);
 
-    assertThat(xrplClient.isFinal(
-      response.transactionResult().hash(),
-      response.validatedLedgerIndex(),
-      lastLedgerSequence,
-      accountInfo.accountData().sequence(),
-      wallet.classicAddress()
-    )).isEqualTo(XrplClient.FinalityStatus.VALIDATED_FAILURE);
+    assertThat(
+      xrplClient.isFinal(
+        response.transactionResult().hash(),
+        response.validatedLedgerIndex(),
+        lastLedgerSequence,
+        accountInfo.accountData().sequence(),
+        wallet.classicAddress()
+      ).finalityStatus()
+    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_FAILURE);
   }
 }

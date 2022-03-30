@@ -26,7 +26,9 @@ import static org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray.of;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Unit tests for {@link UnsignedByteArray}.
@@ -67,17 +69,16 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleEmpty() {
-    assertThat(UnsignedByteArray.of(new byte[] {0}).empty()).isEqualTo(UnsignedByteArray.of(new byte[] {}));
-    assertThat(UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).empty()).isEqualTo(UnsignedByteArray.of(new byte[] {}));
-    assertThat(UnsignedByteArray.of(new byte[] {MAX_BYTE, MAX_BYTE}).empty().length()).isEqualTo(0);
+  public void empty() {
+    assertThat(UnsignedByteArray.empty()).isEqualTo(UnsignedByteArray.of(new byte[] {}));
+    assertThat(UnsignedByteArray.empty().length()).isEqualTo(0);
     assertThat(
-      UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).empty().equals(UnsignedByteArray.of(new byte[] {}))
+      UnsignedByteArray.empty().equals(UnsignedByteArray.of(new byte[] {}))
     ).isTrue();
   }
 
   @Test
-  public void simpleLength() {
+  public void length() {
     final int size = 2;
     assertThat(UnsignedByteArray.of(new byte[] {0, MAX_BYTE}).length()).isEqualTo(size);
     assertThat(UnsignedByteArray.of(new byte[] {0, 1}).length()).isEqualTo(UnsignedByteArray.ofSize(size).length());
@@ -85,7 +86,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleOfSize() {
+  public void ofSize() {
     final int size = 2;
     assertThat(UnsignedByteArray.ofSize(size)).isEqualTo(UnsignedByteArray.of(new byte[] {0, 0}));
     assertThat(UnsignedByteArray.ofSize(size).length()).isEqualTo(size);
@@ -94,7 +95,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleGet() {
+  public void get() {
     byte[] byteArray = new byte[] {0, 1, 2};
     UnsignedByteArray array = UnsignedByteArray.of(byteArray);
     assertThat(array.get(0)).isEqualTo(array.getUnsignedBytes().get(0));
@@ -103,7 +104,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleAppendByte() {
+  public void appendByte() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {0, 1, 9});
     int initialLength = array1.length();
@@ -113,7 +114,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleAppendByteArray() {
+  public void appendByteArray() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {0, 1, 8, 9});
     int initialLength = array1.length();
@@ -123,7 +124,18 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleSet() {
+  public void fill() {
+    List<UnsignedByte> unsignedBytes1 = new ArrayList<>();
+    List<UnsignedByte> unsignedBytes2 = Arrays.asList(UnsignedByte.of(0), UnsignedByte.of(0));
+    List<UnsignedByte> filledBytes = UnsignedByteArray.fill(2);
+    assertThat(unsignedBytes1).isEqualTo(UnsignedByteArray.fill(0));
+    assertThat(unsignedBytes1.size()).isEqualTo(0);
+    assertThat(unsignedBytes2).isEqualTo(filledBytes);
+    assertThat(unsignedBytes2.equals(filledBytes)).isTrue();
+  }
+
+  @Test
+  public void set() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {0, 9});
     assertThat(array1).isNotEqualTo(array2);
@@ -132,7 +144,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleSlice() {
+  public void slice() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 8, 9, 1});
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {8, 9});
     assertThat(array1).isNotEqualTo(array2);
@@ -141,7 +153,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleHashcode() {
+  public void hashcode() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     assertThat(array1).isNotEqualTo(UnsignedByteArray.of(new byte[] {8, 9}));
     assertThat(array1.hashCode()).isNotEqualTo(UnsignedByteArray.of(new byte[] {8, 9}).hashCode());
@@ -150,7 +162,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void simpleToString() {
+  public void UnsignedByteArrayToString() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {8, 9});
     assertThat(array1.toString()).isEqualTo(array1.toString());

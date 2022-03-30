@@ -162,7 +162,7 @@ public class UnsignedByteArrayTest {
   }
 
   @Test
-  public void UnsignedByteArrayToString() {
+  public void unsignedByteArrayToString() {
     UnsignedByteArray array1 = UnsignedByteArray.of(new byte[] {0, 1});
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {8, 9});
     assertThat(array1.toString()).isEqualTo(array1.toString());

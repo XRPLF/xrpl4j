@@ -305,6 +305,7 @@
     <checkstyle.violationSeverity>warning</checkstyle.violationSeverity>
 
     <skipITs>false</skipITs>
+    <useLocal>false</useLocal>
 
 
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
@@ -386,11 +387,47 @@
           </configuration>
           <executions>
             <execution>
-              <id>integration-tests</id>
+              <id>integration-tests-altnet</id>
               <goals>
                 <goal>integration-test</goal>
                 <goal>verify</goal>
               </goals>
+              <configuration>
+                <systemPropertyVariables>
+                  <useTestnet>true</useTestnet>
+                  <useDevnet>null</useDevnet>
+                  <useLocal>${useLocal}</useLocal>
+                </systemPropertyVariables>
+                <skipTests>${useLocal}</skipTests>
+              </configuration>
+            </execution>
+            <execution>
+              <id>integration-tests-devnet</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+              <configuration>
+                <systemPropertyVariables>
+                  <useDevnet>true</useDevnet>
+                  <useTestnet>null</useTestnet>
+                  <useLocal>${useLocal}</useLocal>
+                </systemPropertyVariables>
+                <skipTests>${useLocal}</skipTests>
+              </configuration>
+            </execution>
+            <execution>
+              <id>integration-tests-local</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+              <configuration>
+                <systemPropertyVariables>
+                  <useTestnet>null</useTestnet>
+                  <useDevnet>null</useDevnet>
+                </systemPropertyVariables>
+              </configuration>
             </execution>
           </executions>
         </plugin>

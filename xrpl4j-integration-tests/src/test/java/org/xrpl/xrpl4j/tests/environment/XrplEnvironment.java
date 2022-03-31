@@ -36,16 +36,23 @@ public interface XrplEnvironment {
   /**
    * Gets the XRPL environment to use (based on existence of -DuseTestnet property).
    *
-   * @return
+   * @return XRPL environment of the correct type.
    */
   static XrplEnvironment getConfiguredEnvironment() {
-    // Use the local rippled environment by default because it's faster and more predictable for testing.
-    // TestnetEnvironment can make it easier to debug transactions using in the testnet explorer website.
-    boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
-    logger.info("useTestnet set to {}, using {} for testing.",
-      isTestnetEnabled, isTestnetEnabled ? "testnet" : "local rippled"
-    );
-    return isTestnetEnabled ? new TestnetEnvironment() : new LocalRippledEnvironment();
+    // Use the testnet and devnet environment by default to run integration testing.
+    // Use -DuseLocal test to run integration tests on local rippled.
+    boolean isTestnetEnabled = System.getProperty("useTestnet").equals("true");
+    boolean isDevnetEnabled = System.getProperty("useDevnet").equals("true");
+    if (isTestnetEnabled) {
+      logger.info("Using testnet for integration testing.");
+      return new TestnetEnvironment();
+    } else if (isDevnetEnabled) {
+      logger.info("Using devnet for integration testing.");
+      return new DevnetEnvironment();
+    } else {
+      logger.info("Using local rippled for integration testing.");
+      return new LocalRippledEnvironment();
+    }
   }
 
   XrplClient getXrplClient();

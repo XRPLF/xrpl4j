@@ -188,6 +188,7 @@ public class UnsignedByteArrayTest {
     assertThat(array1.equals(array2)).isFalse();
     assertThat(array1.equals(array3)).isTrue();
     assertThat(Arrays.equals(array1.toByteArray(), array3.toByteArray())).isTrue();
+    assertThat(array1.equals(new Object())).isFalse();
   }
 
 }

@@ -264,6 +264,7 @@ public class XrplClient {
    * Get the ledger index of a tx result response. If not present, throw an exception.
    *
    * @return A string containing value of last validated ledger index.
+   * @throws JsonRpcClientErrorException when client encounters errors related to calling rippled JSON RPC API..
    */
   protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
@@ -303,7 +304,10 @@ public class XrplClient {
    *        transaction will expire and won't be applied to the ledger.
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
-  protected boolean ledgerGapsExistBetween(UnsignedLong submittedLedgerSequence, UnsignedLong lastLedgerSequence) {
+  protected boolean ledgerGapsExistBetween(
+    final UnsignedLong submittedLedgerSequence,
+    final UnsignedLong lastLedgerSequence
+  ) {
     final ServerInfo serverInfo;
     try {
       serverInfo = this.serverInfo();

@@ -24,12 +24,12 @@ public interface Finality {
   }
 
   /**
-   * Get {@link org.xrpl.xrpl4j.client.XrplClient.FinalityStatus} status value for a transaction.
+   * Get {@link FinalityStatus} status value for a transaction.
    *
-   * @return {@link org.xrpl.xrpl4j.client.XrplClient.FinalityStatus} value for a
+   * @return {@link FinalityStatus} value for a
    * {@link org.xrpl.xrpl4j.model.transactions.Transaction}.
    */
-  XrplClient.FinalityStatus finalityStatus();
+  FinalityStatus finalityStatus();
 
   /**
    * The rippled server summarizes transaction results with result codes, which appear in fields such as engine_result

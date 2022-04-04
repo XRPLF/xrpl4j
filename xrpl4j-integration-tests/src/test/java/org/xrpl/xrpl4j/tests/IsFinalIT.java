@@ -6,6 +6,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.client.FinalityStatus;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -74,7 +75,7 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    ).isEqualTo(FinalityStatus.NOT_FINAL);
     Thread.sleep(4000);
     assertThat(
       xrplClient.isFinal(
@@ -84,7 +85,7 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_SUCCESS);
+    ).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
   }
 
   @Test
@@ -103,7 +104,7 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    ).isEqualTo(FinalityStatus.NOT_FINAL);
     Thread.sleep(1000);
 
     assertThat(
@@ -114,7 +115,7 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.EXPIRED);
+    ).isEqualTo(FinalityStatus.EXPIRED);
   }
 
   @Test
@@ -135,7 +136,7 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    ).isEqualTo(FinalityStatus.NOT_FINAL);
     Thread.sleep(1000);
 
     assertThat(
@@ -146,6 +147,6 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_FAILURE);
+    ).isEqualTo(FinalityStatus.VALIDATED_FAILURE);
   }
 }

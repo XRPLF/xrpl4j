@@ -276,6 +276,7 @@ public class XrplClient {
 
   /**
    * Get the {@link TransactionResult} for the transaction with the hash transactionHash.
+   * 
    * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
    * @return the {@link TransactionResult} for a validated transaction and empty response for a
    *        {@link Transaction} that is expired or not found.
@@ -299,9 +300,11 @@ public class XrplClient {
 
   /**
    * Check if there missing ledgers in rippled in the given range.
+   *
    * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
    * @param lastLedgerSequence he ledger index/sequence of type {@link UnsignedInteger} after which the
    *        transaction will expire and won't be applied to the ledger.
+   *
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
   protected boolean ledgerGapsExistBetween(
@@ -333,6 +336,7 @@ public class XrplClient {
    *        is only valid if the Sequence number is exactly 1 greater than the previous transaction
    *        from the same account.
    * @param account The unique {@link Address} of the account that initiated this transaction.
+   *
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    */
   public Finality isFinal(
@@ -375,12 +379,14 @@ public class XrplClient {
         try {
           final boolean isTransactionExpired = FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex())
             .greaterThan(lastLedgerSequence);
+          System.out.println(isTransactionExpired);
           if (!isTransactionExpired) {
             LOGGER.debug("Transaction with hash: {} has not expired yet, check again", transactionHash);
             return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
           } else {
             boolean isMissingLedgers = ledgerGapsExistBetween(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
               UnsignedLong.valueOf(lastLedgerSequence.toString()));
+            System.out.println("isMissingLedgers" + isMissingLedgers);
             if (isMissingLedgers) {
               LOGGER.debug("Transaction with hash: {} has expired and rippled is missing some to confirm if it" +
                 " was validated", transactionHash);

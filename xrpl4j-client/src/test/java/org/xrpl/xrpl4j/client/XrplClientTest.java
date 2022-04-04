@@ -46,6 +46,7 @@ import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
@@ -300,7 +301,7 @@ public class XrplClientTest {
 
       @Override
       protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() {
-        return UnsignedInteger.ONE;
+        return UnsignedInteger.valueOf(2);
       }
 
       @Override
@@ -314,7 +315,7 @@ public class XrplClientTest {
           .baseFeeXrp(BigDecimal.ONE)
           .build();
         ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("0,0")
+          .completeLedgers("0-0")
           .amendmentBlocked(true)
           .buildVersion("1")
           .closedLedger(serverInfoLedger)
@@ -378,7 +379,7 @@ public class XrplClientTest {
           .baseFeeXrp(BigDecimal.ONE)
           .build();
         ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("1,1")
+          .completeLedgers("1-1")
           .amendmentBlocked(true)
           .buildVersion("1")
           .closedLedger(serverInfoLedger)
@@ -462,7 +463,7 @@ public class XrplClientTest {
           .baseFeeXrp(BigDecimal.ONE)
           .build();
         ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("1,1")
+          .completeLedgers("1-1")
           .amendmentBlocked(true)
           .buildVersion("1")
           .closedLedger(serverInfoLedger)
@@ -518,5 +519,98 @@ public class XrplClientTest {
       .hasMessage("Something unexpected happened. Tx not final.");
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
+  }
+
+  @Test
+  void ledgerGapsExistBetweenTest() {
+    xrplClient = new XrplClient(jsonRpcClientMock) {
+      @Override
+      public ServerInfo serverInfo() {
+        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
+          .hash(Hash256.of(Strings.repeat("0", 64)))
+          .age(UnsignedInteger.ONE)
+          .reserveBaseXrp(UnsignedInteger.ONE)
+          .reserveIncXrp(UnsignedInteger.ONE)
+          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
+          .baseFeeXrp(BigDecimal.ONE)
+          .build();
+        ServerInfo serverInfo = ServerInfo.builder()
+          .completeLedgers("2-4")
+          .amendmentBlocked(true)
+          .buildVersion("1")
+          .closedLedger(serverInfoLedger)
+          .hostId("id")
+          .ioLatencyMs(UnsignedLong.valueOf(2))
+          .jqTransOverflow("flow")
+          .lastClose(ServerInfoLastClose.builder()
+            .convergeTimeSeconds(1.11)
+            .proposers(UnsignedInteger.ONE)
+            .build())
+          .publicKeyNode("node")
+          .serverState("full")
+          .serverStateDurationUs("10")
+          .time(ZonedDateTime.now())
+          .upTime(UnsignedLong.ONE)
+          .validationQuorum(UnsignedInteger.ONE)
+          .build();
+        return serverInfo;
+      }
+    };
+    assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.valueOf(2), UnsignedLong.valueOf(4))).isFalse();
+    assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.valueOf(2), UnsignedLong.valueOf(3))).isFalse();
+    assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.valueOf(1), UnsignedLong.valueOf(2))).isTrue();
+    assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.valueOf(1), UnsignedLong.valueOf(4))).isTrue();
+    assertThrows(NullPointerException.class, () -> xrplClient.ledgerGapsExistBetween(null, UnsignedLong.ONE));
+    assertThrows(NullPointerException.class, () -> xrplClient.ledgerGapsExistBetween(UnsignedLong.ONE, null));
+
+  }
+
+  @Test
+  void getValidatedTransactionThrows_ReturnsEmpty() {
+    xrplClient = new XrplClient(jsonRpcClientMock) {
+      @Override
+      public <T extends Transaction> TransactionResult<T> transaction(
+        TransactionRequestParams params,
+        Class<T> transactionType
+      ) throws JsonRpcClientErrorException {
+        throw new JsonRpcClientErrorException("Could not connect to client.");
+      }
+    };
+
+    Hash256 transactionHash = Hash256.of(Strings.repeat("0", 64));
+    assertThat(xrplClient.getValidatedTransaction(transactionHash)).isEqualTo(Optional.empty());
+  }
+
+  @Test
+  void ledgerGapExistsBetweenThrows_ReturnsTrue() {
+    xrplClient = new XrplClient(jsonRpcClientMock) {
+      @Override
+      public ServerInfo serverInfo() throws JsonRpcClientErrorException {
+        throw new JsonRpcClientErrorException("Could not connect to client.");
+      }
+    };
+
+    assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.ONE, UnsignedLong.ONE)).isTrue();
+  }
+
+  @Test
+  void isFinalForGetMostRecentlyValidatedTxThrows_ReturnsNotFinal() {
+    xrplClient = new XrplClient(jsonRpcClientMock) {
+      @Override
+      protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
+        throw new JsonRpcClientErrorException("Could not connect to client.");
+      }
+    };
+
+    Hash256 transactionHash = Hash256.of(Strings.repeat("0", 64));
+    assertThat(
+      xrplClient.isFinal(
+        transactionHash,
+        LedgerIndex.of(UnsignedInteger.ONE),
+        UnsignedInteger.ONE,
+        UnsignedInteger.ZERO,
+        Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
+      ).finalityStatus()
+    ).isEqualTo(FinalityStatus.NOT_FINAL);
   }
 }

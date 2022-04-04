@@ -174,7 +174,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_UNKNOWN);
+    ).isEqualTo(FinalityStatus.VALIDATED_UNKNOWN);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -211,7 +211,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_SUCCESS);
+    ).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -248,7 +248,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.VALIDATED_FAILURE);
+    ).isEqualTo(FinalityStatus.VALIDATED_FAILURE);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -281,7 +281,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    ).isEqualTo(FinalityStatus.NOT_FINAL);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -345,7 +345,7 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.NOT_FINAL);
+    ).isEqualTo(FinalityStatus.NOT_FINAL);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -429,13 +429,13 @@ public class XrplClientTest {
         UnsignedInteger.ONE,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
-    ).isEqualTo(XrplClient.FinalityStatus.EXPIRED);
+    ).isEqualTo(FinalityStatus.EXPIRED);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
 
   @Test
-  void isFinalForNoLedgerGapAndLastLedgerSequencePassedTransaction_ReturnsExpired() throws JsonRpcClientErrorException {
+  void isFinalForNoLedgerGapAndLastLedgerSequencePassedTransaction_ReturnsExpired() {
     AtomicReference<Hash256> calledWithHash = new AtomicReference<>();
     xrplClient = new XrplClient(jsonRpcClientMock) {
       @Override

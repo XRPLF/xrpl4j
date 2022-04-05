@@ -44,13 +44,14 @@ public interface XrplEnvironment {
     boolean isTestnetEnabled = System.getProperty("useTestnet").equals("true");
     boolean isDevnetEnabled = System.getProperty("useDevnet").equals("true");
     if (isTestnetEnabled) {
-      logger.info("Using testnet for integration testing.");
+      logger.info("System property 'useTestnet' detected; Using Testnet for integration testing.");
       return new TestnetEnvironment();
     } else if (isDevnetEnabled) {
-      logger.info("Using devnet for integration testing.");
+      logger.info("System property 'useDevnet' detected; Using Devnet for integration testing.");
       return new DevnetEnvironment();
     } else {
-      logger.info("Using local rippled for integration testing.");
+      logger.info("Neither 'useTestNet' nor 'useDevnet' System properties detected." +
+        " Using local rippled for integration testing.");
       return new LocalRippledEnvironment();
     }
   }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 
+import java.util.Optional;
 
 /**
  * The {@link NfTokenBurn} transaction is used to remove an NfToken object from the
@@ -58,7 +59,7 @@ public interface NfTokenBurn extends Transaction {
    * @return An {@link Address} of the account that owns the NFToken specified by TokenID.
    */
   @JsonProperty("Owner")
-  Address owner();
+  Optional<Address> owner();
 
   /**
    * Set of {@link Flags.TransactionFlags}s for this {@link NfTokenBurn}, which only allows

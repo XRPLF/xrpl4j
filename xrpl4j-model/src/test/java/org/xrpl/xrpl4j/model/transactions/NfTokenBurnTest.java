@@ -22,6 +22,23 @@ public class NfTokenBurnTest {
   }
 
   @Test
+  public void buildTxWithOwner() {
+
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    Address ownerAddress = Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .owner(ownerAddress)
+      .tokenId(id)
+      .build();
+
+    assertThat(id.equals(nfTokenBurn.tokenId()));
+    assertThat(nfTokenBurn.tokenId()).isEqualTo(id);
+    assertThat(nfTokenBurn.owner().get()).isEqualTo(ownerAddress);
+  }
+
+  @Test
   public void buildTxWithMissingParam() {
 
     assertThrows(

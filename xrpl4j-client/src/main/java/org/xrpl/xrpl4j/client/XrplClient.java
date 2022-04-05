@@ -386,7 +386,6 @@ public class XrplClient {
           } else {
             boolean isMissingLedgers = ledgerGapsExistBetween(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
               UnsignedLong.valueOf(lastLedgerSequence.toString()));
-            System.out.println("isMissingLedgers" + isMissingLedgers);
             if (isMissingLedgers) {
               LOGGER.debug("Transaction with hash: {} has expired and rippled is missing some to confirm if it" +
                 " was validated", transactionHash);

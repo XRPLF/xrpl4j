@@ -49,6 +49,16 @@ public interface NfTokenBurn extends Transaction {
    */
   @JsonProperty("TokenID")
   NfTokenId tokenId();
+    
+  /**
+   * Indicates the {@link Address} of the account that owns the NFToken if it is different
+   * than the Account field. Only used to burn tokens which have the lsfBurnable flag enabled
+   * and are not owned by the signing account.
+   *
+   * @return An {@link Address} of the account that owns the NFToken specified by TokenID.
+   */
+  @JsonProperty("Owner")
+  Address owner();
 
   /**
    * Set of {@link Flags.TransactionFlags}s for this {@link NfTokenBurn}, which only allows

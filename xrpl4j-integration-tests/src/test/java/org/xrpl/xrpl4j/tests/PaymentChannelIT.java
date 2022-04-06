@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.PaymentChannelResultObject;
+import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
@@ -217,12 +218,14 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Destination account verifies the claim signature
-    ChannelVerifyResult channelVerifyResult = xrplClient.channelVerify(
-      paymentChannel.channelId(),
-      unsignedClaim.amount(),
-      signature,
-      sourceWallet.publicKey()
-    );
+    ChannelVerifyRequestParams channelVerifyRequestParams = ChannelVerifyRequestParams.builder()
+      .amount(unsignedClaim.amount())
+      .channelId(paymentChannel.channelId())
+      .publicKey(sourceWallet.publicKey())
+      .signature(signature)
+      .build();
+
+    ChannelVerifyResult channelVerifyResult = xrplClient.channelVerify(channelVerifyRequestParams);
     assertThat(channelVerifyResult.signatureVerified()).isTrue();
 
     //////////////////////////

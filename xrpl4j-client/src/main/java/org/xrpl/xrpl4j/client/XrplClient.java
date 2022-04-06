@@ -510,7 +510,7 @@ public class XrplClient {
    * @return The {@link AccountOffersResult} returned by the account_offers method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountOffersResult accountOffers(AccountCurrenciesRequestParams params) throws JsonRpcClientErrorException {
+  public AccountOffersResult accountOffers(AccountOffersRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_OFFERS)
       .addParams(params)
@@ -649,27 +649,12 @@ public class XrplClient {
   /**
    * Verify a payment channel claim signature by making a "channel_verify" rippled API method call.
    *
-   * @param channelId A {@link Hash256} containing the Channel ID.
-   * @param amount    An {@link XrpCurrencyAmount} representing the amount of the claim.
-   * @param signature The signature of the {@link PaymentChannelClaim} transaction.
-   * @param publicKey A {@link String} containing the public key associated with the key used to generate the
-   *                  signature.
+   * @param params The {@link ChannelVerifyRequestParams} to send in the request.
    *
    * @return The result of the request, as a {@link ChannelVerifyResult}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  public ChannelVerifyResult channelVerify(
-    Hash256 channelId,
-    XrpCurrencyAmount amount,
-    String signature,
-    String publicKey
-  ) throws JsonRpcClientErrorException {
-    ChannelVerifyRequestParams params = ChannelVerifyRequestParams.builder()
-      .channelId(channelId)
-      .amount(amount)
-      .signature(signature)
-      .publicKey(publicKey)
-      .build();
+  public ChannelVerifyResult channelVerify(ChannelVerifyRequestParams params) throws JsonRpcClientErrorException {
 
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.CHANNEL_VERIFY)

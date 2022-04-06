@@ -379,7 +379,6 @@ public class XrplClient {
         try {
           final boolean isTransactionExpired = FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex())
             .greaterThan(lastLedgerSequence);
-          System.out.println(isTransactionExpired);
           if (!isTransactionExpired) {
             LOGGER.debug("Transaction with hash: {} has not expired yet, check again", transactionHash);
             return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();

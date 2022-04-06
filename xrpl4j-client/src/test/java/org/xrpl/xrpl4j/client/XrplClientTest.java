@@ -672,12 +672,15 @@ public class XrplClientTest {
   public void submitUnsignedTxWithSigningPubKey() {
     SubmitResult mockSubmitResult = mock(SubmitResult.class);
     SignedTransaction mockSignedTransaction = mock(SignedTransaction.class);
-    xrplClient = new XrplClient(jsonRpcClientMock){
+    xrplClient = new XrplClient(jsonRpcClientMock) {
+      @Override
       public <T extends Transaction> SignedTransaction<T> signTransaction(
         Wallet wallet, T unsignedTransaction
       ) {
         return mockSignedTransaction;
       }
+
+      @Override
       public <T extends Transaction> SubmitResult<T> submit(
         SignedTransaction<T> signedTransaction
       ) {
@@ -928,7 +931,8 @@ public class XrplClientTest {
     TransactionRequestParams transactionRequestParams = TransactionRequestParams.builder()
       .transaction(Hash256.of(Strings.repeat("0", 64)))
       .build();
-    TransactionResult transactionResult = assertDoesNotThrow(() -> xrplClient.transaction(transactionRequestParams, Transaction.class));
+    TransactionResult transactionResult = assertDoesNotThrow(() ->
+      xrplClient.transaction(transactionRequestParams, Transaction.class));
     assertThat(transactionResult.hash().value()).isEqualTo(Strings.repeat("0", 64));
   }
 
@@ -1032,7 +1036,8 @@ public class XrplClientTest {
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
       .build();
-    RuntimeException exception = assertThrows(RuntimeException.class, () -> xrplClient.signTransaction(wallet2, payment));
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
+      xrplClient.signTransaction(wallet2, payment));
     assertThat(exception.getMessage()).isEqualTo("Wallet must provide a private key to sign the transaction.");
   }
 }

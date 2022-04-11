@@ -38,7 +38,7 @@ public interface NfTokenMint extends Transaction {
    *
    * @return Taxon of type {@link int} associated with the Token.
    */
-  @JsonProperty("TokenTaxon")
+  @JsonProperty("NFTokenTaxon")
   UnsignedLong tokenTaxon();
 
   /**

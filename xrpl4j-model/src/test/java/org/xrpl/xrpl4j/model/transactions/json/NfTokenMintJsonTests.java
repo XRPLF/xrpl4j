@@ -35,7 +35,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       "    \"Flags\": 2147483656,\n" +
       "    \"Sequence\": 12,\n" +
       "    \"TransferFee\": \"1000\",\n" +
-      "    \"TokenTaxon\": 146999694\n" +
+      "    \"NFTokenTaxon\": 146999694\n" +
       "}";
 
     assertCanSerializeAndDeserialize(nfTokenMint, json);
@@ -66,7 +66,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       "    \"TransferFee\": \"1000\",\n" +
       "    \"URI\": \"697066733A2F2F62616679626569676479727A74357366703775646D3768753736756837" +
       "7932366E6634646675796C71616266336F636C67747179353566627A6469\",\n" +
-      "    \"TokenTaxon\": 146999694\n" +
+      "    \"NFTokenTaxon\": 146999694\n" +
       "}";
 
     assertCanSerializeAndDeserialize(nfTokenMint, json);

@@ -38,7 +38,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    *
    * @return An {@link Optional} NfTOffer of type {@link String} that offers to sell the NfT.
    */
-  @JsonProperty("SellOffer")
+  @JsonProperty("NFTokenSellOffer")
   Optional<Hash256> sellOffer();
 
   /**
@@ -50,7 +50,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    *
    * @return An {@link Optional} NfTOffer of type {@link String} that offers to buy the NfT.
    */
-  @JsonProperty("BuyOffer")
+  @JsonProperty("NFTokenBuyOffer")
   Optional<Hash256> buyOffer();
 
   /**
@@ -84,7 +84,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
    */
-  @JsonProperty("BrokerFee")
+  @JsonProperty("NFTokenBrokerFee")
   Optional<CurrencyAmount> brokerFee();
 
   /**

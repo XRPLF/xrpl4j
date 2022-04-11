@@ -79,7 +79,7 @@ public interface NfTokenOfferObject extends LedgerObject {
    *
    * @return {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} of the NfToken.
    */
-  @JsonProperty("TokenID")
+  @JsonProperty("NFTokenID")
   NfTokenId tokenId();
 
   /**
@@ -115,7 +115,7 @@ public interface NfTokenOfferObject extends LedgerObject {
    *
    * @return A {@link String} containing the hint.
    */
-  @JsonProperty("OfferNode")
+  @JsonProperty("NFTokenOfferNode")
   Optional<String> offerNode();
 
   /**

@@ -30,10 +30,10 @@ public class NfTokenAcceptOfferJsonTests extends AbstractJsonTest {
       "    \"Account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"Sequence\": 12,\n" +
-      "    \"BuyOffer\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
-      "    \"SellOffer\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+      "    \"NFTokenBuyOffer\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+      "    \"NFTokenSellOffer\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
       "    \"Flags\": 2147483648,\n" +
-      "    \"BrokerFee\": \"10\"\n" +
+      "    \"NFTokenBrokerFee\": \"10\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(nfTokenAcceptOffer, json);
@@ -55,7 +55,7 @@ public class NfTokenAcceptOfferJsonTests extends AbstractJsonTest {
       "    \"Account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"Sequence\": 12,\n" +
-      "    \"BuyOffer\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+      "    \"NFTokenBuyOffer\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
       "    \"Flags\": 2147483648\n" +
       "}";
 

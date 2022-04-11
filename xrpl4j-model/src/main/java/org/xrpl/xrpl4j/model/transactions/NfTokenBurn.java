@@ -47,7 +47,7 @@ public interface NfTokenBurn extends Transaction {
    *
    * @return The TokenID of the NfToken to be burned.
    */
-  @JsonProperty("TokenID")
+  @JsonProperty("NFTokenID")
   NfTokenId tokenId();
 
   /**

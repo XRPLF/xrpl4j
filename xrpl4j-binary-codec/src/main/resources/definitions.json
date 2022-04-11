@@ -636,7 +636,7 @@
       }
     ],
     [
-      "TokenID",
+      "NFTokenID",
       {
         "nth": 10,
         "isVLEncoded": false,
@@ -856,7 +856,7 @@
       }
     ],
     [
-      "BrokerFee",
+      "NFTokenBrokerFee",
       {
         "nth": 19,
         "isVLEncoded": false,
@@ -1166,7 +1166,7 @@
       }
     ],
     [
-      "Minter",
+      "NFTokenMinter",
       {
         "nth": 9,
         "isVLEncoded": true,
@@ -1286,7 +1286,7 @@
       }
     ],
     [
-      "NonFungibleToken",
+      "NFToken",
       {
         "nth": 12,
         "isVLEncoded": false,
@@ -1406,7 +1406,7 @@
       }
     ],
     [
-      "NonFungibleTokens",
+      "NFTokens",
       {
         "nth": 10,
         "isVLEncoded": false,
@@ -1546,7 +1546,7 @@
       }
     ],
     [
-      "TokenOffers",
+      "NFTokenOffers",
       {
         "nth": 4,
         "isVLEncoded": true,
@@ -1626,7 +1626,7 @@
       }
     ],
     [
-      "TokenTaxon",
+      "NFTokenTaxon",
       {
         "nth": 42,
         "isVLEncoded": false,
@@ -1636,7 +1636,7 @@
       }
     ],
     [
-      "MintedTokens",
+      "MintedNFTokens",
       {
         "nth": 43,
         "isVLEncoded": false,
@@ -1646,7 +1646,7 @@
       }
     ],
     [
-      "BurnedTokens",
+      "BurnedNFTokens",
       {
         "nth": 44,
         "isVLEncoded": false,
@@ -1716,7 +1716,7 @@
       }
     ],
     [
-      "BuyOffer",
+      "NFTokenBuyOffer",
       {
         "nth": 28,
         "isVLEncoded": false,
@@ -1726,7 +1726,7 @@
       }
     ],
     [
-      "SellOffer",
+      "NFTokenSellOffer",
       {
         "nth": 29,
         "isVLEncoded": false,
@@ -1786,7 +1786,7 @@
       }
     ],
     [
-      "OfferNode",
+      "NFTokenOfferNode",
       {
         "nth": 12,
         "isVLEncoded": false,

@@ -30,7 +30,7 @@ public class NfTokenCreateOfferJsonTests extends AbstractJsonTest {
       "    \"Fee\": \"12\",\n" +
       "    \"Sequence\": 12,\n" +
       "    \"Amount\": \"2000\",\n" +
-      "    \"TokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+      "    \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
       "    \"Flags\": 2147483648\n" +
       "}";
 

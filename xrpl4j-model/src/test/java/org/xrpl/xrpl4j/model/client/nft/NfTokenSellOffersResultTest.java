@@ -42,7 +42,7 @@ public class NfTokenSellOffersResultTest extends AbstractJsonTest {
       "    \"Flags\": 1,\n" +
       "    \"Amount\": \"10000\",\n" +
       "    \"Owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"TokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+      "    \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
       "    \"Destination\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"PreviousTxnID\": \"E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879\",\n" +
       "    \"PreviousTxnLgrSeq\": 14090896,\n" +
@@ -50,7 +50,7 @@ public class NfTokenSellOffersResultTest extends AbstractJsonTest {
       "}";
 
     String json = "{\n" +
-      "        \"TokenID\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"NFTokenID\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
       "        \"offers\": [" + offer + "]\n" +
       "}";
 

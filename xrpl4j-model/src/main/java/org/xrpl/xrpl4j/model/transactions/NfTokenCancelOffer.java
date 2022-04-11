@@ -41,7 +41,7 @@ public interface NfTokenCancelOffer extends Transaction {
    *
    * @return Array of TokenIDs, each identifying a unique NfToken object, to cancel the offers for.
    */
-  @JsonProperty("TokenOffers")
+  @JsonProperty("NFTokenOffers")
   List<NfTokenId> tokenIds();
 
   /**

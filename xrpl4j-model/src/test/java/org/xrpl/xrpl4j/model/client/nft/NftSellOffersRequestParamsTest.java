@@ -15,7 +15,7 @@ public class NftSellOffersRequestParamsTest extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "        \"TokenID\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
+      "        \"NFTokenID\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "    }";
 
     assertCanSerializeAndDeserialize(params, json);

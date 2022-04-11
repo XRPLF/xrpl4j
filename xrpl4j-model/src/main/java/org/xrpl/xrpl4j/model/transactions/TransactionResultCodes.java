@@ -4,7 +4,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * The rippled server summarizes transaction results with result codes, which appear
  * in fields such as engine_result and meta.TransactionResult.
  */
-public class TransactionResultCode {
+public class TransactionResultCodes {
 
   // tec codes
   public static String TEC = "tec";

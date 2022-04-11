@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -70,7 +70,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
       .build();
 
     SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(TransactionResultCode.TES_SUCCESS);
+    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(TransactionResultCodes.TES_SUCCESS);
     LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString() +
       result.transactionResult().transaction());
   }

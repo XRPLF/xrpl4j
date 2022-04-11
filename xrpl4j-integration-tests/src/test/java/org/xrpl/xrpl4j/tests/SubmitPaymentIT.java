@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -81,7 +81,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
-    assertThat(result.result()).isEqualTo(TransactionResultCode.TES_SUCCESS);
+    assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +

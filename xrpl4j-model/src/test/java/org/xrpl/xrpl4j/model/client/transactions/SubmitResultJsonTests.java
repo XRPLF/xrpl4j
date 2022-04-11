@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCode;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class SubmitResultJsonTests extends AbstractJsonTest {
@@ -25,7 +25,7 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .accountSequenceNext(UnsignedInteger.valueOf(362))
       .applied(true)
       .broadcast(true)
-      .result(TransactionResultCode.TES_SUCCESS)
+      .result(TransactionResultCodes.TES_SUCCESS)
       .resultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .kept(true)

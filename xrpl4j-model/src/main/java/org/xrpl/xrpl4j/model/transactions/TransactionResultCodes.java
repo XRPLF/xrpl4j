@@ -43,6 +43,7 @@ public class TransactionResultCodes {
   public static String TEC_PATH_PARTIAL = TEC + "PATH_PARTIAL";
   public static String TEC_TOO_SOON = TEC + "TOO_SOON";
   public static String TEC_UNFUNDED = TEC + "UNFUNDED";
+  @Deprecated
   public static String TEC_UNFUNDED_ADD = TEC + "UNFUNDED_ADD";
   public static String TEC_UNFUNDED_PAYMENT = TEC + "UNFUNDED_PAYMENT";
   public static String TEC_UNFUNDED_OFFER = TEC + "UNFUNDED_OFFER";
@@ -50,12 +51,14 @@ public class TransactionResultCodes {
   // tef codes
   public static String TEF = "tef";
   public static String TEF_ALREADY = TEF + "ALREADY";
+  @Deprecated
   public static String TEF_BAD_ADD_AUTH = TEF + "BAD_ADD_AUTH";
   public static String TEF_BAD_AUTH = TEF + "BAD_AUTH";
   public static String TEF_BAD_AUTH_MASTER = TEF + "BAD_AUTH_MASTER";
   public static String TEF_BAD_LEDGER = TEF + "BAD_LEDGER";
   public static String TEF_BAD_QUORUM = TEF + "BAD_QUORUM";
   public static String TEF_BAD_SIGNATURE = TEF + "BAD_SIGNATURE";
+  @Deprecated
   public static String TEF_CREATED = TEF + "CREATED";
   public static String TEF_EXCEPTION = TEF + "EXCEPTION";
   public static String TEF_FAILURE = TEF + "FAILURE";
@@ -72,19 +75,19 @@ public class TransactionResultCodes {
 
   // tel codes
   public static String TEL = "tel";
-  public static String TEL_BAD_DOMAIN = TEF + "BAD_DOMAIN";
-  public static String TEL_BAD_PATH_COUNT = TEF + "BAD_PATH_COUNT";
-  public static String TEL_BAD_PUBLIC_KEY = TEF + "BAD_PUBLIC_KEY";
-  public static String TEL_CAN_NOT_QUEUE = TEF + "CAN_NOT_QUEUE";
-  public static String TEL_CAN_NOT_QUEUE_BALANCE = TEF + "CAN_NOT_QUEUE_BALANCE";
-  public static String TEL_CAN_NOT_QUEUE_BLOCKS = TEF + "CAN_NOT_QUEUE_BLOCKS";
-  public static String TEL_CAN_NOT_QUEUE_BLOCKED = TEF + "CAN_NOT_QUEUE_BLOCKED";
-  public static String TEL_CAN_NOT_QUEUE_FEE = TEF + "CAN_NOT_QUEUE_FEE";
-  public static String TEL_CAN_NOT_QUEUE_FULL = TEF + "CAN_NOT_QUEUE_FULL";
-  public static String TEL_FAILED_PROCESSING = TEF + "FAILED_PROCESSING";
-  public static String TEL_INSUF_FEE_P = TEF + "INSUF_FEE_P";
-  public static String TEL_LOCAL_ERROR = TEF + "LOCAL_ERROR";
-  public static String TEL_NO_DST_PARTIAL = TEF + "NO_DST_PARTIAL";
+  public static String TEL_BAD_DOMAIN = TEL + "BAD_DOMAIN";
+  public static String TEL_BAD_PATH_COUNT = TEL + "BAD_PATH_COUNT";
+  public static String TEL_BAD_PUBLIC_KEY = TEL + "BAD_PUBLIC_KEY";
+  public static String TEL_CAN_NOT_QUEUE = TEL + "CAN_NOT_QUEUE";
+  public static String TEL_CAN_NOT_QUEUE_BALANCE = TEL + "CAN_NOT_QUEUE_BALANCE";
+  public static String TEL_CAN_NOT_QUEUE_BLOCKS = TEL + "CAN_NOT_QUEUE_BLOCKS";
+  public static String TEL_CAN_NOT_QUEUE_BLOCKED = TEL + "CAN_NOT_QUEUE_BLOCKED";
+  public static String TEL_CAN_NOT_QUEUE_FEE = TEL + "CAN_NOT_QUEUE_FEE";
+  public static String TEL_CAN_NOT_QUEUE_FULL = TEL + "CAN_NOT_QUEUE_FULL";
+  public static String TEL_FAILED_PROCESSING = TEL + "FAILED_PROCESSING";
+  public static String TEL_INSUF_FEE_P = TEL + "INSUF_FEE_P";
+  public static String TEL_LOCAL_ERROR = TEL + "LOCAL_ERROR";
+  public static String TEL_NO_DST_PARTIAL = TEL + "NO_DST_PARTIAL";
 
   //tem codes
   public static String TEM = "tem";

@@ -22,14 +22,18 @@ package org.xrpl.xrpl4j.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,27 +41,62 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
+import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountOffersResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
+import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
+import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
+import org.xrpl.xrpl4j.model.client.path.PathCurrency;
+import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
+import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
+import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
+import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
+import org.xrpl.xrpl4j.wallet.Wallet;
+import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -70,6 +109,10 @@ public class XrplClientTest {
   private JsonRpcClient jsonRpcClientMock;
 
   private XrplClient xrplClient;
+
+  protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+  SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
+  final Wallet wallet = seedResult.wallet();
 
   @BeforeEach
   void setUp() {
@@ -612,5 +655,389 @@ public class XrplClientTest {
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.NOT_FINAL);
+  }
+
+  @Test
+  public void submitUnsignedTxWithoutSigningPubKey_Throws() {
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    Payment mockPayment = mock(Payment.class);
+
+    IllegalArgumentException thrownException = Assertions.assertThrows(
+      IllegalArgumentException.class, () -> xrplClient.submit(wallet, mockPayment));
+    assertThat(thrownException.getMessage())
+      .isEqualTo("Transaction.signingPublicKey() must be set.");
+  }
+
+  @Test
+  public void submitUnsignedTxWithSigningPubKey() {
+    SubmitResult mockSubmitResult = mock(SubmitResult.class);
+    SignedTransaction mockSignedTransaction = mock(SignedTransaction.class);
+    xrplClient = new XrplClient(jsonRpcClientMock) {
+      @Override
+      public <T extends Transaction> SignedTransaction<T> signTransaction(
+        Wallet wallet, T unsignedTransaction
+      ) {
+        return mockSignedTransaction;
+      }
+
+      @Override
+      public <T extends Transaction> SubmitResult<T> submit(
+        SignedTransaction<T> signedTransaction
+      ) {
+        return mockSubmitResult;
+      }
+    };
+    Payment payment = Payment.builder()
+      .ticketSequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .build();
+
+    assertDoesNotThrow(() -> xrplClient.submit(wallet, payment));
+  }
+
+  @Test
+  public void submitMultiSignedTest() throws JsonRpcClientErrorException {
+    jsonRpcClientMock = new JsonRpcClient() {
+
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
+          .result("tesSUCCESS")
+          .resultCode(200)
+          .resultMessage("Submitted")
+          .transactionBlob("blob")
+          .transaction(mock(TransactionResult.class))
+          .build();
+        return (T) submitMultiSignedResult;
+      }
+    };
+    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
+    final Wallet wallet2 = seedResult.wallet();
+
+    Payment unsignedPayment = Payment.builder()
+      .account(wallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(wallet2.classicAddress())
+      .signingPublicKey("")
+      .build();
+
+    /////////////////////////////
+    // Then we add the signatures to the Payment object and submit it
+    List<SignerWrapper> signers = new ArrayList<>();
+    Payment multiSigPayment = Payment.builder()
+      .from(unsignedPayment)
+      .signers(signers)
+      .build();
+
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.resultCode()).isEqualTo(200);
+    assertThat(paymentResult.transactionBlob()).isEqualTo("blob");
+  }
+
+  @Test
+  public void fee() throws JsonRpcClientErrorException {
+    xrplClient.fee();
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(FeeResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.FEE);
+  }
+
+  @Test
+  public void serverInfo() {
+    ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
+      .hash(Hash256.of(Strings.repeat("0", 64)))
+      .age(UnsignedInteger.ONE)
+      .reserveBaseXrp(UnsignedInteger.ONE)
+      .reserveIncXrp(UnsignedInteger.ONE)
+      .sequence(LedgerIndex.of(UnsignedInteger.ONE))
+      .baseFeeXrp(BigDecimal.ONE)
+      .build();
+    ServerInfo serverInfo = ServerInfo.builder()
+      .completeLedgers("1-2")
+      .amendmentBlocked(true)
+      .buildVersion("1")
+      .closedLedger(serverInfoLedger)
+      .hostId("id")
+      .ioLatencyMs(UnsignedLong.valueOf(2))
+      .jqTransOverflow("flow")
+      .lastClose(ServerInfoLastClose.builder()
+        .convergeTimeSeconds(1.11)
+        .proposers(UnsignedInteger.ONE)
+        .build())
+      .publicKeyNode("node")
+      .serverState("full")
+      .serverStateDurationUs("10")
+      .time(ZonedDateTime.now())
+      .upTime(UnsignedLong.ONE)
+      .validationQuorum(UnsignedInteger.ONE)
+      .build();
+
+    ServerInfoResult  serverInfoResult = ServerInfoResult.builder()
+      .info(serverInfo)
+      .build();
+
+    jsonRpcClientMock = new JsonRpcClient() {
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        return (T) serverInfoResult;
+      }
+    };
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    ServerInfo serverInfoResponse = assertDoesNotThrow(() -> xrplClient.serverInfo());
+    assertThat(serverInfoResponse).isEqualTo(serverInfo);
+  }
+
+  @Test
+  public void accountChannels() throws JsonRpcClientErrorException {
+    AccountChannelsRequestParams accountChannelsRequestParams = AccountChannelsRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountChannels(accountChannelsRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountChannelsResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_CHANNELS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountChannelsRequestParams);
+  }
+
+  @Test
+  public void accountCurrencies() throws JsonRpcClientErrorException {
+    AccountCurrenciesRequestParams accountCurrenciesRequestParams = AccountCurrenciesRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountCurrencies(accountCurrenciesRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountCurrenciesResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_CURRENCIES);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountCurrenciesRequestParams);
+  }
+
+  @Test
+  public void accountInfo() throws JsonRpcClientErrorException {
+    AccountInfoRequestParams accountInfoRequestParams = AccountInfoRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountInfo(accountInfoRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountInfoResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_INFO);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountInfoRequestParams);
+  }
+
+  @Test
+  public void accountObjects() throws JsonRpcClientErrorException {
+    AccountObjectsRequestParams accountObjectsRequestParams = AccountObjectsRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountObjects(accountObjectsRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountObjectsResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_OBJECTS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountObjectsRequestParams);
+  }
+
+  @Test
+  public void accountOffers() throws JsonRpcClientErrorException {
+    AccountOffersRequestParams accountOffersRequestParams = AccountOffersRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountOffers(accountOffersRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountOffersResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_OFFERS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountOffersRequestParams);
+  }
+
+  @Test
+  public void accountTransactionsUsingBuilder() throws JsonRpcClientErrorException {
+    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountTransactions(accountTransactionsRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountTransactionsRequestParams);
+  }
+
+  @Test
+  public void accountTransactionsUsingAddress() throws JsonRpcClientErrorException {
+    Address account = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+    xrplClient.accountTransactions(account);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
+      .isEqualTo(AccountTransactionsRequestParams.builder()
+        .account(account)
+        .build());
+  }
+
+  @Test
+  public void transaction() throws JsonRpcClientErrorException {
+
+    jsonRpcClientMock = new JsonRpcClient() {
+
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        TransactionResult submitTransactionResult = TransactionResult.builder()
+          .hash(Hash256.of(Strings.repeat("0", 64)))
+          .transaction(mock(Transaction.class))
+          .build();
+        return (T) submitTransactionResult;
+      }
+    };
+    xrplClient = new XrplClient(jsonRpcClientMock);
+
+    TransactionRequestParams transactionRequestParams = TransactionRequestParams.builder()
+      .transaction(Hash256.of(Strings.repeat("0", 64)))
+      .build();
+    TransactionResult transactionResult = assertDoesNotThrow(() ->
+      xrplClient.transaction(transactionRequestParams, Transaction.class));
+    assertThat(transactionResult.hash().value()).isEqualTo(Strings.repeat("0", 64));
+  }
+
+  @Test
+  public void ledger() throws JsonRpcClientErrorException {
+    LedgerRequestParams ledgerRequestParams = LedgerRequestParams.builder()
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .build();
+    xrplClient.ledger(ledgerRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(LedgerResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.LEDGER);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ledgerRequestParams);
+  }
+
+  @Test
+  public void ripplePathFind() throws JsonRpcClientErrorException {
+    RipplePathFindRequestParams ripplePathFindRequestParams = RipplePathFindRequestParams.builder()
+      .sourceAccount(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .destinationAccount(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destinationAmount(XrpCurrencyAmount.ofDrops(1))
+      .addSourceCurrencies(PathCurrency.of("XRP"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .build();
+    xrplClient.ripplePathFind(ripplePathFindRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(RipplePathFindResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.RIPPLE_PATH_FIND);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ripplePathFindRequestParams);
+  }
+
+  @Test
+  public void accountLines() throws JsonRpcClientErrorException {
+    AccountLinesRequestParams accountLinesRequestParams = AccountLinesRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountLines(accountLinesRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_LINES);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountLinesRequestParams);
+  }
+
+  @Test
+  public void channelVerify() throws JsonRpcClientErrorException {
+    ChannelVerifyRequestParams channelVerifyRequestParams = ChannelVerifyRequestParams.builder()
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .channelId(Hash256.of(Strings.repeat("0", 64)))
+      .publicKey("publicKey")
+      .signature("signature")
+      .build();
+    xrplClient.channelVerify(channelVerifyRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.CHANNEL_VERIFY);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(channelVerifyRequestParams);
+  }
+
+  @Test
+  public void gatewayBalances() throws JsonRpcClientErrorException {
+    GatewayBalancesRequestParams gatewayBalancesRequestParams = GatewayBalancesRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CLOSED)
+      .build();
+    xrplClient.gatewayBalances(gatewayBalancesRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(GatewayBalancesResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.GATEWAY_BALANCES);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(gatewayBalancesRequestParams);
+  }
+
+  @Test
+  public void signTransaction() {
+    Payment payment = Payment.builder()
+      .account(wallet.classicAddress())
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .build();
+    assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
+  }
+
+  @Test
+  public void signTransactionWithWalletMissingPrivateKey() {
+    Wallet wallet2 = Wallet.builder()
+      .publicKey(wallet.publicKey())
+      .classicAddress(wallet.classicAddress())
+      .xAddress(wallet.xAddress())
+      .isTest(true)
+      .build();
+    Payment payment = Payment.builder()
+      .account(wallet2.classicAddress())
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .build();
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
+      xrplClient.signTransaction(wallet2, payment));
+    assertThat(exception.getMessage()).isEqualTo("Wallet must provide a private key to sign the transaction.");
   }
 }

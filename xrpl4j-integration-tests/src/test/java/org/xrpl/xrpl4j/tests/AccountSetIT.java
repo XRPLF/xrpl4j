@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
@@ -67,7 +68,7 @@ public class AccountSetIT extends AbstractIT {
         .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -129,7 +130,7 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -188,7 +189,7 @@ public class AccountSetIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -224,7 +225,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(

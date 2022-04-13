@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -69,7 +70,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -103,7 +104,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey())
       .build();
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
-    assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(cashResponse.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -158,7 +159,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -189,7 +190,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -235,7 +236,7 @@ public class CheckIT extends AbstractIT {
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
     SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(
@@ -266,7 +267,7 @@ public class CheckIT extends AbstractIT {
       .build();
 
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
     logger.info(

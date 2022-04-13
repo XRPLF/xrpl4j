@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.client;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
@@ -40,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
@@ -81,12 +81,33 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.SignerEntry;
+import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
+import org.xrpl.xrpl4j.model.transactions.AccountDelete;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CheckCancel;
+import org.xrpl.xrpl4j.model.transactions.CheckCash;
+import org.xrpl.xrpl4j.model.transactions.CheckCreate;
+import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
+import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
+import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.OfferCancel;
+import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
+import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
+import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
+import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
@@ -105,14 +126,12 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class XrplClientTest {
 
-  @Mock
-  private JsonRpcClient jsonRpcClientMock;
-
-  private XrplClient xrplClient;
-
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
   SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
   final Wallet wallet = seedResult.wallet();
+  @Mock
+  private JsonRpcClient jsonRpcClientMock;
+  private XrplClient xrplClient;
 
   @BeforeEach
   void setUp() {
@@ -550,16 +569,15 @@ public class XrplClientTest {
 
     Hash256 transactionHash = Hash256.of(Strings.repeat("0", 64));
 
-    assertThatThrownBy(
-      () -> xrplClient.isFinal(
+    assertThat(
+      xrplClient.isFinal(
         transactionHash,
         LedgerIndex.of(UnsignedInteger.ONE),
         UnsignedInteger.ONE,
         UnsignedInteger.ZERO,
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
-      )
-    ).isInstanceOf(IllegalStateException.class)
-      .hasMessage("Something unexpected happened. Tx not final.");
+      ).finalityStatus()
+    ).isEqualTo(FinalityStatus.EXPIRED_WITH_SPENT_ACCOUNT_SEQUENCE);
 
     assertThat(calledWithHash.get()).isEqualTo(transactionHash);
   }
@@ -655,6 +673,201 @@ public class XrplClientTest {
         Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw")
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.NOT_FINAL);
+  }
+
+  @Test
+  public void addSignatureTx() {
+    Payment payment = Payment.builder()
+      .ticketSequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .build();
+    assertThat(xrplClient.addSignature(payment, "sign").transactionSignature().get()).isEqualTo("sign");
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .build();
+    assertThat(xrplClient.addSignature(accountSet, "sign").transactionSignature().get()).isEqualTo("sign");
+    AccountDelete accountDelete = AccountDelete.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .build();
+    assertThat(xrplClient.addSignature(accountDelete, "sign").transactionSignature().get()).isEqualTo("sign");
+    CheckCancel checkCancel = CheckCancel.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+    assertThat(xrplClient.addSignature(checkCancel, "sign").transactionSignature().get()).isEqualTo("sign");
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .deliverMin(XrpCurrencyAmount.ofDrops(100))
+      .build();
+    assertThat(xrplClient.addSignature(checkCash, "sign").transactionSignature().get()).isEqualTo("sign");
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destinationTag(UnsignedInteger.ONE)
+      .sendMax(XrpCurrencyAmount.ofDrops(100000000))
+      .expiration(UnsignedInteger.valueOf(570113521))
+      .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
+      .build();
+    assertThat(xrplClient.addSignature(checkCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+    DepositPreAuth depositPreAuth = DepositPreAuth.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .authorize(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .build();
+    assertThat(xrplClient.addSignature(depositPreAuth, "sign").transactionSignature().get()).isEqualTo("sign");
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .destination(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .build();
+    assertThat(xrplClient.addSignature(escrowCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+    EscrowCancel escrowCancel = EscrowCancel.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .offerSequence(UnsignedInteger.valueOf(7))
+      .build();
+    assertThat(xrplClient.addSignature(escrowCancel, "sign").transactionSignature().get()).isEqualTo("sign");
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .build();
+    assertThat(xrplClient.addSignature(escrowFinish, "sign").transactionSignature().get()).isEqualTo("sign");
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("currency")
+        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .value("1000")
+        .build())
+      .build();
+    assertThat(xrplClient.addSignature(trustSet, "sign").transactionSignature().get()).isEqualTo("sign");
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .takerPays(XrpCurrencyAmount.ofDrops(100))
+      .takerGets(XrpCurrencyAmount.ofDrops(100))
+      .build();
+    assertThat(xrplClient.addSignature(offerCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .build();
+    assertThat(xrplClient.addSignature(offerCancel, "sign").transactionSignature().get()).isEqualTo("sign");
+    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .destination(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("123")
+      .build();
+    assertThat(xrplClient.addSignature(paymentChannelCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .build();
+    assertThat(xrplClient.addSignature(paymentChannelClaim, "sign").transactionSignature().get()).isEqualTo("sign");
+    PaymentChannelFund paymentChannelFund = PaymentChannelFund.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .amount(XrpCurrencyAmount.ofDrops(100L))
+      .build();
+    assertThat(xrplClient.addSignature(paymentChannelFund, "sign").transactionSignature().get()).isEqualTo("sign");
+    SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
+      .build();
+    assertThat(xrplClient.addSignature(setRegularKey, "sign").transactionSignature().get()).isEqualTo("sign");
+    SignerListSet signerListSet = SignerListSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .signerQuorum(UnsignedInteger.valueOf(3))
+      .addSignerEntries(
+        SignerEntryWrapper.of(
+          SignerEntry.builder()
+            .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+            .signerWeight(UnsignedInteger.valueOf(2))
+            .build()
+        )
+      )
+      .build();
+    assertThat(xrplClient.addSignature(signerListSet, "sign").transactionSignature().get()).isEqualTo("sign");
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.ONE)
+      .build();
+    assertThat(xrplClient.addSignature(ticketCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+  }
+
+  @Test
+  public void submitWithSignedTx() {
+
+    jsonRpcClientMock = new JsonRpcClient() {
+
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        return (T) mock(SubmitResult.class);
+      }
+    };
+
+    Payment payment = Payment.builder()
+      .ticketSequence(UnsignedInteger.ONE)
+      .account(wallet.classicAddress())
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey(wallet.publicKey())
+      .build();
+    SignedTransaction<Payment> paymentSignedTransaction = xrplClient.signTransaction(wallet, payment);
+    assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
+
   }
 
   @Test
@@ -789,7 +1002,7 @@ public class XrplClientTest {
       .validationQuorum(UnsignedInteger.ONE)
       .build();
 
-    ServerInfoResult  serverInfoResult = ServerInfoResult.builder()
+    ServerInfoResult serverInfoResult = ServerInfoResult.builder()
       .info(serverInfo)
       .build();
 

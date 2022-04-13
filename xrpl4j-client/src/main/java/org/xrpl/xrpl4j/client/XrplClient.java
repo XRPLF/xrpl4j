@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.model.client.Finality;
+import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -98,7 +100,6 @@ import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
@@ -276,10 +277,11 @@ public class XrplClient {
 
   /**
    * Get the {@link TransactionResult} for the transaction with the hash transactionHash.
-   * 
+   *
    * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
+   *
    * @return the {@link TransactionResult} for a validated transaction and empty response for a
-   *        {@link Transaction} that is expired or not found.
+   *   {@link Transaction} that is expired or not found.
    */
   protected Optional<? extends TransactionResult<? extends Transaction>> getValidatedTransaction(
     final Hash256 transactionHash
@@ -302,8 +304,8 @@ public class XrplClient {
    * Check if there missing ledgers in rippled in the given range.
    *
    * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
-   * @param lastLedgerSequence he ledger index/sequence of type {@link UnsignedInteger} after which the
-   *        transaction will expire and won't be applied to the ledger.
+   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the
+   *                                transaction will expire and won't be applied to the ledger.
    *
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
@@ -327,15 +329,16 @@ public class XrplClient {
   /**
    * Check if the transaction is final on the ledger or not.
    *
-   * @param transactionHash {@link Hash256} of the submitted transaction to check the status for.
-   * @param submittedOnLedgerIndex {@link LedgerIndex} on which the transaction with hash transactionHash
-   *        was submitted. This can be obtained from submit() response of the tx as validatedLedgerIndex.
-   * @param lastLedgerSequence The ledger index/sequence of type {@link UnsignedInteger} after which the
-   *        transaction will expire and won't be applied to the ledger.
-   * @param sequence The sequence number of the account submitting the {@link Transaction}. A {@link Transaction}
-   *        is only valid if the Sequence number is exactly 1 greater than the previous transaction
-   *        from the same account.
-   * @param account The unique {@link Address} of the account that initiated this transaction.
+   * @param transactionHash            {@link Hash256} of the submitted transaction to check the status for.
+   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash
+   *                                   was submitted. This can be obtained from submit() response of the tx as
+   *                                   validatedLedgerIndex.
+   * @param lastLedgerSequence         The ledger index/sequence of type {@link UnsignedInteger} after which the
+   *                                   transaction will expire and won't be applied to the ledger.
+   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}.
+   *                                   A {@link Transaction} is only valid if the Sequence number is exactly 1
+   *                                   greater than the previous transaction from the same account.
+   * @param account                    The unique {@link Address} of the account that initiated this transaction.
    *
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
    */
@@ -343,7 +346,7 @@ public class XrplClient {
     Hash256 transactionHash,
     LedgerIndex submittedOnLedgerIndex,
     UnsignedInteger lastLedgerSequence,
-    UnsignedInteger sequence,
+    UnsignedInteger transactionAccountSequence,
     Address account
   ) {
     return getValidatedTransaction(transactionHash)
@@ -394,10 +397,10 @@ public class XrplClient {
                 AccountInfoRequestParams.of(account)
               );
               UnsignedInteger accountSequence = accountInfoResult.accountData().sequence();
-              if (FluentCompareTo.is(sequence).lessThan(accountSequence)) {
+              if (FluentCompareTo.is(transactionAccountSequence).lessThan(accountSequence)) {
                 // a different transaction with this sequence has a final outcome.
                 // this represents an unexpected case
-                throw new IllegalStateException("Something unexpected happened. Tx not final.");
+                return Finality.builder().finalityStatus(FinalityStatus.EXPIRED_WITH_SPENT_ACCOUNT_SEQUENCE).build();
               } else {
                 LOGGER.debug("Transaction with hash: {} has expired, consider resubmitting with updated" +
                   " lastledgersequence and fee", transactionHash);
@@ -524,7 +527,6 @@ public class XrplClient {
    * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
    *
    * @return The {@link DepositAuthorizedResult} returned by the deposit_authorized method call.
-   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
@@ -731,7 +733,7 @@ public class XrplClient {
    *   in the xrpl4j-crypto module.
    */
   @Deprecated
-  private Transaction addSignature(
+  protected Transaction addSignature(
     Transaction unsignedTransaction,
     String signature
   ) {

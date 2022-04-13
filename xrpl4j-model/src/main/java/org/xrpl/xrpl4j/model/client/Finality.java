@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.client;
+package org.xrpl.xrpl4j.model.client;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -27,16 +27,16 @@ public interface Finality {
    * Get {@link FinalityStatus} status value for a transaction.
    *
    * @return {@link FinalityStatus} value for a
-   * {@link org.xrpl.xrpl4j.model.transactions.Transaction}.
+   *   {@link org.xrpl.xrpl4j.model.transactions.Transaction}.
    */
   FinalityStatus finalityStatus();
 
   /**
    * The rippled server summarizes transaction results with result codes, which appear in fields such as engine_result
    * and meta.TransactionResult. These codes are grouped into several categories of with different prefixes.
-   * @see "https://xrpl.org/transaction-results.html#transaction-results"
    *
    * @return A {@link String} containing the result of the submission.
+   * @see "https://xrpl.org/transaction-results.html#transaction-results"
    */
   Optional<String> resultCode();
 

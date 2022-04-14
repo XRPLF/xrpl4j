@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
@@ -75,7 +76,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
           .metadata(
             TransactionMetadata.builder()
               .transactionIndex(UnsignedInteger.valueOf(12))
-              .transactionResult("tesSUCCESS")
+              .transactionResult(TransactionResultCodes.TES_SUCCESS)
               .deliveredAmount(XrpCurrencyAmount.ofDrops(455643030))
               .build()
           )
@@ -105,7 +106,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
           .metadata(
             TransactionMetadata.builder()
               .transactionIndex(UnsignedInteger.valueOf(33))
-              .transactionResult("tesSUCCESS")
+              .transactionResult(TransactionResultCodes.TES_SUCCESS)
               .deliveredAmount(XrpCurrencyAmount.ofDrops(499500387))
               .build()
           )

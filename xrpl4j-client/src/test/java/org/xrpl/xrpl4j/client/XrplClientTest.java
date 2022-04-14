@@ -27,11 +27,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.xrpl.xrpl4j.crypto.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.signing.SingleKeySignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.XrplResult;
@@ -839,6 +845,47 @@ public class XrplClientTest {
   }
 
   @Test
+  public void submitWithCryptoSigningSignedTx() {
+    jsonRpcClientMock = new JsonRpcClient() {
+
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        return (T) mock(SubmitResult.class);
+      }
+    };
+
+    String edPrivateKeyHex = "60F72F359647AD376D2CB783340CD843BD57CCD46093AA16B0C4D3A5143BADC5";
+    Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters = new Ed25519PrivateKeyParameters(
+      BaseEncoding.base16().decode(edPrivateKeyHex), 0
+    );
+    SingleKeySignatureService ecSignatureService = new SingleKeySignatureService(
+      BcKeyUtils.toPrivateKey(knownEd25519PrivateKeyParameters)
+    );
+    Payment payment = Payment.builder()
+      .ticketSequence(UnsignedInteger.ONE)
+      .account(wallet.classicAddress())
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey(wallet.publicKey())
+      .build();
+
+    org.xrpl.xrpl4j.crypto.signing.SignedTransaction<Payment> paymentSignedTransaction = ecSignatureService.sign(
+      mock(KeyMetadata.class), payment
+    );
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
+  }
+
+  @Test
   public void submitWithSignedTx() {
 
     jsonRpcClientMock = new JsonRpcClient() {
@@ -865,6 +912,7 @@ public class XrplClientTest {
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .signingPublicKey(wallet.publicKey())
       .build();
+    xrplClient = new XrplClient(jsonRpcClientMock);
     SignedTransaction<Payment> paymentSignedTransaction = xrplClient.signTransaction(wallet, payment);
     assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
 

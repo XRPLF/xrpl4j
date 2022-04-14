@@ -1,11 +1,9 @@
-package org.xrpl.xrpl4j.client;
+package org.xrpl.xrpl4j.model.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.model.client.Finality;
-import org.xrpl.xrpl4j.model.client.FinalityStatus;
 
 public class FinalityTest {
 

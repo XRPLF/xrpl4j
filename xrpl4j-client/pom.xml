@@ -94,6 +94,11 @@
       <artifactId>xrpl4j-crypto-bouncycastle</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15to18</artifactId>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
 </project>

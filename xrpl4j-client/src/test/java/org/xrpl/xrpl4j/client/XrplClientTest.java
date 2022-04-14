@@ -27,13 +27,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import okhttp3.HttpUrl;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -845,6 +845,27 @@ public class XrplClientTest {
   }
 
   @Test
+  public void getJsonRpcClientTest() {
+    assertThat(xrplClient.getJsonRpcClient() instanceof JsonRpcClient).isTrue();
+    assertThat(xrplClient.getJsonRpcClient() instanceof XrplClient).isFalse();
+  }
+
+  @Test
+  public void getXrplClientTest() {
+    HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
+    assertThat(new XrplClient(rippledUrl) instanceof XrplClient).isTrue();
+    assertThat(new XrplClient(rippledUrl) instanceof JsonRpcClient).isFalse();
+  }
+
+  @Test
+  public void addSignatureToIncorrectTxType_ThrowsCannotAddSign() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+      () -> xrplClient.addSignature(mock(Transaction.class), "")
+    );
+    assertThat(exception.getMessage()).isEqualTo("Signing fields could not be added to the unsignedTransaction.");
+  }
+
+  @Test
   public void submitWithCryptoSigningSignedTx() {
     jsonRpcClientMock = new JsonRpcClient() {
 
@@ -916,6 +937,12 @@ public class XrplClientTest {
     SignedTransaction<Payment> paymentSignedTransaction = xrplClient.signTransaction(wallet, payment);
     assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
 
+  }
+
+  @Test
+  public void signTxCatchesJsonProcessingException_ThrowsException() {
+    Payment mockPayment = mock(Payment.class);
+    assertThrows(RuntimeException.class, () -> xrplClient.signTransaction(wallet, mockPayment));
   }
 
   @Test

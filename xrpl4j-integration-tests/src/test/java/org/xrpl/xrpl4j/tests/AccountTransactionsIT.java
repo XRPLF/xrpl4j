@@ -61,10 +61,10 @@ public class AccountTransactionsIT {
   @Test
   @Timeout(30)
   public void listTransactionsPagination() throws JsonRpcClientErrorException {
-    final int expectedTransactions = 748;
+    final int expectedTransactions = 284;
     // known ledger index range for this account that is known to have exactly 748 transactions
     LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
-    LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
+    LedgerIndexBound maxLedger = LedgerIndexBound.of(61437000);
     AccountTransactionsResult results = mainnetClient.accountTransactions(
       AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
@@ -87,14 +87,14 @@ public class AccountTransactionsIT {
     }
 
     assertThat(transactionsFound).isEqualTo(expectedTransactions);
-    assertThat(pages).isEqualTo(4);
+    assertThat(pages).isEqualTo(2);
   }
 
   @Test
   public void listTransactionWithIndexRange() {
     // also arbitrary indexes chosen because they have known transaction results we can check
     LedgerIndexBound minLedger = LedgerIndexBound.of(61486000);
-    LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
+    LedgerIndexBound maxLedger = LedgerIndexBound.of(61486500);
 
     // Sometimes we will get a "server busy" error back in this test, so if we do get that, we should just wait
     // a few seconds until asking again.
@@ -106,17 +106,17 @@ public class AccountTransactionsIT {
 
     assertThat(results.ledgerIndexMinimum()).isEqualTo(minLedger);
     assertThat(results.ledgerIndexMaximum()).isEqualTo(maxLedger);
-    assertThat(results.transactions()).hasSize(16);
+    assertThat(results.transactions()).hasSize(7);
     // results are returned in descending sorted order by ledger index
     assertThat(results.transactions().get(0).transaction().ledgerIndex()).isNotEmpty().get()
       .isEqualTo(results.transactions().get(0).resultTransaction().ledgerIndex());
     assertThat(results.transactions().get(0).resultTransaction().ledgerIndex())
-      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486994)));
+      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486272)));
 
-    assertThat(results.transactions().get(15).transaction().ledgerIndex()).isNotEmpty().get()
-      .isEqualTo(results.transactions().get(15).resultTransaction().ledgerIndex());
-    assertThat(results.transactions().get(15).resultTransaction().ledgerIndex())
-      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486026)));
+    assertThat(results.transactions().get(5).transaction().ledgerIndex()).isNotEmpty().get()
+      .isEqualTo(results.transactions().get(5).resultTransaction().ledgerIndex());
+    assertThat(results.transactions().get(5).resultTransaction().ledgerIndex())
+      .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486080)));
   }
 
   @Test

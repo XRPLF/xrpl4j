@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Range;
+import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -33,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.model.client.Finality;
+import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -52,6 +57,8 @@ import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -68,6 +75,7 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -90,11 +98,12 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing
@@ -253,6 +262,160 @@ public class XrplClient {
   }
 
   /**
+   * Get the ledger index of a tx result response. If not present, throw an exception.
+   *
+   * @return A string containing value of last validated ledger index.
+   * @throws JsonRpcClientErrorException when client encounters errors related to calling rippled JSON RPC API..
+   */
+  protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.LEDGER)
+      .addParams(LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build())
+      .build();
+    return jsonRpcClient.send(request, LedgerResult.class).ledgerIndexSafe().unsignedIntegerValue();
+  }
+
+  /**
+   * Get the {@link TransactionResult} for the transaction with the hash transactionHash.
+   *
+   * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
+   *
+   * @return the {@link TransactionResult} for a validated transaction and empty response for a
+   *   {@link Transaction} that is expired or not found.
+   */
+  protected Optional<? extends TransactionResult<? extends Transaction>> getValidatedTransaction(
+    final Hash256 transactionHash
+  ) {
+    Objects.requireNonNull(transactionHash);
+
+    try {
+      final TransactionResult<? extends Transaction> transactionResult = this.transaction(
+        TransactionRequestParams.of(transactionHash), Transaction.class
+      );
+      return Optional.ofNullable(transactionResult).filter(TransactionResult::validated);
+    } catch (JsonRpcClientErrorException e) {
+      // The transaction was not found on ledger, warn on this, but otherwise return.
+      LOGGER.warn(e.getMessage(), e);
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Check if there missing ledgers in rippled in the given range.
+   *
+   * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
+   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the
+   *                                transaction will expire and won't be applied to the ledger.
+   *
+   * @return {@link Boolean} to indicate if there are gaps in the ledger range.
+   */
+  protected boolean ledgerGapsExistBetween(
+    final UnsignedLong submittedLedgerSequence,
+    final UnsignedLong lastLedgerSequence
+  ) {
+    final ServerInfo serverInfo;
+    try {
+      serverInfo = this.serverInfo();
+    } catch (JsonRpcClientErrorException e) {
+      LOGGER.error(e.getMessage(), e);
+      return true; // Assume ledger gaps exist so this can be retried.
+    }
+
+    Range<UnsignedLong> submittedToLast = Range.closed(submittedLedgerSequence, lastLedgerSequence);
+    return serverInfo.completeLedgerRanges().stream()
+      .noneMatch(range -> range.encloses(submittedToLast));
+  }
+
+  /**
+   * Check if the transaction is final on the ledger or not.
+   *
+   * @param transactionHash            {@link Hash256} of the submitted transaction to check the status for.
+   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash
+   *                                   was submitted. This can be obtained from submit() response of the tx as
+   *                                   validatedLedgerIndex.
+   * @param lastLedgerSequence         The ledger index/sequence of type {@link UnsignedInteger} after which the
+   *                                   transaction will expire and won't be applied to the ledger.
+   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}.
+   *                                   A {@link Transaction} is only valid if the Sequence number is exactly 1
+   *                                   greater than the previous transaction from the same account.
+   * @param account                    The unique {@link Address} of the account that initiated this transaction.
+   *
+   * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
+   */
+  public Finality isFinal(
+    Hash256 transactionHash,
+    LedgerIndex submittedOnLedgerIndex,
+    UnsignedInteger lastLedgerSequence,
+    UnsignedInteger transactionAccountSequence,
+    Address account
+  ) {
+    return getValidatedTransaction(transactionHash)
+      .map(transactionResult -> {
+        // Note from https://xrpl.org/transaction-metadata.html#transaction-metadata:
+        // "Any transaction that gets included in a ledger has metadata, regardless of whether it is
+        // successful." However, we handle missing metadata as a failure, just in case rippled doesn't perfectly
+        // conform
+        final boolean isTesSuccess = transactionResult.metadata()
+          .map(TransactionMetadata::transactionResult)
+          .filter("tesSUCCESS"::equals)
+          .map($ -> true)
+          .isPresent();
+
+        final boolean metadataExists = transactionResult.metadata().isPresent();
+
+        if (isTesSuccess) {
+          LOGGER.debug("Transaction with hash: {} was validated with success", transactionHash);
+          return Finality.builder()
+            .finalityStatus(FinalityStatus.VALIDATED_SUCCESS)
+            .resultCode(transactionResult.metadata().get().transactionResult())
+            .build();
+        } else if (!metadataExists) {
+          return Finality.builder().finalityStatus(FinalityStatus.VALIDATED_UNKNOWN).build();
+        } else {
+          LOGGER.debug("Transaction with hash: {} was validated with failure", transactionHash);
+          return Finality.builder()
+            .finalityStatus(FinalityStatus.VALIDATED_FAILURE)
+            .resultCode(transactionResult.metadata().get().transactionResult())
+            .build();
+        }
+      }).orElseGet(() -> {
+        try {
+          final boolean isTransactionExpired = FluentCompareTo.is(getMostRecentlyValidatedLedgerIndex())
+            .greaterThan(lastLedgerSequence);
+          if (!isTransactionExpired) {
+            LOGGER.debug("Transaction with hash: {} has not expired yet, check again", transactionHash);
+            return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
+          } else {
+            boolean isMissingLedgers = ledgerGapsExistBetween(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
+              UnsignedLong.valueOf(lastLedgerSequence.toString()));
+            if (isMissingLedgers) {
+              LOGGER.debug("Transaction with hash: {} has expired and rippled is missing some to confirm if it" +
+                " was validated", transactionHash);
+              return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
+            } else {
+              AccountInfoResult accountInfoResult = this.accountInfo(
+                AccountInfoRequestParams.of(account)
+              );
+              UnsignedInteger accountSequence = accountInfoResult.accountData().sequence();
+              if (FluentCompareTo.is(transactionAccountSequence).lessThan(accountSequence)) {
+                // a different transaction with this sequence has a final outcome.
+                // this represents an unexpected case
+                return Finality.builder().finalityStatus(FinalityStatus.EXPIRED_WITH_SPENT_ACCOUNT_SEQUENCE).build();
+              } else {
+                LOGGER.debug("Transaction with hash: {} has expired, consider resubmitting with updated" +
+                  " lastledgersequence and fee", transactionHash);
+                return Finality.builder().finalityStatus(FinalityStatus.EXPIRED).build();
+              }
+            }
+          }
+        } catch (JsonRpcClientErrorException e) {
+          LOGGER.warn(e.getMessage(), e);
+          return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
+        }
+      });
+  }
+
+  /**
    * Get the "server_info" for the rippled node.
    *
    * @return A {@link ServerInfo} containing information about the server.
@@ -349,7 +512,7 @@ public class XrplClient {
    * @return The {@link AccountOffersResult} returned by the account_offers method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
-  public AccountOffersResult accountOffers(AccountCurrenciesRequestParams params) throws JsonRpcClientErrorException {
+  public AccountOffersResult accountOffers(AccountOffersRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.ACCOUNT_OFFERS)
       .addParams(params)
@@ -364,7 +527,6 @@ public class XrplClient {
    * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
    *
    * @return The {@link DepositAuthorizedResult} returned by the deposit_authorized method call.
-   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
@@ -488,27 +650,12 @@ public class XrplClient {
   /**
    * Verify a payment channel claim signature by making a "channel_verify" rippled API method call.
    *
-   * @param channelId A {@link Hash256} containing the Channel ID.
-   * @param amount    An {@link XrpCurrencyAmount} representing the amount of the claim.
-   * @param signature The signature of the {@link PaymentChannelClaim} transaction.
-   * @param publicKey A {@link String} containing the public key associated with the key used to generate the
-   *                  signature.
+   * @param params The {@link ChannelVerifyRequestParams} to send in the request.
    *
    * @return The result of the request, as a {@link ChannelVerifyResult}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  public ChannelVerifyResult channelVerify(
-    Hash256 channelId,
-    XrpCurrencyAmount amount,
-    String signature,
-    String publicKey
-  ) throws JsonRpcClientErrorException {
-    ChannelVerifyRequestParams params = ChannelVerifyRequestParams.builder()
-      .channelId(channelId)
-      .amount(amount)
-      .signature(signature)
-      .publicKey(publicKey)
-      .build();
+  public ChannelVerifyResult channelVerify(ChannelVerifyRequestParams params) throws JsonRpcClientErrorException {
 
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.CHANNEL_VERIFY)
@@ -586,7 +733,7 @@ public class XrplClient {
    *   in the xrpl4j-crypto module.
    */
   @Deprecated
-  private Transaction addSignature(
+  protected Transaction addSignature(
     Transaction unsignedTransaction,
     String signature
   ) {

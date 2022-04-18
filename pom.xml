@@ -227,6 +227,11 @@
         <version>1.15.1</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.atmosphere</groupId>
+        <artifactId>wasync</artifactId>
+        <version>3.0.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

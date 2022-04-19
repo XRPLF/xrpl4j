@@ -22,20 +22,28 @@ package org.xrpl.xrpl4j.codec.binary.types;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.definitions.DefinitionsService;
 import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinarySerializer;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Codec for XRPL STObject type.
@@ -87,7 +95,6 @@ public class STObjectType extends SerializedType<STObjectType> {
       isUNLModify = false;
     }
 
-
     List<FieldWithValue<JsonNode>> fields = new ArrayList<>();
     for (String fieldName : Lists.newArrayList(node.fieldNames())) {
 
@@ -98,7 +105,29 @@ public class STObjectType extends SerializedType<STObjectType> {
         continue;
       }
 
-      JsonNode fieldNode = node.get(fieldName);
+      JsonNode fieldNode;
+      // rippled expects signers canonically based on address
+      if (fieldName.equals("Signers")) {
+        final AddressCodec addressCodec = new AddressCodec();
+        ArrayNode arrayNode = (ArrayNode) node.get(fieldName);
+        List<JsonNode> jsonNodeList = new ArrayList<>();
+        for (JsonNode x: arrayNode) {
+          jsonNodeList.add(x);
+        }
+        List<JsonNode> jsonNodesSorted = jsonNodeList.stream().sorted(
+          Comparator.comparing(
+            signature -> new BigInteger(addressCodec.decodeAccountId(
+              Address.of(signature.get("Signer").get("Account").asText())
+            ).hexValue(), 16)
+          )
+        ).collect(Collectors.toList());
+
+        final ObjectMapper objectMapper = ObjectMapperFactory.create();
+        fieldNode = objectMapper.createObjectNode().arrayNode().addAll(jsonNodesSorted);
+      } else {
+        fieldNode = node.get(fieldName);
+      }
+
       definitionsService.getFieldInstance(fieldName)
         .filter(FieldInstance::isSerialized)
         .ifPresent(fieldInstance -> fields.add(FieldWithValue.<JsonNode>builder()

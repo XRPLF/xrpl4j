@@ -387,7 +387,7 @@
           </configuration>
           <executions>
             <execution>
-              <id>integration-tests-altnet</id>
+              <id>integration-tests-testnet</id>
               <goals>
                 <goal>integration-test</goal>
                 <goal>verify</goal>

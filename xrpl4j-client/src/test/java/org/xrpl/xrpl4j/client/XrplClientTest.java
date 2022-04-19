@@ -34,6 +34,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
+import org.assertj.core.util.Lists;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,6 +104,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
@@ -1306,6 +1308,24 @@ public class XrplClientTest {
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
       .build();
+    assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
+  }
+
+  @Test
+  public void signPaymentWithPaths_DoesNotThrow() {
+    List<PathStep> paths = Lists.newArrayList(
+      PathStep.builder().account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v")).currency("ABC").build(),
+      PathStep.builder().account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW")).currency("XYZ").build()
+    );
+    Payment payment = Payment.builder()
+      .account(wallet.classicAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .signingPublicKey(wallet.publicKey())
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .addPaths(paths)
+      .build();
+
     assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
   }
 

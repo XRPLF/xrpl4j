@@ -50,10 +50,8 @@ public class AccountTransactionsIT {
     LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
     LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
     AccountTransactionsResult results = mainnetClient.accountTransactions(
-      AccountTransactionsRequestParams.builder()
+      AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMinimum(minLedger)
-        .ledgerIndexMaximum(maxLedger)
         .build()
     );
     assertThat(results.transactions()).isNotEmpty();
@@ -62,10 +60,8 @@ public class AccountTransactionsIT {
     int transactionsFound = results.transactions().size();
     int pages = 1;
     while (results.marker().isPresent()) {
-      results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder()
+      results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMinimum(minLedger)
-        .ledgerIndexMaximum(maxLedger)
         .marker(results.marker().get())
         .build());
       assertThat(results.transactions()).isNotEmpty();

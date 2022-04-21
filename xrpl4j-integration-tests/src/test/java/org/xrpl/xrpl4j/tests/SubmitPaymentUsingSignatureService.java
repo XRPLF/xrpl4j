@@ -41,6 +41,7 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -99,7 +100,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
 
@@ -135,7 +136,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
     SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
 

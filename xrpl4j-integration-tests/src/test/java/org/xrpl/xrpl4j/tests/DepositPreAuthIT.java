@@ -37,6 +37,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -69,7 +70,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .build();
 
     SubmitResult<DepositPreAuth> result = xrplClient.submit(receiverWallet, depositPreAuth);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
 
@@ -113,7 +114,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .build();
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
     logger.info("Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
@@ -243,7 +244,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .build();
 
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(wallet, accountSet);
-    assertThat(accountSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(accountSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(accountSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(accountSetResult.transactionResult().hash());
     logger.info("AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",

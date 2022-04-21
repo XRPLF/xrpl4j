@@ -46,6 +46,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,7 +85,7 @@ public class SignerListSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -110,9 +111,10 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().hash()
+
+    logInfo(
+      signerListSetResult.transactionResult().transaction().transactionType(),
+      signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -138,7 +140,7 @@ public class SignerListSetIT extends AbstractIT {
       .account(sourceWallet.classicAddress())
       .fee(
         Transaction.computeMultiSigFee(
-          feeResult.drops().openLedgerFee(),
+          XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)),
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         )
       )
@@ -182,9 +184,10 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transaction().hash()
+
+    logInfo(
+      paymentResult.transaction().transaction().transactionType(),
+      paymentResult.transaction().hash()
     );
   }
 
@@ -213,7 +216,7 @@ public class SignerListSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -239,9 +242,10 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().hash()
+
+    logInfo(
+      signerListSetResult.transactionResult().transaction().transactionType(),
+      signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -277,9 +281,10 @@ public class SignerListSetIT extends AbstractIT {
     assertThat(signerListDeleteResult.result()).isEqualTo("tesSUCCESS");
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListDeleteResult.transactionResult().hash()
+
+    logInfo(
+      signerListDeleteResult.transactionResult().transaction().transactionType(),
+      signerListDeleteResult.transactionResult().hash()
     );
 
     /////////////////////////////

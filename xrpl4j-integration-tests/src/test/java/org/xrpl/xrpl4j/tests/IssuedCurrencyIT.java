@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,8 +37,10 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class IssuedCurrencyIT extends AbstractIT {
@@ -62,7 +64,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -72,7 +74,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       trustLine.limitPeer(),
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -120,7 +122,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       aliceWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -130,16 +132,20 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       bobWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    sendIssuedCurrency("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "50", issuerWallet, aliceWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    sendIssuedCurrency("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "50", issuerWallet, bobWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -162,7 +168,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult aliceAccountInfo = getValidatedAccountInfo(aliceWallet.classicAddress());
     Payment aliceToBobPayment = Payment.builder()
       .account(aliceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(aliceAccountInfo.accountData().sequence())
       .destination(bobWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -177,9 +183,10 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
 
     ///////////////////////////
@@ -223,7 +230,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       charlieWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -233,7 +240,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       emilyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -243,7 +250,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       emilyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -253,28 +260,36 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       danielWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    sendIssuedCurrency("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "10", issuerAWallet, charlieWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    sendIssuedCurrency("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "1", issuerAWallet, emilyWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    sendIssuedCurrency("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "100", issuerBWallet, emilyWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    sendIssuedCurrency("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "2", issuerBWallet, danielWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+    );
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
@@ -306,7 +321,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.classicAddress());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(charlieAccountInfo.accountData().sequence())
       .destination(danielWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -322,9 +337,10 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
 
     ///////////////////////////
@@ -370,7 +386,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     AccountSet setDefaultRipple = AccountSet.builder()
       .account(issuerWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
@@ -380,9 +396,10 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo("tesSUCCESS");
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        setResult.transactionResult().hash()
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
+      setResult.transactionResult().hash()
     );
 
     scanForResult(

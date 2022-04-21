@@ -30,7 +30,10 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
+
+import java.math.BigDecimal;
 
 public class SetRegularKeyIT extends AbstractIT {
 
@@ -54,7 +57,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.classicAddress())
       .signingPublicKey(wallet.publicKey())
@@ -64,7 +67,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo("tesSUCCESS");
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
       setResult.transactionResult().hash()
     );
 
@@ -76,7 +81,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.classicAddress())
-          .fee(feeResult.drops().openLedgerFee())
+          .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey())
           .build();
@@ -111,7 +116,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.classicAddress())
       .signingPublicKey(wallet.publicKey())
@@ -121,7 +126,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo("tesSUCCESS");
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
       setResult.transactionResult().hash()
     );
 
@@ -133,7 +140,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.classicAddress())
-          .fee(feeResult.drops().openLedgerFee())
+          .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey())
           .build();
@@ -149,7 +156,7 @@ public class SetRegularKeyIT extends AbstractIT {
 
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(wallet.publicKey())
       .build();
@@ -158,7 +165,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(removeResult.result()).isEqualTo("tesSUCCESS");
     assertThat(removeResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(removeResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      removeResult.transactionResult().transaction().transactionType(),
       removeResult.transactionResult().hash()
     );
 

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,6 +40,8 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
+
 public class DepositPreAuthIT extends AbstractIT {
 
   @Test
@@ -52,13 +54,15 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
+    AccountInfoResult receiverAccountInfo = enableDepositPreauth(
+      receiverWallet, XrpCurrencyAmount.ofXrp(new BigDecimal(1))
+    );
 
     /////////////////////////
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(receiverAccountInfo.accountData().sequence())
       .signingPublicKey(receiverWallet.publicKey())
       .authorize(senderWallet.classicAddress())
@@ -68,7 +72,9 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 
@@ -99,7 +105,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -144,7 +150,7 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
+    enableDepositPreauth(receiverWallet, XrpCurrencyAmount.ofXrp(new BigDecimal(1)));
 
     /////////////////////////
     // Validate that the receiver has not given authorization to anyone to send them Payments
@@ -163,7 +169,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -219,7 +225,6 @@ public class DepositPreAuthIT extends AbstractIT {
    * @param fee    The {@link XrpCurrencyAmount} of the ledger fee for the AccountSet transaction.
    *
    * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
-   *
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */
   private AccountInfoResult enableDepositPreauth(

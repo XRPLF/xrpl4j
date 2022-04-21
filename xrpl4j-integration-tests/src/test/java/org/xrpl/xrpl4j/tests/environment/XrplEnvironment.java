@@ -41,8 +41,8 @@ public interface XrplEnvironment {
   static XrplEnvironment getConfiguredEnvironment() {
     // Use the testnet and devnet environment by default to run integration testing.
     // Use -DuseLocal test to run integration tests on local rippled.
-    boolean isTestnetEnabled = System.getProperty("useTestnet").equals("true");
-    boolean isDevnetEnabled = System.getProperty("useDevnet").equals("true");
+    boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
+    boolean isDevnetEnabled = System.getProperty("useDevnet") != null;
     if (isTestnetEnabled) {
       logger.info("System property 'useTestnet' detected; Using Testnet for integration testing.");
       return new TestnetEnvironment();

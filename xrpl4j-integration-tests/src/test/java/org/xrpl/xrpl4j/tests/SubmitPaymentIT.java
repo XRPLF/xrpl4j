@@ -35,6 +35,8 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
+
 public class SubmitPaymentIT extends AbstractIT {
 
   @Test
@@ -49,7 +51,7 @@ public class SubmitPaymentIT extends AbstractIT {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(amount)
@@ -60,7 +62,9 @@ public class SubmitPaymentIT extends AbstractIT {
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 
@@ -92,7 +96,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -103,7 +107,9 @@ public class SubmitPaymentIT extends AbstractIT {
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 

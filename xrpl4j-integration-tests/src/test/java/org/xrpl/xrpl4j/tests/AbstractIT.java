@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,6 +54,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
@@ -86,7 +87,12 @@ public abstract class AbstractIT {
     // Create the account
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
     final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
+    String network = System.getProperty("useTestnet") != null ? "testnet" :
+      (System.getProperty("useDevnet") != null ? "devnet" : "local rippled");
+    logger.info(
+      "Generated {} wallet with XAddress={} (Classic={})",
+      network, wallet.xAddress(), wallet.classicAddress()
+    );
 
     fundAccount(wallet);
 
@@ -300,9 +306,10 @@ public abstract class AbstractIT {
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
-    logger.info(
-      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        trustSetSubmitResult.transactionResult().hash()
+
+    logInfo(
+      trustSetSubmitResult.transactionResult().transaction().transactionType(),
+      trustSetSubmitResult.transactionResult().hash()
     );
 
     return scanForResult(
@@ -354,9 +361,10 @@ public abstract class AbstractIT {
     assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
 
     this.scanForResult(
@@ -365,5 +373,17 @@ public abstract class AbstractIT {
         Payment.class)
     );
 
+  }
+
+  /**
+   * Helper function to print log statements for Integration Tests which is network specific.
+   *
+   * @param txName {@link TransactionType} to be logged for the executed transaction.
+   * @param hash   {@link Hash256} to be logged for the executed transaction.
+   */
+  public void logInfo(TransactionType txName, Hash256 hash) {
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
+    logger.info(txName.value() + " transaction successful: {}{}", url, hash);
   }
 }

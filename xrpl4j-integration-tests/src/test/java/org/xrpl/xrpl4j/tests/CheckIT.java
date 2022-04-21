@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.function.Predicate;
 
 public class CheckIT extends AbstractIT {
@@ -50,7 +51,7 @@ public class CheckIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    //FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -60,7 +61,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -72,8 +73,9 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 
@@ -90,7 +92,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Destination wallet cashes the Check
-    feeResult = xrplClient.fee();
+    //feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
     );
@@ -98,7 +100,7 @@ public class CheckIT extends AbstractIT {
       .account(destinationWallet.classicAddress())
       .amount(checkObject.sendMax())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();
@@ -106,8 +108,9 @@ public class CheckIT extends AbstractIT {
     assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      cashResponse.transactionResult().transaction().transactionType(),
       cashResponse.transactionResult().hash()
     );
 
@@ -141,7 +144,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
-    FeeResult feeResult = xrplClient.fee();
+    //FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -149,7 +152,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -161,8 +164,9 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 
@@ -179,11 +183,11 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Source account cancels the Check
-    feeResult = xrplClient.fee();
+    //feeResult = xrplClient.fee();
     CheckCancel checkCancel = CheckCancel.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .checkId(checkObject.index())
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -192,8 +196,9 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      cancelResult.transactionResult().transaction().transactionType(),
       cancelResult.transactionResult().hash()
     );
 
@@ -215,7 +220,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
-    FeeResult feeResult = xrplClient.fee();
+    //FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -223,7 +228,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -238,10 +243,12 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
+
 
     CheckObject checkObject = (CheckObject) this.scanForResult(
       () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
@@ -253,14 +260,14 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Destination account cancels the Check
-    feeResult = xrplClient.fee();
+    //feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
     );
     CheckCancel checkCancel = CheckCancel.builder()
       .account(destinationWallet.classicAddress())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();
@@ -269,8 +276,9 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      cancelResult.transactionResult().transaction().transactionType(),
       cancelResult.transactionResult().hash()
     );
 

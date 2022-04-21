@@ -395,7 +395,6 @@
               <configuration>
                 <systemPropertyVariables>
                   <useTestnet>true</useTestnet>
-                  <useDevnet>null</useDevnet>
                   <useLocal>${useLocal}</useLocal>
                 </systemPropertyVariables>
                 <skipTests>${useLocal}</skipTests>
@@ -410,7 +409,6 @@
               <configuration>
                 <systemPropertyVariables>
                   <useDevnet>true</useDevnet>
-                  <useTestnet>null</useTestnet>
                   <useLocal>${useLocal}</useLocal>
                 </systemPropertyVariables>
                 <skipTests>${useLocal}</skipTests>
@@ -422,12 +420,6 @@
                 <goal>integration-test</goal>
                 <goal>verify</goal>
               </goals>
-              <configuration>
-                <systemPropertyVariables>
-                  <useTestnet>null</useTestnet>
-                  <useDevnet>null</useDevnet>
-                </systemPropertyVariables>
-              </configuration>
             </execution>
           </executions>
         </plugin>

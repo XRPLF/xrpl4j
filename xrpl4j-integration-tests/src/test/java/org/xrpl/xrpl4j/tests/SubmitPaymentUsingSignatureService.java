@@ -44,6 +44,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.Objects;
@@ -87,7 +88,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -101,8 +102,11 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
+      result.transactionResult().hash()
+    );
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
@@ -120,7 +124,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -134,8 +138,10 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info(
-      "Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash()
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
+      result.transactionResult().hash()
     );
 
     this.scanForResult(

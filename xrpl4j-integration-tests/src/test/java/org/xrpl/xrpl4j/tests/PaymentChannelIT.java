@@ -48,6 +48,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -74,7 +75,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.classicAddress())
@@ -90,7 +91,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 
@@ -156,7 +159,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.classicAddress())
@@ -172,7 +175,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 
@@ -229,7 +234,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Destination account submits the signed claim to the ledger to get their XRP
     PaymentChannelClaim signedClaim = PaymentChannelClaim.builder()
       .account(destinationWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(destinationAccountInfo.accountData().sequence())
       .channel(paymentChannel.channelId())
       .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
@@ -243,7 +248,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(claimResult.result()).isEqualTo("tesSUCCESS");
     assertThat(claimResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(claimResult.transactionResult().hash());
-    logger.info("PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      claimResult.transactionResult().transaction().transactionType(),
       claimResult.transactionResult().hash()
     );
 
@@ -276,7 +283,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.classicAddress())
@@ -292,7 +299,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 
@@ -316,7 +325,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     PaymentChannelFund addFunds = PaymentChannelFund.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
@@ -329,7 +338,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(fundResult.result()).isEqualTo("tesSUCCESS");
     assertThat(fundResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(fundResult.transactionResult().hash());
-    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      fundResult.transactionResult().transaction().transactionType(),
       fundResult.transactionResult().hash()
     );
 
@@ -354,7 +365,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     PaymentChannelFund setExpiry = PaymentChannelFund.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
@@ -368,7 +379,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(expiryResult.result()).isEqualTo("tesSUCCESS");
     assertThat(expiryResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(expiryResult.transactionResult().hash());
-    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      expiryResult.transactionResult().transaction().transactionType(),
       expiryResult.transactionResult().hash()
     );
 
@@ -403,7 +416,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.classicAddress())
@@ -419,7 +432,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,6 +41,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -65,7 +66,7 @@ public class EscrowIT extends AbstractIT {
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))
@@ -79,9 +80,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" +
-        createResult.transactionResult().hash()
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
+      createResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -113,7 +115,7 @@ public class EscrowIT extends AbstractIT {
     );
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(receiverWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(receiverAccountInfo.accountData().sequence())
       .owner(senderWallet.classicAddress())
       .offerSequence(result.transaction().sequence())
@@ -124,9 +126,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
     assertThat(finishResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(finishResult.transactionResult().hash());
-    logger.info(
-      "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" +
-        finishResult.transactionResult().hash()
+
+    logInfo(
+      finishResult.transactionResult().transaction().transactionType(),
+      finishResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -145,7 +148,7 @@ public class EscrowIT extends AbstractIT {
       infoResult -> infoResult.accountData().balance().equals(
         receiverAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
-          .minus(feeResult.drops().openLedgerFee())
+          .minus(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       )
     );
 
@@ -169,7 +172,7 @@ public class EscrowIT extends AbstractIT {
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
@@ -183,9 +186,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" +
-        createResult.transactionResult().hash()
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
+      createResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -223,7 +227,7 @@ public class EscrowIT extends AbstractIT {
     // Sender account cancels the Escrow
     EscrowCancel escrowCancel = EscrowCancel.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .owner(senderWallet.classicAddress())
       .offerSequence(result.transaction().sequence())
@@ -234,9 +238,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
     assertThat(cancelResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(cancelResult.transactionResult().hash());
-    logger.info(
-      "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" +
-        cancelResult.transactionResult().hash()
+
+    logInfo(
+      cancelResult.transactionResult().transaction().transactionType(),
+      cancelResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -254,7 +259,7 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         senderAccountInfo.accountData().balance()
-          .minus(feeResult.drops().openLedgerFee().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
+          .minus(XrpCurrencyAmount.ofXrp(new BigDecimal(1)).times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
       )
     );
   }
@@ -273,14 +278,14 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
-    FeeResult feeResult = xrplClient.fee();
+    final FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .signingPublicKey(senderWallet.publicKey())
@@ -295,9 +300,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" +
-        createResult.transactionResult().hash()
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
+      createResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -329,11 +335,11 @@ public class EscrowIT extends AbstractIT {
     );
 
     final XrpCurrencyAmount feeForFulfillment = EscrowFinish
-      .computeFee(feeResult.drops().openLedgerFee(), executeEscrowFulfillment);
+      .computeFee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)), executeEscrowFulfillment);
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(receiverWallet.classicAddress())
       // V-- Be sure to add more fee to process the Fulfillment
-      .fee(EscrowFinish.computeFee(feeResult.drops().openLedgerFee(), executeEscrowFulfillment))
+      .fee(EscrowFinish.computeFee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)), executeEscrowFulfillment))
       .sequence(receiverAccountInfo.accountData().sequence())
       .owner(senderWallet.classicAddress())
       .offerSequence(result.transaction().sequence())
@@ -346,9 +352,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
     assertThat(finishResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(finishResult.transactionResult().hash());
-    logger.info(
-      "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/" +
-        finishResult.transactionResult().hash()
+
+    logInfo(
+      finishResult.transactionResult().transaction().transactionType(),
+      finishResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -394,7 +401,7 @@ public class EscrowIT extends AbstractIT {
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
@@ -408,9 +415,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/" +
-        createResult.transactionResult().hash()
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
+      createResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -439,7 +447,7 @@ public class EscrowIT extends AbstractIT {
     // Sender account cancels the Escrow
     EscrowCancel escrowCancel = EscrowCancel.builder()
       .account(senderWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .owner(senderWallet.classicAddress())
       .offerSequence(result.transaction().sequence())
@@ -450,9 +458,10 @@ public class EscrowIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
     assertThat(cancelResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(cancelResult.transactionResult().hash());
-    logger.info(
-      "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/" +
-        cancelResult.transactionResult().hash()
+
+    logInfo(
+      cancelResult.transactionResult().transaction().transactionType(),
+      cancelResult.transactionResult().hash()
     );
 
     //////////////////////
@@ -470,7 +479,7 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         senderAccountInfo.accountData().balance()
-          .minus(feeResult.drops().openLedgerFee().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
+          .minus(XrpCurrencyAmount.ofXrp(new BigDecimal(1)).times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
       )
     );
 

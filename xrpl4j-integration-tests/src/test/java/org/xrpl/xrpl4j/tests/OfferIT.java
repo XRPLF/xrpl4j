@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -76,7 +76,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(issuerWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(sequence)
       .signingPublicKey(issuerWallet.publicKey())
       .takerGets(IssuedCurrencyAmount.builder()
@@ -125,7 +125,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(IssuedCurrencyAmount.builder()
@@ -180,7 +180,7 @@ public class OfferIT extends AbstractIT {
 
     OfferCancel offerCancel = OfferCancel.builder()
       .account(purchaser.classicAddress())
-      .fee(xrplClient.fee().drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(nextSequence)
       .offerSequence(offerSequence)
       .signingPublicKey(purchaser.publicKey())
@@ -212,7 +212,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(IssuedCurrencyAmount.builder()
@@ -277,7 +277,7 @@ public class OfferIT extends AbstractIT {
 
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(requestCurrencyAmount)
@@ -288,8 +288,9 @@ public class OfferIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 

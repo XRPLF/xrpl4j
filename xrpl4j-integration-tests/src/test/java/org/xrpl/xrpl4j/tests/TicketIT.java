@@ -31,8 +31,10 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class TicketIT extends AbstractIT {
@@ -49,14 +51,16 @@ public class TicketIT extends AbstractIT {
     TicketCreate ticketCreate = TicketCreate.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .ticketCount(UnsignedInteger.ONE)
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
     SubmitResult<TicketCreate> submitResult = xrplClient.submit(sourceWallet, ticketCreate);
     assertThat(submitResult.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("TicketCreate successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      submitResult.transactionResult().transaction().transactionType(),
       submitResult.transactionResult().hash()
     );
 
@@ -71,14 +75,16 @@ public class TicketIT extends AbstractIT {
 
     AccountSet accountSet = AccountSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .ticketSequence(tickets.get(0).ticketSequence())
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(sourceWallet, accountSet);
     assertThat(accountSetResult.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("AccountSet successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      accountSetResult.transactionResult().transaction().transactionType(),
       accountSetResult.transactionResult().hash()
     );
   }

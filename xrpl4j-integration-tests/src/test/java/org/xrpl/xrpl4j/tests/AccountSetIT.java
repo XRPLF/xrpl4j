@@ -31,8 +31,10 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -60,7 +62,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
         .account(wallet.classicAddress())
-        .fee(feeResult.drops().openLedgerFee())
+        .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
         .sequence(accountInfo.accountData().sequence())
         .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
         .signingPublicKey(wallet.publicKey())
@@ -70,9 +72,8 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(response.transactionResult().hash());
-    logger.info(
-        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
-    );
+
+    logInfo(response.transactionResult().transaction().transactionType(), response.transactionResult().hash());
 
     ///////////////////////
     // Set flags one-by-one
@@ -122,7 +123,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey())
@@ -132,9 +133,8 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
-    );
+
+    logInfo(response.transactionResult().transaction().transactionType(), response.transactionResult().hash());
 
     ///////////////////////
     // Set flags one-by-one
@@ -181,7 +181,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(sequence)
       .setFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
@@ -191,9 +191,11 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
     logger.info(
-      "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transactionResult().hash()
+      "AccountSet SetFlag transaction successful (asf={}; arf={}): {}{}",
+      accountSetFlag, accountRootFlag, url, response.transactionResult().hash()
     );
 
     /////////////////////////
@@ -218,7 +220,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
       .sequence(sequence)
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
@@ -227,9 +229,11 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
     logger.info(
-      "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transactionResult().hash()
+      "AccountSet SetFlag transaction successful (asf={}; arf={}): {}{}",
+      accountSetFlag, accountRootFlag, url, response.transactionResult().hash()
     );
 
     /////////////////////////

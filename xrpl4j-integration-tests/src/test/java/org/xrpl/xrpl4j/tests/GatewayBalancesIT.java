@@ -34,8 +34,10 @@ import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 public class GatewayBalancesIT extends AbstractIT {
@@ -58,7 +60,7 @@ public class GatewayBalancesIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -68,7 +70,7 @@ public class GatewayBalancesIT extends AbstractIT {
       trustLine.limitPeer(),
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////

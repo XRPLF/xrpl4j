@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,6 +28,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
@@ -41,9 +43,12 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class AccountTransactionsIT {
+
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   // an arbitrary address on xrpl mainnet that has a decent amount of transaction history
   public static final Address MAINNET_ADDRESS = Address.of("r9m6MwViR4GnUNqoGXGa8eroBrZ9FAPHFS");
@@ -77,7 +82,7 @@ public class AccountTransactionsIT {
     int pages = 1;
     while (results.marker().isPresent()) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams
-          .builder(minLedger, maxLedger)
+        .builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
         .marker(results.marker().get())
         .build());
@@ -170,10 +175,12 @@ public class AccountTransactionsIT {
         try {
           return mainnetClient.accountTransactions(params);
         } catch (JsonRpcClientErrorException e) {
+          logger.error(e.getMessage(), e);
           if (e.getMessage().equals("The server is too busy to help you now.")) {
             return null;
           } else {
-            throw new RuntimeException(e);
+            return null;
+            //throw new RuntimeException(e);
           }
         }
       }, is(notNullValue()));

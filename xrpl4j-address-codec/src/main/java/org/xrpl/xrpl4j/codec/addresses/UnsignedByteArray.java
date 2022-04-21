@@ -110,7 +110,7 @@ public class UnsignedByteArray implements Destroyable {
     return new UnsignedByteArray(unsignedBytes);
   }
 
-  private static List<UnsignedByte> fill(int amount) {
+  protected static List<UnsignedByte> fill(int amount) {
     List<UnsignedByte> unsignedBytes = new ArrayList<>();
     for (int i = 0; i < amount; i++) {
       unsignedBytes.add(i, UnsignedByte.of(0));

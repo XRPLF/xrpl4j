@@ -110,7 +110,7 @@ public interface AccountTransactionsResult extends XrplResult {
    *
    * @return An {@link UnsignedInteger} representing the requested limit.
    */
-  UnsignedInteger limit();
+  Optional<UnsignedInteger> limit();
 
   /**
    * Server-defined value indicating the response is paginated. Pass this to the next call to resume where this

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.der.DerEncodingException;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.model.flags.Flags;
@@ -51,6 +52,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
@@ -61,7 +63,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 public class BinarySerializationTests {
 
@@ -400,7 +402,6 @@ public class BinarySerializationTests {
         .build())
       .build();
 
-
     String expectedBinary = "1200142200020000240000002C63D6438D7EA4C680000000000000000000000000005743470000" +
       "000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C8114BE6C30732AE33CF2AF3344CE8172A6B9300183E3";
     assertSerializesAndDeserializes(trustSet, expectedBinary);
@@ -489,6 +490,30 @@ public class BinarySerializationTests {
       "96C3580A399F0EE78611C8E3E1EB13000181143A4C02EA95AD6AC3BED92FA036E0BBFB712C030CE1F1";
 
     assertSerializesAndDeserializes(signerListSet, expectedBinary);
+  }
+
+  @Test
+  public void serializePaymentWithPaths() throws JsonProcessingException {
+
+    List<PathStep> paths = Lists.newArrayList(
+      PathStep.builder().account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v")).currency("ABC").build(),
+      PathStep.builder().account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW")).currency("XYZ").build()
+    );
+    Payment payment = Payment.builder()
+      .account(Address.of("raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n"))
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .signingPublicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .addPaths(paths)
+      .build();
+
+    String expected = "1200002280000000240000000061400000000000000A68400000000000000C732132D2471DB72B27E3310" +
+      "F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A81143A4C02EA95AD6AC3BED92FA036E0BBFB712C030C83144B4E9C0" +
+      "6F24296074F7BC48F92A97916C6DC5EA90112117908A7F0EDD48EA896C3580A399F0EE78611C8E3000000000000000000000000" +
+      "414243000000000011204288D2E47F8EF6C99BCC457966320D1240971100000000000000000000000058595A000000000000";
+
+    assertSerializesAndDeserializes(payment, expected);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

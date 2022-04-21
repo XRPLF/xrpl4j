@@ -43,6 +43,7 @@ import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -107,7 +108,7 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Validate that the transaction was submitted successfully
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
-    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
@@ -179,7 +180,7 @@ public class SignerListSetIT extends AbstractIT {
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
@@ -236,7 +237,7 @@ public class SignerListSetIT extends AbstractIT {
     ////////////////////////////
     // Validate that the transaction was submitted successfully
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
-    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(
@@ -274,7 +275,7 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Submit it and validate that it was successful
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(sourceWallet, deleteSignerList);
-    assertThat(signerListDeleteResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListDeleteResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
     logger.info(

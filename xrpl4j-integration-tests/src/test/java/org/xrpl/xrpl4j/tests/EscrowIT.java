@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -76,7 +77,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
     logger.info(
@@ -121,7 +122,7 @@ public class EscrowIT extends AbstractIT {
       .build();
 
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
-    assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(finishResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(finishResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(finishResult.transactionResult().hash());
     logger.info(
@@ -180,7 +181,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
     logger.info(
@@ -231,7 +232,7 @@ public class EscrowIT extends AbstractIT {
       .build();
 
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(cancelResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(cancelResult.transactionResult().hash());
     logger.info(
@@ -292,7 +293,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
     logger.info(
@@ -343,7 +344,7 @@ public class EscrowIT extends AbstractIT {
       .build();
 
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
-    assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(finishResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(finishResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(finishResult.transactionResult().hash());
     logger.info(
@@ -405,7 +406,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
     logger.info(
@@ -447,7 +448,7 @@ public class EscrowIT extends AbstractIT {
       .build();
 
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(senderWallet, escrowCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(cancelResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(cancelResult.transactionResult().hash());
     logger.info(

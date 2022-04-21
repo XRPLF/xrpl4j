@@ -43,7 +43,6 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class AccountTransactionsIT {
@@ -71,7 +70,8 @@ public class AccountTransactionsIT {
     LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
     LedgerIndexBound maxLedger = LedgerIndexBound.of(61437000);
     AccountTransactionsResult results = mainnetClient.accountTransactions(
-      AccountTransactionsRequestParams.builder(minLedger, maxLedger)
+      AccountTransactionsRequestParams
+        .builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
         .build()
     );

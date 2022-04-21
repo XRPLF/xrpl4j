@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.common;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,6 +36,9 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
+/**
+ * Unit tests for {@link LedgerIndexBound}.
+ */
 public class LedgerIndexBoundTests {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
@@ -54,11 +57,6 @@ public class LedgerIndexBoundTests {
 
   @Test
   void constructInvalidBounds() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> LedgerIndexBound.of(0)
-    );
-
     assertThrows(
       IllegalArgumentException.class,
       () -> LedgerIndexBound.of(-2)
@@ -189,10 +187,16 @@ public class LedgerIndexBoundTests {
 
   @Test
   void testJson() throws JsonProcessingException, JSONException {
-    LedgerIndexBound ledgerIndexBound = LedgerIndexBound.of(1);
+    LedgerIndexBound ledgerIndexBound = LedgerIndexBound.of(0);
     LedgerIndexBoundWrapper wrapper = LedgerIndexBoundWrapper.of(ledgerIndexBound);
 
-    String json = "{\"ledgerIndexBound\": 1}";
+    String json = "{\"ledgerIndexBound\": 0}";
+    assertSerializesAndDeserializes(wrapper, json);
+
+    ledgerIndexBound = LedgerIndexBound.of(1);
+    wrapper = LedgerIndexBoundWrapper.of(ledgerIndexBound);
+
+    json = "{\"ledgerIndexBound\": 1}";
     assertSerializesAndDeserializes(wrapper, json);
 
     LedgerIndexBound negativeLedgerIndexBound = LedgerIndexBound.of(-1);

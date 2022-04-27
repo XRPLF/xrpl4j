@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,15 +23,11 @@ package org.xrpl.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
-import org.xrpl.xrpl4j.codec.binary.types.STObjectType;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
 
@@ -267,6 +263,33 @@ class XrplBinaryCodecTest {
         "B041E8F2D4A8CC86AE3D1";
     assertThat(encoder.encode(json)).isNotEqualTo(encoder.encodeForSigning(json));
     assertThat(encoder.encodeForMultiSigning(json, signerAccountId)).isEqualTo(expected);
+  }
+
+  @Test
+  public void encodePaymentWithSigners() throws JsonProcessingException {
+    String json = "{\"Account\":\"rGs8cFHMfJanAXVtn6e8Lz2iH8FtnGdexw\",\"Fee\":\"30\"," +
+      "\"Sequence\":6," +
+      "\"Signers\":" +
+      "[{\"Signer\":{\"Account\":\"rGDG5dYzvaNMaNGHAYGJKGH1vPBTHeD4fy\"," +
+      "\"TxnSignature\":\"F5354C2AEAE320FCE49CE18733EA6C27103989878E2C5561028292A09A0AE920792847982D26" +
+      "8392B8134EF4CA35159C170C40E51F5AFB4F1400DCC9287A3709\"," +
+      "\"SigningPubKey\":\"ED62267B5A9A0917D5F0D52531428294A80EEFEEB1DB595AED1C94964B35F79F2C\"}}," +
+      "{\"Signer\":{\"Account\":\"rwm8zSsHG5oTrHMTkKQFKCV3QDQEG1zHvB\"," +
+      "\"TxnSignature\":\"26A90616049EA684FDD4685726DF674815B48CBC1827D2F0D1DBC8537AC8508F715480AF70C426" +
+      "B35C193DE49C851831E767BF4AA51880CD1F90618E74B93D0C\"," +
+      "\"SigningPubKey\":\"ED9018780E2D6D454ED59E40DBEFA4681B7307940B45B67E4C8DE80DBA79626BB8\"}}]," +
+      "\"SigningPubKey\":\"\",\"Flags\":2147483648,\"Amount\":\"12345\"," +
+      "\"Destination\":\"rfA6dKpRbJfZo9HgAVGLJP3T2qPgQMA9QB\",\"TransactionType\":\"Payment\"}";
+
+    String expected = "1200002280000000240000000661400000000000303968400000000000001E73008114A510CC5A6" +
+      "84976D8986ADA04D2AC4A9C5B77ADD983144C29212A966F2C128FCEB5DB86F5C0A0635275B6F3E0107321ED9018780E" +
+      "2D6D454ED59E40DBEFA4681B7307940B45B67E4C8DE80DBA79626BB8744026A90616049EA684FDD4685726DF674815B" +
+      "48CBC1827D2F0D1DBC8537AC8508F715480AF70C426B35C193DE49C851831E767BF4AA51880CD1F90618E74B93D0C81" +
+      "146B31D3372135AEEB0AA33540B2FBAD8CA4C2EBE2E1E0107321ED62267B5A9A0917D5F0D52531428294A80EEFEEB1D" +
+      "B595AED1C94964B35F79F2C7440F5354C2AEAE320FCE49CE18733EA6C27103989878E2C5561028292A09A0AE9207928" +
+      "47982D268392B8134EF4CA35159C170C40E51F5AFB4F1400DCC9287A37098114A6DBFFB301F614A2F7B5E6B94392E17" +
+      "AAF898E9DE1F1";
+    assertThat(encoder.encode(json)).isEqualTo(expected);
   }
 
   @ParameterizedTest

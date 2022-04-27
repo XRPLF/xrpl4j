@@ -31,6 +31,7 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
@@ -58,12 +59,17 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.math.BigInteger;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BinarySerializationTests {
 
@@ -508,13 +514,117 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .addPaths(paths)
       .build();
-    
+
     String expected = "1200002280000000240000000061400000000000000A68400000000000000C732132D2471DB72B27E3310" +
       "F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A81143A4C02EA95AD6AC3BED92FA036E0BBFB712C030C83144B4E9C0" +
       "6F24296074F7BC48F92A97916C6DC5EA90112117908A7F0EDD48EA896C3580A399F0EE78611C8E3000000000000000000000000" +
       "414243000000000011204288D2E47F8EF6C99BCC457966320D1240971100000000000000000000000058595A000000000000";
 
     assertSerializesAndDeserializes(payment, expected);
+  }
+
+  @Test
+  public void submitMultisignedWithSignersOutOfOrder() throws JsonProcessingException {
+
+    Payment unsignedPayment = Payment.builder()
+      .account(Address.of("rBcTTDopDWefBJoRHkLQ4SXcJ7jmERsB54"))
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(Address.of("rB7KywQ7ewYrCTZimJBH7VSegnt8KYyVze"))
+      .build();
+
+    List<SignerWrapper> signers = Lists.newArrayList(
+      SignerWrapper.of(Signer.builder()
+        .account(Address.of("rPbYo1myPZq4JHbB7D587iR5rqBZ2L47J1"))
+        .signingPublicKey("ED5B9B29CC4C59DB744B59814AF3D891AF7217E403ED734BA598DBE16994DED7EC")
+        .transactionSignature("1DDF2D82C8C010F3ED4C4687AECD5977E60410EA89614E316CF26195A8336CD57B3026" +
+          "4471C54D5BA089A91EDC8321B16C2444CFE0F9385E6B2A37B7C758000E")
+        .build()
+      ),
+      SignerWrapper.of(Signer.builder()
+        .account(Address.of("rEzLrF8UtmrvgS8JjXvmUr1dEZnxVCicnJ"))
+        .signingPublicKey("EDB53FEFAB30FA2AD6EDB6EA3F5F9E4976CF765B94472933E1DAE3088F9707DDD7")
+        .transactionSignature("FAB3FA0C72F1FDAC99EA31701983F8F4F89803D6F7DF5465A22378EFE4ADA1C993B86B3" +
+          "226AAE3A239553F6DCF95CDED8E8FEBBC1C5343D3089A04C758353F03")
+        .build()
+      )
+    );
+
+    Payment multiSigPayment = Payment.builder()
+      .from(unsignedPayment)
+      .signers(signers)
+      .build();
+
+    String expected = "1200002280000000240000000161400000000000303968400000000000001481147465E5C80EA" +
+      "A9829630FB52A2DBE5F47FF7B95E9831472DC52A028EF1F8317D87794DEC6036A7292D502F3E0107321EDB53FEFAB30" +
+      "FA2AD6EDB6EA3F5F9E4976CF765B94472933E1DAE3088F9707DDD77440FAB3FA0C72F1FDAC99EA31701983F8F4F89803" +
+      "D6F7DF5465A22378EFE4ADA1C993B86B3226AAE3A239553F6DCF95CDED8E8FEBBC1C5343D3089A04C758353F038114" +
+      "A46957D247443D07D04ADF0DA0D9412111134744E1E0107321ED5B9B29CC4C59DB744B59814AF3D891AF7217E403ED7" +
+      "34BA598DBE16994DED7EC74401DDF2D82C8C010F3ED4C4687AECD5977E60410EA89614E316CF26195A8336CD57B3026" +
+      "4471C54D5BA089A91EDC8321B16C2444CFE0F9385E6B2A37B7C758000E8114F7DB764B848A8250D9967E19EEBB8F909C62B2E2E1F1";
+
+
+    String decodedBinary = binaryCodec.decode(expected);
+    Payment deserialized = objectMapper.readValue(
+      decodedBinary,
+      objectMapper.getTypeFactory().constructType(Payment.class)
+    );
+
+    assertThat(multiSigPayment).isNotEqualTo(deserialized);
+
+    AddressCodec addressCodec = AddressCodec.getInstance();
+    assertThat(multiSigPayment.signers().stream().sorted(Comparator.comparing(
+      sign -> new BigInteger(addressCodec.decodeAccountId(
+        Address.of(sign.signer().account().value())
+      ).hexValue(), 16)
+    )).collect(Collectors.toList()))
+      .isEqualTo(deserialized.signers());
+
+  }
+
+  @Test
+  public void submitMultisignedWithSignersInOrder() throws JsonProcessingException {
+
+    Payment unsignedPayment = Payment.builder()
+      .account(Address.of("rBcTTDopDWefBJoRHkLQ4SXcJ7jmERsB54"))
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(Address.of("rB7KywQ7ewYrCTZimJBH7VSegnt8KYyVze"))
+      .build();
+
+    List<SignerWrapper> signers = Lists.newArrayList(
+      SignerWrapper.of(Signer.builder()
+        .account(Address.of("rEzLrF8UtmrvgS8JjXvmUr1dEZnxVCicnJ"))
+        .signingPublicKey("EDB53FEFAB30FA2AD6EDB6EA3F5F9E4976CF765B94472933E1DAE3088F9707DDD7")
+        .transactionSignature("FAB3FA0C72F1FDAC99EA31701983F8F4F89803D6F7DF5465A22378EFE4ADA1C993B86B3" +
+          "226AAE3A239553F6DCF95CDED8E8FEBBC1C5343D3089A04C758353F03")
+        .build()
+      ),
+      SignerWrapper.of(Signer.builder()
+        .account(Address.of("rPbYo1myPZq4JHbB7D587iR5rqBZ2L47J1"))
+        .signingPublicKey("ED5B9B29CC4C59DB744B59814AF3D891AF7217E403ED734BA598DBE16994DED7EC")
+        .transactionSignature("1DDF2D82C8C010F3ED4C4687AECD5977E60410EA89614E316CF26195A8336CD57B3026" +
+          "4471C54D5BA089A91EDC8321B16C2444CFE0F9385E6B2A37B7C758000E")
+        .build()
+      )
+    );
+
+    Payment multiSigPayment = Payment.builder()
+      .from(unsignedPayment)
+      .signers(signers)
+      .build();
+
+    String expected = "1200002280000000240000000161400000000000303968400000000000001481147465E5C80EA" +
+      "A9829630FB52A2DBE5F47FF7B95E9831472DC52A028EF1F8317D87794DEC6036A7292D502F3E0107321EDB53FEFAB30" +
+      "FA2AD6EDB6EA3F5F9E4976CF765B94472933E1DAE3088F9707DDD77440FAB3FA0C72F1FDAC99EA31701983F8F4F89803" +
+      "D6F7DF5465A22378EFE4ADA1C993B86B3226AAE3A239553F6DCF95CDED8E8FEBBC1C5343D3089A04C758353F038114" +
+      "A46957D247443D07D04ADF0DA0D9412111134744E1E0107321ED5B9B29CC4C59DB744B59814AF3D891AF7217E403ED7" +
+      "34BA598DBE16994DED7EC74401DDF2D82C8C010F3ED4C4687AECD5977E60410EA89614E316CF26195A8336CD57B3026" +
+      "4471C54D5BA089A91EDC8321B16C2444CFE0F9385E6B2A37B7C758000E8114F7DB764B848A8250D9967E19EEBB8F909C62B2E2E1F1";
+
+    assertSerializesAndDeserializes(multiSigPayment, expected);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

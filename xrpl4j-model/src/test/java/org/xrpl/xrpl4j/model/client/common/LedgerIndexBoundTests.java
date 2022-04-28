@@ -56,11 +56,6 @@ public class LedgerIndexBoundTests {
   void constructInvalidBounds() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> LedgerIndexBound.of(0)
-    );
-
-    assertThrows(
-      IllegalArgumentException.class,
       () -> LedgerIndexBound.of(-2)
     );
 

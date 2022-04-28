@@ -171,7 +171,6 @@ public class Wrappers {
     @Value.Check
     public void checkBounds() {
       Preconditions.checkArgument(value() >= -1, "LedgerIndexBounds must be greater than or equal to -1.");
-      Preconditions.checkArgument(value() != 0, "LedgerIndexBounds cannot be 0.");
       Preconditions.checkArgument(
         value() <= UnsignedInteger.MAX_VALUE.longValue(),
         "LedgerIndexBounds cannot be larger than max unsigned integer value " + UnsignedInteger.MAX_VALUE.toString()

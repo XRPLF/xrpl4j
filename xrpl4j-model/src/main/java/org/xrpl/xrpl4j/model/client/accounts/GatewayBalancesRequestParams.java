@@ -30,7 +30,6 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 

@@ -30,7 +30,7 @@ public interface NfTokenObject {
    *
    * @return The unique TokenID of the token.
    */
-  @JsonProperty("TokenID")
+  @JsonProperty("NFTokenID")
   NfTokenId tokenId();
 
   /**

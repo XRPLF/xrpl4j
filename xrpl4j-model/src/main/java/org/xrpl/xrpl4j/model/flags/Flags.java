@@ -1507,9 +1507,9 @@ public class Flags {
   public static class NfTokenCreateOfferFlags extends TransactionFlags {
 
     /**
-     * Constant {@link NfTokenCreateOfferFlags} for the {@code tfSellToken} flag.
+     * Constant {@link NfTokenCreateOfferFlags} for the {@code tfSellNFToken} flag.
      */
-    public static final NfTokenCreateOfferFlags SELL_TOKEN = new NfTokenCreateOfferFlags(0x00000001);
+    public static final NfTokenCreateOfferFlags SELL_NFTOKEN = new NfTokenCreateOfferFlags(0x00000001);
 
     private NfTokenCreateOfferFlags(long value) {
       super(value);
@@ -1528,7 +1528,7 @@ public class Flags {
       return new NfTokenCreateOfferFlags(
         TransactionFlags.of(
           tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-          tfSellToken ? SELL_TOKEN : UNSET
+          tfSellToken ? SELL_NFTOKEN : UNSET
         ).getValue()
       );
     }
@@ -1551,8 +1551,8 @@ public class Flags {
      *
      * @return {@code true} if {@code tfBurnable} is set, otherwise {@code false}.
      */
-    public boolean tfSellToken() {
-      return this.isSet(SELL_TOKEN);
+    public boolean tfSellNfToken() {
+      return this.isSet(SELL_NFTOKEN);
     }
 
     /**
@@ -1560,7 +1560,7 @@ public class Flags {
      */
     public static class Builder {
       boolean tfFullyCanonicalSig = true;
-      boolean tfSellToken = false;
+      boolean tfSellNfToken = false;
 
       /**
        * Set {@code tfFullyCanonicalSig} to the given value.
@@ -1577,12 +1577,12 @@ public class Flags {
       /**
        * Set {@code tfSellToken} to the given value.
        *
-       * @param tfSellToken A boolean value.
+       * @param tfSellNfToken A boolean value.
        *
        * @return The same {@link NfTokenMintFlags.Builder}.
        */
-      public NfTokenCreateOfferFlags.Builder tfSellToken(boolean tfSellToken) {
-        this.tfSellToken = tfSellToken;
+      public NfTokenCreateOfferFlags.Builder tfSellToken(boolean tfSellNfToken) {
+        this.tfSellNfToken = tfSellNfToken;
         return this;
       }
 
@@ -1592,7 +1592,7 @@ public class Flags {
        * @return A new {@link NfTokenCreateOfferFlags}.
        */
       public NfTokenCreateOfferFlags build() {
-        return NfTokenCreateOfferFlags.of(tfFullyCanonicalSig, tfSellToken);
+        return NfTokenCreateOfferFlags.of(tfFullyCanonicalSig, tfSellNfToken);
       }
     }
   }

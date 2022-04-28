@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -83,28 +83,6 @@ public interface Transaction {
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
       .build();
-
-  /**
-   * Computes the fee necessary for a multisigned transaction.
-   *
-   * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
-   * transaction cost)}, where {@code N} is the number of signatures provided.
-   *
-   * @param currentLedgerFeeDrops The current ledger fee, represented as an {@link XrpCurrencyAmount}.
-   * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
-   *
-   * @return An {@link XrpCurrencyAmount} representing the multisig fee.
-   */
-  static XrpCurrencyAmount computeMultiSigFee(
-    final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerListObject signerList
-  ) {
-    Objects.requireNonNull(currentLedgerFeeDrops);
-    Objects.requireNonNull(signerList);
-
-    return currentLedgerFeeDrops
-      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
-  }
 
   /**
    * The unique {@link Address} of the account that initiated this transaction.
@@ -232,7 +210,7 @@ public interface Transaction {
    *
    * @return An optionally-present {@link UnsignedLong}.
    * @deprecated This field will be removed in favor of {@link
-   *    org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
+   * org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
    */
   @JsonProperty("date")
   @Deprecated
@@ -244,7 +222,7 @@ public interface Transaction {
    *
    * @return An optionally-present {@link ZonedDateTime}.
    * @deprecated This field will be removed in favor of {@link
-   *   org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
+   * org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
    */
   @JsonIgnore
   @Auxiliary
@@ -260,8 +238,8 @@ public interface Transaction {
    *
    * @return An optionally present {@link Hash256} containing the transaction hash.
    * @deprecated This field will be removed in a future release. Instead, use
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in {@link
-   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
+   * {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in {@link
+   * org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
   @Deprecated
   Optional<Hash256> hash();
@@ -272,8 +250,8 @@ public interface Transaction {
    *
    * @return An optionally-present {@link LedgerIndex}.
    * @deprecated This field will be removed in a future release. Instead, use
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in {@link
-   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
+   * {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in {@link
+   * org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
   @Deprecated
   @JsonProperty("ledger_index")

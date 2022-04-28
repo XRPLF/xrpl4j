@@ -75,7 +75,7 @@ public class FeeResultJsonTests extends AbstractJsonTest {
       "            \"open_ledger_level\": \"67940792\",\n" +
       "            \"reference_level\": \"256\"\n" +
       "        },\n" +
-      "        \"max_queue_size\": 1100,\n" +
+      "        \"max_queue_size\": \"1100\",\n" +
       "        \"status\": \"success\"\n" +
       "    }";
 

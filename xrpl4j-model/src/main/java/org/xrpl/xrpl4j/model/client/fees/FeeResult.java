@@ -114,6 +114,6 @@ public interface FeeResult extends XrplResult {
   @JsonProperty("max_queue_size")
   @JsonDeserialize(contentUsing = UnsignedIntegerStringDeserializer.class)
   @JsonSerialize(contentUsing = ToStringSerializer.class)
-  UnsignedInteger maxQueueSize();
+  Optional<UnsignedInteger> maxQueueSize();
 
 }

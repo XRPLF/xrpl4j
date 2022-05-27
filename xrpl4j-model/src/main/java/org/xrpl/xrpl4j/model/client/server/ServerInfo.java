@@ -81,7 +81,7 @@ public interface ServerInfo {
    * @return A {@link String} containing the version number.
    */
   @JsonProperty("build_version")
-  String buildVersion();
+  Optional<String> buildVersion();
 
   /**
    * Information on the most recently closed ledger that has not been validated by consensus. If the most recently
@@ -175,7 +175,7 @@ public interface ServerInfo {
    * @return A {@link String} containing the host name of the serverk.
    */
   @JsonProperty("hostid")
-  String hostId();
+  Optional<String> hostId();
 
   /**
    * Amount of time spent waiting for I/O operations, in milliseconds. If this number is not very, very low, then the
@@ -184,7 +184,7 @@ public interface ServerInfo {
    * @return An {@link UnsignedLong} representing the I/O latency.
    */
   @JsonProperty("io_latency_ms")
-  UnsignedLong ioLatencyMs();
+  Optional<UnsignedLong> ioLatencyMs();
 
   /**
    * The number of times (since starting up) that this server has had over 250 transactions waiting to be processed at
@@ -204,7 +204,7 @@ public interface ServerInfo {
    * @return A {@link ServerInfoLastClose}.
    */
   @JsonProperty("last_close")
-  ServerInfoLastClose lastClose();
+  Optional<ServerInfoLastClose> lastClose();
 
   /**
    * (Admin only) Detailed information about the current load state of the server.
@@ -292,7 +292,7 @@ public interface ServerInfo {
    * @return A {@link String} containing the node's public key.
    */
   @JsonProperty("pubkey_node")
-  String publicKeyNode();
+  Optional<String> publicKeyNode();
 
   /**
    * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the
@@ -310,7 +310,7 @@ public interface ServerInfo {
    * @return A {@link String} containing the server state.
    */
   @JsonProperty("server_state")
-  String serverState();
+  Optional<String> serverState();
 
   /**
    * The number of consecutive microseconds the server has been in the current state.
@@ -318,7 +318,7 @@ public interface ServerInfo {
    * @return A {@link String} containing the number of seconds the server has been in the current state.
    */
   @JsonProperty("server_state_duration_us")
-  String serverStateDurationUs();
+  Optional<String> serverStateDurationUs();
 
   /**
    * The current time in UTC, according to the server's clock.
@@ -326,7 +326,7 @@ public interface ServerInfo {
    * @return A {@link ZonedDateTime} denoting the server clock time.
    */
   @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSS z", locale = "en_US")
-  ZonedDateTime time();
+  Optional<ZonedDateTime> time();
 
   /**
    * Number of consecutive seconds that the server has been operational.
@@ -334,7 +334,7 @@ public interface ServerInfo {
    * @return An {@link UnsignedLong} representing the server uptime, in seconds.
    */
   @JsonProperty("uptime")
-  UnsignedLong upTime();
+  Optional<UnsignedLong> upTime();
 
   /**
    * Information about the most recent fully-validated ledger. If the most recent validated ledger is not available, the
@@ -352,7 +352,7 @@ public interface ServerInfo {
    * @return An {@link UnsignedInteger} representing the quorum.
    */
   @JsonProperty("validation_quorum")
-  UnsignedInteger validationQuorum();
+  Optional<UnsignedInteger> validationQuorum();
 
   /**
    * (Admin only) Either the human readable time, in UTC, when the current validator list will expire, the string {@code

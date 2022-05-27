@@ -38,9 +38,12 @@ public class FeeUtils {
    * @return {@link XrpCurrencyAmount} value of the fee that should be used for the transaction.
    */
   public static XrpCurrencyAmount calculateFeeDynamically(FeeResult feeResult) {
-    int currentQueueSize = feeResult.currentQueueSize().intValue();
-    int maxQueueSize = feeResult.maxQueueSize().get().intValue();
-    int queuePct = currentQueueSize / maxQueueSize;
+
+    Objects.requireNonNull(feeResult);
+
+    double currentQueueSize = feeResult.currentQueueSize().doubleValue();
+    double maxQueueSize = feeResult.maxQueueSize().get().doubleValue();
+    double queuePercentage = currentQueueSize / maxQueueSize;
     FeeDrops drops = feeResult.drops();
     int minimumFee = drops.minimumFee().value().intValue();
     int medianFee = drops.medianFee().value().intValue();
@@ -58,9 +61,9 @@ public class FeeUtils {
     );
 
     long possibleFeeMedium;
-    if (queuePct > 0.1) {
+    if (queuePercentage > 0.1) {
       possibleFeeMedium = Math.round((minimumFee + openLedgerFee) / 3);
-    } else if (queuePct == 0) {
+    } else if (queuePercentage == 0) {
       possibleFeeMedium = Math.max(10 * minimumFee, openLedgerFee);
     } else {
       possibleFeeMedium = Math.max(10 * minimumFee, Math.round((minimumFee + medianFee) / 2));
@@ -76,9 +79,9 @@ public class FeeUtils {
     ));
 
     XrpCurrencyAmount fee;
-    if (queuePct == 0) {  // if queue is empty
+    if (queuePercentage == 0) {  // if queue is empty
       fee = XrpCurrencyAmount.ofDrops(feeLow);
-    } else if (0 < queuePct && queuePct < 1) {  // queue has txns in it but is not full
+    } else if (0 < queuePercentage && queuePercentage < 1) {  // queue has txns in it but is not full
       fee = XrpCurrencyAmount.ofDrops(feeMedium);
     } else {  // if queue is full
       fee = XrpCurrencyAmount.ofDrops(feeHigh);

@@ -85,6 +85,29 @@ public interface Transaction {
       .build();
 
   /**
+   * Computes the fee necessary for a multisigned transaction.
+   *
+   * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
+   * transaction cost)}, where {@code N} is the number of signatures provided.
+   *
+   * @param currentLedgerFeeDrops The current ledger fee, represented as an {@link XrpCurrencyAmount}.
+   * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the multisig fee.
+   */
+  @Deprecated
+  static XrpCurrencyAmount computeMultiSigFee(
+    final XrpCurrencyAmount currentLedgerFeeDrops,
+    final SignerListObject signerList
+  ) {
+    Objects.requireNonNull(currentLedgerFeeDrops);
+    Objects.requireNonNull(signerList);
+
+    return currentLedgerFeeDrops
+      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+  }
+
+  /**
    * The unique {@link Address} of the account that initiated this transaction.
    *
    * @return The {@link Address} of the account submitting this transaction.

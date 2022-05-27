@@ -62,7 +62,6 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      //.fee(feeResult.drops().openLedgerFee())
       .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)

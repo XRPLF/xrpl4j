@@ -67,7 +67,7 @@ public interface ServerInfoLedger {
    * @return An {@link UnsignedInteger} representing the amount of XRP to reserve.
    */
   @JsonProperty("reserve_base_xrp")
-  UnsignedInteger reserveBaseXrp();
+  BigDecimal reserveBaseXrp();
 
   /**
    * Amount of XRP (not drops) added to the account reserve for each object an account owns in the ledger.
@@ -75,7 +75,7 @@ public interface ServerInfoLedger {
    * @return An {@link UnsignedInteger} representing the amount of XRP added.
    */
   @JsonProperty("reserve_inc_xrp")
-  UnsignedInteger reserveIncXrp();
+  BigDecimal reserveIncXrp();
 
   /**
    * The ledger index of the ledger.

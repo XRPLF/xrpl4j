@@ -20,15 +20,26 @@ package org.xrpl.xrpl4j.model.client.server;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Information about a recent ledger, as represented in {@link ServerInfoResult}s.
@@ -66,16 +77,36 @@ public interface ServerInfoLedger {
    *
    * @return An {@link UnsignedInteger} representing the amount of XRP to reserve.
    */
+  @JsonIgnore
+  @Value.Auxiliary
+  @Deprecated
+  @Value.Default
+  default UnsignedInteger reserveBaseXrp() {
+    return UnsignedInteger.valueOf(reserveBaseDrops().toXrp().setScale(0, RoundingMode.CEILING).toBigInteger());
+  }
+
   @JsonProperty("reserve_base_xrp")
-  BigDecimal reserveBaseXrp();
+  @JsonSerialize(using = DecimalXrpCurrencyAmountSerializer.class)
+  @JsonDeserialize(using = DecimalXrpCurrencyAmountDeserializer.class)
+  XrpCurrencyAmount reserveBaseDrops();
 
   /**
    * Amount of XRP (not drops) added to the account reserve for each object an account owns in the ledger.
    *
    * @return An {@link UnsignedInteger} representing the amount of XRP added.
    */
+  @JsonIgnore
+  @Value.Auxiliary
+  @Deprecated
+  @Value.Default
+  default UnsignedInteger reserveIncXrp() {
+    return UnsignedInteger.valueOf(reserveIncDrops().toXrp().setScale(0, RoundingMode.CEILING).toBigInteger());
+  }
+
   @JsonProperty("reserve_inc_xrp")
-  BigDecimal reserveIncXrp();
+  @JsonSerialize(using = DecimalXrpCurrencyAmountSerializer.class)
+  @JsonDeserialize(using = DecimalXrpCurrencyAmountDeserializer.class)
+  XrpCurrencyAmount reserveIncDrops();
 
   /**
    * The ledger index of the ledger.
@@ -92,5 +123,33 @@ public interface ServerInfoLedger {
    */
   @JsonProperty("base_fee_xrp")
   BigDecimal baseFeeXrp();
+
+  /**
+   * Deserializes either scientific notation or decimal notation in JSON to an XrpCurrencyAmount.
+   */
+  class DecimalXrpCurrencyAmountDeserializer extends JsonDeserializer<XrpCurrencyAmount> {
+    @Override
+    public XrpCurrencyAmount deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+      JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+      return XrpCurrencyAmount.ofXrp(new BigDecimal(node.asText()));
+    }
+  }
+
+  /**
+   * Serializes XrpCurrencyAmount in drops to Xrp value as {@link UnsignedInteger}.
+   */
+  class DecimalXrpCurrencyAmountSerializer extends StdScalarSerializer<XrpCurrencyAmount> {
+
+    public DecimalXrpCurrencyAmountSerializer() {
+      super(XrpCurrencyAmount.class, false);
+    }
+
+    @Override
+    public void serialize(XrpCurrencyAmount amount, JsonGenerator gen, SerializerProvider provider) throws IOException {
+      gen.writeNumber(
+        XrpCurrencyAmount.ofDrops(Long.parseLong(amount.toString())).toXrp().setScale(0, RoundingMode.CEILING)
+      );
+    }
+  }
 
 }

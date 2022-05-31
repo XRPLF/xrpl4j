@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -173,6 +174,93 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       "        \"hash\": \"E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3\",\n" +
       "        \"reserve_base_xrp\": 20,\n" +
       "        \"reserve_inc_xrp\": 5,\n" +
+      "        \"seq\": 62562429\n" +
+      "      },\n" +
+      "      \"validation_quorum\": 31\n" +
+      "    }\n" +
+      "  },\n" +
+      "  \"status\": \"success\",\n" +
+      "  \"type\": \"response\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+
+  }
+
+  @Test
+  public void testJsonDeserializationWithReserveBaseAndIncXrpAsDecimal()
+    throws JsonProcessingException, JSONException {
+    ServerInfoResult result = ServerInfoResult.builder().info(updatedServerInfo()).build();
+
+    String json = "{\n" +
+      "    \"info\": {\n" +
+      "      \"build_version\": \"1.7.0\",\n" +
+      "      \"amendment_blocked\": false,\n" +
+      "      \"complete_ledgers\": \"61881385-62562429\",\n" +
+      "      \"hostid\": \"LARD\",\n" +
+      "      \"io_latency_ms\": 2,\n" +
+      "      \"jq_trans_overflow\": \"0\",\n" +
+      "      \"last_close\": {\n" +
+      "        \"converge_time_s\": 3.002,\n" +
+      "        \"proposers\": 38\n" +
+      "      },\n" +
+      "      \"load_factor\": 511.83203125,\n" +
+      "      \"load_factor_server\": 1,\n" +
+      "      \"peers\": 261,\n" +
+      "      \"pubkey_node\": \"n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD\",\n" +
+      "      \"server_state\": \"full\",\n" +
+      "      \"server_state_duration_us\": \"2274468435925\",\n" +
+      "      \"time\": \"2021-Mar-30 15:37:51.486384 UTC\",\n" +
+      "      \"uptime\": 2274704,\n" +
+      "      \"validated_ledger\": {\n" +
+      "        \"age\": 4,\n" +
+      "        \"base_fee_xrp\": 0.00001,\n" +
+      "        \"hash\": \"E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3\",\n" +
+      "        \"reserve_base_xrp\": 20.0,\n" +
+      "        \"reserve_inc_xrp\": 5.0,\n" +
+      "        \"seq\": 62562429\n" +
+      "      },\n" +
+      "      \"validation_quorum\": 31\n" +
+      "    }\n" +
+      "  },\n" +
+      "  \"status\": \"success\",\n" +
+      "  \"type\": \"response\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  public void testJsonDeserializationWithReserveBaseAndIncXrpAsScientific()
+    throws JsonProcessingException, JSONException {
+    ServerInfoResult result = ServerInfoResult.builder().info(updatedServerInfo()).build();
+
+    String json = "{\n" +
+      "    \"info\": {\n" +
+      "      \"build_version\": \"1.7.0\",\n" +
+      "      \"amendment_blocked\": false,\n" +
+      "      \"complete_ledgers\": \"61881385-62562429\",\n" +
+      "      \"hostid\": \"LARD\",\n" +
+      "      \"io_latency_ms\": 2,\n" +
+      "      \"jq_trans_overflow\": \"0\",\n" +
+      "      \"last_close\": {\n" +
+      "        \"converge_time_s\": 3.002,\n" +
+      "        \"proposers\": 38\n" +
+      "      },\n" +
+      "      \"load_factor\": 511.83203125,\n" +
+      "      \"load_factor_server\": 1,\n" +
+      "      \"peers\": 261,\n" +
+      "      \"pubkey_node\": \"n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD\",\n" +
+      "      \"server_state\": \"full\",\n" +
+      "      \"server_state_duration_us\": \"2274468435925\",\n" +
+      "      \"time\": \"2021-Mar-30 15:37:51.486384 UTC\",\n" +
+      "      \"uptime\": 2274704,\n" +
+      "      \"validated_ledger\": {\n" +
+      "        \"age\": 4,\n" +
+      "        \"base_fee_xrp\": 0.00001,\n" +
+      "        \"hash\": \"E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3\",\n" +
+      "        \"reserve_base_xrp\": 2e1,\n" +
+      "        \"reserve_inc_xrp\": 5e0,\n" +
       "        \"seq\": 62562429\n" +
       "      },\n" +
       "      \"validation_quorum\": 31\n" +
@@ -449,8 +537,10 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(2))
         .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
-        .reserveBaseXrp(BigDecimal.valueOf(20))
-        .reserveIncXrp(BigDecimal.valueOf(5))
+        .reserveBaseXrp(UnsignedInteger.valueOf(20))
+        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
+        .reserveIncXrp(UnsignedInteger.valueOf(5))
+        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
         .sequence(LedgerIndex.of(UnsignedInteger.valueOf(54300729)))
         .baseFeeXrp(new BigDecimal("0.00001"))
         .build())
@@ -488,8 +578,10 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(4))
         .hash(Hash256.of("E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3"))
-        .reserveBaseXrp(BigDecimal.valueOf(20))
-        .reserveIncXrp(BigDecimal.valueOf(5))
+        .reserveBaseXrp(UnsignedInteger.valueOf(20))
+        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
+        .reserveIncXrp(UnsignedInteger.valueOf(5))
+        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
         .sequence(LedgerIndex.of(UnsignedInteger.valueOf(62562429)))
         .baseFeeXrp(new BigDecimal("0.00001"))
         .build())

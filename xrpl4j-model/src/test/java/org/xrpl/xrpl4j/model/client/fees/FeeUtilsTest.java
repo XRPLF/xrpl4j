@@ -70,10 +70,10 @@ public class FeeUtilsTest {
   }
 
   @Test
-  public void calculateFeeDynamicallyForEmptyQueue() {
+  public void calculateFeeDynamicallyForAlmostEmptyQueue() {
     FeeResult feeResult = FeeResult.builder()
       .currentLedgerSize(UnsignedInteger.valueOf(56))
-      .currentQueueSize(UnsignedInteger.valueOf(11))
+      .currentQueueSize(UnsignedInteger.valueOf(1))
       .drops(
         FeeDrops.builder()
           .baseFee(XrpCurrencyAmount.ofDrops(10))
@@ -187,5 +187,35 @@ public class FeeUtilsTest {
       .build();
 
     assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
+  }
+
+  @Test
+  public void calculateFeeDynamicallyForEmptyQueue() {
+    FeeResult feeResult = FeeResult.builder()
+      .currentLedgerSize(UnsignedInteger.valueOf(56))
+      .currentQueueSize(UnsignedInteger.valueOf(0))
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(100))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2657))
+          .build()
+      )
+      .expectedLedgerSize(UnsignedInteger.valueOf(55))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
+      .levels(
+        FeeLevels.builder()
+          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
+          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
+          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
+          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(110))
+      .status("success")
+      .build();
+
+    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(15));
   }
 }

@@ -124,7 +124,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey())
@@ -183,7 +183,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(sequence)
       .setFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
@@ -220,7 +220,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(sequence)
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())

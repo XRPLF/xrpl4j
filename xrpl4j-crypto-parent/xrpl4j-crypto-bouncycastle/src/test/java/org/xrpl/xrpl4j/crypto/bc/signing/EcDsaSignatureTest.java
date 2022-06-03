@@ -10,15 +10,15 @@ import org.junit.jupiter.api.Test;
 import java.math.BigInteger;
 
 /**
- * Unit tests for {@link EcDsaSignature}.
+ * Unit tests for {@link BcSignatureService.EcDsaSignature}.
  */
 class EcDsaSignatureTest {
 
-  EcDsaSignature signature;
+  BcSignatureService.EcDsaSignature signature;
 
   @BeforeEach
   void setUp() {
-    signature = EcDsaSignature.builder()
+    signature = BcSignatureService.EcDsaSignature.builder()
       .r(BigInteger.ONE)
       .s(BigInteger.ONE)
       .build();
@@ -27,7 +27,7 @@ class EcDsaSignatureTest {
   @Test
   void fromDer() {
     byte[] derBytes = BaseEncoding.base16().decode("3006020101020101");
-    EcDsaSignature signature = EcDsaSignature.fromDer(derBytes);
+    BcSignatureService.EcDsaSignature signature = BcSignatureService.EcDsaSignature.fromDer(derBytes);
 
     assertThat(signature.r()).isEqualTo(BigInteger.ONE);
     assertThat(signature.s()).isEqualTo(BigInteger.ONE);

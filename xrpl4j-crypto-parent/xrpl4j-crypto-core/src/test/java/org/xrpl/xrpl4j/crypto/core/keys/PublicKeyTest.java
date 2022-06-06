@@ -32,11 +32,15 @@ public class PublicKeyTest {
   @Test
   public void fromBase16EncodedStringEd25519() {
     assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX).base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX.toLowerCase()).base58Value())
+      .isEqualTo(ED_PUBLIC_KEY_B58);
   }
 
   @Test
   public void fromBase16EncodedStringSecp256k1() {
     assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX).base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
+    assertThat(PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX.toLowerCase()).base58Value())
+      .isEqualTo(EC_PUBLIC_KEY_B58);
   }
 
   @Test

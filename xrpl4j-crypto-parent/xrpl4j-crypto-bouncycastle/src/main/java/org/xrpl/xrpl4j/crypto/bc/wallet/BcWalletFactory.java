@@ -49,6 +49,7 @@ public class BcWalletFactory implements WalletFactory {
     return INSTANCE;
   }
 
+  @Deprecated
   @Override
   public SeedWalletGenerationResult randomWalletEd25519() {
     Seed seed = ed25519KeyPairService.generateSeed();
@@ -57,6 +58,7 @@ public class BcWalletFactory implements WalletFactory {
     return SeedWalletGenerationResult.builder().seed(seed).wallet(wallet).build();
   }
 
+  @Deprecated
   @Override
   public SeedWalletGenerationResult randomWalletSecp256k1() {
     Seed seed = secp256k1KeyPairService.generateSeed();

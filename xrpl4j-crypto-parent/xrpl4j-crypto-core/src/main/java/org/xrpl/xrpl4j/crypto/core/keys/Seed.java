@@ -64,6 +64,10 @@ public class Seed implements javax.security.auth.Destroyable {
     return secp256k1SeedFromEntropy(Entropy.of(entropyBytes));
   }
 
+  public static Seed ed25519Seed() {
+    return ed25519SeedFromEntropy(Entropy.newInstance());
+  }
+
   /**
    * Construct an Ed25519-compatible {@link Seed} from the supplied {@code passphrase}.
    *
@@ -81,6 +85,10 @@ public class Seed implements javax.security.auth.Destroyable {
     );
 
     return new Seed(UnsignedByteArray.of(AddressBase58.decode(base58EncodedSeed)));
+  }
+
+  public static Seed secp256k1Seed() {
+    return secp256k1SeedFromEntropy(Entropy.newInstance());
   }
 
   /**

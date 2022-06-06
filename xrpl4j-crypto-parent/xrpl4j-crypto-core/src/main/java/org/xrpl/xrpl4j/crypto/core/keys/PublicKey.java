@@ -67,7 +67,7 @@ public interface PublicKey {
   static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey) {
     Objects.requireNonNull(base16EncodedPublicKey);
     return PublicKey.builder()
-      .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey)))
+      .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey.toUpperCase())))
       .build();
   }
 

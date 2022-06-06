@@ -30,7 +30,10 @@ import java.util.Optional;
  * pass around the key itself. This pattern enables a single API to operate with keys that exist in the same JVM as the
  * running program, but also allows the API to operate on keys that exist outside of the JVM, such as in an external
  * key-store like an HSM or other hardware wallet.
+ *
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public interface KeyMetadata {
 
   /**

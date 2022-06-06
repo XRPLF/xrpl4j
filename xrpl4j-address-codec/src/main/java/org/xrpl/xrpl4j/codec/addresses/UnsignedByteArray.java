@@ -25,16 +25,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import javax.security.auth.Destroyable;
 
 /**
- * Wrapper for holding unsigned bytes since unsigned bytes are hard in Java and XRPL ledger does many operations
- * on arrays on unsigned bytes.
+ * <p>Wrapper for holding unsigned bytes since unsigned bytes are hard in Java and XRPL ledger does many operations on
+ * arrays on unsigned bytes.</p>
  *
- * <p>Note: several of the methods in this class mutate the underlying value.
+ * <p>Note: several of the methods in this class mutate the underlying value.</p>
+ *
+ * @deprecated Prefer the version in the xrpl4j-core module instead.
  */
-public class UnsignedByteArray {
+public class UnsignedByteArray implements Destroyable {
 
   private final List<UnsignedByte> unsignedBytes;
+  private boolean destroyed;
 
   public UnsignedByteArray(final List<UnsignedByte> unsignedBytes) {
     Objects.requireNonNull(unsignedBytes);
@@ -180,8 +184,8 @@ public class UnsignedByteArray {
   }
 
   /**
-   * Appends the given bytes to the end of this array.
-   * Note: this method mutates the instance and returns the same instance (mainly for call chaining convenience).
+   * Appends the given bytes to the end of this array. Note: this method mutates the instance and returns the same
+   * instance (mainly for call chaining convenience).
    *
    * @param array An {@link UnsignedByteArray} to append to this {@link UnsignedByteArray}.
    *
@@ -236,5 +240,17 @@ public class UnsignedByteArray {
     return "UnsignedByteArray{" +
       "unsignedBytes=List(size=" + unsignedBytes.size() + ")" +
       '}';
+  }
+
+  @Override
+  public void destroy() {
+    this.unsignedBytes.forEach(UnsignedByte::destroy);
+    this.unsignedBytes.clear();
+    this.destroyed = true;
+  }
+
+  @Override
+  public boolean isDestroyed() {
+    return this.destroyed;
   }
 }

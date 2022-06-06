@@ -54,7 +54,9 @@ import java.security.Security;
  * non-seed bytes, they are all from the same source.
  *
  * @see "https://github.com/web3j/web3j/blob/master/crypto/src/main/java/org/web3j/crypto/LinuxSecureRandom.java"
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public class LinuxSecureRandom extends SecureRandomSpi {
 
   private static final FileInputStream urandom;

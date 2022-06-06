@@ -6,7 +6,7 @@
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-parent</artifactId>
   <packaging>pom</packaging>
-  <version>HEAD-SNAPSHOT</version>
+  <version>v3-dev-preview-SNAPSHOT</version>
 
   <name>xrpl4j parent</name>
   <description>Parent project for xrpl4j modules.</description>
@@ -44,6 +44,11 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>xrpl4j-address-codec</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>xrpl4j-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -100,6 +105,18 @@
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>3.14.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.skyscreamer</groupId>
+        <artifactId>jsonassert</artifactId>
+        <version>1.5.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit-jupiter.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -173,9 +190,9 @@
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.skyscreamer</groupId>
-        <artifactId>jsonassert</artifactId>
-        <version>1.5.0</version>
+        <groupId>com.jayway.jsonpath</groupId>
+        <artifactId>json-path-assert</artifactId>
+        <version>2.6.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -313,6 +330,7 @@
   </properties>
 
   <modules>
+    <module>xrpl4j-core</module>
     <module>xrpl4j-binary-codec</module>
     <module>xrpl4j-model</module>
     <module>xrpl4j-address-codec</module>

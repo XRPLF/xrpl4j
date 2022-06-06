@@ -38,6 +38,7 @@ import java.math.BigInteger;
 /**
  * Unit tests for {@link BcKeyUtils}.
  */
+@Deprecated
 class BcKeyUtilsTest {
 
   // BouncyCastle Encoding

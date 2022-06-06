@@ -24,8 +24,11 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 /**
- * Defines how to verify an XRPL transaction.
+ * Defines how to verify an XRPL transaction using public key material supplied by the caller.
+ *
+ * @deprecated Prefer the variant found in {@link org.xrpl.xrpl4j.crypto.core} instead.
  */
+@Deprecated
 public interface TransactionVerifier {
 
   /**

@@ -45,6 +45,7 @@ import java.util.Objects;
 /**
  * Unit tests for {@link SingleKeySignatureService}.
  */
+@Deprecated
 class SingleKeySignatureServiceTest {
 
   private static final String SECP256K1 = "secp256k1";
@@ -59,17 +60,18 @@ class SingleKeySignatureServiceTest {
 
   // Source ed25519 Key
   // 32 Bytes (no XRPL prefix here)
-  private static final String ED_PRIVATE_KEY_HEX = "60F72F359647AD376D2CB783340CD843BD57CCD46093AA16B0C4D3A5143BADC5";
-  private static final String sourceClassicAddressED = "rLg3vY8w2tTZz1WVYjub32V4SGynLWnNRw";
+  private static final String ED_PRIVATE_KEY_HEX = "B224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
+  private static final String sourceClassicAddressED = "rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466";
   // Source secp256k1 Key
   // 33 Bytes
   private static final String EC_PRIVATE_KEY_HEX = "0093CC77E2333958D1480FC36811A68A1785258F65251DE100012FA18D0186FFB0";
   private static final String sourceClassicAddressEC = "rDt78kzcAfRf5NwmwL4f3E5pK14iM4CxRi";
   // Dest address
-  private static final String destinationClassicAddress = "rKdi2esXfU7VmZyvRtMKZFFMVESBLE1iiw";
+  private static final String destinationClassicAddress = "rD8ATvjj9mfnFuYYTGRNb9DygnJW9JNN1C";
+
   private ECPrivateKeyParameters knownEcPrivateKeyParameters;
   private Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters;
-  // private static final String destinationSecret = "snvSCVszQz3bLfPaGNqcU2bM7PsVR";
+
   private SingleKeySignatureService edSignatureService;
   private SingleKeySignatureService ecSignatureService;
 
@@ -100,8 +102,8 @@ class SingleKeySignatureServiceTest {
   void getPublicKeyEd() {
     PublicKey actualEcPublicKey = this.edSignatureService.getPublicKey(keyMetadata("single_key"));
     assertThat(actualEcPublicKey.base16Encoded())
-      .isEqualTo("ED63DDD6F90FB4D4787972B8CD3FB960CDA53ED9F18A86BDAAFB4D8C2E8828C06A");
-    assertThat(actualEcPublicKey.base58Encoded()).isEqualTo("aKEXRRa9n8iaCuiWBiUWniXBfoohrj8nR6E5pJ6DCB721WpCN65E");
+      .isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
+    assertThat(actualEcPublicKey.base58Encoded()).isEqualTo("aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B");
     assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.ED25519);
   }
 
@@ -109,7 +111,9 @@ class SingleKeySignatureServiceTest {
   void edDsaSignAndVerify() {
     final KeyMetadata keyMetadata = keyMetadata("foo");
     final PublicKey publicKey = this.edSignatureService.getPublicKey(keyMetadata);
-
+    assertThat(publicKey.base16Encoded())
+      .isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
+    // 94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE
     final Payment paymentTransaction = Payment.builder()
       .account(Address.of(sourceClassicAddressED))
       .fee(XrpCurrencyAmount.ofDrops(10L))

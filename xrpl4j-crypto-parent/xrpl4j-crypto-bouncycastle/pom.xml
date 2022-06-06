@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.xrpl</groupId>
     <artifactId>xrpl4j-crypto-parent</artifactId>
-    <version>HEAD-SNAPSHOT</version>
+    <version>v3-dev-preview-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -50,6 +50,10 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15to18</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.immutables</groupId>
+      <artifactId>value</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

@@ -33,7 +33,10 @@ import java.util.Optional;
  * <p>For example, a database password would not be stored in the key-store. Instead, a private key or symmetric
  * key would be stored in the key-store, and the encrypted database password would be stored in some other system in
  * encrypted form.</p>
+ *
+ * @deprecated This class will be removed once crypto-core is the primary mechanism for signing.
  */
+@Deprecated
 public interface KeyStoreType {
 
   /**

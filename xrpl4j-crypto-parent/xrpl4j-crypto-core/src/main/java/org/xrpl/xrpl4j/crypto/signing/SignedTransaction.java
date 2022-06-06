@@ -35,7 +35,10 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
  * Holds the bytes for a signed XRPL transaction.
  *
  * @param <T> The type of {@link Transaction} that was signed.
+ *
+ * @deprecated Prefer the variant found in {@link org.xrpl.xrpl4j.crypto.core} instead.
  */
+@Deprecated
 @Value.Immutable
 @JsonSerialize(as = ImmutableSignedTransaction.class)
 @JsonDeserialize(as = ImmutableSignedTransaction.class)

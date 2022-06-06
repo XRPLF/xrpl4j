@@ -39,7 +39,9 @@ import java.security.SecureRandom;
  * Utility class for working with SecureRandom implementation (Implementation from web3j).
  *
  * @see "https://github.com/web3j/web3j/blob/master/crypto/src/main/java/org/web3j/crypto/SecureRandomUtils.java"
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public final class SecureRandomUtils {
 
   private static final SecureRandom SECURE_RANDOM;

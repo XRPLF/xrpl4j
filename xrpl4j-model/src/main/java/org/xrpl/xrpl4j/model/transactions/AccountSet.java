@@ -61,9 +61,9 @@ public interface AccountSet extends Transaction {
    * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
-  @Derived
-  default TransactionFlags flags() {
-    return new TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
+  @Value.Default
+  default Flags.AccountSetTransactionFlags flags() {
+    return new Flags.AccountSetTransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

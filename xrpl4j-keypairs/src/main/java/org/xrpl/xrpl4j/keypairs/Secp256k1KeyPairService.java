@@ -36,9 +36,12 @@ import java.math.BigInteger;
 import java.util.Optional;
 
 /**
- * Implementation of {@link KeyPairService} which uses the ECDSA algorithm with the secp256k1 curve to derive keys
- * and sign/verify signatures.
+ * Implementation of {@link KeyPairService} which uses the ECDSA algorithm with the secp256k1 curve to derive keys and
+ * sign/verify signatures.
+ *
+ * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
+@Deprecated
 public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   private static final Secp256k1KeyPairService INSTANCE = new Secp256k1KeyPairService();
@@ -59,10 +62,10 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   }
 
   /**
-   * Note that multiple keypairs can be derived from the same seed using the secp2551k algorithm by
-   * deriving the keys from a seed and an account index UInt32. However, this use case is incredibly uncommon,
-   * and a vast majority of users use 0 for the account index. Thus, this implementation does not allow for custom
-   * account indexes for deriving secp2551k keys.
+   * Note that multiple keypairs can be derived from the same seed using the secp2551k algorithm by deriving the keys
+   * from a seed and an account index UInt32. However, this use case is incredibly uncommon, and a vast majority of
+   * users use 0 for the account index. Thus, this implementation does not allow for custom account indexes for deriving
+   * secp2551k keys.
    *
    * @param seed An {@link UnsignedByteArray} of length 16 containing a seed.
    *

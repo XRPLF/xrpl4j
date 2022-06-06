@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -407,7 +407,6 @@ public class BinarySerializationTests {
         .value("10000000")
         .build())
       .build();
-
 
     String expectedBinary = "1200142200020000240000002C63D6438D7EA4C680000000000000000000000000005743470000" +
       "000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C8114BE6C30732AE33CF2AF3344CE8172A6B9300183E3";

@@ -32,7 +32,10 @@ import java.util.Objects;
 
 /**
  * A typed instance of an XRPL private-key.
+ *
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public interface PrivateKey {
 
   /**

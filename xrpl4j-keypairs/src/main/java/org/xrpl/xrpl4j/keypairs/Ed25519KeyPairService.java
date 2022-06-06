@@ -98,7 +98,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(privateKey.substring(2)), // Remove ED prefix byte
+      BaseEncoding.base16().decode(privateKey.substring(2).toUpperCase()), // Remove ED prefix byte
       0
     );
 
@@ -117,13 +117,13 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     Ed25519PublicKeyParameters publicKeyParameters = new Ed25519PublicKeyParameters(
-      BaseEncoding.base16().decode(publicKey.substring(2)), // Remove ED prefix byte
+      BaseEncoding.base16().decode(publicKey.substring(2).toUpperCase()), // Remove ED prefix byte
       0
     );
 
     signer.reset();
     signer.init(false, publicKeyParameters);
     signer.update(message.toByteArray(), 0, message.getUnsignedBytes().size());
-    return signer.verifySignature(BaseEncoding.base16().decode(signature));
+    return signer.verifySignature(BaseEncoding.base16().decode(signature.toUpperCase()));
   }
 }

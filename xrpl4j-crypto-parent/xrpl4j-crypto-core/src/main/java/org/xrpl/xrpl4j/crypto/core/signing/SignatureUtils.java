@@ -234,7 +234,7 @@ public class SignatureUtils {
         .unsignedTransaction(transaction)
         .signature(signature)
         .signedTransaction((T) transactionWithSignature)
-        .signedTransactionBytes(UnsignedByteArray.of(BaseEncoding.base16().decode(signedBlob)))
+        .signedTransactionBytes(UnsignedByteArray.of(BaseEncoding.base16().decode(signedBlob.toUpperCase())))
         .build();
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e.getMessage(), e);

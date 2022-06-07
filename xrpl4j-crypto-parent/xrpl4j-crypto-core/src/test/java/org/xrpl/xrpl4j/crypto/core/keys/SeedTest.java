@@ -50,6 +50,22 @@ public class SeedTest {
   }
 
   @Test
+  void testRandomEd25519SeedGeneration() {
+    Seed originalSeed = Seed.ed25519Seed();
+    Seed copiedSeed = new Seed(originalSeed);
+    assertThat(originalSeed.equals(copiedSeed)).isTrue();
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
+  }
+
+  @Test
+  void testRandomSecp256k1SeedGeneration() {
+    Seed originalSeed = Seed.secp256k1Seed();
+    Seed copiedSeed = new Seed(originalSeed);
+    assertThat(originalSeed.equals(copiedSeed)).isTrue();
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
+  }
+
+  @Test
   void testSecp256k1SeedFromNullEntropy() {
     Assertions.assertThrows(NullPointerException.class, () -> {
       Seed.secp256k1SeedFromEntropy(null);

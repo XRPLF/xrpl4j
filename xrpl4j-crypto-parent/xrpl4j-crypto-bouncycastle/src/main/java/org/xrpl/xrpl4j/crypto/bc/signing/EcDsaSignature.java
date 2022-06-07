@@ -45,12 +45,10 @@ public interface EcDsaSignature {
       }
       // OpenSSL deviates from the DER spec by interpreting these values as unsigned, though they should not be
       // Thus, we always use the positive versions. See: http://r6.ca/blog/20111119T211504Z.html
-
-      ImmutableEcDsaSignature foo = EcDsaSignature.builder()
+      return EcDsaSignature.builder()
         .r(r.getPositiveValue())
         .s(s.getPositiveValue())
         .build();
-      return foo;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

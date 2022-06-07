@@ -122,7 +122,7 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
 
   @SuppressWarnings("checkstyle:LocalVariableName")
   @Override
-  public synchronized Signature ecDsaSign(final PrivateKey privateKey, final UnsignedByteArray transactionBytes) {
+  protected synchronized Signature ecDsaSign(final PrivateKey privateKey, final UnsignedByteArray transactionBytes) {
     Objects.requireNonNull(privateKey);
     Objects.requireNonNull(transactionBytes);
 

@@ -104,8 +104,6 @@ public class AccountTransactionsIT {
         .build()
     );
 
-    assertThat(results.ledgerIndexMinimum()).isEqualTo(minLedger);
-    assertThat(results.ledgerIndexMaximum()).isEqualTo(maxLedger);
     assertThat(results.transactions()).hasSize(7);
     // results are returned in descending sorted order by ledger index
     assertThat(results.transactions().get(0).transaction().ledgerIndex()).isNotEmpty().get()
@@ -154,7 +152,6 @@ public class AccountTransactionsIT {
         .build()
     );
 
-    assertThat(resultByShortcut.ledgerIndexMinimum()).isEqualTo(resultByShortcut.ledgerIndexMaximum());
     assertThat(resultByShortcut.ledgerIndexMinimum().value())
       .isEqualTo(validatedLedgerIndex.unsignedIntegerValue().longValue());
 

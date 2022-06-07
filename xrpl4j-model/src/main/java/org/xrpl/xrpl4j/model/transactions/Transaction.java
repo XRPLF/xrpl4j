@@ -233,7 +233,7 @@ public interface Transaction {
    *
    * @return An optionally-present {@link UnsignedLong}.
    * @deprecated This field will be removed in favor of {@link
-   * org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
+   *   org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
    */
   @JsonProperty("date")
   @Deprecated
@@ -245,7 +245,7 @@ public interface Transaction {
    *
    * @return An optionally-present {@link ZonedDateTime}.
    * @deprecated This field will be removed in favor of {@link
-   * org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
+   *   org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
    */
   @JsonIgnore
   @Auxiliary
@@ -261,8 +261,8 @@ public interface Transaction {
    *
    * @return An optionally present {@link Hash256} containing the transaction hash.
    * @deprecated This field will be removed in a future release. Instead, use
-   * {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in {@link
-   * org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in {@link
+   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
   @Deprecated
   Optional<Hash256> hash();
@@ -273,8 +273,8 @@ public interface Transaction {
    *
    * @return An optionally-present {@link LedgerIndex}.
    * @deprecated This field will be removed in a future release. Instead, use
-   * {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in {@link
-   * org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in {@link
+   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
   @Deprecated
   @JsonProperty("ledger_index")

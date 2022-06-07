@@ -202,11 +202,6 @@ public class Seed implements javax.security.auth.Destroyable {
   @Wrapped
   abstract static class Base58EncodedSecret extends Wrapper<String> {
 
-    @Override
-    public String toString() {
-      return this.value();
-    }
-
     @Value.Check
     public void validateBase58EncodedSecret() {
       assertDoesNotThrow(() -> Base58.decode(this.value()));

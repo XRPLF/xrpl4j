@@ -43,10 +43,18 @@ class EcDsaSignatureTest {
   }
 
   @Test
+  void badDerThrowsWhenFormingSignature() {
+    assertThrows(
+      RuntimeException.class,
+      () -> EcDsaSignature.fromDer(new byte[] {1, 2, 3, 4})
+    );
+  }
+
+  @Test
   void ecDsaSignatureWithR0() {
     IllegalArgumentException illegalArgumentException = assertThrows(
       IllegalArgumentException.class,
-      () -> signature = EcDsaSignature.builder()
+      () -> EcDsaSignature.builder()
         .r(BigInteger.ZERO)
         .s(BigInteger.ONE)
         .build()
@@ -58,7 +66,7 @@ class EcDsaSignatureTest {
   void ecDsaSignatureWithS0() {
     IllegalArgumentException illegalArgumentException = assertThrows(
       IllegalArgumentException.class,
-      () -> signature = EcDsaSignature.builder()
+      () -> EcDsaSignature.builder()
         .r(BigInteger.ONE)
         .s(BigInteger.ZERO)
         .build()
@@ -70,7 +78,7 @@ class EcDsaSignatureTest {
   void ecDsaSignatureWithRNegativeThrows() {
     IllegalArgumentException illegalArgumentException = assertThrows(
       IllegalArgumentException.class,
-      () -> signature = EcDsaSignature.builder()
+      () -> EcDsaSignature.builder()
         .r(BigInteger.ONE.negate())
         .s(BigInteger.valueOf(2))
         .build()
@@ -82,7 +90,7 @@ class EcDsaSignatureTest {
   void ecDsaSignatureWithSNegativeThrows() {
     IllegalArgumentException illegalArgumentException = assertThrows(
       IllegalArgumentException.class,
-      () -> signature = EcDsaSignature.builder()
+      () -> EcDsaSignature.builder()
         .r(BigInteger.valueOf(2))
         .s(BigInteger.ONE.negate())
         .build()

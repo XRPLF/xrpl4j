@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
 /**
- * Unit tests for {@link org.xrpl.xrpl4j.crypto.Seed}.
+ * Unit tests for {@link Seed}.
  */
 public class SeedTest {
 

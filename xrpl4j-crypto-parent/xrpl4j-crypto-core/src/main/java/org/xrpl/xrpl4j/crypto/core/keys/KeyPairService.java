@@ -11,6 +11,7 @@ public interface KeyPairService {
    * Generate a random 16-byte seed to be used to derive a private key.
    *
    * @return A {@link String} containing a randomly generated Base58Check encoded seed value.
+   *
    * @deprecated This method will be removed in a future release. Prefer {@link Seed#ed25519Seed()} or
    *   {@link Seed#secp256k1Seed()}.
    */
@@ -25,8 +26,9 @@ public interface KeyPairService {
    * @param entropy An {@link UnsignedByteArray} containing the bytes of entropy to encode into a seed.
    *
    * @return A {@link String} containing the Base58Check encoded seed value.
-   * @deprecated This method will be removed in a future release. Prefer {@link Seed#ed25519SeedFromEntropy(Entropy)}
-   *   or {@link Seed#secp256k1SeedFromEntropy(Entropy)}.
+   *
+   * @deprecated This method will be removed in a future release. Prefer {@link Seed#ed25519SeedFromEntropy(Entropy)} or
+   *   {@link Seed#secp256k1SeedFromEntropy(Entropy)}.
    */
   @Deprecated
   Seed generateSeed(Entropy entropy);

@@ -65,8 +65,8 @@ public class Seed implements javax.security.auth.Destroyable {
   }
 
   /**
-   * Construct an Ed25519-compatible {@link Seed} using a random {@link Entropy} instance.
-   * This random {@link Entropy} is created using {@link Entropy#newInstance()}.
+   * Construct an Ed25519-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
+   * is created using {@link Entropy#newInstance()}.
    *
    * @return A {@link Seed}.
    */
@@ -94,8 +94,8 @@ public class Seed implements javax.security.auth.Destroyable {
   }
 
   /**
-   * Construct an SECP256K1-compatible {@link Seed} using a random {@link Entropy} instance.
-   * This random {@link Entropy} is created using {@link Entropy#newInstance()}.
+   * Construct an SECP256K1-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
+   * is created using {@link Entropy#newInstance()}.
    *
    * @return A {@link Seed}.
    */
@@ -131,6 +131,7 @@ public class Seed implements javax.security.auth.Destroyable {
    * @param base58EncodedSecret A base58-encoded {@link String} that represents an encoded seed.
    *
    * @return A {@link Seed}.
+   *
    * @see "https://xrpl.org/xrp-testnet-faucet.html"
    */
   public static Seed fromBase58EncodedSecret(final String base58EncodedSecret) {

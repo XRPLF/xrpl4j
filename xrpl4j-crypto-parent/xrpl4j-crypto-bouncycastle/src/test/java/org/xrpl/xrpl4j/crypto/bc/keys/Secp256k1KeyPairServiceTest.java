@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
+import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
@@ -50,7 +51,7 @@ class Secp256k1KeyPairServiceTest {
 
   @Test
   public void deriveSecp256k1KeyPair() {
-    Seed seed = Seed.fromBase58EncodedSecret("sp5fghtJtpUorTwvof1NpDXAzNwf5");
+    Seed seed = Seed.fromBase58EncodedSecret(Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
     KeyPair expectedKeyPair = KeyPair.builder()
       .privateKey(PrivateKey.of(UnsignedByteArray.of(

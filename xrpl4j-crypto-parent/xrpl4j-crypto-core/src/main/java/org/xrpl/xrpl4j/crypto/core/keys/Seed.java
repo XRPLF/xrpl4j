@@ -122,8 +122,7 @@ public class Seed implements javax.security.auth.Destroyable {
   public static Seed fromBase58EncodedSecret(final Base58EncodedSecret base58EncodedSecret) {
     Objects.requireNonNull(base58EncodedSecret);
 
-    final byte[] base58EncodedSeed = AddressBase58.decode(base58EncodedSecret.value());
-    return new Seed(UnsignedByteArray.of(base58EncodedSeed));
+    return new Seed(base58EncodedSecret.decodedValueBytes());
   }
 
   /**
@@ -196,15 +195,5 @@ public class Seed implements javax.security.auth.Destroyable {
       "value=[redacted]" +
       ", destroyed=" + destroyed +
       '}';
-  }
-
-  @Value.Immutable
-  @Wrapped
-  abstract static class Base58EncodedSecret extends Wrapper<String> {
-
-    @Value.Check
-    public void validateBase58EncodedSecret() {
-      assertDoesNotThrow(() -> Base58.decode(this.value()));
-    }
   }
 }

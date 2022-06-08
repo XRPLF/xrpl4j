@@ -40,7 +40,6 @@ public class FeeUtils {
    * @return {@link XrpCurrencyAmount} value of the fee that should be used for the transaction.
    */
   public static XrpCurrencyAmount calculateFeeDynamically(final FeeResult feeResult) {
-
     Objects.requireNonNull(feeResult);
 
     double currentQueueSize = feeResult.currentQueueSize().doubleValue();

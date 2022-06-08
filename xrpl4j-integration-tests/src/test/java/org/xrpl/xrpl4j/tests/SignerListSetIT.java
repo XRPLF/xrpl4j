@@ -141,7 +141,7 @@ public class SignerListSetIT extends AbstractIT {
       .account(sourceWallet.classicAddress())
       .fee(
         FeeUtils.computeMultiSigFee(
-          XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)),
+          feeResult.drops().openLedgerFee(),
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         )
       )

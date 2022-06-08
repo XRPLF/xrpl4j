@@ -27,6 +27,7 @@ public interface EcDsaSignature {
    * Create an {@link EcDsaSignature} from a DER encoded byte array signature.
    *
    * @param bytes A DER encoded byte array containing a signature.
+   *
    * @return An {@link EcDsaSignature}.
    */
   static EcDsaSignature fromDer(byte[] bytes) {

@@ -25,7 +25,6 @@ public interface Base58EncodedSecret {
    * Construct a {@link Base58EncodedSecret} from a base58-encoded {@link String}.
    *
    * @param base58EncodedSecret A base58-encoded {@link String}.
-   *
    * @return A {@link Base58EncodedSecret}.
    */
   static Base58EncodedSecret of(final String base58EncodedSecret) {
@@ -50,6 +49,6 @@ public interface Base58EncodedSecret {
   @Value.Derived
   default UnsignedByteArray decodedValueBytes() {
     return UnsignedByteArray.of(Base58.decode(value()));
-  };
+  }
 
 }

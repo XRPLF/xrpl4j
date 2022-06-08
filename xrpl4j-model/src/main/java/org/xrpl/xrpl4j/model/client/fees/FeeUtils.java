@@ -16,6 +16,7 @@ public class FeeUtils {
    *
    * @param currentLedgerFeeDrops The current ledger fee, represented as an {@link XrpCurrencyAmount}.
    * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
+   *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    */
   public static XrpCurrencyAmount computeMultiSigFee(
@@ -31,13 +32,14 @@ public class FeeUtils {
 
 
   /**
-   * Get value of fee to be used for submitting a transaction on the ledger. The value is calculated
-   * depending on the load on the job queue.
+   * Get value of fee to be used for submitting a transaction on the ledger. The value is calculated depending on the
+   * load on the job queue.
    *
    * @param feeResult {@link FeeResult} object received from XrplClient#fee() rippled call.
+   *
    * @return {@link XrpCurrencyAmount} value of the fee that should be used for the transaction.
    */
-  public static XrpCurrencyAmount calculateFeeDynamically(FeeResult feeResult) {
+  public static XrpCurrencyAmount calculateFeeDynamically(final FeeResult feeResult) {
 
     Objects.requireNonNull(feeResult);
 

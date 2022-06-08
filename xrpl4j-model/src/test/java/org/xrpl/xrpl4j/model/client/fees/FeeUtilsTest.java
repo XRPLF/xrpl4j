@@ -16,6 +16,9 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+/**
+ * Unit tests for {@link FeeUtils}.
+ */
 public class FeeUtilsTest {
 
   @Test

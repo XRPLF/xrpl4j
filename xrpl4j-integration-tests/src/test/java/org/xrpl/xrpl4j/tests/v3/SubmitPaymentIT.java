@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
@@ -63,7 +64,9 @@ public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet senderWallet = walletFactory.fromSeed(Seed.fromBase58EncodedSecret("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
+    Wallet senderWallet = walletFactory.fromSeed(Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"))
+    );
     logger.info("Generated source testnet wallet with address " + senderWallet.address());
 
     fundAccount(senderWallet);

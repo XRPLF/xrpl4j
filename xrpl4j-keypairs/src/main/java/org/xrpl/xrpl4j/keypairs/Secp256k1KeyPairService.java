@@ -157,13 +157,15 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     UnsignedByteArray messageHash = HashUtils.sha512Half(message);
-    EcDsaSignature sig = EcDsaSignature.fromDer(BaseEncoding.base16().decode(signature));
+    EcDsaSignature sig = EcDsaSignature.fromDer(BaseEncoding.base16().decode(signature.toUpperCase()));
     if (sig == null) {
       return false;
     }
 
     ECDSASigner signer = new ECDSASigner();
-    ECPoint publicKeyPoint = ecDomainParameters.getCurve().decodePoint(BaseEncoding.base16().decode(publicKey));
+    ECPoint publicKeyPoint = ecDomainParameters.getCurve().decodePoint(
+      BaseEncoding.base16().decode(publicKey.toUpperCase())
+    );
     ECPublicKeyParameters params = new ECPublicKeyParameters(publicKeyPoint, ecDomainParameters);
     signer.init(false, params);
     return signer.verifySignature(messageHash.toByteArray(), sig.r(), sig.s());

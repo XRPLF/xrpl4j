@@ -118,7 +118,7 @@ public class SingleKeySignatureService extends AbstractSignatureService implemen
     Objects.requireNonNull(signableTransactionBytes);
 
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(privateKey.base16Encoded().substring(2)), // Remove ED prefix byte
+      BaseEncoding.base16().decode(privateKey.base16Encoded().substring(2).toUpperCase()), // Remove ED prefix byte
       0
     );
 

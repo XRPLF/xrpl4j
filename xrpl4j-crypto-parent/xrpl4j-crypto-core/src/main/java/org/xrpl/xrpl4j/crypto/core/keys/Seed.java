@@ -25,7 +25,7 @@ public class Seed implements javax.security.auth.Destroyable {
   private boolean destroyed;
 
   /**
-   * Construct an Ed25519-compatible {@link Seed} from the supplied {@code passphrase}.
+   * Construct an Ed25519-compatible {@link Seed} from the supplied {@link Passphrase}.
    *
    * @param passphrase A {@link Passphrase} to generate a seed from.
    *
@@ -65,7 +65,17 @@ public class Seed implements javax.security.auth.Destroyable {
   }
 
   /**
-   * Construct an Ed25519-compatible {@link Seed} from the supplied {@code passphrase}.
+   * Construct an Ed25519-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
+   * is created using {@link Entropy#newInstance()}.
+   *
+   * @return A {@link Seed}.
+   */
+  public static Seed ed25519Seed() {
+    return ed25519SeedFromEntropy(Entropy.newInstance());
+  }
+
+  /**
+   * Construct an Ed25519-compatible {@link Seed} from the supplied {@link Entropy}.
    *
    * @param entropy A {@link Entropy} to generate a {@link Seed} from.
    *
@@ -84,7 +94,17 @@ public class Seed implements javax.security.auth.Destroyable {
   }
 
   /**
-   * Construct an SECP256K1-compatible {@link Seed} from the supplied {@link Passphrase}.
+   * Construct an SECP256K1-compatible {@link Seed} using a random {@link Entropy} instance. This random {@link Entropy}
+   * is created using {@link Entropy#newInstance()}.
+   *
+   * @return A {@link Seed}.
+   */
+  public static Seed secp256k1Seed() {
+    return secp256k1SeedFromEntropy(Entropy.newInstance());
+  }
+
+  /**
+   * Construct an SECP256K1-compatible {@link Seed} from the supplied {@link Entropy}.
    *
    * @param entropy A {@link Entropy} to generate a {@link Seed} from.
    *

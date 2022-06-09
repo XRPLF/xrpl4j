@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
 /**
- * Unit tests for {@link org.xrpl.xrpl4j.crypto.Seed}.
+ * Unit tests for {@link Seed}.
  */
 public class SeedTest {
 
@@ -46,6 +46,22 @@ public class SeedTest {
     final Seed copiedSeed = new Seed(originalSeed);
     assertThat(originalSeed).isEqualTo(copiedSeed);
     assertThat(copiedSeed).isEqualTo(originalSeed);
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
+  }
+
+  @Test
+  void testRandomEd25519SeedGeneration() {
+    Seed originalSeed = Seed.ed25519Seed();
+    Seed copiedSeed = new Seed(originalSeed);
+    assertThat(originalSeed.equals(copiedSeed)).isTrue();
+    assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
+  }
+
+  @Test
+  void testRandomSecp256k1SeedGeneration() {
+    Seed originalSeed = Seed.secp256k1Seed();
+    Seed copiedSeed = new Seed(originalSeed);
+    assertThat(originalSeed.equals(copiedSeed)).isTrue();
     assertThat(originalSeed.decodedSeed().bytes().hexValue()).isEqualTo(copiedSeed.decodedSeed().bytes().hexValue());
   }
 

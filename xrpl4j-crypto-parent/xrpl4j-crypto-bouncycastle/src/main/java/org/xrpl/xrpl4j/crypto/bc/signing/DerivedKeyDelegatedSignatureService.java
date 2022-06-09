@@ -8,10 +8,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
-import org.bouncycastle.crypto.params.ECPublicKeyParameters;
-import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
-import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
@@ -23,7 +19,6 @@ import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.AddressUtils;
-import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
@@ -44,7 +39,6 @@ import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
-import java.math.BigInteger;
 import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.Objects;
@@ -354,6 +348,7 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
       private final Ed25519Signer ed25519Signer;
       private final ECDSASigner ecdsaSigner;
       private final PrivateKey privateKey;
+      private final BcSignatureService bcSignatureService;
 
       private SingleKeyDelegatedTransactionSigner(
         PrivateKey privateKey,
@@ -364,27 +359,19 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
         this.ed25519Signer = new Ed25519Signer();
         this.ecdsaSigner = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         this.privateKey = privateKey;
+        this.bcSignatureService = new BcSignatureService(
+          signatureUtils,
+          addressUtils,
+          this.ed25519Signer,
+          this.ecdsaSigner
+        );
       }
 
       @Override
       protected synchronized Signature edDsaSign(
         final KeyMetadata privateKeyMetadata, final UnsignedByteArray signableTransactionBytes
       ) {
-        Objects.requireNonNull(privateKeyMetadata);
-        Objects.requireNonNull(signableTransactionBytes);
-
-        Ed25519PrivateKeyParameters privateKeyParameters = BcKeyUtils.toEd25519PrivateKeyParams(privateKey);
-
-        ed25519Signer.reset();
-        ed25519Signer.init(true, privateKeyParameters);
-        ed25519Signer.update(
-          signableTransactionBytes.toByteArray(), 0, signableTransactionBytes.getUnsignedBytes().size()
-        );
-
-        final UnsignedByteArray sigBytes = UnsignedByteArray.of(ed25519Signer.generateSignature());
-        return Signature.builder()
-          .value(sigBytes)
-          .build();
+        return bcSignatureService.edDsaSign(privateKey, signableTransactionBytes);
       }
 
       @SuppressWarnings("checkstyle:LocalVariableName")
@@ -392,31 +379,7 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
       protected synchronized Signature ecDsaSign(
         final KeyMetadata keyMetadata, final UnsignedByteArray signableTransactionBytes
       ) {
-        Objects.requireNonNull(keyMetadata);
-        Objects.requireNonNull(signableTransactionBytes);
-
-        final UnsignedByteArray messageHash = HashingUtils.sha512Half(signableTransactionBytes);
-
-        final ECPrivateKeyParameters parameters = BcKeyUtils.toEcPrivateKeyParams(privateKey);
-
-        ecdsaSigner.init(true, parameters);
-        final BigInteger[] signatures = ecdsaSigner.generateSignature(messageHash.toByteArray());
-        final BigInteger r = signatures[0];
-        BigInteger s = signatures[1];
-        final BigInteger otherS = Secp256k1.EC_DOMAIN_PARAMETERS.getN().subtract(s);
-        if (s.compareTo(otherS) > 0) {
-          s = otherS;
-        }
-
-        final EcDsaSignature sig = EcDsaSignature.builder()
-          .r(r)
-          .s(s)
-          .build();
-
-        UnsignedByteArray sigBytes = sig.der();
-        return Signature.builder()
-          .value(sigBytes)
-          .build();
+        return bcSignatureService.ecDsaSign(privateKey, signableTransactionBytes);
       }
 
       @Override
@@ -435,6 +398,7 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
       private final Ed25519Signer ed25519Signer;
       private final ECDSASigner ecdsaSigner;
       private final PrivateKey privateKey;
+      private final BcSignatureService bcSignatureService;
 
       public SingleKeyDelegatedTransactionVerifier(
         PrivateKey privateKey,
@@ -445,6 +409,12 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
         this.ed25519Signer = new Ed25519Signer();
         this.ecdsaSigner = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         this.privateKey = privateKey;
+        this.bcSignatureService = new BcSignatureService(
+          signatureUtils,
+          addressUtils,
+          this.ed25519Signer,
+          this.ecdsaSigner
+        );
       }
 
       @Override
@@ -453,21 +423,10 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
         final UnsignedByteArray signableTransactionBytes,
         final Signature transactionSignature
       ) {
-        Objects.requireNonNull(keyMetadata);
-        Objects.requireNonNull(signableTransactionBytes);
-        Objects.requireNonNull(transactionSignature);
-
-        final PublicKey publicKey = this.getPublicKey(keyMetadata);
-        final Ed25519PublicKeyParameters bcPublicKey = BcKeyUtils.toEd25519PublicKeyParameters(
-          publicKey);
-
-        ed25519Signer.reset();
-        ed25519Signer.init(false, bcPublicKey);
-        ed25519Signer.update(signableTransactionBytes.toByteArray(), 0,
-          signableTransactionBytes.getUnsignedBytes().size());
-
-        return ed25519Signer.verifySignature(
-          transactionSignature.value().toByteArray()
+        return bcSignatureService.edDsaVerify(
+          this.getPublicKey(keyMetadata),
+          signableTransactionBytes,
+          transactionSignature
         );
       }
 
@@ -477,21 +436,11 @@ public class DerivedKeyDelegatedSignatureService implements DelegatedSignatureSe
         final UnsignedByteArray signableTransactionBytes,
         final Signature transactionSignature
       ) {
-        Objects.requireNonNull(keyMetadata);
-        Objects.requireNonNull(signableTransactionBytes);
-        Objects.requireNonNull(transactionSignature);
-
-        final PublicKey publicKey = this.getPublicKey(keyMetadata);
-        final ECPublicKeyParameters bcPublicKey = BcKeyUtils.toEcPublicKeyParameters(publicKey);
-
-        UnsignedByteArray messageHash = HashingUtils.sha512Half(signableTransactionBytes);
-        EcDsaSignature sig = EcDsaSignature.fromDer(transactionSignature.value().toByteArray());
-        if (sig == null) {
-          return false;
-        }
-
-        ecdsaSigner.init(false, bcPublicKey);
-        return ecdsaSigner.verifySignature(messageHash.toByteArray(), sig.r(), sig.s());
+        return bcSignatureService.ecDsaVerify(
+          this.getPublicKey(keyMetadata),
+          signableTransactionBytes,
+          transactionSignature
+        );
       }
 
       @Override

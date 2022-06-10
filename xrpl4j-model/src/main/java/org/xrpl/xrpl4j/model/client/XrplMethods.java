@@ -98,6 +98,22 @@ public class XrplMethods {
    */
   public static final String LEDGER_ENTRY = "ledger_entry";
 
+  // NFT methods
+  /**
+   * Constant for the account_nfts rippled API method.
+   */
+  public static final String ACCOUNT_NFTS = "account_nfts";
+
+  /**
+   * Constant for the nft_buy_offers rippled API method.
+   */
+  public static final String NFT_BUY_OFFERS = "nft_buy_offers";
+
+  /**
+   * Constant for the nft_sell_offers rippled API method.
+   */
+  public static final String NFT_SELL_OFFERS = "nft_sell_offers";
+
   // Transaction methods
   /**
    * Constant for the <a href="https://xrpl.org/sign.html">sign</a> rippled API method.

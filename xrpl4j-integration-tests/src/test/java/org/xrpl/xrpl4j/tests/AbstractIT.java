@@ -376,9 +376,8 @@ public abstract class AbstractIT {
    * @param account to get the NFTs for.
    *
    * @return {@link AccountNftsResult} containing list of accounts for an address.
-   * @throws JsonRpcClientErrorException
    */
-  protected AccountNftsResult getAccountNfts(Address account) throws JsonRpcClientErrorException {
+  protected AccountNftsResult getAccountNfts(Address account) {
     return xrplClient.accountNfts(
       AccountNftsRequestParams.builder().account(account).build()
     );

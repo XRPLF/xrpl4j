@@ -88,7 +88,7 @@ public class IsFinalIT extends AbstractIT {
   }
 
   @Test
-  public void isFinalExpiredTxTest() throws JsonRpcClientErrorException, InterruptedException {
+  public void isFinalExpiredTxTest() throws JsonRpcClientErrorException {
 
     Payment builtPayment = payment
       .sequence(accountInfo.accountData().sequence().minus(UnsignedInteger.ONE))
@@ -104,22 +104,22 @@ public class IsFinalIT extends AbstractIT {
         wallet.classicAddress()
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.NOT_FINAL);
-    Thread.sleep(1000);
 
-    assertThat(
-      xrplClient.isFinal(
+    this.scanForResult(
+      () -> xrplClient.isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence.minus(UnsignedInteger.ONE),
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
-      ).finalityStatus()
-    ).isEqualTo(FinalityStatus.EXPIRED);
+      ).finalityStatus(),
+      finalityStatus -> finalityStatus.equals(FinalityStatus.EXPIRED)
+    );
   }
 
   @Test
   public void isFinalNoTrustlineIouPayment_ValidatedFailureResponse()
-    throws JsonRpcClientErrorException, InterruptedException {
+    throws JsonRpcClientErrorException {
 
     Payment builtPayment = payment
       .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(
@@ -136,16 +136,16 @@ public class IsFinalIT extends AbstractIT {
         wallet.classicAddress()
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.NOT_FINAL);
-    Thread.sleep(1000);
 
-    assertThat(
-      xrplClient.isFinal(
+    this.scanForResult(
+      () -> xrplClient.isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
-        lastLedgerSequence,
+        lastLedgerSequence.minus(UnsignedInteger.ONE),
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
-      ).finalityStatus()
-    ).isEqualTo(FinalityStatus.VALIDATED_FAILURE);
+      ).finalityStatus(),
+      finalityStatus -> finalityStatus.equals(FinalityStatus.VALIDATED_FAILURE)
+    );
   }
 }

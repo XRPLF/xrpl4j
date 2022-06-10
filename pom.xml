@@ -389,6 +389,18 @@
                 <goal>verify</goal>
               </goals>
             </execution>
+            <execution>
+              <id>integration-tests-nft-devnet</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+              <configuration>
+                <systemPropertyVariables>
+                  <useNftDevnet>true</useNftDevnet>
+                </systemPropertyVariables>
+              </configuration>
+            </execution>
           </executions>
         </plugin>
 

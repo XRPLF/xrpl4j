@@ -36,14 +36,14 @@ public class NfTokenSellOffersResultTest extends AbstractJsonTest {
       .build();
 
     String offer = "{\n" +
-      "    \"Flags\": 1,\n" +
+      "    \"Flags\": 2,\n" +
       "    \"Amount\": \"1000\",\n" +
       "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
       "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "}";
 
     String json = "{\n" +
-      "        \"NFTokenID\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
       "        \"offers\": [" + offer + "]\n" +
       "}";
 

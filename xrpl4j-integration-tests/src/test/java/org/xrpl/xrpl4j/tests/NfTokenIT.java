@@ -434,7 +434,6 @@ public class NfTokenIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    System.out.println(this.getValidatedAccountObjects(wallet.classicAddress()));
     SubmitResult nfTokenCancelOfferSubmitResult = xrplClient.submit(wallet, nfTokenCancelOffer);
     assertThat(nfTokenCancelOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(nfTokenCancelOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
@@ -448,8 +447,6 @@ public class NfTokenIT extends AbstractIT {
       )
     );
     logger.info("NFT Cancel Offer transaction was validated successfully.");
-
-    System.out.println(this.getValidatedAccountObjects(wallet.classicAddress()));
 
     this.scanForResult(
       () -> this.getValidatedAccountObjects(wallet.classicAddress()),

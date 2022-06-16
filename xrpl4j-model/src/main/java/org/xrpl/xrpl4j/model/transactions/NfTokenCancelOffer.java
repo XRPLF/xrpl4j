@@ -30,7 +30,7 @@ public interface NfTokenCancelOffer extends Transaction {
   }
 
   /**
-   * An array of TokenID objects, each identifying an
+   * An array of NfTokenOffer Ids, each identifying an
    * NfTokenOffer object, which should be cancelled by this
    * transaction.
    *
@@ -42,17 +42,17 @@ public interface NfTokenCancelOffer extends Transaction {
    * @return Array of TokenIDs, each identifying a unique NfToken object, to cancel the offers for.
    */
   @JsonProperty("NFTokenOffers")
-  List<NfTokenId> tokenIds();
+  List<Hash256> tokenOffers();
 
   /**
    * Token Ids array should have atleast one value.
    */
   @Value.Check
-  default void nonEmptyTokenIds() {
+  default void nonEmptyTokenOffers() {
 
     Preconditions.checkArgument(
-      tokenIds().size() > 0,
-      String.format("List of tokenIds must be non-empty.")
+      tokenOffers().size() > 0,
+      String.format("List of token offers must be non-empty.")
     );
   }
 

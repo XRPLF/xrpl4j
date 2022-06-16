@@ -20,18 +20,15 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
   @Test
   public void test() throws JsonProcessingException, JSONException {
 
-    NfTokenOfferObject obj = NfTokenOfferObject.builder()
-      .amount(XrpCurrencyAmount.ofDrops(10000))
-      .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+    BuyOffer buyOffer = BuyOffer.builder()
+      .amount(XrpCurrencyAmount.ofDrops(1000))
       .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-      .previousTransactionId(Hash256.of("E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879"))
-      .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14090896))
-      .tokenId(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65"))
       .flags(Flags.NfTokenOfferFlags.BUY_TOKEN)
+      .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .build();
 
-    List<NfTokenOfferObject> list = new ArrayList<>();
-    list.add(obj);
+    List<BuyOffer> list = new ArrayList<>();
+    list.add(buyOffer);
 
     NftBuyOffersResult params = NftBuyOffersResult.builder()
       .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
@@ -40,13 +37,9 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
 
     String offer = "{\n" +
       "    \"Flags\": 1,\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
-      "    \"Destination\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"PreviousTxnID\": \"E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879\",\n" +
-      "    \"PreviousTxnLgrSeq\": 14090896,\n" +
-      "    \"LedgerEntryType\": \"NFTokenOffer\"\n" +
+      "    \"Amount\": \"1000\",\n" +
+      "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "}";
 
     String json = "{\n" +

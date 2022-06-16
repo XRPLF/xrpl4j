@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
-import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 
 import java.util.List;
@@ -32,13 +31,13 @@ public interface NftSellOffersResult extends XrplResult {
    *
    *  @return the TokenID of the {@link org.xrpl.xrpl4j.model.client.accounts.NfTokenObject} object.
    */
-  @JsonProperty("NFTokenID")
+  @JsonProperty("nft_id")
   NfTokenId tokenId();
 
   /**
    * List of sell offers for a particular NFToken.
    *
-   * @return {@link List} of all {@link NfTokenOfferObject}s owned by an account.
+   * @return {@link List} of all {@link SellOffer}s owned by an account.
    */
-  List<NfTokenOfferObject> offers();
+  List<SellOffer> offers();
 }

@@ -64,6 +64,10 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
@@ -509,6 +513,42 @@ public class XrplClient {
         .build();
 
     return jsonRpcClient.send(request, AccountNftsResult.class);
+  }
+
+  /**
+   * Get the {@link NftBuyOffersResult} for the {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} specified in
+   * {@code params} by making an nft_buy_offers method call.
+   *
+   * @param params The {@link NftBuyOffersRequestParams} to send in the request.
+   *
+   * @return The {@link NftBuyOffersResult} returned by the nft_buy_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public NftBuyOffersResult nftBuyOffers(NftBuyOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_BUY_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftBuyOffersResult.class);
+  }
+
+  /**
+   * Get the {@link NftSellOffersResult} for the {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} specified in
+   * {@code params} by making an nft_sell_offers method call.
+   *
+   * @param params The {@link NftSellOffersRequestParams} to send in the request.
+   *
+   * @return The {@link NftSellOffersResult} returned by the nft_sell_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public NftSellOffersResult nftSellOffers(NftSellOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_SELL_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftSellOffersResult.class);
   }
 
   /**

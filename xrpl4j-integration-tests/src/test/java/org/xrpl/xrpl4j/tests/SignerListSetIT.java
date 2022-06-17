@@ -28,7 +28,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
@@ -57,7 +56,6 @@ public class SignerListSetIT extends BaseIT {
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
   protected final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
   protected final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   void addSignersToSignerListAndSendPayment() throws JsonRpcClientErrorException {

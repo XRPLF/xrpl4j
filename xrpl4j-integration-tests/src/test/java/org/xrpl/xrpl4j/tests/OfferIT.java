@@ -28,7 +28,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -55,8 +54,6 @@ public class OfferIT extends BaseIT {
   private static Wallet issuerWallet;
 
   private static boolean usdIssued = false;
-  
-  private final XrplClient xrplClient = xrplClient();
 
   /**
    * Sets up an issued currency (USD) that can be used to test Offers against this currency.

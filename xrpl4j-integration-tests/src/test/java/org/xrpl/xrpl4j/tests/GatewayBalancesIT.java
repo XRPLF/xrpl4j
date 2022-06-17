@@ -28,7 +28,6 @@ import org.assertj.core.data.MapEntry;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesIssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
@@ -40,8 +39,6 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 import java.util.Optional;
 
 public class GatewayBalancesIT extends BaseIT {
-
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   public void testGatewayBalances() throws JsonRpcClientErrorException {

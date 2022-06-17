@@ -37,8 +37,6 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
  * rippled sends back.
  */
 public class LedgerResultIT extends BaseIT {
-  
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   void getValidatedLedgerResult() throws JsonRpcClientErrorException {

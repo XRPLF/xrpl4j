@@ -28,7 +28,6 @@ import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -50,8 +49,6 @@ import java.time.Instant;
  * Integration test to validate creation, cancellation, and execution of escrow transactions.
  */
 public class EscrowIT extends BaseIT {
-
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, InterruptedException {

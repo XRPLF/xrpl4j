@@ -21,13 +21,11 @@ package org.xrpl.xrpl4j.tests;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -46,11 +44,8 @@ import java.util.List;
 
 public class IssuedCurrencyIT extends BaseIT {
 
-  private final XrplClient xrplClient = xrplClient();
-
   @Test
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException {
-    assumeFalse(System.getProperty("useNftDevnet") != null);
     ///////////////////////////
     // Create random accounts for the issuer and the counterparty
     Wallet issuerWallet = createRandomAccount();
@@ -107,7 +102,6 @@ public class IssuedCurrencyIT extends BaseIT {
 
   @Test
   public void sendSimpleRipplingIssuedCurrencyPayment() throws JsonRpcClientErrorException {
-    assumeFalse(System.getProperty("useNftDevnet") != null);
     ///////////////////////////
     // Create a gateway (issuer) account and two normal accounts
     Wallet issuerWallet = createRandomAccount();
@@ -206,7 +200,6 @@ public class IssuedCurrencyIT extends BaseIT {
 
   @Test
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException {
-    assumeFalse(System.getProperty("useNftDevnet") != null);
     ///////////////////////////
     // Create two issuer wallets and three non-issuer wallets
     final Wallet issuerAWallet = createRandomAccount();

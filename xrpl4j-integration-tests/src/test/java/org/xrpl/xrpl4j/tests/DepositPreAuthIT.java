@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
@@ -43,8 +42,6 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class DepositPreAuthIT extends BaseIT {
-
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   public void preauthorizeAccountAndReceivePayment() throws JsonRpcClientErrorException {

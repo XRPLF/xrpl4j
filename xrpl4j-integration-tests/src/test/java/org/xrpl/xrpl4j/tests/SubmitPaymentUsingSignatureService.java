@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.JavaKeystoreLoader;
@@ -63,7 +62,6 @@ public class SubmitPaymentUsingSignatureService extends BaseIT {
   private static KeyPairService keyPairService;
 
   private static SignatureService signatureService;
-  private final XrplClient xrplClient = xrplClient();
 
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   @BeforeEach

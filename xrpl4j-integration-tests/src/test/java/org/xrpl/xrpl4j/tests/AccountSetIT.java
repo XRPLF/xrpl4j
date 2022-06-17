@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -44,8 +43,6 @@ import java.util.Objects;
  * @see "https://xrpl.org/accountset.html"
  */
 public class AccountSetIT extends BaseIT {
-
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   public void enableAllAndDisableOne() throws JsonRpcClientErrorException {

@@ -9,7 +9,6 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
@@ -42,7 +41,6 @@ public class SubmitMultisignedIT extends BaseIT {
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
   protected final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
   protected final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
-  private final XrplClient xrplClient = xrplClient();
 
   /////////////////////////////
   // Create four accounts, one for the multisign account owner, one for their two friends,

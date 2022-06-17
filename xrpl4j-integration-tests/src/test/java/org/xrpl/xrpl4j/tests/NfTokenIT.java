@@ -24,6 +24,7 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.CustomEnvironment;
@@ -36,7 +37,7 @@ public class NfTokenIT extends AbstractIT {
     HttpUrl.parse("http://xls20-sandbox.rippletest.net:51234"),
     HttpUrl.parse("https://faucet-nft.ripple.com")
   );
-  private static final XrplClient xrplClient = nftDevnetEnvironment.getXrplClient();
+  private final XrplClient xrplClient = xrplClient();
 
   @Test
   void mint() throws JsonRpcClientErrorException {
@@ -45,7 +46,8 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-    int previousLength = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().size();
+
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
@@ -54,6 +56,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
+      .uri(uri)
       .build();
 
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
@@ -69,7 +72,8 @@ public class NfTokenIT extends AbstractIT {
           throw new RuntimeException(e);
         }
       },
-      result -> result.accountNfts().size() == previousLength + 1
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
     );
     logger.info("NFT was minted successfully.");
   }
@@ -83,7 +87,7 @@ public class NfTokenIT extends AbstractIT {
     );
 
     // nft mint
-    int previousLength = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().size();
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
@@ -91,6 +95,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
+      .uri(uri)
       .build();
 
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
@@ -106,14 +111,13 @@ public class NfTokenIT extends AbstractIT {
           throw new RuntimeException(e);
         }
       },
-      result -> result.accountNfts().size() == previousLength + 1
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
     );
     logger.info("NFT was minted successfully.");
 
     // nft burn
     AccountNftsResult accountNftsResult = xrplClient.accountNfts(wallet.classicAddress());
-
-    int initialNftsCount = accountNftsResult.accountNfts().size();
 
     NfTokenId tokenId = accountNftsResult.accountNfts().get(0).tokenId();
 
@@ -138,7 +142,8 @@ public class NfTokenIT extends AbstractIT {
           throw new RuntimeException(e);
         }
       },
-      result -> result.accountNfts().size() == initialNftsCount - 1
+      result -> result.accountNfts().stream()
+        .noneMatch(nft -> nft.uri().get().equals(uri))
     );
 
     AccountNftsResult accountNftsResult1 = xrplClient.accountNfts(wallet.classicAddress());
@@ -158,7 +163,7 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-    int previousLength = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().size();
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
@@ -167,6 +172,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
+      .uri(uri)
       .build();
 
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
@@ -182,7 +188,8 @@ public class NfTokenIT extends AbstractIT {
           throw new RuntimeException(e);
         }
       },
-      result -> result.accountNfts().size() == previousLength + 1
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
     );
     logger.info("NFT was minted successfully.");
 
@@ -235,7 +242,7 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-    int previousLength = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().size();
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
@@ -247,6 +254,7 @@ public class NfTokenIT extends AbstractIT {
       .flags(Flags.NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
+      .uri(uri)
       .build();
 
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
@@ -262,7 +270,8 @@ public class NfTokenIT extends AbstractIT {
           throw new RuntimeException(e);
         }
       },
-      result -> result.accountNfts().size() == previousLength + 1
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
     );
     logger.info("NFT was minted successfully.");
 
@@ -352,7 +361,7 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress())
     );
-    int previousLength = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().size();
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
@@ -361,6 +370,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
+      .uri(uri)
       .build();
 
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
@@ -376,7 +386,8 @@ public class NfTokenIT extends AbstractIT {
           throw new RuntimeException(e);
         }
       },
-      result -> result.accountNfts().size() == previousLength + 1
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
     );
     logger.info("NFT was minted successfully.");
 

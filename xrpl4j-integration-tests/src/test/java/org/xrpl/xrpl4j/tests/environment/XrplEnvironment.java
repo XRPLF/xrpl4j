@@ -46,7 +46,7 @@ public interface XrplEnvironment {
       logger.info("System property 'useTestnet' detected; Using Testnet for integration testing.");
       return new TestnetEnvironment();
     } else {
-      logger.info("Neither 'useTestNet' nor 'useNftDevnet' nor 'useCustom' System properties detected." +
+      logger.info("'useTestNet' system property not detected." +
         " Using local rippled for integration testing.");
       return new LocalRippledEnvironment();
     }

@@ -7,7 +7,6 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -28,7 +27,6 @@ public class IsFinalIT extends BaseIT {
   ImmutablePayment.Builder payment;
   UnsignedInteger lastLedgerSequence;
   AccountInfoResult accountInfo;
-  private final XrplClient xrplClient = xrplClient();
 
   @BeforeEach
   void setup() throws JsonRpcClientErrorException {

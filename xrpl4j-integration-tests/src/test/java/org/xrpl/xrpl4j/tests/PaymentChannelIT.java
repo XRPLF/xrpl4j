@@ -28,7 +28,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
@@ -59,7 +58,6 @@ public class PaymentChannelIT extends BaseIT {
   private final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
   private final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   public void createPaymentChannel() throws JsonRpcClientErrorException {

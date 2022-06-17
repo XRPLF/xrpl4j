@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -37,11 +38,13 @@ import java.util.List;
 
 public class TicketIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   @Test
   void createTicketAndUseSequenceNumber() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -54,7 +57,7 @@ public class TicketIT extends BaseIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<TicketCreate> submitResult = xrplClient().submit(sourceWallet, ticketCreate);
+    SubmitResult<TicketCreate> submitResult = xrplClient.submit(sourceWallet, ticketCreate);
     assertThat(submitResult.result()).isEqualTo(SUCCESS_STATUS);
     logger.info("TicketCreate successful: https://testnet.xrpl.org/transactions/" +
       submitResult.transactionResult().hash()
@@ -76,7 +79,7 @@ public class TicketIT extends BaseIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<AccountSet> accountSetResult = xrplClient().submit(sourceWallet, accountSet);
+    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(sourceWallet, accountSet);
     assertThat(accountSetResult.result()).isEqualTo(SUCCESS_STATUS);
     logger.info("AccountSet successful: https://testnet.xrpl.org/transactions/" +
       accountSetResult.transactionResult().hash()

@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -44,6 +45,8 @@ import java.util.Objects;
  */
 public class AccountSetIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   @Test
   public void enableAllAndDisableOne() throws JsonRpcClientErrorException {
 
@@ -58,7 +61,7 @@ public class AccountSetIT extends BaseIT {
     UnsignedInteger sequence = accountInfo.accountData().sequence();
     //////////////////////
     // Set asfAccountTxnID (no corresponding ledger flag)
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
         .account(wallet.classicAddress())
         .fee(feeResult.drops().openLedgerFee())
@@ -67,7 +70,7 @@ public class AccountSetIT extends BaseIT {
         .signingPublicKey(wallet.publicKey())
         .build();
 
-    SubmitResult<AccountSet> response = xrplClient().submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(response.transactionResult().hash());
@@ -120,7 +123,7 @@ public class AccountSetIT extends BaseIT {
     UnsignedInteger sequence = accountInfo.accountData().sequence();
     //////////////////////
     // Set asfAccountTxnID (no corresponding ledger flag)
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -129,7 +132,7 @@ public class AccountSetIT extends BaseIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<AccountSet> response = xrplClient().submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -179,7 +182,7 @@ public class AccountSetIT extends BaseIT {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -188,7 +191,7 @@ public class AccountSetIT extends BaseIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<AccountSet> response = xrplClient().submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -216,7 +219,7 @@ public class AccountSetIT extends BaseIT {
     Objects.requireNonNull(wallet);
     Objects.requireNonNull(accountSetFlag);
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -224,7 +227,7 @@ public class AccountSetIT extends BaseIT {
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
       .build();
-    SubmitResult<AccountSet> response = xrplClient().submit(wallet, accountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());

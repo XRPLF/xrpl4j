@@ -498,6 +498,20 @@ public class XrplClient {
   }
 
   /**
+   * Return AccountNftsResult for an {@link Address}.
+   *
+   * @param account to get the NFTs for.
+   *
+   * @return {@link AccountNftsResult} containing list of accounts for an address.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountNftsResult accountNfts(Address account) throws JsonRpcClientErrorException {
+    return this.accountNfts(
+      AccountNftsRequestParams.builder().account(account).build()
+    );
+  }
+
+  /**
    * Get the {@link AccountNftsResult} for the account specified in {@code params} by making an account_channels
    * method call.
    *
@@ -508,9 +522,9 @@ public class XrplClient {
    */
   public AccountNftsResult accountNfts(AccountNftsRequestParams params) throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
-        .method(XrplMethods.ACCOUNT_NFTS)
-        .addParams(params)
-        .build();
+      .method(XrplMethods.ACCOUNT_NFTS)
+      .addParams(params)
+      .build();
 
     return jsonRpcClient.send(request, AccountNftsResult.class);
   }
@@ -860,8 +874,8 @@ public class XrplClient {
         .build();
     } else if (NfTokenMint.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return NfTokenMint.builder().from((NfTokenMint) unsignedTransaction)
-          .transactionSignature(signature)
-          .build();
+        .transactionSignature(signature)
+        .build();
     } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return TrustSet.builder().from((TrustSet) unsignedTransaction)
         .transactionSignature(signature)

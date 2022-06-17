@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -38,12 +39,14 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class SubmitPaymentIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   @Test
   public void sendPayment() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -57,7 +60,7 @@ public class SubmitPaymentIT extends BaseIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> result = xrplClient().submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -86,7 +89,7 @@ public class SubmitPaymentIT extends BaseIT {
 
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
@@ -100,7 +103,7 @@ public class SubmitPaymentIT extends BaseIT {
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> result = xrplClient().submit(senderWallet, payment);
+    SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -117,7 +120,7 @@ public class SubmitPaymentIT extends BaseIT {
 
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
-    LedgerResult ledger = xrplClient().ledger(
+    LedgerResult ledger = xrplClient.ledger(
         LedgerRequestParams.builder()
           .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndexSafe()))
           .build()

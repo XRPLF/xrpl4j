@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -36,6 +37,8 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class TransactionWithMemoIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   /**
    * Tests a transaction that has a memo containing only a nibble (i.e., a half byte).
    */
@@ -44,7 +47,7 @@ public class TransactionWithMemoIT extends BaseIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -63,7 +66,7 @@ public class TransactionWithMemoIT extends BaseIT {
         .build())
       .build();
 
-    SubmitResult<Payment> result = xrplClient().submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -89,7 +92,7 @@ public class TransactionWithMemoIT extends BaseIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -107,7 +110,7 @@ public class TransactionWithMemoIT extends BaseIT {
       )
       .build();
 
-    SubmitResult<Payment> result = xrplClient().submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());

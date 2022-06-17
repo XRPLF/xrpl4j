@@ -27,6 +27,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -45,6 +46,8 @@ import java.util.List;
 
 public class IssuedCurrencyIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   @Test
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException {
     assumeFalse(System.getProperty("useNftDevnet") != null);
@@ -53,7 +56,7 @@ public class IssuedCurrencyIT extends BaseIT {
     Wallet issuerWallet = createRandomAccount();
     Wallet counterpartyWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
 
     ///////////////////////////
     // Create a Trust Line between issuer and counterparty denominated in a custom currency
@@ -90,7 +93,7 @@ public class IssuedCurrencyIT extends BaseIT {
     ///////////////////////////
     // We can also retrieve the currencies that the counterparty can send/recieve using the accountCurrencies
     // method.
-    AccountCurrenciesResult counterpartyCurrencies = xrplClient().accountCurrencies(
+    AccountCurrenciesResult counterpartyCurrencies = xrplClient.accountCurrencies(
       AccountCurrenciesRequestParams.builder()
         .account(counterpartyWallet.classicAddress())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
@@ -114,7 +117,7 @@ public class IssuedCurrencyIT extends BaseIT {
     ///////////////////////////
     // Set the DefaultRipple account flag on the issuer wallet, so that
     // its TrustLines allow rippling
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     setDefaultRipple(issuerWallet, feeResult);
 
     ///////////////////////////
@@ -177,7 +180,7 @@ public class IssuedCurrencyIT extends BaseIT {
       .signingPublicKey(aliceWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient().submit(aliceWallet, aliceToBobPayment);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
@@ -214,7 +217,7 @@ public class IssuedCurrencyIT extends BaseIT {
 
     ///////////////////////////
     // Set the lsfDefaultRipple AccountRoot flag so that all trustlines in this topography allow rippling
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     setDefaultRipple(issuerAWallet, feeResult);
     setDefaultRipple(issuerBWallet, feeResult);
     setDefaultRipple(charlieWallet, feeResult);
@@ -323,7 +326,7 @@ public class IssuedCurrencyIT extends BaseIT {
       .signingPublicKey(charlieWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient().submit(charlieWallet, charlieToDanielPayment);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());

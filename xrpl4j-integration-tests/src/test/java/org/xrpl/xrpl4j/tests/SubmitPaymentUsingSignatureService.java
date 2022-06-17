@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.JavaKeystoreLoader;
@@ -62,6 +63,7 @@ public class SubmitPaymentUsingSignatureService extends BaseIT {
   private static KeyPairService keyPairService;
 
   private static SignatureService signatureService;
+  private final XrplClient xrplClient = xrplClient();
 
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   @BeforeEach
@@ -83,7 +85,7 @@ public class SubmitPaymentUsingSignatureService extends BaseIT {
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     sourceWallet = this.newEd25519WalletFromSignatureService(signatureService, "sourceWallet");
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
@@ -98,7 +100,7 @@ public class SubmitPaymentUsingSignatureService extends BaseIT {
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
     SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
-    SubmitResult<Payment> result = xrplClient().submit(signedTransaction);
+    SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -116,7 +118,7 @@ public class SubmitPaymentUsingSignatureService extends BaseIT {
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     sourceWallet = this.newSecp256k1WalletFromSignatureService(signatureService, "sourceWallet");
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
@@ -131,7 +133,7 @@ public class SubmitPaymentUsingSignatureService extends BaseIT {
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
     SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
-    SubmitResult<Payment> result = xrplClient().submit(transactionWithSignature);
+    SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());

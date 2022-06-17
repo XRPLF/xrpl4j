@@ -28,6 +28,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -54,6 +55,8 @@ public class OfferIT extends BaseIT {
   private static Wallet issuerWallet;
 
   private static boolean usdIssued = false;
+  
+  private final XrplClient xrplClient = xrplClient();
 
   /**
    * Sets up an issued currency (USD) that can be used to test Offers against this currency.
@@ -68,7 +71,7 @@ public class OfferIT extends BaseIT {
       return;
     }
     issuerWallet = createRandomAccount();
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
       this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.classicAddress()));
 
@@ -93,7 +96,7 @@ public class OfferIT extends BaseIT {
         .build())
       .build();
 
-    SubmitResult<OfferCreate> response = xrplClient().submit(issuerWallet, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(issuerWallet, offerCreate);
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
@@ -116,7 +119,7 @@ public class OfferIT extends BaseIT {
     // Generate and fund purchaser's account
     Wallet purchaser = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(purchaser.classicAddress())
     );
@@ -142,7 +145,7 @@ public class OfferIT extends BaseIT {
         .build())
       .build();
 
-    SubmitResult<OfferCreate> response = xrplClient().submit(purchaser, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
@@ -181,13 +184,13 @@ public class OfferIT extends BaseIT {
 
     OfferCancel offerCancel = OfferCancel.builder()
       .account(purchaser.classicAddress())
-      .fee(xrplClient().fee().drops().minimumFee())
+      .fee(xrplClient.fee().drops().minimumFee())
       .sequence(nextSequence)
       .offerSequence(offerSequence)
       .signingPublicKey(purchaser.publicKey())
       .build();
 
-    SubmitResult<OfferCancel> cancelResponse = xrplClient().submit(purchaser, offerCancel);
+    SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(purchaser, offerCancel);
     assertThat(cancelResponse.result()).isEqualTo(expectedResult);
 
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.classicAddress(), OfferObject.class));
@@ -203,7 +206,7 @@ public class OfferIT extends BaseIT {
     // Generate and fund purchaser's account
     Wallet purchaser = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(purchaser.classicAddress())
     );
@@ -229,7 +232,7 @@ public class OfferIT extends BaseIT {
         .build())
       .build();
 
-    SubmitResult<OfferCreate> response = xrplClient().submit(purchaser, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -262,7 +265,7 @@ public class OfferIT extends BaseIT {
     // Generate and fund purchaser's account
     Wallet purchaser = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(purchaser.classicAddress())
     );
@@ -285,7 +288,7 @@ public class OfferIT extends BaseIT {
       .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
       .build();
 
-    SubmitResult<OfferCreate> response = xrplClient().submit(purchaser, offerCreate);
+    SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());

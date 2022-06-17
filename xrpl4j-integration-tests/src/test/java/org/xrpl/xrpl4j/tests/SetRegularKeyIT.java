@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -35,6 +36,8 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class SetRegularKeyIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+  
   @Test
   void setRegularKeyOnAccount() throws JsonRpcClientErrorException {
     //////////////////////////
@@ -52,7 +55,7 @@ public class SetRegularKeyIT extends BaseIT {
     //////////////////////////
     // Submit a SetRegularKey transaction with the new wallet's address so that we
     // can sign future transactions with the new wallet's keypair
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -61,7 +64,7 @@ public class SetRegularKeyIT extends BaseIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<SetRegularKey> setResult = xrplClient().submit(wallet, setRegularKey);
+    SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
@@ -83,7 +86,7 @@ public class SetRegularKeyIT extends BaseIT {
           .build();
 
         try {
-          return xrplClient().submit(newWallet, accountSet);
+          return xrplClient.submit(newWallet, accountSet);
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -109,7 +112,7 @@ public class SetRegularKeyIT extends BaseIT {
     //////////////////////////
     // Submit a SetRegularKey transaction with the new wallet's address so that we
     // can sign future transactions with the new wallet's keypair
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -118,7 +121,7 @@ public class SetRegularKeyIT extends BaseIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<SetRegularKey> setResult = xrplClient().submit(wallet, setRegularKey);
+    SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
@@ -140,7 +143,7 @@ public class SetRegularKeyIT extends BaseIT {
           .build();
 
         try {
-          return xrplClient().submit(newWallet, accountSet);
+          return xrplClient.submit(newWallet, accountSet);
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -155,7 +158,7 @@ public class SetRegularKeyIT extends BaseIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<SetRegularKey> removeResult = xrplClient().submit(wallet, removeRegularKey);
+    SubmitResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
     assertThat(removeResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(removeResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(removeResult.transactionResult().hash());

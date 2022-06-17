@@ -37,10 +37,12 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
  * rippled sends back.
  */
 public class LedgerResultIT extends BaseIT {
+  
+  private final XrplClient xrplClient = xrplClient();
 
   @Test
   void getValidatedLedgerResult() throws JsonRpcClientErrorException {
-    final LedgerResult ledgerResult = xrplClient().ledger(LedgerRequestParams.builder()
+    final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build());
 
@@ -57,7 +59,7 @@ public class LedgerResultIT extends BaseIT {
 
   @Test
   void getCurrentLedgerResult() throws JsonRpcClientErrorException {
-    final LedgerResult ledgerResult = xrplClient().ledger(LedgerRequestParams.builder()
+    final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build());
 
@@ -78,7 +80,7 @@ public class LedgerResultIT extends BaseIT {
 
   @Test
   void getClosedLedgerResult() throws JsonRpcClientErrorException {
-    final LedgerResult ledgerResult = xrplClient().ledger(LedgerRequestParams.builder()
+    final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CLOSED)
       .build());
 

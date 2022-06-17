@@ -28,6 +28,7 @@ import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -50,6 +51,8 @@ import java.time.Instant;
  */
 public class EscrowIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   @Test
   public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, InterruptedException {
     //////////////////////
@@ -59,7 +62,7 @@ public class EscrowIT extends BaseIT {
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
@@ -76,7 +79,7 @@ public class EscrowIT extends BaseIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SubmitResult<EscrowCreate> createResult = xrplClient().submit(senderWallet, escrowCreate);
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
@@ -121,7 +124,7 @@ public class EscrowIT extends BaseIT {
       .signingPublicKey(receiverWallet.publicKey())
       .build();
 
-    SubmitResult<EscrowFinish> finishResult = xrplClient().submit(receiverWallet, escrowFinish);
+    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
     assertThat(finishResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(finishResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(finishResult.transactionResult().hash());

@@ -28,6 +28,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
@@ -56,6 +57,7 @@ public class SignerListSetIT extends BaseIT {
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
   protected final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
   protected final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
+  private final XrplClient xrplClient = xrplClient();
 
   @Test
   void addSignersToSignerListAndSendPayment() throws JsonRpcClientErrorException {
@@ -82,7 +84,7 @@ public class SignerListSetIT extends BaseIT {
 
     /////////////////////////////
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -107,7 +109,7 @@ public class SignerListSetIT extends BaseIT {
 
     /////////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<SignerListSet> signerListSetResult = xrplClient().submit(sourceWallet, signerListSet);
+    SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -179,7 +181,7 @@ public class SignerListSetIT extends BaseIT {
       .signers(signers)
       .build();
 
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient().submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -211,7 +213,7 @@ public class SignerListSetIT extends BaseIT {
 
     /////////////////////////////
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -236,7 +238,7 @@ public class SignerListSetIT extends BaseIT {
 
     ////////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<SignerListSet> signerListSetResult = xrplClient().submit(sourceWallet, signerListSet);
+    SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -274,7 +276,7 @@ public class SignerListSetIT extends BaseIT {
 
     /////////////////////////////
     // Submit it and validate that it was successful
-    SubmitResult<SignerListSet> signerListDeleteResult = xrplClient().submit(sourceWallet, deleteSignerList);
+    SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(sourceWallet, deleteSignerList);
     assertThat(signerListDeleteResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());

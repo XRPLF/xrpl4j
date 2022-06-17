@@ -28,6 +28,7 @@ import org.assertj.core.data.MapEntry;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesIssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
@@ -40,13 +41,15 @@ import java.util.Optional;
 
 public class GatewayBalancesIT extends BaseIT {
 
+  private final XrplClient xrplClient = xrplClient();
+
   @Test
   public void testGatewayBalances() throws JsonRpcClientErrorException {
     // Create random accounts for the issuer and the counterparty
     Wallet issuerWallet = createRandomAccount();
     Wallet counterpartyWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient().fee();
+    FeeResult feeResult = xrplClient.fee();
 
     ///////////////////////////
     // Create a Trust Line between issuer and counterparty denominated in a custom currency
@@ -80,7 +83,7 @@ public class GatewayBalancesIT extends BaseIT {
         .anyMatch(line -> line.balance().equals("-" + trustLine.limitPeer()))
     );
 
-    GatewayBalancesResult result = xrplClient().gatewayBalances(GatewayBalancesRequestParams
+    GatewayBalancesResult result = xrplClient.gatewayBalances(GatewayBalancesRequestParams
       .builder()
       .account(issuerWallet.classicAddress())
       .addHotWallets(counterpartyWallet.classicAddress())

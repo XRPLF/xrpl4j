@@ -37,8 +37,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
-import org.xrpl.xrpl4j.model.client.accounts.AccountNftsRequestParams;
-import org.xrpl.xrpl4j.model.client.accounts.AccountNftsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
@@ -97,7 +95,7 @@ public abstract class AbstractIT {
 
   protected XrplClient xrplClient() {
     return xrplEnvironment().getXrplClient();
-  };
+  }
 
   /**
    * Funds a wallet with 1000 XRP.
@@ -371,18 +369,5 @@ public abstract class AbstractIT {
         Payment.class)
     );
 
-  }
-
-  /**
-   * Return AccountNftsResult for an {@link Address}.
-   *
-   * @param account to get the NFTs for.
-   *
-   * @return {@link AccountNftsResult} containing list of accounts for an address.
-   */
-  protected AccountNftsResult getAccountNfts(Address account) throws JsonRpcClientErrorException {
-    return xrplClient().accountNfts(
-      AccountNftsRequestParams.builder().account(account).build()
-    );
   }
 }

@@ -7,7 +7,7 @@ public class BaseIT extends AbstractIT {
 
   private static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
 
-  protected static XrplClient xrplClient = xrplEnvironment.getXrplClient();
+  protected XrplClient xrplClient = xrplClient();
 
   @Override
   protected XrplEnvironment xrplEnvironment() {

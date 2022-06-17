@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,7 +53,7 @@ import java.util.Objects;
  * Integration tests for submitting payment transactions to the XRPL using a {@link DerivedKeysSignatureService} for all
  * signing operations.
  */
-public class SubmitPaymentUsingSignatureService extends AbstractIT {
+public class SubmitPaymentUsingSignatureService extends BaseIT {
 
   private static Wallet sourceWallet;
   private static Wallet destinationWallet;
@@ -83,7 +83,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     sourceWallet = this.newEd25519WalletFromSignatureService(signatureService, "sourceWallet");
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfo = this
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
@@ -98,7 +98,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
     SignedTransaction<Payment> signedTransaction = signatureService.sign(sourceKeyMetadata, payment);
-    SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
+    SubmitResult<Payment> result = xrplClient().submit(signedTransaction);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -116,7 +116,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     sourceWallet = this.newSecp256k1WalletFromSignatureService(signatureService, "sourceWallet");
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfo = this
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWallet.classicAddress()));
     Payment payment = Payment.builder()
@@ -131,7 +131,7 @@ public class SubmitPaymentUsingSignatureService extends AbstractIT {
     final KeyMetadata sourceKeyMetadata = this.keyMetadata("sourceWallet");
 
     SignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourceKeyMetadata, payment);
-    SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
+    SubmitResult<Payment> result = xrplClient().submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());

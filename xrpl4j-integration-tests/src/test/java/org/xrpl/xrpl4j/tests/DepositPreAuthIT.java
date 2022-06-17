@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,7 +41,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class DepositPreAuthIT extends AbstractIT {
+public class DepositPreAuthIT extends BaseIT {
 
   @Test
   public void preauthorizeAccountAndReceivePayment() throws JsonRpcClientErrorException {
@@ -52,7 +52,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
 
     /////////////////////////
@@ -65,7 +65,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .authorize(senderWallet.classicAddress())
       .build();
 
-    SubmitResult<DepositPreAuth> result = xrplClient.submit(receiverWallet, depositPreAuth);
+    SubmitResult<DepositPreAuth> result = xrplClient().submit(receiverWallet, depositPreAuth);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -87,7 +87,7 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Validate that the `deposit_authorized` client call is implemented properly by ensuring it aligns with the
     // result found in the account object.
-    final boolean depositAuthorized = xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+    final boolean depositAuthorized = xrplClient().depositAuthorized(DepositAuthorizedRequestParams.builder()
       .sourceAccount(senderWallet.classicAddress())
       .destinationAccount(receiverWallet.classicAddress())
       .build()).depositAuthorized();
@@ -107,7 +107,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .destination(receiverWallet.classicAddress())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
+    SubmitResult<Payment> paymentResult = xrplClient().submit(senderWallet, payment);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -144,7 +144,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
 
     /////////////////////////
@@ -173,7 +173,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // And validate that the transaction failed with a tecNO_PERMISSION error code
-    SubmitResult<Payment> paymentResult = xrplClient.submit(senderWallet, payment);
+    SubmitResult<Payment> paymentResult = xrplClient().submit(senderWallet, payment);
     assertThat(paymentResult.result()).isEqualTo("tecNO_PERMISSION");
   }
 
@@ -184,7 +184,7 @@ public class DepositPreAuthIT extends AbstractIT {
     Wallet senderWallet = createRandomAccount();
 
     assertThat(
-      xrplClient.depositAuthorized(
+      xrplClient().depositAuthorized(
         DepositAuthorizedRequestParams.builder()
           .sourceAccount(senderWallet.classicAddress())
           .destinationAccount(receiverWallet.classicAddress())
@@ -201,7 +201,7 @@ public class DepositPreAuthIT extends AbstractIT {
     Wallet senderWallet = createRandomAccount();
 
     Assertions.assertThrows(JsonRpcClientErrorException.class, () -> {
-        xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+        xrplClient().depositAuthorized(DepositAuthorizedRequestParams.builder()
           .sourceAccount(senderWallet.classicAddress())
           .destinationAccount(receiverWallet.classicAddress())
           .ledgerSpecifier(
@@ -238,7 +238,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
       .build();
 
-    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(wallet, accountSet);
+    SubmitResult<AccountSet> accountSetResult = xrplClient().submit(wallet, accountSet);
     assertThat(accountSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(accountSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(accountSetResult.transactionResult().hash());

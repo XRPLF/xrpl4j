@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,7 +41,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.function.Predicate;
 
-public class CheckIT extends AbstractIT {
+public class CheckIT extends BaseIT {
 
   @Test
   public void createXrpCheckAndCash() throws JsonRpcClientErrorException {
@@ -51,7 +51,7 @@ public class CheckIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -69,7 +69,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
+    SubmitResult<CheckCreate> response = xrplClient().submit(sourceWallet, checkCreate);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -91,7 +91,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Destination wallet cashes the Check
-    feeResult = xrplClient.fee();
+    feeResult = xrplClient().fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
     );
@@ -103,7 +103,7 @@ public class CheckIT extends AbstractIT {
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();
-    SubmitResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
+    SubmitResult<CheckCash> cashResponse = xrplClient().submit(destinationWallet, checkCash);
     assertThat(cashResponse.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -142,7 +142,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -158,7 +158,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
+    SubmitResult<CheckCreate> response = xrplClient().submit(sourceWallet, checkCreate);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -180,7 +180,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Source account cancels the Check
-    feeResult = xrplClient.fee();
+    feeResult = xrplClient().fee();
     CheckCancel checkCancel = CheckCancel.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
@@ -189,7 +189,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
+    SubmitResult<CheckCancel> cancelResult = xrplClient().submit(sourceWallet, checkCancel);
     assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -216,7 +216,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -235,7 +235,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
+    SubmitResult<CheckCreate> response = xrplClient().submit(sourceWallet, checkCreate);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
@@ -254,7 +254,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Destination account cancels the Check
-    feeResult = xrplClient.fee();
+    feeResult = xrplClient().fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
     );
@@ -266,7 +266,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey())
       .build();
 
-    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
+    SubmitResult<CheckCancel> cancelResult = xrplClient().submit(destinationWallet, checkCancel);
     assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());

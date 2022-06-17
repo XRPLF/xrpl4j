@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class IsFinalIT extends AbstractIT {
+public class IsFinalIT extends BaseIT {
 
   Wallet wallet = createRandomAccount();
 
@@ -36,9 +36,9 @@ public class IsFinalIT extends AbstractIT {
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
 
-    LedgerIndex validatedLedger = xrplClient.ledger(
+    LedgerIndex validatedLedger = xrplClient().ledger(
         LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED)
           .build()
       )
@@ -63,11 +63,11 @@ public class IsFinalIT extends AbstractIT {
   public void simpleIsFinalTest() throws JsonRpcClientErrorException, InterruptedException {
 
     Payment builtPayment = payment.build();
-    SubmitResult response = xrplClient.submit(wallet, builtPayment);
+    SubmitResult response = xrplClient().submit(wallet, builtPayment);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
 
     assertThat(
-      xrplClient.isFinal(
+      xrplClient().isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence,
@@ -77,7 +77,7 @@ public class IsFinalIT extends AbstractIT {
     ).isEqualTo(FinalityStatus.NOT_FINAL);
     Thread.sleep(4000);
     assertThat(
-      xrplClient.isFinal(
+      xrplClient().isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence,
@@ -93,10 +93,10 @@ public class IsFinalIT extends AbstractIT {
     Payment builtPayment = payment
       .sequence(accountInfo.accountData().sequence().minus(UnsignedInteger.ONE))
       .build();
-    SubmitResult response = xrplClient.submit(wallet, builtPayment);
+    SubmitResult response = xrplClient().submit(wallet, builtPayment);
 
     assertThat(
-      xrplClient.isFinal(
+      xrplClient().isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence.minus(UnsignedInteger.ONE),
@@ -106,7 +106,7 @@ public class IsFinalIT extends AbstractIT {
     ).isEqualTo(FinalityStatus.NOT_FINAL);
 
     this.scanForResult(
-      () -> xrplClient.isFinal(
+      () -> xrplClient().isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence.minus(UnsignedInteger.ONE),
@@ -125,10 +125,10 @@ public class IsFinalIT extends AbstractIT {
       .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(
         wallet.classicAddress()).value("500").build()
       ).build();
-    SubmitResult response = xrplClient.submit(wallet, builtPayment);
+    SubmitResult response = xrplClient().submit(wallet, builtPayment);
 
     assertThat(
-      xrplClient.isFinal(
+      xrplClient().isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence,
@@ -138,7 +138,7 @@ public class IsFinalIT extends AbstractIT {
     ).isEqualTo(FinalityStatus.NOT_FINAL);
 
     this.scanForResult(
-      () -> xrplClient.isFinal(
+      () -> xrplClient().isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence.minus(UnsignedInteger.ONE),

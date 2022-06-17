@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,11 +36,11 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
  * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses
  * rippled sends back.
  */
-public class LedgerResultIT extends AbstractIT {
+public class LedgerResultIT extends BaseIT {
 
   @Test
   void getValidatedLedgerResult() throws JsonRpcClientErrorException {
-    final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
+    final LedgerResult ledgerResult = xrplClient().ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.VALIDATED)
       .build());
 
@@ -57,7 +57,7 @@ public class LedgerResultIT extends AbstractIT {
 
   @Test
   void getCurrentLedgerResult() throws JsonRpcClientErrorException {
-    final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
+    final LedgerResult ledgerResult = xrplClient().ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build());
 
@@ -78,7 +78,7 @@ public class LedgerResultIT extends AbstractIT {
 
   @Test
   void getClosedLedgerResult() throws JsonRpcClientErrorException {
-    final LedgerResult ledgerResult = xrplClient.ledger(LedgerRequestParams.builder()
+    final LedgerResult ledgerResult = xrplClient().ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CLOSED)
       .build());
 

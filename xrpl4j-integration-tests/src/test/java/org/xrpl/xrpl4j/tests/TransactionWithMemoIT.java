@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class TransactionWithMemoIT extends AbstractIT {
+public class TransactionWithMemoIT extends BaseIT {
 
   /**
    * Tests a transaction that has a memo containing only a nibble (i.e., a half byte).
@@ -44,7 +44,7 @@ public class TransactionWithMemoIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -63,7 +63,7 @@ public class TransactionWithMemoIT extends AbstractIT {
         .build())
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient().submit(sourceWallet, payment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -89,7 +89,7 @@ public class TransactionWithMemoIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -107,7 +107,7 @@ public class TransactionWithMemoIT extends AbstractIT {
       )
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient().submit(sourceWallet, payment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());

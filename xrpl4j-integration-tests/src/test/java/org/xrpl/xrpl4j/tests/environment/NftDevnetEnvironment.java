@@ -9,7 +9,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  */
 public class NftDevnetEnvironment extends CustomEnvironment implements XrplEnvironment {
 
-  NftDevnetEnvironment() {
+  public NftDevnetEnvironment() {
     super(
       HttpUrl.parse("http://xls20-sandbox.rippletest.net:51234"),
       HttpUrl.parse("https://faucet-nft.ripple.com")

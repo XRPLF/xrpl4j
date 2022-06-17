@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,7 +48,7 @@ import java.time.Instant;
 /**
  * Integration test to validate creation, cancellation, and execution of escrow transactions.
  */
-public class EscrowIT extends AbstractIT {
+public class EscrowIT extends BaseIT {
 
   @Test
   public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, InterruptedException {
@@ -59,7 +59,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
@@ -76,7 +76,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SubmitResult<EscrowCreate> createResult = xrplClient.submit(senderWallet, escrowCreate);
+    SubmitResult<EscrowCreate> createResult = xrplClient().submit(senderWallet, escrowCreate);
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
@@ -121,7 +121,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(receiverWallet.publicKey())
       .build();
 
-    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(receiverWallet, escrowFinish);
+    SubmitResult<EscrowFinish> finishResult = xrplClient().submit(receiverWallet, escrowFinish);
     assertThat(finishResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(finishResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(finishResult.transactionResult().hash());

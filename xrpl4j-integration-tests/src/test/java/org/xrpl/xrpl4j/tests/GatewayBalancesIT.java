@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Optional;
 
-public class GatewayBalancesIT extends AbstractIT {
+public class GatewayBalancesIT extends BaseIT {
 
   @Test
   public void testGatewayBalances() throws JsonRpcClientErrorException {
@@ -46,7 +46,7 @@ public class GatewayBalancesIT extends AbstractIT {
     Wallet issuerWallet = createRandomAccount();
     Wallet counterpartyWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
 
     ///////////////////////////
     // Create a Trust Line between issuer and counterparty denominated in a custom currency
@@ -80,7 +80,7 @@ public class GatewayBalancesIT extends AbstractIT {
         .anyMatch(line -> line.balance().equals("-" + trustLine.limitPeer()))
     );
 
-    GatewayBalancesResult result = xrplClient.gatewayBalances(GatewayBalancesRequestParams
+    GatewayBalancesResult result = xrplClient().gatewayBalances(GatewayBalancesRequestParams
       .builder()
       .account(issuerWallet.classicAddress())
       .addHotWallets(counterpartyWallet.classicAddress())

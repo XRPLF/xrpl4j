@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class SetRegularKeyIT extends AbstractIT {
+public class SetRegularKeyIT extends BaseIT {
 
   @Test
   void setRegularKeyOnAccount() throws JsonRpcClientErrorException {
@@ -52,7 +52,7 @@ public class SetRegularKeyIT extends AbstractIT {
     //////////////////////////
     // Submit a SetRegularKey transaction with the new wallet's address so that we
     // can sign future transactions with the new wallet's keypair
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -61,7 +61,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
+    SubmitResult<SetRegularKey> setResult = xrplClient().submit(wallet, setRegularKey);
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
@@ -83,7 +83,7 @@ public class SetRegularKeyIT extends AbstractIT {
           .build();
 
         try {
-          return xrplClient.submit(newWallet, accountSet);
+          return xrplClient().submit(newWallet, accountSet);
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -109,7 +109,7 @@ public class SetRegularKeyIT extends AbstractIT {
     //////////////////////////
     // Submit a SetRegularKey transaction with the new wallet's address so that we
     // can sign future transactions with the new wallet's keypair
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -118,7 +118,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<SetRegularKey> setResult = xrplClient.submit(wallet, setRegularKey);
+    SubmitResult<SetRegularKey> setResult = xrplClient().submit(wallet, setRegularKey);
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
@@ -140,7 +140,7 @@ public class SetRegularKeyIT extends AbstractIT {
           .build();
 
         try {
-          return xrplClient.submit(newWallet, accountSet);
+          return xrplClient().submit(newWallet, accountSet);
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -155,7 +155,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult<SetRegularKey> removeResult = xrplClient.submit(wallet, removeRegularKey);
+    SubmitResult<SetRegularKey> removeResult = xrplClient().submit(wallet, removeRegularKey);
     assertThat(removeResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(removeResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(removeResult.transactionResult().hash());

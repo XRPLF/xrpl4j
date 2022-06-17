@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,11 +77,8 @@ public abstract class AbstractIT {
 
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
-  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
-
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   protected Wallet createRandomAccount() {
@@ -96,13 +93,19 @@ public abstract class AbstractIT {
     return wallet;
   }
 
+  protected abstract XrplEnvironment xrplEnvironment();
+
+  protected XrplClient xrplClient() {
+    return xrplEnvironment().getXrplClient();
+  };
+
   /**
    * Funds a wallet with 1000 XRP.
    *
    * @param wallet The {@link Wallet} to fund.
    */
   protected void fundAccount(Wallet wallet) {
-    xrplEnvironment.fundAccount(wallet.classicAddress());
+    xrplEnvironment().fundAccount(wallet.classicAddress());
   }
 
   //////////////////////
@@ -149,7 +152,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient.accountObjects(params);
+      return xrplClient().accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -161,7 +164,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
+      List<LedgerObject> ledgerObjects = xrplClient().accountObjects(params).accountObjects();
       return ledgerObjects
         .stream()
         .filter(object -> clazz.isAssignableFrom(object.getClass()))
@@ -178,7 +181,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient.accountChannels(params);
+      return xrplClient().accountChannels(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -190,7 +193,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient.accountInfo(params);
+      return xrplClient().accountInfo(params);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -201,7 +204,7 @@ public abstract class AbstractIT {
     Class<T> transactionType
   ) {
     try {
-      TransactionResult<T> transaction = xrplClient.transaction(
+      TransactionResult<T> transaction = xrplClient().transaction(
         TransactionRequestParams.of(transactionHash),
         transactionType
       );
@@ -216,7 +219,7 @@ public abstract class AbstractIT {
       LedgerRequestParams params = LedgerRequestParams.builder()
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient.ledger(params);
+      return xrplClient().ledger(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -235,7 +238,7 @@ public abstract class AbstractIT {
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
 
-      return xrplClient.ripplePathFind(pathFindParams);
+      return xrplClient().ripplePathFind(pathFindParams);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -249,7 +252,7 @@ public abstract class AbstractIT {
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
 
-      return xrplClient.accountLines(params);
+      return xrplClient().accountLines(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -299,7 +302,7 @@ public abstract class AbstractIT {
       .signingPublicKey(counterpartyWallet.publicKey())
       .build();
 
-    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient().submit(counterpartyWallet, trustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
@@ -353,7 +356,7 @@ public abstract class AbstractIT {
       .signingPublicKey(issuerWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
+    SubmitResult<Payment> paymentResult = xrplClient().submit(issuerWallet, fundCounterparty);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
@@ -378,7 +381,7 @@ public abstract class AbstractIT {
    * @return {@link AccountNftsResult} containing list of accounts for an address.
    */
   protected AccountNftsResult getAccountNfts(Address account) throws JsonRpcClientErrorException {
-    return xrplClient.accountNfts(
+    return xrplClient().accountNfts(
       AccountNftsRequestParams.builder().account(account).build()
     );
   }

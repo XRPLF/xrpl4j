@@ -25,14 +25,16 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.tests.environment.NftDevnetEnvironment;
+import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class NfTokenIT extends AbstractIT {
 
+  private static final XrplEnvironment nftDevnetEnvironment = new NftDevnetEnvironment();
+
   @Test
   void mint() throws JsonRpcClientErrorException {
-    assumeTrue(System.getProperty("useNftDevnet") != null);
-
     Wallet wallet = createRandomAccount();
 
     AccountInfoResult accountInfoResult = this.scanForResult(
@@ -49,7 +51,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence())
       .build();
 
-    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient().submit(wallet, nfTokenMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -69,8 +71,6 @@ public class NfTokenIT extends AbstractIT {
 
   @Test
   void mintAndBurn() throws JsonRpcClientErrorException {
-    assumeTrue(System.getProperty("useNftDevnet") != null);
-
     Wallet wallet = createRandomAccount();
 
     AccountInfoResult accountInfoResult = this.scanForResult(
@@ -88,7 +88,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence())
       .build();
 
-    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient().submit(wallet, nfTokenMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -120,7 +120,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .build();
 
-    SubmitResult<NfTokenBurn> burnSubmitResult = xrplClient.submit(wallet, nfTokenBurn);
+    SubmitResult<NfTokenBurn> burnSubmitResult = xrplClient().submit(wallet, nfTokenBurn);
     assertThat(burnSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(burnSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(burnSubmitResult.transactionResult().hash());
@@ -147,8 +147,6 @@ public class NfTokenIT extends AbstractIT {
 
   @Test
   void mintAndCreateOffer() throws JsonRpcClientErrorException {
-    assumeTrue(System.getProperty("useNftDevnet") != null);
-
     Wallet wallet = createRandomAccount();
 
     //mint NFT from one account
@@ -166,7 +164,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence())
       .build();
 
-    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient().submit(wallet, nfTokenMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -199,7 +197,7 @@ public class NfTokenIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient.submit(wallet, nfTokenCreateOffer);
+    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient().submit(wallet, nfTokenCreateOffer);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
@@ -226,8 +224,6 @@ public class NfTokenIT extends AbstractIT {
 
   @Test
   void mintAndCreateThenAcceptOffer() throws JsonRpcClientErrorException {
-    assumeTrue(System.getProperty("useNftDevnet") != null);
-
     Wallet wallet = createRandomAccount();
 
     //mint NFT from one account
@@ -248,7 +244,7 @@ public class NfTokenIT extends AbstractIT {
         .build())
       .build();
 
-    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient().submit(wallet, nfTokenMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -286,7 +282,7 @@ public class NfTokenIT extends AbstractIT {
       .signingPublicKey(wallet2.publicKey())
       .build();
 
-    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient.submit(wallet2, nfTokenCreateOffer);
+    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient().submit(wallet2, nfTokenCreateOffer);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
@@ -310,7 +306,7 @@ public class NfTokenIT extends AbstractIT {
     );
     logger.info("NFTokenOffer object was found in account's objects.");
 
-    NftBuyOffersResult nftBuyOffersResult = xrplClient.nftBuyOffers(NftBuyOffersRequestParams.builder()
+    NftBuyOffersResult nftBuyOffersResult = xrplClient().nftBuyOffers(NftBuyOffersRequestParams.builder()
       .tokenId(tokenId)
       .build());
     assertThat(nftBuyOffersResult.offers().size()).isEqualTo(1);
@@ -324,7 +320,7 @@ public class NfTokenIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult nfTokenAcceptOfferSubmitResult = xrplClient.submit(wallet, nfTokenAcceptOffer);
+    SubmitResult nfTokenAcceptOfferSubmitResult = xrplClient().submit(wallet, nfTokenAcceptOffer);
     assertThat(nfTokenAcceptOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(nfTokenAcceptOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(nfTokenAcceptOfferSubmitResult.transactionResult().hash());
@@ -345,8 +341,6 @@ public class NfTokenIT extends AbstractIT {
 
   @Test
   void mintAndCreateOfferThenCancelOffer() throws JsonRpcClientErrorException {
-    assumeTrue(System.getProperty("useNftDevnet") != null);
-
     Wallet wallet = createRandomAccount();
 
     //mint NFT from one account
@@ -364,7 +358,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence())
       .build();
 
-    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient().submit(wallet, nfTokenMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -397,7 +391,7 @@ public class NfTokenIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient.submit(wallet, nfTokenCreateOffer);
+    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient().submit(wallet, nfTokenCreateOffer);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
@@ -421,7 +415,7 @@ public class NfTokenIT extends AbstractIT {
     );
     logger.info("NFTokenOffer object was found in account's objects.");
 
-    NftSellOffersResult nftSellOffersResult = xrplClient.nftSellOffers(NftSellOffersRequestParams.builder()
+    NftSellOffersResult nftSellOffersResult = xrplClient().nftSellOffers(NftSellOffersRequestParams.builder()
       .tokenId(tokenId)
       .build());
 
@@ -434,7 +428,7 @@ public class NfTokenIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey())
       .build();
 
-    SubmitResult nfTokenCancelOfferSubmitResult = xrplClient.submit(wallet, nfTokenCancelOffer);
+    SubmitResult nfTokenCancelOfferSubmitResult = xrplClient().submit(wallet, nfTokenCancelOffer);
     assertThat(nfTokenCancelOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(nfTokenCancelOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(nfTokenCancelOfferSubmitResult.transactionResult().hash());
@@ -456,5 +450,10 @@ public class NfTokenIT extends AbstractIT {
         )
     );
     logger.info("NFTokenOffer object was deleted successfully.");
+  }
+
+  @Override
+  protected XrplEnvironment xrplEnvironment() {
+    return nftDevnetEnvironment;
   }
 }

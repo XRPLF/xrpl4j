@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,14 +36,14 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class SubmitPaymentIT extends AbstractIT {
+public class SubmitPaymentIT extends BaseIT {
 
   @Test
   public void sendPayment() throws JsonRpcClientErrorException {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -57,7 +57,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SubmitResult<Payment> result = xrplClient().submit(sourceWallet, payment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -86,7 +86,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
     );
@@ -100,7 +100,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
+    SubmitResult<Payment> result = xrplClient().submit(senderWallet, payment);
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -117,7 +117,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
-    LedgerResult ledger = xrplClient.ledger(
+    LedgerResult ledger = xrplClient().ledger(
         LedgerRequestParams.builder()
           .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndexSafe()))
           .build()

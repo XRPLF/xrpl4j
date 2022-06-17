@@ -36,7 +36,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SubmitMultisignedIT extends AbstractIT {
+public class SubmitMultisignedIT extends BaseIT {
 
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
   protected final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
@@ -72,7 +72,7 @@ public class SubmitMultisignedIT extends AbstractIT {
 
     /////////////////////////////
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
-    feeResult = xrplClient.fee();
+    feeResult = xrplClient().fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -97,7 +97,7 @@ public class SubmitMultisignedIT extends AbstractIT {
 
     /////////////////////////////
     // Validate that the transaction was submitted successfully
-    signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
+    signerListSetResult = xrplClient().submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -179,7 +179,7 @@ public class SubmitMultisignedIT extends AbstractIT {
       .build();
     String libraryCalculatedHash = signedTransaction.hash().value();
 
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient().submitMultisigned(multiSigPayment);
 
     assertThat(paymentResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
 
@@ -258,7 +258,7 @@ public class SubmitMultisignedIT extends AbstractIT {
       .build();
     String libraryCalculatedHash = signedTransaction.hash().value();
 
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient().submitMultisigned(multiSigPayment);
 
     assertThat(paymentResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
 

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,7 +53,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 import java.time.Duration;
 import java.time.Instant;
 
-public class PaymentChannelIT extends AbstractIT {
+public class PaymentChannelIT extends BaseIT {
 
   private final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
   private final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
@@ -66,7 +66,7 @@ public class PaymentChannelIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -88,7 +88,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient().submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
@@ -148,7 +148,7 @@ public class PaymentChannelIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -170,7 +170,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(sourceWallet, createPaymentChannel);
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient().submit(sourceWallet, createPaymentChannel);
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());

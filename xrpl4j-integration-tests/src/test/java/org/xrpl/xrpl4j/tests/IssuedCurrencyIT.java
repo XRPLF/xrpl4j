@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +43,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
 
-public class IssuedCurrencyIT extends AbstractIT {
+public class IssuedCurrencyIT extends BaseIT {
 
   @Test
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException {
@@ -53,7 +53,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     Wallet issuerWallet = createRandomAccount();
     Wallet counterpartyWallet = createRandomAccount();
 
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
 
     ///////////////////////////
     // Create a Trust Line between issuer and counterparty denominated in a custom currency
@@ -90,7 +90,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // We can also retrieve the currencies that the counterparty can send/recieve using the accountCurrencies
     // method.
-    AccountCurrenciesResult counterpartyCurrencies = xrplClient.accountCurrencies(
+    AccountCurrenciesResult counterpartyCurrencies = xrplClient().accountCurrencies(
       AccountCurrenciesRequestParams.builder()
         .account(counterpartyWallet.classicAddress())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
@@ -114,7 +114,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Set the DefaultRipple account flag on the issuer wallet, so that
     // its TrustLines allow rippling
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     setDefaultRipple(issuerWallet, feeResult);
 
     ///////////////////////////
@@ -177,7 +177,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(aliceWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient.submit(aliceWallet, aliceToBobPayment);
+    SubmitResult<Payment> paymentResult = xrplClient().submit(aliceWallet, aliceToBobPayment);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
@@ -214,7 +214,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Set the lsfDefaultRipple AccountRoot flag so that all trustlines in this topography allow rippling
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     setDefaultRipple(issuerAWallet, feeResult);
     setDefaultRipple(issuerBWallet, feeResult);
     setDefaultRipple(charlieWallet, feeResult);
@@ -323,7 +323,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(charlieWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient.submit(charlieWallet, charlieToDanielPayment);
+    SubmitResult<Payment> paymentResult = xrplClient().submit(charlieWallet, charlieToDanielPayment);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());

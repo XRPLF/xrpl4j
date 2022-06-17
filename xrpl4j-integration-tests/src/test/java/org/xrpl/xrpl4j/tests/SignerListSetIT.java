@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SignerListSetIT extends AbstractIT {
+public class SignerListSetIT extends BaseIT {
 
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
   protected final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
@@ -82,7 +82,7 @@ public class SignerListSetIT extends AbstractIT {
 
     /////////////////////////////
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -107,7 +107,7 @@ public class SignerListSetIT extends AbstractIT {
 
     /////////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
+    SubmitResult<SignerListSet> signerListSetResult = xrplClient().submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
         .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -179,7 +179,7 @@ public class SignerListSetIT extends AbstractIT {
       .signers(signers)
       .build();
 
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient().submitMultisigned(multiSigPayment);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -211,7 +211,7 @@ public class SignerListSetIT extends AbstractIT {
 
     /////////////////////////////
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
-    FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient().fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
       .fee(feeResult.drops().openLedgerFee())
@@ -236,7 +236,7 @@ public class SignerListSetIT extends AbstractIT {
 
     ////////////////////////////
     // Validate that the transaction was submitted successfully
-    SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
+    SubmitResult<SignerListSet> signerListSetResult = xrplClient().submit(sourceWallet, signerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -274,7 +274,7 @@ public class SignerListSetIT extends AbstractIT {
 
     /////////////////////////////
     // Submit it and validate that it was successful
-    SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(sourceWallet, deleteSignerList);
+    SubmitResult<SignerListSet> signerListDeleteResult = xrplClient().submit(sourceWallet, deleteSignerList);
     assertThat(signerListDeleteResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());

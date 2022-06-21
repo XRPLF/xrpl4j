@@ -229,7 +229,6 @@ class XrplBinaryCodecTest {
         "\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}," +
         "\"Destination\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\",\"DestinationTag\":2," +
         "\"SigningPubKey\":\"ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A\"," +
-        "\"Signature\": \"12345678\"," +
         "\"TxnSignature\": \"12345678\"}";
 
     // expected value obtained by calling encodeForSigning(json) from ripple-binary-codec
@@ -252,7 +251,6 @@ class XrplBinaryCodecTest {
         "\"issuer\":\"rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw\"}," +
         "\"Destination\":\"rrrrrrrrrrrrrrrrrrrrBZbvji\",\"DestinationTag\":2," +
         "\"SigningPubKey\":\"ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A\"," +
-        "\"Signature\": \"12345678\"," +
         "\"TxnSignature\": \"12345678\"}";
 
     // expected value obtained by calling encodeForMultisigning(json, signerAccount) from ripple-binary-codec

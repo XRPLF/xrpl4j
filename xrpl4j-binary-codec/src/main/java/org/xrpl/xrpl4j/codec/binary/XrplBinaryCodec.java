@@ -152,7 +152,13 @@ public class XrplBinaryCodec {
    * @return A {@link String} representing the decoded hex.
    */
   public String decode(String hex) {
-    return new BinaryParser(hex).readType(STObjectType.class)
+    String nonSignPrefixHex;
+    if (hex.startsWith(TRX_SIGNATURE_PREFIX) || hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
+      nonSignPrefixHex = hex.substring(8);
+    } else {
+      nonSignPrefixHex = hex;
+    }
+    return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
       .toJson()
       .toString();
   }

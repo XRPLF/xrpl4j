@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -37,9 +38,12 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Stream;
 
 class XrplBinaryCodecTest {
@@ -275,6 +279,48 @@ class XrplBinaryCodecTest {
       .build();
 
     assertThat(objectMapper.readValue(encoder.decode(signedTxHex), Payment.class)).isEqualTo(unsignedPayment);
+  }
+
+  @Test
+  void decodeMultiSignedTransaction() throws JsonProcessingException {
+
+    List<SignerWrapper> signers = Lists.newArrayList(
+      SignerWrapper.of(Signer.builder()
+        .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+        .signingPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF")
+        .transactionSignature("30450221009C195DBBF7967E223D8626CA19CF02073667F2B22E206727BFE848" +
+          "FF42BEAC8A022048C323B0BED19A988BDBEFA974B6DE8AA9DCAE250AA82BBD1221787032A864E5")
+        .build()
+      ),
+      SignerWrapper.of(Signer.builder()
+        .account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"))
+        .signingPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B")
+        .transactionSignature("30440220680BBD745004E9CFB6B13A137F505FB92298AD309071D16C7B982825" +
+          "188FD1AE022004200B1F7E4A6A84BB0E4FC09E1E3BA2B66EBD32F0E6D121A34BA3B04AD99BC1")
+        .build()
+      )
+    );
+
+    Payment payment = Payment.builder()
+      .account(Address.of("rEuLyBCvcw4CFmzv8RepSiAoNgF8tTGJQC"))
+      .fee(XrpCurrencyAmount.ofDrops(30000))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .destination(Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK"))
+      .signers(signers)
+      .sequence(UnsignedInteger.ONE)
+      .build();
+
+    String signedTxHex =
+      "120000228000000024000000016140000000000003E86840000000000075308114A3780F5CB5A44D366520FC4" +
+        "4055E8ED44D9A22708314EE39E6D05CFD6A90DAB700A1D70149ECEE29DFECF3E010732102B3EC4E5DD96029" +
+        "A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF744730450221009C195DBBF7967E223D8626C" +
+        "A19CF02073667F2B22E206727BFE848FF42BEAC8A022048C323B0BED19A988BDBEFA974B6DE8AA9DCAE250A" +
+        "A82BBD1221787032A864E58114204288D2E47F8EF6C99BCC457966320D12409711E1E0107321028FFB27650" +
+        "5F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B744630440220680BBD745004E9CFB6B1" +
+        "3A137F505FB92298AD309071D16C7B982825188FD1AE022004200B1F7E4A6A84BB0E4FC09E1E3BA2B66EBD3" +
+        "2F0E6D121A34BA3B04AD99BC181147908A7F0EDD48EA896C3580A399F0EE78611C8E3E1F1";
+
+    assertThat(objectMapper.readValue(encoder.decode(signedTxHex), Payment.class)).isEqualTo(payment);
   }
 
   @Test

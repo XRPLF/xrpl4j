@@ -153,8 +153,10 @@ public class XrplBinaryCodec {
    */
   public String decode(String hex) {
     String nonSignPrefixHex;
-    if (hex.startsWith(TRX_SIGNATURE_PREFIX) || hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
-      nonSignPrefixHex = hex.substring(8);
+    if (hex.startsWith(TRX_SIGNATURE_PREFIX)) {
+      nonSignPrefixHex = hex.substring(TRX_SIGNATURE_PREFIX.length());
+    } else if (hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
+      nonSignPrefixHex = hex.substring(TRX_MULTI_SIGNATURE_PREFIX.length());
     } else {
       nonSignPrefixHex = hex;
     }

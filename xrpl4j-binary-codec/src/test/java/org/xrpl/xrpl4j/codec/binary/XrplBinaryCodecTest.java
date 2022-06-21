@@ -23,13 +23,21 @@ package org.xrpl.xrpl4j.codec.binary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
+import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 import java.util.stream.Stream;
@@ -46,6 +54,7 @@ class XrplBinaryCodecTest {
   public static final String MULTI_LEVEL_OBJECT_HEX = "EAEA011001021002E1E1";
 
   private XrplBinaryCodec encoder = new XrplBinaryCodec();
+  private ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   private static Stream<Arguments> dataDrivenFixtures() throws IOException {
     return FixtureUtils.getDataDrivenFixtures().wholeObjectTests().stream()
@@ -239,6 +248,33 @@ class XrplBinaryCodecTest {
         "000000000000000000000001";
     assertThat(encoder.encode(json)).isNotEqualTo(encoder.encodeForSigning(json));
     assertThat(encoder.encodeForSigning(json)).isEqualTo(expected);
+  }
+
+  @Test
+  void decodeSignedTransaction() throws JsonProcessingException {
+    String signedTxHex =
+      "535458001200002280020000230000000124000000012E0000000261D84462D53C8ABAC00000000000000000000000005553440000000" +
+        "0008B1CE810C13D6F337DAC85863B3D70265A24DF446840000000000003157321ED5F5AC8B98974A3CA843326D9B88CEB" +
+        "D0560177B973EE0B149F782CFAA06DC66A8114EE39E6D05CFD6A90DAB700A1D70149ECEE29DFEC83140000000000000000" +
+        "000000000000000000000001";
+
+    Payment unsignedPayment = Payment.builder()
+      .account(Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK"))
+      .fee(XrpCurrencyAmount.ofDrops(789))
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+        .value("1234567890123456")
+        .build())
+      .destination(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
+      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .flags(Flags.PaymentFlags.builder().tfPartialPayment(true).build())
+      .destinationTag(UnsignedInteger.valueOf(2))
+      .sequence(UnsignedInteger.ONE)
+      .sourceTag(UnsignedInteger.ONE)
+      .build();
+
+    assertThat(objectMapper.readValue(encoder.decode(signedTxHex), Payment.class)).isEqualTo(unsignedPayment);
   }
 
   @Test

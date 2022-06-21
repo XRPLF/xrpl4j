@@ -41,7 +41,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class DepositPreAuthIT extends BaseIT {
+public class DepositPreAuthIT extends AbstractIT {
 
   @Test
   public void preauthorizeAccountAndReceivePayment() throws JsonRpcClientErrorException {

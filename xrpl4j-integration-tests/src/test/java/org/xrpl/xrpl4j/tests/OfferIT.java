@@ -47,7 +47,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-public class OfferIT extends BaseIT {
+public class OfferIT extends AbstractIT {
 
   public static final String CURRENCY = "USD";
 

@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class IsFinalIT extends BaseIT {
+public class IsFinalIT extends AbstractIT {
 
   Wallet wallet = createRandomAccount();
 

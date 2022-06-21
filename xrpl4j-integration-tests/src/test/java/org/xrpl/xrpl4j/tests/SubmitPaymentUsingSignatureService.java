@@ -53,7 +53,7 @@ import java.util.Objects;
  * Integration tests for submitting payment transactions to the XRPL using a {@link DerivedKeysSignatureService} for all
  * signing operations.
  */
-public class SubmitPaymentUsingSignatureService extends BaseIT {
+public class SubmitPaymentUsingSignatureService extends AbstractIT {
 
   private static Wallet sourceWallet;
   private static Wallet destinationWallet;

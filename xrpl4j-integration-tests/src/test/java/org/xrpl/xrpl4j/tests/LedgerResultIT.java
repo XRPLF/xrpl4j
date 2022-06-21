@@ -36,7 +36,7 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
  * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses
  * rippled sends back.
  */
-public class LedgerResultIT extends BaseIT {
+public class LedgerResultIT extends AbstractIT {
 
   @Test
   void getValidatedLedgerResult() throws JsonRpcClientErrorException {

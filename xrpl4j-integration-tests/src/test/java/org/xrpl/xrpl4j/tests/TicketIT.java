@@ -35,7 +35,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
 
-public class TicketIT extends BaseIT {
+public class TicketIT extends AbstractIT {
 
   @Test
   void createTicketAndUseSequenceNumber() throws JsonRpcClientErrorException {

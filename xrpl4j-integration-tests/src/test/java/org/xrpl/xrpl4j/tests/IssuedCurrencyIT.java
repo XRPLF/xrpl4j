@@ -42,7 +42,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
 
-public class IssuedCurrencyIT extends BaseIT {
+public class IssuedCurrencyIT extends AbstractIT {
 
   @Test
   public void issueIssuedCurrencyBalance() throws JsonRpcClientErrorException {

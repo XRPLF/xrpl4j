@@ -42,7 +42,7 @@ import java.util.Objects;
  *
  * @see "https://xrpl.org/accountset.html"
  */
-public class AccountSetIT extends BaseIT {
+public class AccountSetIT extends AbstractIT {
 
   @Test
   public void enableAllAndDisableOne() throws JsonRpcClientErrorException {

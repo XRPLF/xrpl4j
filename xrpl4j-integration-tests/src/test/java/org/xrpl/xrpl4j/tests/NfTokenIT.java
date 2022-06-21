@@ -37,7 +37,6 @@ public class NfTokenIT extends AbstractIT {
     HttpUrl.parse("http://xls20-sandbox.rippletest.net:51234"),
     HttpUrl.parse("https://faucet-nft.ripple.com")
   );
-  private final XrplClient xrplClient = xrplClient();
 
   @Test
   void mint() throws JsonRpcClientErrorException {

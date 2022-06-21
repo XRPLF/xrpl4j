@@ -506,6 +506,7 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountNftsResult accountNfts(Address account) throws JsonRpcClientErrorException {
+    Objects.requireNonNull(account);
     return this.accountNfts(
       AccountNftsRequestParams.builder().account(account).build()
     );
@@ -517,7 +518,7 @@ public class XrplClient {
    *
    * @param params The {@link AccountNftsRequestParams} to send in the request.
    *
-   * @return The {@link AccountNftsResult} returned by the account_channels method call.
+   * @return The {@link AccountNftsResult} returned by the account_nfts method call.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountNftsResult accountNfts(AccountNftsRequestParams params) throws JsonRpcClientErrorException {

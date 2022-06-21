@@ -53,7 +53,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 import java.time.Duration;
 import java.time.Instant;
 
-public class PaymentChannelIT extends BaseIT {
+public class PaymentChannelIT extends AbstractIT {
 
   private final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
   private final KeyPairService keyPairService = DefaultKeyPairService.getInstance();

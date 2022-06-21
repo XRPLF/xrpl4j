@@ -34,7 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class TransactionWithMemoIT extends BaseIT {
+public class TransactionWithMemoIT extends AbstractIT {
 
   /**
    * Tests a transaction that has a memo containing only a nibble (i.e., a half byte).

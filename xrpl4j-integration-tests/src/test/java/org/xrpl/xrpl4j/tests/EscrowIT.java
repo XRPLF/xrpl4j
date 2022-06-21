@@ -48,7 +48,7 @@ import java.time.Instant;
 /**
  * Integration test to validate creation, cancellation, and execution of escrow transactions.
  */
-public class EscrowIT extends BaseIT {
+public class EscrowIT extends AbstractIT {
 
   @Test
   public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, InterruptedException {

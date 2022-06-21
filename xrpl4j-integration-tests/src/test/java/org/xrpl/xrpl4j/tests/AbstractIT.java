@@ -76,7 +76,7 @@ public abstract class AbstractIT {
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+  protected final XrplClient xrplClient = xrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
   protected Wallet createRandomAccount() {
@@ -91,7 +91,11 @@ public abstract class AbstractIT {
     return wallet;
   }
 
-  protected abstract XrplEnvironment xrplEnvironment();
+  private static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+
+  protected XrplEnvironment xrplEnvironment() {
+    return xrplEnvironment;
+  }
 
   protected XrplClient xrplClient() {
     return xrplEnvironment().getXrplClient();
@@ -150,7 +154,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient().accountObjects(params);
+      return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -162,7 +166,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      List<LedgerObject> ledgerObjects = xrplClient().accountObjects(params).accountObjects();
+      List<LedgerObject> ledgerObjects = xrplClient.accountObjects(params).accountObjects();
       return ledgerObjects
         .stream()
         .filter(object -> clazz.isAssignableFrom(object.getClass()))
@@ -179,7 +183,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient().accountChannels(params);
+      return xrplClient.accountChannels(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -191,7 +195,7 @@ public abstract class AbstractIT {
         .account(classicAddress)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient().accountInfo(params);
+      return xrplClient.accountInfo(params);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -202,7 +206,7 @@ public abstract class AbstractIT {
     Class<T> transactionType
   ) {
     try {
-      TransactionResult<T> transaction = xrplClient().transaction(
+      TransactionResult<T> transaction = xrplClient.transaction(
         TransactionRequestParams.of(transactionHash),
         transactionType
       );
@@ -217,7 +221,7 @@ public abstract class AbstractIT {
       LedgerRequestParams params = LedgerRequestParams.builder()
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
-      return xrplClient().ledger(params);
+      return xrplClient.ledger(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -236,7 +240,7 @@ public abstract class AbstractIT {
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
 
-      return xrplClient().ripplePathFind(pathFindParams);
+      return xrplClient.ripplePathFind(pathFindParams);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -250,7 +254,7 @@ public abstract class AbstractIT {
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
 
-      return xrplClient().accountLines(params);
+      return xrplClient.accountLines(params);
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -300,7 +304,7 @@ public abstract class AbstractIT {
       .signingPublicKey(counterpartyWallet.publicKey())
       .build();
 
-    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient().submit(counterpartyWallet, trustSet);
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
@@ -354,7 +358,7 @@ public abstract class AbstractIT {
       .signingPublicKey(issuerWallet.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient().submit(issuerWallet, fundCounterparty);
+    SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());

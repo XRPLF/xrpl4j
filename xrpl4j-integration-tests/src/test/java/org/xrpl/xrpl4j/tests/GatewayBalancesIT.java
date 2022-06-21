@@ -38,7 +38,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Optional;
 
-public class GatewayBalancesIT extends BaseIT {
+public class GatewayBalancesIT extends AbstractIT {
 
   @Test
   public void testGatewayBalances() throws JsonRpcClientErrorException {

@@ -36,7 +36,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-public class SubmitPaymentIT extends BaseIT {
+public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPayment() throws JsonRpcClientErrorException {

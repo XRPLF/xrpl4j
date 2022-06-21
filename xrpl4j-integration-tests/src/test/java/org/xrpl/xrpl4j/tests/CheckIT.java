@@ -41,7 +41,7 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.function.Predicate;
 
-public class CheckIT extends BaseIT {
+public class CheckIT extends AbstractIT {
 
   @Test
   public void createXrpCheckAndCash() throws JsonRpcClientErrorException {

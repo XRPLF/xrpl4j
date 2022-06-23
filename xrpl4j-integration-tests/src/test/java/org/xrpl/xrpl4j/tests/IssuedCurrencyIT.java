@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -163,7 +164,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult aliceAccountInfo = getValidatedAccountInfo(aliceWallet.classicAddress());
     Payment aliceToBobPayment = Payment.builder()
       .account(aliceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(aliceAccountInfo.accountData().sequence())
       .destination(bobWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -307,7 +308,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.classicAddress());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(charlieAccountInfo.accountData().sequence())
       .destination(danielWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -371,7 +372,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     AccountSet setDefaultRipple = AccountSet.builder()
       .account(issuerWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)

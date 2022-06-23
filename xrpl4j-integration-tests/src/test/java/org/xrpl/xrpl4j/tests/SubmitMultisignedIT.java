@@ -15,6 +15,7 @@ import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -75,7 +76,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -132,7 +133,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(
-        Transaction.computeMultiSigFee(
+        FeeUtils.computeMultiSigFee(
           feeResult.drops().openLedgerFee(),
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         )
@@ -201,7 +202,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(
-        Transaction.computeMultiSigFee(
+        FeeUtils.computeMultiSigFee(
           feeResult.drops().openLedgerFee(),
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         )

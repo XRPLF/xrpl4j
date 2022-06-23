@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -49,7 +50,7 @@ public class TicketIT extends AbstractIT {
     TicketCreate ticketCreate = TicketCreate.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfo.accountData().sequence())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .ticketCount(UnsignedInteger.ONE)
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -71,7 +72,7 @@ public class TicketIT extends AbstractIT {
 
     AccountSet accountSet = AccountSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .ticketSequence(tickets.get(0).ticketSequence())
       .signingPublicKey(sourceWallet.publicKey())
       .build();

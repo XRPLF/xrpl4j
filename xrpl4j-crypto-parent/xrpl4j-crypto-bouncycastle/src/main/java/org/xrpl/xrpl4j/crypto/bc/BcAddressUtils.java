@@ -12,7 +12,11 @@ import java.util.Objects;
 
 /**
  * A service to help with interactions involving XRPL addresses.
+ *
+ * @deprecated This interface will be removed in a future version. Prefer
+ *   {@link org.xrpl.xrpl4j.crypto.core.keys.KeyPairService} instead.
  */
+@Deprecated
 public class BcAddressUtils implements AddressUtils {
 
   private static final BcAddressUtils INSTANCE = new BcAddressUtils();

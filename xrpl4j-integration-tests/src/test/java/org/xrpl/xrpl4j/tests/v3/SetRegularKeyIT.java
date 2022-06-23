@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -39,7 +40,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.address())
       .signingPublicKey(wallet.publicKey().base16Value())
@@ -63,7 +64,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.address())
-          .fee(feeResult.drops().openLedgerFee())
+          .fee(calculateFeeDynamically(feeResult))
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey().base16Value())
           .build();
@@ -100,7 +101,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.address())
       .signingPublicKey(wallet.publicKey().base16Value())
@@ -124,7 +125,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.address())
-          .fee(feeResult.drops().openLedgerFee())
+          .fee(calculateFeeDynamically(feeResult))
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey().base16Value())
           .build();
@@ -142,7 +143,7 @@ public class SetRegularKeyIT extends AbstractIT {
 
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();

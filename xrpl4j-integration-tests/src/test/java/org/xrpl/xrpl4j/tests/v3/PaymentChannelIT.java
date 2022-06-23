@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -52,7 +53,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.address())
@@ -138,7 +139,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.address())
@@ -207,7 +208,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Destination account submits the signed claim to the ledger to get their XRP
     PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
       .account(destinationWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(destinationAccountInfo.accountData().sequence())
       .channel(paymentChannel.channelId())
       .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
@@ -256,7 +257,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.address())
@@ -298,7 +299,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     PaymentChannelFund paymentChannelFund = PaymentChannelFund.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .channel(paymentChannel.channelId())
@@ -338,7 +339,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     PaymentChannelFund paymentChannelFundWithNewExpiry = PaymentChannelFund.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .channel(paymentChannel.channelId())
@@ -389,7 +390,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.address())

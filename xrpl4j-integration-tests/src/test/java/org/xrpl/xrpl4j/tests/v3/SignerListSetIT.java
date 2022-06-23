@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -12,6 +13,7 @@ import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -60,7 +62,7 @@ public class SignerListSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -112,7 +114,7 @@ public class SignerListSetIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.address())
       .fee(
-        Transaction.computeMultiSigFee(
+        FeeUtils.computeMultiSigFee(
           feeResult.drops().openLedgerFee(),
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         )
@@ -178,7 +180,7 @@ public class SignerListSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(calculateFeeDynamically(feeResult))
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -67,7 +68,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     TrustLine badActorTrustLine = this.createTrustLine(
       issuerWallet,
       badActorWallet,
-      feeResult.drops().minimumFee()
+      calculateFeeDynamically(feeResult)
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
     assertThat(badActorTrustLine.freezePeer()).isFalse();
@@ -79,7 +80,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     TrustLine goodActorTrustLine = this.createTrustLine(
       issuerWallet,
       goodActorWallet,
-      feeResult.drops().minimumFee()
+      calculateFeeDynamically(feeResult)
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
     assertThat(goodActorTrustLine.freezePeer()).isFalse();
@@ -92,7 +93,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Send funds from issuer to the badActor.
     sendFunds(
-      TEN_THOUSAND, issuerWallet, badActorWallet, feeResult.drops().minimumFee()
+      TEN_THOUSAND, issuerWallet, badActorWallet, calculateFeeDynamically(feeResult)
     );
 
     ///////////////////////////
@@ -105,7 +106,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Send funds from badActor to the goodActor.
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, goodActorWallet, feeResult.drops().minimumFee()
+      FIVE_THOUSAND, badActorWallet, goodActorWallet, calculateFeeDynamically(feeResult)
     );
 
     ///////////////////////////
@@ -120,7 +121,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     badActorTrustLine = this.adjustTrustlineFreeze(
       issuerWallet,
       badActorWallet,
-      feeResult.drops().minimumFee(),
+      calculateFeeDynamically(feeResult),
       FREEZE
     );
     assertThat(badActorTrustLine.freeze()).isTrue();
@@ -138,25 +139,25 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Try to send funds from badActor to goodActor should not work because the badActor is frozen.
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, goodActorWallet, feeResult.drops().minimumFee(),
+      FIVE_THOUSAND, badActorWallet, goodActorWallet, calculateFeeDynamically(feeResult),
       "tecPATH_DRY"
     );
 
     // Sending from the badActor to the issuer should still work
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, issuerWallet, feeResult.drops().minimumFee()
+      FIVE_THOUSAND, badActorWallet, issuerWallet, calculateFeeDynamically(feeResult)
     );
 
     // Sending from the goodActor to the badActor should still work
     sendFunds(
-      FIVE_THOUSAND, goodActorWallet, badActorWallet, feeResult.drops().minimumFee()
+      FIVE_THOUSAND, goodActorWallet, badActorWallet, calculateFeeDynamically(feeResult)
     );
 
     // Unfreeze the bad actor.
     badActorTrustLine = this.adjustTrustlineFreeze(
       issuerWallet,
       badActorWallet,
-      feeResult.drops().minimumFee(),
+      calculateFeeDynamically(feeResult),
       UN_FREEZE
     );
     assertThat(badActorTrustLine.freeze()).isTrue();
@@ -180,7 +181,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     TrustLine badActorTrustLine = this.createTrustLine(
       issuerWallet,
       badActorWallet,
-      feeResult.drops().minimumFee()
+      calculateFeeDynamically(feeResult)
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
     assertThat(badActorTrustLine.freezePeer()).isFalse();
@@ -192,7 +193,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     TrustLine goodActorTrustLine = this.createTrustLine(
       issuerWallet,
       goodActorWallet,
-      feeResult.drops().minimumFee()
+      calculateFeeDynamically(feeResult)
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
     assertThat(goodActorTrustLine.freezePeer()).isFalse();
@@ -205,7 +206,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Send funds from issuer to the badActor.
     sendFunds(
-      TEN_THOUSAND, issuerWallet, badActorWallet, feeResult.drops().minimumFee()
+      TEN_THOUSAND, issuerWallet, badActorWallet, calculateFeeDynamically(feeResult)
     );
 
     ///////////////////////////
@@ -218,7 +219,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Send funds from badActor to the goodActor.
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, goodActorWallet, feeResult.drops().minimumFee()
+      FIVE_THOUSAND, badActorWallet, goodActorWallet, calculateFeeDynamically(feeResult)
     );
 
     ///////////////////////////
@@ -232,7 +233,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     // Global-Freeze the trustline for the issuer.
     AccountInfoResult issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
       issuerWallet,
-      feeResult.drops().minimumFee(),
+      calculateFeeDynamically(feeResult),
       FREEZE
     );
     assertThat(issuerAccountInfo.accountData().flags().lsfGlobalFreeze()).isTrue();
@@ -246,43 +247,43 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Try to send funds from badActor to goodActor should not work because the badActor is frozen.
     sendFunds(
-      "500", badActorWallet, goodActorWallet, feeResult.drops().minimumFee(),
+      "500", badActorWallet, goodActorWallet, calculateFeeDynamically(feeResult),
       "tecPATH_DRY"
     );
     // Sending from the goodActor to the badActor should not work
     sendFunds(
-      "500", goodActorWallet, badActorWallet, feeResult.drops().minimumFee(),
+      "500", goodActorWallet, badActorWallet, calculateFeeDynamically(feeResult),
       "tecPATH_DRY"
     );
 
     // Try to send funds from issuer to goodActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      "100", issuerWallet, goodActorWallet, feeResult.drops().minimumFee()
+      "100", issuerWallet, goodActorWallet, calculateFeeDynamically(feeResult)
     );
 
     // Try to send funds from issuer to badActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      "100", issuerWallet, badActorWallet, feeResult.drops().minimumFee()
+      "100", issuerWallet, badActorWallet, calculateFeeDynamically(feeResult)
     );
 
     // Try to send funds from issuer to goodActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, issuerWallet, feeResult.drops().minimumFee()
+      FIVE_THOUSAND, badActorWallet, issuerWallet, calculateFeeDynamically(feeResult)
     );
 
     // Try to send funds from issuer to goodActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      FIVE_THOUSAND, goodActorWallet, issuerWallet, feeResult.drops().minimumFee()
+      FIVE_THOUSAND, goodActorWallet, issuerWallet, calculateFeeDynamically(feeResult)
     );
 
     // Unfreeze the bad actor.
     issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
       issuerWallet,
-      feeResult.drops().minimumFee(),
+      calculateFeeDynamically(feeResult),
       UN_FREEZE
     );
     assertThat(issuerAccountInfo.accountData().flags().lsfGlobalFreeze()).isFalse();
@@ -427,7 +428,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     AccountSet accountSet = AccountSet.builder()
       .sequence(issuerWalletAccountInfo.accountData().sequence())
       .account(wallet.address())
-      .fee(feeResult.drops().minimumFee())
+      .fee(calculateFeeDynamically(feeResult))
       .setFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();

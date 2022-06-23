@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -27,13 +28,20 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.CustomEnvironment;
-import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 /**
  * IT for NfToken operations.
  */
 public class NfTokenIT extends AbstractIT {
+
+  @BeforeAll
+  protected static void initXrplEnvironment() {
+    xrplEnvironment = new CustomEnvironment(
+      HttpUrl.parse("http://xls20-sandbox.rippletest.net:51234"),
+      HttpUrl.parse("https://faucet-nft.ripple.com")
+    );
+  }
 
   @Test
   void mint() throws JsonRpcClientErrorException {
@@ -462,19 +470,5 @@ public class NfTokenIT extends AbstractIT {
         )
     );
     logger.info("NFTokenOffer object was deleted successfully.");
-  }
-
-  @Override
-  protected XrplEnvironment xrplEnvironment() {
-    // Just in-case we decide to run tests in parallel
-    synchronized (this) {
-      if (xrplEnvironment == null) {
-        xrplEnvironment = new CustomEnvironment(
-          HttpUrl.parse("http://xls20-sandbox.rippletest.net:51234"),
-          HttpUrl.parse("https://faucet-nft.ripple.com")
-        );
-      }
-    }
-    return xrplEnvironment;
   }
 }

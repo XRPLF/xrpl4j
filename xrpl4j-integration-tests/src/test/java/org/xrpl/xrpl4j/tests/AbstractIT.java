@@ -26,6 +26,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -87,18 +88,13 @@ public abstract class AbstractIT {
    *
    * @return An {@link XrplEnvironment}.
    */
-  protected XrplEnvironment xrplEnvironment() {
-    // Just in-case we decide to run tests in parallel
-    synchronized (this) {
-      if (xrplEnvironment == null) {
-        xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
-      }
-    }
-    return xrplEnvironment;
+  @BeforeAll
+  protected static void initXrplEnvironment() {
+    xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
   }
 
   protected XrplClient xrplClient() {
-    return xrplEnvironment().getXrplClient();
+    return xrplEnvironment.getXrplClient();
   }
 
   protected Wallet createRandomAccount() {

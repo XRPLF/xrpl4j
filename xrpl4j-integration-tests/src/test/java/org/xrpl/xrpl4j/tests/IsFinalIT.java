@@ -12,6 +12,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
@@ -52,7 +53,7 @@ public class IsFinalIT extends AbstractIT {
     Wallet destinationWallet = createRandomAccount();
     payment = Payment.builder()
       .account(wallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(10))

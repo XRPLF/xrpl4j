@@ -79,6 +79,28 @@ public abstract class AbstractIT {
   protected final XrplClient xrplClient = xrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
 
+  protected static XrplEnvironment xrplEnvironment;
+
+  /**
+   * Helper method to initialize the {@link XrplEnvironment} and to also allow sub-classes to use a different
+   * environment. This construction allows sub-classes to choose an environment that doesn't spin-up a test container.
+   *
+   * @return An {@link XrplEnvironment}.
+   */
+  protected XrplEnvironment xrplEnvironment() {
+    // Just in-case we decide to run tests in parallel
+    synchronized (this) {
+      if (xrplEnvironment == null) {
+        xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+      }
+    }
+    return xrplEnvironment;
+  }
+
+  protected XrplClient xrplClient() {
+    return xrplEnvironment().getXrplClient();
+  }
+
   protected Wallet createRandomAccount() {
     ///////////////////////
     // Create the account
@@ -91,23 +113,13 @@ public abstract class AbstractIT {
     return wallet;
   }
 
-  private static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
-
-  protected XrplEnvironment xrplEnvironment() {
-    return xrplEnvironment;
-  }
-
-  protected XrplClient xrplClient() {
-    return xrplEnvironment().getXrplClient();
-  }
-
   /**
    * Funds a wallet with 1000 XRP.
    *
    * @param wallet The {@link Wallet} to fund.
    */
   protected void fundAccount(Wallet wallet) {
-    xrplEnvironment().fundAccount(wallet.classicAddress());
+    xrplEnvironment.fundAccount(wallet.classicAddress());
   }
 
   //////////////////////
@@ -269,8 +281,8 @@ public abstract class AbstractIT {
   }
 
   /**
-   * Create a trustline between the given issuer and counterparty accounts for the given currency code and
-   * with the given limit.
+   * Create a trustline between the given issuer and counterparty accounts for the given currency code and with the
+   * given limit.
    *
    * @param currency           The currency code of the trustline to create.
    * @param value              The trustline limit of the trustline to create.
@@ -279,6 +291,7 @@ public abstract class AbstractIT {
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @return The {@link TrustLine} that gets created.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(

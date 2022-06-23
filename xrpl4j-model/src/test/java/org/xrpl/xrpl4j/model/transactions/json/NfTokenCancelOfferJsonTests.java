@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -18,14 +19,14 @@ public class NfTokenCancelOfferJsonTests extends AbstractJsonTest {
   @Test
   public void testMinimalNfTokenCancelOfferJson() throws JsonProcessingException, JSONException {
 
-    NfTokenId offer = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
-    List<NfTokenId> offers = new ArrayList<>();
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
     offers.add(offer);
     NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(12))
-      .tokenIds(offers)
+      .tokenOffers(offers)
       .build();
 
     String json = "{\n" +

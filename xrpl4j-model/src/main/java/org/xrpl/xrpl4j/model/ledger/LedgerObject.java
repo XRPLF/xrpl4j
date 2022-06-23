@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
   //    @JsonSubTypes.Type(value = ImmutableFeeSettingsObject.class, name = "FeeSettings"),
   //    @JsonSubTypes.Type(value = ImmutableLedgerHashesObject.class, name = "LedgerHashes"),
   //    @JsonSubTypes.Type(value = ImmutableNegativeUnlObject.class, name = "NegativeUNL"),
-  @JsonSubTypes.Type(value = ImmutableNfTokenOfferObject.class, name = "NfTokenOffer"),
+  @JsonSubTypes.Type(value = ImmutableNfTokenOfferObject.class, name = "NFTokenOffer"),
   @JsonSubTypes.Type(value = ImmutableOfferObject.class, name = "Offer"),
   @JsonSubTypes.Type(value = ImmutablePayChannelObject.class, name = "PayChannel"),
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
@@ -106,7 +106,7 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code NFTokenOffer} ledger objects.
      */
-    NFTOKEN_OFFER("NfTokenOffer"),
+    NFTOKEN_OFFER("NFTokenOffer"),
 
     /**
      * The {@link LedgerEntryType} for {@code Offer} ledger objects.

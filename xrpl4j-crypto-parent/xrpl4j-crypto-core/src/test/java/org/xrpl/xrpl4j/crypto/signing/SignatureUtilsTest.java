@@ -378,14 +378,14 @@ public class SignatureUtilsTest {
 
   @Test
   public void addSignatureToTransactionNfTokenCancelOffer() {
-    NfTokenId offer = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
-    List<NfTokenId> offers = new ArrayList<>();
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
     offers.add(offer);
     NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
       .account(sourceWallet.classicAddress())
       .signingPublicKey(sourceWallet.publicKey())
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .tokenIds(offers)
+      .tokenOffers(offers)
       .build();
     addSignatureToTransactionHelper(nfTokenCancelOffer);
   }

@@ -35,7 +35,7 @@ public class NfTokenOfferObjectJsonTests  extends AbstractJsonTest {
       "    \"Destination\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"PreviousTxnID\": \"E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879\",\n" +
       "    \"PreviousTxnLgrSeq\": 14090896,\n" +
-      "    \"LedgerEntryType\": \"NfTokenOffer\"\n" +
+      "    \"LedgerEntryType\": \"NFTokenOffer\"\n" +
       "}";
 
     assertCanSerializeAndDeserialize(object, json);

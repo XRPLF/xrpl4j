@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 
 import java.util.Optional;
 
@@ -39,5 +40,5 @@ public interface NfTokenObject {
    * @return The URI for the data of the token.
    */
   @JsonProperty("URI")
-  Optional<String> uri();
+  Optional<NfTokenUri> uri();
 }

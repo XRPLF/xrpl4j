@@ -57,6 +57,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountNftsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountNftsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
@@ -72,6 +74,10 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
@@ -102,6 +108,12 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
@@ -765,6 +777,50 @@ public class XrplClientTest {
       .offerSequence(UnsignedInteger.ZERO)
       .build();
     assertThat(xrplClient.addSignature(escrowFinish, "sign").transactionSignature().get()).isEqualTo("sign");
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .account(wallet.classicAddress())
+      .buyOffer(Hash256.of(Strings.repeat("0", 64)))
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(wallet.publicKey())
+      .build();
+    assertThat(xrplClient.addSignature(nfTokenAcceptOffer, "sign").transactionSignature().get()).isEqualTo("sign");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .account(wallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .signingPublicKey(wallet.publicKey())
+      .sequence(UnsignedInteger.ONE)
+      .build();
+    assertThat(xrplClient.addSignature(nfTokenBurn, "sign").transactionSignature().get()).isEqualTo("sign");
+    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
+      .addTokenOffers(Hash256.of(Strings.repeat("0", 64)))
+      .account(wallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .sequence(UnsignedInteger.valueOf(2))
+      .signingPublicKey(wallet.publicKey())
+      .build();
+    assertThat(xrplClient.addSignature(nfTokenCancelOffer, "sign").transactionSignature().get()).isEqualTo("sign");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(wallet.classicAddress())
+      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(Flags.NfTokenCreateOfferFlags.builder()
+        .tfSellToken(true)
+        .build())
+      .signingPublicKey(wallet.publicKey())
+      .build();
+    assertThat(xrplClient.addSignature(nfTokenCreateOffer, "sign").transactionSignature().get()).isEqualTo("sign");
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .tokenTaxon(UnsignedLong.ONE)
+      .account(wallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .signingPublicKey(wallet.publicKey())
+      .sequence(UnsignedInteger.ONE)
+      .build();
+    assertThat(xrplClient.addSignature(nfTokenMint, "sign").transactionSignature().get()).isEqualTo("sign");
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .fee(XrpCurrencyAmount.ofDrops(1))
@@ -1195,6 +1251,33 @@ public class XrplClientTest {
   }
 
   @Test
+  public void accountNftsUsingBuilder() throws JsonRpcClientErrorException {
+    AccountNftsRequestParams accountNftsRequestParams = AccountNftsRequestParams.builder()
+      .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .build();
+    xrplClient.accountNfts(accountNftsRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_NFTS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountNftsRequestParams);
+  }
+
+  @Test
+  public void accountNftsUsingAddress() throws JsonRpcClientErrorException {
+    Address account = Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw");
+    xrplClient.accountNfts(account);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_NFTS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
+      .isEqualTo(AccountNftsRequestParams.builder()
+        .account(account)
+        .build());
+  }
+
+  @Test
   public void transaction() throws JsonRpcClientErrorException {
 
     jsonRpcClientMock = new JsonRpcClient() {
@@ -1297,6 +1380,32 @@ public class XrplClientTest {
     Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(GatewayBalancesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.GATEWAY_BALANCES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(gatewayBalancesRequestParams);
+  }
+
+  @Test
+  public void nftBuyOffers() throws JsonRpcClientErrorException {
+    NftBuyOffersRequestParams nftBuyOffersRequestParams = NftBuyOffersRequestParams.builder()
+      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .build();
+    xrplClient.nftBuyOffers(nftBuyOffersRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftBuyOffersResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_BUY_OFFERS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftBuyOffersRequestParams);
+  }
+
+  @Test
+  public void nftSellOffers() throws JsonRpcClientErrorException {
+    NftSellOffersRequestParams nftSellOffersRequestParams = NftSellOffersRequestParams.builder()
+      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .build();
+    xrplClient.nftSellOffers(nftSellOffersRequestParams);
+
+    ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
+    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_SELL_OFFERS);
+    assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
   }
 
   @Test

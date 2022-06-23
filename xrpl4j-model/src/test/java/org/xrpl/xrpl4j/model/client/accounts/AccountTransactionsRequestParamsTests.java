@@ -134,8 +134,6 @@ public class AccountTransactionsRequestParamsTests {
         .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
-    System.out.println(params);
-
     assertThat(params.ledgerSpecifier()).isEqualTo(Optional.of(LedgerSpecifier.VALIDATED));
   }
 
@@ -146,7 +144,6 @@ public class AccountTransactionsRequestParamsTests {
         .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .build();
 
-    System.out.print(params);
     assertThat(params.ledgerSpecifier()).isEqualTo(Optional.of(LedgerSpecifier.of(UnsignedInteger.ONE)));
   }
 

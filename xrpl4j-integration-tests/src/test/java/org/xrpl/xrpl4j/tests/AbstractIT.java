@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -75,19 +76,33 @@ public abstract class AbstractIT {
 
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
-  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
-
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
+  protected final XrplClient xrplClient = xrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+
+  protected static XrplEnvironment xrplEnvironment;
+
+  /**
+   * Helper method to initialize the {@link XrplEnvironment} and to also allow sub-classes to use a different
+   * environment. This construction allows sub-classes to choose an environment that doesn't spin-up a test container.
+   *
+   * @return An {@link XrplEnvironment}.
+   */
+  @BeforeAll
+  protected static void initXrplEnvironment() {
+    xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+  }
+
+  protected XrplClient xrplClient() {
+    return xrplEnvironment.getXrplClient();
+  }
 
   protected Wallet createRandomAccount() {
     ///////////////////////
     // Create the account
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
     final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
+    logger.info("Generated wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
 
     fundAccount(wallet);
 
@@ -262,8 +277,8 @@ public abstract class AbstractIT {
   }
 
   /**
-   * Create a trustline between the given issuer and counterparty accounts for the given currency code and
-   * with the given limit.
+   * Create a trustline between the given issuer and counterparty accounts for the given currency code and with the
+   * given limit.
    *
    * @param currency           The currency code of the trustline to create.
    * @param value              The trustline limit of the trustline to create.
@@ -272,6 +287,7 @@ public abstract class AbstractIT {
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @return The {@link TrustLine} that gets created.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(

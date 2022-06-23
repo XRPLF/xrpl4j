@@ -454,13 +454,13 @@ public class BinarySerializationTests {
 
   @Test
   public void serializeNfTokenCancelOffer() throws JsonProcessingException {
-    NfTokenId offer = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
-    List<NfTokenId> offers = new ArrayList<NfTokenId>();
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
     offers.add(offer);
     NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .tokenIds(offers)
+      .tokenOffers(offers)
       .build();
 
     String expectedBinary = "12001C2280000000240000000068400000000000000181144B4E9C06F24296074F7BC48F" +

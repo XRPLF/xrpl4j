@@ -62,7 +62,6 @@ public class AbstractJsonTest {
     String json
   ) throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(result);
-    System.out.println(serialized);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
     XrplResult deserialized = objectMapper.readValue(serialized, result.getClass());

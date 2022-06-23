@@ -786,7 +786,7 @@ public class XrplClientTest {
       .build();
     assertThat(xrplClient.addSignature(nfTokenAcceptOffer, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
-      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .account(wallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
@@ -803,7 +803,7 @@ public class XrplClientTest {
     assertThat(xrplClient.addSignature(nfTokenCancelOffer, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(wallet.classicAddress())
-      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(1000))
@@ -1385,7 +1385,7 @@ public class XrplClientTest {
   @Test
   public void nftBuyOffers() throws JsonRpcClientErrorException {
     NftBuyOffersRequestParams nftBuyOffersRequestParams = NftBuyOffersRequestParams.builder()
-      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .build();
     xrplClient.nftBuyOffers(nftBuyOffersRequestParams);
 
@@ -1398,7 +1398,7 @@ public class XrplClientTest {
   @Test
   public void nftSellOffers() throws JsonRpcClientErrorException {
     NftSellOffersRequestParams nftSellOffersRequestParams = NftSellOffersRequestParams.builder()
-      .tokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .build();
     xrplClient.nftSellOffers(nftSellOffersRequestParams);
 

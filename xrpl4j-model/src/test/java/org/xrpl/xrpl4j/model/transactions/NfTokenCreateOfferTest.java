@@ -14,12 +14,12 @@ public class NfTokenCreateOfferTest {
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .tokenId(id)
+      .nfTokenId(id)
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();
 
-    assertThat(id.equals(nfTokenCreateOffer.tokenId()));
-    assertThat(nfTokenCreateOffer.tokenId()).isEqualTo(id);
+    assertThat(id.equals(nfTokenCreateOffer.nfTokenId()));
+    assertThat(nfTokenCreateOffer.nfTokenId()).isEqualTo(id);
   }
 
   @Test

@@ -20,7 +20,7 @@ public class NfTokenBurnJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .sequence(UnsignedInteger.valueOf(12))
-      .tokenId(id)
+      .nfTokenId(id)
       .build();
 
     String json = "{\n" +

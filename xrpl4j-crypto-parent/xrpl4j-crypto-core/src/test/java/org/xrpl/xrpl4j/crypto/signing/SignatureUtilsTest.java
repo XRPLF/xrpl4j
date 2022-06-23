@@ -371,7 +371,7 @@ public class SignatureUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(sourceWallet.classicAddress())
       .signingPublicKey(sourceWallet.publicKey())
-      .tokenId(id)
+      .nfTokenId(id)
       .build();
     addSignatureToTransactionHelper(nfTokenBurn);
   }
@@ -397,7 +397,7 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .signingPublicKey(sourceWallet.publicKey())
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .tokenId(id)
+      .nfTokenId(id)
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();
     addSignatureToTransactionHelper(nfTokenCreateOffer);

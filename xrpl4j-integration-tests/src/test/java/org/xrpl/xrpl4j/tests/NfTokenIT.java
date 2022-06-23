@@ -123,10 +123,10 @@ public class NfTokenIT extends AbstractIT {
     // nft burn
     AccountNftsResult accountNftsResult = xrplClient.accountNfts(wallet.classicAddress());
 
-    NfTokenId tokenId = accountNftsResult.accountNfts().get(0).tokenId();
+    NfTokenId tokenId = accountNftsResult.accountNfts().get(0).nfTokenId();
 
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
-      .tokenId(tokenId)
+      .nfTokenId(tokenId)
       .account(wallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
@@ -153,7 +153,7 @@ public class NfTokenIT extends AbstractIT {
     AccountNftsResult accountNftsResult1 = xrplClient.accountNfts(wallet.classicAddress());
     assertThat(
       accountNftsResult1.accountNfts().stream().noneMatch(
-        object -> object.equals(NfTokenObject.builder().tokenId(tokenId).build())
+        object -> object.equals(NfTokenObject.builder().nfTokenId(tokenId).build())
       )
     ).isTrue();
     logger.info("NFT burned successfully.");
@@ -199,11 +199,11 @@ public class NfTokenIT extends AbstractIT {
 
     //create a sell offer for the NFT that was created above
 
-    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).tokenId();
+    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).nfTokenId();
 
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(wallet.classicAddress())
-      .tokenId(tokenId)
+      .nfTokenId(tokenId)
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
@@ -281,7 +281,7 @@ public class NfTokenIT extends AbstractIT {
 
     //create a sell offer for the NFT that was created above
 
-    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).tokenId();
+    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).nfTokenId();
 
     // create buy offer from another account
     Wallet wallet2 = createRandomAccount();
@@ -293,7 +293,7 @@ public class NfTokenIT extends AbstractIT {
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(wallet2.classicAddress())
       .owner(wallet.classicAddress())
-      .tokenId(tokenId)
+      .nfTokenId(tokenId)
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult2.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(1000))
@@ -325,7 +325,7 @@ public class NfTokenIT extends AbstractIT {
     logger.info("NFTokenOffer object was found in account's objects.");
 
     NftBuyOffersResult nftBuyOffersResult = xrplClient.nftBuyOffers(NftBuyOffersRequestParams.builder()
-      .tokenId(tokenId)
+      .nfTokenId(tokenId)
       .build());
     assertThat(nftBuyOffersResult.offers().size()).isEqualTo(1);
 
@@ -397,11 +397,11 @@ public class NfTokenIT extends AbstractIT {
 
     //create a sell offer for the NFT that was created above
 
-    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).tokenId();
+    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).nfTokenId();
 
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(wallet.classicAddress())
-      .tokenId(tokenId)
+      .nfTokenId(tokenId)
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
@@ -436,7 +436,7 @@ public class NfTokenIT extends AbstractIT {
     logger.info("NFTokenOffer object was found in account's objects.");
 
     NftSellOffersResult nftSellOffersResult = xrplClient.nftSellOffers(NftSellOffersRequestParams.builder()
-      .tokenId(tokenId)
+      .nfTokenId(tokenId)
       .build());
 
     // cancel the created offer

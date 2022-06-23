@@ -444,7 +444,7 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .sequence(UnsignedInteger.valueOf(12))
-      .tokenId(id)
+      .nfTokenId(id)
       .build();
 
     String expectedBinary = "12001A2280000000240000000C5A000B013A95F14B0044F78A264E41713C64B5F8924254" +
@@ -475,7 +475,7 @@ public class BinarySerializationTests {
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .tokenId(id)
+      .nfTokenId(id)
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();
 

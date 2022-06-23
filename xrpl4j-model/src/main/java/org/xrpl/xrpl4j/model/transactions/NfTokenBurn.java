@@ -49,7 +49,7 @@ public interface NfTokenBurn extends Transaction {
    * @return The TokenID of the NfToken to be burned.
    */
   @JsonProperty("NFTokenID")
-  NfTokenId tokenId();
+  NfTokenId nfTokenId();
     
   /**
    * Indicates the {@link Address} of the account that owns the NFToken if it is different

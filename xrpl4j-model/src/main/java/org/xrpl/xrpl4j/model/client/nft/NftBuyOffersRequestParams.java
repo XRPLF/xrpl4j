@@ -34,7 +34,7 @@ public interface NftBuyOffersRequestParams extends XrplRequestParams {
    *  @return the TokenID of the {@link org.xrpl.xrpl4j.model.client.accounts.NfTokenObject} object.
    */
   @JsonProperty("nft_id")
-  NfTokenId tokenId();
+  NfTokenId nfTokenId();
 
   /**
    * Limit the number of buy offers for the {@link NfTokenId}. The server is not required to honor

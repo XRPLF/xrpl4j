@@ -14,11 +14,11 @@ public class NfTokenBurnTest {
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .tokenId(id)
+      .nfTokenId(id)
       .build();
 
-    assertThat(id.equals(nfTokenBurn.tokenId()));
-    assertThat(nfTokenBurn.tokenId()).isEqualTo(id);
+    assertThat(id.equals(nfTokenBurn.nfTokenId()));
+    assertThat(nfTokenBurn.nfTokenId()).isEqualTo(id);
   }
 
   @Test
@@ -30,11 +30,11 @@ public class NfTokenBurnTest {
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .owner(ownerAddress)
-      .tokenId(id)
+      .nfTokenId(id)
       .build();
 
-    assertThat(id.equals(nfTokenBurn.tokenId()));
-    assertThat(nfTokenBurn.tokenId()).isEqualTo(id);
+    assertThat(id.equals(nfTokenBurn.nfTokenId()));
+    assertThat(nfTokenBurn.nfTokenId()).isEqualTo(id);
     assertThat(nfTokenBurn.owner().get()).isEqualTo(ownerAddress);
   }
 
@@ -58,7 +58,7 @@ public class NfTokenBurnTest {
       () -> NfTokenBurn.builder()
         .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .fee(XrpCurrencyAmount.ofDrops(1))
-        .tokenId(NfTokenId.of("random"))
+        .nfTokenId(NfTokenId.of("random"))
         .build(),
       "tokenId must be 64 characters (256 bits), but was 6 characters long."
     );

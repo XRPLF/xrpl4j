@@ -19,7 +19,7 @@ public class NfTokenCreateOfferJsonTests extends AbstractJsonTest {
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
-      .tokenId(id)
+      .nfTokenId(id)
       .sequence(UnsignedInteger.valueOf(12))
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .build();

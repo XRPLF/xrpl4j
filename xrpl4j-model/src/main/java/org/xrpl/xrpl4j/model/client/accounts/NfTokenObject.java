@@ -32,7 +32,7 @@ public interface NfTokenObject {
    * @return The unique TokenID of the token.
    */
   @JsonProperty("NFTokenID")
-  NfTokenId tokenId();
+  NfTokenId nfTokenId();
 
   /**
    * The URI for the data of the token.

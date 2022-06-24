@@ -37,6 +37,7 @@ public interface KeyPairService {
    *
    * @return A {@link String} containing a randomly generated Base58Check encoded seed value.
    */
+  @Deprecated
   String generateSeed();
 
   /**
@@ -46,6 +47,7 @@ public interface KeyPairService {
    *
    * @return A {@link String} containing the Base58Check encoded seed value.
    */
+  @Deprecated
   String generateSeed(UnsignedByteArray entropy);
 
   /**
@@ -55,6 +57,7 @@ public interface KeyPairService {
    *
    * @return The {@link KeyPair} derived from the seed.
    */
+  @Deprecated
   KeyPair deriveKeyPair(String seed);
 
   /**
@@ -65,6 +68,7 @@ public interface KeyPairService {
    *
    * @return The signed message, in hexadecimal form.
    */
+  @Deprecated
   String sign(UnsignedByteArray message, String privateKey);
 
   /**
@@ -88,6 +92,7 @@ public interface KeyPairService {
    *
    * @return true if the signature is valid, false if not.
    */
+  @Deprecated
   boolean verify(UnsignedByteArray message, String signature, String publicKey);
 
   /**
@@ -99,6 +104,7 @@ public interface KeyPairService {
    *
    * @return true if the signature is valid, false if not.
    */
+  @Deprecated
   boolean verify(String message, String signature, String publicKey);
 
   /**
@@ -108,6 +114,7 @@ public interface KeyPairService {
    *
    * @return A Base58Check encoded XRPL address in Classic Address form.
    */
+  @Deprecated
   Address deriveAddress(String publicKey);
 
   /**
@@ -117,6 +124,7 @@ public interface KeyPairService {
    *
    * @return A Base58Check encoded XRPL address in Classic Address form.
    */
+  @Deprecated
   Address deriveAddress(UnsignedByteArray publicKey);
 
 }

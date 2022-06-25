@@ -4,8 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultiSigFee;
+import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
+import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.Flags;
@@ -16,10 +19,14 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * Unit tests for {@link FeeUtils}.
  */
 public class FeeUtilsTest {
+
 
   @Test
   public void nullInputForComputeMultiSigFee() {
@@ -99,7 +106,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5005));
+    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
   }
 
   @Test
@@ -159,7 +166,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5005));
+    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
   }
 
   @Test
@@ -220,5 +227,193 @@ public class FeeUtilsTest {
       .build();
 
     assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(15));
+  }
+
+  @Test
+  void testQueueIsEmpty() {
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.queueIsEmpty(null)
+    );
+
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(-1))).isTrue();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.ZERO)).isTrue();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(0.1))).isFalse();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(0.4))).isFalse();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(0.5))).isFalse();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(0.6))).isFalse();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(0.999999))).isFalse();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.ONE)).isFalse();
+    assertThat(FeeUtils.queueIsEmpty(BigDecimal.valueOf(2))).isFalse();
+  }
+
+  @Test
+  void testQueueIsNotEmptyAndNotFull() {
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.queueIsNotEmptyAndNotFull(null)
+    );
+
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(-1))).isFalse();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.ZERO)).isFalse();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(0.1))).isTrue();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(0.4))).isTrue();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(0.5))).isTrue();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(0.6))).isTrue();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(0.999999))).isTrue();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.ONE)).isFalse();
+    assertThat(FeeUtils.queueIsNotEmptyAndNotFull(BigDecimal.valueOf(2))).isFalse();
+  }
+
+  @Test
+  void testToUnsignedLongSafe() {
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.toUnsignedLongSafe(null)
+    );
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> FeeUtils.toUnsignedLongSafe(BigInteger.valueOf(-1))
+    );
+
+    assertThat(FeeUtils.toUnsignedLongSafe(BigInteger.ZERO)).isEqualTo(UnsignedLong.ZERO);
+    assertThat(FeeUtils.toUnsignedLongSafe(BigInteger.ONE)).isEqualTo(UnsignedLong.ONE);
+    assertThat(FeeUtils.toUnsignedLongSafe(BigInteger.valueOf(MAX_XRP))).isEqualTo(UnsignedLong.valueOf(MAX_XRP));
+    assertThat(FeeUtils.toUnsignedLongSafe(BigInteger.valueOf(MAX_XRP_IN_DROPS)))
+      .isEqualTo(UnsignedLong.valueOf(MAX_XRP_IN_DROPS));
+    assertThat(FeeUtils.toUnsignedLongSafe(UnsignedLong.MAX_VALUE.bigIntegerValue())).isEqualTo(UnsignedLong.MAX_VALUE);
+    assertThat(FeeUtils.toUnsignedLongSafe(UnsignedLong.MAX_VALUE.bigIntegerValue().add(BigInteger.ONE)))
+      .isEqualTo(UnsignedLong.MAX_VALUE);
+  }
+
+  @Test
+  void testMin() {
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.min(null)
+    );
+
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.min(BigInteger.ZERO, null)
+    );
+
+    assertThat(FeeUtils.min(BigInteger.valueOf(-1), BigInteger.ZERO)).isEqualTo(BigInteger.valueOf(-1));
+    assertThat(FeeUtils.min(BigInteger.ZERO, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.min(BigInteger.ZERO, BigInteger.ONE)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.min(BigInteger.ONE, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.min(BigInteger.ONE, BigInteger.ONE)).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.min(BigInteger.ONE)).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.min(BigInteger.ZERO, BigInteger.valueOf(MAX_XRP_IN_DROPS))).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.min(BigInteger.valueOf(MAX_XRP_IN_DROPS), BigInteger.ONE)).isEqualTo(BigInteger.ONE);
+  }
+
+  @Test
+  void testMax() {
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.max(null)
+    );
+
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.max(BigInteger.ZERO, null)
+    );
+
+    assertThat(FeeUtils.max(BigInteger.valueOf(-1), BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.max(BigInteger.ZERO, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.max(BigInteger.ZERO, BigInteger.ONE)).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.max(BigInteger.ONE, BigInteger.ZERO)).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.max(BigInteger.ONE, BigInteger.ONE)).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.max(BigInteger.ONE)).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.max(BigInteger.ZERO, BigInteger.valueOf(MAX_XRP_IN_DROPS)))
+      .isEqualTo(BigInteger.valueOf(MAX_XRP_IN_DROPS));
+    assertThat(FeeUtils.max(BigInteger.valueOf(MAX_XRP_IN_DROPS), BigInteger.ONE))
+      .isEqualTo(BigInteger.valueOf(MAX_XRP_IN_DROPS));
+  }
+
+  @Test
+  void testDivideBigDecimalsToBigInteger() {
+    final BigDecimal nullBigDecimal = null;
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.divideToBigInteger(nullBigDecimal, BigDecimal.ONE)
+    );
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.divideToBigInteger(BigDecimal.ONE, nullBigDecimal)
+    );
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> FeeUtils.divideToBigInteger(BigDecimal.ONE, BigDecimal.valueOf(-1))
+    );
+
+    assertThat(FeeUtils.divideToBigInteger(BigDecimal.valueOf(-1), BigDecimal.ONE)).isEqualTo(BigInteger.valueOf(-1));
+    assertThat(FeeUtils.divideToBigInteger(BigDecimal.ONE, BigDecimal.valueOf(2))).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.divideToBigInteger(BigDecimal.ONE, BigDecimal.valueOf(4))).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.divideToBigInteger(BigDecimal.ONE, BigDecimal.TEN)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.divideToBigInteger(BigDecimal.TEN, BigDecimal.valueOf(2))).isEqualTo(BigInteger.valueOf(5));
+    assertThat(FeeUtils.divideToBigInteger(new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue()), BigDecimal.ONE))
+      .isEqualTo(UnsignedLong.MAX_VALUE.bigIntegerValue());
+    assertThat(FeeUtils.divideToBigInteger(
+      new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue()),
+      new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue()))
+    ).isEqualTo(BigInteger.ONE);
+  }
+
+  @Test
+  void testDivideBigIntegersToBigInteger() {
+    final BigInteger nullBigInteger = null;
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.divideToBigInteger(nullBigInteger, BigInteger.ONE)
+    );
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.divideToBigInteger(BigInteger.ONE, nullBigInteger)
+    );
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> FeeUtils.divideToBigInteger(BigInteger.ONE, BigInteger.valueOf(-1))
+    );
+
+    assertThat(FeeUtils.divideToBigInteger(BigInteger.valueOf(-1), BigInteger.ONE)).isEqualTo(BigInteger.valueOf(-1));
+    assertThat(FeeUtils.divideToBigInteger(BigInteger.ONE, BigInteger.valueOf(2))).isEqualTo(BigInteger.ONE);
+    assertThat(FeeUtils.divideToBigInteger(BigInteger.ONE, BigInteger.valueOf(4))).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.divideToBigInteger(BigInteger.ONE, BigInteger.TEN)).isEqualTo(BigInteger.ZERO);
+    assertThat(FeeUtils.divideToBigInteger(BigInteger.TEN, BigInteger.valueOf(2))).isEqualTo(BigInteger.valueOf(5));
+    assertThat(FeeUtils.divideToBigInteger(UnsignedLong.MAX_VALUE.bigIntegerValue(), BigInteger.ONE))
+      .isEqualTo(UnsignedLong.MAX_VALUE.bigIntegerValue());
+    assertThat(FeeUtils.divideToBigInteger(
+      UnsignedLong.MAX_VALUE.bigIntegerValue(),
+      UnsignedLong.MAX_VALUE.bigIntegerValue())
+    ).isEqualTo(BigInteger.ONE);
+  }
+
+  @Test
+  void testMultiplyToBigInteger() {
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.multiplyToBigInteger(null, BigDecimal.ONE)
+    );
+    assertThrows(
+      NullPointerException.class,
+      () -> FeeUtils.multiplyToBigInteger(BigInteger.ONE, null)
+    );
+
+    assertThat(FeeUtils.multiplyToBigInteger(BigInteger.valueOf(-1), BigDecimal.ONE)).isEqualTo(BigInteger.valueOf(-1));
+    assertThat(FeeUtils.multiplyToBigInteger(BigInteger.ONE, BigDecimal.valueOf(2))).isEqualTo(BigInteger.valueOf(2));
+    assertThat(FeeUtils.multiplyToBigInteger(BigInteger.ONE, BigDecimal.valueOf(4))).isEqualTo(BigInteger.valueOf(4));
+    assertThat(FeeUtils.multiplyToBigInteger(BigInteger.ONE, BigDecimal.TEN)).isEqualTo(BigInteger.TEN);
+    assertThat(FeeUtils.multiplyToBigInteger(BigInteger.TEN, BigDecimal.valueOf(2))).isEqualTo(BigInteger.valueOf(20));
+    assertThat(FeeUtils.multiplyToBigInteger(UnsignedLong.MAX_VALUE.bigIntegerValue(), BigDecimal.ONE))
+      .isEqualTo(UnsignedLong.MAX_VALUE.bigIntegerValue());
+    assertThat(FeeUtils.multiplyToBigInteger(
+      UnsignedLong.MAX_VALUE.bigIntegerValue(),
+      new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue())
+    )).isEqualTo(new BigInteger("340282366920938463426481119284349108225"));
   }
 }

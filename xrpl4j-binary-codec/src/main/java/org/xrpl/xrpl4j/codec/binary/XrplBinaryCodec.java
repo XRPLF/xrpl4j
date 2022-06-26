@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,6 +59,7 @@ public class XrplBinaryCodec {
    * @param json A {@link String} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code json}.
+   *
    * @throws JsonProcessingException if {@code json} is not valid JSON.
    */
   public String encode(String json) throws JsonProcessingException {
@@ -73,6 +74,7 @@ public class XrplBinaryCodec {
    * @param jsonNode A {@link JsonNode} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code jsonNode}.
+   *
    * @throws JsonProcessingException if {@code jsonNode} is not valid JSON.
    */
   private String encode(final JsonNode jsonNode) {
@@ -88,6 +90,7 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return hex encoded representations
+   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForSigning(String json) throws JsonProcessingException {
@@ -102,6 +105,7 @@ public class XrplBinaryCodec {
    * @param xrpAccountId A {@link String} containing the XRPL AccountId.
    *
    * @return hex encoded representations
+   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForMultiSigning(String json, String xrpAccountId) throws JsonProcessingException {
@@ -122,6 +126,7 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return The binary encoded JSON in hexadecimal form.
+   *
    * @throws JsonProcessingException If the JSON is not valid.
    */
   public String encodeForSigningClaim(String json) throws JsonProcessingException {
@@ -152,7 +157,7 @@ public class XrplBinaryCodec {
    * @return A {@link String} representing the decoded hex.
    */
   public String decode(String hex) {
-    String nonSignPrefixHex;
+    final String nonSignPrefixHex;
     if (hex.startsWith(TRX_SIGNATURE_PREFIX)) {
       nonSignPrefixHex = hex.substring(TRX_SIGNATURE_PREFIX.length());
     } else if (hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {

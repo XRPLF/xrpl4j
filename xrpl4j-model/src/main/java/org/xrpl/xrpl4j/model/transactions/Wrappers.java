@@ -134,22 +134,29 @@ public class Wrappers {
   abstract static class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
 
     /**
+     * One XRP, in drops.
+     *
      * @deprecated Prefer {@link CurrencyAmount#ONE_XRP_IN_DROPS}.
      */
     @Deprecated
     static final long ONE_XRP_IN_DROPS = 1_000_000L;
 
     /**
+     * The largest XRP amount.
+     *
      * @deprecated Prefer {@link CurrencyAmount#MAX_XRP}.
      */
     @Deprecated
     static final long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
 
     /**
+     * The largest XRP amount, in drops.
+     *
      * @deprecated Prefer {@link CurrencyAmount#MAX_XRP_IN_DROPS}.
      */
     @Deprecated
     static final long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
+
     static final BigDecimal SMALLEST_XRP = new BigDecimal("0.000001");
     static final DecimalFormat FORMATTER = new DecimalFormat("###,###");
 
@@ -196,8 +203,8 @@ public class Wrappers {
      * @return A {@link BigDecimal} representing this value denominated in whole XRP units.
      */
     public BigDecimal toXrp() {
-      return new BigDecimal(this.value().bigIntegerValue())
-        .divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS), MathContext.DECIMAL128);
+      return new BigDecimal(this.value().bigIntegerValue()).divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS),
+        MathContext.DECIMAL128);
     }
 
     /**
@@ -243,11 +250,9 @@ public class Wrappers {
      */
     @Value.Check
     protected void check() {
-      Preconditions.checkState(
-        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedLong.valueOf(MAX_XRP_IN_DROPS)),
-        String.format(
-          "XRP Amounts may not exceed %s drops (100B XRP, denominated in Drops)", FORMATTER.format(MAX_XRP_IN_DROPS))
-      );
+      Preconditions.checkState(FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedLong.valueOf(MAX_XRP_IN_DROPS)),
+        String.format("XRP Amounts may not exceed %s drops (100B XRP, denominated in Drops)",
+          FORMATTER.format(MAX_XRP_IN_DROPS)));
     }
 
   }

@@ -32,9 +32,7 @@ public class FeeUtils {
 
   private static final BigInteger FIVE_HUNDRED = BigInteger.valueOf(500);
 
-  private static final BigDecimal TWO_BIG_DECIMAL = new BigDecimal(2);
-
-  private static final BigInteger TWO = BigInteger.valueOf(2);
+  private static final BigDecimal TWO = new BigDecimal(2);
 
   private static final BigDecimal THREE = new BigDecimal(3);
 
@@ -56,10 +54,8 @@ public class FeeUtils {
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    */
-  public static XrpCurrencyAmount computeMultiSigFee(
-    final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerListObject signerList
-  ) {
+  public static XrpCurrencyAmount computeMultiSigFee(final XrpCurrencyAmount currentLedgerFeeDrops,
+    final SignerListObject signerList) {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(signerList);
 
@@ -115,11 +111,16 @@ public class FeeUtils {
     final BigInteger medianFee = decomposedFees.medianFeeDrops();
     final BigInteger openLedgerFee = decomposedFees.openLedgerFeeDrops();
 
-    final UnsignedLong feeLow = toUnsignedLongSafe(min(max(adjustedMinimumFeeDrops, // min fee * 1.50
-      divideToBigInteger(max(medianFee, openLedgerFee), FIVE_HUNDRED)), ONE_THOUSAND));
-
     // Cap `feeLow` to the size of an UnsignedLong.
-    return feeLow;
+    return toUnsignedLongSafe(
+      min(
+        max(
+          adjustedMinimumFeeDrops, // min fee * 1.50
+          divideToBigInteger(max(medianFee, openLedgerFee), FIVE_HUNDRED)
+        ),
+        ONE_THOUSAND
+      )
+    );
   }
 
   /**
@@ -141,14 +142,16 @@ public class FeeUtils {
 
     final BigInteger possibleFeeMedium;
     if (FluentCompareTo.is(queuePercentage).greaterThan(ZERO_POINT_ONE)) {
-      possibleFeeMedium = minimumFeeBd.add(medianFeeBd).add(decomposedFees.openLedgerFeeDropsAsBigDecimal())
-        .divide(THREE, 0, RoundingMode.HALF_UP).toBigIntegerExact();
-    }
-    // This method is not called if `queuePercentage` is 0, so we omit that check even though it's in the original xumm
-    // code.
-    else { // 0 > `queuePercentage` < 0.1
+      possibleFeeMedium = minimumFeeBd
+        .add(medianFeeBd)
+        .add(decomposedFees.openLedgerFeeDropsAsBigDecimal())
+        .divide(THREE, 0, RoundingMode.HALF_UP)
+        .toBigIntegerExact();
+    } else { // 0 > `queuePercentage` < 0.1
+      // Note: `computeFeeMedium` is not called if `queuePercentage` is 0, so we omit that check even though it's in
+      // the original xumm code.
       possibleFeeMedium = max(minimumFee.multiply(BigInteger.TEN),
-        minimumFeeBd.add(medianFeeBd).divide(TWO_BIG_DECIMAL, 0, RoundingMode.HALF_UP).toBigIntegerExact());
+        minimumFeeBd.add(medianFeeBd).divide(TWO, 0, RoundingMode.HALF_UP).toBigIntegerExact());
     }
 
     // calculate the lowest fee the user is able to pay if there are txns in the queue
@@ -205,7 +208,7 @@ public class FeeUtils {
   }
 
   /**
-   * Convert a {@link BigInteger} into an {@link UnsignedLong} without overflowing. If the input would overflow, return
+   * Convert a {@link BigInteger} into an {@link UnsignedLong} without overflowing. If the input overflows, return
    * {@link UnsignedLong#MAX_VALUE} instead.
    *
    * @param value A {@link BigInteger} to convert.
@@ -217,8 +220,7 @@ public class FeeUtils {
   @VisibleForTesting
   static UnsignedLong toUnsignedLongSafe(final BigInteger value) {
     Objects.requireNonNull(value);
-    final UnsignedLong valueNotMoreThanMax = UnsignedLong.valueOf(min(value, MAX_UNSIGNED_LONG));
-    return valueNotMoreThanMax;
+    return UnsignedLong.valueOf(min(value, MAX_UNSIGNED_LONG));
   }
 
   /**
@@ -357,7 +359,7 @@ public class FeeUtils {
 
     /**
      * The minimum ledger fee as found in the supplied {@link FeeDrops} that was used to construct this instance.,
-     * adjusted to be at least 50% larger than what was supplied in order to provide a buffer for fee calcuations.
+     * adjusted to be at least 50% larger than what was supplied in order to provide a buffer for fee calculations.
      *
      * @return A {@link BigInteger} representing the adjusted minimum fee (in drops).
      */

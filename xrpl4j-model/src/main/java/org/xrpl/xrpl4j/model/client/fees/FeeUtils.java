@@ -75,7 +75,7 @@ public class FeeUtils {
    *
    * @return {@link XrpCurrencyAmount} value of the fee that should be used for the transaction.
    *
-   * @sse "https://xrpl.org/fee.html"
+   * @see "https://xrpl.org/fee.html"
    * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
    */
   public static XrpCurrencyAmount calculateFeeDynamically(final FeeResult feeResult) {

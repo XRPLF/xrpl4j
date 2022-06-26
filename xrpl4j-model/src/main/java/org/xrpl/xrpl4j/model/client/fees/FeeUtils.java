@@ -213,7 +213,9 @@ public class FeeUtils {
    * @return An equivalent {@code value} as an {@link UnsignedLong}, or {@link UnsignedLong#MAX_VALUE} if the input
    *   would overflow during conversion.
    */
-  public static UnsignedLong toUnsignedLongSafe(final BigInteger value) {
+  // TODO: Move to MathUtils once all v3 modules are condensed and MathUtils is accessible.
+  @VisibleForTesting
+  static UnsignedLong toUnsignedLongSafe(final BigInteger value) {
     Objects.requireNonNull(value);
     final UnsignedLong valueNotMoreThanMax = UnsignedLong.valueOf(min(value, MAX_UNSIGNED_LONG));
     return valueNotMoreThanMax;
@@ -227,6 +229,7 @@ public class FeeUtils {
    *
    * @return The smallest value of any supplied inputs, or {@code input1} if that is the only supplied input.
    */
+  // TODO: Move to MathUtils once all v3 modules are condensed and MathUtils is accessible.
   @VisibleForTesting
   static BigInteger min(final BigInteger input1, final BigInteger... otherInputs) {
     Objects.requireNonNull(input1);
@@ -243,6 +246,7 @@ public class FeeUtils {
    *
    * @return The largest value of any supplied inputs, or {@code input1} if that is the only supplied input.
    */
+  // TODO: Move to MathUtils once all v3 modules are condensed and MathUtils is accessible.
   @VisibleForTesting
   static BigInteger max(final BigInteger input1, final BigInteger... otherInputs) {
     Objects.requireNonNull(input1);

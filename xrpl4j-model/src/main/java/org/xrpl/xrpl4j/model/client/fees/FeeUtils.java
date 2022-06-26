@@ -4,6 +4,7 @@ import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -31,7 +32,9 @@ public class FeeUtils {
 
   private static final BigInteger FIVE_HUNDRED = BigInteger.valueOf(500);
 
-  private static final BigDecimal TWO = new BigDecimal(2);
+  private static final BigDecimal TWO_BIG_DECIMAL = new BigDecimal(2);
+
+  private static final BigInteger TWO = BigInteger.valueOf(2);
 
   private static final BigDecimal THREE = new BigDecimal(3);
 
@@ -53,15 +56,13 @@ public class FeeUtils {
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    */
-  public static XrpCurrencyAmount computeMultiSigFee(
-    final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerListObject signerList
-  ) {
+  public static XrpCurrencyAmount computeMultiSigFee(final XrpCurrencyAmount currentLedgerFeeDrops,
+    final SignerListObject signerList) {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(signerList);
 
-    return currentLedgerFeeDrops
-      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+    return currentLedgerFeeDrops.times(
+      XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
   }
 
   /**
@@ -81,17 +82,17 @@ public class FeeUtils {
     final DecomposedFees decomposedFees = DecomposedFees.builder(feeResult);
     final BigDecimal queuePercentage = decomposedFees.queuePercentage();
 
-    final UnsignedLong feeLow = computeFeeLow(decomposedFees); // <- empty tx queue
-    final UnsignedLong feeMedium = computeFeeMedium(decomposedFees, feeLow); // <- in-between tx queue size
-    final UnsignedLong feeHigh = computeFeeHigh(decomposedFees); // <- full tx queue
-
     final XrpCurrencyAmount fee;
     if (queueIsEmpty(queuePercentage)) {
       // queue is empty
+      final UnsignedLong feeLow = computeFeeLow(decomposedFees); // <- empty tx queue
       fee = XrpCurrencyAmount.ofDrops(feeLow);
     } else if (queueIsNotEmptyAndNotFull(queuePercentage)) {
+      final UnsignedLong feeLow = computeFeeLow(decomposedFees); // <- empty tx queue
+      final UnsignedLong feeMedium = computeFeeMedium(decomposedFees, feeLow); // <- in-between tx queue size
       fee = XrpCurrencyAmount.ofDrops(feeMedium);
     } else { // queue is full
+      final UnsignedLong feeHigh = computeFeeHigh(decomposedFees); // <- full tx queue
       fee = XrpCurrencyAmount.ofDrops(feeHigh);
     }
 
@@ -103,7 +104,7 @@ public class FeeUtils {
    *
    * @param decomposedFees A {@link DecomposedFees} that contains information about current XRPL fees.
    *
-   * @return An {@link UnsignedLong} representing the lowest fee.
+   * @return An {@link UnsignedLong} representing the `low` fee.
    */
   private static UnsignedLong computeFeeLow(final DecomposedFees decomposedFees) {
     Objects.requireNonNull(decomposedFees);
@@ -112,59 +113,56 @@ public class FeeUtils {
     final BigInteger medianFee = decomposedFees.medianFeeDrops();
     final BigInteger openLedgerFee = decomposedFees.openLedgerFeeDrops();
 
-    final UnsignedLong feeLow =
-      toUnsignedLongSafe(
-        min(
-          max(
-            adjustedMinimumFeeDrops, // min fee * 1.50
-            divideToBigInteger(max(medianFee, openLedgerFee), FIVE_HUNDRED)
-          ),
-          ONE_THOUSAND
-        ));
+    final UnsignedLong feeLow = toUnsignedLongSafe(min(max(adjustedMinimumFeeDrops, // min fee * 1.50
+      divideToBigInteger(max(medianFee, openLedgerFee), FIVE_HUNDRED)), ONE_THOUSAND));
 
     // Cap `feeLow` to the size of an UnsignedLong.
     return feeLow;
   }
 
-  private static UnsignedLong computeFeeMedium(
-    final DecomposedFees decomposedFees,
-    final UnsignedLong feeLow
-  ) {
+  /**
+   * Compute the `medium` fee, which is the fee to use when the transaction queue is neither empty nor full.
+   *
+   * @param decomposedFees A {@link DecomposedFees} with precomputed values to use.
+   * @param feeLow         The computed `low` fee as found in {@link #computeFeeLow(DecomposedFees)}.
+   *
+   * @return An {@link UnsignedLong} representing the `medium` fee.
+   */
+  private static UnsignedLong computeFeeMedium(final DecomposedFees decomposedFees, final UnsignedLong feeLow) {
     Objects.requireNonNull(decomposedFees);
     Objects.requireNonNull(feeLow);
 
     final BigInteger minimumFee = decomposedFees.adjustedMinimumFeeDrops();
     final BigDecimal minimumFeeBd = decomposedFees.adjustedMinimumFeeDropsAsBigDecimal();
     final BigDecimal medianFeeBd = decomposedFees.medianFeeDropsAsBigDecimal();
-    final BigInteger openLedgerFee = decomposedFees.openLedgerFeeDrops();
     final BigDecimal queuePercentage = decomposedFees.queuePercentage();
 
     final BigInteger possibleFeeMedium;
     if (FluentCompareTo.is(queuePercentage).greaterThan(ZERO_POINT_ONE)) {
-      final BigDecimal openLedgerFeeBd = decomposedFees.openLedgerFeeDropsAsBigDecimal();
-      possibleFeeMedium = minimumFeeBd.add(openLedgerFeeBd).divide(THREE, 0, RoundingMode.HALF_UP).toBigIntegerExact();
-    } else if (FluentCompareTo.is(queuePercentage).equalTo(BigDecimal.ZERO)) {
-      possibleFeeMedium = max(minimumFee.multiply(BigInteger.TEN), openLedgerFee);
-    } else {
-      BigInteger minMed = minimumFeeBd.add(medianFeeBd).divide(TWO, 0, RoundingMode.HALF_UP).toBigIntegerExact();
-      possibleFeeMedium = max(minimumFee.multiply(BigInteger.TEN), minMed);
+      possibleFeeMedium = minimumFeeBd.add(medianFeeBd).add(decomposedFees.openLedgerFeeDropsAsBigDecimal())
+        .divide(THREE, 0, RoundingMode.HALF_UP).toBigIntegerExact();
+    }
+    // This method is not called if `queuePercentage` is 0, so we omit that check even though it's in the original xumm
+    // code.
+    else { // 0 > `queuePercentage` < 0.1
+      possibleFeeMedium = max(minimumFee.multiply(BigInteger.TEN),
+        minimumFeeBd.add(medianFeeBd).divide(TWO_BIG_DECIMAL, 0, RoundingMode.HALF_UP).toBigIntegerExact());
     }
 
-    final BigInteger feeLowTimes15 = feeLow.bigIntegerValue().multiply(FIFTEEN);
-
     // calculate the lowest fee the user is able to pay if there are txns in the queue
-    final BigInteger feeMedium = min(
-      possibleFeeMedium,
-      feeLowTimes15,
-      TEN_THOUSAND
-    );
+    final BigInteger feeMedium = min(possibleFeeMedium, feeLow.bigIntegerValue().multiply(FIFTEEN), TEN_THOUSAND);
 
     return toUnsignedLongSafe(feeMedium);
   }
 
-  private static UnsignedLong computeFeeHigh(
-    final DecomposedFees decomposedFees
-  ) {
+  /**
+   * Compute the `high` fee, which is the fee to use when the transaction queue is full.
+   *
+   * @param decomposedFees A {@link DecomposedFees} with precomputed values to use.
+   *
+   * @return An {@link UnsignedLong} representing the `high` fee.
+   */
+  private static UnsignedLong computeFeeHigh(final DecomposedFees decomposedFees) {
     Objects.requireNonNull(decomposedFees);
 
     final BigInteger minimumFee = decomposedFees.adjustedMinimumFeeDrops();
@@ -172,15 +170,8 @@ public class FeeUtils {
     final BigInteger openLedgerFee = decomposedFees.openLedgerFeeDrops();
 
     final BigInteger highFee = min(
-      max(
-        minimumFee.multiply(BigInteger.TEN),
-        multiplyToBigInteger(
-          max(medianFee, openLedgerFee),
-          ONE_POINT_ONE
-        )
-      ),
-      TEN_THOUSAND
-    );
+      max(minimumFee.multiply(BigInteger.TEN), multiplyToBigInteger(max(medianFee, openLedgerFee), ONE_POINT_ONE)),
+      TEN_THOUSAND);
     return toUnsignedLongSafe(highFee);
   }
 
@@ -212,16 +203,17 @@ public class FeeUtils {
   }
 
   /**
-   * Convert {@code value} into an {@link UnsignedLong}.
+   * Convert a {@link BigInteger} into an {@link UnsignedLong} without overflowing. If the input would overflow, return
+   * {@link UnsignedLong#MAX_VALUE} instead.
    *
    * @param value A {@link BigInteger} to convert.
    *
-   * @return An equivalent {@code value} as an {@link UnsignedLong}.
+   * @return An equivalent {@code value} as an {@link UnsignedLong}, or {@link UnsignedLong#MAX_VALUE} if the input
+   *   would overflow during conversion.
    */
   public static UnsignedLong toUnsignedLongSafe(final BigInteger value) {
-    final UnsignedLong valueNotMoreThanMax = UnsignedLong.valueOf(
-      min(value, MAX_UNSIGNED_LONG)
-    );
+    Objects.requireNonNull(value);
+    final UnsignedLong valueNotMoreThanMax = UnsignedLong.valueOf(min(value, MAX_UNSIGNED_LONG));
     return valueNotMoreThanMax;
   }
 
@@ -238,10 +230,7 @@ public class FeeUtils {
     Objects.requireNonNull(input1);
     Objects.requireNonNull(otherInputs);
 
-    return Arrays.stream(otherInputs)
-      .min(BigInteger::compareTo)
-      .orElse(input1)
-      .min(input1);
+    return Arrays.stream(otherInputs).min(BigInteger::compareTo).orElse(input1).min(input1);
   }
 
   /**
@@ -257,10 +246,7 @@ public class FeeUtils {
     Objects.requireNonNull(input1);
     Objects.requireNonNull(otherInputs);
 
-    return Arrays.stream(otherInputs)
-      .max(BigInteger::compareTo)
-      .orElse(input1)
-      .max(input1);
+    return Arrays.stream(otherInputs).max(BigInteger::compareTo).orElse(input1).max(input1);
   }
 
   /**
@@ -289,9 +275,7 @@ public class FeeUtils {
    */
   @VisibleForTesting
   static BigInteger divideToBigInteger(final BigInteger numerator, final BigInteger denominator) {
-    return divideToBigInteger(
-      new BigDecimal(numerator), new BigDecimal(denominator)
-    );
+    return divideToBigInteger(new BigDecimal(numerator), new BigDecimal(denominator));
   }
 
   /**
@@ -331,13 +315,11 @@ public class FeeUtils {
       Objects.requireNonNull(feeResult);
 
       final BigDecimal currentQueueSize = new BigDecimal(feeResult.currentQueueSize().bigIntegerValue());
-      final BigDecimal maxQueueSize = feeResult.maxQueueSize()
-        .map($ -> new BigDecimal($.bigIntegerValue()))
-        .orElse(new BigDecimal(5000)); // Arbitrary value, but should generally be present.
+      final BigDecimal maxQueueSize = feeResult.maxQueueSize().map(UnsignedInteger::bigIntegerValue)
+        .map(BigDecimal::new).orElse(new BigDecimal(5000)); // Arbitrary value, but should generally be present.
       // Don't divide by 0
-      final BigDecimal queuePercentage = FluentCompareTo.is(currentQueueSize).equalTo(BigDecimal.ZERO) ?
-        BigDecimal.ZERO :
-        currentQueueSize.divide(maxQueueSize, MathContext.DECIMAL128);
+      final BigDecimal queuePercentage = FluentCompareTo.is(currentQueueSize).equalTo(BigDecimal.ZERO) ? BigDecimal.ZERO
+        : currentQueueSize.divide(maxQueueSize, MathContext.DECIMAL128);
 
       return builder(feeResult.drops(), queuePercentage);
     }
@@ -350,30 +332,20 @@ public class FeeUtils {
      *
      * @return A {@link DecomposedFees}.
      */
-    static DecomposedFees builder(
-      final FeeDrops feeDrops,
-      final BigDecimal queuePercentage
-    ) {
+    static DecomposedFees builder(final FeeDrops feeDrops, final BigDecimal queuePercentage) {
       Objects.requireNonNull(feeDrops);
       Objects.requireNonNull(queuePercentage);
       Preconditions.checkArgument(FluentCompareTo.is(queuePercentage).greaterThanEqualTo(BigDecimal.ZERO));
       Preconditions.checkArgument(FluentCompareTo.is(queuePercentage).lessThanOrEqualTo(BigDecimal.ONE));
 
-      // Min fee should be about 50% larger (rounded) than the indicated min.
-      final BigInteger adjustedMinimumFeeDrops =
-        min(
-          MAX_XRP_IN_DROPS_BIG_INT,
-          new BigDecimal(feeDrops.minimumFee().value().bigIntegerValue())
-            .multiply(ONE_POINT_FIVE)
-            .setScale(0, RoundingMode.HALF_DOWN)
-            .toBigIntegerExact()
-        );
+      // Min fee should be slightly larger than the indicated min.
+      final BigInteger adjustedMinimumFeeDrops = min(MAX_XRP_IN_DROPS_BIG_INT,
+        new BigDecimal(feeDrops.minimumFee().value().bigIntegerValue()).multiply(ONE_POINT_FIVE)
+          .setScale(0, RoundingMode.HALF_DOWN).toBigIntegerExact());
 
-      return ImmutableDecomposedFees.builder()
-        .adjustedMinimumFeeDrops(adjustedMinimumFeeDrops)
+      return ImmutableDecomposedFees.builder().adjustedMinimumFeeDrops(adjustedMinimumFeeDrops)
         .medianFeeDrops(feeDrops.medianFee().value().bigIntegerValue())
-        .openLedgerFeeDrops(feeDrops.openLedgerFee().value().bigIntegerValue())
-        .queuePercentage(queuePercentage)
+        .openLedgerFeeDrops(feeDrops.openLedgerFee().value().bigIntegerValue()).queuePercentage(queuePercentage)
         .build();
     }
 

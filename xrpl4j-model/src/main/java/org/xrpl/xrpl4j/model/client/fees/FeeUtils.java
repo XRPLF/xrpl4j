@@ -56,8 +56,10 @@ public class FeeUtils {
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    */
-  public static XrpCurrencyAmount computeMultiSigFee(final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerListObject signerList) {
+  public static XrpCurrencyAmount computeMultiSigFee(
+    final XrpCurrencyAmount currentLedgerFeeDrops,
+    final SignerListObject signerList
+  ) {
     Objects.requireNonNull(currentLedgerFeeDrops);
     Objects.requireNonNull(signerList);
 

@@ -159,7 +159,9 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
-    issueBalance(xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, calculateFeeDynamically(feeResult));
+    issueBalance(
+      xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, calculateFeeDynamically(feeResult)
+    );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.

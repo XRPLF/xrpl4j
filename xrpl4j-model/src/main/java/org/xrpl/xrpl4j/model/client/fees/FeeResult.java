@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.fees;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,8 +33,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.UnsignedIntegerStringDeserializer;
 import java.util.Optional;
 
 /**
- * The result of a "fee" rippled API call, which reports the current state of the open-ledger requirements
- * for the transaction cost.
+ * The result of a "fee" rippled API call, which reports the current state of the open-ledger requirements for the
+ * transaction cost.
  */
 @Immutable
 @JsonSerialize(as = ImmutableFeeResult.class)
@@ -78,8 +78,8 @@ public interface FeeResult extends XrplResult {
   FeeDrops drops();
 
   /**
-   * The approximate number of transactions expected to be included in the current ledger.
-   * This is based on the number of transactions in the previous ledger.
+   * The approximate number of transactions expected to be included in the current ledger. This is based on the number
+   * of transactions in the previous ledger.
    *
    * @return An {@link UnsignedInteger} denoting the expected ledger size.
    */
@@ -106,8 +106,8 @@ public interface FeeResult extends XrplResult {
   FeeLevels levels();
 
   /**
-   * The maximum number of transactions that the transaction queue can currently hold.
-   * Optional because this may not be present on older versions of rippled.
+   * The maximum number of transactions that the transaction queue can currently hold. Optional because this may not be
+   * present on older versions of rippled.
    *
    * @return An optionally-present {@link UnsignedInteger} denoting the maximum queue size.
    */

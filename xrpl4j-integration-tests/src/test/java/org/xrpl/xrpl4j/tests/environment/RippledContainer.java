@@ -132,7 +132,7 @@ public class RippledContainer {
 
   private ZonedDateTime getLedgerTime() {
     try {
-      return getXrplClient().serverInfo().time().get();
+      return getXrplClient().serverInfo().time();
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e);
     }

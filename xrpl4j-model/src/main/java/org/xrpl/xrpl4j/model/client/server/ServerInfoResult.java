@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.model.client.XrplResult;
 /**
  * Result of a "server_info" rippled API method request.
  */
+@Deprecated
 @Immutable
 @JsonSerialize(as = ImmutableServerInfoResult.class)
 @JsonDeserialize(as = ImmutableServerInfoResult.class)

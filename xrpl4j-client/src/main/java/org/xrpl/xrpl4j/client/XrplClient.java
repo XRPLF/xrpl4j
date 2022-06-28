@@ -422,12 +422,28 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
    */
+  @Deprecated
   public ServerInfo serverInfo() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)
       .build();
 
     return jsonRpcClient.send(request, ServerInfoResult.class).info();
+  }
+
+  /**
+   * Get the "server_info" for the rippled node.
+   *
+   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo} containing information about the server.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/server_info.html"
+   */
+  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo serverInformation() throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SERVER_INFO)
+      .build();
+
+    return jsonRpcClient.send(request, org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.class).info();
   }
 
   /**

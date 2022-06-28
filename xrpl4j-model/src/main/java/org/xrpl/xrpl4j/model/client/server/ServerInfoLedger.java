@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.server;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -73,9 +73,10 @@ public interface ServerInfoLedger {
   Hash256 hash();
 
   /**
-   * Minimum amount of XRP (not drops) necessary for every account to keep in reserve.
+   * Minimum amount of XRP (not drops) necessary for every account to keep in reserve. This value will be rounded.
    *
    * @return An {@link UnsignedInteger} representing the amount of XRP to reserve.
+   * @deprecated This method handles only drops and not xrp values from servers of types scientific and decimal.
    */
   @JsonIgnore
   @Value.Auxiliary
@@ -92,8 +93,10 @@ public interface ServerInfoLedger {
 
   /**
    * Amount of XRP (not drops) added to the account reserve for each object an account owns in the ledger.
+   * This value will be rounded.
    *
    * @return An {@link UnsignedInteger} representing the amount of XRP added.
+   * @deprecated This method handles only drops and not xrp values from servers of types scientific and decimal.
    */
   @JsonIgnore
   @Value.Auxiliary
@@ -147,7 +150,7 @@ public interface ServerInfoLedger {
     @Override
     public void serialize(XrpCurrencyAmount amount, JsonGenerator gen, SerializerProvider provider) throws IOException {
       gen.writeNumber(
-        XrpCurrencyAmount.ofDrops(Long.parseLong(amount.toString())).toXrp().setScale(0, RoundingMode.CEILING)
+        amount.toXrp().setScale(0, RoundingMode.CEILING)
       );
     }
   }

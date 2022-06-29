@@ -1115,7 +1115,8 @@ public class XrplClientTest {
 
   @Test
   public void serverInformation() {
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger serverInfoLedger = org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger.builder()
+    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger serverInfoLedger =
+      org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger.builder()
       .hash(Hash256.of(Strings.repeat("0", 64)))
       .age(UnsignedInteger.ONE)
       .reserveBaseXrp(UnsignedInteger.ONE)
@@ -1145,7 +1146,8 @@ public class XrplClientTest {
       .validationQuorum(UnsignedInteger.ONE)
       .build();
 
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResult = org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.builder()
+    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResult =
+      org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.builder()
       .info(serverInfo)
       .build();
 
@@ -1164,7 +1166,8 @@ public class XrplClientTest {
       }
     };
     xrplClient = new XrplClient(jsonRpcClientMock);
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResponse = assertDoesNotThrow(() -> xrplClient.serverInformation());
+    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResponse =
+      assertDoesNotThrow(() -> xrplClient.serverInformation());
     assertThat(serverInfoResponse.info()).isEqualTo(serverInfo);
   }
 

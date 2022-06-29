@@ -27,6 +27,9 @@ import org.xrpl.xrpl4j.model.client.XrplResult;
 
 /**
  * Result of a "server_info" rippled API method request.
+ *
+ * @deprecated {@link ServerInfo} was deprecated hence this interface is being deprecated as well.
+ *   Use {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} instead.
  */
 @Deprecated
 @Immutable

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.client.server;
+package org.xrpl.xrpl4j.model.client.serverinfo;
 
 /*-
  * ========================LICENSE_START=================================
@@ -43,11 +43,7 @@ import java.math.RoundingMode;
 
 /**
  * Information about a recent ledger, as represented in {@link ServerInfoResult}s.
- *
- * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated.
- *   Use {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger} instead.
  */
-@Deprecated
 @Value.Immutable
 @JsonSerialize(as = ImmutableServerInfoLedger.class)
 @JsonDeserialize(as = ImmutableServerInfoLedger.class)
@@ -77,12 +73,10 @@ public interface ServerInfoLedger {
   Hash256 hash();
 
   /**
-   * Minimum amount of XRP (not drops) necessary for every account to keep in reserve. This value will be rounded
-   * up to the nearest integer.
+   * Minimum amount of XRP (not drops) necessary for every account to keep in reserve. This value will be rounded.
    *
    * @return An {@link UnsignedInteger} representing the amount of XRP to reserve.
    * @deprecated This method handles only drops and not xrp values from servers of types scientific and decimal.
-   *   Please use {@link #reserveBaseDrops()} instead.
    */
   @JsonIgnore
   @Value.Auxiliary
@@ -99,11 +93,10 @@ public interface ServerInfoLedger {
 
   /**
    * Amount of XRP (not drops) added to the account reserve for each object an account owns in the ledger.
-   * This value will be rounded up to the nearest integer.
+   * This value will be rounded.
    *
    * @return An {@link UnsignedInteger} representing the amount of XRP added.
    * @deprecated This method handles only drops and not xrp values from servers of types scientific and decimal.
-   *   Please use {@link #reserveIncDrops()} instead.
    */
   @JsonIgnore
   @Value.Auxiliary

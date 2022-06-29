@@ -8,14 +8,10 @@ import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableClioServerInfo.class)
@@ -59,52 +55,11 @@ public interface ClioServerInfo extends ServerInfo {
   @JsonProperty("complete_ledgers")
   String completeLedgers();
 
-  /**
-   * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
-   *
-   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
-   *   rippled node contains in its history.
-   */
+
   @Value.Derived
   @JsonIgnore
   default List<Range<UnsignedLong>> completeLedgerRanges() {
-    // Split completeLedgers by comma...
-    return Stream.of(completeLedgers().split(","))
-      .map(String::trim)
-      .filter($ -> !$.equals("empty")) // <-- `empty` is a valid value for completed ledgers.
-      .map(range -> {
-        final String[] parts = range.split("-");
-        if (parts.length == 1) {
-          try {
-            return Range.singleton(UnsignedLong.valueOf(parts[0]));
-          } catch (Exception e) {
-            return null; // <-- filtered out of the ultimate List below.
-          }
-        }
-        if (parts.length == 2) {
-          final UnsignedLong lower;
-          final UnsignedLong upper;
-          try {
-            lower = UnsignedLong.valueOf(parts[0]);
-          } catch (Exception e) {
-            LOGGER.warn("Unable to parse valid lower bound number (ignoring range).", e);
-            return null; // <-- filtered out of the ultimate List below.
-          }
-
-          try {
-            upper = UnsignedLong.valueOf(parts[1]);
-          } catch (Exception e) {
-            LOGGER.warn("Unable to parse valid upper bound number (ignoring range).", e);
-            return null; // <-- filtered out of the ultimate List below.
-          }
-          return Range.closed(lower, upper);
-        } else {
-          LOGGER.warn("Range had too many dashes (ignoring range)");
-          return null; // <-- filtered out of the ultimate List below.
-        }
-      })
-      .filter(Objects::nonNull)
-      .collect(Collectors.toList());
+    return LedgerRangeUtils.completeLedgerRanges(completeLedgers());
   }
 
   /**

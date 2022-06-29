@@ -548,6 +548,81 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       .build();
   }
 
+  @Test
+  void testReserveBaseValueSerializeToDecimal() throws JSONException, JsonProcessingException {
+
+    String json = "{\n" +
+      "    \"info\": {\n" +
+      "      \"build_version\": \"1.7.0\",\n" +
+      "      \"amendment_blocked\": false,\n" +
+      "      \"complete_ledgers\": \"61881385-62562429\",\n" +
+      "      \"hostid\": \"LARD\",\n" +
+      "      \"io_latency_ms\": 2,\n" +
+      "      \"jq_trans_overflow\": \"0\",\n" +
+      "      \"last_close\": {\n" +
+      "        \"converge_time_s\": 3.002,\n" +
+      "        \"proposers\": 38\n" +
+      "      },\n" +
+      "      \"load_factor\": 511.83203125,\n" +
+      "      \"load_factor_server\": 1,\n" +
+      "      \"peers\": 261,\n" +
+      "      \"pubkey_node\": \"n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD\",\n" +
+      "      \"server_state\": \"full\",\n" +
+      "      \"server_state_duration_us\": \"2274468435925\",\n" +
+      "      \"time\": \"2021-Mar-30 15:37:51.486384 UTC\",\n" +
+      "      \"uptime\": 2274704,\n" +
+      "      \"validated_ledger\": {\n" +
+      "        \"age\": 4,\n" +
+      "        \"base_fee_xrp\": 0.00001,\n" +
+      "        \"hash\": \"E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3\",\n" +
+      "        \"reserve_base_xrp\": 20.1,\n" +
+      "        \"reserve_inc_xrp\": 5.0,\n" +
+      "        \"seq\": 62562429\n" +
+      "      },\n" +
+      "      \"validation_quorum\": 31\n" +
+      "  },\n" +
+      "  \"status\": \"success\"\n" +
+      "}";
+
+    ServerInfo serverInfo = ServerInfo.builder()
+      .buildVersion("1.7.0")
+      .completeLedgers("61881385-62562429")
+      .hostId("LARD")
+      .ioLatencyMs(UnsignedLong.valueOf(2))
+      .jqTransOverflow("0")
+      .lastClose(ServerInfoLastClose.builder()
+        .convergeTimeSeconds(3.002)
+        .proposers(UnsignedInteger.valueOf(38))
+        .build())
+      .loadFactor(new BigDecimal("511.83203125"))
+      .loadFactorServer(BigDecimal.ONE)
+      .peers(UnsignedInteger.valueOf(261))
+      .publicKeyNode("n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD")
+      .serverState("full")
+      .serverStateDurationUs("2274468435925")
+      .time(ZonedDateTime.parse("2021-Mar-30 15:37:51.486384 UTC",
+        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
+      .upTime(UnsignedLong.valueOf(2274704))
+      .validatedLedger(ServerInfoLedger.builder()
+        .age(UnsignedInteger.valueOf(4))
+        .hash(Hash256.of("E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3"))
+        .reserveBaseXrp(UnsignedInteger.valueOf(20))
+        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20100000))
+        .reserveIncXrp(UnsignedInteger.valueOf(5))
+        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
+        .sequence(LedgerIndex.of(UnsignedInteger.valueOf(62562429)))
+        .baseFeeXrp(new BigDecimal("0.00001"))
+        .build())
+      .validationQuorum(UnsignedInteger.valueOf(31))
+      .build();
+    ServerInfoResult result = ServerInfoResult.builder()
+      .info(serverInfo)
+      .status("success")
+      .build();
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
   /**
    * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in {@link
    * ServerInfo#completeLedgers()}.

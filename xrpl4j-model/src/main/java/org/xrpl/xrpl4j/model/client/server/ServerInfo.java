@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.server;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,6 +44,12 @@ import java.util.stream.Stream;
 
 /**
  * Maps the fields inside the "info" section of the "server_info" API call.
+ *
+ * @deprecated {@link ServerInfo} is deprecated to allow various ServerInfo types like
+ *   specialised Clio {@link org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo} and Reporting Mode
+ *   {@link org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo} servers and the generic rippled server
+ *   {@link org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo}. Use
+ *   {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
  */
 @Deprecated
 @Immutable

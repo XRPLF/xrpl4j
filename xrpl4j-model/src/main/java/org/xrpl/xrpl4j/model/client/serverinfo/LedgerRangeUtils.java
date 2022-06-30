@@ -10,6 +10,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Utilities for dealing with XRP Ledger ranges.
+ */
 public class LedgerRangeUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LedgerRangeUtils.class);
@@ -20,8 +23,8 @@ public class LedgerRangeUtils {
    *
    * @param completeLedgers A hyphen separated {@link String} containing ledger range. e.g. "2-6000798"
    *
-   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
-   *   rippled node contains in its history.
+   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a rippled
+   *   node contains in its history.
    */
   public static List<Range<UnsignedLong>> completeLedgerRanges(String completeLedgers) {
     // Split completeLedgers by comma...

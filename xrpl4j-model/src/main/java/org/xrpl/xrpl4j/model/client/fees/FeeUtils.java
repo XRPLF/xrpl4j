@@ -6,6 +6,9 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Objects;
 
+/**
+ * Utilities for computing XRP Ledger fees.
+ */
 public class FeeUtils {
 
   /**

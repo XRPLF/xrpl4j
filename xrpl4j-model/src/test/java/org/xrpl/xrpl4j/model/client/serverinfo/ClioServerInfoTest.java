@@ -46,8 +46,8 @@ public class ClioServerInfoTest extends AbstractJsonTest {
   }
 
   /**
-   * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in {@link
-   * ClioServerInfo#completeLedgers()}.
+   * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in
+   * {@link ClioServerInfo#completeLedgers()}.
    *
    * @param completeLedgers A {@link String} with the value of completeLedgers.
    *
@@ -64,10 +64,8 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(2))
         .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
-        .reserveBaseXrp(UnsignedInteger.valueOf(20))
-        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
-        .reserveIncXrp(UnsignedInteger.valueOf(5))
-        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
+        .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(20)))
+        .reserveIncXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
         .sequence(LedgerIndex.of(UnsignedInteger.valueOf(54300729)))
         .baseFeeXrp(new BigDecimal("0.000010"))
         .build())

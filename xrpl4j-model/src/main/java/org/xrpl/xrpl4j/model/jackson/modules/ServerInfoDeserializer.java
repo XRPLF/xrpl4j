@@ -13,6 +13,9 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.io.IOException;
 
+/**
+ * A {@link StdDeserializer} for deserializing instances of {@link ServerInfo}.
+ */
 public class ServerInfoDeserializer extends StdDeserializer<ServerInfo> {
 
   /**

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.server;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -145,7 +145,6 @@ public class ServerInfoResultTests extends AbstractJsonTest {
 
   @Test
   public void testJsonDeserialization() throws JsonProcessingException, JSONException {
-    logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult result = ServerInfoResult.builder().info(updatedServerInfo()).build();
 
     String json = "{\n" +
@@ -436,9 +435,9 @@ public class ServerInfoResultTests extends AbstractJsonTest {
   }
 
   /**
-   * Negative test to show that when the default Locale is not en_US and an object's {@link ZonedDateTime}
-   * field is not annotated with a {@link JsonFormat} with locale = en_US, then deserializing JSON with an
-   * english date to that object fails.
+   * Negative test to show that when the default Locale is not en_US and an object's {@link ZonedDateTime} field is not
+   * annotated with a {@link JsonFormat} with locale = en_US, then deserializing JSON with an english date to that
+   * object fails.
    *
    * <p>This test will only run if the default locale language is not equal to "en", as is the case
    * in the final step of our CI.</p>
@@ -461,8 +460,8 @@ public class ServerInfoResultTests extends AbstractJsonTest {
   }
 
   /**
-   * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in {@link
-   * ServerInfo#completeLedgers()}.
+   * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in
+   * {@link ServerInfo#completeLedgers()}.
    *
    * @param completeLedgers A {@link String} with the value of completeLedgers.
    *
@@ -537,10 +536,8 @@ public class ServerInfoResultTests extends AbstractJsonTest {
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(2))
         .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
-        .reserveBaseXrp(UnsignedInteger.valueOf(20))
-        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
-        .reserveIncXrp(UnsignedInteger.valueOf(5))
-        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
+        .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(20000000))
+        .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(5000000))
         .sequence(LedgerIndex.of(UnsignedInteger.valueOf(54300729)))
         .baseFeeXrp(new BigDecimal("0.00001"))
         .build())
@@ -607,9 +604,9 @@ public class ServerInfoResultTests extends AbstractJsonTest {
         .age(UnsignedInteger.valueOf(4))
         .hash(Hash256.of("E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3"))
         .reserveBaseXrp(UnsignedInteger.valueOf(20))
-        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20100000))
+        .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(20100000))
         .reserveIncXrp(UnsignedInteger.valueOf(5))
-        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
+        .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(5000000))
         .sequence(LedgerIndex.of(UnsignedInteger.valueOf(62562429)))
         .baseFeeXrp(new BigDecimal("0.00001"))
         .build())
@@ -624,8 +621,8 @@ public class ServerInfoResultTests extends AbstractJsonTest {
   }
 
   /**
-   * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in {@link
-   * ServerInfo#completeLedgers()}.
+   * Helper method to construct an instance of {@link ServerInfo} with {@code completeLedgers} in
+   * {@link ServerInfo#completeLedgers()}.
    *
    * @return An instance of {@link ServerInfo}.
    */
@@ -654,9 +651,9 @@ public class ServerInfoResultTests extends AbstractJsonTest {
         .age(UnsignedInteger.valueOf(4))
         .hash(Hash256.of("E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3"))
         .reserveBaseXrp(UnsignedInteger.valueOf(20))
-        .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
+        .reserveBaseAsXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(20)))
         .reserveIncXrp(UnsignedInteger.valueOf(5))
-        .reserveIncDrops(XrpCurrencyAmount.ofDrops(5000000))
+        .reserveIncAsXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
         .sequence(LedgerIndex.of(UnsignedInteger.valueOf(62562429)))
         .baseFeeXrp(new BigDecimal("0.00001"))
         .build())

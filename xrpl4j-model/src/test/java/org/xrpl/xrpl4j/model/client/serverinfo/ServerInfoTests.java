@@ -7,6 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 
+/**
+ * Unit tests for {@link ServerInfo}.
+ */
 public class ServerInfoTests extends AbstractJsonTest {
 
   ServerInfo rippledServerInfo;

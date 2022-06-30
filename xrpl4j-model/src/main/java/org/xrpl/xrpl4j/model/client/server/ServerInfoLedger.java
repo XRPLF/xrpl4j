@@ -93,8 +93,7 @@ public interface ServerInfoLedger {
   default UnsignedInteger reserveBaseXrp() {
     // Given that this is a reserve amount, we always want _some_ amount of XRP, so we use CEILING here, for example, so
     // that something like `0.1` would round up to a whole number of 1 XRP. While this is a rather large assumption,
-    // this method is deprecated, and will go away in a future version, with `reserveBaseAsXrp` being the preferred
-    // method anyway.
+    // this method is deprecated, and will go away in a future version.
     return UnsignedInteger.valueOf(reserveIncAsXrp().toXrp().setScale(0, RoundingMode.CEILING).toBigInteger());
   }
 
@@ -127,8 +126,7 @@ public interface ServerInfoLedger {
   default UnsignedInteger reserveIncXrp() {
     // Given that this is a reserve amount, we always want _some_ amount of XRP, so we use CEILING here, for example, so
     // that something like `0.1` would round up to a whole number of 1 XRP. While this is a rather large assumption,
-    // this method is deprecated, and will go away in a future version, with `reserveIncAsXrp` being the preferred
-    // method anyway.
+    // this method is deprecated, and will go away in a future version.
     return UnsignedInteger.valueOf(reserveIncAsXrp().toXrp().setScale(0, RoundingMode.CEILING).toBigInteger());
   }
 

@@ -203,8 +203,8 @@ public class Wrappers {
      * @return A {@link BigDecimal} representing this value denominated in whole XRP units.
      */
     public BigDecimal toXrp() {
-      return new BigDecimal(this.value().bigIntegerValue()).divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS),
-        MathContext.DECIMAL128);
+      return new BigDecimal(this.value().bigIntegerValue())
+        .divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS), MathContext.DECIMAL128);
     }
 
     /**
@@ -250,9 +250,12 @@ public class Wrappers {
      */
     @Value.Check
     protected void check() {
-      Preconditions.checkState(FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedLong.valueOf(MAX_XRP_IN_DROPS)),
-        String.format("XRP Amounts may not exceed %s drops (100B XRP, denominated in Drops)",
-          FORMATTER.format(MAX_XRP_IN_DROPS)));
+      Preconditions.checkState(
+        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedLong.valueOf(MAX_XRP_IN_DROPS)),
+        String.format(
+          "XRP Amounts may not exceed %s drops (100B XRP, denominated in Drops)", FORMATTER.format(MAX_XRP_IN_DROPS)
+        )
+      );
     }
 
   }

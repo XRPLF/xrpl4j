@@ -105,7 +105,7 @@ public interface ServerInfoLedger {
   @JsonProperty("reserve_base_xrp")
   @JsonSerialize(using = CurrencyAmountToXrpSerializer.class)
   @JsonDeserialize(using = XrpToCurrencyAmountDeserializer.class)
-  @Default // TODO: remove once reserveIncXrp is removed.
+  @Default
   default XrpCurrencyAmount reserveBaseAsXrp() {
     return XrpCurrencyAmount.ofXrp(new BigDecimal(reserveBaseXrp().bigIntegerValue()));
   }
@@ -138,7 +138,7 @@ public interface ServerInfoLedger {
   @JsonProperty("reserve_inc_xrp")
   @JsonSerialize(using = CurrencyAmountToXrpSerializer.class)
   @JsonDeserialize(using = XrpToCurrencyAmountDeserializer.class)
-  @Default // TODO: remove once reserveIncXrp is removed.
+  @Default
   default XrpCurrencyAmount reserveIncAsXrp() {
     return XrpCurrencyAmount.ofXrp(new BigDecimal(reserveIncXrp().bigIntegerValue()));
   }

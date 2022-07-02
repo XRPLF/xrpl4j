@@ -60,7 +60,7 @@ public class DepositPreAuthIT extends AbstractIT {
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(receiverAccountInfo.accountData().sequence())
       .signingPublicKey(receiverWallet.publicKey())
       .authorize(senderWallet.classicAddress())
@@ -101,7 +101,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -165,7 +165,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))

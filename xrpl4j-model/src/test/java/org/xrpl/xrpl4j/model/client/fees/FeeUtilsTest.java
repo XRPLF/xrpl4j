@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.model.client.fees;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultiSigFee;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS;
@@ -26,7 +26,6 @@ import java.math.BigInteger;
  * Unit tests for {@link FeeUtils}.
  */
 public class FeeUtilsTest {
-
 
   @Test
   public void nullInputForComputeMultiSigFee() {
@@ -75,7 +74,7 @@ public class FeeUtilsTest {
   public void nullInputForCalculateFeeDynamically() {
     assertThrows(
       NullPointerException.class,
-      () -> calculateFeeDynamically(null)
+      () -> computeFees(null)
     );
   }
 
@@ -106,7 +105,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
   }
 
   @Test
@@ -136,7 +135,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
   }
 
   @Test
@@ -166,7 +165,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
   }
 
   @Test
@@ -196,7 +195,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
   }
 
   @Test
@@ -226,7 +225,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(15));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
   }
 
   @Test
@@ -256,7 +255,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(15));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
   }
 
   @Test
@@ -286,7 +285,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(225));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
   }
 
   @Test
@@ -316,7 +315,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    assertThat(calculateFeeDynamically(feeResult)).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
+    assertThat(computeFees(feeResult).recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
   }
 
   @Test

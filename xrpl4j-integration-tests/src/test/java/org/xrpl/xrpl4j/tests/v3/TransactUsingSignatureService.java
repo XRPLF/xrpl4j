@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeFees;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -65,7 +65,7 @@ public class TransactUsingSignatureService extends AbstractIT {
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWalletAddress));
     Payment payment = Payment.builder()
       .account(sourceWalletAddress)
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -99,7 +99,7 @@ public class TransactUsingSignatureService extends AbstractIT {
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWalletAddress));
     Payment payment = Payment.builder()
       .account(sourceWalletAddress)
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -174,7 +174,7 @@ public class TransactUsingSignatureService extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(

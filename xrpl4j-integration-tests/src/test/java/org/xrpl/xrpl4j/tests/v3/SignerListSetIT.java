@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeFees;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -61,7 +61,7 @@ public class SignerListSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -179,7 +179,7 @@ public class SignerListSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(

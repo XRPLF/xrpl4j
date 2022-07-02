@@ -75,7 +75,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(

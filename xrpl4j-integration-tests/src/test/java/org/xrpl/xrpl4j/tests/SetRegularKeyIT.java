@@ -56,7 +56,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.classicAddress())
       .signingPublicKey(wallet.publicKey())
@@ -78,7 +78,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.classicAddress())
-          .fee(FeeUtils.calculateFeeDynamically(feeResult))
+          .fee(FeeUtils.computeFees(feeResult).recommendedFee())
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey())
           .build();
@@ -113,7 +113,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.classicAddress())
       .signingPublicKey(wallet.publicKey())
@@ -135,7 +135,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.classicAddress())
-          .fee(FeeUtils.calculateFeeDynamically(feeResult))
+          .fee(FeeUtils.computeFees(feeResult).recommendedFee())
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey())
           .build();
@@ -151,7 +151,7 @@ public class SetRegularKeyIT extends AbstractIT {
 
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(wallet.publicKey())
       .build();

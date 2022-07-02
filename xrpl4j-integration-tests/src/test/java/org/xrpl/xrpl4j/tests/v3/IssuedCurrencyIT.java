@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeFees;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -52,7 +52,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       IssuedCurrencyAmount.MAX_VALUE,
       issuerWallet,
       counterpartyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e80");
@@ -77,7 +77,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toEngineeringString(),
       issuerWallet,
       counterpartyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e79");
@@ -102,7 +102,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       IssuedCurrencyAmount.MIN_POSITIVE_VALUE,
       issuerWallet,
       counterpartyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("1000000000000000e-96");
@@ -129,7 +129,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       limitValue.toString(),
       issuerWallet,
       counterpartyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("1100000000000000e-96");
@@ -154,13 +154,13 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
     issueBalance(
-      xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, calculateFeeDynamically(feeResult)
+      xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -206,7 +206,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       aliceWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -216,16 +216,16 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       bobWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    issueBalance("USD", "50", issuerWallet, aliceWallet, calculateFeeDynamically(feeResult));
+    issueBalance("USD", "50", issuerWallet, aliceWallet, computeFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    issueBalance("USD", "50", issuerWallet, bobWallet, calculateFeeDynamically(feeResult));
+    issueBalance("USD", "50", issuerWallet, bobWallet, computeFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -248,7 +248,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult aliceAccountInfo = getValidatedAccountInfo(aliceWallet.address());
     Payment aliceToBobPayment = Payment.builder()
       .account(aliceWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(aliceAccountInfo.accountData().sequence())
       .destination(bobWallet.address())
       .amount(IssuedCurrencyAmount.builder()
@@ -319,7 +319,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       charlieWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -329,7 +329,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       emilyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -339,7 +339,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       emilyWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -349,28 +349,28 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       danielWallet,
-      calculateFeeDynamically(feeResult)
+      computeFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    issueBalance("USD", "10", issuerAWallet, charlieWallet, calculateFeeDynamically(feeResult));
+    issueBalance("USD", "10", issuerAWallet, charlieWallet, computeFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    issueBalance("USD", "1", issuerAWallet, emilyWallet, calculateFeeDynamically(feeResult));
+    issueBalance("USD", "1", issuerAWallet, emilyWallet, computeFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    issueBalance("USD", "100", issuerBWallet, emilyWallet, calculateFeeDynamically(feeResult));
+    issueBalance("USD", "100", issuerBWallet, emilyWallet, computeFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    issueBalance("USD", "2", issuerBWallet, danielWallet, calculateFeeDynamically(feeResult));
+    issueBalance("USD", "2", issuerBWallet, danielWallet, computeFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
@@ -401,7 +401,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.address());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(charlieAccountInfo.accountData().sequence())
       .destination(danielWallet.address())
       .amount(IssuedCurrencyAmount.builder()
@@ -467,7 +467,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     AccountSet setDefaultRipple = AccountSet.builder()
       .account(issuerWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey().base16Value())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)

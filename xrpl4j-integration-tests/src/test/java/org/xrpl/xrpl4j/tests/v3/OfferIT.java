@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeFees;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -62,7 +62,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(issuerWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(issuerWallet.publicKey().base16Value())
       .takerGets(IssuedCurrencyAmount.builder()
@@ -112,7 +112,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
       .takerPays(IssuedCurrencyAmount.builder()
@@ -170,7 +170,7 @@ public class OfferIT extends AbstractIT {
 
     OfferCancel offerCancel = OfferCancel.builder()
       .account(purchaser.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(nextSequence)
       .offerSequence(offerSequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
@@ -205,7 +205,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
       .takerPays(IssuedCurrencyAmount.builder()
@@ -273,7 +273,7 @@ public class OfferIT extends AbstractIT {
 
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
       .takerPays(requestCurrencyAmount)

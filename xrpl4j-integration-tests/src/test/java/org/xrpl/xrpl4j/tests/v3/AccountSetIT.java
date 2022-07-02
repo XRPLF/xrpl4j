@@ -1,7 +1,7 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeFees;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -44,7 +44,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey().base16Value())
@@ -108,7 +108,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey().base16Value())
@@ -170,7 +170,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sequence)
       .setFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey().base16Value())
@@ -210,7 +210,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(computeFees(feeResult).recommendedFee())
       .sequence(sequence)
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey().base16Value())

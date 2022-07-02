@@ -53,7 +53,7 @@ public class IsFinalIT extends AbstractIT {
     Wallet destinationWallet = createRandomAccount();
     payment = Payment.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(10))

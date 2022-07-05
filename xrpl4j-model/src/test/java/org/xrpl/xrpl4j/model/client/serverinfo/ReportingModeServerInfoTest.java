@@ -37,7 +37,7 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       "      \"jq_trans_overflow\": \"0\",\n" +
       "      \"reporting\": \"0\",\n" +
       "      \"last_close\": {\n" +
-      "        \"converge_time_s\": 2,\n" +
+      "        \"converge_time_s\": 2.0,\n" +
       "        \"proposers\": 34\n" +
       "      },\n" +
       "      \"load\": {\n" +
@@ -171,7 +171,7 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
             .perSecond(UnsignedInteger.valueOf(14))
             .build()
         )
-        .threads(UnsignedLong.valueOf(6))
+        .threads(UnsignedInteger.valueOf(6))
         .build())
       .loadFactor(BigDecimal.ONE)
       .peers(UnsignedInteger.valueOf(21))

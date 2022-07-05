@@ -12,7 +12,7 @@ public class ServerInfoLoadTest {
   @Test
   void serverInfoLoadTest() {
 
-    UnsignedLong threads = UnsignedLong.valueOf(6);
+    UnsignedInteger threads = UnsignedInteger.valueOf(6);
     ImmutableServerInfoLoad.Builder serverInfoLoadBuilder = ServerInfoLoad.builder()
       .addJobTypes(
         JobType.builder()
@@ -59,7 +59,7 @@ public class ServerInfoLoadTest {
 
     ServerInfoLoad serverInfoLoad = assertDoesNotThrow(() -> serverInfoLoadBuilder.build());
 
-    assertThat(serverInfoLoad.threads()).isEqualTo(UnsignedLong.valueOf(6));
+    assertThat(serverInfoLoad.threads()).isEqualTo(UnsignedInteger.valueOf(6));
     assertThat(serverInfoLoad.jobTypes().size()).isEqualTo(8);
   }
 }

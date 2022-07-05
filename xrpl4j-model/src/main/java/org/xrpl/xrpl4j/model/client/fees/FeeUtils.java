@@ -69,32 +69,30 @@ public class FeeUtils {
    *
    * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    *
-   * @return {@link XrpCurrencyAmount} value of the fee that should be used for the transaction.
+   * @return {@link NetworkFeeResult} with low, medium and high fee levels to choose from for the transaction.
    *
    * @see "https://xrpl.org/fee.html"
    * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
    */
-  public static XrpCurrencyAmount calculateFeeDynamically(final FeeResult feeResult) {
+  public static NetworkFeeResult computeNetworkFee(final FeeResult feeResult) {
     Objects.requireNonNull(feeResult);
 
     final DecomposedFees decomposedFees = DecomposedFees.builder(feeResult);
-    final BigDecimal queuePercentage = decomposedFees.queuePercentage();
 
-    final XrpCurrencyAmount fee;
-    if (queueIsEmpty(queuePercentage)) {
-      // queue is empty
-      final UnsignedLong feeLow = computeFeeLow(decomposedFees); // <- empty tx queue
-      fee = XrpCurrencyAmount.ofDrops(feeLow);
-    } else if (queueIsNotEmptyAndNotFull(queuePercentage)) {
-      final UnsignedLong feeLow = computeFeeLow(decomposedFees); // <- empty tx queue
-      final UnsignedLong feeMedium = computeFeeMedium(decomposedFees, feeLow); // <- in-between tx queue size
-      fee = XrpCurrencyAmount.ofDrops(feeMedium);
-    } else { // queue is full
-      final UnsignedLong feeHigh = computeFeeHigh(decomposedFees); // <- full tx queue
-      fee = XrpCurrencyAmount.ofDrops(feeHigh);
-    }
+    // queue is empty
+    final XrpCurrencyAmount feeLow = XrpCurrencyAmount.ofDrops(computeFeeLow(decomposedFees));
 
-    return fee;
+    // in-between tx queue size
+    final XrpCurrencyAmount feeMedium = XrpCurrencyAmount.ofDrops(computeFeeMedium(decomposedFees, feeLow.value()));
+
+    // queue is full
+    final XrpCurrencyAmount feeHigh = XrpCurrencyAmount.ofDrops(computeFeeHigh(decomposedFees));
+
+    return NetworkFeeResult.builder()
+      .feeLow(feeLow)
+      .feeMedium(feeMedium)
+      .feeHigh(feeHigh)
+      .build();
   }
 
   /**
@@ -188,7 +186,7 @@ public class FeeUtils {
    * @return {@code true} if the queue is empty; {@code false} otherwise.
    */
   @VisibleForTesting
-  protected static boolean queueIsEmpty(final BigDecimal queuePercentage) {
+  public static boolean queueIsEmpty(final BigDecimal queuePercentage) {
     Objects.requireNonNull(queuePercentage);
     return FluentCompareTo.is(queuePercentage).lessThanOrEqualTo(BigDecimal.ZERO);
   }
@@ -202,7 +200,7 @@ public class FeeUtils {
    * @return {@code true} if the queue is empty; {@code false} otherwise.
    */
   @VisibleForTesting
-  protected static boolean queueIsNotEmptyAndNotFull(final BigDecimal queuePercentage) {
+  public static boolean queueIsNotEmptyAndNotFull(final BigDecimal queuePercentage) {
     Objects.requireNonNull(queuePercentage);
     return FluentCompareTo.is(queuePercentage).betweenExclusive(BigDecimal.ZERO, BigDecimal.ONE);
   }
@@ -307,7 +305,7 @@ public class FeeUtils {
    * created more than once per call, and to put data into a state that simplifies fee calculation logic.
    */
   @Immutable
-  interface DecomposedFees {
+  public interface DecomposedFees {
 
     BigDecimal ONE_POINT_FIVE = new BigDecimal("1.5");
     BigInteger MAX_XRP_IN_DROPS_BIG_INT = BigInteger.valueOf(MAX_XRP_IN_DROPS);

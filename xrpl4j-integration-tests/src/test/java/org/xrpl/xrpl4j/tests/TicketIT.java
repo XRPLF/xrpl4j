@@ -50,7 +50,7 @@ public class TicketIT extends AbstractIT {
     TicketCreate ticketCreate = TicketCreate.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfo.accountData().sequence())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .ticketCount(UnsignedInteger.ONE)
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -72,7 +72,7 @@ public class TicketIT extends AbstractIT {
 
     AccountSet accountSet = AccountSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .ticketSequence(tickets.get(0).ticketSequence())
       .signingPublicKey(sourceWallet.publicKey())
       .build();

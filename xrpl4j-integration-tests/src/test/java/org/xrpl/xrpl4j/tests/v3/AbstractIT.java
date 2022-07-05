@@ -32,6 +32,9 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.fees.NetworkFeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
@@ -43,8 +46,10 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
+import java.math.BigDecimal;
 import java.security.Key;
 import java.security.KeyStore;
 import java.time.Duration;
@@ -342,5 +347,19 @@ public abstract class AbstractIT {
     final String jksFileName = "crypto/crypto.p12";
     final char[] jksPassword = "password".toCharArray();
     return JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
+  }
+
+  protected XrpCurrencyAmount getComputedNetworkFee(FeeResult feeResult) {
+    NetworkFeeResult networkFeeResult = FeeUtils.computeNetworkFee(feeResult);
+    final FeeUtils.DecomposedFees decomposedFees = FeeUtils.DecomposedFees.builder(feeResult);
+    final BigDecimal queuePercentage = decomposedFees.queuePercentage();
+
+    if (FeeUtils.queueIsEmpty(queuePercentage)) {
+      return networkFeeResult.feeLow();
+    } else if (FeeUtils.queueIsNotEmptyAndNotFull(queuePercentage)) {
+      return networkFeeResult.feeMedium();
+    } else {
+      return networkFeeResult.feeHigh();
+    }
   }
 }

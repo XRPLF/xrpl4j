@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ public class SubmitPaymentIT extends AbstractIT {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
       .account(sourceWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.address())
       .amount(amount)
@@ -81,7 +80,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     Payment payment = Payment.builder()
       .account(senderWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.address())
       .amount(XrpCurrencyAmount.ofDrops(12345))

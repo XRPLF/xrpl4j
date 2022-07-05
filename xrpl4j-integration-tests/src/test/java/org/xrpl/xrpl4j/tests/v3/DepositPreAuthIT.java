@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.tests.v3;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.calculateFeeDynamically;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Assertions;
@@ -38,13 +37,13 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, calculateFeeDynamically(feeResult));
+    AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, getComputedNetworkFee(feeResult));
 
     /////////////////////////
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(receiverAccountInfo.accountData().sequence())
       .signingPublicKey(receiverWallet.publicKey().base16Value())
       .authorize(senderWallet.address())
@@ -89,7 +88,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey().base16Value())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -136,7 +135,7 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    enableDepositPreauth(receiverWallet, calculateFeeDynamically(feeResult));
+    enableDepositPreauth(receiverWallet, getComputedNetworkFee(feeResult));
 
     /////////////////////////
     // Validate that the receiver has not given authorization to anyone to send them Payments
@@ -155,7 +154,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.address())
-      .fee(calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey().base16Value())
       .amount(XrpCurrencyAmount.ofDrops(12345))

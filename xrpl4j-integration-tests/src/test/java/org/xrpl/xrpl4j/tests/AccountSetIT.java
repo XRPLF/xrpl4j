@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
-import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
@@ -63,7 +62,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey())
@@ -124,7 +123,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey())
@@ -293,7 +292,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(sequence)
       .setFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
@@ -330,7 +329,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(sequence)
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())

@@ -29,7 +29,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
-import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -60,7 +59,7 @@ public class DepositPreAuthIT extends AbstractIT {
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(receiverAccountInfo.accountData().sequence())
       .signingPublicKey(receiverWallet.publicKey())
       .authorize(senderWallet.classicAddress())
@@ -101,7 +100,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -165,7 +164,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(getComputedNetworkFee(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))

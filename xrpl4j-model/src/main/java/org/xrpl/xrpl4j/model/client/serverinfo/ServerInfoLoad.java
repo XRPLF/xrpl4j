@@ -58,7 +58,7 @@ public interface ServerInfoLoad {
   /**
    * (Admin only) The number of threads in the server's main job pool.
    *
-   * @return An {@link UnsignedLong} representing the number of threads.
+   * @return An {@link UnsignedInteger} representing the number of threads.
    */
   UnsignedInteger threads();
 }

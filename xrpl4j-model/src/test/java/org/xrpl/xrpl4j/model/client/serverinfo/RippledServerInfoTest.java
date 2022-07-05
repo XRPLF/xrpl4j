@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.serverinfo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -105,6 +107,20 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       "  }";
 
     assertCanSerializeAndDeserialize(rippledResult, json);
+
+    boolean inRange = rippledResult.info().map(
+      reportingServerInfoCopy -> reportingServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300025)),
+      ($) -> false,
+      ($) -> false
+    );
+    assertThat(inRange).isTrue();
+
+    boolean outOfRange = rippledResult.info().map(
+      reportingServerInfoCopy -> reportingServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300019)),
+      ($) -> false,
+      ($) -> false
+    );
+    assertThat(outOfRange).isFalse();
   }
 
   /**

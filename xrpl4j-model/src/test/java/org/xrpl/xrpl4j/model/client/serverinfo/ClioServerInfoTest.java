@@ -1,7 +1,10 @@
 package org.xrpl.xrpl4j.model.client.serverinfo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -43,6 +46,20 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       "  }";
 
     assertCanSerializeAndDeserialize(clioResult, json);
+
+    boolean inRange = clioResult.info().map(
+      ($) -> false,
+      clioServerInfoCopy -> clioServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300025)),
+      ($) -> false
+    );
+    assertThat(inRange).isTrue();
+
+    boolean outOfRange = clioResult.info().map(
+      ($) -> false,
+      clioServerInfoCopy -> clioServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300019)),
+      ($) -> false
+    );
+    assertThat(outOfRange).isFalse();
   }
 
   /**

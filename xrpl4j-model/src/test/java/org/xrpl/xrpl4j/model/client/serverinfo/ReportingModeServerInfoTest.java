@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.client.serverinfo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -20,7 +22,7 @@ import java.util.Objects;
 public class ReportingModeServerInfoTest extends AbstractJsonTest {
 
   @Test
-  public void testRippledServerInfoJson() throws JsonProcessingException, JSONException {
+  public void testReportingModeServerInfoJson() throws JsonProcessingException, JSONException {
     logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult reportingResult = ServerInfoResult.builder()
       .status("success")
@@ -106,6 +108,20 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       "  }";
 
     assertCanDeserialize(json, reportingResult);
+
+    boolean inRange = reportingResult.info().map(
+      ($) -> false,
+      ($) -> false,
+      reportingServerInfoCopy -> reportingServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300025))
+    );
+    assertThat(inRange).isTrue();
+
+    boolean outOfRange = reportingResult.info().map(
+      ($) -> false,
+      ($) -> false,
+      reportingServerInfoCopy -> reportingServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300019))
+    );
+    assertThat(outOfRange).isFalse();
   }
 
   /**

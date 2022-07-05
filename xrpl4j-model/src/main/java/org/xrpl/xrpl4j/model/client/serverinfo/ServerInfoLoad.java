@@ -60,5 +60,5 @@ public interface ServerInfoLoad {
    *
    * @return An {@link UnsignedLong} representing the number of threads.
    */
-  UnsignedLong threads();
+  UnsignedInteger threads();
 }

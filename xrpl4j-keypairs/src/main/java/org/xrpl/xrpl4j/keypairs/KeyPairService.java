@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.keypairs;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,8 +24,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
- * Interface of a service that can perform the crypto operations necessary to create a wallet,
- * sign and verify XRPL transactions, and derive XRPL addresses.
+ * Interface of a service that can perform the crypto operations necessary to create a wallet, sign and verify XRPL
+ * transactions, and derive XRPL addresses.
  *
  * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
  */
@@ -36,7 +36,10 @@ public interface KeyPairService {
    * Generate a random 16 byte seed to be used to derive a private key.
    *
    * @return A {@link String} containing a randomly generated Base58Check encoded seed value.
+   *
+   * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
    */
+  @Deprecated
   String generateSeed();
 
   /**
@@ -45,7 +48,10 @@ public interface KeyPairService {
    * @param entropy An {@link UnsignedByteArray} containing the bytes of entropy to encode into a seed.
    *
    * @return A {@link String} containing the Base58Check encoded seed value.
+   *
+   * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
    */
+  @Deprecated
   String generateSeed(UnsignedByteArray entropy);
 
   /**
@@ -54,7 +60,10 @@ public interface KeyPairService {
    * @param seed A Base58Check encoded {@link String} containing the seed.
    *
    * @return The {@link KeyPair} derived from the seed.
+   *
+   * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
    */
+  @Deprecated
   KeyPair deriveKeyPair(String seed);
 
   /**
@@ -64,7 +73,10 @@ public interface KeyPairService {
    * @param privateKey The hexadecimal encoded private key used to sign the transaction.
    *
    * @return The signed message, in hexadecimal form.
+   *
+   * @deprecated This class will go away in a future version. Prefer xrpl4j-crypto variants instead.
    */
+  @Deprecated
   String sign(UnsignedByteArray message, String privateKey);
 
   /**
@@ -74,7 +86,8 @@ public interface KeyPairService {
    * @param privateKey The hexadecimal encoded private key used to sign the transaction.
    *
    * @return The signed message, in hexadecimal form.
-   * @deprecated Consider using  TransactionSigner instead.
+   *
+   * @deprecated Consider using TransactionSigner instead from xrpl4j-crypto.
    */
   @Deprecated
   String sign(String message, String privateKey);
@@ -84,10 +97,14 @@ public interface KeyPairService {
    *
    * @param message   The arbitrary message that was signed with a private key.
    * @param signature The hexadecimal encoded {@link String} containing the signature to verify.
-   * @param publicKey The hexadecimal encoded public key derived from the private key that was used to sign the message.
+   * @param publicKey The hexadecimal encoded public key derived from the private key that was used to sign the
+   *                  message.
    *
    * @return true if the signature is valid, false if not.
+   *
+   * @deprecated Consider using TransactionVerifier instead from xrpl4j-crypto.
    */
+  @Deprecated
   boolean verify(UnsignedByteArray message, String signature, String publicKey);
 
   /**
@@ -95,10 +112,14 @@ public interface KeyPairService {
    *
    * @param message   The hexadecimal encoded arbitrary message that was signed with a private key.
    * @param signature The hexadecimal encoded {@link String} containing the signature to verify.
-   * @param publicKey The hexadecimal encoded public key derived from the private key that was used to sign the message.
+   * @param publicKey The hexadecimal encoded public key derived from the private key that was used to sign the
+   *                  message.
    *
    * @return true if the signature is valid, false if not.
+   *
+   * @deprecated Consider using TransactionVerifier instead from xrpl4j-crypto.
    */
+  @Deprecated
   boolean verify(String message, String signature, String publicKey);
 
   /**
@@ -107,7 +128,10 @@ public interface KeyPairService {
    * @param publicKey The hexadecimal encoded public key of the account.
    *
    * @return A Base58Check encoded XRPL address in Classic Address form.
+   *
+   * @deprecated Consider using AddressUtils instead.
    */
+  @Deprecated
   Address deriveAddress(String publicKey);
 
   /**
@@ -116,7 +140,10 @@ public interface KeyPairService {
    * @param publicKey The public key of the account.
    *
    * @return A Base58Check encoded XRPL address in Classic Address form.
+   *
+   * @deprecated Consider using AddressUtils instead.
    */
+  @Deprecated
   Address deriveAddress(UnsignedByteArray publicKey);
 
 }

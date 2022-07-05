@@ -1133,7 +1133,7 @@ public class XrplClientTest {
       .ioLatencyMs(UnsignedLong.valueOf(2))
       .jqTransOverflow("flow")
       .lastClose(org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLastClose.builder()
-        .convergeTimeSeconds(1.11)
+        .convergeTimeSeconds(BigDecimal.valueOf(1.11))
         .proposers(UnsignedInteger.ONE)
         .build())
       .publicKeyNode("node")

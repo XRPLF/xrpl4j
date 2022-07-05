@@ -26,6 +26,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 
+import java.math.BigDecimal;
+
 /**
  * Information about the last time the server closed a ledger, including the amount of time it took to reach a
  * consensus and the number of trusted validators participating.
@@ -50,7 +52,7 @@ public interface ServerInfoLastClose {
    * @return A {@link Double} representing the convergence time.
    */
   @JsonProperty("converge_time_s")
-  Double convergeTimeSeconds();
+  BigDecimal convergeTimeSeconds();
 
   /**
    * The number of proposers in the last closed ledger.

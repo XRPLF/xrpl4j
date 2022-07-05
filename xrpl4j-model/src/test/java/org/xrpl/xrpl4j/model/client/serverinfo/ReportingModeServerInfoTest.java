@@ -126,7 +126,7 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       .ioLatencyMs(UnsignedLong.ONE)
       .jqTransOverflow("0")
       .lastClose(ServerInfoLastClose.builder()
-        .convergeTimeSeconds(2d)
+        .convergeTimeSeconds(BigDecimal.valueOf(2d))
         .proposers(UnsignedInteger.valueOf(34))
         .build())
       .load(ServerInfoLoad.builder()

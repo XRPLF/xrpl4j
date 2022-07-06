@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.codec.binary.types.AccountIdType;
 import org.xrpl.xrpl4j.codec.binary.types.STObjectType;
 import org.xrpl.xrpl4j.codec.binary.types.UInt64Type;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Map;
 import java.util.Objects;
@@ -59,7 +60,6 @@ public class XrplBinaryCodec {
    * @param json A {@link String} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code json}.
-   *
    * @throws JsonProcessingException if {@code json} is not valid JSON.
    */
   public String encode(String json) throws JsonProcessingException {
@@ -74,7 +74,6 @@ public class XrplBinaryCodec {
    * @param jsonNode A {@link JsonNode} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code jsonNode}.
-   *
    * @throws JsonProcessingException if {@code jsonNode} is not valid JSON.
    */
   private String encode(final JsonNode jsonNode) {
@@ -90,7 +89,6 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return hex encoded representations
-   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForSigning(String json) throws JsonProcessingException {
@@ -105,7 +103,6 @@ public class XrplBinaryCodec {
    * @param xrpAccountId A {@link String} containing the XRPL AccountId.
    *
    * @return hex encoded representations
-   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForMultiSigning(String json, String xrpAccountId) throws JsonProcessingException {
@@ -126,7 +123,6 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return The binary encoded JSON in hexadecimal form.
-   *
    * @throws JsonProcessingException If the JSON is not valid.
    */
   public String encodeForSigningClaim(String json) throws JsonProcessingException {
@@ -161,10 +157,31 @@ public class XrplBinaryCodec {
     if (hex.startsWith(TRX_SIGNATURE_PREFIX)) {
       nonSignPrefixHex = hex.substring(TRX_SIGNATURE_PREFIX.length());
     } else if (hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
-      nonSignPrefixHex = hex.substring(TRX_MULTI_SIGNATURE_PREFIX.length());
+      throw new IllegalStateException("Use method decodeMultiSignTx with an additional param, signerAddress, to " +
+        "decode multi-signed transactions");
     } else {
       nonSignPrefixHex = hex;
     }
+    return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
+      .toJson()
+      .toString();
+  }
+
+  /**
+   * Decodes canonical XRPL binary hex string to JSON.
+   *
+   * @param hex           A {@link String} value to decode.
+   * @param signerAddress {@link Address} used to sign the encoded multi-sign tx.
+   *
+   * @return A {@link String} representing the decoded hex.
+   */
+  public String decodeMultiSignTx(String hex, Address signerAddress) {
+    final String nonSignPrefixHex;
+    if (!hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
+      throw new IllegalStateException("Use decode method with single param, transaction hex blob.");
+    }
+    final int addressLength = new AccountIdType().fromJson(new TextNode(signerAddress.value())).toHex().length();
+    nonSignPrefixHex = hex.substring(TRX_MULTI_SIGNATURE_PREFIX.length(), hex.length() - addressLength);
     return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
       .toJson()
       .toString();

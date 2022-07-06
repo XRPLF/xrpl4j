@@ -328,7 +328,7 @@ class XrplBinaryCodecTest {
         "02EFED4B041E8F2D4A8CC86AE3D1";
 
     TrustSet decodedTrustset = objectMapper.readValue(
-      encoder.decodeMultiSignTx(multiSignedWithSignersTxHex, Address.of(signerAccountId)), TrustSet.class
+      encoder.decode(multiSignedWithSignersTxHex), TrustSet.class
     );
     assertThat(decodedTrustset).isEqualTo(trustSet);
   }
@@ -366,7 +366,7 @@ class XrplBinaryCodecTest {
     
     final String unsignedJson = objectMapper.writeValueAsString(paymentWithSigners);
     final String unsignedBinaryHex = encoder.encodeForMultiSigning(unsignedJson, signerAccountId);
-    String decoded = encoder.decodeMultiSignTx(unsignedBinaryHex, Address.of(signerAccountId));
+    String decoded = encoder.decode(unsignedBinaryHex);
     Payment transaction = objectMapper.readValue(
       decoded,
       Payment.class

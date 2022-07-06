@@ -157,31 +157,15 @@ public class XrplBinaryCodec {
     if (hex.startsWith(TRX_SIGNATURE_PREFIX)) {
       nonSignPrefixHex = hex.substring(TRX_SIGNATURE_PREFIX.length());
     } else if (hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
-      throw new IllegalStateException("Use method decodeMultiSignTx with an additional param, signerAddress, to " +
-        "decode multi-signed transactions");
+      /**
+       * HEX_REGEX in class Hash160Type has length 40
+       * @see org.xrpl.xrpl4j.codec.binary.types.Hash160Type
+       */
+      final int addressLength = 40;
+      nonSignPrefixHex = hex.substring(TRX_MULTI_SIGNATURE_PREFIX.length(), hex.length() - addressLength);
     } else {
       nonSignPrefixHex = hex;
     }
-    return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
-      .toJson()
-      .toString();
-  }
-
-  /**
-   * Decodes canonical XRPL binary hex string to JSON.
-   *
-   * @param hex           A {@link String} value to decode.
-   * @param signerAddress {@link Address} used to sign the encoded multi-sign tx.
-   *
-   * @return A {@link String} representing the decoded hex.
-   */
-  public String decodeMultiSignTx(String hex, Address signerAddress) {
-    final String nonSignPrefixHex;
-    if (!hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
-      throw new IllegalStateException("Use decode method with single param, transaction hex blob.");
-    }
-    final int addressLength = new AccountIdType().fromJson(new TextNode(signerAddress.value())).toHex().length();
-    nonSignPrefixHex = hex.substring(TRX_MULTI_SIGNATURE_PREFIX.length(), hex.length() - addressLength);
     return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
       .toJson()
       .toString();

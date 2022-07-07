@@ -12,6 +12,7 @@ import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -40,7 +41,7 @@ public class SubmitPaymentIT extends AbstractIT {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
       .account(sourceWallet.address())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.address())
       .amount(amount)
@@ -80,7 +81,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     Payment payment = Payment.builder()
       .account(senderWallet.address())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.address())
       .amount(XrpCurrencyAmount.ofDrops(12345))

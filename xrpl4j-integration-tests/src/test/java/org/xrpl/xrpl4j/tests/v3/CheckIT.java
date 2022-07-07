@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -46,7 +47,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.address())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.address())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -86,7 +87,7 @@ public class CheckIT extends AbstractIT {
       .account(destinationWallet.address())
       .amount(checkObject.sendMax())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();
@@ -138,7 +139,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.address())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.address())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -173,7 +174,7 @@ public class CheckIT extends AbstractIT {
     CheckCancel checkCancel = CheckCancel.builder()
       .account(sourceWallet.address())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
@@ -214,7 +215,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.address())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.address())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -253,7 +254,7 @@ public class CheckIT extends AbstractIT {
     CheckCancel checkCancel = CheckCancel.builder()
       .account(destinationWallet.address())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();

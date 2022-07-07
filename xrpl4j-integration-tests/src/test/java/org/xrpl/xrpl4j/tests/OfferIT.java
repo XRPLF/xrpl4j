@@ -78,7 +78,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(issuerWallet.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(issuerWallet.publicKey())
       .takerGets(IssuedCurrencyAmount.builder()
@@ -127,7 +127,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(IssuedCurrencyAmount.builder()
@@ -214,7 +214,7 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(IssuedCurrencyAmount.builder()
@@ -279,7 +279,7 @@ public class OfferIT extends AbstractIT {
 
     OfferCreate offerCreate = OfferCreate.builder()
       .account(purchaser.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey())
       .takerPays(requestCurrencyAmount)

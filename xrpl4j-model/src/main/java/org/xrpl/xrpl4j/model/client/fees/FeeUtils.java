@@ -49,18 +49,22 @@ public class FeeUtils {
    * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
    * transaction cost)}, where {@code N} is the number of signatures provided.
    *
-   * @param currentLedgerFeeDrops The current ledger fee, represented as an {@link XrpCurrencyAmount}.
-   * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
+   * @param feeResult  {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
+   * @param signerList The {@link SignerListObject} containing the signers of the transaction.
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    */
-  public static XrpCurrencyAmount computeMultiSigFee(final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerListObject signerList) {
-    Objects.requireNonNull(currentLedgerFeeDrops);
+  public static ComputedNetworkFees computeMultisigNetworkFees(
+    final FeeResult feeResult,
+    final SignerListObject signerList
+  ) {
+    Objects.requireNonNull(feeResult);
     Objects.requireNonNull(signerList);
 
-    return currentLedgerFeeDrops.times(
-      XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+    throw new RuntimeException("FIXME!");
+    //    // TODO: Mukul!
+    //    return currentLedgerFeeDrops.times(
+    //      XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
   }
 
   /**
@@ -69,29 +73,22 @@ public class FeeUtils {
    *
    * @param feeResult {@link FeeResult} object obtained by querying the ledger (e.g., via an `XrplClient#fee()` call).
    *
-   * @return {@link NetworkFeeResult} with low, medium and high fee levels to choose from for the transaction.
+   * @return {@link ComputedNetworkFees} with low, medium and high fee levels to choose from for the transaction.
    *
    * @see "https://xrpl.org/fee.html"
    * @see "https://github.com/XRPL-Labs/XUMM-App/blob/master/src/services/LedgerService.ts#L244"
    */
-  public static NetworkFeeResult computeNetworkFee(final FeeResult feeResult) {
+  public static ComputedNetworkFees computeNetworkFees(final FeeResult feeResult) {
     Objects.requireNonNull(feeResult);
 
     final DecomposedFees decomposedFees = DecomposedFees.builder(feeResult);
+    final XrpCurrencyAmount feeLow = computeFeeLow(decomposedFees);
 
-    // queue is empty
-    final XrpCurrencyAmount feeLow = XrpCurrencyAmount.ofDrops(computeFeeLow(decomposedFees));
-
-    // in-between tx queue size
-    final XrpCurrencyAmount feeMedium = XrpCurrencyAmount.ofDrops(computeFeeMedium(decomposedFees, feeLow.value()));
-
-    // queue is full
-    final XrpCurrencyAmount feeHigh = XrpCurrencyAmount.ofDrops(computeFeeHigh(decomposedFees));
-
-    return NetworkFeeResult.builder()
+    return ComputedNetworkFees.builder()
       .feeLow(feeLow)
-      .feeMedium(feeMedium)
-      .feeHigh(feeHigh)
+      .feeMedium(computeFeeMedium(decomposedFees, feeLow))
+      .feeHigh(computeFeeHigh(decomposedFees))
+      .queuePercentage(decomposedFees.queuePercentage())
       .build();
   }
 
@@ -100,9 +97,9 @@ public class FeeUtils {
    *
    * @param decomposedFees A {@link DecomposedFees} that contains information about current XRPL fees.
    *
-   * @return An {@link UnsignedLong} representing the `low` fee.
+   * @return An {@link XrpCurrencyAmount} representing the `low` fee.
    */
-  private static UnsignedLong computeFeeLow(final DecomposedFees decomposedFees) {
+  private static XrpCurrencyAmount computeFeeLow(final DecomposedFees decomposedFees) {
     Objects.requireNonNull(decomposedFees);
 
     final BigInteger adjustedMinimumFeeDrops = decomposedFees.adjustedMinimumFeeDrops();
@@ -110,13 +107,15 @@ public class FeeUtils {
     final BigInteger openLedgerFee = decomposedFees.openLedgerFeeDrops();
 
     // Cap `feeLow` to the size of an UnsignedLong.
-    return toUnsignedLongSafe(
-      min(
-        max(
-          adjustedMinimumFeeDrops, // min fee * 1.50
-          divideToBigInteger(max(medianFee, openLedgerFee), FIVE_HUNDRED)
-        ),
-        ONE_THOUSAND
+    return XrpCurrencyAmount.ofDrops(
+      toUnsignedLongSafe(
+        min(
+          max(
+            adjustedMinimumFeeDrops, // min fee * 1.50
+            divideToBigInteger(max(medianFee, openLedgerFee), FIVE_HUNDRED)
+          ),
+          ONE_THOUSAND
+        )
       )
     );
   }
@@ -129,7 +128,8 @@ public class FeeUtils {
    *
    * @return An {@link UnsignedLong} representing the `medium` fee.
    */
-  private static UnsignedLong computeFeeMedium(final DecomposedFees decomposedFees, final UnsignedLong feeLow) {
+  private static XrpCurrencyAmount computeFeeMedium(final DecomposedFees decomposedFees,
+    final XrpCurrencyAmount feeLow) {
     Objects.requireNonNull(decomposedFees);
     Objects.requireNonNull(feeLow);
 
@@ -153,9 +153,14 @@ public class FeeUtils {
     }
 
     // calculate the lowest fee the user is able to pay if there are txns in the queue
-    final BigInteger feeMedium = min(possibleFeeMedium, feeLow.bigIntegerValue().multiply(FIFTEEN), TEN_THOUSAND);
+    final BigInteger feeMedium = min(
+      possibleFeeMedium,
+      feeLow.value().bigIntegerValue().multiply(FIFTEEN), TEN_THOUSAND
+    );
 
-    return toUnsignedLongSafe(feeMedium);
+    return XrpCurrencyAmount.ofDrops(
+      toUnsignedLongSafe(feeMedium)
+    );
   }
 
   /**
@@ -165,17 +170,19 @@ public class FeeUtils {
    *
    * @return An {@link UnsignedLong} representing the `high` fee.
    */
-  private static UnsignedLong computeFeeHigh(final DecomposedFees decomposedFees) {
+  private static XrpCurrencyAmount computeFeeHigh(final DecomposedFees decomposedFees) {
     Objects.requireNonNull(decomposedFees);
 
     final BigInteger minimumFee = decomposedFees.adjustedMinimumFeeDrops();
     final BigInteger medianFee = decomposedFees.medianFeeDrops();
     final BigInteger openLedgerFee = decomposedFees.openLedgerFeeDrops();
 
-    final BigInteger highFee = min(
+    final BigInteger feeHigh = min(
       max(minimumFee.multiply(BigInteger.TEN), multiplyToBigInteger(max(medianFee, openLedgerFee), ONE_POINT_ONE)),
       TEN_THOUSAND);
-    return toUnsignedLongSafe(highFee);
+    return XrpCurrencyAmount.ofDrops(
+      toUnsignedLongSafe(feeHigh)
+    );
   }
 
   /**

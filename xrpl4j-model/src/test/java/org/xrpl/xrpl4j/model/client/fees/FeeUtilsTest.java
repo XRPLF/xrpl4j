@@ -2,8 +2,9 @@ package org.xrpl.xrpl4j.model.client.fees;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultiSigFee;
-import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFee;
+import static org.mockito.Mockito.mock;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP_IN_DROPS;
 
@@ -27,23 +28,22 @@ import java.math.BigInteger;
  */
 public class FeeUtilsTest {
 
-
   @Test
   public void nullInputForComputeMultiSigFee() {
     assertThrows(
       NullPointerException.class,
-      () -> computeMultiSigFee(null, null)
+      () -> computeMultisigNetworkFees(null, mock(SignerListObject.class))
     );
 
     assertThrows(
       NullPointerException.class,
-      () -> computeMultiSigFee(XrpCurrencyAmount.ofDrops(20), null)
+      () -> computeMultisigNetworkFees(mock(FeeResult.class), null)
     );
   }
 
   @Test
   public void simpleComputeMultiSigFee() {
-    XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(20);
+    FeeResult feeResult = feeResultBuilder().build();
     SignerListObject object = SignerListObject.builder()
       .flags(Flags.SignerListFlags.UNSET)
       .ownerNode("0000000000000000")
@@ -68,19 +68,19 @@ public class FeeUtilsTest {
       .index(Hash256.of("A9C28A28B85CD533217F5C0A0C7767666B093FA58A0F2D80026FCC4CD932DDC7"))
       .build();
 
-    assertThat(computeMultiSigFee(xrpCurrencyAmount, object)).isEqualTo(XrpCurrencyAmount.ofDrops(60));
+    assertThat(computeMultisigNetworkFees(feeResult, object)).isEqualTo(XrpCurrencyAmount.ofDrops(60));
   }
 
   @Test
   public void nullInputForCalculateFeeDynamically() {
     assertThrows(
       NullPointerException.class,
-      () -> computeNetworkFee(null)
+      () -> computeNetworkFees(null)
     );
   }
 
   @Test
-  public void computeNetworkFeeForAlmostEmptyQueue() {
+  public void computeNetworkFeesForAlmostEmptyQueue() {
     FeeResult feeResult = FeeResult.builder()
       .currentLedgerSize(UnsignedInteger.valueOf(56))
       .currentQueueSize(UnsignedInteger.valueOf(1))
@@ -106,14 +106,14 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
-    assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
-    assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
-    assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    assertThat(computedNetworkFees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
+    assertThat(computedNetworkFees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
+    assertThat(computedNetworkFees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
   }
 
   @Test
-  public void computeNetworkFeeForModeratelyFilledQueue() {
+  public void computeNetworkFeesForModeratelyFilledQueue() {
     FeeResult feeResult = FeeResult.builder()
       .currentLedgerSize(UnsignedInteger.valueOf(56))
       .currentQueueSize(UnsignedInteger.valueOf(220))
@@ -139,14 +139,14 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
   }
 
   @Test
-  public void computeNetworkFeeForLessThanModerateTraffic() {
+  public void computeNetworkFeesForLessThanModerateTraffic() {
     FeeResult feeResult = FeeResult.builder()
       .currentLedgerSize(UnsignedInteger.valueOf(56))
       .currentQueueSize(UnsignedInteger.valueOf(100))
@@ -172,14 +172,14 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
   }
 
   @Test
-  public void computeNetworkFeeForCompletelyFilledQueue() {
+  public void computeNetworkFeesForCompletelyFilledQueue() {
     FeeResult feeResult = FeeResult.builder()
       .currentLedgerSize(UnsignedInteger.valueOf(56))
       .currentQueueSize(UnsignedInteger.valueOf(110))
@@ -205,14 +205,14 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
   }
 
   @Test
-  public void computeNetworkFeeForEmptyQueue() {
+  public void computeNetworkFeesForEmptyQueue() {
     FeeResult feeResult = FeeResult.builder()
       .currentLedgerSize(UnsignedInteger.valueOf(56))
       .currentQueueSize(UnsignedInteger.valueOf(0))
@@ -238,7 +238,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(150));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
@@ -271,7 +271,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
@@ -304,7 +304,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
@@ -337,7 +337,7 @@ public class FeeUtilsTest {
       .status("success")
       .build();
 
-    NetworkFeeResult networkFeeResult = computeNetworkFee(feeResult);
+    ComputedNetworkFees networkFeeResult = computeNetworkFees(feeResult);
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
@@ -529,5 +529,31 @@ public class FeeUtilsTest {
       UnsignedLong.MAX_VALUE.bigIntegerValue(),
       new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue())
     )).isEqualTo(new BigInteger("340282366920938463426481119284349108225"));
+  }
+
+  private ImmutableFeeResult.Builder feeResultBuilder() {
+    return FeeResult.builder()
+      .currentLedgerSize(UnsignedInteger.valueOf(56))
+      .currentQueueSize(UnsignedInteger.valueOf(1))
+      .drops(
+        FeeDrops.builder()
+          .baseFee(XrpCurrencyAmount.ofDrops(10))
+          .medianFee(XrpCurrencyAmount.ofDrops(10000))
+          .minimumFee(XrpCurrencyAmount.ofDrops(10))
+          .openLedgerFee(XrpCurrencyAmount.ofDrops(2653937))
+          .build()
+      )
+      .expectedLedgerSize(UnsignedInteger.valueOf(55))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(26575101)))
+      .levels(
+        FeeLevels.builder()
+          .medianLevel(XrpCurrencyAmount.ofDrops(256000))
+          .minimumLevel(XrpCurrencyAmount.ofDrops(256))
+          .openLedgerLevel(XrpCurrencyAmount.ofDrops(67940792))
+          .referenceLevel(XrpCurrencyAmount.ofDrops(256))
+          .build()
+      )
+      .maxQueueSize(UnsignedInteger.valueOf(1100))
+      .status("success");
   }
 }

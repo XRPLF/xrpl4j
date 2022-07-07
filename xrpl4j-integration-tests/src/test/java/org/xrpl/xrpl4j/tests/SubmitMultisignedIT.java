@@ -75,7 +75,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -132,10 +132,10 @@ public class SubmitMultisignedIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(
-        FeeUtils.computeMultiSigFee(
-          feeResult.drops().openLedgerFee(),
+        FeeUtils.computeMultisigNetworkFees(
+          feeResult,
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-        )
+        ).recommendedFee()
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -201,10 +201,10 @@ public class SubmitMultisignedIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(
-        FeeUtils.computeMultiSigFee(
-          feeResult.drops().openLedgerFee(),
+        FeeUtils.computeMultisigNetworkFees(
+          feeResult,
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-        )
+        ).recommendedFee()
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))

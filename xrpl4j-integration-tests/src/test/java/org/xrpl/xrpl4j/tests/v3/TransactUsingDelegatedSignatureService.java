@@ -54,7 +54,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceWalletAddress));
     Payment payment = Payment.builder()
       .account(sourceWalletAddress)
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -88,7 +88,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       .scanForResult(() -> this.getValidatedAccountInfo(sourceWalletAddress));
     Payment payment = Payment.builder()
       .account(sourceWalletAddress)
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -169,7 +169,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceAddress)
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -221,10 +221,10 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceAddress)
       .fee(
-        FeeUtils.computeMultiSigFee(
-          feeResult.drops().openLedgerFee(),
+        FeeUtils.computeMultisigNetworkFees(
+          feeResult,
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-        )
+        ).recommendedFee()
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))

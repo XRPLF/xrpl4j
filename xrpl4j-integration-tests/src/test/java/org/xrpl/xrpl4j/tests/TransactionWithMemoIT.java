@@ -52,7 +52,7 @@ public class TransactionWithMemoIT extends AbstractIT {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(amount)
@@ -97,7 +97,7 @@ public class TransactionWithMemoIT extends AbstractIT {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(getComputedNetworkFee(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .amount(amount)

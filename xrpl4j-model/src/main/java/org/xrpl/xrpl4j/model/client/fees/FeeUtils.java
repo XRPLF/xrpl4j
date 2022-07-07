@@ -61,10 +61,16 @@ public class FeeUtils {
     Objects.requireNonNull(feeResult);
     Objects.requireNonNull(signerList);
 
-    throw new RuntimeException("FIXME!");
-    //    // TODO: Mukul!
-    //    return currentLedgerFeeDrops.times(
-    //      XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
+    ComputedNetworkFees computedNetworkFees = computeNetworkFees(feeResult);
+    XrpCurrencyAmount numberOfSignersAsAmount = XrpCurrencyAmount.of(
+      UnsignedLong.valueOf(signerList.signerEntries().size() + 1)
+    );
+    return ComputedNetworkFees.builder()
+      .feeLow(computedNetworkFees.feeLow().times(numberOfSignersAsAmount))
+      .feeMedium(computedNetworkFees.feeMedium().times(numberOfSignersAsAmount))
+      .feeHigh(computedNetworkFees.feeHigh().times(numberOfSignersAsAmount))
+      .queuePercentage(computedNetworkFees.queuePercentage())
+      .build();
   }
 
   /**

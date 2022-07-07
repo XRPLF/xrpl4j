@@ -68,7 +68,8 @@ public class FeeUtilsTest {
       .index(Hash256.of("A9C28A28B85CD533217F5C0A0C7767666B093FA58A0F2D80026FCC4CD932DDC7"))
       .build();
 
-    assertThat(computeMultisigNetworkFees(feeResult, object)).isEqualTo(XrpCurrencyAmount.ofDrops(60));
+    assertThat(computeMultisigNetworkFees(feeResult, object).recommendedFee())
+      .isEqualTo(XrpCurrencyAmount.ofDrops(15024));
   }
 
   @Test

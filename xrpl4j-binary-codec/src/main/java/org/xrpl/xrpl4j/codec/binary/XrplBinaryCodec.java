@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -60,6 +61,7 @@ public class XrplBinaryCodec {
    * @param json A {@link String} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code json}.
+   *
    * @throws JsonProcessingException if {@code json} is not valid JSON.
    */
   public String encode(String json) throws JsonProcessingException {
@@ -74,6 +76,7 @@ public class XrplBinaryCodec {
    * @param jsonNode A {@link JsonNode} containing JSON to be encoded.
    *
    * @return A {@link String} containing the hex-encoded representation of {@code jsonNode}.
+   *
    * @throws JsonProcessingException if {@code jsonNode} is not valid JSON.
    */
   private String encode(final JsonNode jsonNode) {
@@ -89,6 +92,7 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return hex encoded representations
+   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForSigning(String json) throws JsonProcessingException {
@@ -103,6 +107,7 @@ public class XrplBinaryCodec {
    * @param xrpAccountId A {@link String} containing the XRPL AccountId.
    *
    * @return hex encoded representations
+   *
    * @throws JsonProcessingException if JSON is not valid.
    */
   public String encodeForMultiSigning(String json, String xrpAccountId) throws JsonProcessingException {
@@ -123,6 +128,7 @@ public class XrplBinaryCodec {
    * @param json String containing JSON to be encoded.
    *
    * @return The binary encoded JSON in hexadecimal form.
+   *
    * @throws JsonProcessingException If the JSON is not valid.
    */
   public String encodeForSigningClaim(String json) throws JsonProcessingException {
@@ -146,25 +152,24 @@ public class XrplBinaryCodec {
   }
 
   /**
-   * Decodes canonical XRPL binary hex string to JSON.
+   * Decodes canonical XRPL binary encodedTransaction string to JSON.
    *
-   * @param hex A {@link String} value to decode.
+   * @param encodedTransaction A {@link String} value, in hex, to decode to JSON.
    *
-   * @return A {@link String} representing the decoded hex.
+   * @return A JSON {@link String} representing the decoded encodedTransaction.
    */
-  public String decode(String hex) {
+  public String decode(String encodedTransaction) {
     final String nonSignPrefixHex;
-    if (hex.startsWith(TRX_SIGNATURE_PREFIX)) {
-      nonSignPrefixHex = hex.substring(TRX_SIGNATURE_PREFIX.length());
-    } else if (hex.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
-      /**
-       * HEX_REGEX in class Hash160Type has length 40
-       * @see org.xrpl.xrpl4j.codec.binary.types.Hash160Type
-       */
-      final int addressLength = 40;
-      nonSignPrefixHex = hex.substring(TRX_MULTI_SIGNATURE_PREFIX.length(), hex.length() - addressLength);
+    if (encodedTransaction.startsWith(TRX_SIGNATURE_PREFIX)) {
+      nonSignPrefixHex = encodedTransaction.substring(TRX_SIGNATURE_PREFIX.length());
+    } else if (encodedTransaction.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
+      // The suffix is always a Hash160, which is 160 bits/20 bytes, which is 40 HEX chars.
+      final int suffixLength = 40;
+      nonSignPrefixHex = encodedTransaction.substring(
+        TRX_MULTI_SIGNATURE_PREFIX.length(), encodedTransaction.length() - suffixLength
+      );
     } else {
-      nonSignPrefixHex = hex;
+      nonSignPrefixHex = encodedTransaction;
     }
     return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
       .toJson()

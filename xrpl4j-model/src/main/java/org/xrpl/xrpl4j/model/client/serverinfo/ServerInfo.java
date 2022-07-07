@@ -161,7 +161,7 @@ public interface ServerInfo {
    * @return An optionally-present {@link BigDecimal} representing the load factor.
    */
   @JsonProperty("load_factor")
-  BigDecimal loadFactor();
+  Optional<BigDecimal> loadFactor();
 
   /**
    * Current multiplier to the transaction cost based on load to this server.

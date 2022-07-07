@@ -85,7 +85,8 @@ public interface ServerInfo {
 
   /**
    * Information on the most recently closed ledger that has not been validated by consensus. If the most recently
-   * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.
+   * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
+   * xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link ServerInfoLedger} containing information about the server's view of the most
    *   recently closed ledger.
@@ -164,7 +165,8 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactor();
 
   /**
-   * Current multiplier to the transaction cost based on load to this server.
+   * Current multiplier to the transaction cost based on load to this server.  Per xrpl.org docs, this field is
+   * optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link BigDecimal} representing the local load factor.
    */
@@ -173,7 +175,8 @@ public interface ServerInfo {
 
   /**
    * Current multiplier to the transaction cost being used by the rest of the network (estimated from other servers'
-   * reported load values).
+   * reported load values). Per xrpl.org docs, this field is optionally present in any server response and may be
+   * omitted.
    *
    * @return An optionally-present {@link BigDecimal} representing the network load factor.
    */
@@ -181,7 +184,8 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactorNet();
 
   /**
-   * Current multiplier to the transaction cost based on load to servers in this cluster.
+   * Current multiplier to the transaction cost based on load to servers in this cluster. Per xrpl.org docs, this field
+   * is optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link BigDecimal} representing the cluster load factor.
    */
@@ -189,7 +193,8 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactorCluster();
 
   /**
-   * The current multiplier to the transaction cost that a transaction must pay to get into the open ledger.
+   * The current multiplier to the transaction cost that a transaction must pay to get into the open ledger. Per
+   * xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link BigDecimal} representing the open ledger load factor.
    */
@@ -198,7 +203,7 @@ public interface ServerInfo {
 
   /**
    * The current multiplier to the transaction cost that a transaction must pay to get into the queue, if the queue is
-   * full.
+   * full. Per xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link BigDecimal} representing the queue load factor.
    */
@@ -206,7 +211,8 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactorFeeQueue();
 
   /**
-   * The load factor the server is enforcing, not including the open ledger cost.
+   * The load factor the server is enforcing, not including the open ledger cost. Per xrpl.org docs, this field is
+   * optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link BigDecimal} representing the server load factor.
    */
@@ -231,7 +237,8 @@ public interface ServerInfo {
 
   /**
    * Information about the most recent fully-validated ledger. If the most recent validated ledger is not available, the
-   * response omits this field and includes {@link #closedLedger()} instead.
+   * response omits this field and includes {@link #closedLedger()} instead. Per xrpl.org docs, this field is
+   * optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link ServerInfoLedger} representing the latest validated ledger.
    */

@@ -288,6 +288,7 @@ public interface ServerInfo {
    *
    * @return An optionally-present {@link UnsignedInteger} representing the number of peers of this server.
    */
+  @JsonProperty("peers")
   Optional<UnsignedInteger> peers();
 
   /**

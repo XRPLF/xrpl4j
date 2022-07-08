@@ -26,7 +26,7 @@ public class LedgerRangeUtils {
    * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a rippled
    *   node contains in its history.
    */
-  public static List<Range<UnsignedLong>> completeLedgerRanges(String completeLedgers) {
+  public static List<Range<UnsignedLong>> completeLedgersToListOfRange(String completeLedgers) {
     // Split completeLedgers by comma...
     return Stream.of(completeLedgers.split(","))
       .map(String::trim)

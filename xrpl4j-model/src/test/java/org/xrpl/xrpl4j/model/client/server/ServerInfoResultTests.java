@@ -551,7 +551,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
     String json = "{\n" +
       "    \"info\": {\n" +
       "      \"build_version\": \"1.7.0\",\n" +
-      "      \"amendment_blocked\": false,\n" +
+      "      \"amendment_blocked\": true,\n" +
       "      \"complete_ledgers\": \"61881385-62562429\",\n" +
       "      \"hostid\": \"LARD\",\n" +
       "      \"io_latency_ms\": 2,\n" +
@@ -584,6 +584,7 @@ public class ServerInfoResultTests extends AbstractJsonTest {
     ServerInfo serverInfo = ServerInfo.builder()
       .buildVersion("1.7.0")
       .completeLedgers("61881385-62562429")
+      .amendmentBlocked(true)
       .hostId("LARD")
       .ioLatencyMs(UnsignedLong.valueOf(2))
       .jqTransOverflow("0")

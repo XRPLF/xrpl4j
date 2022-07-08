@@ -51,14 +51,6 @@ public class AccountTransactionsIT {
   private final XrplClient mainnetClient = new MainnetEnvironment().getXrplClient();
 
   @Test
-  public void listTransactionsDefaultWithPagination() throws JsonRpcClientErrorException {
-    AccountTransactionsResult results = mainnetClient.accountTransactions(MAINNET_ADDRESS);
-
-    assertThat(results.transactions()).hasSize(200);
-    assertThat(results.marker()).isNotEmpty();
-  }
-
-  @Test
   @Timeout(30)
   public void listTransactionsPagination() throws JsonRpcClientErrorException {
     final int expectedTransactions = 284;

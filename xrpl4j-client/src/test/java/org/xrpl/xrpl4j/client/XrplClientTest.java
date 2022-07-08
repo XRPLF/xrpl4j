@@ -81,6 +81,7 @@ import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -1125,7 +1126,7 @@ public class XrplClientTest {
       .baseFeeXrp(BigDecimal.ONE)
       .build();
     org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo serverInfo = RippledServerInfo.builder()
-      .completeLedgers("1-2")
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange("1-2"))
       .amendmentBlocked(true)
       .buildVersion("1")
       .closedLedger(serverInfoLedger)

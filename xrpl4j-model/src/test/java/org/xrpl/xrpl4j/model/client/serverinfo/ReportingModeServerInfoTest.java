@@ -137,7 +137,7 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
 
     return ReportingModeServerInfo.builder()
       .buildVersion("1.5.0-rc1")
-      .completeLedgers(completeLedgers) // <-- use completeLedgers here.
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange(completeLedgers)) // <-- use completeLedgers here.
       .hostId("trace")
       .ioLatencyMs(UnsignedLong.ONE)
       .jqTransOverflow("0")

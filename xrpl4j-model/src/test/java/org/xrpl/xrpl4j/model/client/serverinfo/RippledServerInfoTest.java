@@ -106,7 +106,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       "    \"status\": \"success\"\n" +
       "  }";
 
-    assertCanSerializeAndDeserialize(rippledResult, json);
+    assertCanDeserialize(json, rippledResult);
 
     boolean inRange = rippledResult.info().map(
       reportingServerInfoCopy -> reportingServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300025)),
@@ -136,7 +136,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
 
     return RippledServerInfo.builder()
       .buildVersion("1.5.0-rc1")
-      .completeLedgers(completeLedgers) // <-- use completeLedgers here.
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange(completeLedgers)) // <-- use completeLedgers here.
       .hostId("trace")
       .ioLatencyMs(UnsignedLong.ONE)
       .jqTransOverflow("0")

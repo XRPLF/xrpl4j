@@ -58,7 +58,7 @@ public class ServerInfoResultTest extends AbstractJsonTest {
 
     ServerInfo serverInfo = RippledServerInfo.builder()
       .buildVersion("1.7.0")
-      .completeLedgers("61881385-62562429")
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange("61881385-62562429"))
       .hostId("LARD")
       .ioLatencyMs(UnsignedLong.valueOf(2))
       .jqTransOverflow("0")
@@ -91,7 +91,7 @@ public class ServerInfoResultTest extends AbstractJsonTest {
 
     ServerInfoResult result = assertDoesNotThrow(() -> resultBuilder.build());
 
-    assertCanSerializeAndDeserialize(result, json);
+    assertCanDeserialize(json, result);
     assertThat(result.info()).isEqualTo(serverInfo);
   }
 }

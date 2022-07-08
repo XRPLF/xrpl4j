@@ -45,7 +45,7 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       "    }\n" +
       "  }";
 
-    assertCanSerializeAndDeserialize(clioResult, json);
+    assertCanDeserialize(json, clioResult);
 
     boolean inRange = clioResult.info().map(
       ($) -> false,
@@ -76,7 +76,7 @@ public class ClioServerInfoTest extends AbstractJsonTest {
     return ClioServerInfo.builder()
       .clioVersion("1.5.0-rc1")
       .rippledVersion("1.5.0-rc1")
-      .completeLedgers(completeLedgers) // <-- use completeLedgers here.
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange(completeLedgers)) // <-- use completeLedgers here.
       .loadFactor(BigDecimal.ONE)
       .validatedLedger(ServerInfoLedger.builder()
         .age(UnsignedInteger.valueOf(2))

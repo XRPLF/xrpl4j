@@ -2,11 +2,17 @@ package org.xrpl.xrpl4j.model.client.serverinfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -103,19 +109,8 @@ public interface ServerInfo {
    * @return A {@link String} representing a range of ledger sequences.
    */
   @JsonProperty("complete_ledgers")
-  String completeLedgers();
-
-  /**
-   * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
-   *
-   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a rippled
-   *   node contains in its history.
-   */
-  @Value.Derived
-  @JsonIgnore
-  default List<Range<UnsignedLong>> completeLedgerRanges() {
-    return LedgerRangeUtils.completeLedgerRanges(completeLedgers());
-  }
+  @JsonDeserialize(using = CompleteLedgersDeserializer.class)
+  List<Range<UnsignedLong>> completeLedgers();
 
   /**
    * Determines if the supplied {@code ledgerIndex} exists on the rippled server by inspecting
@@ -129,7 +124,7 @@ public interface ServerInfo {
   @Value.Derived
   @JsonIgnore
   default boolean isLedgerInCompleteLedgers(final UnsignedLong ledgerIndex) {
-    return this.completeLedgerRanges().stream()
+    return this.completeLedgers().stream()
       .anyMatch(range -> range.contains(ledgerIndex));
   }
 
@@ -157,7 +152,8 @@ public interface ServerInfo {
    * transaction cost. For example, at 1000 load factor and a reference transaction cost of 10 drops of XRP, the
    * load-scaled transaction cost is 10,000 drops (0.01 XRP). The load factor is determined by the highest of the
    * individual server's load factor, the cluster's load factor, the open ledger cost and the overall network's load
-   * factor.
+   * factor. Per xrpl.org docs, this field is optionally present in any server response and may be omitted because it
+   * is only returned when requested via an admin host/port.
    *
    * @return An optionally-present {@link BigDecimal} representing the load factor.
    */
@@ -224,11 +220,14 @@ public interface ServerInfo {
    *
    * @return An optionally-present {@link UnsignedInteger} representing the number of peers of this server.
    */
+  @JsonProperty("peers")
   Optional<UnsignedInteger> peers();
 
   /**
    * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the
-   * {@code [validator_token]} or {@code [validation_seed]} config field.
+   * {@code [validator_token]} or {@code [validation_seed]} config field. Per xrpl.org docs, this field is optionally
+   * present in any server response and may be omitted because it is only returned when requested via an admin
+   * host/port.
    *
    * @return A {@link String} containing the validator's public key.
    */
@@ -257,11 +256,26 @@ public interface ServerInfo {
   /**
    * (Admin only) Either the human readable time, in UTC, when the current validator list will expire, the string
    * {@code "unknown"} if the server has yet to load a published validator list or the string {@code "never"} if the
-   * server uses a static validator list.
+   * server uses a static validator list. Per xrpl.org docs, this field is optionally present in any server response
+   * and may be omitted because it is only returned when requested via an admin host/port.
    *
    * @return An optionally-present {@link String} containing the validator expiration list.
    */
   @JsonProperty("validator_list_expires")
   Optional<String> validatorListExpires();
+
+  /**
+   * Deserializes complete_ledgers field in the server_info response from hyphen-separated ledger indices to list of
+   * range of UnsignedLong values.
+   */
+  class CompleteLedgersDeserializer extends JsonDeserializer<List<Range<UnsignedLong>>> {
+
+    @Override
+    public List<Range<UnsignedLong>> deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+      throws IOException {
+      JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+      return LedgerRangeUtils.completeLedgersToListOfRange(node.asText());
+    }
+  }
 
 }

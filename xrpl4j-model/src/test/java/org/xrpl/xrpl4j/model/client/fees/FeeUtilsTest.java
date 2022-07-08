@@ -70,6 +70,12 @@ public class FeeUtilsTest {
 
     assertThat(computeMultisigNetworkFees(feeResult, object).recommendedFee())
       .isEqualTo(XrpCurrencyAmount.ofDrops(15024));
+    assertThat(computeMultisigNetworkFees(feeResult, object).feeLow())
+      .isEqualTo(XrpCurrencyAmount.ofDrops(3000));
+    assertThat(computeMultisigNetworkFees(feeResult, object).feeMedium())
+      .isEqualTo(XrpCurrencyAmount.ofDrops(15024));
+    assertThat(computeMultisigNetworkFees(feeResult, object).feeHigh())
+      .isEqualTo(XrpCurrencyAmount.ofDrops(30000));
   }
 
   @Test
@@ -111,6 +117,7 @@ public class FeeUtilsTest {
     assertThat(computedNetworkFees.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
     assertThat(computedNetworkFees.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
     assertThat(computedNetworkFees.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+    assertThat(computedNetworkFees.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
   }
 
   @Test
@@ -144,6 +151,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
   }
 
   @Test
@@ -177,6 +185,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(1000));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(10000));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(5008));
   }
 
   @Test
@@ -210,6 +219,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
   }
 
   @Test
@@ -243,6 +253,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(150));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(2923));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
   }
 
   @Test
@@ -276,6 +287,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
   }
 
   @Test
@@ -309,6 +321,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
   }
 
   @Test
@@ -342,6 +355,7 @@ public class FeeUtilsTest {
     assertThat(networkFeeResult.feeLow()).isEqualTo(XrpCurrencyAmount.ofDrops(15));
     assertThat(networkFeeResult.feeMedium()).isEqualTo(XrpCurrencyAmount.ofDrops(225));
     assertThat(networkFeeResult.feeHigh()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
+    assertThat(networkFeeResult.recommendedFee()).isEqualTo(XrpCurrencyAmount.ofDrops(5877));
   }
 
   @Test

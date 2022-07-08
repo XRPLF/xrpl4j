@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -35,7 +34,6 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.codec.binary.types.AccountIdType;
 import org.xrpl.xrpl4j.codec.binary.types.STObjectType;
 import org.xrpl.xrpl4j.codec.binary.types.UInt64Type;
-import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Map;
 import java.util.Objects;

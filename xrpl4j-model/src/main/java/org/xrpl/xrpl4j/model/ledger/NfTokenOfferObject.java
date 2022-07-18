@@ -80,7 +80,7 @@ public interface NfTokenOfferObject extends LedgerObject {
    * @return {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} of the NfToken.
    */
   @JsonProperty("NFTokenID")
-  NfTokenId tokenId();
+  NfTokenId nfTokenId();
 
   /**
    * A time after which this offer is considered unfunded, as the number of seconds since

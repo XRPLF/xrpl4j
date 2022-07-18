@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
@@ -76,7 +77,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.classicAddress())
@@ -158,7 +159,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.classicAddress())
@@ -233,7 +234,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Destination account submits the signed claim to the ledger to get their XRP
     PaymentChannelClaim signedClaim = PaymentChannelClaim.builder()
       .account(destinationWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(destinationAccountInfo.accountData().sequence())
       .channel(paymentChannel.channelId())
       .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
@@ -280,7 +281,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000000))
       .destination(destinationWallet.classicAddress())
@@ -320,7 +321,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     PaymentChannelFund addFunds = PaymentChannelFund.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
@@ -358,7 +359,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     PaymentChannelFund setExpiry = PaymentChannelFund.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(sourceWallet.publicKey())
       .channel(paymentChannel.channelId())
@@ -407,7 +408,7 @@ public class PaymentChannelIT extends AbstractIT {
     // the source and destination accounts
     PaymentChannelCreate createPaymentChannel = PaymentChannelCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .destination(destinationWallet.classicAddress())

@@ -15,6 +15,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -51,7 +52,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       IssuedCurrencyAmount.MAX_VALUE,
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e80");
@@ -76,7 +77,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toEngineeringString(),
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e79");
@@ -101,7 +102,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       IssuedCurrencyAmount.MIN_POSITIVE_VALUE,
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("1000000000000000e-96");
@@ -128,7 +129,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       limitValue.toString(),
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("1100000000000000e-96");
@@ -153,12 +154,15 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
-    issueBalance(xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet, feeResult.drops().minimumFee());
+    issueBalance(
+      xrpl4jCoin, trustLine.limitPeer(), issuerWallet, counterpartyWallet,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
@@ -203,7 +207,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       aliceWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -213,16 +217,16 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       bobWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    issueBalance("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
+    issueBalance("USD", "50", issuerWallet, aliceWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    issueBalance("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
+    issueBalance("USD", "50", issuerWallet, bobWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -245,7 +249,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult aliceAccountInfo = getValidatedAccountInfo(aliceWallet.address());
     Payment aliceToBobPayment = Payment.builder()
       .account(aliceWallet.address())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(aliceAccountInfo.accountData().sequence())
       .destination(bobWallet.address())
       .amount(IssuedCurrencyAmount.builder()
@@ -316,7 +320,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       charlieWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -326,7 +330,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       emilyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -336,7 +340,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       emilyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -346,28 +350,28 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       danielWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    issueBalance("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
+    issueBalance("USD", "10", issuerAWallet, charlieWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    issueBalance("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
+    issueBalance("USD", "1", issuerAWallet, emilyWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    issueBalance("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
+    issueBalance("USD", "100", issuerBWallet, emilyWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    issueBalance("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
+    issueBalance("USD", "2", issuerBWallet, danielWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
@@ -398,7 +402,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.address());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.address())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(charlieAccountInfo.accountData().sequence())
       .destination(danielWallet.address())
       .amount(IssuedCurrencyAmount.builder()
@@ -464,7 +468,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     AccountSet setDefaultRipple = AccountSet.builder()
       .account(issuerWallet.address())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey().base16Value())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)

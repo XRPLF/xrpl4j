@@ -27,7 +27,6 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
-import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
@@ -76,7 +75,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
@@ -133,10 +132,10 @@ public class SubmitMultisignedIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(
-        FeeUtils.computeMultiSigFee(
-          feeResult.drops().openLedgerFee(),
+        FeeUtils.computeMultisigNetworkFees(
+          feeResult,
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-        )
+        ).recommendedFee()
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -202,10 +201,10 @@ public class SubmitMultisignedIT extends AbstractIT {
     Payment unsignedPayment = Payment.builder()
       .account(sourceWallet.classicAddress())
       .fee(
-        FeeUtils.computeMultiSigFee(
-          feeResult.drops().openLedgerFee(),
+        FeeUtils.computeMultisigNetworkFees(
+          feeResult,
           sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
-        )
+        ).recommendedFee()
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))

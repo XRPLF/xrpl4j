@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+/**
+ * Unit tests for {@link LedgerRangeUtils}.
+ */
 public class LedgerRangeUtilsTest {
 
   @Test
@@ -18,7 +21,6 @@ public class LedgerRangeUtilsTest {
       serverInfoCopy -> serverInfoCopy.completeLedgers(),
       ($) -> null
     ).size()).isEqualTo(0);
-
 
     ServerInfo reportingServerInfo = ReportingModeServerInfoTest.reportingServerInfo("empty");
     assertThat(reportingServerInfo.map(

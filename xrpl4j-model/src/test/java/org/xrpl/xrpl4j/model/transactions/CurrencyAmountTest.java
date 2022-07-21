@@ -133,4 +133,12 @@ public class CurrencyAmountTest {
       issuedCurrencyAmount.map(($) -> new Object(), null)
     );
   }
+
+
+  @Test
+  void testConstants() {
+    assertThat(CurrencyAmount.ONE_XRP_IN_DROPS).isEqualTo(1_000_000L);
+    assertThat(CurrencyAmount.MAX_XRP).isEqualTo(100_000_000_000L);
+    assertThat(CurrencyAmount.MAX_XRP_IN_DROPS).isEqualTo(100_000_000_000_000_000L);
+  }
 }

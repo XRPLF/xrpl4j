@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -145,14 +145,26 @@ public class XrplBinaryCodec {
   }
 
   /**
-   * Decodes canonical XRPL binary hex string to JSON.
+   * Decodes canonical XRPL binary hex encoded transaction string to JSON.
    *
-   * @param hex A {@link String} value to decode.
+   * @param encodedTransaction A {@link String} value, in hex, to decode to JSON.
    *
-   * @return A {@link String} representing the decoded hex.
+   * @return A JSON {@link String} representing the decoded encodedTransaction.
    */
-  public String decode(String hex) {
-    return new BinaryParser(hex).readType(STObjectType.class)
+  public String decode(String encodedTransaction) {
+    final String nonSignPrefixHex;
+    if (encodedTransaction.startsWith(TRX_SIGNATURE_PREFIX)) {
+      nonSignPrefixHex = encodedTransaction.substring(TRX_SIGNATURE_PREFIX.length());
+    } else if (encodedTransaction.startsWith(TRX_MULTI_SIGNATURE_PREFIX)) {
+      // The suffix is always a Hash160, which is 160 bits/20 bytes, which is 40 HEX chars.
+      final int suffixLength = 40;
+      nonSignPrefixHex = encodedTransaction.substring(
+        TRX_MULTI_SIGNATURE_PREFIX.length(), encodedTransaction.length() - suffixLength
+      );
+    } else {
+      nonSignPrefixHex = encodedTransaction;
+    }
+    return new BinaryParser(nonSignPrefixHex).readType(STObjectType.class)
       .toJson()
       .toString();
   }

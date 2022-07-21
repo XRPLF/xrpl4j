@@ -23,7 +23,7 @@ public class NfTokenOfferObjectJsonTests  extends AbstractJsonTest {
       .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
       .previousTransactionId(Hash256.of("E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14090896))
-      .tokenId(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65"))
+      .nfTokenId(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65"))
       .flags(Flags.NfTokenOfferFlags.BUY_TOKEN)
       .build();
 

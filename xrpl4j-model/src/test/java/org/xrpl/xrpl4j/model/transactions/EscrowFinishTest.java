@@ -90,7 +90,7 @@ public class EscrowFinishTest {
   }
 
   @Test
-  public void testNormalizeWithFulfillmentAndConditionButLowFee() {
+  public void testNormalizeWithFulfillmentAndConditionButFeeLow() {
     // We expect the
 
     Fulfillment fulfillment = PreimageSha256Fulfillment.from("ssh".getBytes());

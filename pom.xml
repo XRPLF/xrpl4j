@@ -6,7 +6,7 @@
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-parent</artifactId>
   <packaging>pom</packaging>
-  <version>2.3.0-nft-dev-preview-SNAPSHOT</version>
+  <version>2.3.1-nft-dev-preview-SNAPSHOT</version>
 
   <name>xrpl4j parent</name>
   <description>Parent project for xrpl4j modules.</description>

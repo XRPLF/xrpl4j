@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -39,7 +40,6 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-import java.math.BigDecimal;
 import java.util.function.Predicate;
 
 public class CheckIT extends AbstractIT {
@@ -52,7 +52,7 @@ public class CheckIT extends AbstractIT {
     Wallet sourceWallet = createRandomAccount();
     Wallet destinationWallet = createRandomAccount();
 
-    //FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -62,7 +62,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -93,7 +93,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Destination wallet cashes the Check
-    //feeResult = xrplClient.fee();
+    feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
     );
@@ -101,7 +101,7 @@ public class CheckIT extends AbstractIT {
       .account(destinationWallet.classicAddress())
       .amount(checkObject.sendMax())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();
@@ -109,7 +109,6 @@ public class CheckIT extends AbstractIT {
     assertThat(cashResponse.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-
     logInfo(
       cashResponse.transactionResult().transaction().transactionType(),
       cashResponse.transactionResult().hash()
@@ -145,7 +144,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
-    //FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -153,7 +152,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -184,11 +183,11 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Source account cancels the Check
-    //feeResult = xrplClient.fee();
+    feeResult = xrplClient.fee();
     CheckCancel checkCancel = CheckCancel.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .checkId(checkObject.index())
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -221,7 +220,7 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
-    //FeeResult feeResult = xrplClient.fee();
+    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
@@ -229,7 +228,7 @@ public class CheckIT extends AbstractIT {
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
       .account(sourceWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfoResult.accountData().sequence())
       .destination(destinationWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
@@ -250,7 +249,6 @@ public class CheckIT extends AbstractIT {
       response.transactionResult().hash()
     );
 
-
     CheckObject checkObject = (CheckObject) this.scanForResult(
       () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
       result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
@@ -261,14 +259,14 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Destination account cancels the Check
-    //feeResult = xrplClient.fee();
+    feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
     );
     CheckCancel checkCancel = CheckCancel.builder()
       .account(destinationWallet.classicAddress())
       .sequence(destinationAccountInfo.accountData().sequence())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey())
       .build();

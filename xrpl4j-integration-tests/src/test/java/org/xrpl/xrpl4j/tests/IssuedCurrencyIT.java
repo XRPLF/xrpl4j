@@ -32,16 +32,15 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class IssuedCurrencyIT extends AbstractIT {
@@ -65,7 +64,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
@@ -75,7 +74,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       trustLine.limitPeer(),
       issuerWallet,
       counterpartyWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
@@ -123,7 +122,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       aliceWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
@@ -133,20 +132,16 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       bobWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    sendIssuedCurrency(
-      "USD", "50", issuerWallet, aliceWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
-    );
+    sendIssuedCurrency("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    sendIssuedCurrency(
-      "USD", "50", issuerWallet, bobWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
-    );
+    sendIssuedCurrency("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -169,7 +164,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult aliceAccountInfo = getValidatedAccountInfo(aliceWallet.classicAddress());
     Payment aliceToBobPayment = Payment.builder()
       .account(aliceWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(aliceAccountInfo.accountData().sequence())
       .destination(bobWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -231,7 +226,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       charlieWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
@@ -241,7 +236,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       emilyWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
@@ -251,7 +246,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       emilyWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
@@ -261,36 +256,28 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       danielWallet,
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
+      feeResult.drops().minimumFee()
     );
 
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    sendIssuedCurrency(
-      "USD", "10", issuerAWallet, charlieWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
-    );
+    sendIssuedCurrency("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    sendIssuedCurrency(
-      "USD", "1", issuerAWallet, emilyWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
-    );
+    sendIssuedCurrency("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    sendIssuedCurrency(
-      "USD", "100", issuerBWallet, emilyWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
-    );
+    sendIssuedCurrency("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    sendIssuedCurrency(
-      "USD", "2", issuerBWallet, danielWallet, XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
-    );
+    sendIssuedCurrency("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
@@ -322,7 +309,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.classicAddress());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(charlieAccountInfo.accountData().sequence())
       .destination(danielWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -387,7 +374,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     AccountSet setDefaultRipple = AccountSet.builder()
       .account(issuerWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)

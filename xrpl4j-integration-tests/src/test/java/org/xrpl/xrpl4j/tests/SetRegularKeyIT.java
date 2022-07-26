@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,14 +27,12 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.wallet.Wallet;
-
-import java.math.BigDecimal;
 
 public class SetRegularKeyIT extends AbstractIT {
 
@@ -58,7 +56,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.classicAddress())
       .signingPublicKey(wallet.publicKey())
@@ -82,7 +80,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.classicAddress())
-          .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+          .fee(FeeUtils.calculateFeeDynamically(feeResult))
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey())
           .build();
@@ -117,7 +115,7 @@ public class SetRegularKeyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newWallet.classicAddress())
       .signingPublicKey(wallet.publicKey())
@@ -141,7 +139,7 @@ public class SetRegularKeyIT extends AbstractIT {
       () -> {
         AccountSet accountSet = AccountSet.builder()
           .account(wallet.classicAddress())
-          .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+          .fee(FeeUtils.calculateFeeDynamically(feeResult))
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey())
           .build();
@@ -154,10 +152,9 @@ public class SetRegularKeyIT extends AbstractIT {
       }
     );
 
-
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(wallet.publicKey())
       .build();

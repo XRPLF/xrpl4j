@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,15 +27,14 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -62,19 +61,20 @@ public class AccountSetIT extends AbstractIT {
     // Set asfAccountTxnID (no corresponding ledger flag)
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-        .account(wallet.classicAddress())
-        .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
-        .sequence(accountInfo.accountData().sequence())
-        .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
-        .signingPublicKey(wallet.publicKey())
-        .build();
+      .account(wallet.classicAddress())
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .sequence(accountInfo.accountData().sequence())
+      .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+      .signingPublicKey(wallet.publicKey())
+      .build();
 
     SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-        .isEqualTo(response.transactionResult().hash());
-
-    logInfo(response.transactionResult().transaction().transactionType(), response.transactionResult().hash());
+      .isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    );
 
     ///////////////////////
     // Set flags one-by-one
@@ -103,7 +103,7 @@ public class AccountSetIT extends AbstractIT {
     ).accountData().flags();
 
     assertThat(flags1.getValue() - flags2.getValue())
-        .isEqualTo(AccountRootFlags.GLOBAL_FREEZE.getValue());
+      .isEqualTo(AccountRootFlags.GLOBAL_FREEZE.getValue());
   }
 
 
@@ -124,7 +124,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
       .signingPublicKey(wallet.publicKey())
@@ -134,8 +134,11 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-
-    logInfo(response.transactionResult().transaction().transactionType(), response.transactionResult().hash());
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
+    logger.info(
+      "AccountSet transaction successful: {}{}", url, response.transactionResult().hash()
+    );
 
     ///////////////////////
     // Set flags one-by-one
@@ -182,7 +185,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(sequence)
       .setFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
@@ -221,7 +224,7 @@ public class AccountSetIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
       .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(sequence)
       .clearFlag(accountSetFlag)
       .signingPublicKey(wallet.publicKey())
@@ -233,7 +236,7 @@ public class AccountSetIT extends AbstractIT {
     String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
       (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
     logger.info(
-      "AccountSet SetFlag transaction successful (asf={}; arf={}): {}{}",
+      "AccountSet ClearFlag transaction successful (asf={}; arf={}): {}{}",
       accountSetFlag, accountRootFlag, url, response.transactionResult().hash()
     );
 

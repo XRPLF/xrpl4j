@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -40,8 +41,6 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
-
-import java.math.BigDecimal;
 
 public class DepositPreAuthIT extends AbstractIT {
 
@@ -55,15 +54,13 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult receiverAccountInfo = enableDepositPreauth(
-      receiverWallet, XrpCurrencyAmount.ofXrp(new BigDecimal(1))
-    );
+    AccountInfoResult receiverAccountInfo = enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
 
     /////////////////////////
     // Give Preauthorization for the sender to send a funds to the receiver
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(receiverAccountInfo.accountData().sequence())
       .signingPublicKey(receiverWallet.publicKey())
       .authorize(senderWallet.classicAddress())
@@ -106,7 +103,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
@@ -151,7 +148,7 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
     FeeResult feeResult = xrplClient.fee();
-    enableDepositPreauth(receiverWallet, XrpCurrencyAmount.ofXrp(new BigDecimal(1)));
+    enableDepositPreauth(receiverWallet, feeResult.drops().openLedgerFee());
 
     /////////////////////////
     // Validate that the receiver has not given authorization to anyone to send them Payments
@@ -170,7 +167,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     Payment payment = Payment.builder()
       .account(senderWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .sequence(senderAccountInfo.accountData().sequence())
       .signingPublicKey(senderWallet.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))

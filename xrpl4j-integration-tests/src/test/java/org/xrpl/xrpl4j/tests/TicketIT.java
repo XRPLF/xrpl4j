@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,14 +27,13 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class TicketIT extends AbstractIT {
@@ -51,7 +50,7 @@ public class TicketIT extends AbstractIT {
     TicketCreate ticketCreate = TicketCreate.builder()
       .account(sourceWallet.classicAddress())
       .sequence(accountInfo.accountData().sequence())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .ticketCount(UnsignedInteger.ONE)
       .signingPublicKey(sourceWallet.publicKey())
       .build();
@@ -75,7 +74,7 @@ public class TicketIT extends AbstractIT {
 
     AccountSet accountSet = AccountSet.builder()
       .account(sourceWallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1)))
+      .fee(FeeUtils.calculateFeeDynamically(feeResult))
       .ticketSequence(tickets.get(0).ticketSequence())
       .signingPublicKey(sourceWallet.publicKey())
       .build();

@@ -148,61 +148,6 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactor();
 
   /**
-   * Current multiplier to the transaction cost based on load to this server.  Per xrpl.org docs, this field is
-   * optionally present in any server response and may be omitted.
-   *
-   * @return An optionally-present {@link BigDecimal} representing the local load factor.
-   */
-  @JsonProperty("load_factor_local")
-  Optional<BigDecimal> loadFactorLocal();
-
-  /**
-   * Current multiplier to the transaction cost being used by the rest of the network (estimated from other servers'
-   * reported load values). Per xrpl.org docs, this field is optionally present in any server response and may be
-   * omitted.
-   *
-   * @return An optionally-present {@link BigDecimal} representing the network load factor.
-   */
-  @JsonProperty("load_factor_net")
-  Optional<BigDecimal> loadFactorNet();
-
-  /**
-   * Current multiplier to the transaction cost based on load to servers in this cluster. Per xrpl.org docs, this field
-   * is optionally present in any server response and may be omitted.
-   *
-   * @return An optionally-present {@link BigDecimal} representing the cluster load factor.
-   */
-  @JsonProperty("load_factor_cluster")
-  Optional<BigDecimal> loadFactorCluster();
-
-  /**
-   * The current multiplier to the transaction cost that a transaction must pay to get into the open ledger. Per
-   * xrpl.org docs, this field is optionally present in any server response and may be omitted.
-   *
-   * @return An optionally-present {@link BigDecimal} representing the open ledger load factor.
-   */
-  @JsonProperty("load_factor_fee_escalation")
-  Optional<BigDecimal> loadFactorFeeEscalation();
-
-  /**
-   * The current multiplier to the transaction cost that a transaction must pay to get into the queue, if the queue is
-   * full. Per xrpl.org docs, this field is optionally present in any server response and may be omitted.
-   *
-   * @return An optionally-present {@link BigDecimal} representing the queue load factor.
-   */
-  @JsonProperty("load_factor_fee_queue")
-  Optional<BigDecimal> loadFactorFeeQueue();
-
-  /**
-   * The load factor the server is enforcing, not including the open ledger cost. Per xrpl.org docs, this field is
-   * optionally present in any server response and may be omitted.
-   *
-   * @return An optionally-present {@link BigDecimal} representing the server load factor.
-   */
-  @JsonProperty("load_factor_server")
-  Optional<BigDecimal> loadFactorServer();
-
-  /**
    * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the
    * {@code [validator_token]} or {@code [validation_seed]} config field. Per xrpl.org docs, this field is optionally
    * present in any server response and may be omitted because it is only returned when requested via an admin

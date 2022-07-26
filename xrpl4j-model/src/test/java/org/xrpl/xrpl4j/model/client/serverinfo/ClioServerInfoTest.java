@@ -16,6 +16,9 @@ import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Unit tests for {@link ClioServerInfo}.
+ */
 public class ClioServerInfoTest extends AbstractJsonTest {
 
   @Test

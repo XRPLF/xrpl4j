@@ -18,6 +18,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Unit tests for {@link RippledServerInfo}.
+ */
 public class RippledServerInfoTest extends AbstractJsonTest {
 
   @Test

@@ -8,6 +8,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * An implementation of {@link ServerInfo} that conforms to Reporting mode server payloads.
@@ -71,6 +72,14 @@ public interface ReportingModeServerInfo extends ServerInfo {
    */
   @JsonProperty("last_close")
   ServerInfoLastClose lastClose();
+
+  /**
+   * (Admin only) Detailed information about the current load state of the server.
+   *
+   * @return An optionally-present {@link ServerInfoLoad}.
+   */
+  @JsonProperty("load")
+  Optional<ServerInfoLoad> load();
 
   /**
    * Public key used to verify this server for peer-to-peer communications. This node key pair is automatically

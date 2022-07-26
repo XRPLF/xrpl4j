@@ -86,6 +86,14 @@ public interface RippledServerInfo extends ServerInfo {
   ServerInfoLastClose lastClose();
 
   /**
+   * (Admin only) Detailed information about the current load state of the server.
+   *
+   * @return An optionally-present {@link ServerInfoLoad}.
+   */
+  @JsonProperty("load")
+  Optional<ServerInfoLoad> load();
+
+  /**
    * How many other rippled servers this one is currently connected to.
    *
    * @return An optionally-present {@link UnsignedInteger} representing the number of peers of this server.

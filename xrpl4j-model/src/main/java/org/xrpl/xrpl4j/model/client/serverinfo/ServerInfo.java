@@ -135,14 +135,6 @@ public interface ServerInfo {
   Optional<String> jqTransOverflow();
 
   /**
-   * (Admin only) Detailed information about the current load state of the server.
-   *
-   * @return An optionally-present {@link ServerInfoLoad}.
-   */
-  @JsonProperty("load")
-  Optional<ServerInfoLoad> load();
-
-  /**
    * The load-scaled open ledger transaction cost the server is currently enforcing, as a multiplier on the base
    * transaction cost. For example, at 1000 load factor and a reference transaction cost of 10 drops of XRP, the
    * load-scaled transaction cost is 10,000 drops (0.01 XRP). The load factor is determined by the highest of the

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -22,7 +21,7 @@ import java.util.Objects;
 public class RippledServerInfoTest extends AbstractJsonTest {
 
   @Test
-  public void testRippledServerInfoJson() throws JsonProcessingException, JSONException {
+  public void testRippledServerInfoJson() throws JsonProcessingException {
     logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult rippledResult = ServerInfoResult.builder()
       .status("success")

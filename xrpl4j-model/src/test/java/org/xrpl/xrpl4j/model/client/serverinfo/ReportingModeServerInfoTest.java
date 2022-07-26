@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -19,10 +18,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Unit tests for {@link ReportingModeServerInfo}.
+ */
 public class ReportingModeServerInfoTest extends AbstractJsonTest {
 
   @Test
-  public void testReportingModeServerInfoJson() throws JsonProcessingException, JSONException {
+  public void testReportingModeServerInfoJson() throws JsonProcessingException {
     logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult reportingResult = ServerInfoResult.builder()
       .status("success")
@@ -190,7 +192,6 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
         .threads(UnsignedInteger.valueOf(6))
         .build())
       .loadFactor(BigDecimal.ONE)
-      .peers(UnsignedInteger.valueOf(21))
       .publicKeyNode("n9KUjqxCr5FKThSNXdzb7oqN8rYwScB2dUnNqxQxbEA17JkaWy5x")
       .publicKeyValidator("nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9")
       .serverState("proposing")

@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * An implementation of {@link ServerInfo} that conforms to rippled server payloads.
@@ -49,7 +51,7 @@ public interface RippledServerInfo extends ServerInfo {
    * On an admin request, returns the hostname of the server running the rippled instance; otherwise, returns a single
    * RFC-1751 word based on the node public key.
    *
-   * @return A {@link String} containing the host name of the serverk.
+   * @return A {@link String} containing the host name of the server.
    */
   @JsonProperty("hostid")
   String hostId();
@@ -64,6 +66,17 @@ public interface RippledServerInfo extends ServerInfo {
   UnsignedLong ioLatencyMs();
 
   /**
+   * The number of times (since starting up) that this server has had over 250 transactions waiting to be processed at
+   * once. A large number here may mean that your server is unable to handle the transaction load of the XRP Ledger
+   * network. For detailed recommendations of future-proof server specifications, see
+   * <a href="https://xrpl.org/capacity-planning.html">Capacity Planning</a>.
+   *
+   * @return An optionally-present {@link String}.
+   */
+  @JsonProperty("jq_trans_overflow")
+  Optional<String> jqTransOverflow();
+
+  /**
    * Information about the last time the server closed a ledger, including the amount of time it took to reach a
    * consensus and the number of trusted validators participating.
    *
@@ -71,6 +84,14 @@ public interface RippledServerInfo extends ServerInfo {
    */
   @JsonProperty("last_close")
   ServerInfoLastClose lastClose();
+
+  /**
+   * How many other rippled servers this one is currently connected to.
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of peers of this server.
+   */
+  @JsonProperty("peers")
+  Optional<UnsignedInteger> peers();
 
   /**
    * Public key used to verify this server for peer-to-peer communications. This node key pair is automatically

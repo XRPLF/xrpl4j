@@ -36,11 +36,9 @@ public interface ServerInfo {
    * @param reportingModeServerInfoHandler A {@link Consumer} that is called if this instance is of type
    *                                       {@link ReportingModeServerInfo}.
    */
-  default void handle(
-    final Consumer<RippledServerInfo> rippledServerInfoHandler,
+  default void handle(final Consumer<RippledServerInfo> rippledServerInfoHandler,
     final Consumer<ClioServerInfo> clioServerInfoHandler,
-    final Consumer<ReportingModeServerInfo> reportingModeServerInfoHandler
-  ) {
+    final Consumer<ReportingModeServerInfo> reportingModeServerInfoHandler) {
     Objects.requireNonNull(rippledServerInfoHandler);
     Objects.requireNonNull(clioServerInfoHandler);
     Objects.requireNonNull(reportingModeServerInfoHandler);
@@ -69,11 +67,9 @@ public interface ServerInfo {
    *
    * @return A {@link R} that is constructed by the appropriate mapper function.
    */
-  default <R> R map(
-    final Function<RippledServerInfo, R> rippledServerInfoMapper,
+  default <R> R map(final Function<RippledServerInfo, R> rippledServerInfoMapper,
     final Function<ClioServerInfo, R> clioServerInfoMapper,
-    final Function<ReportingModeServerInfo, R> reportingModeServerInfoMapper
-  ) {
+    final Function<ReportingModeServerInfo, R> reportingModeServerInfoMapper) {
     Objects.requireNonNull(rippledServerInfoMapper);
     Objects.requireNonNull(clioServerInfoMapper);
     Objects.requireNonNull(reportingModeServerInfoMapper);
@@ -124,8 +120,7 @@ public interface ServerInfo {
   @Value.Derived
   @JsonIgnore
   default boolean isLedgerInCompleteLedgers(final UnsignedLong ledgerIndex) {
-    return this.completeLedgers().stream()
-      .anyMatch(range -> range.contains(ledgerIndex));
+    return this.completeLedgers().stream().anyMatch(range -> range.contains(ledgerIndex));
   }
 
   /**
@@ -152,8 +147,8 @@ public interface ServerInfo {
    * transaction cost. For example, at 1000 load factor and a reference transaction cost of 10 drops of XRP, the
    * load-scaled transaction cost is 10,000 drops (0.01 XRP). The load factor is determined by the highest of the
    * individual server's load factor, the cluster's load factor, the open ledger cost and the overall network's load
-   * factor. Per xrpl.org docs, this field is optionally present in any server response and may be omitted because it
-   * is only returned when requested via an admin host/port.
+   * factor. Per xrpl.org docs, this field is optionally present in any server response and may be omitted because it is
+   * only returned when requested via an admin host/port.
    *
    * @return An optionally-present {@link BigDecimal} representing the load factor.
    */
@@ -216,14 +211,6 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactorServer();
 
   /**
-   * How many other rippled servers this one is currently connected to.
-   *
-   * @return An optionally-present {@link UnsignedInteger} representing the number of peers of this server.
-   */
-  @JsonProperty("peers")
-  Optional<UnsignedInteger> peers();
-
-  /**
    * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the
    * {@code [validator_token]} or {@code [validation_seed]} config field. Per xrpl.org docs, this field is optionally
    * present in any server response and may be omitted because it is only returned when requested via an admin
@@ -236,8 +223,8 @@ public interface ServerInfo {
 
   /**
    * Information about the most recent fully-validated ledger. If the most recent validated ledger is not available, the
-   * response omits this field and includes {@link #closedLedger()} instead. Per xrpl.org docs, this field is
-   * optionally present in any server response and may be omitted.
+   * response omits this field and includes {@link #closedLedger()} instead. Per xrpl.org docs, this field is optionally
+   * present in any server response and may be omitted.
    *
    * @return An optionally-present {@link ServerInfoLedger} representing the latest validated ledger.
    */
@@ -251,13 +238,13 @@ public interface ServerInfo {
    * @return An {@link UnsignedInteger} representing the quorum.
    */
   @JsonProperty("validation_quorum")
-  UnsignedInteger validationQuorum();
+  Optional<UnsignedInteger> validationQuorum();
 
   /**
-   * (Admin only) Either the human readable time, in UTC, when the current validator list will expire, the string
+   * (Admin only) Either the human-readable time, in UTC, when the current validator list will expire, the string
    * {@code "unknown"} if the server has yet to load a published validator list or the string {@code "never"} if the
-   * server uses a static validator list. Per xrpl.org docs, this field is optionally present in any server response
-   * and may be omitted because it is only returned when requested via an admin host/port.
+   * server uses a static validator list. Per xrpl.org docs, this field is optionally present in any server response and
+   * may be omitted because it is only returned when requested via an admin host/port.
    *
    * @return An optionally-present {@link String} containing the validator expiration list.
    */

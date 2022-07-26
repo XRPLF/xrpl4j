@@ -19,7 +19,7 @@ import java.util.Objects;
 public class ClioServerInfoTest extends AbstractJsonTest {
 
   @Test
-  public void testClioServerInfoJson() throws JsonProcessingException, JSONException {
+  public void testClioServerInfoJson() throws JsonProcessingException {
     logger.info("Default Locale: {}", Locale.getDefault());
     ServerInfoResult clioResult = ServerInfoResult.builder()
       .status("success")

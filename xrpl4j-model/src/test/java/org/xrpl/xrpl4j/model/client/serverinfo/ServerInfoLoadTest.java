@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.JobType;
 
+/**
+ * Unit tests for {@link ServerInfoLoad}.
+ */
 public class ServerInfoLoadTest {
 
   @Test

@@ -3,11 +3,13 @@ package org.xrpl.xrpl4j.model.client.serverinfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 /**
  * An implementation of {@link ServerInfo} that conforms to Clio server payloads.
  */
+@Beta
 @Value.Immutable
 @JsonSerialize(as = ImmutableClioServerInfo.class)
 @JsonDeserialize(as = ImmutableClioServerInfo.class)

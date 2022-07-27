@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
@@ -15,6 +16,7 @@ import java.util.Optional;
 /**
  * An implementation of {@link ServerInfo} that conforms to rippled server payloads.
  */
+@Beta
 @Value.Immutable
 @JsonSerialize(as = ImmutableRippledServerInfo.class)
 @JsonDeserialize(as = ImmutableRippledServerInfo.class)

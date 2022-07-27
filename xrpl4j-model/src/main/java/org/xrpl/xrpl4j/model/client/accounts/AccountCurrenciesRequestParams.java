@@ -44,9 +44,9 @@ import javax.annotation.Nullable;
 public interface AccountCurrenciesRequestParams extends XrplRequestParams {
 
   /**
-   * Build for {@link AccountCurrenciesRequestParams}.
+   * Builder for {@link AccountCurrenciesRequestParams}.
    *
-   * @return A {@link AccountCurrenciesRequestParams}.
+   * @return A {@link ImmutableAccountCurrenciesRequestParams.Builder}.
    */
   static ImmutableAccountCurrenciesRequestParams.Builder builder() {
     return ImmutableAccountCurrenciesRequestParams.builder();

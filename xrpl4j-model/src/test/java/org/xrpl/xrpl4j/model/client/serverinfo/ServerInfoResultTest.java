@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -79,7 +80,7 @@ public class ServerInfoResultTest extends AbstractJsonTest {
       .time(ZonedDateTime.parse("2021-Mar-30 15:37:51.486384 UTC",
         DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
       .upTime(UnsignedLong.valueOf(2274704))
-      .validatedLedger(ServerInfoValidatedLedger.builder()
+      .validatedLedger(ValidatedLedger.builder()
         .age(UnsignedInteger.valueOf(4))
         .hash(Hash256.of("E5A958048D98D4EFEEDD2BC3F36D23893BBC1D9354CB3E739068D2DFDE3D1AA3"))
         .reserveBaseXrp(XrpCurrencyAmount.ofDrops(20100000))

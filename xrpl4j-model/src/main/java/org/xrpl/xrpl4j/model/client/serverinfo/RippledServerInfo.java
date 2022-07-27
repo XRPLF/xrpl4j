@@ -91,10 +91,10 @@ public interface RippledServerInfo extends ServerInfo {
   /**
    * (Admin only) Detailed information about the current load state of the server.
    *
-   * @return An optionally-present {@link ServerInfoLoad}.
+   * @return An optionally-present {@link Load}.
    */
   @JsonProperty("load")
-  Optional<ServerInfoLoad> load();
+  Optional<Load> load();
 
   /**
    * Current multiplier to the transaction cost based on load to this server.  Per xrpl.org docs, this field is

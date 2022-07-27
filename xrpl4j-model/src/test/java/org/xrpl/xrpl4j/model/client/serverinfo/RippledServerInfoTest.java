@@ -10,6 +10,8 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.JobType;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.Load;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -148,7 +150,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
         .convergeTimeSeconds(BigDecimal.valueOf(2d))
         .proposers(UnsignedInteger.valueOf(34))
         .build())
-      .load(ServerInfoLoad.builder()
+      .load(Load.builder()
         .addJobTypes(
           JobType.builder()
             .jobType("ledgerRequest")
@@ -201,7 +203,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .time(ZonedDateTime.parse("2020-Mar-24 01:27:42.147330 UTC",
         DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
       .upTime(UnsignedLong.valueOf(1984))
-      .validatedLedger(ServerInfoValidatedLedger.builder()
+      .validatedLedger(ValidatedLedger.builder()
         .age(UnsignedInteger.valueOf(2))
         .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
         .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(20)))

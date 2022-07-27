@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.Load;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ import java.util.List;
  * Information about the current load state of a rippled server.
  *
  * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated.
- *   Use {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLoad} instead.
+ *   Use {@link Load} instead.
  */
 @Deprecated
 @Value.Immutable

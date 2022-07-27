@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.JobType;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.Load;
 
 /**
- * Unit tests for {@link ServerInfoLoad}.
+ * Unit tests for {@link Load}.
  */
 public class ServerInfoLoadTest {
 
@@ -16,7 +17,7 @@ public class ServerInfoLoadTest {
   void serverInfoLoadTest() {
 
     UnsignedInteger threads = UnsignedInteger.valueOf(6);
-    ImmutableServerInfoLoad.Builder serverInfoLoadBuilder = ServerInfoLoad.builder()
+    ImmutableLoad.Builder serverInfoLoadBuilder = Load.builder()
       .addJobTypes(
         JobType.builder()
           .jobType("ledgerRequest")
@@ -60,7 +61,7 @@ public class ServerInfoLoadTest {
       )
       .threads(threads);
 
-    ServerInfoLoad serverInfoLoad = assertDoesNotThrow(() -> serverInfoLoadBuilder.build());
+    Load serverInfoLoad = assertDoesNotThrow(() -> serverInfoLoadBuilder.build());
 
     assertThat(serverInfoLoad.threads()).isEqualTo(UnsignedInteger.valueOf(6));
     assertThat(serverInfoLoad.jobTypes().size()).isEqualTo(8);

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
-import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoValidatedLedger;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -95,14 +95,14 @@ public class AbstractJsonTest {
   }
 
   protected void assertCanSerializeAndDeserialize(
-    ServerInfoValidatedLedger serverInfoLedger, String json
+    ValidatedLedger serverInfoLedger, String json
   )
     throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(serverInfoLedger);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
-    ServerInfoValidatedLedger deserialized = objectMapper.readValue(
-      serialized, ServerInfoValidatedLedger.class
+    ValidatedLedger deserialized = objectMapper.readValue(
+      serialized, ValidatedLedger.class
     );
     assertThat(deserialized).isEqualTo(serverInfoLedger);
   }

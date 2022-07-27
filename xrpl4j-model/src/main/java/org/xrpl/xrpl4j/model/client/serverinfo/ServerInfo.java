@@ -262,4 +262,38 @@ public interface ServerInfo {
     Optional<UnsignedInteger> averageTime();
 
   }
+
+  /**
+   * Information about the last time the server closed a ledger, including the amount of time it took to reach a
+   * consensus and the number of trusted validators participating.
+   */
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableLastClose.class)
+  @JsonDeserialize(as = ImmutableLastClose.class)
+  interface LastClose {
+
+    /**
+     * Construct a builder for this class.
+     *
+     * @return An {@link ImmutableLastClose.Builder}.
+     */
+    static ImmutableLastClose.Builder builder() {
+      return ImmutableLastClose.builder();
+    }
+
+    /**
+     * The amount of time, in seconds, it took to converge.
+     *
+     * @return A {@link Double} representing the convergence time.
+     */
+    @JsonProperty("converge_time_s")
+    BigDecimal convergeTimeSeconds();
+
+    /**
+     * The number of proposers in the last closed ledger.
+     *
+     * @return An {@link UnsignedInteger} representing the number of proposers.
+     */
+    UnsignedInteger proposers();
+  }
 }

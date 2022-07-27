@@ -83,10 +83,10 @@ public interface RippledServerInfo extends ServerInfo {
    * Information about the last time the server closed a ledger, including the amount of time it took to reach a
    * consensus and the number of trusted validators participating.
    *
-   * @return A {@link ServerInfoLastClose}.
+   * @return A {@link LastClose}.
    */
   @JsonProperty("last_close")
-  ServerInfoLastClose lastClose();
+  LastClose lastClose();
 
   /**
    * (Admin only) Detailed information about the current load state of the server.

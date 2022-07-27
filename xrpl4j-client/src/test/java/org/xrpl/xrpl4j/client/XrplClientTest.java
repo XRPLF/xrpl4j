@@ -83,6 +83,7 @@ import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoValidatedLedger;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -1134,7 +1135,7 @@ public class XrplClientTest {
       .hostId("id")
       .ioLatencyMs(UnsignedLong.valueOf(2))
       .jqTransOverflow("flow")
-      .lastClose(org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLastClose.builder()
+      .lastClose(LastClose.builder()
         .convergeTimeSeconds(BigDecimal.valueOf(1.11))
         .proposers(UnsignedInteger.ONE)
         .build())

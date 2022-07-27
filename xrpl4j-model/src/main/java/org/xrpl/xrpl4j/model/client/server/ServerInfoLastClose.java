@@ -25,13 +25,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
 
 /**
  * Information about the last time the server closed a ledger, including the amount of time it took to reach a
  * consensus and the number of trusted validators participating.
  *
  * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated.
- *   Use {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLastClose} instead.
+ *   Use {@link LastClose} instead.
  */
 @Deprecated
 @Value.Immutable

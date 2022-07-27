@@ -74,7 +74,7 @@ public interface ReportingModeServerInfo extends ServerInfo {
    * @return A {@link org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose}.
    */
   @JsonProperty("last_close")
-  ServerInfoLastClose lastClose();
+  LastClose lastClose();
 
   /**
    * (Admin only) Detailed information about the current load state of the server.

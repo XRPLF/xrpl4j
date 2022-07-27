@@ -31,8 +31,8 @@ import java.util.Optional;
 /**
  * (Admin only) Information about the rate of a job the server is doing and how much time it spends on it.
  *
- * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated.
- *   Use {@link org.xrpl.xrpl4j.model.client.serverinfo.JobType} instead.
+ * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated. Use
+ *   {@link JobType} instead.
  */
 @Deprecated
 @Value.Immutable

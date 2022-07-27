@@ -97,8 +97,8 @@ public interface ServerInfo {
    * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
    * xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
-   * @return An optionally-present {@link ValidatedLedger} containing information about the server's view of
-   *   the most recently closed ledger.
+   * @return An optionally-present {@link ValidatedLedger} containing information about the server's view of the most
+   *   recently closed ledger.
    */
   @JsonProperty("closed_ledger")
   Optional<ValidatedLedger> closedLedger();
@@ -321,10 +321,10 @@ public interface ServerInfo {
     }
 
     /**
-     * (Admin only) Information about the rate of different types of jobs the server is doing and how much time it spends
-     * on each.
+     * (Admin only) Information about the rate of different types of jobs the server is doing and how much time it
+     * spends on each.
      *
-     * @return A {@link List} of {@link JobType}s.
+     * @return A {@link List} of {@link ServerInfo.JobType}.
      */
     @JsonProperty("job_types")
     List<JobType> jobTypes();
@@ -425,12 +425,16 @@ public interface ServerInfo {
      */
     class CurrencyAmountToXrpSerializer extends StdScalarSerializer<XrpCurrencyAmount> {
 
+      /**
+       * No-args constructor.
+       */
       public CurrencyAmountToXrpSerializer() {
         super(XrpCurrencyAmount.class, false);
       }
 
       @Override
-      public void serialize(XrpCurrencyAmount amount, JsonGenerator gen, SerializerProvider provider) throws IOException {
+      public void serialize(XrpCurrencyAmount amount, JsonGenerator gen, SerializerProvider provider)
+        throws IOException {
         gen.writeNumber(amount.toXrp());
       }
     }

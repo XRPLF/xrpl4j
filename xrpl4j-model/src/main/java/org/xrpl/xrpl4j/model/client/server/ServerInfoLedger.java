@@ -179,6 +179,9 @@ public interface ServerInfoLedger {
    */
   class CurrencyAmountToXrpSerializer extends StdScalarSerializer<XrpCurrencyAmount> {
 
+    /**
+     * No-args constructor.
+     */
     public CurrencyAmountToXrpSerializer() {
       super(XrpCurrencyAmount.class, false);
     }

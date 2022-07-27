@@ -43,9 +43,11 @@ public interface ServerInfo {
    * @param reportingModeServerInfoHandler A {@link Consumer} that is called if this instance is of type
    *                                       {@link ReportingModeServerInfo}.
    */
-  default void handle(final Consumer<RippledServerInfo> rippledServerInfoHandler,
+  default void handle(
+    final Consumer<RippledServerInfo> rippledServerInfoHandler,
     final Consumer<ClioServerInfo> clioServerInfoHandler,
-    final Consumer<ReportingModeServerInfo> reportingModeServerInfoHandler) {
+    final Consumer<ReportingModeServerInfo> reportingModeServerInfoHandler
+  ) {
     Objects.requireNonNull(rippledServerInfoHandler);
     Objects.requireNonNull(clioServerInfoHandler);
     Objects.requireNonNull(reportingModeServerInfoHandler);
@@ -74,9 +76,11 @@ public interface ServerInfo {
    *
    * @return A {@link R} that is constructed by the appropriate mapper function.
    */
-  default <R> R map(final Function<RippledServerInfo, R> rippledServerInfoMapper,
+  default <R> R map(
+    final Function<RippledServerInfo, R> rippledServerInfoMapper,
     final Function<ClioServerInfo, R> clioServerInfoMapper,
-    final Function<ReportingModeServerInfo, R> reportingModeServerInfoMapper) {
+    final Function<ReportingModeServerInfo, R> reportingModeServerInfoMapper
+  ) {
     Objects.requireNonNull(rippledServerInfoMapper);
     Objects.requireNonNull(clioServerInfoMapper);
     Objects.requireNonNull(reportingModeServerInfoMapper);
@@ -145,8 +149,9 @@ public interface ServerInfo {
 
   /**
    * Information about the most recent fully-validated ledger. If the most recent validated ledger is not available, the
-   * response omits this field and includes {@link #closedLedger()} instead. Per xrpl.org docs, this field is optionally
-   * present in any server response and may be omitted.
+   * response omits this field and includes {@link ReportingModeServerInfo#closedLedger()} or
+   * {@link RippledServerInfo#closedLedger()} but nothing in {@link ClioServerInfo}. Per xrpl.org docs, this field is
+   * optionally present in any server response and may be omitted.
    *
    * @return An optionally-present {@link ValidatedLedger} representing the latest validated ledger.
    */

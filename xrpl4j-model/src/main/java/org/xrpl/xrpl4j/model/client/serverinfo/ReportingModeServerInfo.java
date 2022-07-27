@@ -192,11 +192,11 @@ public interface ReportingModeServerInfo extends ServerInfo {
    * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
    * xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
-   * @return An optionally-present {@link ServerInfoLedger} containing information about the server's view of the most
-   *   recently closed ledger.
+   * @return An optionally-present {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger} containing
+   *   information about the server's view of the most recently closed ledger.
    */
   @JsonProperty("closed_ledger")
-  Optional<ServerInfoLedger> closedLedger();
+  Optional<ValidatedLedger> closedLedger();
 
   /**
    * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the

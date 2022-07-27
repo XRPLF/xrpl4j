@@ -27,7 +27,7 @@ public class ServerInfoIT {
 
     ServerInfo info;
 
-    while(true) {
+    while (true) {
       info = rippledClient.serverInformation().info();
       logger.info("Rippled info was mapped correctly. " + getType(info));
       info = reportingClient.serverInformation().info();

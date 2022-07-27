@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.client.serverinfoinfo;
+package org.xrpl.xrpl4j.model.client.serverinfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -7,20 +7,19 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 
 /**
- * Unit tests for {@link ServerInfoLedger}.
+ * Unit tests for {@link ServerInfoValidatedLedger}.
  */
 class ServerInfoLedgerTest extends AbstractJsonTest {
 
   @Test
   public void testJsonReserves() throws JsonProcessingException, JSONException {
-    ServerInfoLedger result = ServerInfoLedger.builder()
+    ServerInfoValidatedLedger result = ServerInfoValidatedLedger.builder()
       .age(UnsignedInteger.valueOf(2))
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
@@ -43,7 +42,7 @@ class ServerInfoLedgerTest extends AbstractJsonTest {
 
   @Test
   public void testJsonReservesWithZero() throws JsonProcessingException, JSONException {
-    ServerInfoLedger result = ServerInfoLedger.builder()
+    ServerInfoValidatedLedger result = ServerInfoValidatedLedger.builder()
       .age(UnsignedInteger.valueOf(2))
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
@@ -66,7 +65,7 @@ class ServerInfoLedgerTest extends AbstractJsonTest {
 
   @Test
   public void testJsonReservesWithOneDrop() throws JsonProcessingException, JSONException {
-    ServerInfoLedger result = ServerInfoLedger.builder()
+    ServerInfoValidatedLedger result = ServerInfoValidatedLedger.builder()
       .age(UnsignedInteger.valueOf(2))
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
@@ -89,7 +88,7 @@ class ServerInfoLedgerTest extends AbstractJsonTest {
 
   @Test
   public void testJsonReservesWithMaxXrpValues() throws JsonProcessingException, JSONException {
-    ServerInfoLedger result = ServerInfoLedger.builder()
+    ServerInfoValidatedLedger result = ServerInfoValidatedLedger.builder()
       .age(UnsignedInteger.valueOf(2))
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
@@ -121,7 +120,7 @@ class ServerInfoLedgerTest extends AbstractJsonTest {
       "        \"reserve_inc_xrp\": 2E0\n" +
       "      }";
 
-    ServerInfoLedger result = ServerInfoLedger.builder()
+    ServerInfoValidatedLedger result = ServerInfoValidatedLedger.builder()
       .age(UnsignedInteger.valueOf(2))
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))

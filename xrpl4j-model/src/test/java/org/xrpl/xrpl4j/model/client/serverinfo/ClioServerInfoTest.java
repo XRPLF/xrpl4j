@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -81,7 +80,7 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       .rippledVersion("1.5.0-rc1")
       .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange(completeLedgers)) // <-- use completeLedgers here.
       .loadFactor(BigDecimal.ONE)
-      .validatedLedger(ServerInfoLedger.builder()
+      .validatedLedger(ServerInfoValidatedLedger.builder()
         .age(UnsignedInteger.valueOf(2))
         .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
         .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(20)))

@@ -35,6 +35,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoValidatedLedger;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -46,7 +47,7 @@ import java.math.RoundingMode;
  * Information about a recent ledger, as represented in {@link ServerInfoResult}s.
  *
  * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated. Use
- *   {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger} instead.
+ *   {@link ServerInfoValidatedLedger} instead.
  */
 @Deprecated
 @Value.Immutable

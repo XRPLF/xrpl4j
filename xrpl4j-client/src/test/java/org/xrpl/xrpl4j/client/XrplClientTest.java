@@ -83,6 +83,7 @@ import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoValidatedLedger;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -1116,8 +1117,8 @@ public class XrplClientTest {
 
   @Test
   public void serverInformation() {
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger serverInfoLedger =
-      org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoLedger.builder()
+    ServerInfoValidatedLedger serverInfoLedger =
+      ServerInfoValidatedLedger.builder()
       .hash(Hash256.of(Strings.repeat("0", 64)))
       .age(UnsignedInteger.ONE)
       .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.ONE))

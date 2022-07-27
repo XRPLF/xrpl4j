@@ -43,17 +43,17 @@ import java.math.BigDecimal;
  * Human-readable information about a rippled server being queried.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableServerInfoLedger.class)
-@JsonDeserialize(as = ImmutableServerInfoLedger.class)
-public interface ServerInfoLedger {
+@JsonSerialize(as = ImmutableServerInfoValidatedLedger.class)
+@JsonDeserialize(as = ImmutableServerInfoValidatedLedger.class)
+public interface ServerInfoValidatedLedger {
 
   /**
    * Construct a builder for this class.
    *
-   * @return An {@link ImmutableServerInfoLedger.Builder}.
+   * @return An {@link ImmutableServerInfoValidatedLedger.Builder}.
    */
-  static ImmutableServerInfoLedger.Builder builder() {
-    return ImmutableServerInfoLedger.builder();
+  static ImmutableServerInfoValidatedLedger.Builder builder() {
+    return ImmutableServerInfoValidatedLedger.builder();
   }
 
   /**

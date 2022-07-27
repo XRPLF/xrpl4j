@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Unit tests for {@link JobType}.
+ */
 public class JobTypeTest {
 
   @Test

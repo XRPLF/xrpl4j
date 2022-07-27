@@ -90,11 +90,11 @@ public interface ServerInfo {
    * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
    * xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
-   * @return An optionally-present {@link ServerInfoLedger} containing information about the server's view of the most
+   * @return An optionally-present {@link ServerInfoValidatedLedger} containing information about the server's view of the most
    *   recently closed ledger.
    */
   @JsonProperty("closed_ledger")
-  Optional<ServerInfoLedger> closedLedger();
+  Optional<ServerInfoValidatedLedger> closedLedger();
 
   /**
    * Range expression indicating the sequence numbers of the ledger versions the local rippled has in its database. This
@@ -163,10 +163,10 @@ public interface ServerInfo {
    * response omits this field and includes {@link #closedLedger()} instead. Per xrpl.org docs, this field is optionally
    * present in any server response and may be omitted.
    *
-   * @return An optionally-present {@link ServerInfoLedger} representing the latest validated ledger.
+   * @return An optionally-present {@link ServerInfoValidatedLedger} representing the latest validated ledger.
    */
   @JsonProperty("validated_ledger")
-  Optional<ServerInfoLedger> validatedLedger();
+  Optional<ServerInfoValidatedLedger> validatedLedger();
 
   /**
    * Minimum number of trusted validations required to validate a ledger version. Some circumstances may cause the

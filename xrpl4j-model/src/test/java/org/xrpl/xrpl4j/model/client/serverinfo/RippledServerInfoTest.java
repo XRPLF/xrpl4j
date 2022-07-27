@@ -199,7 +199,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .time(ZonedDateTime.parse("2020-Mar-24 01:27:42.147330 UTC",
         DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
       .upTime(UnsignedLong.valueOf(1984))
-      .validatedLedger(ServerInfoLedger.builder()
+      .validatedLedger(ServerInfoValidatedLedger.builder()
         .age(UnsignedInteger.valueOf(2))
         .hash(Hash256.of("0D2D30837E05995AAAAA117294BB45AB0699AB1219605FFD23318E050C7166E9"))
         .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(20)))

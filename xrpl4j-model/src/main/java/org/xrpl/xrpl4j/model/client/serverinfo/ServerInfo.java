@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -90,8 +91,8 @@ public interface ServerInfo {
    * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
    * xrpl.org docs, this field is optionally present in any server response and may be omitted.
    *
-   * @return An optionally-present {@link ServerInfoValidatedLedger} containing information about the server's view of the most
-   *   recently closed ledger.
+   * @return An optionally-present {@link ServerInfoValidatedLedger} containing information about the server's view of
+   *   the most recently closed ledger.
    */
   @JsonProperty("closed_ledger")
   Optional<ServerInfoValidatedLedger> closedLedger();
@@ -202,4 +203,63 @@ public interface ServerInfo {
     }
   }
 
+
+  /**
+   * (Admin only) Information about the rate of a job the server is doing and how much time it spends on it.
+   */
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableJobType.class)
+  @JsonDeserialize(as = ImmutableJobType.class)
+  interface JobType {
+
+    /**
+     * Construct a builder for this class.
+     *
+     * @return An {@link ImmutableJobType.Builder}.
+     */
+    static ImmutableJobType.Builder builder() {
+      return ImmutableJobType.builder();
+    }
+
+    /**
+     * The type of job.
+     *
+     * @return A {@link String} representing the job type.
+     */
+    @JsonProperty("job_type")
+    String jobType();
+
+    /**
+     * The number of jobs that are currently in progress.
+     *
+     * @return An optionally-present {@link UnsignedInteger} representing the number of jobs in progress.
+     */
+    @JsonProperty("in_progress")
+    Optional<UnsignedInteger> inProgress();
+
+    /**
+     * The peak time of the job.
+     *
+     * @return An optionally-present {@link UnsignedInteger} denoting the peak time.
+     */
+    @JsonProperty("peak_time")
+    Optional<UnsignedInteger> peakTime();
+
+    /**
+     * The number of jobs of this type performed per second.
+     *
+     * @return An optionally-present {@link UnsignedInteger} denoting the number of jobs.
+     */
+    @JsonProperty("per_second")
+    Optional<UnsignedInteger> perSecond();
+
+    /**
+     * The average time, in seconds, jobs of this type take to perform.
+     *
+     * @return An optionally-present {@link UnsignedInteger} denoting the average time.
+     */
+    @JsonProperty("avg_time")
+    Optional<UnsignedInteger> averageTime();
+
+  }
 }

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 /**
  * An implementation of {@link ServerInfo} that conforms to Clio server payloads.
  */
@@ -24,6 +26,10 @@ public interface ClioServerInfo extends ServerInfo {
     return ImmutableClioServerInfo.builder();
   }
 
+  default ServerInfoType type() {
+    return ServerInfoType.CLIO_SERVER_INFO;
+  }
+
   /**
    * The version number of the running clio version.
    *
@@ -38,5 +44,5 @@ public interface ClioServerInfo extends ServerInfo {
    * @return A {@link String} containing the version number.
    */
   @JsonProperty("rippled_version")
-  String rippledVersion();
+  Optional<String> rippledVersion();
 }

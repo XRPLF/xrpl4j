@@ -93,17 +93,6 @@ public interface ServerInfo {
   }
 
   /**
-   * Information on the most recently closed ledger that has not been validated by consensus. If the most recently
-   * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
-   * xrpl.org docs, this field is optionally present in any server response and may be omitted.
-   *
-   * @return An optionally-present {@link ValidatedLedger} containing information about the server's view of the most
-   *   recently closed ledger.
-   */
-  @JsonProperty("closed_ledger")
-  Optional<ValidatedLedger> closedLedger();
-
-  /**
    * Range expression indicating the sequence numbers of the ledger versions the local rippled has in its database. This
    * may be a disjoint sequence such as {@code 24900901-24900984,24901116-24901158}. If the server does not have any
    * complete ledgers (for example, it recently started syncing with the network), this will be an empty
@@ -155,17 +144,6 @@ public interface ServerInfo {
   Optional<BigDecimal> loadFactor();
 
   /**
-   * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the
-   * {@code [validator_token]} or {@code [validation_seed]} config field. Per xrpl.org docs, this field is optionally
-   * present in any server response and may be omitted because it is only returned when requested via an admin
-   * host/port.
-   *
-   * @return A {@link String} containing the validator's public key.
-   */
-  @JsonProperty("pubkey_validator")
-  Optional<String> publicKeyValidator();
-
-  /**
    * Information about the most recent fully-validated ledger. If the most recent validated ledger is not available, the
    * response omits this field and includes {@link #closedLedger()} instead. Per xrpl.org docs, this field is optionally
    * present in any server response and may be omitted.
@@ -183,17 +161,6 @@ public interface ServerInfo {
    */
   @JsonProperty("validation_quorum")
   Optional<UnsignedInteger> validationQuorum();
-
-  /**
-   * (Admin only) Either the human-readable time, in UTC, when the current validator list will expire, the string
-   * {@code "unknown"} if the server has yet to load a published validator list or the string {@code "never"} if the
-   * server uses a static validator list. Per xrpl.org docs, this field is optionally present in any server response and
-   * may be omitted because it is only returned when requested via an admin host/port.
-   *
-   * @return An optionally-present {@link String} containing the validator expiration list.
-   */
-  @JsonProperty("validator_list_expires")
-  Optional<String> validatorListExpires();
 
   /**
    * Deserializes complete_ledgers field in the server_info response from hyphen-separated ledger indices to list of

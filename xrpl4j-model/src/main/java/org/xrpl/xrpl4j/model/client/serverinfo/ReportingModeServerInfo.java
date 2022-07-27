@@ -30,6 +30,10 @@ public interface ReportingModeServerInfo extends ServerInfo {
     return ImmutableReportingModeServerInfo.builder();
   }
 
+  default ServerInfoType type() {
+    return ServerInfoType.REPORTING_MODE_SERVER_INFO;
+  }
+
   /**
    * If {@code true}, this server is amendment blocked.
    *
@@ -182,4 +186,37 @@ public interface ReportingModeServerInfo extends ServerInfo {
    */
   @JsonProperty("uptime")
   UnsignedLong upTime();
+
+  /**
+   * Information on the most recently closed ledger that has not been validated by consensus. If the most recently
+   * validated ledger is available, the response omits this field and includes {@link #validatedLedger()} instead.  Per
+   * xrpl.org docs, this field is optionally present in any server response and may be omitted.
+   *
+   * @return An optionally-present {@link ServerInfoLedger} containing information about the server's view of the most
+   *   recently closed ledger.
+   */
+  @JsonProperty("closed_ledger")
+  Optional<ServerInfoLedger> closedLedger();
+
+  /**
+   * (Admin only) Public key used by this node to sign ledger validations. This validation key pair is derived from the
+   * {@code [validator_token]} or {@code [validation_seed]} config field. Per xrpl.org docs, this field is optionally
+   * present in any server response and may be omitted because it is only returned when requested via an admin
+   * host/port.
+   *
+   * @return A {@link String} containing the validator's public key.
+   */
+  @JsonProperty("pubkey_validator")
+  Optional<String> publicKeyValidator();
+
+  /**
+   * (Admin only) Either the human-readable time, in UTC, when the current validator list will expire, the string
+   * {@code "unknown"} if the server has yet to load a published validator list or the string {@code "never"} if the
+   * server uses a static validator list. Per xrpl.org docs, this field is optionally present in any server response and
+   * may be omitted because it is only returned when requested via an admin host/port.
+   *
+   * @return An optionally-present {@link String} containing the validator expiration list.
+   */
+  @JsonProperty("validator_list_expires")
+  Optional<String> validatorListExpires();
 }

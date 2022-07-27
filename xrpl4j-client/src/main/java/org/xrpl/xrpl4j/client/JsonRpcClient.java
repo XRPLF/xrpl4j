@@ -137,6 +137,7 @@ public interface JsonRpcClient {
     try {
       return objectMapper.readValue(result.toString(), resultType);
     } catch (JsonProcessingException e) {
+      logger.error("JSON that caused the exception: " + result);
       throw new JsonRpcClientErrorException(e);
     }
   }

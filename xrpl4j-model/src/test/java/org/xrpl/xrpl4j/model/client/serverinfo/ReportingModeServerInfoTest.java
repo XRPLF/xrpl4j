@@ -150,7 +150,6 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange(completeLedgers)) // <-- use completeLedgers here.
       .hostId("trace")
       .ioLatencyMs(UnsignedLong.ONE)
-      .jqTransOverflow("0")
       .lastClose(LastClose.builder()
         .convergeTimeSeconds(BigDecimal.valueOf(2d))
         .proposers(UnsignedInteger.valueOf(34))

@@ -35,7 +35,7 @@ public interface ReportingModeServerInfo extends ServerInfo {
    *
    * @return A {@link ServerInfoType}.
    */
-  @Value.Default
+  @Value.Derived
   default ServerInfoType type() {
     return ServerInfoType.REPORTING_MODE_SERVER_INFO;
   }

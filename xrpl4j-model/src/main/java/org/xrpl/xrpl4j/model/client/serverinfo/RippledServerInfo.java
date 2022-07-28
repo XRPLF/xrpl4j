@@ -36,7 +36,7 @@ public interface RippledServerInfo extends ServerInfo {
    *
    * @return A {@link ServerInfoType}.
    */
-  @Value.Default
+  @Value.Derived
   default ServerInfoType type() {
     return ServerInfoType.RIPPLED_SERVER_INFO;
   }

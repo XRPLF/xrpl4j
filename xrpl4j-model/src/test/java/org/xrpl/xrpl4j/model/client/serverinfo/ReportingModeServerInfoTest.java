@@ -42,7 +42,6 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       "      \"complete_ledgers\": \"54300020-54300729\",\n" +
       "      \"hostid\": \"trace\",\n" +
       "      \"io_latency_ms\": 1,\n" +
-      "      \"jq_trans_overflow\": \"0\",\n" +
       "      \"reporting\": \"0\",\n" +
       "      \"last_close\": {\n" +
       "        \"converge_time_s\": 2.0,\n" +
@@ -115,7 +114,7 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
 
     assertCanDeserialize(json, reportingResult);
     assertThat(
-      reportingResult.info().map(($) -> false, reportingInfo -> reportingInfo.type(), ($) -> false)
+      reportingResult.info().map(($) -> false, ($) -> false, reportingInfo -> reportingInfo.type())
         .equals(ServerInfoType.REPORTING_MODE_SERVER_INFO)
     ).isTrue();
 

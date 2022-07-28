@@ -114,7 +114,7 @@ public class RippledServerInfoTest extends AbstractJsonTest {
 
     assertCanDeserialize(json, rippledResult);
     assertThat(
-      rippledResult.info().map(($) -> false, rippledInfo -> rippledInfo.type(), ($) -> false)
+      rippledResult.info().map(rippledInfo -> rippledInfo.type(), ($) -> false, ($) -> false)
         .equals(ServerInfoType.RIPPLED_SERVER_INFO)
     ).isTrue();
 

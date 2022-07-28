@@ -124,17 +124,6 @@ public interface ServerInfo {
   }
 
   /**
-   * The number of times (since starting up) that this server has had over 250 transactions waiting to be processed at
-   * once. A large number here may mean that your server is unable to handle the transaction load of the XRP Ledger
-   * network. For detailed recommendations of future-proof server specifications, see
-   * <a href="https://xrpl.org/capacity-planning.html">Capacity Planning</a>.
-   *
-   * @return An optionally-present {@link String}.
-   */
-  @JsonProperty("jq_trans_overflow")
-  Optional<String> jqTransOverflow();
-
-  /**
    * The load-scaled open ledger transaction cost the server is currently enforcing, as a multiplier on the base
    * transaction cost. For example, at 1000 load factor and a reference transaction cost of 10 drops of XRP, the
    * load-scaled transaction cost is 10,000 drops (0.01 XRP). The load factor is determined by the highest of the

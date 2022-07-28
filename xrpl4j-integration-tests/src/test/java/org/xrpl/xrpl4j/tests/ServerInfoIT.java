@@ -13,10 +13,22 @@ import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoType;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Integration test for different types of ServerInfo values.
+ */
 public class ServerInfoIT {
 
   Logger logger = LoggerFactory.getLogger(this.getClass());
 
+  /**
+   * This test was written to run a long-running test on different Server Info models. Server Info is an implementation
+   * detail and different servers could respond differently. This test essentially verifies the correctness of these
+   * models. In the future, if the response structure changes, this test will alarm us to take action but has to be run
+   * manually everytime since it is disabled for CI.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @throws InterruptedException If {@link Thread} is interrupted.
+   */
   @Timeout(value = 3, unit = TimeUnit.HOURS)
   @Test
   @Disabled

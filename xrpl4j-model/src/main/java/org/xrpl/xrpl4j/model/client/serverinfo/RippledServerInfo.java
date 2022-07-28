@@ -31,6 +31,12 @@ public interface RippledServerInfo extends ServerInfo {
     return ImmutableRippledServerInfo.builder();
   }
 
+  /**
+   * The type of Server Info response.
+   *
+   * @return A {@link ServerInfoType}.
+   */
+  @Value.Default
   default ServerInfoType type() {
     return ServerInfoType.RIPPLED_SERVER_INFO;
   }

@@ -113,6 +113,10 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       "  }";
 
     assertCanDeserialize(json, rippledResult);
+    assertThat(
+      rippledResult.info().map(($) -> false, rippledInfo -> rippledInfo.type(), ($) -> false)
+        .equals(ServerInfoType.RIPPLED_SERVER_INFO)
+    ).isTrue();
 
     boolean inRange = rippledResult.info().map(
       reportingServerInfoCopy -> reportingServerInfoCopy.isLedgerInCompleteLedgers(UnsignedLong.valueOf(54300025)),

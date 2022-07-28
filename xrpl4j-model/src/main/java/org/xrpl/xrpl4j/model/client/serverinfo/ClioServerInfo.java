@@ -26,6 +26,12 @@ public interface ClioServerInfo extends ServerInfo {
     return ImmutableClioServerInfo.builder();
   }
 
+  /**
+   * The type of Server Info response.
+   *
+   * @return A {@link ServerInfoType}.
+   */
+  @Value.Default
   default ServerInfoType type() {
     return ServerInfoType.CLIO_SERVER_INFO;
   }

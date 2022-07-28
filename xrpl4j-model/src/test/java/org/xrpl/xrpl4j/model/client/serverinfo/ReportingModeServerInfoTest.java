@@ -114,6 +114,10 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       "  }";
 
     assertCanDeserialize(json, reportingResult);
+    assertThat(
+      reportingResult.info().map(($) -> false, reportingInfo -> reportingInfo.type(), ($) -> false)
+        .equals(ServerInfoType.REPORTING_MODE_SERVER_INFO)
+    ).isTrue();
 
     boolean inRange = reportingResult.info().map(
       ($) -> false,

@@ -49,6 +49,10 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       "  }";
 
     assertCanDeserialize(json, clioResult);
+    assertThat(
+      clioResult.info().map(($) -> false, clioInfo -> clioInfo.type(), ($) -> false)
+      .equals(ServerInfoType.CLIO_SERVER_INFO)
+    ).isTrue();
 
     boolean inRange = clioResult.info().map(
       ($) -> false,

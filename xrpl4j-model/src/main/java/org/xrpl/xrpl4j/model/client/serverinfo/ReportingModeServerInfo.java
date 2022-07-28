@@ -30,6 +30,12 @@ public interface ReportingModeServerInfo extends ServerInfo {
     return ImmutableReportingModeServerInfo.builder();
   }
 
+  /**
+   * The type of Server Info response.
+   *
+   * @return A {@link ServerInfoType}.
+   */
+  @Value.Default
   default ServerInfoType type() {
     return ServerInfoType.REPORTING_MODE_SERVER_INFO;
   }

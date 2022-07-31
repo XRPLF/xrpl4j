@@ -27,16 +27,6 @@ public interface ClioServerInfo extends ServerInfo {
   }
 
   /**
-   * The type of Server Info response.
-   *
-   * @return A {@link ServerInfoType}.
-   */
-  @Value.Derived
-  default ServerInfoType type() {
-    return ServerInfoType.CLIO_SERVER_INFO;
-  }
-
-  /**
    * The version number of the running clio version.
    *
    * @return A {@link String} containing the version number.

@@ -27,7 +27,7 @@ public class ServerInfoIT {
    * manually everytime since it is disabled for CI.
    *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @throws InterruptedException If {@link Thread} is interrupted.
+   * @throws InterruptedException        If {@link Thread} is interrupted.
    */
   @Timeout(value = 3, unit = TimeUnit.HOURS)
   @Test

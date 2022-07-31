@@ -28,11 +28,11 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
 
 /**
- * Information about the last time the server closed a ledger, including the amount of time it took to reach a
- * consensus and the number of trusted validators participating.
+ * Information about the last time the server closed a ledger, including the amount of time it took to reach a consensus
+ * and the number of trusted validators participating.
  *
- * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated.
- *   Use {@link LastClose} instead.
+ * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated. Use
+ *   {@link LastClose} instead.
  */
 @Deprecated
 @Value.Immutable

@@ -33,6 +33,9 @@ import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -45,11 +48,9 @@ import java.util.stream.Stream;
 /**
  * Maps the fields inside the "info" section of the "server_info" API call.
  *
- * @deprecated {@link ServerInfo} is deprecated to allow various ServerInfo types like
- *   specialised Clio {@link org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo} and Reporting Mode
- *   {@link org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo} servers and the generic rippled server
- *   {@link org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo}. Use
- *   {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+ * @deprecated {@link ServerInfo} is deprecated to allow various ServerInfo types like specialised Clio
+ *   {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the generic rippled server
+ *   {@link RippledServerInfo}. Use {@link ServerInfo}.
  */
 @Deprecated
 @Immutable
@@ -103,8 +104,8 @@ public interface ServerInfo {
   /**
    * Range expression indicating the sequence numbers of the ledger versions the local rippled has in its database. This
    * may be a disjoint sequence such as {@code 24900901-24900984,24901116-24901158}. If the server does not have any
-   * complete ledgers (for example, it recently started syncing with the network), this will be an empty {@link
-   * String}.
+   * complete ledgers (for example, it recently started syncing with the network), this will be an empty
+   * {@link String}.
    *
    * @return A {@link String} representing a range of ledger sequences.
    */
@@ -114,15 +115,14 @@ public interface ServerInfo {
   /**
    * Transforms {@link #completeLedgers()} from a range expression to a {@code List<Range<UnsignedLong>>}.
    *
-   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a
-   *   rippled node contains in its history.
+   * @return A {@link List} of {@link Range} of type {@link UnsignedLong} containing the range of ledgers that a rippled
+   *   node contains in its history.
    */
   @Derived
   @JsonIgnore
   default List<Range<UnsignedLong>> completeLedgerRanges() {
     // Split completeLedgers by comma...
-    return Stream.of(completeLedgers().split(","))
-      .map(String::trim)
+    return Stream.of(completeLedgers().split(",")).map(String::trim)
       .filter($ -> !$.equals("empty")) // <-- `empty` is a valid value for completed ledgers.
       .map(range -> {
         final String[] parts = range.split("-");
@@ -154,14 +154,12 @@ public interface ServerInfo {
           LOGGER.warn("Range had too many dashes (ignoring range)");
           return null; // <-- filtered out of the ultimate List below.
         }
-      })
-      .filter(Objects::nonNull)
-      .collect(Collectors.toList());
+      }).filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   /**
-   * Determines if the supplied {@code ledgerIndex} exists on the rippled server by inspecting {@link
-   * #completeLedgers()}.
+   * Determines if the supplied {@code ledgerIndex} exists on the rippled server by inspecting
+   * {@link #completeLedgers()}.
    *
    * @param ledgerIndex An {@link UnsignedLong} representing a particular ledger index.
    *
@@ -171,8 +169,7 @@ public interface ServerInfo {
   @Derived
   @JsonIgnore
   default boolean isLedgerInCompleteLedgers(final UnsignedLong ledgerIndex) {
-    return this.completeLedgerRanges().stream()
-      .anyMatch(range -> range.contains(ledgerIndex));
+    return this.completeLedgerRanges().stream().anyMatch(range -> range.contains(ledgerIndex));
   }
 
   /**
@@ -363,9 +360,9 @@ public interface ServerInfo {
   UnsignedInteger validationQuorum();
 
   /**
-   * (Admin only) Either the human readable time, in UTC, when the current validator list will expire, the string {@code
-   * "unknown"} if the server has yet to load a published validator list or the string {@code "never"} if the server
-   * uses a static validator list.
+   * (Admin only) Either the human readable time, in UTC, when the current validator list will expire, the string
+   * {@code "unknown"} if the server has yet to load a published validator list or the string {@code "never"} if the
+   * server uses a static validator list.
    *
    * @return An optionally-present {@link String} containing the validator expiration list.
    */

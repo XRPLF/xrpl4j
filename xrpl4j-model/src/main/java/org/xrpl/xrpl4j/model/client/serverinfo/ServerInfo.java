@@ -149,7 +149,8 @@ public interface ServerInfo {
 
   /**
    * Minimum number of trusted validations required to validate a ledger version. Some circumstances may cause the
-   * server to require more validations.
+   * server to require more validations. Additionally, some implemenations (e.g., clio) tries to get this info from
+   * rippled, but if rippled does not respond for some reason, the info is not included.
    *
    * @return An {@link UnsignedInteger} representing the quorum.
    */

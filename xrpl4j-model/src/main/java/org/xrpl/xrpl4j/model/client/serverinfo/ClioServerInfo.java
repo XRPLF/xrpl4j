@@ -45,7 +45,8 @@ public interface ClioServerInfo extends ServerInfo {
   String clioVersion();
 
   /**
-   * The version number of the running rippled version.
+   * The version number of the running rippled version. Optional because clio tries to get the info from rippled, but if
+   * there is an error for some reason, the info is not included.
    *
    * @return A {@link String} containing the version number.
    */

@@ -32,8 +32,8 @@ import java.util.List;
 /**
  * Information about the current load state of a rippled server.
  *
- * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated.
- *   Use {@link Load} instead.
+ * @deprecated Package org.xrpl.xrpl4j.model.client.server was deprecated hence this interface is also deprecated. Use
+ *   {@link Load} instead.
  */
 @Deprecated
 @Value.Immutable
@@ -51,8 +51,8 @@ public interface ServerInfoLoad {
   }
 
   /**
-   * (Admin only) Information about the rate of different types of jobs the server is doing and how much time
-   * it spends on each.
+   * (Admin only) Information about the rate of different types of jobs the server is doing and how much time it spends
+   * on each.
    *
    * @return A {@link List} of {@link JobType}s.
    */

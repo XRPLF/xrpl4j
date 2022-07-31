@@ -122,7 +122,8 @@ public interface ServerInfo {
   @JsonIgnore
   default List<Range<UnsignedLong>> completeLedgerRanges() {
     // Split completeLedgers by comma...
-    return Stream.of(completeLedgers().split(",")).map(String::trim)
+    return Stream.of(completeLedgers().split(","))
+      .map(String::trim)
       .filter($ -> !$.equals("empty")) // <-- `empty` is a valid value for completed ledgers.
       .map(range -> {
         final String[] parts = range.split("-");
@@ -154,7 +155,9 @@ public interface ServerInfo {
           LOGGER.warn("Range had too many dashes (ignoring range)");
           return null; // <-- filtered out of the ultimate List below.
         }
-      }).filter(Objects::nonNull).collect(Collectors.toList());
+      })
+      .filter(Objects::nonNull)
+      .collect(Collectors.toList());
   }
 
   /**

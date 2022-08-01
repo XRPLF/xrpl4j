@@ -93,6 +93,8 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       "      },\n" +
       "      \"load_factor\": 1,\n" +
       "      \"peers\": 21,\n" +
+      "      \"peer_disconnects\": 365016,\n" +
+      "      \"peer_disconnects_resources\": 336,\n" +
       "      \"pubkey_node\": \"n9KUjqxCr5FKThSNXdzb7oqN8rYwScB2dUnNqxQxbEA17JkaWy5x\",\n" +
       "      \"pubkey_validator\": \"nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9\",\n" +
       "      \"server_state\": \"proposing\",\n" +
@@ -128,6 +130,102 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       ($) -> false
     );
     assertThat(outOfRange).isFalse();
+  }
+
+  @Test
+  public void deserializeActualRippledResponse() throws JsonProcessingException {
+    String json = "{\n" +
+      "    \"info\": {\n" +
+      "      \"build_version\": \"1.7.3\",\n" +
+      "      \"complete_ledgers\": \"3-9170366\",\n" +
+      "      \"hostid\": \"MOLE\",\n" +
+      "      \"io_latency_ms\": 1,\n" +
+      "      \"jq_trans_overflow\": \"0\",\n" +
+      "      \"last_close\": {\n" +
+      "        \"converge_time_s\": 2,\n" +
+      "        \"proposers\": 4\n" +
+      "      },\n" +
+      "      \"load_factor\": 1,\n" +
+      "      \"peer_disconnects\": \"1937\",\n" +
+      "      \"peer_disconnects_resources\": \"1933\",\n" +
+      "      \"peers\": 4,\n" +
+      "      \"pubkey_node\": \"n9MmdUoYxpTMPhD8Fxky48wXnmr3zu5hqG1httdLrD8JY66GbdTq\",\n" +
+      "      \"server_state\": \"full\",\n" +
+      "      \"server_state_duration_us\": \"20369650238475\",\n" +
+      "      \"state_accounting\": {\n" +
+      "        \"connected\": {\n" +
+      "          \"duration_us\": \"2001303\",\n" +
+      "          \"transitions\": 1\n" +
+      "        },\n" +
+      "        \"disconnected\": {\n" +
+      "          \"duration_us\": \"2203422\",\n" +
+      "          \"transitions\": 1\n" +
+      "        },\n" +
+      "        \"full\": {\n" +
+      "          \"duration_us\": \"20369650238475\",\n" +
+      "          \"transitions\": 1\n" +
+      "        },\n" +
+      "        \"syncing\": {\n" +
+      "          \"duration_us\": \"5003539\",\n" +
+      "          \"transitions\": 1\n" +
+      "        },\n" +
+      "        \"tracking\": {\n" +
+      "          \"duration_us\": \"10\",\n" +
+      "          \"transitions\": 1\n" +
+      "        }\n" +
+      "      },\n" +
+      "      \"time\": \"2022-Jul-26 19:14:02.337455 UTC\",\n" +
+      "      \"uptime\": 20369659,\n" +
+      "      \"validated_ledger\": {\n" +
+      "        \"age\": 1,\n" +
+      "        \"base_fee_xrp\": 1e-05,\n" +
+      "        \"hash\": \"B486A2A16FA1D2C70188054CE0ABA3159000DDEF4BA277D2E11DD828FA376475\",\n" +
+      "        \"reserve_base_xrp\": 20,\n" +
+      "        \"reserve_inc_xrp\": 5,\n" +
+      "        \"seq\": 9170366\n" +
+      "      },\n" +
+      "      \"validation_quorum\": 4\n" +
+      "    },\n" +
+      "    \"status\": \"success\"\n" +
+      "  }";
+
+    RippledServerInfo rippledServerInfo = RippledServerInfo.builder()
+      .buildVersion("1.7.3")
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange("3-9170366"))
+      .hostId("MOLE")
+      .ioLatencyMs(UnsignedLong.ONE)
+      .jqTransOverflow("0")
+      .lastClose(LastClose.builder().
+        convergeTimeSeconds(BigDecimal.valueOf(2))
+        .proposers(UnsignedInteger.valueOf(4))
+        .build())
+      .loadFactor(BigDecimal.ONE)
+      .peerDisconnects("1937")
+      .peerDisconnectsResources("1933")
+      .peers(UnsignedInteger.valueOf(4))
+      .publicKeyNode("n9MmdUoYxpTMPhD8Fxky48wXnmr3zu5hqG1httdLrD8JY66GbdTq")
+      .serverState("full")
+      .serverStateDurationUs("20369650238475")
+      .time(ZonedDateTime.parse("2022-Jul-26 19:14:02.337455 UTC",
+        DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSS z", Locale.US)).withZoneSameLocal(ZoneId.of("UTC")))
+      .upTime(UnsignedLong.valueOf(20369659))
+      .validatedLedger(ValidatedLedger.builder()
+        .age(UnsignedInteger.ONE)
+        .baseFeeXrp(new BigDecimal("0.000010"))
+        .hash(Hash256.of("B486A2A16FA1D2C70188054CE0ABA3159000DDEF4BA277D2E11DD828FA376475"))
+        .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(20)))
+        .reserveIncXrp(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
+        .sequence(LedgerIndex.of(UnsignedInteger.valueOf(9170366)))
+        .build())
+      .validationQuorum(UnsignedInteger.valueOf(4))
+      .build();
+
+    ServerInfoResult rippledResult = ServerInfoResult.builder()
+      .status("success")
+      .info(rippledServerInfo)
+      .build();
+
+    assertCanDeserialize(json, rippledResult);
   }
 
   /**
@@ -197,6 +295,8 @@ public class RippledServerInfoTest extends AbstractJsonTest {
         .build())
       .loadFactor(BigDecimal.ONE)
       .peers(UnsignedInteger.valueOf(21))
+      .peerDisconnects("365016")
+      .peerDisconnectsResources("336")
       .publicKeyNode("n9KUjqxCr5FKThSNXdzb7oqN8rYwScB2dUnNqxQxbEA17JkaWy5x")
       .publicKeyValidator("nHBk5DPexBjinXV8qHn7SEKzoxh2W92FxSbNTPgGtQYBzEF4msn9")
       .serverState("proposing")

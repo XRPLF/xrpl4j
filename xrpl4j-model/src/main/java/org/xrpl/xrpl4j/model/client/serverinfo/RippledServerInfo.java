@@ -32,16 +32,6 @@ public interface RippledServerInfo extends ServerInfo {
   }
 
   /**
-   * The type of Server Info response.
-   *
-   * @return A {@link ServerInfoType}.
-   */
-  @Value.Derived
-  default ServerInfoType type() {
-    return ServerInfoType.RIPPLED_SERVER_INFO;
-  }
-
-  /**
    * If {@code true}, this server is amendment blocked.
    *
    * @return {@code true} if this server is amendment blocked, otherwise {@code false}.

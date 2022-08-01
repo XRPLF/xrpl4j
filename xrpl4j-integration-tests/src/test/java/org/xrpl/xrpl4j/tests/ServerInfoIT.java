@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
-import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoType;
 
 import java.util.concurrent.TimeUnit;
 
@@ -50,11 +49,11 @@ public class ServerInfoIT {
     }
   }
 
-  private ServerInfoType getType(ServerInfo info) {
+  private String getType(ServerInfo info) {
     return info.map(
-      rippled -> rippled.type(),
-      clio -> clio.type(),
-      reporting -> reporting.type()
+      rippled -> "rippled",
+      clio -> "clio",
+      reporting -> "reporting"
     );
   }
 

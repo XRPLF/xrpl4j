@@ -195,8 +195,8 @@ public class RippledServerInfoTest extends AbstractJsonTest {
       .hostId("MOLE")
       .ioLatencyMs(UnsignedLong.ONE)
       .jqTransOverflow("0")
-      .lastClose(LastClose.builder().
-        convergeTimeSeconds(BigDecimal.valueOf(2))
+      .lastClose(LastClose.builder()
+        .convergeTimeSeconds(BigDecimal.valueOf(2))
         .proposers(UnsignedInteger.valueOf(4))
         .build())
       .loadFactor(BigDecimal.ONE)

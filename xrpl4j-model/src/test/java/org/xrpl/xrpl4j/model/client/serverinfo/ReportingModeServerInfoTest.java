@@ -224,7 +224,10 @@ public class ReportingModeServerInfoTest extends AbstractJsonTest {
       "    \"warnings\": [\n" +
       "      {\n" +
       "        \"id\": 1004,\n" +
-      "        \"message\": \"This is a reporting server.  The default behavior of a reporting server is to only return validated data. If you are looking for not yet validated data, include \\\"ledger_index : current\\\" in your request, which will cause this server to forward the request to a p2p node. If the forward is successful the response will include \\\"forwarded\\\" : \\\"true\\\"\"\n" +
+      "        \"message\": \"This is a reporting server.  The default behavior of a reporting server is to only " +
+      "            return validated data. If you are looking for not yet validated data, include \\\"ledger_index : " +
+      "            current\\\" in your request, which will cause this server to forward the request to a p2p node. If" +
+      "            the forward is successful the response will include \\\"forwarded\\\" : \\\"true\\\"\"\n" +
       "      }\n" +
       "    ]\n" +
       "  }";

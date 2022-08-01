@@ -208,7 +208,8 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       "    \"validated\": true,\n" +
       "    \"status\": \"success\",\n" +
       "    \"warnings\": [\n" +
-      "      \"This is a clio server. clio only serves validated data. If you want to talk to rippled, include 'ledger_index':'current' in your request\"\n" +
+      "      \"This is a clio server. clio only serves validated data. If you want to talk to rippled, include" +
+      "         'ledger_index':'current' in your request\"\n" +
       "    ]\n" +
       "  }";
 

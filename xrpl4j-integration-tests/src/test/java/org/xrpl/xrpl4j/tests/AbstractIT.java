@@ -268,8 +268,8 @@ public abstract class AbstractIT {
   }
 
   /**
-   * Create a trustline between the given issuer and counterparty accounts for the given currency code and
-   * with the given limit.
+   * Create a trustline between the given issuer and counterparty accounts for the given currency code and with the
+   * given limit.
    *
    * @param currency           The currency code of the trustline to create.
    * @param value              The trustline limit of the trustline to create.
@@ -278,6 +278,7 @@ public abstract class AbstractIT {
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @return The {@link TrustLine} that gets created.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(

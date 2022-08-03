@@ -15,7 +15,6 @@ public class UnlModifyJsonTests  extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     UnlModify unlModify = UnlModify.builder()
-      .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
       .signingPublicKey("")
@@ -25,7 +24,7 @@ public class UnlModifyJsonTests  extends AbstractJsonTest {
       .build();
 
     String json = "{" +
-      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Account\":\"" + UnlModify.ACCOUNT_ZERO + "\"," +
       "\"Fee\":\"12\"," +
       "\"LedgerSequence\":67850752," +
       "\"Sequence\":2470665," +

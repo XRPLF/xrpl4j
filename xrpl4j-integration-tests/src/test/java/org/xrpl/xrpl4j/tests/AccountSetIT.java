@@ -134,10 +134,10 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
-      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info(
-      "AccountSet transaction successful: {}{}", url, response.transactionResult().hash()
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     ///////////////////////
@@ -195,11 +195,9 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
-      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info(
-      "AccountSet SetFlag transaction successful (asf={}; arf={}): {}{}",
-      accountSetFlag, accountRootFlag, url, response.transactionResult().hash()
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     /////////////////////////
@@ -233,11 +231,9 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
-      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info(
-      "AccountSet ClearFlag transaction successful (asf={}; arf={}): {}{}",
-      accountSetFlag, accountRootFlag, url, response.transactionResult().hash()
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     /////////////////////////

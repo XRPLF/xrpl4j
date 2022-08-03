@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,10 @@ import java.util.function.Function;
 public interface CurrencyAmount {
 
   long ONE_XRP_IN_DROPS = 1_000_000L;
-  long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
+
+  // <-- per https://xrpl.org/rippleapi-reference.html#value
+  long MAX_XRP = 100_000_000_000L;
+
   long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
 
   /**
@@ -63,9 +66,9 @@ public interface CurrencyAmount {
    * Map this {@link CurrencyAmount} to an instance of {@link R}, depending on its actualy polymorphic sub-type.
    *
    * @param xrpCurrencyAmountMapper    A {@link Function} that is called if this instance is of type
-   *                                     {@link XrpCurrencyAmount}.
+   *                                   {@link XrpCurrencyAmount}.
    * @param issuedCurrencyAmountMapper A {@link Function} that is called if this instance is  of type
-   *                                     {@link IssuedCurrencyAmount}.
+   *                                   {@link IssuedCurrencyAmount}.
    * @param <R>                        The type of object to return after mapping.
    *
    * @return A {@link R} that is constructed by the appropriate mapper function.

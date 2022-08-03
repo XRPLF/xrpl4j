@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,9 +42,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A feign HTTP client for interacting with the rippled JSON RPC API. This client is strictly responsible for
- * making network calls and deserializing responses. All higher order functionality such as signing and serialization
- * should be implemented in a wrapper class.
+ * A feign HTTP client for interacting with the rippled JSON RPC API. This client is strictly responsible for making
+ * network calls and deserializing responses. All higher order functionality such as signing and serialization should be
+ * implemented in a wrapper class.
  *
  * <p>Note: This client is currently marked as {@link Beta}, and should be used as a reference implementation ONLY.
  */
@@ -102,6 +102,7 @@ public interface JsonRpcClient {
    * @param <T>        The extension of {@link XrplResult} corresponding to the request method.
    *
    * @return The {@link T} representing the result of the request.
+   *
    * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */
@@ -114,16 +115,17 @@ public interface JsonRpcClient {
   }
 
   /**
-   * Send a given request to rippled. Unlike {@link JsonRpcClient#send(JsonRpcRequest, Class)}, this
-   * override requires a {@link JavaType} as the resultType, which can be useful when expecting a {@link XrplResult}
-   * with type parameters. In this case, you can use an {@link ObjectMapper}'s
-   * {@link com.fasterxml.jackson.databind.type.TypeFactory} to construct parameterized types.
+   * Send a given request to rippled. Unlike {@link JsonRpcClient#send(JsonRpcRequest, Class)}, this override requires a
+   * {@link JavaType} as the resultType, which can be useful when expecting a {@link XrplResult} with type parameters.
+   * In this case, you can use an {@link ObjectMapper}'s {@link com.fasterxml.jackson.databind.type.TypeFactory} to
+   * construct parameterized types.
    *
    * @param request    The {@link JsonRpcRequest} to send to the server.
    * @param resultType The type of {@link XrplResult} that should be returned, converted to a {@link JavaType}.
    * @param <T>        The extension of {@link XrplResult} corresponding to the request method.
    *
    * @return The {@link T} representing the result of the request.
+   *
    * @throws JsonRpcClientErrorException If rippled returns an error message, or if the response could not be
    *                                     deserialized to the provided {@link JsonRpcRequest} type.
    */

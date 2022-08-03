@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -46,10 +48,8 @@ public class AbstractJsonTest {
     objectMapper = ObjectMapperFactory.create();
   }
 
-  protected void assertCanSerializeAndDeserialize(
-    Transaction transaction,
-    String json
-  ) throws JsonProcessingException, JSONException {
+  protected void assertCanSerializeAndDeserialize(Transaction transaction, String json)
+    throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(transaction);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
@@ -57,10 +57,8 @@ public class AbstractJsonTest {
     assertThat(deserialized).isEqualTo(transaction);
   }
 
-  protected void assertCanSerializeAndDeserialize(
-    XrplResult result,
-    String json
-  ) throws JsonProcessingException, JSONException {
+  protected void assertCanSerializeAndDeserialize(XrplResult result, String json)
+    throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(result);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
@@ -68,10 +66,8 @@ public class AbstractJsonTest {
     assertThat(deserialized).isEqualTo(result);
   }
 
-  protected void assertCanSerializeAndDeserialize(
-    XrplRequestParams params,
-    String json
-  ) throws JsonProcessingException, JSONException {
+  protected void assertCanSerializeAndDeserialize(XrplRequestParams params, String json)
+    throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(params);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
@@ -79,10 +75,8 @@ public class AbstractJsonTest {
     assertThat(deserialized).isEqualTo(params);
   }
 
-  protected void assertCanSerializeAndDeserialize(
-    LedgerObject ledgerObject,
-    String json
-  ) throws JsonProcessingException, JSONException {
+  protected void assertCanSerializeAndDeserialize(LedgerObject ledgerObject, String json)
+    throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(ledgerObject);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 
@@ -90,10 +84,30 @@ public class AbstractJsonTest {
     assertThat(deserialized).isEqualTo(ledgerObject);
   }
 
-  protected void assertCanDeserialize(
-    String json,
-    XrplResult result
-  ) throws JsonProcessingException {
+  @Deprecated
+  protected void assertCanSerializeAndDeserialize(ServerInfoLedger serverInfoLedger, String json)
+    throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(serverInfoLedger);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    ServerInfoLedger deserialized = objectMapper.readValue(serialized, ServerInfoLedger.class);
+    assertThat(deserialized).isEqualTo(serverInfoLedger);
+  }
+
+  protected void assertCanSerializeAndDeserialize(
+    ValidatedLedger serverInfoLedger, String json
+  )
+    throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(serverInfoLedger);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+
+    ValidatedLedger deserialized = objectMapper.readValue(
+      serialized, ValidatedLedger.class
+    );
+    assertThat(deserialized).isEqualTo(serverInfoLedger);
+  }
+
+  protected void assertCanDeserialize(String json, XrplResult result) throws JsonProcessingException {
     XrplResult deserialized = objectMapper.readValue(json, result.getClass());
     assertThat(deserialized).isEqualTo(result);
   }

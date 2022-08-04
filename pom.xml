@@ -301,9 +301,7 @@
     <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
     <checkstyle.violationSeverity>warning</checkstyle.violationSeverity>
 
-    <skipITs>false</skipITs>
     <useLocal>false</useLocal>
-
 
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
     <jackson.version>2.13.3</jackson.version>
@@ -378,41 +376,9 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>2.22.2</version>
-          <configuration>
-            <skipITs>${skipITs}</skipITs>
-            <argLine>${failsafe.argLine}</argLine>
-          </configuration>
           <executions>
             <execution>
-              <id>integration-tests-testnet</id>
-              <goals>
-                <goal>integration-test</goal>
-                <goal>verify</goal>
-              </goals>
-              <configuration>
-                <systemPropertyVariables>
-                  <useTestnet>true</useTestnet>
-                  <useLocal>${useLocal}</useLocal>
-                </systemPropertyVariables>
-                <skipTests>${useLocal}</skipTests>
-              </configuration>
-            </execution>
-            <execution>
-              <id>integration-tests-devnet</id>
-              <goals>
-                <goal>integration-test</goal>
-                <goal>verify</goal>
-              </goals>
-              <configuration>
-                <systemPropertyVariables>
-                  <useDevnet>true</useDevnet>
-                  <useLocal>${useLocal}</useLocal>
-                </systemPropertyVariables>
-                <skipTests>${useLocal}</skipTests>
-              </configuration>
-            </execution>
-            <execution>
-              <id>integration-tests-local</id>
+              <id>integration-tests</id>
               <goals>
                 <goal>integration-test</goal>
                 <goal>verify</goal>

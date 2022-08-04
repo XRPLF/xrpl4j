@@ -74,6 +74,9 @@ import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -164,6 +167,7 @@ public class XrplClient {
    *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/submit.html"
    */
@@ -187,6 +191,7 @@ public class XrplClient {
    * @param <T>               The type of {@link Transaction} contained in the {@link SignedTransaction} object.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <T extends Transaction> SubmitResult<T> submit(
@@ -208,6 +213,7 @@ public class XrplClient {
    * @param signedTransaction A {@link org.xrpl.xrpl4j.crypto.signing.SignedTransaction} to submit.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
@@ -242,6 +248,7 @@ public class XrplClient {
    * @param <T>         A type parameter for the type of {@link Transaction} being submitted.
    *
    * @return A {@link SubmitMultiSignedResult} of type {@link T}.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(
@@ -261,6 +268,7 @@ public class XrplClient {
    * Get the current state of the open-ledger requirements for transaction costs.
    *
    * @return A {@link FeeResult} containing information about current transaction costs.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/fee.html"
    */
@@ -276,6 +284,7 @@ public class XrplClient {
    * Get the ledger index of a tx result response. If not present, throw an exception.
    *
    * @return A string containing value of last validated ledger index.
+   *
    * @throws JsonRpcClientErrorException when client encounters errors related to calling rippled JSON RPC API..
    */
   protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
@@ -291,8 +300,8 @@ public class XrplClient {
    *
    * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
    *
-   * @return the {@link TransactionResult} for a validated transaction and empty response for a
-   *   {@link Transaction} that is expired or not found.
+   * @return the {@link TransactionResult} for a validated transaction and empty response for a {@link Transaction} that
+   *   is expired or not found.
    */
   protected Optional<? extends TransactionResult<? extends Transaction>> getValidatedTransaction(
     final Hash256 transactionHash
@@ -315,8 +324,8 @@ public class XrplClient {
    * Check if there missing ledgers in rippled in the given range.
    *
    * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
-   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the
-   *                                transaction will expire and won't be applied to the ledger.
+   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the transaction
+   *                                will expire and won't be applied to the ledger.
    *
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
@@ -341,14 +350,14 @@ public class XrplClient {
    * Check if the transaction is final on the ledger or not.
    *
    * @param transactionHash            {@link Hash256} of the submitted transaction to check the status for.
-   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash
-   *                                   was submitted. This can be obtained from submit() response of the tx as
+   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash was
+   *                                   submitted. This can be obtained from submit() response of the tx as
    *                                   validatedLedgerIndex.
    * @param lastLedgerSequence         The ledger index/sequence of type {@link UnsignedInteger} after which the
    *                                   transaction will expire and won't be applied to the ledger.
-   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}.
-   *                                   A {@link Transaction} is only valid if the Sequence number is exactly 1
-   *                                   greater than the previous transaction from the same account.
+   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}. A
+   *                                   {@link Transaction} is only valid if the Sequence number is exactly 1 greater
+   *                                   than the previous transaction from the same account.
    * @param account                    The unique {@link Address} of the account that initiated this transaction.
    *
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
@@ -430,9 +439,14 @@ public class XrplClient {
    * Get the "server_info" for the rippled node.
    *
    * @return A {@link ServerInfo} containing information about the server.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
+   * @deprecated This method is deprecated to accommodate 3 different types of server_info responses from the
+   *   specialised Clio {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the
+   *   generic rippled server {@link RippledServerInfo}. Use {@link XrplClient#serverInformation()}.
    */
+  @Deprecated
   public ServerInfo serverInfo() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)
@@ -442,12 +456,32 @@ public class XrplClient {
   }
 
   /**
+   * Get the "server_info" for the rippled node {@link RippledServerInfo}, clio server {@link ClioServerInfo} and
+   * reporting mode server {@link ReportingModeServerInfo}. You should be able to handle all these response types as
+   * {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+   *
+   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} containing information about the server.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/server_info.html"
+   */
+  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInformation()
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SERVER_INFO)
+      .build();
+
+    return jsonRpcClient.send(request, org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.class);
+  }
+
+  /**
    * Get the {@link AccountChannelsResult} for the account specified in {@code params} by making an account_channels
    * method call.
    *
    * @param params The {@link AccountChannelsRequestParams} to send in the request.
    *
    * @return The {@link AccountChannelsResult} returned by the account_channels method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountChannelsResult accountChannels(AccountChannelsRequestParams params) throws JsonRpcClientErrorException {
@@ -466,6 +500,7 @@ public class XrplClient {
    * @param params The {@link AccountCurrenciesRequestParams} to send in the request.
    *
    * @return The {@link AccountCurrenciesResult} returned by the account_currencies method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountCurrenciesResult accountCurrencies(
@@ -486,6 +521,7 @@ public class XrplClient {
    * @param params The {@link AccountInfoRequestParams} to send in the request.
    *
    * @return The {@link AccountInfoResult} returned by the account_info method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountInfoResult accountInfo(AccountInfoRequestParams params) throws JsonRpcClientErrorException {
@@ -573,6 +609,7 @@ public class XrplClient {
    * @param params The {@link AccountObjectsRequestParams} to send in the request.
    *
    * @return The {@link AccountObjectsResult} returned by the account_objects method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountObjectsResult accountObjects(AccountObjectsRequestParams params) throws JsonRpcClientErrorException {
@@ -584,12 +621,13 @@ public class XrplClient {
   }
 
   /**
-   * Get the {@link AccountOffersResult} for the account specified in {@code params} by making an account_offers
-   * method call.
+   * Get the {@link AccountOffersResult} for the account specified in {@code params} by making an account_offers method
+   * call.
    *
    * @param params The {@link AccountOffersRequestParams} to send in the request.
    *
    * @return The {@link AccountOffersResult} returned by the account_offers method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountOffersResult accountOffers(AccountOffersRequestParams params) throws JsonRpcClientErrorException {
@@ -607,6 +645,7 @@ public class XrplClient {
    * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
    *
    * @return The {@link DepositAuthorizedResult} returned by the deposit_authorized method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
@@ -625,6 +664,7 @@ public class XrplClient {
    * @param address The {@link Address} of the account to request.
    *
    * @return The {@link AccountTransactionsResult} returned by the account_tx method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountTransactionsResult accountTransactions(Address address) throws JsonRpcClientErrorException {
@@ -640,6 +680,7 @@ public class XrplClient {
    * @param params The {@link AccountTransactionsRequestParams} to send in the request.
    *
    * @return The {@link AccountTransactionsResult} returned by the account_tx method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountTransactionsResult accountTransactions(AccountTransactionsRequestParams params)
@@ -660,6 +701,7 @@ public class XrplClient {
    * @param <T>             Type parameter for the type of {@link Transaction} that the {@link TransactionResult} will
    *
    * @return A {@link TransactionResult} containing the requested transaction and other metadata.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <T extends Transaction> TransactionResult<T> transaction(
@@ -682,6 +724,7 @@ public class XrplClient {
    * @param params The {@link LedgerRequestParams} to send in the request.
    *
    * @return A {@link LedgerResult} containing the ledger details.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public LedgerResult ledger(LedgerRequestParams params) throws JsonRpcClientErrorException {
@@ -699,6 +742,7 @@ public class XrplClient {
    * @param params The {@link RipplePathFindRequestParams} to send in the request.
    *
    * @return A {@link RipplePathFindResult} containing possible paths.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public RipplePathFindResult ripplePathFind(RipplePathFindRequestParams params) throws JsonRpcClientErrorException {
@@ -716,6 +760,7 @@ public class XrplClient {
    * @param params The {@link AccountLinesRequestParams} to send in the request.
    *
    * @return The {@link AccountLinesResult} containing the requested trust lines.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public AccountLinesResult accountLines(AccountLinesRequestParams params) throws JsonRpcClientErrorException {
@@ -733,6 +778,7 @@ public class XrplClient {
    * @param params The {@link ChannelVerifyRequestParams} to send in the request.
    *
    * @return The result of the request, as a {@link ChannelVerifyResult}.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public ChannelVerifyResult channelVerify(ChannelVerifyRequestParams params) throws JsonRpcClientErrorException {
@@ -746,12 +792,12 @@ public class XrplClient {
   }
 
   /**
-   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled
-   * API method call.
+   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled API method call.
    *
    * @param params The {@link GatewayBalancesRequestParams} to send in the request.
    *
    * @return The result of the request, as a {@link GatewayBalancesResult}.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public GatewayBalancesResult gatewayBalances(
@@ -801,14 +847,15 @@ public class XrplClient {
    * a {@link Value.Immutable}, it does not have a generated builder like the subclasses.  Thus, this method needs to
    * rebuild transactions based on their runtime type.
    *
-   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to. {@link
-   *                            Transaction#transactionSignature()} must not be provided, and {@link
-   *                            Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it does not
-   *                            have a generated builder like the subclasses.  Thus, this method needs to rebuild
-   *                            transactions based on their runtime type.
+   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to.
+   *                            {@link Transaction#transactionSignature()} must not be provided, and
+   *                            {@link Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it
+   *                            does not have a generated builder like the subclasses.  Thus, this method needs to
+   *                            rebuild transactions based on their runtime type.
    * @param signature           The hex encoded {@link String} containing the transaction signature.
    *
    * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.
+   *
    * @deprecated This method will go away in a future version and be replaced with the implementation in SignatureUtils
    *   in the xrpl4j-crypto module.
    */

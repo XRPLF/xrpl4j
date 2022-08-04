@@ -30,6 +30,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
@@ -96,7 +97,7 @@ public interface Transaction {
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
    *
-   * @deprecated Use {@link FeeUtils#computeMultiSigFee(XrpCurrencyAmount, SignerListObject)} instead.
+   * @deprecated Use {@link FeeUtils#computeMultisigNetworkFees(FeeResult, SignerListObject)} instead.
    */
   @Deprecated
   static XrpCurrencyAmount computeMultiSigFee(

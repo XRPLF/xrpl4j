@@ -179,16 +179,16 @@ public class SubmitMultisignedIT extends AbstractIT {
       .build();
     String libraryCalculatedHash = signedTransaction.hash().value();
 
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(multiSigPayment);
 
-    assertThat(paymentResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
+    assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
 
-    assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(submitMultiSignedResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
     logInfo(
-      paymentResult.transactionResult().transaction().transactionType(),
-      paymentResult.transactionResult().hash()
+      submitMultiSignedResult.transaction().transaction().transactionType(),
+      submitMultiSignedResult.transaction().hash()
     );
   }
 

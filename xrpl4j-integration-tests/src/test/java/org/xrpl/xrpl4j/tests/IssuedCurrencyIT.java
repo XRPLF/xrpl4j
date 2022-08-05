@@ -164,7 +164,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult aliceAccountInfo = getValidatedAccountInfo(aliceWallet.classicAddress());
     Payment aliceToBobPayment = Payment.builder()
       .account(aliceWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(aliceAccountInfo.accountData().sequence())
       .destination(bobWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -308,7 +308,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.classicAddress());
     Payment charlieToDanielPayment = Payment.builder()
       .account(charlieWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(charlieAccountInfo.accountData().sequence())
       .destination(danielWallet.classicAddress())
       .amount(IssuedCurrencyAmount.builder()
@@ -372,7 +372,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     AccountSet setDefaultRipple = AccountSet.builder()
       .account(issuerWallet.classicAddress())
-      .fee(FeeUtils.calculateFeeDynamically(feeResult))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(issuerAccountInfo.accountData().sequence())
       .signingPublicKey(issuerWallet.publicKey())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)

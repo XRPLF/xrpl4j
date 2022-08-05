@@ -78,8 +78,8 @@ public interface FeeResult extends XrplResult {
   FeeDrops drops();
 
   /**
-   * The approximate number of transactions expected to be included in the current ledger.
-   * This is based on the number of transactions in the previous ledger.
+   * The approximate number of transactions expected to be included in the current ledger. This is based on the number
+   * of transactions in the previous ledger.
    *
    * @return An {@link UnsignedInteger} denoting the expected ledger size.
    */
@@ -106,8 +106,8 @@ public interface FeeResult extends XrplResult {
   FeeLevels levels();
 
   /**
-   * The maximum number of transactions that the transaction queue can currently hold.
-   * Optional because this may not be present on older versions of rippled.
+   * The maximum number of transactions that the transaction queue can currently hold. Optional because this may not be
+   * present on older versions of rippled.
    *
    * @return An optionally-present {@link UnsignedInteger} denoting the maximum queue size.
    */

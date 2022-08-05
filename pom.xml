@@ -301,8 +301,6 @@
     <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
     <checkstyle.violationSeverity>warning</checkstyle.violationSeverity>
 
-    <useLocal>false</useLocal>
-
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
     <jackson.version>2.13.3</jackson.version>
     <feign.version>11.6</feign.version>

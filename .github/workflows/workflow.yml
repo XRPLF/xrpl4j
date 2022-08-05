@@ -113,7 +113,7 @@ jobs:
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
           restore-keys: ${{ env.cache-name }}-
       - name: Build
-        run: mvn dependency:go-offline install -DskipTests -Dmaven.javadoc.skip=true -DuseDevnet
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseDevnet
 
   build_testnet_its:
     runs-on: ubuntu-latest
@@ -134,4 +134,4 @@ jobs:
           key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
           restore-keys: ${{ env.cache-name }}-
       - name: Build
-        run: mvn dependency:go-offline install -DskipTests -Dmaven.javadoc.skip=true -DuseTestnet
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseTestnet

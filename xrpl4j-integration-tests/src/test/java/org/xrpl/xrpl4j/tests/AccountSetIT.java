@@ -72,8 +72,9 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     ///////////////////////

@@ -114,7 +114,8 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
       paymentResult.transactionResult().hash()
     );
 
@@ -244,9 +245,11 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(accountSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(accountSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(accountSetResult.transactionResult().hash());
-    logger.info("AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
+    logInfo(
+      accountSetResult.transactionResult().transaction().transactionType(),
       accountSetResult.transactionResult().hash()
     );
+
     return this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.classicAddress()),
       accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()

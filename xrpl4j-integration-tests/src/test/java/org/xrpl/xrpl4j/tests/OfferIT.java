@@ -101,8 +101,8 @@ public class OfferIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
     usdIssued = true;
@@ -150,8 +150,8 @@ public class OfferIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 
@@ -232,8 +232,8 @@ public class OfferIT extends AbstractIT {
 
     SubmitResult<OfferCreate> response = xrplClient.submit(purchaser, offerCreate);
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    logger.info(
-      "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 

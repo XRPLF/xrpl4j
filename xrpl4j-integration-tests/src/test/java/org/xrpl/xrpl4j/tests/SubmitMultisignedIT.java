@@ -101,9 +101,9 @@ public class SubmitMultisignedIT extends AbstractIT {
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        signerListSetResult.transactionResult().hash()
+    logInfo(
+      signerListSetResult.transactionResult().transaction().transactionType(),
+      signerListSetResult.transactionResult().hash()
     );
 
     /////////////////////////////
@@ -186,9 +186,9 @@ public class SubmitMultisignedIT extends AbstractIT {
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transaction().hash()
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
   }
 
@@ -258,16 +258,16 @@ public class SubmitMultisignedIT extends AbstractIT {
       .build();
     String libraryCalculatedHash = signedTransaction.hash().value();
 
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-
-    assertThat(paymentResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
-
-    assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(multiSigPayment);
+    assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
+    assertThat(submitMultiSignedResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transaction().hash()
+
+    logInfo(
+      submitMultiSignedResult.transaction().transaction().transactionType(),
+      submitMultiSignedResult.transaction().hash()
     );
+
   }
 }

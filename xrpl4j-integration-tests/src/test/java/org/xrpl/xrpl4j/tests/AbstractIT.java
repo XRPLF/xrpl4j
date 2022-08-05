@@ -380,12 +380,12 @@ public abstract class AbstractIT {
   /**
    * Helper function to print log statements for Integration Tests which is network specific.
    *
-   * @param txName {@link TransactionType} to be logged for the executed transaction.
+   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
    * @param hash   {@link Hash256} to be logged for the executed transaction.
    */
-  public void logInfo(TransactionType txName, Hash256 hash) {
+  public void logInfo(TransactionType transactionType, Hash256 hash) {
     String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
       (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info(txName.value() + " transaction successful: {}{}", url, hash);
+    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
   }
 }

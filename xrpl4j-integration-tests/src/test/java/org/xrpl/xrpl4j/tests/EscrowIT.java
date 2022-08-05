@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -67,7 +68,7 @@ public class EscrowIT extends AbstractIT {
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderWallet.classicAddress())
       .sequence(senderAccountInfo.accountData().sequence())
-      .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))

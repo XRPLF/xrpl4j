@@ -61,24 +61,19 @@ Then you can add any of the xrpl4j modules found in the BOM to your `pom.xml`. F
 ```
 
 ## Development
-You can build and install the project locally using maven from the command line:
+You can build and test the entire project locally using maven from the command line:
 ```
-mvn clean install -DskipTests
+mvn clean install
 ```
 
-To run unit tests, use the following command:
+To build the project while skipping Integration tests, use the following command:
 ```
 mvn clean install -DskipITs
 ```
 
-To run the integration tests, you can either run
+To build the project while skipping Unit and Integration tests, use the following command:
 ```
-mvn clean install
-```
-which will run both the unit tests and integration tests, or to run only the integration tests, you can run the following commands:
-```
-cd xrpl4j-integration-tests
-mvn clean install
+mvn clean install -DskipITs -DskipTests
 ```
 
 [codecov-image]: https://codecov.io/gh/XRPLF/xrpl4j/branch/main/graph/badge.svg

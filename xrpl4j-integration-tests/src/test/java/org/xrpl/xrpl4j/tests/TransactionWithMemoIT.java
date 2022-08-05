@@ -68,7 +68,9 @@ public class TransactionWithMemoIT extends AbstractIT {
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 
@@ -112,7 +114,9 @@ public class TransactionWithMemoIT extends AbstractIT {
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 

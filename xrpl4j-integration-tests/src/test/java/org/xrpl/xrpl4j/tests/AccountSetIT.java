@@ -72,8 +72,9 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     ///////////////////////
@@ -134,8 +135,10 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     ///////////////////////
@@ -193,9 +196,9 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transactionResult().hash()
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     /////////////////////////
@@ -229,9 +232,9 @@ public class AccountSetIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
-      accountSetFlag, accountRootFlag, response.transactionResult().hash()
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
+      response.transactionResult().hash()
     );
 
     /////////////////////////

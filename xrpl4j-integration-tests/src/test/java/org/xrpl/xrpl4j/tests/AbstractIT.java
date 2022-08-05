@@ -26,7 +26,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedLong;
-import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -56,6 +55,7 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
@@ -76,33 +76,24 @@ public abstract class AbstractIT {
 
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
+  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-  protected final XrplClient xrplClient = xrplClient();
+
+  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
   protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
-
-  protected static XrplEnvironment xrplEnvironment;
-
-  /**
-   * Helper method to initialize the {@link XrplEnvironment} and to also allow sub-classes to use a different
-   * environment. This construction allows sub-classes to choose an environment that doesn't spin-up a test container.
-   *
-   * @return An {@link XrplEnvironment}.
-   */
-  @BeforeAll
-  protected static void initXrplEnvironment() {
-    xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
-  }
-
-  protected XrplClient xrplClient() {
-    return xrplEnvironment.getXrplClient();
-  }
 
   protected Wallet createRandomAccount() {
     ///////////////////////
     // Create the account
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
     final Wallet wallet = seedResult.wallet();
-    logger.info("Generated wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
+    String network = System.getProperty("useTestnet") != null ? "testnet" :
+      (System.getProperty("useDevnet") != null ? "devnet" : "local rippled");
+    logger.info(
+      "Generated {} wallet with XAddress={} (Classic={})",
+      network, wallet.xAddress(), wallet.classicAddress()
+    );
 
     fundAccount(wallet);
 
@@ -317,9 +308,10 @@ public abstract class AbstractIT {
     assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
-    logger.info(
-      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        trustSetSubmitResult.transactionResult().hash()
+
+    logInfo(
+      trustSetSubmitResult.transactionResult().transaction().transactionType(),
+      trustSetSubmitResult.transactionResult().hash()
     );
 
     return scanForResult(
@@ -369,11 +361,11 @@ public abstract class AbstractIT {
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+    assertThat(paymentResult.transactionResult().hash()).isEqualTo(paymentResult.transactionResult().hash());
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
 
     this.scanForResult(
@@ -382,5 +374,17 @@ public abstract class AbstractIT {
         Payment.class)
     );
 
+  }
+
+  /**
+   * Helper function to print log statements for Integration Tests which is network specific.
+   *
+   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
+   * @param hash            {@link Hash256} to be logged for the executed transaction.
+   */
+  public void logInfo(TransactionType transactionType, Hash256 hash) {
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
+    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
   }
 }

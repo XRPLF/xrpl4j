@@ -57,7 +57,9 @@ public class TicketIT extends AbstractIT {
 
     SubmitResult<TicketCreate> submitResult = xrplClient.submit(sourceWallet, ticketCreate);
     assertThat(submitResult.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("TicketCreate successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      submitResult.transactionResult().transaction().transactionType(),
       submitResult.transactionResult().hash()
     );
 
@@ -79,7 +81,9 @@ public class TicketIT extends AbstractIT {
 
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(sourceWallet, accountSet);
     assertThat(accountSetResult.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("AccountSet successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      accountSetResult.transactionResult().transaction().transactionType(),
       accountSetResult.transactionResult().hash()
     );
   }

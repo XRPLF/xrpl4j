@@ -66,7 +66,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
       setResult.transactionResult().hash()
     );
 
@@ -123,7 +125,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
       setResult.transactionResult().hash()
     );
 
@@ -148,7 +152,6 @@ public class SetRegularKeyIT extends AbstractIT {
       }
     );
 
-
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -160,7 +163,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(removeResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(removeResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(removeResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      removeResult.transactionResult().transaction().transactionType(),
       removeResult.transactionResult().hash()
     );
 

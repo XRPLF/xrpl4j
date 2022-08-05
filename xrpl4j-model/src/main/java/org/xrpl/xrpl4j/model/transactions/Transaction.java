@@ -30,6 +30,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
 import java.time.Instant;
@@ -45,8 +47,8 @@ import java.util.Optional;
 public interface Transaction {
 
   /**
-   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
-   * the start of that epoch.
+   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for the start of that
+   * epoch.
    *
    * @deprecated This will be unnecessary once {@link #closeDateHuman()} is removed.
    */
@@ -99,6 +101,8 @@ public interface Transaction {
    * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
+   *
+   * @deprecated Use {@link FeeUtils#computeMultisigNetworkFees(FeeResult, SignerListObject)} instead.
    */
   @Deprecated
   static XrpCurrencyAmount computeMultiSigFee(
@@ -137,6 +141,7 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link XrpCurrencyAmount} representing the transaction cost.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
@@ -149,6 +154,7 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link UnsignedInteger} representing the sequence of the transaction.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @Value.Default
@@ -158,9 +164,9 @@ public interface Transaction {
   }
 
   /**
-   * The sequence number of the {@link org.xrpl.xrpl4j.model.ledger.TicketObject} to use in place of a {@link
-   * #sequence()} number. If this is provided, {@link #sequence()} must be 0. Cannot be used with {@link
-   * #accountTransactionId()}.
+   * The sequence number of the {@link org.xrpl.xrpl4j.model.ledger.TicketObject} to use in place of a
+   * {@link #sequence()} number. If this is provided, {@link #sequence()} must be 0. Cannot be used with
+   * {@link #accountTransactionId()}.
    *
    * @return An {@link UnsignedInteger} representing the ticket sequence of the transaction.
    */
@@ -233,24 +239,25 @@ public interface Transaction {
   Optional<String> transactionSignature();
 
   /**
-   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
-   * This is an undocumented field.
+   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction. This is an undocumented
+   * field.
    *
    * @return An optionally-present {@link UnsignedLong}.
-   * @deprecated This field will be removed in favor of {@link
-   *   org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
+   *
+   * @deprecated This field will be removed in favor of
+   *   {@link org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
    */
   @JsonProperty("date")
   @Deprecated
   Optional<UnsignedLong> closeDate();
 
   /**
-   * The approximate close time in UTC offset.
-   * This is derived from undocumented field.
+   * The approximate close time in UTC offset. This is derived from undocumented field.
    *
    * @return An optionally-present {@link ZonedDateTime}.
-   * @deprecated This field will be removed in favor of {@link
-   *   org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
+   *
+   * @deprecated This field will be removed in favor of
+   *   {@link org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
    */
   @JsonIgnore
   @Auxiliary
@@ -265,9 +272,10 @@ public interface Transaction {
    * The transaction hash of this transaction.  Only present in responses to {@code account_tx} rippled calls.
    *
    * @return An optionally present {@link Hash256} containing the transaction hash.
+   *
    * @deprecated This field will be removed in a future release. Instead, use
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in {@link
-   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
   @Deprecated
   Optional<Hash256> hash();
@@ -277,9 +285,10 @@ public interface Transaction {
    * rippled calls.
    *
    * @return An optionally-present {@link LedgerIndex}.
+   *
    * @deprecated This field will be removed in a future release. Instead, use
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in {@link
-   *   org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in
+   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
    */
   @Deprecated
   @JsonProperty("ledger_index")

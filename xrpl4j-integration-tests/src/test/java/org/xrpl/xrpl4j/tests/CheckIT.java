@@ -74,8 +74,9 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 
@@ -108,8 +109,8 @@ public class CheckIT extends AbstractIT {
     assertThat(cashResponse.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
+    logInfo(
+      cashResponse.transactionResult().transaction().transactionType(),
       cashResponse.transactionResult().hash()
     );
 
@@ -163,8 +164,9 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 
@@ -194,8 +196,9 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      cancelResult.transactionResult().transaction().transactionType(),
       cancelResult.transactionResult().hash()
     );
 
@@ -240,8 +243,9 @@ public class CheckIT extends AbstractIT {
     assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      response.transactionResult().transaction().transactionType(),
       response.transactionResult().hash()
     );
 
@@ -271,8 +275,9 @@ public class CheckIT extends AbstractIT {
     assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(response.transactionResult().hash());
-    logger.info(
-      "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      cancelResult.transactionResult().transaction().transactionType(),
       cancelResult.transactionResult().hash()
     );
 

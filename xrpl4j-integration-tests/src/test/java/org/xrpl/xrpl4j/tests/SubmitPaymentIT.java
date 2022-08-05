@@ -62,7 +62,9 @@ public class SubmitPaymentIT extends AbstractIT {
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 
@@ -105,7 +107,9 @@ public class SubmitPaymentIT extends AbstractIT {
     assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      result.transactionResult().transaction().transactionType(),
       result.transactionResult().hash()
     );
 
@@ -119,9 +123,9 @@ public class SubmitPaymentIT extends AbstractIT {
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
-        LedgerRequestParams.builder()
-          .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndexSafe()))
-          .build()
+      LedgerRequestParams.builder()
+        .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndexSafe()))
+        .build()
     );
 
     assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty()

@@ -65,13 +65,12 @@ public class AccountTransactionsIT {
   @Test
   @Timeout(30)
   public void listTransactionsPagination() throws JsonRpcClientErrorException {
-    final int expectedTransactions = 284;
+    final int expectedTransactions = 748;
     // known ledger index range for this account that is known to have exactly 748 transactions
     LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
-    LedgerIndexBound maxLedger = LedgerIndexBound.of(61437000);
+    LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
     AccountTransactionsResult results = mainnetClient.accountTransactions(
-      AccountTransactionsRequestParams
-        .builder(minLedger, maxLedger)
+      AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
         .build()
     );
@@ -79,20 +78,27 @@ public class AccountTransactionsIT {
     assertThat(results.marker()).isNotEmpty();
 
     int transactionsFound = results.transactions().size();
-    int pages = 1;
-    while (results.marker().isPresent()) {
-      results = mainnetClient.accountTransactions(AccountTransactionsRequestParams
-        .builder(minLedger, maxLedger)
+    int pages = 0;
+    while (results.marker().isPresent()
+      // Needed because clio is broken. See https://github.com/XRPLF/clio/issues/195#issuecomment-1247412892
+      && results.transactions().size() > 0
+    ) {
+      results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
+        .limit(UnsignedInteger.valueOf(200L))
         .marker(results.marker().get())
         .build());
       assertThat(results.transactions()).isNotEmpty();
       transactionsFound += results.transactions().size();
       pages++;
+      logger.info("Retrieved {} ledgers (marker={} page={})",
+        transactionsFound,
+        results.marker().map($ -> $.value()).orElseGet(() -> "n/a"),
+        pages
+      );
     }
 
     assertThat(transactionsFound).isEqualTo(expectedTransactions);
-    assertThat(pages).isEqualTo(2);
   }
 
   @Test

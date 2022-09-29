@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,7 +66,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
       setResult.transactionResult().hash()
     );
 
@@ -123,7 +125,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
       setResult.transactionResult().hash()
     );
 
@@ -148,7 +152,6 @@ public class SetRegularKeyIT extends AbstractIT {
       }
     );
 
-
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.classicAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -160,7 +163,9 @@ public class SetRegularKeyIT extends AbstractIT {
     assertThat(removeResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(removeResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(removeResult.transactionResult().hash());
-    logger.info("SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      removeResult.transactionResult().transaction().transactionType(),
       removeResult.transactionResult().hash()
     );
 

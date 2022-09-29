@@ -93,7 +93,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 
@@ -175,7 +177,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 
@@ -248,7 +252,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(claimResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(claimResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(claimResult.transactionResult().hash());
-    logger.info("PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      claimResult.transactionResult().transaction().transactionType(),
       claimResult.transactionResult().hash()
     );
 
@@ -297,7 +303,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 
@@ -334,7 +342,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(fundResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(fundResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(fundResult.transactionResult().hash());
-    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      fundResult.transactionResult().transaction().transactionType(),
       fundResult.transactionResult().hash()
     );
 
@@ -373,7 +383,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(expiryResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(expiryResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(expiryResult.transactionResult().hash());
-    logger.info("PaymentChannelFund transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      expiryResult.transactionResult().transaction().transactionType(),
       expiryResult.transactionResult().hash()
     );
 
@@ -424,7 +436,9 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(createResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(createResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(createResult.transactionResult().hash());
-    logger.info("PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
       createResult.transactionResult().hash()
     );
 

@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -82,7 +83,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
     AccountInfoResult accountInfo = this.getCurrentAccountInfo(sourceWallet.classicAddress());
     Payment payment = Payment.builder()
       .account(sourceWallet.classicAddress())
-      .fee(feeResult.drops().minimumFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationAddress)
       .amount(paymentAmount)

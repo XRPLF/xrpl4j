@@ -20,15 +20,28 @@ package org.xrpl.xrpl4j.crypto.signing;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
+import java.io.IOException;
+
 /**
  * Represents a digital signature for a transaction that can be submitted to the XRP Ledger.
  */
 @Value.Immutable
+@JsonSerialize(using = Signature.SignatureSerializer.class)
+@JsonDeserialize(using = Signature.SignatureDeserializer.class)
 public interface Signature {
 
   /**
@@ -55,5 +68,28 @@ public interface Signature {
   @Derived
   default String base16Value() {
     return BaseEncoding.base16().encode(value().toByteArray());
+  }
+
+  /**
+   * Custom Jackson serializer for {@link Signature}es.
+   */
+  class SignatureSerializer extends JsonSerializer<Signature> {
+    @Override
+    public void serialize(Signature signature, JsonGenerator gen, SerializerProvider provider) throws IOException {
+      gen.writeString(signature.base16Value());
+    }
+  }
+
+  /**
+   * Deserializes signature string value to an object of type {@link Signature}.
+   */
+  class SignatureDeserializer extends JsonDeserializer<Signature> {
+
+    @Override
+    public Signature deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+      throws IOException {
+      JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+      return Signature.builder().value(UnsignedByteArray.fromHex(node.asText())).build();
+    }
   }
 }

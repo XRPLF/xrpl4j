@@ -12,8 +12,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
  * Represents a digital signature for a transaction that can be submitted to the XRP Ledger.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableSignature.class)
-@JsonDeserialize(as = ImmutableSignature.class)
+@JsonSerialize(using = SignatureSerializer.class)
+@JsonDeserialize(using = SignatureDeserializer.class)
 public interface Signature {
 
   /**

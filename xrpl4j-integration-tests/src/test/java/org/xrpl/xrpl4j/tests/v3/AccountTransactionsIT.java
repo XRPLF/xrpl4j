@@ -73,7 +73,6 @@ public class AccountTransactionsIT {
         .limit(UnsignedInteger.valueOf(200L))
         .marker(results.marker().get())
         .build());
-      assertThat(results.transactions()).isNotEmpty();
       transactionsFound += results.transactions().size();
       pages++;
       logger.info("Retrieved {} ledgers (marker={} page={})",

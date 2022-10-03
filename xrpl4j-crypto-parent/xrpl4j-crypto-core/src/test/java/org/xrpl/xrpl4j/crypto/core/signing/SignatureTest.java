@@ -77,7 +77,7 @@ class SignatureTest {
       .build();
     String serializedWrappedSignature = objectMapper.writeValueAsString(wrappedSignature);
 
-    String serialized = "{\"signature\":\""+ HEX_32_BYTES + "\"}";
+    String serialized = "{\"signature\":\"" + HEX_32_BYTES + "\"}";
     assertThat(serializedWrappedSignature).isEqualTo(serialized);
 
     WrappedSignature deserializedWrappedSignature = objectMapper.readValue(

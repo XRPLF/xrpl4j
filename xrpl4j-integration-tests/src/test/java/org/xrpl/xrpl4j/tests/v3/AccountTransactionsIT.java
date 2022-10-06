@@ -42,7 +42,8 @@ public class AccountTransactionsIT {
   public void listTransactionsDefaultWithPagination() throws JsonRpcClientErrorException {
     AccountTransactionsResult results = mainnetClient.accountTransactions(MAINNET_ADDRESS);
 
-    assertThat(results.transactions()).hasSize(50);
+    // The default value for reporting mode is 200; but clio it's 50. However, the important things to test here is
+    // that a marker exists, so we only assert on that value.
     assertThat(results.marker()).isNotEmpty();
   }
 

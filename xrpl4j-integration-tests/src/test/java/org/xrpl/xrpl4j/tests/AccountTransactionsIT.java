@@ -81,16 +81,15 @@ public class AccountTransactionsIT {
 
     int transactionsFound = results.transactions().size();
     int pages = 0;
-    while (results.marker().isPresent()
+    while (results.marker().isPresent() &&
       // Needed because clio is broken. See https://github.com/XRPLF/clio/issues/195#issuecomment-1247412892
-      && results.transactions().size() > 0
+      results.transactions().size() > 0
     ) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
         .limit(UnsignedInteger.valueOf(200L))
         .marker(results.marker().get())
         .build());
-      assertThat(results.transactions()).isNotEmpty();
       transactionsFound += results.transactions().size();
       pages++;
       logger.info("Retrieved {} ledgers (marker={} page={})",

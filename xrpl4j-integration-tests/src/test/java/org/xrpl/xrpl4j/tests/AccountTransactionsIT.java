@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.oneOf;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,8 @@ public class AccountTransactionsIT {
   public void listTransactionsDefaultWithPagination() throws JsonRpcClientErrorException {
     AccountTransactionsResult results = mainnetClient.accountTransactions(MAINNET_ADDRESS);
 
-    assertThat(results.transactions()).hasSize(200);
+    // The default value for reporting mode is 200; but clio it's 50. However, the important things to test here is
+    // that a marker exists, so we only assert on that value.
     assertThat(results.marker()).isNotEmpty();
   }
 

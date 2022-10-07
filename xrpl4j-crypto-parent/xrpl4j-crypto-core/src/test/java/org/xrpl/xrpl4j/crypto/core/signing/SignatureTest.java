@@ -4,7 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.jayway.jsonassert.JsonAssert;
+import org.immutables.value.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -46,7 +50,8 @@ class SignatureTest {
   @Test
   void jsonSerializeAndDeserialize() throws JsonProcessingException {
     String json = ObjectMapperFactory.create().writeValueAsString(signature);
-    JsonAssert.with(json).assertThat("$.value", is(HEX_32_BYTES));
+    JsonAssert.with(json).assertThat("$", is(HEX_32_BYTES));
+    assertThat(json).isEqualTo("\"" + HEX_32_BYTES + "\"");
 
     Signature actual = ObjectMapperFactory.create().readValue(json, Signature.class);
     assertThat(actual).isEqualTo(signature);
@@ -60,5 +65,37 @@ class SignatureTest {
   @Test
   void fromBase16() {
     assertThat(Signature.fromBase16(HEX_32_BYTES)).isEqualTo(signature);
+  }
+
+  @Test
+  void serializeSignature() throws JsonProcessingException {
+
+    ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+    WrappedSignature wrappedSignature = WrappedSignature.builder()
+      .signature(signature)
+      .build();
+    String serializedWrappedSignature = objectMapper.writeValueAsString(wrappedSignature);
+
+    String serialized = "{\"signature\":\"" + HEX_32_BYTES + "\"}";
+    assertThat(serializedWrappedSignature).isEqualTo(serialized);
+
+    WrappedSignature deserializedWrappedSignature = objectMapper.readValue(
+      serializedWrappedSignature, WrappedSignature.class
+    );
+    assertThat(deserializedWrappedSignature).isEqualTo(wrappedSignature);
+
+  }
+  
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableWrappedSignature.class)
+  @JsonDeserialize(as = ImmutableWrappedSignature.class)
+  interface WrappedSignature {
+
+    static ImmutableWrappedSignature.Builder builder() {
+      return ImmutableWrappedSignature.builder();
+    }
+
+    Signature signature();
   }
 }

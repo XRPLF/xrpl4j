@@ -77,7 +77,7 @@ public interface PrivateKey {
     Objects.requireNonNull(base16EncodedPrivateKey);
 
     return PrivateKey.builder()
-      .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPrivateKey)))
+      .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPrivateKey.toUpperCase())))
       .build();
   }
 

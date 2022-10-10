@@ -5,12 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -39,7 +41,7 @@ public class SubmitPaymentIT extends AbstractIT {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
       .account(sourceWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.address())
       .amount(amount)
@@ -63,7 +65,9 @@ public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet senderWallet = walletFactory.fromSeed(Seed.fromBase58EncodedSecret("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
+    Wallet senderWallet = walletFactory.fromSeed(Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"))
+    );
     logger.info("Generated source testnet wallet with address " + senderWallet.address());
 
     fundAccount(senderWallet);
@@ -77,7 +81,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     Payment payment = Payment.builder()
       .account(senderWallet.address())
-      .fee(feeResult.drops().openLedgerFee())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWallet.address())
       .amount(XrpCurrencyAmount.ofDrops(12345))

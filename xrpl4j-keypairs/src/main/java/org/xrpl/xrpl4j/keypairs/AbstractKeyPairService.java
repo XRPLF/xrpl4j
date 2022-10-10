@@ -58,7 +58,7 @@ public abstract class AbstractKeyPairService implements KeyPairService {
 
   @Override
   public Address deriveAddress(String publicKey) {
-    UnsignedByteArray publicKeyBytes = UnsignedByteArray.of(BaseEncoding.base16().decode(publicKey));
+    UnsignedByteArray publicKeyBytes = UnsignedByteArray.of(BaseEncoding.base16().decode(publicKey.toUpperCase()));
     return this.deriveAddress(publicKeyBytes);
   }
 

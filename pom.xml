@@ -202,13 +202,10 @@
       </dependency>
       <dependency>
         <groupId>io.github.openfeign</groupId>
-        <artifactId>feign-core</artifactId>
+        <artifactId>feign-bom</artifactId>
         <version>${feign.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.github.openfeign</groupId>
-        <artifactId>feign-jackson</artifactId>
-        <version>${feign.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
@@ -329,7 +326,7 @@
     <feign.version>11.6</feign.version>
     <slf4j.version>1.7.30</slf4j.version>
     <junit-jupiter.version>5.7.1</junit-jupiter.version>
-    <guava.version>29.0-jre</guava.version>
+    <guava.version>31.1-jre</guava.version>
   </properties>
 
   <modules>

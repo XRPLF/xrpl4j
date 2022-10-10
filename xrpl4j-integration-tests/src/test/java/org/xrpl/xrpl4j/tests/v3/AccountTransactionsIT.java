@@ -9,6 +9,8 @@ import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
@@ -29,6 +31,8 @@ import java.util.Optional;
  */
 public class AccountTransactionsIT {
 
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
   // an arbitrary address on xrpl mainnet that has a decent amount of transaction history
   public static final Address MAINNET_ADDRESS = Address.of("r9m6MwViR4GnUNqoGXGa8eroBrZ9FAPHFS");
 
@@ -38,7 +42,8 @@ public class AccountTransactionsIT {
   public void listTransactionsDefaultWithPagination() throws JsonRpcClientErrorException {
     AccountTransactionsResult results = mainnetClient.accountTransactions(MAINNET_ADDRESS);
 
-    assertThat(results.transactions()).hasSize(200);
+    // The default value for reporting mode is 200; but clio it's 50. However, the important things to test here is
+    // that a marker exists, so we only assert on that value.
     assertThat(results.marker()).isNotEmpty();
   }
 
@@ -58,19 +63,26 @@ public class AccountTransactionsIT {
     assertThat(results.marker()).isNotEmpty();
 
     int transactionsFound = results.transactions().size();
-    int pages = 1;
-    while (results.marker().isPresent()) {
+    int pages = 0;
+    while (results.marker().isPresent() &&
+      // Needed because clio is broken. See https://github.com/XRPLF/clio/issues/195#issuecomment-1247412892
+      results.transactions().size() > 0
+    ) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
+        .limit(UnsignedInteger.valueOf(200L))
         .marker(results.marker().get())
         .build());
-      assertThat(results.transactions()).isNotEmpty();
       transactionsFound += results.transactions().size();
       pages++;
+      logger.info("Retrieved {} ledgers (marker={} page={})",
+        transactionsFound,
+        results.marker().map($ -> $.value()).orElseGet(() -> "n/a"),
+        pages
+      );
     }
 
     assertThat(transactionsFound).isEqualTo(expectedTransactions);
-    assertThat(pages).isEqualTo(4);
   }
 
   @Test
@@ -89,8 +101,6 @@ public class AccountTransactionsIT {
         .build()
     );
 
-    assertThat(results.ledgerIndexMinimum()).isEqualTo(minLedger);
-    assertThat(results.ledgerIndexMaximum()).isEqualTo(maxLedger);
     assertThat(results.transactions()).hasSize(16);
     // results are returned in descending sorted order by ledger index
     assertThat(results.transactions().get(0).resultTransaction().ledgerIndex())
@@ -140,7 +150,6 @@ public class AccountTransactionsIT {
         .build()
     );
 
-    assertThat(resultByShortcut.ledgerIndexMinimum()).isEqualTo(resultByShortcut.ledgerIndexMaximum());
     assertThat(resultByShortcut.ledgerIndexMinimum().value())
       .isEqualTo(validatedLedgerIndex.unsignedIntegerValue().longValue());
 

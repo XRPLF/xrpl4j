@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
@@ -41,11 +40,10 @@ import java.util.stream.Collectors;
  */
 public class TransactUsingSignatureService extends AbstractIT {
 
-
-
   @Test
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final SignatureService<PrivateKeyReference> delegatedSignatureService = this.constructDelegatedSignatureServiceEd25519();
+    final SignatureService<PrivateKeyReference> delegatedSignatureService
+      = this.constructDelegatedSignatureServiceEd25519();
 
     final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.ED25519);
     final PublicKey sourceWalletPublicKey = delegatedSignatureService.derivePublicKey(sourceKeyMetadata);
@@ -79,7 +77,8 @@ public class TransactUsingSignatureService extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final SignatureService<PrivateKeyReference> delegatedSignatureService = this.constructDelegatedSignatureServiceSecp256k1();
+    final SignatureService<PrivateKeyReference> delegatedSignatureService
+      = this.constructDelegatedSignatureServiceSecp256k1();
 
     final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.SECP256K1);
     final PublicKey sourceWalletPublicKey = delegatedSignatureService.derivePublicKey(sourceKeyMetadata);

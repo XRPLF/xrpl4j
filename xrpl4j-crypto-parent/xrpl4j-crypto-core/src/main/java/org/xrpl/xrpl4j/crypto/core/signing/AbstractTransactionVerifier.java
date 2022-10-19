@@ -15,8 +15,6 @@ import java.util.Set;
  */
 public abstract class AbstractTransactionVerifier implements TransactionVerifier {
 
-  protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
   private final SignatureUtils signatureUtils;
 
   /**

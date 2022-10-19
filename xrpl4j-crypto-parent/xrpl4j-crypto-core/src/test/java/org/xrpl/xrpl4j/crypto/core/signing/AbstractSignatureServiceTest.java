@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Unit tests for {@link AbstractSignatureService}.
  */
-@SuppressWarnings("CheckStyle")
 public class AbstractSignatureServiceTest {
 
   @Mock
@@ -48,12 +47,13 @@ public class AbstractSignatureServiceTest {
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
 
-  private AbstractSignatureService signatureService;
+  private AbstractSignatureService<PrivateKeyable> signatureService;
 
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws Exception {
 
     MockitoAnnotations.openMocks(this);
+
     ed25519VerifyCalled = new AtomicBoolean(false);
     secp256k1VerifyCalled = new AtomicBoolean(false);
 
@@ -62,7 +62,7 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.addSignatureToTransaction(any(), any())).thenReturn(signedTransactionMock);
 
-    this.signatureService = new AbstractSignatureService(signatureUtilsMock) {
+    this.signatureService = new AbstractSignatureService<PrivateKeyable>(signatureUtilsMock) {
 
       @Override
       protected Signature edDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
@@ -88,8 +88,7 @@ public class AbstractSignatureServiceTest {
 
       @Override
       public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
-        return privateKeyable.versionType() == VersionType.ED25519
-          ? TestConstants.ED_PUBLIC_KEY
+        return privateKeyable.versionType() == VersionType.ED25519 ? TestConstants.ED_PUBLIC_KEY
           : TestConstants.EC_PUBLIC_KEY;
       }
     };
@@ -101,8 +100,8 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void nullConstructorSigner() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      new AbstractSignatureService<PrivateKeyable>(null, mock(AbstractTransactionVerifier.class)) {
+    Assertions.assertThrows(NullPointerException.class,
+      () -> new AbstractSignatureService<PrivateKeyable>(null, mock(AbstractTransactionVerifier.class)) {
         @Override
         protected Signature edDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
           return null;
@@ -127,14 +126,13 @@ public class AbstractSignatureServiceTest {
         public PublicKey derivePublicKey(PrivateKeyable privateKey) {
           return null;
         }
-      };
-    });
+      });
   }
 
   @Test
   public void nullConstructorVerifier() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      new AbstractSignatureService<PrivateKeyable>(mock(AbstractTransactionSigner.class), null) {
+    Assertions.assertThrows(NullPointerException.class,
+      () -> new AbstractSignatureService<PrivateKeyable>(mock(AbstractTransactionSigner.class), null) {
         @Override
         protected Signature edDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
           return null;
@@ -159,8 +157,7 @@ public class AbstractSignatureServiceTest {
         public PublicKey derivePublicKey(PrivateKeyable privateKey) {
           return null;
         }
-      };
-    });
+      });
   }
 
   ///////////////////
@@ -256,10 +253,8 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void verifyWithNullSigPubKey() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      SignatureWithPublicKey nullSignatureWithPublicKey = null;
-      signatureService.verifySingleSigned(nullSignatureWithPublicKey, transactionMock);
-    });
+    Assertions.assertThrows(NullPointerException.class,
+      () -> signatureService.verifySingleSigned(null, transactionMock));
   }
 
   @Test

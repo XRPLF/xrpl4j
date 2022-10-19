@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * An abstract implementation of {@link SignatureService} with common functionality that sub-classes can utilize.
  */
-public abstract class AbstractTransactionSigner<PK extends PrivateKeyable> implements TransactionSigner<PK> {
+public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implements TransactionSigner<P> {
 
   private final SignatureUtils signatureUtils;
 
@@ -27,7 +27,7 @@ public abstract class AbstractTransactionSigner<PK extends PrivateKeyable> imple
   }
 
   @Override
-  public <T extends Transaction> SingleSingedTransaction<T> sign(final PK privateKeyable, final T transaction) {
+  public <T extends Transaction> SingleSingedTransaction<T> sign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
@@ -37,7 +37,7 @@ public abstract class AbstractTransactionSigner<PK extends PrivateKeyable> imple
   }
 
   @Override
-  public Signature sign(final PK privateKeyable, final UnsignedClaim unsignedClaim) {
+  public Signature sign(final P privateKeyable, final UnsignedClaim unsignedClaim) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(unsignedClaim);
 
@@ -46,7 +46,7 @@ public abstract class AbstractTransactionSigner<PK extends PrivateKeyable> imple
   }
 
   @Override
-  public <T extends Transaction> Signature multiSign(final PK privateKeyable, final T transaction) {
+  public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
@@ -65,7 +65,7 @@ public abstract class AbstractTransactionSigner<PK extends PrivateKeyable> imple
    * @return A {@link SignatureWithPublicKey}.
    */
   private Signature signingHelper(
-    final PK privateKey, final UnsignedByteArray signableTransactionBytes
+    final P privateKey, final UnsignedByteArray signableTransactionBytes
   ) {
     Objects.requireNonNull(privateKey);
     Objects.requireNonNull(signableTransactionBytes);
@@ -87,21 +87,21 @@ public abstract class AbstractTransactionSigner<PK extends PrivateKeyable> imple
   /**
    * Does the actual work of computing a signature using a ed25519 private-key, as locatable using {@code privateKey}.
    *
-   * @param privateKey               A {@link PK} used for signing.
+   * @param privateKey               A {@link P} used for signing.
    * @param signableTransactionBytes A {@link UnsignedByteArray} to sign.
    *
    * @return A {@link Signature} with data that can be used to submit a transaction to the XRP Ledger.
    */
-  protected abstract Signature edDsaSign(PK privateKey, UnsignedByteArray signableTransactionBytes);
+  protected abstract Signature edDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes);
 
   /**
    * Does the actual work of computing a signature using a secp256k1 private-key, as locatable using
    * {@code privateKey}.
    *
-   * @param privateKey               A {@link PK} used for signing.
+   * @param privateKey               A {@link P} used for signing.
    * @param signableTransactionBytes A {@link UnsignedByteArray} to sign.
    *
    * @return A {@link Signature} with data that can be used to submit a transaction to the XRP Ledger.
    */
-  protected abstract Signature ecDsaSign(PK privateKey, UnsignedByteArray signableTransactionBytes);
+  protected abstract Signature ecDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes);
 }

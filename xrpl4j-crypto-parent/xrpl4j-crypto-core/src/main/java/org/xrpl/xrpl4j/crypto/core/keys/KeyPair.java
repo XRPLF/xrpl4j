@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.crypto.core.keys.ImmutableKeyPair.Builder;
 
 /**
  * Represents an XRPL public/private key pair.
@@ -9,7 +8,12 @@ import org.xrpl.xrpl4j.crypto.core.keys.ImmutableKeyPair.Builder;
 @Value.Immutable
 public interface KeyPair {
 
-  static Builder builder() {
+  /**
+   * Convenience builder.
+   *
+   * @return A {@link ImmutableKeyPair.Builder}.
+   */
+  static ImmutableKeyPair.Builder builder() {
     return ImmutableKeyPair.builder();
   }
 

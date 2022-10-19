@@ -150,4 +150,10 @@ public class PublicKeyTest {
     PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
     assertThat(actual.base16Value()).isEqualTo("027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9");
   }
+
+  @Test
+  void publicKey() {
+    assertThat(ED_PUBLIC_KEY.deriveAddress().value()).isEqualTo("rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466");
+    assertThat(EC_PUBLIC_KEY.deriveAddress().value()).isEqualTo("rD8ATvjj9mfnFuYYTGRNb9DygnJW9JNN1C");
+  }
 }

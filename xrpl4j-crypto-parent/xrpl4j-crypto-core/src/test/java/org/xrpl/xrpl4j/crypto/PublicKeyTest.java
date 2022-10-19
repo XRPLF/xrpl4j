@@ -92,15 +92,15 @@ public class PublicKeyTest {
   public void versionTypeSecp256k1() {
     final Seed seed = Seed.secp256k1SeedFromPassphrase("hello".getBytes());
     final String publicKeyString = keyPairService.deriveKeyPair(seed.value()).publicKey();
-    final PublicKey privateKey = PublicKey.fromBase16EncodedPublicKey(publicKeyString);
-    assertThat(privateKey.versionType()).isEqualTo(VersionType.SECP256K1);
+    final PublicKey publicKey = PublicKey.fromBase16EncodedPublicKey(publicKeyString);
+    assertThat(publicKey.versionType()).isEqualTo(VersionType.SECP256K1);
   }
 
   @Test
   public void versionTypeEd25519() {
     final Seed seed = Seed.ed25519SeedFromPassphrase("hello".getBytes());
     final String publicKeyString = keyPairService.deriveKeyPair(seed.value()).publicKey();
-    final PublicKey privateKey = PublicKey.fromBase16EncodedPublicKey(publicKeyString);
-    assertThat(privateKey.versionType()).isEqualTo(VersionType.ED25519);
+    final PublicKey publicKey = PublicKey.fromBase16EncodedPublicKey(publicKeyString);
+    assertThat(publicKey.versionType()).isEqualTo(VersionType.ED25519);
   }
 }

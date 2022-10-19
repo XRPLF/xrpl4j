@@ -62,10 +62,7 @@ public class BcAddressUtils implements AddressUtils {
    * @deprecated Prefer the variant on PublicKey.
    */
   @Deprecated
-  @SuppressWarnings("UnstableApiUsage")
   private UnsignedByteArray computePublicKeyHash(final UnsignedByteArray publicKey) {
-    Objects.requireNonNull(publicKey);
-
     byte[] sha256 = Hashing.sha256().hashBytes(publicKey.toByteArray()).asBytes();
     RIPEMD160Digest digest = new RIPEMD160Digest();
     digest.update(sha256, 0, sha256.length);

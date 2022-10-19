@@ -7,6 +7,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * The parent interface for any private key in xrpl4j.
+ */
 public interface PrivateKeyable {
 
   /**

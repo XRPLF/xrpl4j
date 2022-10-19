@@ -12,11 +12,11 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * An abstract implementation of {@link SignatureService} with common functionality that sub-classes can utilize.
+ * An abstract implementation of {@link SignatureService} with common functionality that subclasses can utilize.
  */
-public abstract class AbstractSignatureService<PK extends PrivateKeyable> implements SignatureService<PK> {
+public abstract class AbstractSignatureService<P extends PrivateKeyable> implements SignatureService<P> {
 
-  private final AbstractTransactionSigner abstractTransactionSigner;
+  private final AbstractTransactionSigner<P> abstractTransactionSigner;
   private final AbstractTransactionVerifier abstractTransactionVerifier;
 
   /**
@@ -25,19 +25,19 @@ public abstract class AbstractSignatureService<PK extends PrivateKeyable> implem
    * @param signatureUtils A {@link SignatureUtils}.
    */
   public AbstractSignatureService(final SignatureUtils signatureUtils) {
-    this.abstractTransactionSigner = new AbstractTransactionSigner<PK>(signatureUtils) {
+    this.abstractTransactionSigner = new AbstractTransactionSigner<P>(signatureUtils) {
       @Override
-      protected Signature edDsaSign(PK privateKey, UnsignedByteArray signableTransactionBytes) {
+      protected Signature edDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes) {
         return AbstractSignatureService.this.edDsaSign(privateKey, signableTransactionBytes);
       }
 
       @Override
-      protected Signature ecDsaSign(PK privateKey, UnsignedByteArray signableTransactionBytes) {
+      protected Signature ecDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes) {
         return AbstractSignatureService.this.ecDsaSign(privateKey, signableTransactionBytes);
       }
 
       @Override
-      public PublicKey derivePublicKey(PK privateKey) {
+      public PublicKey derivePublicKey(P privateKey) {
         return AbstractSignatureService.this.derivePublicKey(privateKey);
       }
     };
@@ -63,7 +63,7 @@ public abstract class AbstractSignatureService<PK extends PrivateKeyable> implem
    */
   @VisibleForTesting
   protected AbstractSignatureService(
-    final AbstractTransactionSigner<PK> abstractTransactionSigner,
+    final AbstractTransactionSigner<P> abstractTransactionSigner,
     final AbstractTransactionVerifier abstractTransactionVerifier
   ) {
     this.abstractTransactionSigner = Objects.requireNonNull(abstractTransactionSigner);
@@ -71,17 +71,17 @@ public abstract class AbstractSignatureService<PK extends PrivateKeyable> implem
   }
 
   @Override
-  public <T extends Transaction> SingleSingedTransaction<T> sign(final PK privateKeyable, final T transaction) {
+  public <T extends Transaction> SingleSingedTransaction<T> sign(final P privateKeyable, final T transaction) {
     return this.abstractTransactionSigner.sign(privateKeyable, transaction);
   }
 
   @Override
-  public Signature sign(final PK privateKeyable, final UnsignedClaim unsignedClaim) {
+  public Signature sign(final P privateKeyable, final UnsignedClaim unsignedClaim) {
     return this.abstractTransactionSigner.sign(privateKeyable, unsignedClaim);
   }
 
   @Override
-  public <T extends Transaction> Signature multiSign(final PK privateKeyable, final T transaction) {
+  public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     return abstractTransactionSigner.multiSign(privateKeyable, transaction);
   }
 
@@ -104,23 +104,23 @@ public abstract class AbstractSignatureService<PK extends PrivateKeyable> implem
   /**
    * Does the actual work of computing a signature using a ed25519 private-key, as locatable using {@code privateKey}.
    *
-   * @param privateKey               A {@link PK} used for signing.
+   * @param privateKey               A {@link P} used for signing.
    * @param signableTransactionBytes A {@link UnsignedByteArray} to sign.
    *
    * @return A {@link Signature} with data that can be used to submit a transaction to the XRP Ledger.
    */
-  protected abstract Signature edDsaSign(PK privateKey, UnsignedByteArray signableTransactionBytes);
+  protected abstract Signature edDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes);
 
   /**
    * Does the actual work of computing a signature using a secp256k1 private-key, as locatable using
    * {@code privateKey}.
    *
-   * @param privateKey               A {@link PK} used for signing.
+   * @param privateKey               A {@link P} used for signing.
    * @param signableTransactionBytes A {@link UnsignedByteArray} to sign.
    *
    * @return A {@link Signature} with data that can be used to submit a transaction to the XRP Ledger.
    */
-  protected abstract Signature ecDsaSign(PK privateKey, UnsignedByteArray signableTransactionBytes);
+  protected abstract Signature ecDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes);
 
   /**
    * Verify a signature.
@@ -151,5 +151,5 @@ public abstract class AbstractSignatureService<PK extends PrivateKeyable> implem
    *
    * @return A corresponding {@link PublicKey}.
    */
-  public abstract PublicKey derivePublicKey(PK privateKey);
+  public abstract PublicKey derivePublicKey(P privateKey);
 }

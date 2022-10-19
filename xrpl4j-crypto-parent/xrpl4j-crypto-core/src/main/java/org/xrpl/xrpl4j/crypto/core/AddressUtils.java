@@ -16,7 +16,9 @@ public interface AddressUtils {
    * this address as the issuer for XRP. This is a Black hole account.
    *
    * @see "https://xrpl.org/accounts.html#special-addresses"
+   * @deprecated Prefer {@link AddressConstants} instead.
    */
+  @Deprecated
   Address ACCOUNT_ZERO = Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp");
 
   /**
@@ -24,7 +26,9 @@ public interface AddressUtils {
    * address as a placeholder for the issuer of a trust line balance. This is a Black hole account.
    *
    * @see "https://xrpl.org/accounts.html#special-addresses"
+   * @deprecated Prefer {@link AddressConstants} instead.
    */
+  @Deprecated
   Address ACCOUNT_ONE = Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji");
 
   /**
@@ -32,14 +36,18 @@ public interface AddressUtils {
    * the XRP. This address is generated from the seed value masterpassphrase which is hard-coded.
    *
    * @see "https://xrpl.org/accounts.html#special-addresses"
+   * @deprecated Prefer {@link AddressConstants} instead.
    */
+  @Deprecated
   Address GENESIS_ACCOUNT = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
 
   /**
    * In the past, Ripple asked users to send XRP to this account to reserve Ripple Names. This is a Black hole account.
    *
    * @see "https://xrpl.org/accounts.html#special-addresses"
+   * @deprecated Prefer {@link AddressConstants} instead.
    */
+  @Deprecated
   Address NAME_RESERVATION_BLACKHOLD = Address.of("rrrrrrrrrrrrrrrrrNAMEtxvNvQ");
 
   /**
@@ -47,7 +55,9 @@ public interface AddressUtils {
    * string encoding format. This is a Black hole account.
    *
    * @see "https://xrpl.org/accounts.html#special-addresses"
+   * @deprecated Prefer {@link AddressConstants} instead.
    */
+  @Deprecated
   Address NAN_ADDRESS = Address.of("rrrrrrrrrrrrrrrrrrrn5RM1rHd");
 
   /**

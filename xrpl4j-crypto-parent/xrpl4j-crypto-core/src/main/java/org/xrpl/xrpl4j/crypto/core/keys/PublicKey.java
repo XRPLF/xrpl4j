@@ -8,10 +8,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
@@ -22,6 +25,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeyDeserializer;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeySerializer;
 import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArrayDeserializer;
 import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArraySerializer;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -90,7 +94,6 @@ public interface PublicKey {
     return AddressBase58.encode(value(), Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
   }
 
-
   /**
    * The private-key value, as a Base16-encoded (i.e., HEX) string. Note that if this is an Ed25519 private-key, then
    * this value contains a leading prefix of `ED`, in hex.
@@ -110,6 +113,34 @@ public interface PublicKey {
   @Derived
   default VersionType versionType() {
     return this.base16Value().startsWith("ED") ? VersionType.ED25519 : VersionType.SECP256K1;
+  }
+
+  /**
+   * Derive an XRPL address from this public key.
+   *
+   * @return A Base58Check encoded XRPL address in Classic Address form.
+   */
+  @Lazy
+  default Address deriveAddress() {
+    return AddressCodec.getInstance().encodeAccountId(computePublicKeyHash(this.value()));
+  }
+
+  /**
+   * Compute the RIPEMD160 of the SHA256 of the given public key, which can be encoded to an XRPL address.
+   *
+   * @param publicKey The public key that should be hashed.
+   *
+   * @return An {@link UnsignedByteArray} containing the non-encoded XRPL address derived from the public key.
+   */
+  static UnsignedByteArray computePublicKeyHash(final UnsignedByteArray publicKey) {
+    Objects.requireNonNull(publicKey);
+
+    byte[] sha256 = Hashing.sha256().hashBytes(publicKey.toByteArray()).asBytes();
+    RIPEMD160Digest digest = new RIPEMD160Digest();
+    digest.update(sha256, 0, sha256.length);
+    byte[] ripemdSha256 = new byte[digest.getDigestSize()];
+    digest.doFinal(ripemdSha256, 0);
+    return UnsignedByteArray.of(ripemdSha256);
   }
 
   /**

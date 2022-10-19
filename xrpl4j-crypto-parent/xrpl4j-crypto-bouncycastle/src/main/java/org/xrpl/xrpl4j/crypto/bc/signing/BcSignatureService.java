@@ -10,14 +10,12 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractSignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
@@ -27,15 +25,16 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * <p>A {@link SignatureService} that uses BouncyCastle internally.</p>
+ * <p>A {@link SignatureService} that uses BouncyCastle internally to signed with in-memory instance of
+ * {@link PrivateKey}.</p>
  *
- * <p>WARNING: This implementation requires in-memory private-key material. Consider using an implementation of {@link
- * DelegatedSignatureService} for improved security.</p>
+ * <p>WARNING: This implementation utilizes in-memory private-key material. Consider instead using a
+ * {@link SignatureService} that uses instance of {@link PrivateKeyReference} for improved security.</p>
  *
  * @see "https://www.bouncycastle.org/java.html"
  * @see "https://www.bouncycastle.org/fips-java/BCFipsIn100.pdf"
  */
-public class BcSignatureService extends AbstractSignatureService implements SignatureService {
+public class BcSignatureService extends AbstractSignatureService<PrivateKey> implements SignatureService<PrivateKey> {
 
   private final Ed25519Signer ed25519Signer;
   private final ECDSASigner ecdsaSigner;
@@ -46,7 +45,6 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
   public BcSignatureService() {
     this(
       new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
-      BcAddressUtils.getInstance(),
       new Ed25519Signer(),
       new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()))
     );
@@ -56,17 +54,15 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
    * Required-args Constructor.
    *
    * @param signatureUtils An {@link SignatureUtils}.
-   * @param addressService An {@link AddressUtils}.
    * @param ed25519Signer  An {@link Ed25519Signer}.
    * @param ecdsaSigner    An {@link ECDSASigner}.
    */
   public BcSignatureService(
     final SignatureUtils signatureUtils,
-    final AddressUtils addressService,
     final Ed25519Signer ed25519Signer,
     final ECDSASigner ecdsaSigner
   ) {
-    super(signatureUtils, addressService);
+    super(signatureUtils);
     this.ed25519Signer = Objects.requireNonNull(ed25519Signer);
     this.ecdsaSigner = Objects.requireNonNull(ecdsaSigner);
   }
@@ -88,8 +84,9 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
 
       ed25519Signer.reset();
       ed25519Signer.init(true, privateKeyParameters);
-      ed25519Signer.update(signableTransactionBytes.toByteArray(), 0,
-        signableTransactionBytes.getUnsignedBytes().size());
+      ed25519Signer.update(
+        signableTransactionBytes.toByteArray(), 0, signableTransactionBytes.getUnsignedBytes().size()
+      );
 
       final UnsignedByteArray sigBytes = UnsignedByteArray.of(ed25519Signer.generateSignature());
       return Signature.builder()
@@ -101,23 +98,6 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
         privateKeyBytes[i] = (byte) 0;
       }
     }
-  }
-
-  @Override
-  protected synchronized boolean edDsaVerify(
-    final PublicKey publicKey, final UnsignedByteArray transactionBytes, final Signature signature
-  ) {
-    Objects.requireNonNull(publicKey);
-    Objects.requireNonNull(transactionBytes);
-    Objects.requireNonNull(signature);
-
-    final Ed25519PublicKeyParameters bcPublicKey = BcKeyUtils.toEd25519PublicKeyParameters(publicKey);
-
-    ed25519Signer.reset();
-    ed25519Signer.init(false, bcPublicKey);
-    ed25519Signer.update(transactionBytes.toByteArray(), 0, transactionBytes.length());
-
-    return ed25519Signer.verifySignature(signature.value().toByteArray());
   }
 
   @SuppressWarnings("checkstyle:LocalVariableName")
@@ -152,10 +132,22 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
   }
 
   @Override
-  protected PublicKey derivePublicKey(final PrivateKey privateKey) {
-    Objects.requireNonNull(privateKey);
-    return BcKeyUtils.toPublicKey(privateKey);
+  protected synchronized boolean edDsaVerify(
+    final PublicKey publicKey, final UnsignedByteArray transactionBytes, final Signature signature
+  ) {
+    Objects.requireNonNull(publicKey);
+    Objects.requireNonNull(transactionBytes);
+    Objects.requireNonNull(signature);
+
+    final Ed25519PublicKeyParameters bcPublicKey = BcKeyUtils.toEd25519PublicKeyParameters(publicKey);
+
+    ed25519Signer.reset();
+    ed25519Signer.init(false, bcPublicKey);
+    ed25519Signer.update(transactionBytes.toByteArray(), 0, transactionBytes.length());
+
+    return ed25519Signer.verifySignature(signature.value().toByteArray());
   }
+
 
   @Override
   protected synchronized boolean ecDsaVerify(
@@ -174,6 +166,12 @@ public class BcSignatureService extends AbstractSignatureService implements Sign
 
     ecdsaSigner.init(false, bcPublicKey);
     return ecdsaSigner.verifySignature(messageHash.toByteArray(), sig.r(), sig.s());
+  }
+
+  @Override
+  public PublicKey derivePublicKey(final PrivateKey privateKey) {
+    Objects.requireNonNull(privateKey);
+    return BcKeyUtils.toPublicKey(privateKey);
   }
 
 }

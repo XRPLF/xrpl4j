@@ -25,7 +25,7 @@ public class Ed25519KeyPairService implements KeyPairService {
   private static final Ed25519KeyPairService INSTANCE = new Ed25519KeyPairService();
 
   /**
-   * No-args Constructor.
+   * Private no-args constructor to enforce singleton pattern.
    */
   private Ed25519KeyPairService() {
   }

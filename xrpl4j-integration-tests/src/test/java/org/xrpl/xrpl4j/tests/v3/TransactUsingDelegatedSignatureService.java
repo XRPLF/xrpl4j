@@ -7,11 +7,12 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -33,20 +34,23 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Integration tests for submitting payment transactions to the XRPL using a {@link DelegatedSignatureService} for all
- * signing operations.
+ * Integration tests for submitting payment transactions to the XRPL using a {@link SignatureService} for all signing
+ * operations.
  */
 public class TransactUsingDelegatedSignatureService extends AbstractIT {
 
   @Test
   public void sendPaymentFromEd25519Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureServiceEd25519.getPublicKey(sourceKeyMetadata);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.ED25519);
+    final PublicKey sourceWalletPublicKey = delegatedSignatureServiceEd25519.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureServiceEd25519.getPublicKey(destinationKeyMetadata);
+    final PrivateKeyReference destinationKeyMetadata = constructPrivateKeyReference(
+      "destinationWallet", VersionType.ED25519
+    );
+    final PublicKey destinationWalletPublicKey = delegatedSignatureServiceEd25519.derivePublicKey(
+      destinationKeyMetadata);
     final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
     this.fundAccount(destinationWalletAddress);
 
@@ -72,13 +76,14 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureServiceSecp256k1.getPublicKey(sourceKeyMetadata);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.SECP256K1);
+    final PublicKey sourceWalletPublicKey = delegatedSignatureServiceSecp256k1.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureServiceSecp256k1.getPublicKey(
+    final PrivateKeyReference destinationKeyMetadata = constructPrivateKeyReference("destinationWallet",
+      VersionType.SECP256K1);
+    final PublicKey destinationWalletPublicKey = delegatedSignatureServiceSecp256k1.derivePublicKey(
       destinationKeyMetadata);
     final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
     this.fundAccount(destinationWalletAddress);
@@ -115,40 +120,69 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
   }
 
   /**
-   * Helper to send a multisign payment using a designated {@link DelegatedSignatureService}.
+   * Helper to send a multisign payment using a designated {@link SignatureService}.
    *
-   * @param delegatedSignatureService A particular type of {@link DelegatedSignatureService} for a given key type.
+   * @param delegatedSignatureService A particular type of {@link SignatureService} for a given key type.
    */
-  private void multiSigSendPaymentHelper(final DelegatedSignatureService delegatedSignatureService)
+  private void multiSigSendPaymentHelper(final SignatureService<PrivateKeyReference> delegatedSignatureService)
     throws JsonRpcClientErrorException, JsonProcessingException {
     Objects.requireNonNull(delegatedSignatureService);
 
-    KeyMetadata sourceKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("source")
-      .build();
-    final Address sourceAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(sourceKeyMetadata));
+    PrivateKeyReference sourcePrivateKeyReference = new PrivateKeyReference() {
+      @Override
+      public String keyIdentifier() {
+        return "source";
+      }
+
+      @Override
+      public VersionType versionType() {
+        return VersionType.ED25519;
+      }
+    };
+    final Address sourceAddress = delegatedSignatureService.derivePublicKey(sourcePrivateKeyReference).deriveAddress();
     this.fundAccount(sourceAddress);
 
-    KeyMetadata aliceKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("alice")
-      .build();
-    final Address aliceAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(aliceKeyMetadata));
+    PrivateKeyReference alicePrivateKeyReference = new PrivateKeyReference() {
+      @Override
+      public String keyIdentifier() {
+        return "alice";
+      }
+
+      @Override
+      public VersionType versionType() {
+        return VersionType.ED25519;
+      }
+    };
+    final Address aliceAddress = delegatedSignatureService.derivePublicKey(alicePrivateKeyReference).deriveAddress();
     this.fundAccount(aliceAddress);
 
-    KeyMetadata bobKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("bob")
-      .build();
-    final Address bobAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(bobKeyMetadata));
+    PrivateKeyReference bobPrivateKeyReference = new PrivateKeyReference() {
+      @Override
+      public String keyIdentifier() {
+        return "bob";
+      }
+
+      @Override
+      public VersionType versionType() {
+        return VersionType.ED25519;
+      }
+    };
+    final Address bobAddress = delegatedSignatureService.derivePublicKey(bobPrivateKeyReference).deriveAddress();
     this.fundAccount(bobAddress);
 
-    KeyMetadata destinationKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("destination")
-      .build();
-    final Address destinationAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(destinationKeyMetadata));
+    PrivateKeyReference destinationPrivateKeyReference = new PrivateKeyReference() {
+      @Override
+      public String keyIdentifier() {
+        return "destination";
+      }
+
+      @Override
+      public VersionType versionType() {
+        return VersionType.ED25519;
+      }
+    };
+    final Address destinationAddress = delegatedSignatureService.derivePublicKey(destinationPrivateKeyReference)
+      .deriveAddress();
     this.fundAccount(destinationAddress);
 
     /////////////////////////////
@@ -186,11 +220,11 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(toPublicKey(sourceKeyMetadata, delegatedSignatureService).base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKeyReference, delegatedSignatureService).base16Value())
       .build();
 
     SingleSingedTransaction<SignerListSet> signedSignerListSet = delegatedSignatureService.sign(
-      sourceKeyMetadata, signerListSet
+      sourcePrivateKeyReference, signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
@@ -234,7 +268,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
-    List<SignerWrapper> signers = Lists.newArrayList(aliceKeyMetadata, bobKeyMetadata).stream()
+    List<SignerWrapper> signers = Lists.newArrayList(alicePrivateKeyReference, bobPrivateKeyReference).stream()
       .map(keyMetadata -> {
           Signature signatureWithKeyMetadata = delegatedSignatureService.multiSign(keyMetadata, unsignedPayment);
           return SignerWrapper.of(Signer.builder()
@@ -262,12 +296,11 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     );
   }
 
-  private PublicKey toPublicKey(final KeyMetadata keyMetadata,
-    final DelegatedSignatureService delegatedSignatureService) {
-    return delegatedSignatureService.getPublicKey(keyMetadata);
+  private PublicKey toPublicKey(final PrivateKeyReference keyMetadata, final SignatureService signatureService) {
+    return signatureService.derivePublicKey(keyMetadata);
   }
 
-  private Address toAddress(final KeyMetadata keyMetadata, final DelegatedSignatureService delegatedSignatureService) {
-    return BcAddressUtils.getInstance().deriveAddress(toPublicKey(keyMetadata, delegatedSignatureService));
+  private Address toAddress(final PrivateKeyReference keyMetadata, final SignatureService signatureService) {
+    return toPublicKey(keyMetadata, signatureService).deriveAddress();
   }
 }

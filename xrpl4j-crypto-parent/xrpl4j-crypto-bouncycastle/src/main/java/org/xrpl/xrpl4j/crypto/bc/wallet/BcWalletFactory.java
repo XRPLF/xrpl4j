@@ -16,7 +16,10 @@ import java.util.Objects;
 
 /**
  * Default implementation of {@link WalletFactory}.
+ *
+ * @deprecated This will go away in favor of {@link KeyPairService}.
  */
+@Deprecated
 public class BcWalletFactory implements WalletFactory {
 
   private static final WalletFactory INSTANCE = new BcWalletFactory(

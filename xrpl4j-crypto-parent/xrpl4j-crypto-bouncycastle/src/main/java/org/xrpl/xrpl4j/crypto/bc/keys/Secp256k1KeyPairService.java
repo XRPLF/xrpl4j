@@ -5,7 +5,6 @@ import static org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService.Secp256k1.E
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.params.ECDomainParameters;
-import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
@@ -42,13 +41,10 @@ public class Secp256k1KeyPairService implements KeyPairService {
 
   private static final Secp256k1KeyPairService INSTANCE = new Secp256k1KeyPairService();
 
-  private final SeedCodec seedCodec;
-
   /**
-   * Private constructor to enforce singleton pattern.
+   * Private no-args constructor to enforce singleton pattern.
    */
   private Secp256k1KeyPairService() {
-    this.seedCodec = SeedCodec.getInstance();
   }
 
   /**

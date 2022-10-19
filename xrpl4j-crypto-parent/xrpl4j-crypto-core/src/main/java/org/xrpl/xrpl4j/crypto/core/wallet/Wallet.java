@@ -1,15 +1,18 @@
 package org.xrpl.xrpl4j.crypto.core.wallet;
 
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.wallet.ImmutableWallet;
 import org.xrpl.xrpl4j.crypto.core.wallet.ImmutableWallet.Builder;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Represents an Account on the XRP Ledger, otherwise known as a Wallet.
+ *
+ * @deprecated Prefer {@link KeyPairService} instead.
  */
+@Deprecated
 @Value.Immutable
 public interface Wallet {
 

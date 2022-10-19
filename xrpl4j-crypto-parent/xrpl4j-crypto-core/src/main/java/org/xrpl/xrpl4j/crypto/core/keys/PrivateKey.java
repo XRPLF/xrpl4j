@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  * A typed instance of an XRPL private-key.
  */
-public class PrivateKey implements javax.security.auth.Destroyable {
+public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyable {
 
   /**
    * Keys generated from the secp256k1 curve have 33 bytes in XRP Ledger. However, keys derived from the ed25519 curve

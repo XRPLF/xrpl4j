@@ -43,7 +43,10 @@ public class BcAddressUtils implements AddressUtils {
    * @param publicKey The hexadecimal encoded public key of the account.
    *
    * @return A Base58Check encoded XRPL address in Classic Address form.
+   *
+   * @deprecated Prefer the variant on PublicKey.
    */
+  @Deprecated
   public Address deriveAddress(final PublicKey publicKey) {
     Objects.requireNonNull(publicKey);
     return AddressCodec.getInstance().encodeAccountId(computePublicKeyHash(publicKey.value()));
@@ -55,7 +58,10 @@ public class BcAddressUtils implements AddressUtils {
    * @param publicKey The public key that should be hashed.
    *
    * @return An {@link UnsignedByteArray} containing the non-encoded XRPL address derived from the public key.
+   *
+   * @deprecated Prefer the variant on PublicKey.
    */
+  @Deprecated
   @SuppressWarnings("UnstableApiUsage")
   private UnsignedByteArray computePublicKeyHash(final UnsignedByteArray publicKey) {
     Objects.requireNonNull(publicKey);

@@ -16,9 +16,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.TestConstants;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Unit tests for {@link AbstractDelegatedSignatureService}.
+ * Unit tests for {@link AbstractSignatureService}.
  */
 @SuppressWarnings("CheckStyle")
 public class AbstractSignatureServiceTest {
@@ -42,8 +42,6 @@ public class AbstractSignatureServiceTest {
   Transaction transactionMock;
   @Mock
   SingleSingedTransaction<Transaction> signedTransactionMock;
-  @Mock
-  AddressUtils addressServiceMock;
   @Mock
   SignatureWithPublicKey signatureWithPublicKeyMock;
 
@@ -64,14 +62,15 @@ public class AbstractSignatureServiceTest {
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.addSignatureToTransaction(any(), any())).thenReturn(signedTransactionMock);
 
-    this.signatureService = new AbstractSignatureService(signatureUtilsMock, addressServiceMock) {
+    this.signatureService = new AbstractSignatureService(signatureUtilsMock) {
+
       @Override
-      protected Signature edDsaSign(PrivateKey privateKey, UnsignedByteArray signableTransactionBytes) {
+      protected Signature edDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
         return ed25519SignatureMock;
       }
 
       @Override
-      protected Signature ecDsaSign(PrivateKey privateKey, UnsignedByteArray signableTransactionBytes) {
+      protected Signature ecDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
         return secp256k1SignatureMock;
       }
 
@@ -88,10 +87,80 @@ public class AbstractSignatureServiceTest {
       }
 
       @Override
-      protected PublicKey derivePublicKey(PrivateKey privateKey) {
-        return TestConstants.ED_PUBLIC_KEY;
+      public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
+        return privateKeyable.versionType() == VersionType.ED25519
+          ? TestConstants.ED_PUBLIC_KEY
+          : TestConstants.EC_PUBLIC_KEY;
       }
     };
+  }
+
+  ///////////////////
+  // Sign (privateKey, Transaction)
+  ///////////////////
+
+  @Test
+  public void nullConstructorSigner() {
+    Assertions.assertThrows(NullPointerException.class, () -> {
+      new AbstractSignatureService<PrivateKeyable>(null, mock(AbstractTransactionVerifier.class)) {
+        @Override
+        protected Signature edDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
+          return null;
+        }
+
+        @Override
+        protected Signature ecDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
+          return null;
+        }
+
+        @Override
+        protected boolean edDsaVerify(PublicKey publicKey, UnsignedByteArray transactionBytes, Signature signature) {
+          return false;
+        }
+
+        @Override
+        protected boolean ecDsaVerify(PublicKey publicKey, UnsignedByteArray transactionBytes, Signature signature) {
+          return false;
+        }
+
+        @Override
+        public PublicKey derivePublicKey(PrivateKeyable privateKey) {
+          return null;
+        }
+      };
+    });
+  }
+
+  @Test
+  public void nullConstructorVerifier() {
+    Assertions.assertThrows(NullPointerException.class, () -> {
+      new AbstractSignatureService<PrivateKeyable>(mock(AbstractTransactionSigner.class), null) {
+        @Override
+        protected Signature edDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
+          return null;
+        }
+
+        @Override
+        protected Signature ecDsaSign(PrivateKeyable privateKey, UnsignedByteArray signableTransactionBytes) {
+          return null;
+        }
+
+        @Override
+        protected boolean edDsaVerify(PublicKey publicKey, UnsignedByteArray transactionBytes, Signature signature) {
+          return false;
+        }
+
+        @Override
+        protected boolean ecDsaVerify(PublicKey publicKey, UnsignedByteArray transactionBytes, Signature signature) {
+          return false;
+        }
+
+        @Override
+        public PublicKey derivePublicKey(PrivateKeyable privateKey) {
+          return null;
+        }
+      };
+    });
   }
 
   ///////////////////
@@ -132,28 +201,24 @@ public class AbstractSignatureServiceTest {
   @Test
   void multiSignEd25519() {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
-    when(addressServiceMock.deriveAddress(any())).thenReturn(TestConstants.ED_ADDRESS);
 
     final Signature signature = signatureService.multiSign(TestConstants.ED_PRIVATE_KEY, transactionMock);
     assertThat(signature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, ed25519SignatureMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void multiSignSecp256k1() {
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
-    when(addressServiceMock.deriveAddress(any())).thenReturn(TestConstants.EC_ADDRESS);
 
     final Signature signature = signatureService.multiSign(TestConstants.EC_PRIVATE_KEY, transactionMock);
     assertThat(signature).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, secp256k1SignatureMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -193,21 +258,21 @@ public class AbstractSignatureServiceTest {
   public void verifyWithNullSigPubKey() {
     Assertions.assertThrows(NullPointerException.class, () -> {
       SignatureWithPublicKey nullSignatureWithPublicKey = null;
-      signatureService.verify(nullSignatureWithPublicKey, transactionMock);
+      signatureService.verifySingleSigned(nullSignatureWithPublicKey, transactionMock);
     });
   }
 
   @Test
   public void verifyWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verify(mock(SignatureWithPublicKey.class), null));
+      () -> signatureService.verifySingleSigned(mock(SignatureWithPublicKey.class), null));
   }
 
   @Test
   public void verifyEd25519() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.ED_PUBLIC_KEY);
 
-    boolean actual = signatureService.verify(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -220,7 +285,7 @@ public class AbstractSignatureServiceTest {
   public void verifySecp256k1() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.EC_PUBLIC_KEY);
 
-    boolean actual = signatureService.verify(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();
@@ -237,13 +302,11 @@ public class AbstractSignatureServiceTest {
 
     final Set<SignatureWithPublicKey> signatureWithPublicKeys = Sets.newLinkedHashSet(signatureWithPublicKeyMock);
 
-    boolean actual = signatureService.verify(signatureWithPublicKeys, transactionMock, 1);
+    boolean actual = signatureService.verifyMultiSigned(signatureWithPublicKeys, transactionMock, 1);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isFalse();
-    verify(addressServiceMock).deriveAddress(TestConstants.ED_PUBLIC_KEY);
-    verifyNoMoreInteractions(addressServiceMock);
     verify(signatureUtilsMock).toMultiSignableBytes(any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }
@@ -256,13 +319,11 @@ public class AbstractSignatureServiceTest {
 
     final Set<SignatureWithPublicKey> signatureWithPublicKeys = Sets.newLinkedHashSet(signatureWithPublicKeyMock);
 
-    boolean actual = signatureService.verify(signatureWithPublicKeys, transactionMock, 1);
+    boolean actual = signatureService.verifyMultiSigned(signatureWithPublicKeys, transactionMock, 1);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();
     assertThat(ed25519VerifyCalled.get()).isFalse();
-    verify(addressServiceMock).deriveAddress(TestConstants.EC_PUBLIC_KEY);
-    verifyNoMoreInteractions(addressServiceMock);
     verify(signatureUtilsMock).toMultiSignableBytes(any(), any());
     verifyNoMoreInteractions(signatureUtilsMock);
   }

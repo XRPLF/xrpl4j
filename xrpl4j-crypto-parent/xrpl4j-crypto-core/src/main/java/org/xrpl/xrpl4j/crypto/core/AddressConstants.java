@@ -1,15 +1,11 @@
 package org.xrpl.xrpl4j.crypto.core;
 
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
- * A utility interface to help with interactions involving XRPL addresses.
- *
- * @deprecated This interface will be removed in a future version. Prefer {@link AddressConstants} instead.
+ * Constants defining well-known XRPL addresses.
  */
-@Deprecated
-public interface AddressUtils {
+public interface AddressConstants {
 
   /**
    * An address that is the XRP Ledger's base58 encoding of the value 0. In peer-to-peer communications, rippled uses
@@ -49,17 +45,4 @@ public interface AddressUtils {
    * @see "https://xrpl.org/accounts.html#special-addresses"
    */
   Address NAN_ADDRESS = Address.of("rrrrrrrrrrrrrrrrrrrn5RM1rHd");
-
-  /**
-   * Derive an XRPL address from a public key.
-   *
-   * @param publicKey The hexadecimal encoded public key of the account.
-   *
-   * @return A Base58Check encoded XRPL address in Classic Address form.
-   *
-   * @deprecated This interface will be removed in a future version. Prefer {@link PublicKey} instead.
-   */
-  @Deprecated
-  Address deriveAddress(final PublicKey publicKey);
-
 }

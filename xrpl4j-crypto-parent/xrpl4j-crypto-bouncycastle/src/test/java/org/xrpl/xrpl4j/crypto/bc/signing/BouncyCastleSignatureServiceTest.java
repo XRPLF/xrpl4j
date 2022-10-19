@@ -22,10 +22,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
@@ -38,7 +36,6 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.math.BigInteger;
-import java.util.Set;
 
 /**
  * Unit tests for {@link BcSignatureService}.
@@ -56,8 +53,6 @@ class BouncyCastleSignatureServiceTest {
   @Mock
   private SingleSingedTransaction<AccountSet> signedTransactionMock;
   @Mock
-  private AddressUtils addressServiceMock;
-  @Mock
   private Ed25519Signer ed25519SignerMock;
   @Mock
   private ECDSASigner ecdsaSignerMock;
@@ -74,20 +69,18 @@ class BouncyCastleSignatureServiceTest {
   public void setUp() {
     MockitoAnnotations.openMocks(this);
 
-    AddressUtils addressUtils = BcAddressUtils.getInstance();
     Ed25519KeyPairService ed25519KeyPairService = Ed25519KeyPairService.getInstance();
     this.ed25519KeyPair = ed25519KeyPairService.deriveKeyPair(
       Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"))
     );
-    this.ed25519SignerAddress = addressUtils.deriveAddress(ed25519KeyPair.publicKey());
+    this.ed25519SignerAddress = ed25519KeyPair.publicKey().deriveAddress();
 
     Secp256k1KeyPairService secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
     this.secp256k1KeyPair = secp256k1KeyPairService.deriveKeyPair(
       Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"))
     );
-    this.secp256k1SignerAddress = addressUtils.deriveAddress(secp256k1KeyPair.publicKey());
+    this.secp256k1SignerAddress = secp256k1KeyPair.publicKey().deriveAddress();
 
-    when(addressServiceMock.deriveAddress(any())).thenReturn(ed25519SignerAddress);
     when(signedTransactionMock.unsignedTransaction()).thenReturn(transactionMock);
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
@@ -111,25 +104,20 @@ class BouncyCastleSignatureServiceTest {
     }
     when(ecdsaSignerMock.generateSignature(any())).thenReturn(bigInts);
 
-    this.signatureService = new BcSignatureService(
-      signatureUtilsMock, addressServiceMock, ed25519SignerMock, ecdsaSignerMock
-    );
+    this.signatureService = new BcSignatureService(signatureUtilsMock, ed25519SignerMock, ecdsaSignerMock);
   }
 
   @Test
   void constructorWithNulls() {
     // 4-arg Constructor
     assertThrows(NullPointerException.class, () -> new BcSignatureService(
-      null, addressServiceMock, ed25519SignerMock, ecdsaSignerMock
+      null, ed25519SignerMock, ecdsaSignerMock
     ));
     assertThrows(NullPointerException.class, () -> new BcSignatureService(
-      signatureUtilsMock, null, ed25519SignerMock, ecdsaSignerMock
+      signatureUtilsMock, null, ecdsaSignerMock
     ));
     assertThrows(NullPointerException.class, () -> new BcSignatureService(
-      signatureUtilsMock, addressServiceMock, null, ecdsaSignerMock
-    ));
-    assertThrows(NullPointerException.class, () -> new BcSignatureService(
-      signatureUtilsMock, addressServiceMock, ed25519SignerMock, null
+      signatureUtilsMock, ed25519SignerMock, null
     ));
   }
 
@@ -194,7 +182,8 @@ class BouncyCastleSignatureServiceTest {
       ed25519KeyPair.privateKey(),
       transactionMock
     );
-    assertThat(signature).isEqualTo(ed25519SignatureMock);
+    assertThat(signature.base16Value())
+      .isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, ed25519SignerAddress);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
@@ -202,27 +191,21 @@ class BouncyCastleSignatureServiceTest {
     ed25519SignatureMock = Signature.builder()
       .value(UnsignedByteArray.of(new byte[32]))
       .build();
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, ed25519SignatureMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
   @Test
   void multiSignSecp256k1() {
-    when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
-    when(addressServiceMock.deriveAddress(any())).thenReturn(secp256k1SignerAddress);
+    //when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
 
     final Signature signature = signatureService.multiSign(
       secp256k1KeyPair.privateKey(),
       transactionMock
     );
-    assertThat(signature).isEqualTo(secp256k1SignatureMock);
+    assertThat(signature.base16Value()).isEqualTo("300602010A02010A");
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, secp256k1SignerAddress);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
-    Signature secp256k1SignatureMock = Signature.builder()
-      .value(UnsignedByteArray.of(BaseEncoding.base16().decode("300602010A02010A")))
-      .build();
-    verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, secp256k1SignatureMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
@@ -233,13 +216,13 @@ class BouncyCastleSignatureServiceTest {
   @Test
   public void verifyWithNullMetadata() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verify((SignatureWithPublicKey) null, transactionMock));
+      () -> signatureService.verifySingleSigned(null, transactionMock));
   }
 
   @Test
   public void verifyWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verify(mock(SignatureWithPublicKey.class), null));
+      () -> signatureService.verifySingleSigned(mock(SignatureWithPublicKey.class), null));
   }
 
   @Test
@@ -252,7 +235,7 @@ class BouncyCastleSignatureServiceTest {
       .signingPublicKey(ed25519KeyPair.publicKey())
       .build();
 
-    boolean actual = signatureService.verify(signatureWithPublicKey, transactionMock);
+    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKey, transactionMock);
 
     assertThat(actual).isTrue();
     verify(ed25519SignerMock).reset();
@@ -275,7 +258,7 @@ class BouncyCastleSignatureServiceTest {
       .signingPublicKey(secp256k1KeyPair.publicKey())
       .build();
 
-    boolean actual = signatureService.verify(signatureWithPublicKey, transactionMock);
+    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKey, transactionMock);
 
     assertThat(actual).isTrue();
     verify(ecdsaSignerMock).init(anyBoolean(), any());
@@ -296,7 +279,7 @@ class BouncyCastleSignatureServiceTest {
   public void verifyMultiWithNullSigs() {
     Assertions.assertThrows(
       NullPointerException.class,
-      () -> signatureService.verify((Set<SignatureWithPublicKey>) null, mock(Transaction.class), 1)
+      () -> signatureService.verifyMultiSigned(null, mock(Transaction.class), 1)
     );
   }
 
@@ -304,7 +287,7 @@ class BouncyCastleSignatureServiceTest {
   public void verifyMultiWithNullTransaction() {
     Assertions.assertThrows(
       NullPointerException.class,
-      () -> signatureService.verify(Sets.newHashSet(), null, 1)
+      () -> signatureService.verifyMultiSigned(Sets.newHashSet(), null, 1)
     );
   }
 
@@ -312,7 +295,7 @@ class BouncyCastleSignatureServiceTest {
   public void verifyMultiWith0MinSigners() {
     Assertions.assertThrows(
       IllegalArgumentException.class,
-      () -> signatureService.verify(Sets.newHashSet(), transactionMock, 0)
+      () -> signatureService.verifyMultiSigned(Sets.newHashSet(), transactionMock, 0)
     );
   }
 
@@ -320,7 +303,7 @@ class BouncyCastleSignatureServiceTest {
   public void verifyMultiWithNegativeMinSigners() {
     Assertions.assertThrows(
       IllegalArgumentException.class,
-      () -> signatureService.verify(Sets.newHashSet(), transactionMock, -1)
+      () -> signatureService.verifyMultiSigned(Sets.newHashSet(), transactionMock, -1)
     );
   }
 
@@ -329,7 +312,7 @@ class BouncyCastleSignatureServiceTest {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
     when(ed25519SignerMock.verifySignature(any())).thenReturn(true);
 
-    boolean actual = signatureService.verify(
+    boolean actual = signatureService.verifyMultiSigned(
       Sets.newLinkedHashSet(
         SignatureWithPublicKey.builder()
           .transactionSignature(ed25519SignatureMock)
@@ -357,7 +340,7 @@ class BouncyCastleSignatureServiceTest {
     when(ecdsaSignerMock.verifySignature(any(), any(), any())).thenReturn(true);
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
 
-    boolean actual = signatureService.verify(
+    boolean actual = signatureService.verifyMultiSigned(
       Sets.newLinkedHashSet(
         SignatureWithPublicKey.builder()
           .transactionSignature(secp256k1SignatureMock)

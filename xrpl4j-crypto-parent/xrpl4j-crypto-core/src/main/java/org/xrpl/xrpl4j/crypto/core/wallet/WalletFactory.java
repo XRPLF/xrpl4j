@@ -1,11 +1,15 @@
 package org.xrpl.xrpl4j.crypto.core.wallet;
 
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 
 /**
  * Interface for constructing XRPL wallets.
+ *
+ * @deprecated Prefer {@link KeyPairService} instead.
  */
+@Deprecated
 public interface WalletFactory {
 
   /**
@@ -55,7 +59,10 @@ public interface WalletFactory {
    * @param seed A {@link Seed}, which is a Base58Check encoded 16 byte value.
    *
    * @return The {@link Wallet} derived from the seed.
+   *
+   * @deprecated Prefer {@link KeyPairService} instead.
    */
+  @Deprecated
   Wallet fromSeed(Seed seed);
 
   /**
@@ -65,6 +72,7 @@ public interface WalletFactory {
    *
    * @return The {@link Wallet} derived from the keyPair.
    */
+  @Deprecated
   Wallet fromKeyPair(KeyPair keyPair);
 
 }

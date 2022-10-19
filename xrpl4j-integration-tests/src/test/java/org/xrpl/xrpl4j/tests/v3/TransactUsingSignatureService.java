@@ -8,10 +8,10 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
@@ -41,22 +41,20 @@ import java.util.stream.Collectors;
  */
 public class TransactUsingSignatureService extends AbstractIT {
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
-  @BeforeEach
-  public void setUp() {
-  }
+
 
   @Test
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final DelegatedSignatureService delegatedSignatureService = this.constructDelegatedSignatureServiceEd25519();
+    final SignatureService<PrivateKeyReference> delegatedSignatureService = this.constructDelegatedSignatureServiceEd25519();
 
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.ED25519);
+    final PublicKey sourceWalletPublicKey = delegatedSignatureService.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
+    final PrivateKeyReference destinationKeyMetadata = constructPrivateKeyReference("destinationWallet",
+      VersionType.ED25519);
+    final PublicKey destinationWalletPublicKey = delegatedSignatureService.derivePublicKey(destinationKeyMetadata);
     final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
     this.fundAccount(destinationWalletAddress);
 
@@ -81,15 +79,16 @@ public class TransactUsingSignatureService extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final DelegatedSignatureService delegatedSignatureService = this.constructDelegatedSignatureServiceSecp256k1();
+    final SignatureService<PrivateKeyReference> delegatedSignatureService = this.constructDelegatedSignatureServiceSecp256k1();
 
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.SECP256K1);
+    final PublicKey sourceWalletPublicKey = delegatedSignatureService.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
+    final PrivateKeyReference destinationKeyMetadata = constructPrivateKeyReference("destinationWallet",
+      VersionType.SECP256K1);
+    final PublicKey destinationWalletPublicKey = delegatedSignatureService.derivePublicKey(destinationKeyMetadata);
     final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
     this.fundAccount(destinationWalletAddress);
 

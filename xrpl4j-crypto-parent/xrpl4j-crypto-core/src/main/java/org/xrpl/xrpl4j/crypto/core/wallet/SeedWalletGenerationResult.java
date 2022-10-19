@@ -1,11 +1,15 @@
 package org.xrpl.xrpl4j.crypto.core.wallet;
 
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 
 /**
  * The result of generating a {@link Wallet} from a seed value.
+ *
+ * @deprecated Prefer {@link KeyPairService}.
  */
+@Deprecated
 @Value.Immutable
 public interface SeedWalletGenerationResult {
 

@@ -19,7 +19,9 @@ public interface TransactionVerifier {
    *
    * @return {@code true} if the signature is valid and verified; {@code false} otherwise.
    */
-  <T extends Transaction> boolean verify(SignatureWithPublicKey signatureWithPublicKey, T unsignedTransaction);
+  <T extends Transaction> boolean verifySingleSigned(
+    SignatureWithPublicKey signatureWithPublicKey, T unsignedTransaction
+  );
 
   /**
    * Verify that all signers have properly signed the {@code unsignedTransaction}.
@@ -31,10 +33,10 @@ public interface TransactionVerifier {
    * @return {@code true} if a minimum number of signatures are valid for the supplied transaction; {@code false}
    *   otherwise.
    */
-  default <T extends Transaction> boolean verify(
+  default <T extends Transaction> boolean verifyMultiSigned(
     final Set<SignatureWithPublicKey> signatureWithPublicKeys, final T unsignedTransaction
   ) {
-    return verify(signatureWithPublicKeys, unsignedTransaction, signatureWithPublicKeys.size());
+    return verifyMultiSigned(signatureWithPublicKeys, unsignedTransaction, signatureWithPublicKeys.size());
   }
 
   /**
@@ -49,7 +51,7 @@ public interface TransactionVerifier {
    * @return {@code true} if a minimum number of signatures are valid for the supplied transaction; {@code false}
    *   otherwise.
    */
-  <T extends Transaction> boolean verify(
+  <T extends Transaction> boolean verifyMultiSigned(
     Set<SignatureWithPublicKey> signatureWithPublicKeys, T unsignedTransaction, int minSigners
   );
 

@@ -18,13 +18,13 @@ import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithKeyMetadata;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.Flags;
@@ -45,10 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Unit tests for {@link DerivedKeyDelegatedSignatureService}.
+ * Unit tests for {@link BcDerivedKeySignatureService}.
  */
-@SuppressWarnings("UnstableApiUsage")
-class DerivedKeyDelegatedSignatureServiceTest {
+class BcDerivedKeySignatureServiceTest {
 
   private static final String sourceClassicAddressEd = "rLg3vY8w2tTZz1WVYjub32V4SGynLWnNRw";
   private static final String sourceClassicAddressEc = "rDt78kzcAfRf5NwmwL4f3E5pK14iM4CxRi";
@@ -56,43 +55,43 @@ class DerivedKeyDelegatedSignatureServiceTest {
   // Dest address
   private static final String destinationClassicAddress = "rKdi2esXfU7VmZyvRtMKZFFMVESBLE1iiw";
 
-  private DerivedKeyDelegatedSignatureService edSignatureService;
-  private DerivedKeyDelegatedSignatureService ecSignatureService;
+  private BcDerivedKeySignatureService edSignatureService;
+  private BcDerivedKeySignatureService ecSignatureService;
 
   @BeforeEach
   public void setUp() {
     final ServerSecretSupplier serverSecretSupplier = () -> ServerSecret.of("happy".getBytes(StandardCharsets.UTF_8));
-    this.edSignatureService = new DerivedKeyDelegatedSignatureService(serverSecretSupplier, VersionType.ED25519);
-    this.ecSignatureService = new DerivedKeyDelegatedSignatureService(serverSecretSupplier, VersionType.SECP256K1);
+    this.edSignatureService = new BcDerivedKeySignatureService(serverSecretSupplier, VersionType.ED25519);
+    this.ecSignatureService = new BcDerivedKeySignatureService(serverSecretSupplier, VersionType.SECP256K1);
   }
 
   @Test
   void constructorWithNulls() {
     // 2-arg Constructor
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(null, VersionType.ED25519));
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(null, VersionType.ED25519));
     assertThrows(NullPointerException.class,
-      () -> new DerivedKeyDelegatedSignatureService(() -> ServerSecret.of(new byte[32]), null));
+      () -> new BcDerivedKeySignatureService(() -> ServerSecret.of(new byte[32]), null));
 
     // 4-arg Constructor
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       null,
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class)
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       null,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class)
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       null,
       mock(Secp256k1KeyPairService.class)
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
@@ -100,35 +99,35 @@ class DerivedKeyDelegatedSignatureServiceTest {
     ));
 
     // 5-arg Constructor
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       null,
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class),
       CaffeineSpec.parse("")
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       null,
       mock(Ed25519KeyPairService.class),
       mock(Secp256k1KeyPairService.class),
       CaffeineSpec.parse("")
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       null,
       mock(Secp256k1KeyPairService.class),
       CaffeineSpec.parse("")
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
       null,
       CaffeineSpec.parse("")
     ));
-    assertThrows(NullPointerException.class, () -> new DerivedKeyDelegatedSignatureService(
+    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
@@ -141,7 +140,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
   @Test
   void constructorWithExternalCaffeineConfig() {
     // This test merely assert that construction succeeds.
-    new DerivedKeyDelegatedSignatureService(
+    new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
       VersionType.ED25519,
       mock(Ed25519KeyPairService.class),
@@ -155,8 +154,8 @@ class DerivedKeyDelegatedSignatureServiceTest {
    */
   @Test
   void signAndVerifyEd() {
-    final KeyMetadata keyMetadata = keyMetadata("foo");
-    final PublicKey publicKey = this.edSignatureService.getPublicKey(keyMetadata);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.ED25519);
+    final PublicKey publicKey = this.edSignatureService.derivePublicKey(privateKeyReference);
 
     final Payment paymentTransaction = Payment.builder()
       .account(Address.of(sourceClassicAddressEd))
@@ -169,11 +168,11 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      SingleSingedTransaction<Payment> signedTx = this.edSignatureService.sign(keyMetadata, paymentTransaction);
+      SingleSingedTransaction<Payment> signedTx = this.edSignatureService.sign(privateKeyReference, paymentTransaction);
       return this.edSignatureService.verifySingleSigned(
-        SignatureWithKeyMetadata.builder()
+        SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
-          .signingKeyMetadata(keyMetadata)
+          .signingPublicKey(publicKey)
           .build(),
         paymentTransaction
       );
@@ -196,7 +195,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
   }
 
   /**
-   * Note: this test runs in a loop solely to exercise concurrent correctness.
+   * Note: this test runs in a loop solely to exercise concurrency correctness.
    */
   @Test
   void multiSignAndVerifyEd() {
@@ -215,30 +214,33 @@ class DerivedKeyDelegatedSignatureServiceTest {
       .signingPublicKey("")
       .build();
 
-    final KeyMetadata keyMetadataFoo = keyMetadata("foo");
-    final KeyMetadata keyMetadataBar = keyMetadata("bar");
+    final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", VersionType.ED25519);
+    final PublicKey publicKeyFoo = this.edSignatureService.derivePublicKey(privateKeyReferenceFoo);
+    final PrivateKeyReference privateKeyReferenceBar = privateKeyReference("bar", VersionType.ED25519);
+    final PublicKey publicKeyBar = this.edSignatureService.derivePublicKey(privateKeyReferenceBar);
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallableFoo = () -> {
-      Signature signature = this.edSignatureService.multiSign(keyMetadataFoo, payment);
+      Signature signature = this.edSignatureService.multiSign(privateKeyReferenceFoo, payment);
       assertThat(signature.base16Value()).isEqualTo(
         "E2ACD61C90D93433402B1F704DA38DF72876B6788C2C05B3196E14BC711AECFF14A7D6276439A198D8B4880EE2DB544CF351A8CE23" +
           "1B3340F42F9BF1EDBF5104"
       );
 
       boolean result = this.edSignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithKeyMetadata.builder()
+        Sets.newHashSet(SignatureWithPublicKey.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadataFoo)
+          .signingPublicKey(publicKeyFoo)
           .build()),
         payment,
         1
       );
       assertThat(result).isTrue();
 
-      result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+      result = this.edSignatureService.verifyMultiSigned(
+        Sets.newHashSet(SignatureWithPublicKey.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadataFoo)
+          .signingPublicKey(publicKeyFoo)
           .build()),
         payment,
         2
@@ -249,23 +251,25 @@ class DerivedKeyDelegatedSignatureServiceTest {
     };
 
     final Callable<Boolean> signedTxCallableBar = () -> {
-      Signature signature = this.edSignatureService.multiSign(keyMetadataBar, payment);
+      Signature signature = this.edSignatureService.multiSign(privateKeyReferenceBar, payment);
       assertThat(signature.base16Value()).isEqualTo(
         "55A7B3AD35E01774A85BBB81958F505C1AF8DB67318420239AAEA32AD4A9D6B6AF920159314D5A5C93490C696C7F2BB3CEA76A4" +
           "6FDF4E03514070FB994EFFF08"
       );
 
-      boolean result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+      boolean result = this.edSignatureService.verifyMultiSigned(
+        Sets.newHashSet(SignatureWithPublicKey.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadataBar)
+          .signingPublicKey(publicKeyBar)
           .build()),
         payment,
         1);
       assertThat(result).isTrue();
 
-      result = this.edSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+      result = this.edSignatureService.verifyMultiSigned(
+        Sets.newHashSet(SignatureWithPublicKey.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadataBar)
+          .signingPublicKey(publicKeyBar)
           .build()),
         payment,
         2
@@ -297,7 +301,9 @@ class DerivedKeyDelegatedSignatureServiceTest {
    */
   @Test
   void multiSignEc() {
-    final KeyMetadata keyMetadata = keyMetadata("foo");
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.SECP256K1);
+    final PublicKey publicKey = this.ecSignatureService.derivePublicKey(privateKeyReference);
+
     final Payment payment = Payment.builder()
       .account(Address.of(sourceClassicAddressEc))
       .amount(IssuedCurrencyAmount.builder()
@@ -315,22 +321,24 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      Signature signature = this.ecSignatureService.multiSign(keyMetadata, payment);
+      Signature signature = this.ecSignatureService.multiSign(privateKeyReference, payment);
 
       assertThat(signature.base16Value()).isEqualTo(
         "3045022100ED9BF3764ACF7AFC39E75AEDC5825EF667B498305A469CFCE3CF76E7580CC2F902204A4B1317103459EE777B0406D04ED" +
           "5C60942D962B6FB60BB589E15636817086E"
       );
 
-      boolean result = this.ecSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
-        .transactionSignature(signature)
-        .signingKeyMetadata(keyMetadata)
-        .build()), payment, 1);
+      boolean result = this.ecSignatureService.verifyMultiSigned(
+        Sets.newHashSet(SignatureWithPublicKey.builder()
+          .transactionSignature(signature)
+          .signingPublicKey(publicKey)
+          .build()), payment, 1);
       assertThat(result).isTrue();
 
-      result = this.ecSignatureService.verifyMultiSigned(Sets.newHashSet(SignatureWithKeyMetadata.builder()
+      result = this.ecSignatureService.verifyMultiSigned(
+        Sets.newHashSet(SignatureWithPublicKey.builder()
           .transactionSignature(signature)
-          .signingKeyMetadata(keyMetadata)
+          .signingPublicKey(publicKey)
           .build()),
         payment,
         2);
@@ -357,8 +365,8 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
   @Test
   void signAndVerifyEc() {
-    final KeyMetadata keyMetadata = keyMetadata("foo");
-    final PublicKey publicKey = this.ecSignatureService.getPublicKey(keyMetadata);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.SECP256K1);
+    final PublicKey publicKey = this.ecSignatureService.derivePublicKey(privateKeyReference);
 
     final Payment paymentTransaction = Payment.builder()
       .account(Address.of(sourceClassicAddressEc))
@@ -372,11 +380,11 @@ class DerivedKeyDelegatedSignatureServiceTest {
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
 
-      SingleSingedTransaction<Payment> signedTx = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
+      SingleSingedTransaction<Payment> signedTx = this.ecSignatureService.sign(privateKeyReference, paymentTransaction);
       return this.ecSignatureService.verifySingleSigned(
-        SignatureWithKeyMetadata.builder()
+        SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
-          .signingKeyMetadata(keyMetadata)
+          .signingPublicKey(publicKey)
           .build(),
         paymentTransaction
       );
@@ -400,25 +408,28 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
   @Test
   void getPublicKeyEd() {
-    PublicKey actualEcPublicKey = this.edSignatureService.getPublicKey(keyMetadata("ec_key"));
+    PublicKey actualEcPublicKey = this.edSignatureService.derivePublicKey(
+      privateKeyReference("ed_key", VersionType.ED25519)
+    );
     assertThat(actualEcPublicKey.base16Value())
-      .isEqualTo("EDFB5C6D87DACC6DCD852D7F1CE6914EDD2A82C1D7ECB9AF866E48A01D45E9E6DD");
-    assertThat(actualEcPublicKey.base58Value()).isEqualTo("aKGg99sHNs3Vs5nUXKyjiv2ED73izdrDR2Pjy1mRY54WmxAkusZZ");
+      .isEqualTo("ED9909CDE4F59EA84686FCEE2149BE37CC05317F6C4F1434D96EE0E476F78C4C70");
+    assertThat(actualEcPublicKey.base58Value()).isEqualTo("aKEvqcjfwFvcRSUd6fF5QL6N14xxNzNMDVZ2xmspAknpzf2LJfTy");
     assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.ED25519);
   }
 
   @Test
   void getPublicKeyEc() {
-    PublicKey actualEcPublicKey = this.ecSignatureService.getPublicKey(keyMetadata("ed_key"));
+    PublicKey actualEcPublicKey = this.ecSignatureService.derivePublicKey(
+      privateKeyReference("ec_key", VersionType.SECP256K1));
     assertThat(actualEcPublicKey.base16Value())
-      .isEqualTo("0308C7F864BB4CA1B6598BF9BB0B538AB58AAB9B4E42E5C1A2A95136125711ACB2");
-    assertThat(actualEcPublicKey.base58Value()).isEqualTo("aBPyf7q6qWdDbSWEvm47oQTotG7qtKPVFebfbR1u4aY73Z6roFCH");
+      .isEqualTo("021ABFB4DDB4F25162D858BD02289D5B7D0F4D143082C1781DEFBC5EF9662E6263");
+    assertThat(actualEcPublicKey.base58Value()).isEqualTo("aB4wHG4rW8bF9HSXg6Q7BNxddwNQ1EtvgF2AyPqQyeAgZ27tQxSP");
     assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.SECP256K1);
   }
 
   @Test
   void signUnsignedClaimEd() {
-    final KeyMetadata keyMetadata = keyMetadata("foo");
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.ED25519);
 
     final UnsignedClaim unsignedClaim = UnsignedClaim.builder()
       .channel(Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString()))
@@ -427,7 +438,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      Signature signature = this.edSignatureService.sign(keyMetadata, unsignedClaim);
+      Signature signature = this.edSignatureService.sign(privateKeyReference, unsignedClaim);
       assertThat(signature).isNotNull();
       assertThat(signature.base16Value()).isEqualTo(
         "2600C6672DF81452E2FE3CBE2D1DC45000F7C1380C43CE3AC24591A43060EE82E7B1EF65B933786D40BF66B82019E4E1EB1B0" +
@@ -454,7 +465,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
   @Test
   void signUnsignedClaimEc() {
-    final KeyMetadata keyMetadata = keyMetadata("foo");
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.SECP256K1);
 
     final UnsignedClaim unsignedClaim = UnsignedClaim.builder()
       .channel(Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString()))
@@ -463,7 +474,7 @@ class DerivedKeyDelegatedSignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      Signature signature = this.ecSignatureService.sign(keyMetadata, unsignedClaim);
+      Signature signature = this.ecSignatureService.sign(privateKeyReference, unsignedClaim);
       assertThat(signature).isNotNull();
       assertThat(signature.base16Value()).isEqualTo(
         "304402201D8C29FF455AFCD80F09892057B7A2A2E956A2B4B505B46722AC14ED3D6ACC5B02204EB2DF84D97AF5C4A83" +
@@ -562,17 +573,22 @@ class DerivedKeyDelegatedSignatureServiceTest {
    *
    * @param keyIdentifier A {@link String} identifying the key.
    *
-   * @return A {@link KeyMetadata}.
+   * @return A {@link PrivateKeyReference}.
    */
-  private KeyMetadata keyMetadata(final String keyIdentifier) {
+  private PrivateKeyReference privateKeyReference(final String keyIdentifier, final VersionType versionType) {
     Objects.requireNonNull(keyIdentifier);
+    Objects.requireNonNull(versionType);
 
-    return KeyMetadata.builder()
-      .platformIdentifier("jks")
-      .keyringIdentifier("n/a")
-      .keyIdentifier(keyIdentifier)
-      .keyVersion("1")
-      .keyPassword("password")
-      .build();
+    return new PrivateKeyReference() {
+      @Override
+      public String keyIdentifier() {
+        return keyIdentifier;
+      }
+
+      @Override
+      public VersionType versionType() {
+        return versionType;
+      }
+    };
   }
 }

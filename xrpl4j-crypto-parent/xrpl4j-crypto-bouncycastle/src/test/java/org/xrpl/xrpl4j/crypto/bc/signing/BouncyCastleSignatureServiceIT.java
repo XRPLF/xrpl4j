@@ -102,7 +102,7 @@ class BouncyCastleSignatureServiceIT {
     assertThat(signedTransaction).isNotNull();
     assertThat(signedTransaction.unsignedTransaction()).isEqualTo(payment);
 
-    boolean actual = signatureService.verify(
+    boolean actual = signatureService.verifySingleSigned(
       SignatureWithPublicKey.builder()
         .transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519Wallet.publicKey())
@@ -111,7 +111,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(actual).isTrue();
 
-    actual = signatureService.verify(
+    actual = signatureService.verifySingleSigned(
       SignatureWithPublicKey.builder()
         .transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519WalletOther.publicKey())
@@ -130,7 +130,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(signedTransaction).isNotNull();
 
-    boolean actual = signatureService.verify(
+    boolean actual = signatureService.verifySingleSigned(
       SignatureWithPublicKey.builder()
         .transactionSignature(signedTransaction.signature())
         .signingPublicKey(secp256k1Wallet.publicKey())
@@ -139,7 +139,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(actual).isTrue();
 
-    actual = signatureService.verify(
+    actual = signatureService.verifySingleSigned(
       SignatureWithPublicKey.builder()
         .transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519Wallet.publicKey())
@@ -157,7 +157,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(signature).isNotNull();
 
-    boolean actual = signatureService.verify(
+    boolean actual = signatureService.verifyMultiSigned(
       Sets.newLinkedHashSet(
         SignatureWithPublicKey.builder()
           .transactionSignature(signature)
@@ -169,7 +169,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(actual).isTrue();
 
-    actual = signatureService.verify(
+    actual = signatureService.verifyMultiSigned(
       Sets.newLinkedHashSet(
         SignatureWithPublicKey.builder()
           .transactionSignature(signature)
@@ -190,7 +190,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(signature).isNotNull();
 
-    boolean actual = signatureService.verify(
+    boolean actual = signatureService.verifyMultiSigned(
       Sets.newLinkedHashSet(
         SignatureWithPublicKey.builder()
           .transactionSignature(signature)
@@ -202,7 +202,7 @@ class BouncyCastleSignatureServiceIT {
     );
     assertThat(actual).isTrue();
 
-    actual = signatureService.verify(
+    actual = signatureService.verifyMultiSigned(
       Sets.newLinkedHashSet(
         SignatureWithPublicKey.builder()
           .transactionSignature(signature)
@@ -219,7 +219,7 @@ class BouncyCastleSignatureServiceIT {
   void signAndVerifyEdMultithreaded() {
     final Callable<Boolean> signedTxCallable = () -> {
       SingleSingedTransaction<Payment> signedTx = signatureService.sign(ed25519Wallet.privateKey(), payment);
-      return signatureService.verify(
+      return signatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
           .signingPublicKey(ed25519Wallet.publicKey())
@@ -270,25 +270,25 @@ class BouncyCastleSignatureServiceIT {
           .build()
       );
 
-      boolean noSigners = signatureService.verify(
+      boolean noSigners = signatureService.verifyMultiSigned(
         Sets.newHashSet(),
         payment,
         3
       );
 
-      boolean oneOfThree = signatureService.verify(
+      boolean oneOfThree = signatureService.verifyMultiSigned(
         sigsWithKeys,
         payment,
         1
       );
 
-      boolean twoOfThree = signatureService.verify(
+      boolean twoOfThree = signatureService.verifyMultiSigned(
         sigsWithKeys,
         payment,
         2
       );
 
-      boolean threeOfThree = signatureService.verify(
+      boolean threeOfThree = signatureService.verifyMultiSigned(
         sigsWithKeys,
         payment,
         3
@@ -340,25 +340,25 @@ class BouncyCastleSignatureServiceIT {
           .build()
       );
 
-      boolean noSigners = signatureService.verify(
+      boolean noSigners = signatureService.verifyMultiSigned(
         Sets.newHashSet(),
         payment,
         3
       );
 
-      boolean oneOfThree = signatureService.verify(
+      boolean oneOfThree = signatureService.verifyMultiSigned(
         sigsWithKeys,
         payment,
         1
       );
 
-      boolean twoOfThree = signatureService.verify(
+      boolean twoOfThree = signatureService.verifyMultiSigned(
         sigsWithKeys,
         payment,
         2
       );
 
-      boolean threeOfThree = signatureService.verify(
+      boolean threeOfThree = signatureService.verifyMultiSigned(
         sigsWithKeys,
         payment,
         3
@@ -374,7 +374,7 @@ class BouncyCastleSignatureServiceIT {
     final Callable<Boolean> signedTxCallable = () -> {
 
       SingleSingedTransaction<Payment> signedTx = signatureService.sign(secp256k1Wallet.privateKey(), payment);
-      return signatureService.verify(
+      return signatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
           .signingPublicKey(secp256k1Wallet.publicKey())

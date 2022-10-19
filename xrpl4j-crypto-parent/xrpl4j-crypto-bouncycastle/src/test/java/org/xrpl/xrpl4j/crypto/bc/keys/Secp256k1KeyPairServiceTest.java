@@ -46,14 +46,7 @@ class Secp256k1KeyPairServiceTest {
 
   @Test
   void deriveKeyPairFromNullSeed() {
-    Seed nullSeed = null;
-    Assertions.assertThrows(NullPointerException.class, () -> keyPairService.deriveKeyPair(nullSeed));
-  }
-
-  @Test
-  void deriveKeyPairFromNullPrivateKey() {
-    PrivateKey nullPrivateKey = null;
-    Assertions.assertThrows(NullPointerException.class, () -> keyPairService.deriveKeyPair(nullPrivateKey));
+    Assertions.assertThrows(NullPointerException.class, () -> keyPairService.deriveKeyPair(null));
   }
 
   @Test

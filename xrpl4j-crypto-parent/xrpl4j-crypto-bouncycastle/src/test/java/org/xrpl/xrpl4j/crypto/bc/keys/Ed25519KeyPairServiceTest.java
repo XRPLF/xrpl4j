@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
@@ -46,20 +47,15 @@ class Ed25519KeyPairServiceTest {
 
   @Test
   void deriveKeyPairFromNullSeed() {
-    Seed nullSeed = null;
-    Assertions.assertThrows(NullPointerException.class, () -> keyPairService.deriveKeyPair(nullSeed));
-  }
-
-  @Test
-  void deriveKeyPairFromNullPrivateKey() {
-    PrivateKey nullPrivateKey = null;
-    Assertions.assertThrows(NullPointerException.class, () -> keyPairService.deriveKeyPair(nullPrivateKey));
+    Assertions.assertThrows(NullPointerException.class, () -> keyPairService.deriveKeyPair(null));
   }
 
   @Test
   public void deriveKeyPair() {
     Seed seed = Seed.fromBase58EncodedSecret(Base58EncodedSecret.of("sEdSvUyszZFDFkkxQLm18ry3yeZ2FDM"));
+
     KeyPair keyPair = keyPairService.deriveKeyPair(seed);
+
     KeyPair expectedKeyPair = KeyPair.builder()
       .privateKey(PrivateKey.of(UnsignedByteArray.of(
         BaseEncoding.base16().decode("ED2F1185B6F5525D7A7D2A22C1D8BAEEBEEFFE597C9010AF916EBB9447BECC5BE6"
@@ -71,5 +67,11 @@ class Ed25519KeyPairServiceTest {
     assertThat(keyPair).isEqualTo(expectedKeyPair);
     assertThat(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()).value())
       .isEqualTo("rpsAiz1JjunVeGk5QipvZt8QxY3hRcmKRR");
+  }
+
+  @Test
+  public void deriveKeyPairFromWrongSeedType() {
+    Seed seed = Seed.fromBase58EncodedSecret(Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
+    Assertions.assertThrows(DecodeException.class, () -> keyPairService.deriveKeyPair(seed));
   }
 }

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,12 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -115,15 +117,6 @@ public class IssuedCurrencyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     setDefaultRipple(issuerWallet, feeResult);
 
-    ///////////////////////////
-    // Create a TrustLine between alice and the issuer
-    TrustLine aliceTrustLine = createTrustLine(
-      "USD",
-      "10000",
-      issuerWallet,
-      aliceWallet,
-      feeResult.drops().minimumFee()
-    );
 
     ///////////////////////////
     // Create a TrustLine between bob and the issuer
@@ -199,8 +192,17 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
   }
 
+  /**
+   * Send and verify a multi-hop payment that transits the following path.
+   *
+   * <pre>
+   * ┌────────────┐         ┌────────────┐        ┌────────────┐         ┌────────────┐        ┌────────────┐
+   * │  Charlie   │◁───TL──▷│  IssuerA   │◁──TL──▷│   Emily    │◁──TL───▷│  IssuerB   │◁──TL──▷│   Daniel   │
+   * └────────────┘         └────────────┘        └────────────┘         └────────────┘        └────────────┘
+   * </pre>
+   */
   @Test
-  public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException {
+  public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
     ///////////////////////////
     // Create two issuer wallets and three non-issuer wallets
     final Wallet issuerAWallet = createRandomAccount();
@@ -225,7 +227,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       charlieWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -235,7 +237,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerAWallet,
       emilyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -245,7 +247,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       emilyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -255,7 +257,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerBWallet,
       danielWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -302,7 +304,6 @@ public class IssuedCurrencyIT extends AbstractIT {
       .findFirst().orElseThrow(() -> new RuntimeException("No path found."))
       .pathsComputed();
 
-
     ///////////////////////////
     // Send a Payment from charlie to Daniel using the previously found paths.
     AccountInfoResult charlieAccountInfo = getValidatedAccountInfo(charlieWallet.classicAddress());
@@ -325,8 +326,8 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
     logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
+      paymentResult.transactionResult().hash()
     );
 
     ///////////////////////////

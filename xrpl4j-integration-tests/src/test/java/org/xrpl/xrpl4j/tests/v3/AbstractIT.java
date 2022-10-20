@@ -11,12 +11,17 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
+import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcDerivedKeySignatureService;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
@@ -50,6 +55,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -66,10 +72,14 @@ public abstract class AbstractIT {
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   protected final XrplClient xrplClient;
+
   protected final WalletFactory walletFactory;
-  protected final SignatureService signatureService;
-  protected final SignatureService<PrivateKeyReference> delegatedSignatureServiceEd25519;
-  protected final SignatureService<PrivateKeyReference> delegatedSignatureServiceSecp256k1;
+
+  protected final Ed25519KeyPairService ed25519KeyPairService;
+  protected final Secp256k1KeyPairService secp256k1KeyPairService;
+
+  protected final SignatureService<PrivateKey> signatureService;
+  protected final SignatureService<PrivateKeyReference> derivedKeySignatureService;
 
   /**
    * No-args Constructor.
@@ -78,10 +88,14 @@ public abstract class AbstractIT {
     this.xrplClient = xrplEnvironment.getXrplClient();
     this.walletFactory = BcWalletFactory.getInstance();
     this.signatureService = this.constructSignatureService();
-    this.delegatedSignatureServiceEd25519 = this.constructDelegatedSignatureServiceEd25519();
-    this.delegatedSignatureServiceSecp256k1 = this.constructDelegatedSignatureServiceSecp256k1();
+
+    this.ed25519KeyPairService = Ed25519KeyPairService.getInstance();
+    this.secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
+
+    this.derivedKeySignatureService = this.constructDerivedKeySignatureService();
   }
 
+  @Deprecated
   protected Wallet createRandomAccountEd25519() {
     ///////////////////////
     // Create the account
@@ -94,6 +108,7 @@ public abstract class AbstractIT {
     return wallet;
   }
 
+  @Deprecated
   protected Wallet createRandomAccountSecp256k1() {
     ///////////////////////
     // Create the account
@@ -104,6 +119,46 @@ public abstract class AbstractIT {
     fundAccount(wallet);
 
     return wallet;
+  }
+
+  protected PrivateKeyReference createRandomPrivateKeyReferenceEd25519() {
+    final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
+      @Override
+      public VersionType versionType() {
+        return VersionType.ED25519;
+      }
+
+      @Override
+      public String keyIdentifier() {
+        return UUID.randomUUID().toString();
+      }
+    };
+
+    PublicKey publicKey = derivedKeySignatureService.derivePublicKey(privateKeyReference);
+    logger.info("Generated testnet wallet with ClassicAddress={})", publicKey.deriveAddress());
+    fundAccount(publicKey.deriveAddress());
+
+    return privateKeyReference;
+  }
+
+  protected PrivateKeyReference createRandomPrivateKeyReferenceSecp256k1() {
+    final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
+      @Override
+      public VersionType versionType() {
+        return VersionType.SECP256K1;
+      }
+
+      @Override
+      public String keyIdentifier() {
+        return UUID.randomUUID().toString();
+      }
+    };
+
+    PublicKey publicKey = derivedKeySignatureService.derivePublicKey(privateKeyReference);
+    logger.info("Generated testnet wallet with ClassicAddress={})", publicKey.deriveAddress());
+    fundAccount(publicKey.deriveAddress());
+
+    return privateKeyReference;
   }
 
   /**
@@ -307,29 +362,35 @@ public abstract class AbstractIT {
     };
   }
 
-  protected SignatureService<PrivateKeyReference> constructDelegatedSignatureServiceEd25519() {
+  protected PrivateKey constructPrivateKey(
+    final String keyIdentifier, final VersionType versionType
+  ) {
+    Objects.requireNonNull(keyIdentifier);
+    Objects.requireNonNull(versionType);
+
+    switch (versionType) {
+      case ED25519: {
+        return ed25519KeyPairService.deriveKeyPair(Seed.ed25519Seed()).privateKey();
+      }
+      case SECP256K1: {
+        return secp256k1KeyPairService.deriveKeyPair(Seed.secp256k1Seed()).privateKey();
+      }
+      default: {
+        throw new RuntimeException("Unhandled VersionType: " + versionType);
+      }
+    }
+  }
+
+  protected SignatureService<PrivateKeyReference> constructDerivedKeySignatureService() {
     try {
       final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
-      return new BcDerivedKeySignatureService(
-        () -> ServerSecret.of(secretKey.getEncoded()), VersionType.ED25519
-      );
+      return new BcDerivedKeySignatureService(() -> ServerSecret.of(secretKey.getEncoded()));
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
 
-  protected SignatureService<PrivateKeyReference> constructDelegatedSignatureServiceSecp256k1() {
-    try {
-      final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
-      return new BcDerivedKeySignatureService(
-        () -> ServerSecret.of(secretKey.getEncoded()), VersionType.SECP256K1
-      );
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-  }
-
-  protected SignatureService constructSignatureService() {
+  protected SignatureService<PrivateKey> constructSignatureService() {
     return new BcSignatureService();
   }
 

@@ -8,7 +8,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import java.io.IOException;
 
 /**
- * A FasterXML serializer for {@link UnsignedByteArray}.
+ * A FasterXML deserializer for {@link UnsignedByteArray}.
  *
  * @deprecated This class will go away once {@link UnsignedByteArray} is moved into the core module.
  */

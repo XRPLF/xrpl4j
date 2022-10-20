@@ -23,6 +23,7 @@ import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.tests.environment.TestnetEnvironment;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -296,6 +297,11 @@ public class IssuedCurrencyIT extends AbstractIT {
    */
   @Test
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
+    // NOTE: Only run this on non-testnet and non-devnet evironmens.
+    if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
+      return;
+    }
+
     ///////////////////////////
     // Create two issuer wallets and three non-issuer wallets
     final Wallet issuerAWallet = createRandomAccountEd25519();

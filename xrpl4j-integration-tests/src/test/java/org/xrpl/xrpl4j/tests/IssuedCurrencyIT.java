@@ -117,6 +117,16 @@ public class IssuedCurrencyIT extends AbstractIT {
     setDefaultRipple(issuerWallet, feeResult);
 
     ///////////////////////////
+    // Create a TrustLine between alice and the issuer
+    createTrustLine(
+      "USD",
+      "10000",
+      issuerWallet,
+      aliceWallet,
+      feeResult.drops().minimumFee()
+    );
+
+    ///////////////////////////
     // Create a TrustLine between bob and the issuer
     TrustLine bobTrustLine = createTrustLine(
       "USD",

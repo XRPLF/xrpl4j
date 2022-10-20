@@ -356,7 +356,8 @@ class BcDerivedKeySignatureServiceTest {
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
 
-      SingleSingedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(privateKeyReference, paymentTransaction);
+      SingleSingedTransaction<Payment> signedTx
+        = this.derivedKeySignatureService.sign(privateKeyReference, paymentTransaction);
       return this.derivedKeySignatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())

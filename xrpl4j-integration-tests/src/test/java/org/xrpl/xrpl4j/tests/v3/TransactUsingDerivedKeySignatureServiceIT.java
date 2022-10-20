@@ -250,16 +250,15 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
     List<SignerWrapper> signers = Lists.newArrayList(alicePrivateKeyReference, bobKeyPrivateKeyReference)
       .stream()
       .map(privateKeyReference -> {
-          Signature signatureWithKeyMetadata
-            = derivedKeySignatureService.multiSign(privateKeyReference, unsignedPayment);
-          return SignerWrapper.of(Signer.builder()
-            .account(toAddress(privateKeyReference))
-            .signingPublicKey(toPublicKey(privateKeyReference).base16Value())
-            .transactionSignature(signatureWithKeyMetadata.base16Value())
-            .build()
-          );
-        }
-      )
+        Signature signatureWithKeyMetadata
+          = derivedKeySignatureService.multiSign(privateKeyReference, unsignedPayment);
+        return SignerWrapper.of(Signer.builder()
+          .account(toAddress(privateKeyReference))
+          .signingPublicKey(toPublicKey(privateKeyReference).base16Value())
+          .transactionSignature(signatureWithKeyMetadata.base16Value())
+          .build()
+        );
+      })
       .collect(Collectors.toList());
 
     /////////////////////////////

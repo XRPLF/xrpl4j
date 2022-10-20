@@ -22,12 +22,10 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -118,7 +116,6 @@ public class IssuedCurrencyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     setDefaultRipple(issuerWallet, feeResult);
 
-
     ///////////////////////////
     // Create a TrustLine between bob and the issuer
     TrustLine bobTrustLine = createTrustLine(
@@ -206,7 +203,7 @@ public class IssuedCurrencyIT extends AbstractIT {
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException {
 
     // NOTE: Only run this on non-testnet and non-devnet evironmens.
-    if(TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())){
+    if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
       return;
     }
 
@@ -239,7 +236,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Create a Trustline between emily and issuerA
-    final TrustLine emilyTrustLineWithIssuerA = createTrustLine(
+    createTrustLine(
       "USD",
       "10000",
       issuerAWallet,
@@ -249,7 +246,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Create a Trustline between emily and issuerB
-    final TrustLine emilyTrustLineWithIssuerB = createTrustLine(
+    createTrustLine(
       "USD",
       "10000",
       issuerBWallet,

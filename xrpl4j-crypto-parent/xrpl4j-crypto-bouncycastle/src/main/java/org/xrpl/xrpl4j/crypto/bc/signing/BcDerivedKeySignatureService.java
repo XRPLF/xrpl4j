@@ -33,7 +33,6 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -275,9 +274,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     Objects.requireNonNull(privateKeyReference);
 
     // Try to load from the loading cache...
-    return Optional.ofNullable(this.transactionSignerCache.get(privateKeyReference)).orElseThrow(
-      () -> new RuntimeException(
-        String.format("No SignatureService Found for publicKey=%s", privateKeyReference.keyIdentifier())));
+    return this.transactionSignerCache.get(privateKeyReference);
   }
 
   /**

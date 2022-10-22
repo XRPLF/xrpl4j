@@ -170,6 +170,38 @@ class BcDerivedKeySignatureServiceTest {
       .forEach(validSig -> assertThat(validSig).isTrue());
   }
 
+  @Test
+  void signAndVerifyEdFailure() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.ED25519);
+    final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
+
+    final Payment paymentTransaction = Payment.builder()
+      .account(Address.of(sourceClassicAddressEd))
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(publicKey.base16Value())
+      .build();
+
+    SingleSingedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(
+      privateKeyReference, paymentTransaction
+    );
+    final boolean verified = this.derivedKeySignatureService.verifySingleSigned(
+      SignatureWithPublicKey.builder()
+        .transactionSignature(Signature.builder().from(signedTx.signature())
+          .value(UnsignedByteArray.fromHex("00000000000000000000000000000000"))
+          .build()
+        )
+        .signingPublicKey(publicKey)
+        .build(),
+      paymentTransaction
+    );
+
+    assertThat(verified).isFalse();
+  }
+
+
   /**
    * Note: this test runs in a loop solely to exercise concurrency correctness.
    */
@@ -381,6 +413,35 @@ class BcDerivedKeySignatureServiceTest {
         }
       })
       .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void signAndVerifyEcFailure() {
+    final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", VersionType.SECP256K1);
+    final PublicKey publicKeyFoo = this.derivedKeySignatureService.derivePublicKey(privateKeyReferenceFoo);
+
+    final PrivateKeyReference privateKeyReferenceBar = privateKeyReference("bar", VersionType.SECP256K1);
+    final PublicKey publicKeyBar = this.derivedKeySignatureService.derivePublicKey(privateKeyReferenceBar);
+
+    final Payment paymentTransaction = Payment.builder()
+      .account(Address.of(sourceClassicAddressEc))
+      .fee(XrpCurrencyAmount.ofDrops(10L))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of(destinationClassicAddress))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey(publicKeyFoo.base16Value())
+      .build();
+    SingleSingedTransaction<Payment> signedTx
+      = this.derivedKeySignatureService.sign(privateKeyReferenceFoo, paymentTransaction);
+
+    final boolean verified = this.derivedKeySignatureService.verifySingleSigned(
+      SignatureWithPublicKey.builder()
+        .transactionSignature(signedTx.signature())
+        .signingPublicKey(publicKeyBar)
+        .build(),
+      paymentTransaction
+    );
+    assertThat(verified).isFalse();
   }
 
   @Test

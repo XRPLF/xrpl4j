@@ -182,7 +182,9 @@ public class XrplClient {
    * @return The {@link SubmitResult} resulting from the submission request.
    *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @deprecated Prefer the submit method with the variant from the new crypto package.
    */
+  @Deprecated
   public <T extends Transaction> SubmitResult<T> submit(
     SignedTransaction<T> signedTransaction
   ) throws JsonRpcClientErrorException {
@@ -244,9 +246,9 @@ public class XrplClient {
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(
-    final SingleSingedTransaction signedTransaction
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSingedTransaction signedTransaction)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(signedTransaction);
 
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("About to submit signedTransaction: {}", signedTransaction);
@@ -278,9 +280,10 @@ public class XrplClient {
    *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(
-    T transaction
-  ) throws JsonRpcClientErrorException {
+  public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(T transaction)
+    throws JsonRpcClientErrorException {
+    Objects.requireNonNull(transaction);
+
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SUBMIT_MULTISIGNED)
       .addParams(SubmitMultiSignedRequestParams.of(transaction))
@@ -311,6 +314,7 @@ public class XrplClient {
    * Get the ledger index of a tx result response. If not present, throw an exception.
    *
    * @return A string containing value of last validated ledger index.
+   *
    * @throws JsonRpcClientErrorException when client encounters errors related to calling rippled JSON RPC API..
    */
   protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
@@ -326,8 +330,8 @@ public class XrplClient {
    *
    * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
    *
-   * @return the {@link TransactionResult} for a validated transaction and empty response for a
-   *   {@link Transaction} that is expired or not found.
+   * @return the {@link TransactionResult} for a validated transaction and empty response for a {@link Transaction} that
+   *   is expired or not found.
    */
   protected Optional<? extends TransactionResult<? extends Transaction>> getValidatedTransaction(
     final Hash256 transactionHash
@@ -350,8 +354,8 @@ public class XrplClient {
    * Check if there missing ledgers in rippled in the given range.
    *
    * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
-   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the
-   *                                transaction will expire and won't be applied to the ledger.
+   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the transaction
+   *                                will expire and won't be applied to the ledger.
    *
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
@@ -376,14 +380,14 @@ public class XrplClient {
    * Check if the transaction is final on the ledger or not.
    *
    * @param transactionHash            {@link Hash256} of the submitted transaction to check the status for.
-   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash
-   *                                   was submitted. This can be obtained from submit() response of the tx as
+   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash was
+   *                                   submitted. This can be obtained from submit() response of the tx as
    *                                   validatedLedgerIndex.
    * @param lastLedgerSequence         The ledger index/sequence of type {@link UnsignedInteger} after which the
    *                                   transaction will expire and won't be applied to the ledger.
-   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}.
-   *                                   A {@link Transaction} is only valid if the Sequence number is exactly 1
-   *                                   greater than the previous transaction from the same account.
+   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}. A
+   *                                   {@link Transaction} is only valid if the Sequence number is exactly 1 greater
+   *                                   than the previous transaction from the same account.
    * @param account                    The unique {@link Address} of the account that initiated this transaction.
    *
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
@@ -579,6 +583,7 @@ public class XrplClient {
    * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
    *
    * @return The {@link DepositAuthorizedResult} returned by the deposit_authorized method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
@@ -638,9 +643,12 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <T extends Transaction> TransactionResult<T> transaction(
-    TransactionRequestParams params,
-    Class<T> transactionType
+    final TransactionRequestParams params,
+    final Class<T> transactionType
   ) throws JsonRpcClientErrorException {
+    Objects.requireNonNull(params);
+    Objects.requireNonNull(transactionType);
+
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.TX)
       .addParams(params)
@@ -725,12 +733,12 @@ public class XrplClient {
   }
 
   /**
-   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled
-   * API method call.
+   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled API method call.
    *
    * @param params The {@link GatewayBalancesRequestParams} to send in the request.
    *
    * @return The result of the request, as a {@link GatewayBalancesResult}.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public GatewayBalancesResult gatewayBalances(
@@ -780,11 +788,11 @@ public class XrplClient {
    * a {@link Value.Immutable}, it does not have a generated builder like the subclasses.  Thus, this method needs to
    * rebuild transactions based on their runtime type.
    *
-   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to. {@link
-   *                            Transaction#transactionSignature()} must not be provided, and {@link
-   *                            Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it does not
-   *                            have a generated builder like the subclasses.  Thus, this method needs to rebuild
-   *                            transactions based on their runtime type.
+   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to.
+   *                            {@link Transaction#transactionSignature()} must not be provided, and
+   *                            {@link Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it
+   *                            does not have a generated builder like the subclasses.  Thus, this method needs to
+   *                            rebuild transactions based on their runtime type.
    * @param signature           The hex encoded {@link String} containing the transaction signature.
    *
    * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.

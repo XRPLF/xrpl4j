@@ -47,6 +47,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
 import java.security.Key;
@@ -93,6 +94,18 @@ public abstract class AbstractIT {
     this.secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
 
     this.derivedKeySignatureService = this.constructDerivedKeySignatureService();
+  }
+
+  /**
+   * Helper function to print log statements for Integration Tests which is network specific.
+   *
+   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
+   * @param hash            {@link Hash256} to be logged for the executed transaction.
+   */
+  protected void logInfo(TransactionType transactionType, Hash256 hash) {
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
+    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
   }
 
   @Deprecated
@@ -404,6 +417,15 @@ public abstract class AbstractIT {
     fundAccount(wallet);
 
     return wallet;
+  }
+
+
+  protected PublicKey toPublicKey(final PrivateKeyReference privateKeyReference) {
+    return derivedKeySignatureService.derivePublicKey(privateKeyReference);
+  }
+
+  protected Address toAddress(final PrivateKeyReference privateKeyReference) {
+    return toPublicKey(privateKeyReference).deriveAddress();
   }
 
   private KeyStore loadKeyStore() {

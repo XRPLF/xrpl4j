@@ -275,12 +275,4 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       paymentResult.transaction().hash()
     );
   }
-
-  private PublicKey toPublicKey(final PrivateKeyReference privateKeyReference) {
-    return derivedKeySignatureService.derivePublicKey(privateKeyReference);
-  }
-
-  private Address toAddress(final PrivateKeyReference privateKeyReference) {
-    return toPublicKey(privateKeyReference).deriveAddress();
-  }
 }

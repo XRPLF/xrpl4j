@@ -459,7 +459,7 @@ public class SignatureUtilsTest {
   private void addSignatureToTransactionHelper(final Transaction transaction) {
     Objects.requireNonNull(transaction);
     when(signatureMock.base16Value()).thenReturn("ED");
-    SingleSingedTransaction<?> result = signatureUtils.addSignatureToTransaction(transaction, signatureMock);
+    SingleSignedTransaction<?> result = signatureUtils.addSignatureToTransaction(transaction, signatureMock);
     assertThat(result.unsignedTransaction()).isEqualTo(transaction);
     assertThat(result.signature().base16Value()).isEqualTo("ED");
     assertThat(result.signedTransaction().transactionSignature()).isPresent();

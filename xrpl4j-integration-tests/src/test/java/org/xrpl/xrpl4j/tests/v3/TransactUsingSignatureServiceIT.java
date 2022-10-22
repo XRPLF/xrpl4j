@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -61,7 +61,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .signingPublicKey(sourcePublicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey, payment);
+    SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
@@ -93,7 +93,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .signingPublicKey(sourceWalletPublicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> transactionWithSignature = signatureService.sign(sourcePrivateKey, payment);
+    SingleSignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
@@ -190,7 +190,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .signingPublicKey(toPublicKey(sourcePrivateKey).base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
       sourcePrivateKey, signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);

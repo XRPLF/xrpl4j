@@ -27,7 +27,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
-  public <T extends Transaction> SingleSingedTransaction<T> sign(final P privateKeyable, final T transaction) {
+  public <T extends Transaction> SingleSignedTransaction<T> sign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 

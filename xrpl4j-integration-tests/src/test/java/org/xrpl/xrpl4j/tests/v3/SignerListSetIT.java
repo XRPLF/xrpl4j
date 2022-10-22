@@ -8,7 +8,7 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -80,7 +80,7 @@ public class SignerListSetIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
       sourceWallet.privateKey(), signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
@@ -198,7 +198,7 @@ public class SignerListSetIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
       sourceWallet.privateKey(), signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
@@ -235,7 +235,7 @@ public class SignerListSetIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedDeleteSignerList = signatureService.sign(
+    SingleSignedTransaction<SignerListSet> signedDeleteSignerList = signatureService.sign(
       sourceWallet.privateKey(), deleteSignerList
     );
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(signedDeleteSignerList);

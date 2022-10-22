@@ -7,7 +7,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -55,7 +55,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
+    SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
       sourceWallet.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
@@ -91,7 +91,7 @@ public class CheckIT extends AbstractIT {
       .checkId(checkObject.index())
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();
-    SingleSingedTransaction<CheckCash> signedCheckCash = signatureService.sign(
+    SingleSignedTransaction<CheckCash> signedCheckCash = signatureService.sign(
       destinationWallet.privateKey(), checkCash
     );
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(signedCheckCash);
@@ -147,7 +147,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
+    SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
       sourceWallet.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
@@ -179,7 +179,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
+    SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
       sourceWallet.privateKey(), checkCancel
     );
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
@@ -226,7 +226,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    SingleSingedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
+    SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
       sourceWallet.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
@@ -259,7 +259,7 @@ public class CheckIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
+    SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
       destinationWallet.privateKey(), checkCancel
     );
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);

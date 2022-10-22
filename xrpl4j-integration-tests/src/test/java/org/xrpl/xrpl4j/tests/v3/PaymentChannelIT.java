@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -62,7 +62,7 @@ public class PaymentChannelIT extends AbstractIT {
       .cancelAfter(UnsignedLong.valueOf(533171558))
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
-    SingleSingedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
       sourceWallet.privateKey(), paymentChannelCreate
     );
     //////////////////////////
@@ -151,7 +151,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
       sourceWallet.privateKey(), paymentChannelCreate
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
@@ -218,7 +218,7 @@ public class PaymentChannelIT extends AbstractIT {
       .signingPublicKey(destinationWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<PaymentChannelClaim> signedPaymentChannelClaim = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelClaim> signedPaymentChannelClaim = signatureService.sign(
       destinationWallet.privateKey(), paymentChannelClaim
     );
     SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
@@ -269,7 +269,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
       sourceWallet.privateKey(), paymentChannelCreate
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
@@ -308,7 +308,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelFund> signedPaymentChannelFund = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelFund> signedPaymentChannelFund = signatureService.sign(
       sourceWallet.privateKey(), paymentChannelFund
     );
     SubmitResult<PaymentChannelFund> fundResult = xrplClient.submit(signedPaymentChannelFund);
@@ -349,7 +349,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelFund> signedPaymentChannelFundWithExpiry = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelFund> signedPaymentChannelFundWithExpiry = signatureService.sign(
       sourceWallet.privateKey(), paymentChannelFundWithNewExpiry
     );
     SubmitResult<PaymentChannelFund> expiryResult = xrplClient.submit(signedPaymentChannelFundWithExpiry);
@@ -402,7 +402,7 @@ public class PaymentChannelIT extends AbstractIT {
 
     //////////////////////////
     // Validate that the transaction was submitted successfully
-    SingleSingedTransaction<PaymentChannelCreate> signedCreatePaymentChannel = signatureService.sign(
+    SingleSignedTransaction<PaymentChannelCreate> signedCreatePaymentChannel = signatureService.sign(
       sourceWallet.privateKey(), createPaymentChannel
     );
     SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedCreatePaymentChannel);

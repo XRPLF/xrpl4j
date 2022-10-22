@@ -7,7 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
@@ -261,7 +261,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(aliceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedAliceToBobPayment = signatureService.sign(
+    SingleSignedTransaction<Payment> signedAliceToBobPayment = signatureService.sign(
       aliceWallet.privateKey(), aliceToBobPayment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedAliceToBobPayment);
@@ -420,7 +420,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(charlieWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedCharlieToDanielPayment = signatureService.sign(
+    SingleSignedTransaction<Payment> signedCharlieToDanielPayment = signatureService.sign(
       charlieWallet.privateKey(), charlieToDanielPayment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedCharlieToDanielPayment);
@@ -480,7 +480,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
       .build();
 
-    SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       issuerWallet.privateKey(), setDefaultRipple
     );
     SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
@@ -533,7 +533,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(issuerWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedFundCounterparty = signatureService.sign(
+    SingleSignedTransaction<Payment> signedFundCounterparty = signatureService.sign(
       issuerWallet.privateKey(), fundCounterparty
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedFundCounterparty);
@@ -583,7 +583,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(counterpartyWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartyWallet.privateKey(), trustSet);
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartyWallet.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(

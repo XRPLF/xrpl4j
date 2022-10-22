@@ -8,7 +8,7 @@ import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
@@ -345,7 +345,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(sender.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
     assertThat(paymentResult.result()).isEqualTo(expectedResultCode);
 
@@ -394,7 +394,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(counterpartWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartWallet.privateKey(), trustSet);
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartWallet.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -433,7 +433,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<AccountSet> signedTrustSet = signatureService.sign(wallet.privateKey(), accountSet);
+    SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(wallet.privateKey(), accountSet);
     SubmitResult<AccountSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -493,7 +493,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .signingPublicKey(issuerWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), trustSet);
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -545,7 +545,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     }
     AccountSet accountSet = builder.build();
 
-    SingleSingedTransaction<AccountSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), accountSet);
+    SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), accountSet);
     SubmitResult<AccountSet> transactionResult = xrplClient.submit(signedTrustSet);
     assertThat(transactionResult.result()).isEqualTo("tesSUCCESS");
     logger.info(

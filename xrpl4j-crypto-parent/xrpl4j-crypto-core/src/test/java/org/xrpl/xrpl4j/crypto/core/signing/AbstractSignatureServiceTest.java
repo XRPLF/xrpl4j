@@ -40,7 +40,7 @@ public class AbstractSignatureServiceTest {
   @Mock
   Transaction transactionMock;
   @Mock
-  SingleSingedTransaction<Transaction> signedTransactionMock;
+  SingleSignedTransaction<Transaction> signedTransactionMock;
   @Mock
   SignatureWithPublicKey signatureWithPublicKeyMock;
 

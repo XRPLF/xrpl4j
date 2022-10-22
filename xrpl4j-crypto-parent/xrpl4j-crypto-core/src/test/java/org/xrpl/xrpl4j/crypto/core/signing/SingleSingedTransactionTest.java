@@ -12,21 +12,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
- * Unit tests for {@link SingleSingedTransaction}.
+ * Unit tests for {@link SingleSignedTransaction}.
  */
 class SingleSingedTransactionTest {
 
   private static final String HEX_32_BYTES = "0000000000000000000000000000000000000000000000000000000000000000";
-  private SingleSingedTransaction singleSingedTransaction;
+  private SingleSignedTransaction singleSingedTransaction;
 
   @BeforeEach
   void setUp() {
-    singleSingedTransaction = SingleSingedTransaction.builder()
+    singleSingedTransaction = SingleSignedTransaction.builder()
       .signedTransaction(Payment.builder()
         .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
@@ -64,7 +63,7 @@ class SingleSingedTransactionTest {
     JsonAssert.with(json).assertNotNull("$.signedTransactionBytes");
     JsonAssert.with(json).assertNotNull("$.signature");
 
-    SingleSingedTransaction actual = ObjectMapperFactory.create().readValue(json, SingleSingedTransaction.class);
+    SingleSignedTransaction actual = ObjectMapperFactory.create().readValue(json, SingleSignedTransaction.class);
     assertThat(actual).isEqualTo(singleSingedTransaction);
   }
 

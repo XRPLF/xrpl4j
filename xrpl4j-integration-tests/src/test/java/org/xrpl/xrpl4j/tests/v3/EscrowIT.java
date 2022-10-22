@@ -8,7 +8,7 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -56,7 +56,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
       senderWallet.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
@@ -99,7 +99,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(receiverWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
       receiverWallet.privateKey(), escrowFinish
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
@@ -156,7 +156,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
       senderWallet.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
@@ -205,7 +205,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
+    SingleSignedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
       senderWallet.privateKey(), escrowCancel
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
@@ -262,7 +262,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
       senderWallet.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
@@ -311,7 +311,7 @@ public class EscrowIT extends AbstractIT {
       .fulfillment(executeEscrowFulfillment) // <-- condition and fulfillment are required to finish an escrow
       .build();
 
-    SingleSingedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
       receiverWallet.privateKey(), escrowFinish
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
@@ -369,7 +369,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
       senderWallet.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
@@ -409,7 +409,7 @@ public class EscrowIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
+    SingleSignedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
       senderWallet.privateKey(), escrowCancel
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);

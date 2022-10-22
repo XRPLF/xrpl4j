@@ -10,7 +10,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -78,7 +78,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       issuerWallet.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
@@ -128,7 +128,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
@@ -176,7 +176,7 @@ public class OfferIT extends AbstractIT {
       .signingPublicKey(purchaser.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
+    SingleSignedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
       purchaser.privateKey(), offerCancel
     );
     SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(signedOfferCancel);
@@ -221,7 +221,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
@@ -280,7 +280,7 @@ public class OfferIT extends AbstractIT {
       .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);

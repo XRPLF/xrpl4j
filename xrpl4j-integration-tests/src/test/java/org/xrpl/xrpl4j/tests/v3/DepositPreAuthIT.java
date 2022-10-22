@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
@@ -51,7 +51,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .authorize(senderWallet.address())
       .build();
 
-    SingleSingedTransaction<DepositPreAuth> singedDepositPreAuth = this.signatureService.sign(
+    SingleSignedTransaction<DepositPreAuth> singedDepositPreAuth = this.signatureService.sign(
       receiverWallet.privateKey(), depositPreAuth
     );
 
@@ -97,7 +97,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .destination(receiverWallet.address())
       .build();
 
-    SingleSingedTransaction<Payment> singedPayment = signatureService.sign(
+    SingleSignedTransaction<Payment> singedPayment = signatureService.sign(
       senderWallet.privateKey(), payment
     );
 
@@ -165,7 +165,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // And validate that the transaction failed with a tecNO_PERMISSION error code
-    SingleSingedTransaction<Payment> singedPayment = signatureService.sign(
+    SingleSignedTransaction<Payment> singedPayment = signatureService.sign(
       senderWallet.privateKey(), payment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
@@ -232,7 +232,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
       .build();
 
-    SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       wallet.privateKey(), accountSet
     );
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);

@@ -25,7 +25,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -143,7 +143,7 @@ class BcDerivedKeySignatureServiceTest {
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
-      SingleSingedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(privateKeyReference,
+      SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(privateKeyReference,
         paymentTransaction);
       return this.derivedKeySignatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
@@ -184,7 +184,7 @@ class BcDerivedKeySignatureServiceTest {
       .signingPublicKey(publicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(
+    SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(
       privateKeyReference, paymentTransaction
     );
     final boolean verified = this.derivedKeySignatureService.verifySingleSigned(
@@ -388,7 +388,7 @@ class BcDerivedKeySignatureServiceTest {
     final ExecutorService pool = Executors.newFixedThreadPool(5);
     final Callable<Boolean> signedTxCallable = () -> {
 
-      SingleSingedTransaction<Payment> signedTx
+      SingleSignedTransaction<Payment> signedTx
         = this.derivedKeySignatureService.sign(privateKeyReference, paymentTransaction);
       return this.derivedKeySignatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
@@ -431,7 +431,7 @@ class BcDerivedKeySignatureServiceTest {
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .signingPublicKey(publicKeyFoo.base16Value())
       .build();
-    SingleSingedTransaction<Payment> signedTx
+    SingleSignedTransaction<Payment> signedTx
       = this.derivedKeySignatureService.sign(privateKeyReferenceFoo, paymentTransaction);
 
     final boolean verified = this.derivedKeySignatureService.verifySingleSigned(

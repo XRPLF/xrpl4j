@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
@@ -48,7 +48,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(sourceWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedPayment = signatureService.sign(sourceWallet.privateKey(), payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceWallet.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
@@ -88,7 +88,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .signingPublicKey(senderWallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedPayment = signatureService.sign(senderWallet.privateKey(), payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderWallet.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());

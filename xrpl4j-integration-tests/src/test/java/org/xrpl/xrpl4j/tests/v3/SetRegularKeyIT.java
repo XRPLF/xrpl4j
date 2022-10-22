@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -46,7 +46,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+    SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
       wallet.privateKey(), setRegularKey
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
@@ -68,7 +68,7 @@ public class SetRegularKeyIT extends AbstractIT {
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
           .signingPublicKey(newWallet.publicKey().base16Value())
           .build();
-        SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
           newWallet.privateKey(), accountSet
         );
         try {
@@ -107,7 +107,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+    SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
       wallet.privateKey(), setRegularKey
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
@@ -130,7 +130,7 @@ public class SetRegularKeyIT extends AbstractIT {
           .signingPublicKey(newWallet.publicKey().base16Value())
           .build();
 
-        SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
           newWallet.privateKey(), accountSet
         );
         try {
@@ -147,7 +147,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
-    SingleSingedTransaction<SetRegularKey> signedRemoveRegularKey = signatureService.sign(
+    SingleSignedTransaction<SetRegularKey> signedRemoveRegularKey = signatureService.sign(
       wallet.privateKey(), removeRegularKey
     );
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(signedRemoveRegularKey);

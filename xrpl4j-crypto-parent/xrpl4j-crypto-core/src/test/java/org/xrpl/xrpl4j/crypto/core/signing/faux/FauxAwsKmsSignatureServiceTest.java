@@ -22,7 +22,7 @@ import org.xrpl.xrpl4j.crypto.core.signing.AbstractTransactionVerifier;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -55,7 +55,7 @@ class FauxAwsKmsSignatureServiceTest {
   private Transaction transactionMock;
 
   @Mock
-  private SingleSingedTransaction<Transaction> singleSignedTransactionMock;
+  private SingleSignedTransaction<Transaction> singleSignedTransactionMock;
 
   private SignatureService<AwsKmsPrivateKeyReference> signatureService;
 
@@ -108,7 +108,7 @@ class FauxAwsKmsSignatureServiceTest {
 
   @Test
   void signTransaction() {
-    SingleSingedTransaction<Transaction> actual = signatureService.sign(privateKeyReferenceMock, transactionMock);
+    SingleSignedTransaction<Transaction> actual = signatureService.sign(privateKeyReferenceMock, transactionMock);
     assertThat(actual).isEqualTo(singleSignedTransactionMock);
     verify(abstractTransactionSigner).sign(privateKeyReferenceMock, transactionMock);
   }

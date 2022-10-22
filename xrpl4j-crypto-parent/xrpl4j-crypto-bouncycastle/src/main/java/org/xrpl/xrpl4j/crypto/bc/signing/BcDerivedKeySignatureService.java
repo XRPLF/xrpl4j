@@ -27,7 +27,7 @@ import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -121,7 +121,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
-  public <T extends Transaction> SingleSingedTransaction<T> sign(
+  public <T extends Transaction> SingleSignedTransaction<T> sign(
     final PrivateKeyReference privateKeyReference, final T transaction
   ) {
     Objects.requireNonNull(privateKeyReference);
@@ -293,7 +293,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       this.bcSignatureService = Objects.requireNonNull(bcSignatureService);
     }
 
-    public final <T extends Transaction> SingleSingedTransaction<T> sign(final T transaction) {
+    public final <T extends Transaction> SingleSignedTransaction<T> sign(final T transaction) {
       return bcSignatureService.sign(this.privateKey, transaction);
     }
 

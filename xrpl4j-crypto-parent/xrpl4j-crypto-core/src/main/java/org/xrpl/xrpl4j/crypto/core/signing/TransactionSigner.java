@@ -29,9 +29,9 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @param transaction    The {@link Transaction} to sign.
    * @param <T>            The type {@link Transaction} to be signed.
    *
-   * @return A {@link SingleSingedTransaction} of type {@link T} containing everything related to a signed transaction.
+   * @return A {@link SingleSignedTransaction} of type {@link T} containing everything related to a signed transaction.
    */
-  <T extends Transaction> SingleSingedTransaction<T> sign(P privateKeyable, T transaction);
+  <T extends Transaction> SingleSignedTransaction<T> sign(P privateKeyable, T transaction);
 
   /**
    * Signs a claim for usage in a Payment Channel.

@@ -34,7 +34,7 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.Finality;
@@ -235,10 +235,10 @@ public class XrplClient {
   }
 
   /**
-   * Submit a {@link SingleSingedTransaction} to the XRP Ledger.
+   * Submit a {@link SingleSignedTransaction} to the XRP Ledger.
    *
    * @param <T>               The type of signed {@link Transaction} that is being submitted.
-   * @param signedTransaction A {@link SingleSingedTransaction} to submit.
+   * @param signedTransaction A {@link SingleSignedTransaction} to submit.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
    *
@@ -246,7 +246,7 @@ public class XrplClient {
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(final SingleSingedTransaction signedTransaction)
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction signedTransaction)
     throws JsonRpcClientErrorException, JsonProcessingException {
     Objects.requireNonNull(signedTransaction);
 

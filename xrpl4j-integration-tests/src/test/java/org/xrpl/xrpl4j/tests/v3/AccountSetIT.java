@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -50,7 +50,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       wallet.privateKey(), accountSet
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
@@ -114,7 +114,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       wallet.privateKey(), accountSet
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
@@ -176,7 +176,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       wallet.privateKey(), accountSet
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
@@ -216,7 +216,7 @@ public class AccountSetIT extends AbstractIT {
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       wallet.privateKey(), accountSet
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);

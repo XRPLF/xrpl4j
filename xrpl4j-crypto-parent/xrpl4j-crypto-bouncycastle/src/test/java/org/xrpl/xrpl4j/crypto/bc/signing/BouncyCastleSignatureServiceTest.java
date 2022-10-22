@@ -30,7 +30,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -51,7 +51,7 @@ class BouncyCastleSignatureServiceTest {
   @Mock
   private AccountSet transactionMock;
   @Mock
-  private SingleSingedTransaction<AccountSet> signedTransactionMock;
+  private SingleSignedTransaction<AccountSet> signedTransactionMock;
   @Mock
   private Ed25519Signer ed25519SignerMock;
   @Mock
@@ -139,7 +139,7 @@ class BouncyCastleSignatureServiceTest {
   @Test
   public void signAndVerifySecp256k1() {
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
-    SingleSingedTransaction<Transaction> signedTransaction = signatureService.sign(
+    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(
       secp256k1KeyPair.privateKey(), transactionMock
     );
     assertThat(signedTransaction.signature()).isEqualTo(secp256k1SignatureMock);
@@ -158,7 +158,7 @@ class BouncyCastleSignatureServiceTest {
   @Test
   void signAndVerifyEd25519() {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
-    SingleSingedTransaction<Transaction> signedTransaction = signatureService.sign(
+    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(
       ed25519KeyPair.privateKey(), transactionMock
     );
     assertThat(signedTransaction.signature()).isEqualTo(ed25519SignatureMock);

@@ -15,7 +15,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -95,7 +95,7 @@ class BouncyCastleSignatureServiceIT {
 
   @Test
   void signAndVerifyEd() {
-    SingleSingedTransaction<Transaction> signedTransaction = signatureService.sign(
+    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(
       ed25519Wallet.privateKey(),
       payment
     );
@@ -124,7 +124,7 @@ class BouncyCastleSignatureServiceIT {
 
   @Test
   void signAndVerifyEc() {
-    SingleSingedTransaction<Transaction> signedTransaction = signatureService.sign(
+    SingleSignedTransaction<Transaction> signedTransaction = signatureService.sign(
       secp256k1Wallet.privateKey(),
       payment
     );
@@ -218,7 +218,7 @@ class BouncyCastleSignatureServiceIT {
   @Test
   void signAndVerifyEdMultithreaded() {
     final Callable<Boolean> signedTxCallable = () -> {
-      SingleSingedTransaction<Payment> signedTx = signatureService.sign(ed25519Wallet.privateKey(), payment);
+      SingleSignedTransaction<Payment> signedTx = signatureService.sign(ed25519Wallet.privateKey(), payment);
       return signatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
@@ -373,7 +373,7 @@ class BouncyCastleSignatureServiceIT {
   void signAndVerifyEcMultiThreaded() {
     final Callable<Boolean> signedTxCallable = () -> {
 
-      SingleSingedTransaction<Payment> signedTx = signatureService.sign(secp256k1Wallet.privateKey(), payment);
+      SingleSignedTransaction<Payment> signedTx = signatureService.sign(secp256k1Wallet.privateKey(), payment);
       return signatureService.verifySingleSigned(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())

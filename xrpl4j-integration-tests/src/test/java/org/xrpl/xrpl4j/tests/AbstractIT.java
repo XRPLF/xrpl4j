@@ -41,9 +41,6 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
-import org.xrpl.xrpl4j.model.client.fees.ComputedNetworkFees;
-import org.xrpl.xrpl4j.model.client.fees.FeeResult;
-import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
@@ -58,6 +55,7 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
@@ -66,7 +64,6 @@ import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
 import org.xrpl.xrpl4j.wallet.Wallet;
 import org.xrpl.xrpl4j.wallet.WalletFactory;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +88,12 @@ public abstract class AbstractIT {
     // Create the account
     SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
     final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with XAddress={} (Classic={})", wallet.xAddress(), wallet.classicAddress());
+    String network = System.getProperty("useTestnet") != null ? "testnet" :
+      (System.getProperty("useDevnet") != null ? "devnet" : "local rippled");
+    logger.info(
+      "Generated {} wallet with XAddress={} (Classic={})",
+      network, wallet.xAddress(), wallet.classicAddress()
+    );
 
     fundAccount(wallet);
 
@@ -306,9 +308,10 @@ public abstract class AbstractIT {
     assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(trustSetSubmitResult.transactionResult().hash());
-    logger.info(
-      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        trustSetSubmitResult.transactionResult().hash()
+
+    logInfo(
+      trustSetSubmitResult.transactionResult().transaction().transactionType(),
+      trustSetSubmitResult.transactionResult().hash()
     );
 
     return scanForResult(
@@ -360,9 +363,10 @@ public abstract class AbstractIT {
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
 
     this.scanForResult(
@@ -374,25 +378,14 @@ public abstract class AbstractIT {
   }
 
   /**
-   * Send issued currency funds from an issuer to a counterparty.
+   * Helper function to print log statements for Integration Tests which is network specific.
    *
-   * @param feeResult The {@link FeeResult} which has information from the api call to the network.
-   *
-   * @return The {@link ComputedNetworkFees} object woth 3 levels of fees.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
+   * @param hash   {@link Hash256} to be logged for the executed transaction.
    */
-  protected XrpCurrencyAmount getComputedNetworkFee(FeeResult feeResult) {
-    ComputedNetworkFees networkFeeResult = FeeUtils.computeNetworkFees(feeResult);
-    final FeeUtils.DecomposedFees decomposedFees = FeeUtils.DecomposedFees.builder(feeResult);
-    final BigDecimal queuePercentage = decomposedFees.queuePercentage();
-
-    if (FeeUtils.queueIsEmpty(queuePercentage)) {
-      return networkFeeResult.feeLow();
-    } else if (FeeUtils.queueIsNotEmptyAndNotFull(queuePercentage)) {
-      return networkFeeResult.feeMedium();
-    } else {
-      return networkFeeResult.feeHigh();
-    }
+  public void logInfo(TransactionType transactionType, Hash256 hash) {
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
+    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
   }
 }

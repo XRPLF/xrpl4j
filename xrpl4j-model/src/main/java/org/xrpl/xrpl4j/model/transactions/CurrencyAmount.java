@@ -32,7 +32,10 @@ import java.util.function.Function;
 public interface CurrencyAmount {
 
   long ONE_XRP_IN_DROPS = 1_000_000L;
-  long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
+
+  // <-- per https://xrpl.org/rippleapi-reference.html#value
+  long MAX_XRP = 100_000_000_000L;
+
   long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
 
   /**

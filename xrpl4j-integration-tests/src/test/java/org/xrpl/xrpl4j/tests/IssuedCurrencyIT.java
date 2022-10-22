@@ -65,7 +65,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -75,7 +75,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       trustLine.limitPeer(),
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -123,7 +123,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       aliceWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -133,16 +133,16 @@ public class IssuedCurrencyIT extends AbstractIT {
       "10000",
       issuerWallet,
       bobWallet,
-      feeResult.drops().minimumFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    sendIssuedCurrency("USD", "50", issuerWallet, aliceWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "50", issuerWallet, aliceWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    sendIssuedCurrency("USD", "50", issuerWallet, bobWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency("USD", "50", issuerWallet, bobWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -180,9 +180,10 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/" +
-        paymentResult.transactionResult().hash()
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
     );
 
     ///////////////////////////
@@ -277,22 +278,30 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    sendIssuedCurrency("USD", "10", issuerAWallet, charlieWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "10", issuerAWallet, charlieWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    sendIssuedCurrency("USD", "1", issuerAWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "1", issuerAWallet, emilyWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    sendIssuedCurrency("USD", "100", issuerBWallet, emilyWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "100", issuerBWallet, emilyWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    sendIssuedCurrency("USD", "2", issuerBWallet, danielWallet, feeResult.drops().minimumFee());
+    sendIssuedCurrency(
+      "USD", "2", issuerBWallet, danielWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
@@ -339,8 +348,9 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(paymentResult.transactionResult().hash());
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
       paymentResult.transactionResult().hash()
     );
 
@@ -397,9 +407,10 @@ public class IssuedCurrencyIT extends AbstractIT {
     assertThat(setResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(setResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(setResult.transactionResult().hash());
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
-        setResult.transactionResult().hash()
+
+    logInfo(
+      setResult.transactionResult().transaction().transactionType(),
+      setResult.transactionResult().hash()
     );
 
     scanForResult(

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,7 +57,9 @@ public class TicketIT extends AbstractIT {
 
     SubmitResult<TicketCreate> submitResult = xrplClient.submit(sourceWallet, ticketCreate);
     assertThat(submitResult.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("TicketCreate successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      submitResult.transactionResult().transaction().transactionType(),
       submitResult.transactionResult().hash()
     );
 
@@ -79,7 +81,9 @@ public class TicketIT extends AbstractIT {
 
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(sourceWallet, accountSet);
     assertThat(accountSetResult.result()).isEqualTo(SUCCESS_STATUS);
-    logger.info("AccountSet successful: https://testnet.xrpl.org/transactions/" +
+
+    logInfo(
+      accountSetResult.transactionResult().transaction().transactionType(),
       accountSetResult.transactionResult().hash()
     );
   }

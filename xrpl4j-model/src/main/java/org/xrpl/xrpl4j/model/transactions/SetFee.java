@@ -10,8 +10,8 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import java.util.Optional;
 
 /**
- * A {@link SetFee} pseudo-transaction marks a change in transaction cost or reserve
- * requirements as a result of Fee Voting.
+ * A {@link SetFee} pseudo-transaction marks a change in transaction cost or reserve requirements as a result of Fee
+ * Voting.
  *
  * @see "https://xrpl.org/setfee.html"
  */
@@ -30,8 +30,8 @@ public interface SetFee extends Transaction {
   }
 
   /**
-   * The charge, in drops of XRP, for the reference transaction, as hex.
-   * (This is the transaction cost before scaling for load.)
+   * The charge, in drops of XRP, for the reference transaction, as hex. (This is the transaction cost before scaling
+   * for load.)
    *
    * @return A hex {@link String} basefee value.
    */
@@ -63,9 +63,9 @@ public interface SetFee extends Transaction {
   UnsignedInteger reserveIncrement();
 
   /**
-   * The index of the ledger version where this pseudo-transaction appears. This distinguishes the
-   * pseudo-transaction from other occurrences of the same change.
-   * Omitted for some historical SetFee pseudo-transactions hence making it optional.
+   * The index of the ledger version where this pseudo-transaction appears. This distinguishes the pseudo-transaction
+   * from other occurrences of the same change. Omitted for some historical SetFee pseudo-transactions hence making it
+   * optional.
    *
    * @return A {@link LedgerIndex} to indicates where the tx appears.
    */

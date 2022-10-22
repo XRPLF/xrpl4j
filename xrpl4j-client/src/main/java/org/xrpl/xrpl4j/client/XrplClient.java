@@ -69,6 +69,9 @@ import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -472,13 +475,36 @@ public class XrplClient {
    *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
+   * @deprecated This method is deprecated to accommodate 3 different types of server_info responses from the
+   *   specialised Clio {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the
+   *   generic rippled server {@link RippledServerInfo}. Use {@link XrplClient#serverInformation()}.
    */
+  @Deprecated
   public ServerInfo serverInfo() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)
       .build();
 
     return jsonRpcClient.send(request, ServerInfoResult.class).info();
+  }
+
+  /**
+   * Get the "server_info" for the rippled node {@link RippledServerInfo}, clio server {@link ClioServerInfo} and
+   * reporting mode server {@link ReportingModeServerInfo}. You should be able to handle all these response types as
+   * {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+   *
+   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} containing information about the server.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/server_info.html"
+   */
+  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInformation()
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SERVER_INFO)
+      .build();
+
+    return jsonRpcClient.send(request, org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.class);
   }
 
   /**

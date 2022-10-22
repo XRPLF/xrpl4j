@@ -81,6 +81,10 @@ import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
+import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -380,7 +384,9 @@ public class XrplClientTest {
           .hash(Hash256.of(Strings.repeat("0", 64)))
           .age(UnsignedInteger.ONE)
           .reserveBaseXrp(UnsignedInteger.ONE)
+          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .reserveIncXrp(UnsignedInteger.ONE)
+          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .sequence(LedgerIndex.of(UnsignedInteger.ONE))
           .baseFeeXrp(BigDecimal.ONE)
           .build();
@@ -444,7 +450,9 @@ public class XrplClientTest {
           .hash(Hash256.of(Strings.repeat("0", 64)))
           .age(UnsignedInteger.ONE)
           .reserveBaseXrp(UnsignedInteger.ONE)
+          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .reserveIncXrp(UnsignedInteger.ONE)
+          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .sequence(LedgerIndex.of(UnsignedInteger.ONE))
           .baseFeeXrp(BigDecimal.ONE)
           .build();
@@ -528,7 +536,9 @@ public class XrplClientTest {
           .hash(Hash256.of(Strings.repeat("0", 64)))
           .age(UnsignedInteger.ONE)
           .reserveBaseXrp(UnsignedInteger.ONE)
+          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .reserveIncXrp(UnsignedInteger.ONE)
+          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .sequence(LedgerIndex.of(UnsignedInteger.ONE))
           .baseFeeXrp(BigDecimal.ONE)
           .build();
@@ -599,7 +609,9 @@ public class XrplClientTest {
           .hash(Hash256.of(Strings.repeat("0", 64)))
           .age(UnsignedInteger.ONE)
           .reserveBaseXrp(UnsignedInteger.ONE)
+          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .reserveIncXrp(UnsignedInteger.ONE)
+          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
           .sequence(LedgerIndex.of(UnsignedInteger.ONE))
           .baseFeeXrp(BigDecimal.ONE)
           .build();
@@ -1055,7 +1067,9 @@ public class XrplClientTest {
       .hash(Hash256.of(Strings.repeat("0", 64)))
       .age(UnsignedInteger.ONE)
       .reserveBaseXrp(UnsignedInteger.ONE)
+      .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
       .reserveIncXrp(UnsignedInteger.ONE)
+      .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .baseFeeXrp(BigDecimal.ONE)
       .build();
@@ -1100,6 +1114,62 @@ public class XrplClientTest {
     xrplClient = new XrplClient(jsonRpcClientMock);
     ServerInfo serverInfoResponse = assertDoesNotThrow(() -> xrplClient.serverInfo());
     assertThat(serverInfoResponse).isEqualTo(serverInfo);
+  }
+
+  @Test
+  public void serverInformation() {
+    ValidatedLedger serverInfoLedger =
+      ValidatedLedger.builder()
+      .hash(Hash256.of(Strings.repeat("0", 64)))
+      .age(UnsignedInteger.ONE)
+      .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.ONE))
+      .reserveIncXrp(XrpCurrencyAmount.ofXrp(BigDecimal.ONE))
+      .sequence(LedgerIndex.of(UnsignedInteger.ONE))
+      .baseFeeXrp(BigDecimal.ONE)
+      .build();
+    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo serverInfo = RippledServerInfo.builder()
+      .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange("1-2"))
+      .amendmentBlocked(true)
+      .buildVersion("1")
+      .closedLedger(serverInfoLedger)
+      .hostId("id")
+      .ioLatencyMs(UnsignedLong.valueOf(2))
+      .jqTransOverflow("flow")
+      .lastClose(LastClose.builder()
+        .convergeTimeSeconds(BigDecimal.valueOf(1.11))
+        .proposers(UnsignedInteger.ONE)
+        .build())
+      .publicKeyNode("node")
+      .serverState("full")
+      .serverStateDurationUs("10")
+      .time(ZonedDateTime.now())
+      .upTime(UnsignedLong.ONE)
+      .validationQuorum(UnsignedInteger.ONE)
+      .build();
+
+    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResult =
+      org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.builder()
+      .info(serverInfo)
+      .build();
+
+    jsonRpcClientMock = new JsonRpcClient() {
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        return (T) serverInfoResult;
+      }
+    };
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResponse =
+      assertDoesNotThrow(() -> xrplClient.serverInformation());
+    assertThat(serverInfoResponse.info()).isEqualTo(serverInfo);
   }
 
   @Test

@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
@@ -201,7 +202,8 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
   }
 
-//  @Test
+  @Test
+  @Disabled
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException {
     ///////////////////////////
     // Create two issuer wallets and three non-issuer wallets

@@ -15,7 +15,6 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -115,24 +114,20 @@ public class IsFinalIT extends AbstractIT {
     ).isEqualTo(FinalityStatus.NOT_FINAL);
 
     this.scanForResult(
-      () -> this.getValidatedLedger(),
-      ledger -> FluentCompareTo.is(ledger.ledgerIndexSafe().unsignedIntegerValue())
-        .greaterThan(lastLedgerSequence.minus(UnsignedInteger.ONE))
-    );
-
-    assertThat(
-      xrplClient.isFinal(
-        txHash,
+      () -> xrplClient.isFinal(
+        response.transactionResult().hash(),
         response.validatedLedgerIndex(),
         lastLedgerSequence.minus(UnsignedInteger.ONE),
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
-      ).finalityStatus()
-    ).isEqualTo(FinalityStatus.EXPIRED);
+      ).finalityStatus(),
+      finalityStatus -> finalityStatus.equals(FinalityStatus.EXPIRED)
+    );
   }
 
   @Test
-  public void isFinalNoTrustlineIouPayment_ValidatedFailureResponse() throws JsonRpcClientErrorException {
+  public void isFinalNoTrustlineIouPayment_ValidatedFailureResponse()
+    throws JsonRpcClientErrorException {
 
     Payment builtPayment = payment
       .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(
@@ -152,17 +147,14 @@ public class IsFinalIT extends AbstractIT {
     ).isEqualTo(FinalityStatus.NOT_FINAL);
 
     this.scanForResult(
-      () -> getValidatedTransaction(txHash, Payment.class)
-    );
-
-    assertThat(
-      xrplClient.isFinal(
-        txHash,
+      () -> xrplClient.isFinal(
+        response.transactionResult().hash(),
         response.validatedLedgerIndex(),
-        lastLedgerSequence,
+        lastLedgerSequence.minus(UnsignedInteger.ONE),
         accountInfo.accountData().sequence(),
         wallet.classicAddress()
-      ).finalityStatus()
-    ).isEqualTo(FinalityStatus.VALIDATED_FAILURE);
+      ).finalityStatus(),
+      finalityStatus -> finalityStatus.equals(FinalityStatus.VALIDATED_FAILURE)
+    );
   }
 }

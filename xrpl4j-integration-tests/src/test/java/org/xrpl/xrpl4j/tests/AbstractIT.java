@@ -361,8 +361,7 @@ public abstract class AbstractIT {
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
     assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(paymentResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(paymentResult.transactionResult().hash());
+    assertThat(paymentResult.transactionResult().hash()).isEqualTo(paymentResult.transactionResult().hash());
 
     logInfo(
       paymentResult.transactionResult().transaction().transactionType(),
@@ -381,7 +380,7 @@ public abstract class AbstractIT {
    * Helper function to print log statements for Integration Tests which is network specific.
    *
    * @param transactionType {@link TransactionType} to be logged for the executed transaction.
-   * @param hash   {@link Hash256} to be logged for the executed transaction.
+   * @param hash            {@link Hash256} to be logged for the executed transaction.
    */
   public void logInfo(TransactionType transactionType, Hash256 hash) {
     String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :

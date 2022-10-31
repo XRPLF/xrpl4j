@@ -530,7 +530,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <version>1.20</version>
+          <version>2.0.0</version>
           <configuration>
             <!--license to use for the project-->
             <licenseName>apache_v2</licenseName>

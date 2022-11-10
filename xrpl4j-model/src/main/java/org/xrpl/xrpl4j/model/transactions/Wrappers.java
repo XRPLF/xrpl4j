@@ -378,9 +378,9 @@ public class Wrappers {
     @Value.Check
     public void validateBounds() {
       Preconditions.checkArgument(
-        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(9999)) &&
+        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(50000)) &&
           FluentCompareTo.is(value()).greaterThanEqualTo(UnsignedInteger.valueOf(0)),
-        "TransferFee should be in the range 0 to 9999.");
+        "TransferFee should be in the range 0 to 50000.");
     }
 
   }

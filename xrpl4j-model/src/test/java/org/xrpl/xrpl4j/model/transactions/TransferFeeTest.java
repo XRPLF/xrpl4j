@@ -1,6 +1,8 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedInteger;
@@ -34,5 +36,14 @@ public class TransferFeeTest {
       () -> TransferFee.ofPercent(BigDecimal.valueOf(99.999)),
       "Percent value should have a maximum of 2 decimal places."
     );
+  }
+
+  @Test
+  public void validateBounds() {
+    assertDoesNotThrow(() -> TransferFee.of(UnsignedInteger.valueOf(10000)));
+
+    assertThatThrownBy(() -> TransferFee.of(UnsignedInteger.valueOf(50001)))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("TransferFee should be in the range 0 to 50000.");
   }
 }

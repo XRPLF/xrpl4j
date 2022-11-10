@@ -52,6 +52,7 @@ public class TransferFeeTest {
   @Test
   public void validateBounds() {
     assertDoesNotThrow(() -> TransferFee.of(UnsignedInteger.valueOf(49999)));
+    assertDoesNotThrow(() -> TransferFee.of(UnsignedInteger.valueOf(50000)));
 
     assertThatThrownBy(() -> TransferFee.of(UnsignedInteger.valueOf(50001)))
       .isInstanceOf(IllegalArgumentException.class)

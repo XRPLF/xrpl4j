@@ -82,9 +82,9 @@ public class NfTokenMintTest {
         .flags(Flags.NfTokenMintFlags.builder()
           .tfTransferable(true)
           .build())
-        .transferFee(TransferFee.of(UnsignedInteger.valueOf(10000)))
+        .transferFee(TransferFee.of(UnsignedInteger.valueOf(50001)))
         .build(),
-      "TransferFee should be in the range 0 to 9999."
+      "TransferFee should be in the range 0 to 50000."
     );
   }
 

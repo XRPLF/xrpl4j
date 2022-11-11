@@ -92,14 +92,13 @@ public interface NfTokenAcceptOffer extends Transaction {
    * for direct mode and both are present for brokered mode.
    */
   @Value.Check
-  default void atleastOneOfferPresent() {
-    if (brokerFee().isPresent()) {
-      Preconditions.checkState( buyOffer().isPresent() && sellOffer().isPresent(),
-        "In brokered mode, you must specify both the SellOffer and the BuyOffer.");
-    } else {
-      Preconditions.checkState( (buyOffer().isPresent() || sellOffer().isPresent()) &&
-        !(buyOffer().isPresent() && sellOffer().isPresent()),
-        "In direct mode, you must specify either the SellOffer or the BuyOffer.");
+  default void brokerFeeNotPresentInDirectModeAndAtleastOneOfferPresent() {
+    Preconditions.checkState(buyOffer().isPresent() || sellOffer().isPresent(),
+      "One offer must be present.");
+
+    if ((buyOffer().isPresent() || sellOffer().isPresent()) &&
+      !(buyOffer().isPresent() && sellOffer().isPresent())) {
+      Preconditions.checkState(!brokerFee().isPresent(), "No BrokerFee needed in direct mode.");
     }
   }
 

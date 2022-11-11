@@ -94,7 +94,7 @@ public interface NfTokenAcceptOffer extends Transaction {
   @Value.Check
   default void brokerFeeNotPresentInDirectModeAndAtleastOneOfferPresent() {
     Preconditions.checkState(buyOffer().isPresent() || sellOffer().isPresent(),
-      "One offer must be present.");
+      "PLease specify one offer for direct mode and both offers for brokered mode.");
 
     if ((buyOffer().isPresent() || sellOffer().isPresent()) &&
       !(buyOffer().isPresent() && sellOffer().isPresent())) {

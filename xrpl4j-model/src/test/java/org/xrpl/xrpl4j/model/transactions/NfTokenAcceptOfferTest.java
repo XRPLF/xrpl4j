@@ -27,6 +27,17 @@ public class NfTokenAcceptOfferTest {
   }
 
   @Test
+  public void throwWhenNoOfferIsPresent() {
+    assertThatThrownBy(() -> NfTokenAcceptOffer.builder()
+      .account(address)
+      .brokerFee(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .build())
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage("PLease specify one offer for direct mode and both offers for brokered mode.");
+  }
+
+  @Test
   public void directModeWithBrokerFee_throws() {
     assertThatThrownBy(() -> NfTokenAcceptOffer.builder()
       .account(address)

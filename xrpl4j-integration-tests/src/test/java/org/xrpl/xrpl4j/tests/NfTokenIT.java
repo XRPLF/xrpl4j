@@ -405,9 +405,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .flags(Flags.NfTokenCreateOfferFlags.builder()
-        .tfSellToken(true)
-        .build())
+      .flags(Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN)
       .signingPublicKey(wallet.publicKey())
       .build();
 
@@ -470,5 +468,178 @@ public class NfTokenIT extends AbstractIT {
         )
     );
     logger.info("NFTokenOffer object was deleted successfully.");
+  }
+
+  @Test
+  void acceptOfferDirectModeWithBrokerFee() throws JsonRpcClientErrorException {
+    Wallet wallet = createRandomAccount();
+
+    //mint NFT from one account
+    AccountInfoResult accountInfoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+    );
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
+
+    //Nft mint transaction
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .tokenTaxon(UnsignedLong.ONE)
+      .account(wallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .signingPublicKey(wallet.publicKey())
+      .sequence(accountInfoResult.accountData().sequence())
+      .flags(Flags.NfTokenMintFlags.builder()
+        .tfTransferable(true)
+        .build())
+      .uri(uri)
+      .build();
+
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(wallet, nfTokenMint);
+    assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(mintSubmitResult.transactionResult().hash());
+
+    this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountNfts(wallet.classicAddress());
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
+    );
+    logger.info("NFT was minted successfully.");
+
+    //create a sell offer for the NFT that was created above
+
+    NfTokenId tokenId = xrplClient.accountNfts(wallet.classicAddress()).accountNfts().get(0).nfTokenId();
+
+    // the owner creates the sell offer
+    NfTokenCreateOffer nfTokenCreateSellOffer = NfTokenCreateOffer.builder()
+      .account(wallet.classicAddress())
+      .nfTokenId(tokenId)
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(wallet.publicKey())
+      .flags(Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN)
+      .build();
+
+    SubmitResult nfTokenCreateSellOfferSubmitResult = xrplClient.submit(wallet, nfTokenCreateSellOffer);
+    assertThat(nfTokenCreateSellOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(nfTokenCreateSellOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(nfTokenCreateSellOfferSubmitResult.transactionResult().hash());
+
+    //verify the offer was created
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        nfTokenCreateSellOfferSubmitResult.transactionResult().hash(),
+        NfTokenCreateOffer.class
+      )
+    );
+    logger.info("NFT Create Offer (Sell) transaction was validated successfully.");
+
+    this.scanForResult(
+      () -> this.getValidatedAccountObjects(wallet.classicAddress()),
+      objectsResult -> objectsResult.accountObjects().stream()
+        .anyMatch(object ->
+          NfTokenOfferObject.class.isAssignableFrom(object.getClass()) &&
+            ((NfTokenOfferObject) object).owner().equals(wallet.classicAddress())
+        )
+    );
+    logger.info("NFTokenOffer object was found in account's objects.");
+
+    NftSellOffersResult nftSellOffersResult = xrplClient.nftSellOffers(NftSellOffersRequestParams.builder()
+      .nfTokenId(tokenId)
+      .build());
+    assertThat(nftSellOffersResult.offers().size()).isEqualTo(1);
+
+    // create buy offer from another account
+    Wallet wallet2 = createRandomAccount();
+
+    AccountInfoResult accountInfoResult2 = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet2.classicAddress())
+    );
+
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(wallet2.classicAddress())
+      .owner(wallet.classicAddress())
+      .nfTokenId(tokenId)
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .sequence(accountInfoResult2.accountData().sequence())
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .signingPublicKey(wallet2.publicKey())
+      .build();
+
+    SubmitResult nfTokenCreateOfferSubmitResult = xrplClient.submit(wallet2, nfTokenCreateOffer);
+    assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
+
+    //verify the offer was created
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        nfTokenCreateOfferSubmitResult.transactionResult().hash(),
+        NfTokenCreateOffer.class
+      )
+    );
+    logger.info("NFT Create Offer (Buy) transaction was validated successfully.");
+
+    this.scanForResult(
+      () -> this.getValidatedAccountObjects(wallet2.classicAddress()),
+      objectsResult -> objectsResult.accountObjects().stream()
+        .anyMatch(object ->
+          NfTokenOfferObject.class.isAssignableFrom(object.getClass()) &&
+            ((NfTokenOfferObject) object).owner().equals(wallet2.classicAddress())
+        )
+    );
+    logger.info("NFTokenOffer object was found in account's objects.");
+
+    NftBuyOffersResult nftBuyOffersResult = xrplClient.nftBuyOffers(NftBuyOffersRequestParams.builder()
+      .nfTokenId(tokenId)
+      .build());
+    assertThat(nftBuyOffersResult.offers().size()).isEqualTo(1);
+
+    // accept offer from a different account
+    Wallet wallet3 = createRandomAccount();
+
+    AccountInfoResult accountInfoResult3 = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet3.classicAddress())
+    );
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .account(wallet3.classicAddress())
+      .buyOffer(nftBuyOffersResult.offers().get(0).nftOfferIndex())
+      .sellOffer(nftSellOffersResult.offers().get(0).nftOfferIndex())
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .sequence(accountInfoResult3.accountData().sequence())
+      .signingPublicKey(wallet3.publicKey())
+      .build();
+
+    SubmitResult nfTokenAcceptOfferSubmitResult = xrplClient.submit(wallet3, nfTokenAcceptOffer);
+    assertThat(nfTokenAcceptOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(nfTokenAcceptOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(nfTokenAcceptOfferSubmitResult.transactionResult().hash());
+
+    //verify the offer was accepted
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        nfTokenAcceptOfferSubmitResult.transactionResult().hash(),
+        NfTokenAcceptOffer.class
+      )
+    );
+
+    this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountNfts(wallet2.classicAddress());
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
+    );
+    logger.info("NFT was transferred successfully.");
   }
 }

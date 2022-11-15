@@ -187,6 +187,8 @@ public class DepositPreAuthIT extends AbstractIT {
     Wallet receiverWallet = createRandomAccount();
     Wallet senderWallet = createRandomAccount();
 
+    this.scanForResult(() -> this.getValidatedAccountInfo(receiverWallet.classicAddress()));
+    this.scanForResult(() -> this.getValidatedAccountInfo(senderWallet.classicAddress()));
     assertThat(
       xrplClient.depositAuthorized(
         DepositAuthorizedRequestParams.builder()

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 public class AccountRootFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(9);
+    return getBooleanCombinations(10);
   }
 
   @ParameterizedTest
@@ -45,7 +45,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfNoFreeze,
     boolean lsfPasswordSpent,
     boolean lsfRequireAuth,
-    boolean lsfRequireDestTag
+    boolean lsfRequireDestTag,
+    boolean lsfAMM
   ) {
     long expectedFlags = (lsfDefaultRipple ? Flags.AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
       (lsfDepositAuth ? Flags.AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
@@ -55,7 +56,8 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfNoFreeze ? Flags.AccountRootFlags.NO_FREEZE.getValue() : 0L) |
       (lsfPasswordSpent ? Flags.AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
       (lsfRequireAuth ? Flags.AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
-      (lsfRequireDestTag ? Flags.AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L);
+      (lsfRequireDestTag ? Flags.AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
+      (lsfAMM ? Flags.AccountRootFlags.AMM.getValue() : 0L);
     Flags.AccountRootFlags flags = Flags.AccountRootFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -69,5 +71,6 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     assertThat(flags.lsfPasswordSpent()).isEqualTo(lsfPasswordSpent);
     assertThat(flags.lsfRequireAuth()).isEqualTo(lsfRequireAuth);
     assertThat(flags.lsfRequireDestTag()).isEqualTo(lsfRequireDestTag);
+    assertThat(flags.lsfAMM()).isEqualTo(lsfAMM);
   }
 }

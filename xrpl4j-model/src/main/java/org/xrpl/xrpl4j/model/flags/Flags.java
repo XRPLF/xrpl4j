@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -411,6 +411,11 @@ public class Flags {
     public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
     /**
+     * Constant {@link AccountRootFlags} for the {@code lsfAMM} account flag.
+     */
+    public static final AccountRootFlags AMM = new AccountRootFlags(0x02000000);
+
+    /**
      * Required-args Constructor.
      *
      * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
@@ -511,6 +516,15 @@ public class Flags {
      */
     public boolean lsfRequireDestTag() {
       return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
+    }
+
+    /**
+     * This account is an Automated Market Maker instance.
+     *
+     * @return {@code true} if {@code lsfAMM} is set, otherwise {@code false}.
+     */
+    public boolean lsfAMM() {
+      return this.isSet(AccountRootFlags.AMM);
     }
   }
 

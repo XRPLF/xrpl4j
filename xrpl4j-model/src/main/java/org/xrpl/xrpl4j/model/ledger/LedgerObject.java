@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.ledger;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,6 +50,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
   @JsonSubTypes.Type(value = ImmutableSignerListObject.class, name = "SignerList"),
   @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
+  @JsonSubTypes.Type(value = ImmutableAmmObject.class, name = "AMM"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -131,7 +132,12 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code TicketObject} ledger objects.
      */
-    TICKET("Ticket");
+    TICKET("Ticket"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
+     */
+    AMM("AMM");
 
     private final String value;
 

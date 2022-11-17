@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,7 +64,7 @@ public class Wrappers {
      */
     @Value.Check
     public void validateAddress() {
-      Preconditions.checkArgument(this.value().startsWith("r"),"Invalid Address: Bad Prefix");
+      Preconditions.checkArgument(this.value().startsWith("r"), "Invalid Address: Bad Prefix");
       Preconditions.checkArgument(this.value().length() >= 25 && this.value().length() <= 35,
         "Classic Addresses must be (25,35) characters long inclusive.");
     }
@@ -361,9 +361,10 @@ public class Wrappers {
      * Construct {@link TransferFee} as a percentage value.
      *
      * @param percent of type {@link BigDecimal}
+     *
      * @return {@link TransferFee}
      */
-    static TransferFee ofPercent(BigDecimal percent) {
+    public static TransferFee ofPercent(BigDecimal percent) {
       Preconditions.checkArgument(
         Math.max(0, percent.stripTrailingZeros().scale()) <= 2,
         "Percent value should have a maximum of 2 decimal places."
@@ -384,5 +385,80 @@ public class Wrappers {
     }
 
   }
-  
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = TradingFee.class)
+  @JsonDeserialize(as = TradingFee.class)
+  abstract static class _TradingFee extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Construct {@link TradingFee} as a percentage value.
+     *
+     * @param percent The trading fee, as a {@link BigDecimal}.
+     *
+     * @return A {@link TradingFee}.
+     */
+    public static TradingFee ofPercent(BigDecimal percent) {
+      Preconditions.checkArgument(
+        Math.max(0, percent.stripTrailingZeros().scale()) <= 3,
+        "Percent value should have a maximum of 3 decimal places."
+      );
+      return TradingFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
+    }
+
+    /**
+     * Get the {@link TradingFee} as a {@link BigDecimal}.
+     *
+     * @return A {@link BigDecimal}.
+     */
+    public BigDecimal bigDecimalValue() {
+      return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
+    /**
+     * Validates that a TradingFee is not more than 1%, or 1000.
+     */
+    @Value.Check
+    public void validateBounds() {
+      Preconditions.checkArgument(
+        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(1_000)),
+        "TradingFee should be in the range 0 to 1000."
+      );
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the VoteWeight.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = VoteWeight.class)
+  @JsonDeserialize(as = VoteWeight.class)
+  abstract static class _VoteWeight extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Get the {@link VoteWeight} as a {@link BigDecimal}.
+     *
+     * @return A {@link BigDecimal}.
+     */
+    public BigDecimal bigDecimalValue() {
+      return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
+  }
 }

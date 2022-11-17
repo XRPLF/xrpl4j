@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,8 +38,10 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
+import org.xrpl.xrpl4j.model.transactions.VoteWeight;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
@@ -76,6 +78,12 @@ public class Xrpl4jModule extends SimpleModule {
 
     addSerializer(TransferFee.class, new TransferFeeSerializer());
     addDeserializer(TransferFee.class, new TransferFeeDeserializer());
+
+    addSerializer(TradingFee.class, new TradingFeeSerializer());
+    addDeserializer(TradingFee.class, new TradingFeeDeserializer());
+
+    addSerializer(VoteWeight.class, new VoteWeightSerializer());
+    addDeserializer(VoteWeight.class, new VoteWeightDeserializer());
 
     addSerializer(NfTokenUri.class, new NfTokenUriSerializer());
 

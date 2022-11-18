@@ -27,7 +27,8 @@ public interface AmmDeposit extends Transaction {
   }
 
   /**
-   * A {@link Flags.AmmDepositFlags} for this transaction.
+   * A {@link Flags.AmmDepositFlags} for this transaction. This flag will always be derived from the presence
+   * of {@link #lpTokenOut()}, {@link #amount()}, {@link #amount2()} and {@link #effectivePrice()}.
    *
    * @return A {@link Flags.AmmDepositFlags} for this transaction.
    */

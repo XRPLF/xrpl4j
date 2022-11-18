@@ -92,6 +92,7 @@ public interface Transaction {
       .put(ImmutableAmmBid.class, TransactionType.AMM_BID)
       .put(ImmutableAmmCreate.class, TransactionType.AMM_CREATE)
       .put(ImmutableAmmDeposit.class, TransactionType.AMM_DEPOSIT)
+      .put(ImmutableAmmVote.class, TransactionType.AMM_VOTE)
       .build();
 
   /**

@@ -91,6 +91,7 @@ public interface Transaction {
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
       .put(ImmutableAmmBid.class, TransactionType.AMM_BID)
       .put(ImmutableAmmCreate.class, TransactionType.AMM_CREATE)
+      .put(ImmutableAmmDeposit.class, TransactionType.AMM_DEPOSIT)
       .build();
 
   /**

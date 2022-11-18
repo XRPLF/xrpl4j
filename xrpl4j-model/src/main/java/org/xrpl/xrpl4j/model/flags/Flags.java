@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
@@ -192,6 +193,89 @@ public class Flags {
         );
       }
     }
+  }
+
+  /**
+   * A set of {@link TransactionFlags} that can be set on {@link AmmDeposit} transactions. Exactly
+   * one flag must be set on each {@link AmmDeposit} transaction, so this class does not allow for combination
+   * of multiple flags.
+   */
+  public static class AmmDepositFlags extends TransactionFlags {
+
+    /**
+     * Constant {@link AmmDepositFlags} for the {@code tfLPToken} flag.
+     */
+    public static final AmmDepositFlags LP_TOKEN = new AmmDepositFlags(0x00010000);
+
+    /**
+     * Constant {@link AmmDepositFlags} for the {@code tfSingleAsset} flag.
+     */
+    public static final AmmDepositFlags SINGLE_ASSET = new AmmDepositFlags(0x00080000);
+
+    /**
+     * Constant {@link AmmDepositFlags} for the {@code tfTwoAsset} flag.
+     */
+    public static final AmmDepositFlags TWO_ASSET = new AmmDepositFlags(0x00100000);
+
+    /**
+     * Constant {@link AmmDepositFlags} for the {@code tfOneAssetLPToken} flag.
+     */
+    public static final AmmDepositFlags ONE_ASSET_LP_TOKEN = new AmmDepositFlags(0x00200000);
+
+    /**
+     * Constant {@link AmmDepositFlags} for the {@code tfLimitLPToken} flag.
+     */
+    public static final AmmDepositFlags LIMIT_LP_TOKEN = new AmmDepositFlags(0x00400000);
+
+    private AmmDepositFlags(long value) {
+      super(value);
+    }
+
+    /**
+     * Whether the {@code tfLPToken} flag is set.
+     *
+     * @return {@code true} if {@code tfLPToken} is set, otherwise {@code false}.
+     */
+    public boolean tfLPToken() {
+      return this.isSet(LP_TOKEN);
+    }
+
+    /**
+     * Whether the {@code tfSingleAsset} flag is set.
+     *
+     * @return {@code true} if {@code tfSingleAsset} is set, otherwise {@code false}.
+     */
+    public boolean tfSingleAsset() {
+      return this.isSet(SINGLE_ASSET);
+    }
+
+    /**
+     * Whether the {@code tfTwoAsset} flag is set.
+     *
+     * @return {@code true} if {@code tfTwoAsset} is set, otherwise {@code false}.
+     */
+    public boolean tfTwoAsset() {
+      return this.isSet(TWO_ASSET);
+    }
+
+    /**
+     * Whether the {@code tfOneAssetLPToken} flag is set.
+     *
+     * @return {@code true} if {@code tfOneAssetLPToken} is set, otherwise {@code false}.
+     */
+    public boolean tfOneAssetLPToken() {
+      return this.isSet(ONE_ASSET_LP_TOKEN);
+    }
+
+    /**
+     * Whether the {@code tfLimitLPToken} flag is set.
+     *
+     * @return {@code true} if {@code tfLimitLPToken} is set, otherwise {@code false}.
+     */
+    public boolean tfLimitLPToken() {
+      return this.isSet(LIMIT_LP_TOKEN);
+    }
+
   }
 
   /**

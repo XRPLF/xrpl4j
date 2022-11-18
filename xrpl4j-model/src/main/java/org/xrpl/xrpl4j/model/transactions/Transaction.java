@@ -90,6 +90,7 @@ public interface Transaction {
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
       .put(ImmutableAmmBid.class, TransactionType.AMM_BID)
+      .put(ImmutableAmmCreate.class, TransactionType.AMM_CREATE)
       .build();
 
   /**

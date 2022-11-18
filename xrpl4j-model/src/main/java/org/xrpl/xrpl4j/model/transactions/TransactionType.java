@@ -165,7 +165,27 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link AmmBid} transaction.
    */
-  AMM_BID("AMMBid");
+  AMM_BID("AMMBid"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmCreate} transaction.
+   */
+  AMM_CREATE("AMMCreate"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmDeposit} transaction.
+   */
+  AMM_DEPOSIT("AMMDeposit"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmVote} transaction.
+   */
+  AMM_VOTE("AMMVote"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmWithdraw} transaction.
+   */
+  AMM_WITHDRAW("AMMWithdraw");
 
   private final String value;
 

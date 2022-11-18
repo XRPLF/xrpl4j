@@ -1,0 +1,65 @@
+package org.xrpl.xrpl4j.model.transactions;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.Flags;
+
+/**
+ * Object mapping for the AMMCreate transaction.
+ */
+@Value.Immutable
+@JsonSerialize(as = ImmutableAmmCreate.class)
+@JsonDeserialize(as = ImmutableAmmCreate.class)
+public interface AmmCreate extends Transaction {
+
+  /**
+   * Construct a {@code AmmCreate} builder.
+   *
+   * @return An {@link ImmutableAmmCreate.Builder}.
+   */
+  static ImmutableAmmCreate.Builder builder() {
+    return ImmutableAmmCreate.builder();
+  }
+
+  /**
+   * Set of {@link Flags.TransactionFlags}s for this {@link AmmCreate}, which only allows the
+   * {@code tfFullyCanonicalSig} flag.
+   *
+   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
+   * proper signature computation in rippled.
+   *
+   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   */
+  @JsonProperty("Flags")
+  @Value.Derived
+  default Flags.TransactionFlags flags() {
+    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
+  }
+
+  /**
+   * The first of the two assets to fund this AMM with.
+   *
+   * @return A {@link CurrencyAmount}.
+   */
+  @JsonProperty("Amount")
+  CurrencyAmount amount();
+
+  /**
+   * The second of the two assets to fund this AMM with.
+   *
+   * @return A {@link CurrencyAmount}.
+   */
+  @JsonProperty("Amount2")
+  CurrencyAmount amount2();
+
+  /**
+   * The fee to charge for trades against this AMM instance.
+   *
+   * @return A {@link TradingFee}.
+   */
+  @JsonProperty("TradingFee")
+  TradingFee tradingFee();
+
+}

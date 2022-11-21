@@ -67,6 +67,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -98,11 +100,19 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.AuthAccount;
+import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
+import org.xrpl.xrpl4j.model.transactions.AmmVote;
+import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -111,6 +121,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableAmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
@@ -129,6 +140,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
@@ -912,6 +924,88 @@ public class XrplClientTest {
       .ticketCount(UnsignedInteger.ONE)
       .build();
     assertThat(xrplClient.addSignature(ticketCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+
+    AmmBid ammBid = AmmBid.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .addAuthAccounts(
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .build();
+    assertThat(xrplClient.addSignature(ammBid, "sign").transactionSignature().get()).isEqualTo("sign");
+
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .build();
+    assertThat(xrplClient.addSignature(ammCreate, "sign").transactionSignature().get()).isEqualTo("sign");
+
+    AmmDeposit ammDeposit = AmmDeposit.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .lpTokenOut(
+        IssuedCurrencyAmount.builder()
+          .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
+          .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+          .value("100")
+          .build()
+      ).build();
+    assertThat(xrplClient.addSignature(ammDeposit, "sign").transactionSignature().get()).isEqualTo("sign");
+
+    AmmVote ammVote = AmmVote.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(8))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
+      .build();
+    assertThat(xrplClient.addSignature(ammVote, "sign").transactionSignature().get()).isEqualTo("sign");
+
+    AmmWithdraw ammWithdraw = AmmWithdraw.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .asset2(Asset.XRP)
+      .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+      .build();
+    assertThat(xrplClient.addSignature(ammWithdraw, "sign").transactionSignature().get()).isEqualTo("sign");
   }
 
   @Test
@@ -1476,6 +1570,20 @@ public class XrplClientTest {
     Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_SELL_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
+  }
+
+  @Test
+  void ammInfo() throws JsonRpcClientErrorException {
+    AmmInfoRequestParams params = mock(AmmInfoRequestParams.class);
+    JsonRpcRequest expectedRequest = JsonRpcRequest.builder()
+      .method(XrplMethods.AMM_INFO)
+      .addParams(params)
+      .build();
+    AmmInfoResult mockResult = mock(AmmInfoResult.class);
+    when(jsonRpcClientMock.send(expectedRequest, AmmInfoResult.class)).thenReturn(mockResult);
+    AmmInfoResult result = xrplClient.ammInfo(params);
+
+    assertThat(result).isEqualTo(mockResult);
   }
 
   @Test

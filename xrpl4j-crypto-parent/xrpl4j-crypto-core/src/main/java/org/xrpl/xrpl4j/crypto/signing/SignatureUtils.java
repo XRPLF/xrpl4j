@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,6 +28,11 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
+import org.xrpl.xrpl4j.model.transactions.AmmVote;
+import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -236,6 +241,26 @@ public class SignatureUtils {
         .build();
     } else if (TicketCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
       signedTransaction = TicketCreate.builder().from((TicketCreate) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmBid.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = AmmBid.builder().from((AmmBid) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = AmmCreate.builder().from((AmmCreate) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmDeposit.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = AmmDeposit.builder().from((AmmDeposit) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmVote.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = AmmVote.builder().from((AmmVote) unsignedTransaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmWithdraw.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      signedTransaction = AmmWithdraw.builder().from((AmmWithdraw) unsignedTransaction)
         .transactionSignature(signature.base16Value())
         .build();
     } else {

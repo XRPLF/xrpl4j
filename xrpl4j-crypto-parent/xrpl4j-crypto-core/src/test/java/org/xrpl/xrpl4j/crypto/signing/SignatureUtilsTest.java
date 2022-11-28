@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,9 +49,17 @@ import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.AuthAccount;
+import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
+import org.xrpl.xrpl4j.model.transactions.AmmVote;
+import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -77,6 +85,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -513,6 +522,114 @@ public class SignatureUtilsTest {
       .build();
 
     addSignatureToTransactionHelper(ticketCreate);
+  }
+
+  @Test
+  void addSignatureToAmmBid() {
+    AmmBid bid = AmmBid.builder()
+      .account(sourceWallet.classicAddress())
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .addAuthAccounts(
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    addSignatureToTransactionHelper(bid);
+  }
+
+  @Test
+  void addSignatureToAmmCreate() {
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(sourceWallet.classicAddress())
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    addSignatureToTransactionHelper(ammCreate);
+  }
+
+  @Test
+  void addSignatureToAmmDeposit() {
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .lpTokenOut(
+        IssuedCurrencyAmount.builder()
+          .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
+          .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+          .value("100")
+          .build()
+      )
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    addSignatureToTransactionHelper(deposit);
+  }
+
+  @Test
+  void addSignatureToAmmVote() {
+    AmmVote vote = AmmVote.builder()
+      .account(sourceWallet.classicAddress())
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(8))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    addSignatureToTransactionHelper(vote);
+  }
+
+  @Test
+  void addSignatureToAmmWithdraw() {
+    AmmWithdraw withdraw = AmmWithdraw.builder()
+      .account(sourceWallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .asset2(Asset.XRP)
+      .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+      .signingPublicKey(sourceWallet.publicKey())
+      .build();
+
+    addSignatureToTransactionHelper(withdraw);
   }
 
   @Test

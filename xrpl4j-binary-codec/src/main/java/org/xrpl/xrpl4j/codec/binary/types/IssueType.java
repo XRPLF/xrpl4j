@@ -12,7 +12,7 @@ public class IssueType extends SerializedType<IssueType> {
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
   public IssueType() {
-    this(UnsignedByteArray.ofSize(40));
+    this(UnsignedByteArray.ofSize(20));
   }
 
   public IssueType(UnsignedByteArray bytes) {
@@ -38,7 +38,7 @@ public class IssueType extends SerializedType<IssueType> {
   @Override
   public IssueType fromParser(BinaryParser parser) {
     CurrencyType currency = new CurrencyType().fromParser(parser);
-    if (currency.toJson().toString().equals("XRP")) {
+    if (currency.toJson().asText().equals("XRP")) {
       return new IssueType(currency.value());
     }
     AccountIdType issuer = new AccountIdType().fromParser(parser);

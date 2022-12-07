@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests.environment;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplAdminClient;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
@@ -99,9 +100,9 @@ public class RippledContainer {
   /**
    * Start contain with given interval for closing ledgers.
    *
-   * @param acceptIntervalMillis
+   * @param acceptIntervalMillis the startup time limit.
    *
-   * @return
+   * @return the {@link RippledContainer}.
    */
   public RippledContainer start(int acceptIntervalMillis) {
     if (started) {
@@ -132,7 +133,11 @@ public class RippledContainer {
 
   private ZonedDateTime getLedgerTime() {
     try {
-      return getXrplClient().serverInfo().time();
+      return getXrplClient().serverInformation().info().map(
+        rippled -> rippled.time(),
+        clio -> null,
+        reporting -> null
+      );
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e);
     }

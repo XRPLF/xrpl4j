@@ -50,8 +50,8 @@ public class ServerInfoIT {
     }
   }
 
-  private String getType(ServerInfo result) {
-    return result.map(
+  private String getType(ServerInfo serverInfo) {
+    return serverInfo.map(
       rippled -> "rippled",
       clio -> "clio",
       reporting -> "reporting"

@@ -22,14 +22,18 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.model.client.Finality;
+import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -40,6 +44,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -127,6 +132,35 @@ public abstract class AbstractIT {
       }, is(notNullValue()));
   }
 
+  protected Finality scanForFinality(
+    Hash256 transactionHash,
+    LedgerIndex submittedOnLedgerIndex,
+    UnsignedInteger lastLedgerSequence,
+    UnsignedInteger transactionAccountSequence,
+    Address account
+  ) {
+    return given()
+      .pollInterval(100, TimeUnit.MILLISECONDS)
+      .atMost(30, TimeUnit.SECONDS)
+      .ignoreException(RuntimeException.class)
+      .await()
+      .until(
+        () -> xrplClient.isFinal(
+          transactionHash,
+          submittedOnLedgerIndex,
+          lastLedgerSequence,
+          transactionAccountSequence,
+          account
+        ),
+        is(equalTo(
+          Finality.builder()
+            .finalityStatus(FinalityStatus.VALIDATED_SUCCESS)
+            .resultCode(TransactionResultCodes.TES_SUCCESS)
+            .build()
+          )
+        )
+      );
+  }
   protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()

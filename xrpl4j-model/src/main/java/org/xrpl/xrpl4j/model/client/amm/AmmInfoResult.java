@@ -31,9 +31,10 @@ public interface AmmInfoResult extends XrplResult {
   /**
    * The AMM ledger object.
    *
-   * @return An {@link AmmObject}.
+   * @return An {@link AmmInfoResult}.
    */
-  AmmObject amm();
+  @JsonProperty("amm")
+  AmmResult amm();
 
   /**
    * (Omitted if ledger_current_index is provided instead) The ledger index of the ledger version used when

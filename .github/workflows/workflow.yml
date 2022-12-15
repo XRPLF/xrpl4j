@@ -116,7 +116,7 @@ jobs:
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseDevnet
 
   build_testnet_its:
-    runs-on: ubuntu-21.10
+    runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2

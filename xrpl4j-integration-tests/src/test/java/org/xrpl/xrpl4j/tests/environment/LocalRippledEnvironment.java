@@ -55,7 +55,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
 
   @Override
   public void fundAccount(Address classicAddress) {
-    // accounts are funded  from the genesis account that holds all XRP when the ledger container starts.
+    // accounts are funded from the genesis account that holds all XRP when the ledger container starts.
     try {
       sendPayment(
         RippledContainer.getMasterWallet(),

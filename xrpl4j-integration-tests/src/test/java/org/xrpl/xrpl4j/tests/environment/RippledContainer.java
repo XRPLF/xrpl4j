@@ -100,7 +100,7 @@ public class RippledContainer {
   /**
    * Start contain with given interval for closing ledgers.
    *
-   * @param acceptIntervalMillis the startup time limit.
+   * @param acceptIntervalMillis the number of milliseconds between ledger version closes.
    *
    * @return the {@link RippledContainer}.
    */

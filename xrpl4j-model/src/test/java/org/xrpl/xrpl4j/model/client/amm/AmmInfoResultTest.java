@@ -17,118 +17,114 @@ import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
 import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 class AmmInfoResultTest extends AbstractJsonTest {
 
-  /*@Test
+  @Test
   void testJsonForCurrentLedger() throws JSONException, JsonProcessingException {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
-        AmmObject.builder()
-          .ammAccount(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-          .asset(Asset.XRP)
-          .asset2(
-            Asset.builder()
-              .currency("TST")
-              .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+        AmmResult.builder()
+          .ammAccount(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+          .amount(XrpCurrencyAmount.ofDrops(11080000720L))
+          .amount2(
+            IssuedCurrencyAmount.builder()
+              .currency("USD")
+              .issuer(Address.of("rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP"))
+              .value("11080.00072727936")
               .build()
           )
+          .asset2Frozen(false)
           .auctionSlot(
-            AuctionSlot.builder()
-              .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+            AmmInfoAuctionSlot.builder()
+              .account(Address.of("rM7xXGzMUALmEhQ2y9FW5XG69WXwQ6xtDC"))
               .addAuthAccounts(
-                AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
-                AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
+                AmmInfoAuthAccount.of(Address.of("rHq1eC9TEyEPVhRvdTPLKr3z8D5BUzcHqi")),
+                AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration(UnsignedInteger.valueOf(721870180))
+              .expiration(
+                ZonedDateTime.parse("2023-Jan-07 23:47:21.000000000 UTC",
+                  DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
+                  .withZoneSameLocal(ZoneId.of("UTC"))
+              )
               .price(
                 IssuedCurrencyAmount.builder()
-                  .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
-                  .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-                  .value("0.8696263565463045")
+                  .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
+                  .issuer(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+                  .value("100")
                   .build()
               )
+              .timeInterval(UnsignedInteger.ZERO)
               .build()
           )
-          .lpTokenBalance(
+          .lpToken(
             IssuedCurrencyAmount.builder()
-              .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
-              .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-              .value("71150.53584131501")
+              .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
+              .issuer(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+              .value("11079900")
               .build()
           )
-          .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
+          .tradingFee(TradingFee.of(UnsignedInteger.valueOf(225)))
           .addVoteSlots(
-            VoteEntryWrapper.of(
-              VoteEntry.builder()
-                .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(100000)))
-                .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
-                .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-                .build()
-            )
+            AmmInfoVoteEntry.builder()
+              .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(90)))
+              .tradingFee(TradingFee.of(UnsignedInteger.valueOf(50)))
+              .account(Address.of("rs6HZNabrZzBBjDWCwkWcSGdDH7Xsi4Z99"))
+              .build(),
+            AmmInfoVoteEntry.builder()
+              .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(90)))
+              .tradingFee(TradingFee.of(UnsignedInteger.valueOf(100)))
+              .account(Address.of("rJd7rhLSaqLHEfeqAW2vYzYYkhvyE9XfBE"))
+              .build()
           )
           .build()
       )
-      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(226645)))
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(102)))
+      .status("success")
       .validated(false)
       .build();
-    String json = "{\n" +
-      "    \"amm\": {\n" +
-      "        \"AMMAccount\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
-      "        \"LedgerEntryType\" : \"AMM\",\n" +
-      "        \"Asset\" : {\n" +
-      "          \"currency\" : \"XRP\"\n" +
-      "        },\n" +
-      "        \"Asset2\" : {\n" +
-      "          \"currency\" : \"TST\",\n" +
-      "          \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
-      "        },\n" +
-      "        \"AuctionSlot\" : {\n" +
-      "          \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "          \"AuthAccounts\" : [\n" +
-      "              {\n" +
-      "                \"AuthAccount\" : {\n" +
-      "                    \"Account\" : \"rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg\"\n" +
-      "                }\n" +
-      "              },\n" +
-      "              {\n" +
-      "                \"AuthAccount\" : {\n" +
-      "                    \"Account\" : \"rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv\"\n" +
-      "                }\n" +
-      "              }\n" +
-      "          ],\n" +
-      "          \"DiscountedFee\" : 0,\n" +
-      "          \"Expiration\" : 721870180,\n" +
-      "          \"Price\" : {\n" +
-      "              \"currency\" : \"039C99CD9AB0B70B32ECDA51EAAE471625608EA2\",\n" +
-      "              \"issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
-      "              \"value\" : \"0.8696263565463045\"\n" +
-      "          }\n" +
-      "        },\n" +
-      "        \"Flags\" : 0,\n" +
-      "        \"LPTokenBalance\" : {\n" +
-      "          \"currency\" : \"039C99CD9AB0B70B32ECDA51EAAE471625608EA2\",\n" +
-      "          \"issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
-      "          \"value\" : \"71150.53584131501\"\n" +
-      "        },\n" +
-      "        \"TradingFee\" : 600,\n" +
-      "        \"VoteSlots\" : [\n" +
-      "          {\n" +
-      "              \"VoteEntry\" : {\n" +
-      "                \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "                \"TradingFee\" : 600,\n" +
-      "                \"VoteWeight\" : 100000\n" +
-      "              }\n" +
-      "          }\n" +
-      "        ]\n" +
-      "    },\n" +
-      "    \"ledger_current_index\": 226645,\n" +
-      "    \"validated\": false\n" +
-      "  }";
+
+    String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+      "      \"amount\": \"11080000720\",\n" +
+      "      \"amount2\": {\"currency\": \"USD\",\n" +
+      "      \"issuer\": \"rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP\",\n" +
+      "      \"value\": \"11080.00072727936\"},\n" +
+      "      \"asset2_frozen\": false,\n" +
+      "      \"asset_frozen\": false,\n" +
+      "        \"auction_slot\": {\"account\": \"rM7xXGzMUALmEhQ2y9FW5XG69WXwQ6xtDC\",\n" +
+      "        \"auth_accounts\": [{\"account\": \"rHq1eC9TEyEPVhRvdTPLKr3z8D5BUzcHqi\"},\n" +
+      "        {\"account\": \"rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG\"}],\n" +
+      "        \"discounted_fee\": 0,\n" +
+      "          \"expiration\": \"2023-Jan-07 23:47:21.000000000 UTC\",\n" +
+      "          \"price\": {\"currency\": \"03930D02208264E2E40EC1B0C09E4DB96EE197B1\",\n" +
+      "          \"issuer\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+      "          \"value\": \"100\"},\n" +
+      "        \"time_interval\": 0},\n" +
+      "      \"lp_token\": {\"currency\": \"03930D02208264E2E40EC1B0C09E4DB96EE197B1\",\n" +
+      "        \"issuer\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+      "        \"value\": \"11079900\"},\n" +
+      "      \"trading_fee\": 225,\n" +
+      "        \"vote_slots\": [{\"account\": \"rs6HZNabrZzBBjDWCwkWcSGdDH7Xsi4Z99\",\n" +
+      "        \"trading_fee\": 50,\n" +
+      "        \"vote_weight\": 90},\n" +
+      "      {\"account\": \"rJd7rhLSaqLHEfeqAW2vYzYYkhvyE9XfBE\",\n" +
+      "        \"trading_fee\": 100,\n" +
+      "        \"vote_weight\": 90}]},\n" +
+      "      \"ledger_current_index\": 102,\n" +
+      "      \"status\": \"success\",\n" +
+      "      \"validated\": false}";
 
     assertCanSerializeAndDeserialize(result, json);
 
@@ -140,112 +136,102 @@ class AmmInfoResultTest extends AbstractJsonTest {
   void testJsonForValidatedLedger() throws JSONException, JsonProcessingException {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
-        AmmObject.builder()
-          .ammAccount(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-          .asset(Asset.XRP)
-          .asset2(
-            Asset.builder()
-              .currency("TST")
-              .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+        AmmResult.builder()
+          .ammAccount(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+          .amount(XrpCurrencyAmount.ofDrops(11080000720L))
+          .amount2(
+            IssuedCurrencyAmount.builder()
+              .currency("USD")
+              .issuer(Address.of("rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP"))
+              .value("11080.00072727936")
               .build()
           )
+          .asset2Frozen(false)
           .auctionSlot(
-            AuctionSlot.builder()
-              .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+            AmmInfoAuctionSlot.builder()
+              .account(Address.of("rM7xXGzMUALmEhQ2y9FW5XG69WXwQ6xtDC"))
               .addAuthAccounts(
-                AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
-                AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
+                AmmInfoAuthAccount.of(Address.of("rHq1eC9TEyEPVhRvdTPLKr3z8D5BUzcHqi")),
+                AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration(UnsignedInteger.valueOf(721870180))
+              .expiration(
+                ZonedDateTime.parse("2023-Jan-07 23:47:21.000000000 UTC",
+                    DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
+                  .withZoneSameLocal(ZoneId.of("UTC"))
+              )
               .price(
                 IssuedCurrencyAmount.builder()
-                  .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
-                  .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-                  .value("0.8696263565463045")
+                  .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
+                  .issuer(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+                  .value("100")
                   .build()
               )
+              .timeInterval(UnsignedInteger.ZERO)
               .build()
           )
-          .lpTokenBalance(
+          .lpToken(
             IssuedCurrencyAmount.builder()
-              .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
-              .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-              .value("71150.53584131501")
+              .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
+              .issuer(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+              .value("11079900")
               .build()
           )
-          .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
+          .tradingFee(TradingFee.of(UnsignedInteger.valueOf(225)))
           .addVoteSlots(
-            VoteEntryWrapper.of(
-              VoteEntry.builder()
-                .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(100000)))
-                .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
-                .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-                .build()
-            )
+            AmmInfoVoteEntry.builder()
+              .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(90)))
+              .tradingFee(TradingFee.of(UnsignedInteger.valueOf(50)))
+              .account(Address.of("rs6HZNabrZzBBjDWCwkWcSGdDH7Xsi4Z99"))
+              .build(),
+            AmmInfoVoteEntry.builder()
+              .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(90)))
+              .tradingFee(TradingFee.of(UnsignedInteger.valueOf(100)))
+              .account(Address.of("rJd7rhLSaqLHEfeqAW2vYzYYkhvyE9XfBE"))
+              .build()
           )
           .build()
       )
-      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(226645)))
+      .ledgerHash(Hash256.of("93586177048F82080AB79B8D0FA76F9D93AF458551A7358D9F0EC6D790AF5CBA"))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(102)))
+      .status("success")
       .validated(true)
       .build();
-    String json = "{\n" +
-      "    \"amm\": {\n" +
-      "        \"AMMAccount\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
-      "        \"LedgerEntryType\" : \"AMM\",\n" +
-      "        \"Asset\" : {\n" +
-      "          \"currency\" : \"XRP\"\n" +
-      "        },\n" +
-      "        \"Asset2\" : {\n" +
-      "          \"currency\" : \"TST\",\n" +
-      "          \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
-      "        },\n" +
-      "        \"AuctionSlot\" : {\n" +
-      "          \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "          \"AuthAccounts\" : [\n" +
-      "              {\n" +
-      "                \"AuthAccount\" : {\n" +
-      "                    \"Account\" : \"rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg\"\n" +
-      "                }\n" +
-      "              },\n" +
-      "              {\n" +
-      "                \"AuthAccount\" : {\n" +
-      "                    \"Account\" : \"rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv\"\n" +
-      "                }\n" +
-      "              }\n" +
-      "          ],\n" +
-      "          \"DiscountedFee\" : 0,\n" +
-      "          \"Expiration\" : 721870180,\n" +
-      "          \"Price\" : {\n" +
-      "              \"currency\" : \"039C99CD9AB0B70B32ECDA51EAAE471625608EA2\",\n" +
-      "              \"issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
-      "              \"value\" : \"0.8696263565463045\"\n" +
-      "          }\n" +
-      "        },\n" +
-      "        \"Flags\" : 0,\n" +
-      "        \"LPTokenBalance\" : {\n" +
-      "          \"currency\" : \"039C99CD9AB0B70B32ECDA51EAAE471625608EA2\",\n" +
-      "          \"issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
-      "          \"value\" : \"71150.53584131501\"\n" +
-      "        },\n" +
-      "        \"TradingFee\" : 600,\n" +
-      "        \"VoteSlots\" : [\n" +
-      "          {\n" +
-      "              \"VoteEntry\" : {\n" +
-      "                \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "                \"TradingFee\" : 600,\n" +
-      "                \"VoteWeight\" : 100000\n" +
-      "              }\n" +
-      "          }\n" +
-      "        ]\n" +
-      "    },\n" +
-      "    \"ledger_index\": 226645,\n" +
-      "    \"validated\": true\n" +
-      "  }";
+
+    String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+      "      \"amount\": \"11080000720\",\n" +
+      "      \"amount2\": {\"currency\": \"USD\",\n" +
+      "      \"issuer\": \"rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP\",\n" +
+      "      \"value\": \"11080.00072727936\"},\n" +
+      "      \"asset2_frozen\": false,\n" +
+      "      \"asset_frozen\": false,\n" +
+      "        \"auction_slot\": {\"account\": \"rM7xXGzMUALmEhQ2y9FW5XG69WXwQ6xtDC\",\n" +
+      "        \"auth_accounts\": [{\"account\": \"rHq1eC9TEyEPVhRvdTPLKr3z8D5BUzcHqi\"},\n" +
+      "        {\"account\": \"rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG\"}],\n" +
+      "        \"discounted_fee\": 0,\n" +
+      "          \"expiration\": \"2023-Jan-07 23:47:21.000000000 UTC\",\n" +
+      "          \"price\": {\"currency\": \"03930D02208264E2E40EC1B0C09E4DB96EE197B1\",\n" +
+      "          \"issuer\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+      "          \"value\": \"100\"},\n" +
+      "        \"time_interval\": 0},\n" +
+      "      \"lp_token\": {\"currency\": \"03930D02208264E2E40EC1B0C09E4DB96EE197B1\",\n" +
+      "        \"issuer\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+      "        \"value\": \"11079900\"},\n" +
+      "      \"trading_fee\": 225,\n" +
+      "        \"vote_slots\": [{\"account\": \"rs6HZNabrZzBBjDWCwkWcSGdDH7Xsi4Z99\",\n" +
+      "        \"trading_fee\": 50,\n" +
+      "        \"vote_weight\": 90},\n" +
+      "      {\"account\": \"rJd7rhLSaqLHEfeqAW2vYzYYkhvyE9XfBE\",\n" +
+      "        \"trading_fee\": 100,\n" +
+      "        \"vote_weight\": 90}]},\n" +
+      "      \"ledger_hash\": \"93586177048F82080AB79B8D0FA76F9D93AF458551A7358D9F0EC6D790AF5CBA\",\n" +
+      "      \"ledger_index\": 102,\n" +
+      "      \"status\": \"success\",\n" +
+      "      \"validated\": true}";
 
     assertCanSerializeAndDeserialize(result, json);
 
     assertThat(result.ledgerIndexSafe()).isEqualTo(result.ledgerIndex().get());
     assertThatThrownBy(result::ledgerCurrentIndexSafe).isInstanceOf(IllegalStateException.class);
-  }*/
+  }
 }

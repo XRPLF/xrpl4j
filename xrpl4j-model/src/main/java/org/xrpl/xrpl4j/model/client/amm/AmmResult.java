@@ -1,26 +1,26 @@
 package org.xrpl.xrpl4j.model.client.amm;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
-import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Information about the requested AMM ledger entry. This response is very closely related to
+ * {@link org.xrpl.xrpl4j.model.ledger.AmmObject}, however rippled returns the object in a different format in
+ * responses to {@code amm_info} RPC requests.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmResult.class)
 @JsonDeserialize(as = ImmutableAmmResult.class)
@@ -51,12 +51,22 @@ public interface AmmResult extends XrplResult {
   @JsonProperty("amount2")
   CurrencyAmount amount2();
 
+  /**
+   * Whether the first asset of the AMM is frozen. Always false is the first asset is XRP.
+   *
+   * @return {@code true} if asset 1 is frozen, otherwise {@code false}.
+   */
   @Value.Default
   @JsonProperty("asset_frozen")
   default boolean assetFrozen() {
     return false;
   }
 
+  /**
+   * Whether the second asset of the AMM is frozen. Always false is the second asset is XRP.
+   *
+   * @return {@code true} if asset 2 is frozen, otherwise {@code false}.
+   */
   @Value.Default
   @JsonProperty("asset2_frozen")
   default boolean asset2Frozen() {
@@ -74,7 +84,7 @@ public interface AmmResult extends XrplResult {
   /**
    * Details of the current owner of the auction slot.
    *
-   * @return An {@link AuctionSlot}.
+   * @return An {@link AmmInfoAuctionSlot}.
    */
   @JsonProperty("auction_slot")
   Optional<AmmInfoAuctionSlot> auctionSlot();
@@ -103,7 +113,7 @@ public interface AmmResult extends XrplResult {
    *
    * @return A {@link List} of {@link VoteEntry}s.
    */
-  @JsonProperty("vote_slot")
-  List<VoteEntry> voteSlots();
+  @JsonProperty("vote_slots")
+  List<AmmInfoVoteEntry> voteSlots();
 
 }

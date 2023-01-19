@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
  * Represents an AuctionSlot object in an {@link AmmObject}, containing details of the current owner of the auction
  * slot.
  */
-// TODO: Add Optional<TimeInterval> field for amm_info results
 @Value.Immutable
 @JsonSerialize(as = ImmutableAuctionSlot.class)
 @JsonDeserialize(as = ImmutableAuctionSlot.class)

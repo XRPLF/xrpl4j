@@ -8,6 +8,9 @@ import org.immutables.value.Value;
 
 import java.util.Optional;
 
+/**
+ * JSON mapping object for the Issue serializable type.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableIssue.class)
 @JsonDeserialize(as = ImmutableIssue.class)
@@ -22,8 +25,18 @@ public interface Issue {
     return ImmutableIssue.builder();
   }
 
+  /**
+   * The currency code of the Issue.
+   *
+   * @return A {@link JsonNode} containing the currency code.
+   */
   JsonNode currency();
 
+  /**
+   * The address of the issuer of this currency. Will be empty if {@link #currency()} is XRP.
+   *
+   * @return An optionally present {@link JsonNode}.
+   */
   Optional<JsonNode> issuer();
 
   @Value.Check

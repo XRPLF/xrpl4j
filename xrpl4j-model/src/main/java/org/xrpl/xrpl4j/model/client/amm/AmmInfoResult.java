@@ -92,9 +92,20 @@ public interface AmmInfoResult extends XrplResult {
     return false;
   }
 
+  /**
+   * The identifying Hash of the ledger version used to generate this response.
+   *
+   * @return A {@link Hash256} containing the ledger hash.
+   */
   @JsonProperty("ledger_hash")
   Optional<Hash256> ledgerHash();
 
+  /**
+   * Get {@link #ledgerHash()}, or throw an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
+   *
+   * @return The value of {@link #ledgerHash()}.
+   * @throws IllegalStateException If {@link #ledgerHash()} is empty.
+   */
   @JsonIgnore
   @Value.Auxiliary
   default Hash256 ledgerHashSafe() {

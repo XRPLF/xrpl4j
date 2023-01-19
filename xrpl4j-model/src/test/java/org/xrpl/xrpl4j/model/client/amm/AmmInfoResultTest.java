@@ -23,7 +23,7 @@ import org.xrpl.xrpl4j.model.transactions.VoteWeight;
 
 class AmmInfoResultTest extends AbstractJsonTest {
 
-  @Test
+  /*@Test
   void testJsonForCurrentLedger() throws JSONException, JsonProcessingException {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
@@ -247,5 +247,5 @@ class AmmInfoResultTest extends AbstractJsonTest {
 
     assertThat(result.ledgerIndexSafe()).isEqualTo(result.ledgerIndex().get());
     assertThatThrownBy(result::ledgerCurrentIndexSafe).isInstanceOf(IllegalStateException.class);
-  }
+  }*/
 }

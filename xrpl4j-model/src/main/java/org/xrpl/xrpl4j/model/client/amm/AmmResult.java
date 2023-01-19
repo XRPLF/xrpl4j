@@ -1,15 +1,20 @@
 package org.xrpl.xrpl4j.model.client.amm;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
 import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 
@@ -19,7 +24,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmResult.class)
 @JsonDeserialize(as = ImmutableAmmResult.class)
-public interface AmmResult {
+public interface AmmResult extends XrplResult {
 
   /**
    * Construct a {@code AmmResult} builder.
@@ -35,23 +40,35 @@ public interface AmmResult {
    *
    * @return An {@link Asset}.
    */
-  @JsonProperty("Amount")
-  Asset amount();
+  @JsonProperty("amount")
+  CurrencyAmount amount();
 
   /**
    * The definition for the other asset this AMM holds.
    *
    * @return An {@link Asset}.
    */
-  @JsonProperty("Amount2")
-  Asset asset2();
+  @JsonProperty("amount2")
+  CurrencyAmount amount2();
+
+  @Value.Default
+  @JsonProperty("asset_frozen")
+  default boolean assetFrozen() {
+    return false;
+  }
+
+  @Value.Default
+  @JsonProperty("asset2_frozen")
+  default boolean asset2Frozen() {
+    return false;
+  }
 
   /**
    * The address of the special account that holds this AMM's assets.
    *
    * @return An {@link Address}.
    */
-  @JsonProperty("AMMAccount")
+  @JsonProperty("amm_account")
   Address ammAccount();
 
   /**
@@ -59,8 +76,8 @@ public interface AmmResult {
    *
    * @return An {@link AuctionSlot}.
    */
-  @JsonProperty("AuctionSlot")
-  Optional<AuctionSlot> auctionSlot();
+  @JsonProperty("auction_slot")
+  Optional<AmmInfoAuctionSlot> auctionSlot();
 
   /**
    * The total outstanding balance of liquidity provider tokens from this AMM instance. The holders of these tokens
@@ -69,9 +86,8 @@ public interface AmmResult {
    *
    * @return An {@link IssuedCurrencyAmount}.
    */
-  @JsonProperty("LPTokenBalance")
-  @JsonAlias("LPToken") // FIXME: This is only here because AMM-net hasn't been updated and should be removed later on
-  IssuedCurrencyAmount lpTokenBalance();
+  @JsonProperty("lp_token")
+  IssuedCurrencyAmount lpToken();
 
   /**
    * The percentage fee to be charged for trades against this AMM instance, in units of 1/10,000. The maximum value is
@@ -79,7 +95,7 @@ public interface AmmResult {
    *
    * @return A {@link TradingFee}.
    */
-  @JsonProperty("TradingFee")
+  @JsonProperty("trading_fee")
   TradingFee tradingFee();
 
   /**
@@ -87,7 +103,7 @@ public interface AmmResult {
    *
    * @return A {@link List} of {@link VoteEntry}s.
    */
-  @JsonProperty("VoteSlots")
+  @JsonProperty("vote_slot")
   List<VoteEntry> voteSlots();
 
 }

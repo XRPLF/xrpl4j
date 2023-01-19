@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.ledger;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -31,6 +32,7 @@ public interface VoteEntry {
    * @return An {@link Address}.
    */
   @JsonProperty("Account")
+  @JsonAlias("account")
   Address account();
 
   /**
@@ -39,6 +41,7 @@ public interface VoteEntry {
    * @return A {@link TradingFee}.
    */
   @JsonProperty("TradingFee")
+  @JsonAlias("trading_fee")
   TradingFee tradingFee();
 
   /**
@@ -47,6 +50,7 @@ public interface VoteEntry {
    * @return The {@link VoteWeight}.
    */
   @JsonProperty("VoteWeight")
+  @JsonAlias("vote_weight")
   VoteWeight voteWeight();
 
 }

@@ -8,6 +8,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
 
@@ -82,14 +83,22 @@ public interface AmmInfoResult extends XrplResult {
   }
 
   /**
-   * If true, the information in this response comes from a validated ledger version.
-   * Otherwise, the information is subject to change.
+   * True if this data is from a validated ledger version; if false, this data is not final.
    *
-   * @return {@code true} if the information in this response comes from a validated ledger version, {@code false}
-   *   if not.
+   * @return {@code true} if this data is from a validated ledger version, otherwise {@code false}.
    */
   @Value.Default
   default boolean validated() {
     return false;
+  }
+
+  @JsonProperty("ledger_hash")
+  Optional<Hash256> ledgerHash();
+
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
   }
 }

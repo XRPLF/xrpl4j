@@ -8,6 +8,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
@@ -47,11 +48,18 @@ import org.xrpl.xrpl4j.wallet.Wallet;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+/**
+ * All tests in this class will be disabled until AMM functionality has been merged into the rippled codebase and
+ * is available in a local standalone docker container. Running these tests as part of a maven build will
+ * overwrite the value of xrplEnvironment, so any ITs run after these ITs will point at the AMM devnet. This is
+ * obviously undesirable, and in lieu of making a broader change to enable custom environments for specific test suites,
+ * we choose to simply disable these tests until we can run them against the normal xrplEnvironment.
+ */
 public class AmmIT extends AbstractIT {
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
-  @BeforeAll
+  //  @BeforeAll
   protected static void initXrplEnvironment() {
     xrplEnvironment = new CustomEnvironment(
       HttpUrl.parse("http://amm.devnet.rippletest.net:51234"),
@@ -59,7 +67,7 @@ public class AmmIT extends AbstractIT {
     );
   }
 
-  @Test
+  //  @Test
   void depositAndVoteOnTradingFee() throws JsonRpcClientErrorException, JsonProcessingException {
     Wallet issuerWallet = createRandomAccount();
     AmmInfoResult amm = createAmm(issuerWallet);
@@ -114,7 +122,7 @@ public class AmmIT extends AbstractIT {
     assertThat(ammAfterVote.amm().tradingFee()).isEqualTo(newTradingFee);
   }
 
-  @Test
+  //  @Test
   void depositAndBid() throws JsonRpcClientErrorException, JsonProcessingException {
     Wallet issuerWallet = createRandomAccount();
     AmmInfoResult amm = createAmm(issuerWallet);
@@ -182,7 +190,7 @@ public class AmmIT extends AbstractIT {
       .containsExactly(authAccount1.classicAddress());
   }
 
-  @Test
+  //  @Test
   void depositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
     Wallet issuerWallet = createRandomAccount();
     AmmInfoResult amm = createAmm(issuerWallet);

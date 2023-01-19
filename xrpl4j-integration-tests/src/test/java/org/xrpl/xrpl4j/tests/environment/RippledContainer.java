@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests.environment;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -109,6 +109,7 @@ public class RippledContainer {
     }
     started = true;
     rippledContainer.start();
+
     // rippled is run in standalone mode which means that ledgers won't automatically close. You have to manually
     // advance the ledger using the "ledger_accept" method on the admin API. To mimic the behavior of a networked
     // rippled, run a scheduled task to trigger the "ledger_accept" method.

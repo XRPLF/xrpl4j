@@ -48,7 +48,11 @@ public class AbstractJsonTest {
     objectMapper = ObjectMapperFactory.create();
   }
 
-  protected <T> void assertCanSerializeAndDeserialize(T object, String json, Class<T> clazz) throws JSONException, JsonProcessingException {
+  protected <T> void assertCanSerializeAndDeserialize(
+    T object,
+    String json,
+    Class<T> clazz
+  ) throws JSONException, JsonProcessingException {
     String serialized = objectMapper.writeValueAsString(object);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
 

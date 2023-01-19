@@ -74,7 +74,7 @@ public class TradingFeeTest {
     TradingFee tradingFee = TradingFee.of(UnsignedInteger.valueOf(1000));
     TradingFeeWrapper wrapper = TradingFeeWrapper.of(tradingFee);
 
-    String json = "{\"tradingFee\": \"1000\"}";
+    String json = "{\"tradingFee\": 1000}";
     assertSerializesAndDeserializes(wrapper, json);
   }
 

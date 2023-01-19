@@ -64,7 +64,7 @@ public interface AmmDeposit extends Transaction {
   Asset asset();
 
   /**
-   * 	The definition for the other asset in the AMM's pool.
+   * The definition for the other asset in the AMM's pool.
    *
    * @return An {@link Asset}.
    */
@@ -100,7 +100,7 @@ public interface AmmDeposit extends Transaction {
   /**
    * How many of the AMM's LP Tokens to buy.
    *
-   * @return @return An optionally present {@link IssuedCurrencyAmount}.
+   * @return An optionally present {@link IssuedCurrencyAmount}.
    */
   @JsonProperty("LPTokenOut")
   Optional<IssuedCurrencyAmount> lpTokenOut();

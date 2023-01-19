@@ -9,67 +9,67 @@ public class AmmWithdrawFlagsTest {
   @Test
   void testFlagValues() {
     Flags.AmmWithdrawFlags lpToken = Flags.AmmWithdrawFlags.LP_TOKEN;
-    assertThat(lpToken.tfLPToken()).isTrue();
+    assertThat(lpToken.tfLpToken()).isTrue();
     assertThat(lpToken.tfWithdrawAll()).isFalse();
     assertThat(lpToken.tfOneAssetWithdrawAll()).isFalse();
     assertThat(lpToken.tfSingleAsset()).isFalse();
     assertThat(lpToken.tfTwoAsset()).isFalse();
-    assertThat(lpToken.tfOneAssetLPToken()).isFalse();
-    assertThat(lpToken.tfLimitLPToken()).isFalse();
+    assertThat(lpToken.tfOneAssetLpToken()).isFalse();
+    assertThat(lpToken.tfLimitLpToken()).isFalse();
 
     Flags.AmmWithdrawFlags withdrawAll = Flags.AmmWithdrawFlags.WITHDRAW_ALL;
-    assertThat(withdrawAll.tfLPToken()).isFalse();
+    assertThat(withdrawAll.tfLpToken()).isFalse();
     assertThat(withdrawAll.tfWithdrawAll()).isTrue();
     assertThat(withdrawAll.tfOneAssetWithdrawAll()).isFalse();
     assertThat(withdrawAll.tfSingleAsset()).isFalse();
     assertThat(withdrawAll.tfTwoAsset()).isFalse();
-    assertThat(withdrawAll.tfOneAssetLPToken()).isFalse();
-    assertThat(withdrawAll.tfLimitLPToken()).isFalse();
+    assertThat(withdrawAll.tfOneAssetLpToken()).isFalse();
+    assertThat(withdrawAll.tfLimitLpToken()).isFalse();
 
     Flags.AmmWithdrawFlags oneAssetWithdrawAll = Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL;
-    assertThat(oneAssetWithdrawAll.tfLPToken()).isFalse();
+    assertThat(oneAssetWithdrawAll.tfLpToken()).isFalse();
     assertThat(oneAssetWithdrawAll.tfWithdrawAll()).isFalse();
     assertThat(oneAssetWithdrawAll.tfOneAssetWithdrawAll()).isTrue();
     assertThat(oneAssetWithdrawAll.tfSingleAsset()).isFalse();
     assertThat(oneAssetWithdrawAll.tfTwoAsset()).isFalse();
-    assertThat(oneAssetWithdrawAll.tfOneAssetLPToken()).isFalse();
-    assertThat(oneAssetWithdrawAll.tfLimitLPToken()).isFalse();
+    assertThat(oneAssetWithdrawAll.tfOneAssetLpToken()).isFalse();
+    assertThat(oneAssetWithdrawAll.tfLimitLpToken()).isFalse();
 
     Flags.AmmWithdrawFlags singleAsset = Flags.AmmWithdrawFlags.SINGLE_ASSET;
-    assertThat(singleAsset.tfLPToken()).isFalse();
+    assertThat(singleAsset.tfLpToken()).isFalse();
     assertThat(singleAsset.tfWithdrawAll()).isFalse();
     assertThat(singleAsset.tfOneAssetWithdrawAll()).isFalse();
     assertThat(singleAsset.tfSingleAsset()).isTrue();
     assertThat(singleAsset.tfTwoAsset()).isFalse();
-    assertThat(singleAsset.tfOneAssetLPToken()).isFalse();
-    assertThat(singleAsset.tfLimitLPToken()).isFalse();
+    assertThat(singleAsset.tfOneAssetLpToken()).isFalse();
+    assertThat(singleAsset.tfLimitLpToken()).isFalse();
 
     Flags.AmmWithdrawFlags twoAsset = Flags.AmmWithdrawFlags.TWO_ASSET;
-    assertThat(twoAsset.tfLPToken()).isFalse();
+    assertThat(twoAsset.tfLpToken()).isFalse();
     assertThat(twoAsset.tfWithdrawAll()).isFalse();
     assertThat(twoAsset.tfOneAssetWithdrawAll()).isFalse();
     assertThat(twoAsset.tfSingleAsset()).isFalse();
     assertThat(twoAsset.tfTwoAsset()).isTrue();
-    assertThat(twoAsset.tfOneAssetLPToken()).isFalse();
-    assertThat(twoAsset.tfLimitLPToken()).isFalse();
+    assertThat(twoAsset.tfOneAssetLpToken()).isFalse();
+    assertThat(twoAsset.tfLimitLpToken()).isFalse();
 
     Flags.AmmWithdrawFlags oneAssetLpToken = Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN;
-    assertThat(oneAssetLpToken.tfLPToken()).isFalse();
+    assertThat(oneAssetLpToken.tfLpToken()).isFalse();
     assertThat(oneAssetLpToken.tfWithdrawAll()).isFalse();
     assertThat(oneAssetLpToken.tfOneAssetWithdrawAll()).isFalse();
     assertThat(oneAssetLpToken.tfSingleAsset()).isFalse();
     assertThat(oneAssetLpToken.tfTwoAsset()).isFalse();
-    assertThat(oneAssetLpToken.tfOneAssetLPToken()).isTrue();
-    assertThat(oneAssetLpToken.tfLimitLPToken()).isFalse();
+    assertThat(oneAssetLpToken.tfOneAssetLpToken()).isTrue();
+    assertThat(oneAssetLpToken.tfLimitLpToken()).isFalse();
 
     Flags.AmmWithdrawFlags limitLpToken = Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN;
-    assertThat(limitLpToken.tfLPToken()).isFalse();
+    assertThat(limitLpToken.tfLpToken()).isFalse();
     assertThat(limitLpToken.tfWithdrawAll()).isFalse();
     assertThat(limitLpToken.tfOneAssetWithdrawAll()).isFalse();
     assertThat(limitLpToken.tfSingleAsset()).isFalse();
     assertThat(limitLpToken.tfTwoAsset()).isFalse();
-    assertThat(limitLpToken.tfOneAssetLPToken()).isFalse();
-    assertThat(limitLpToken.tfLimitLPToken()).isTrue();
+    assertThat(limitLpToken.tfOneAssetLpToken()).isFalse();
+    assertThat(limitLpToken.tfLimitLpToken()).isTrue();
 
   }
 }

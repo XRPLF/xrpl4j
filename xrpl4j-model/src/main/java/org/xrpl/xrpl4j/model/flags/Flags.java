@@ -236,7 +236,7 @@ public class Flags {
      *
      * @return {@code true} if {@code tfLPToken} is set, otherwise {@code false}.
      */
-    public boolean tfLPToken() {
+    public boolean tfLpToken() {
       return this.isSet(LP_TOKEN);
     }
 
@@ -263,7 +263,7 @@ public class Flags {
      *
      * @return {@code true} if {@code tfOneAssetLPToken} is set, otherwise {@code false}.
      */
-    public boolean tfOneAssetLPToken() {
+    public boolean tfOneAssetLpToken() {
       return this.isSet(ONE_ASSET_LP_TOKEN);
     }
 
@@ -272,7 +272,7 @@ public class Flags {
      *
      * @return {@code true} if {@code tfLimitLPToken} is set, otherwise {@code false}.
      */
-    public boolean tfLimitLPToken() {
+    public boolean tfLimitLpToken() {
       return this.isSet(LIMIT_LP_TOKEN);
     }
 
@@ -329,7 +329,7 @@ public class Flags {
      *
      * @return {@code true} if {@code tfLPToken} is set, otherwise {@code false}.
      */
-    public boolean tfLPToken() {
+    public boolean tfLpToken() {
       return this.isSet(LP_TOKEN);
     }
 
@@ -374,7 +374,7 @@ public class Flags {
      *
      * @return {@code true} if {@code tfOneAssetLPToken} is set, otherwise {@code false}.
      */
-    public boolean tfOneAssetLPToken() {
+    public boolean tfOneAssetLpToken() {
       return this.isSet(ONE_ASSET_LP_TOKEN);
     }
 
@@ -383,7 +383,7 @@ public class Flags {
      *
      * @return {@code true} if {@code tfLimitLPToken} is set, otherwise {@code false}.
      */
-    public boolean tfLimitLPToken() {
+    public boolean tfLimitLpToken() {
       return this.isSet(LIMIT_LP_TOKEN);
     }
   }
@@ -717,7 +717,7 @@ public class Flags {
      *
      * @return {@code true} if {@code lsfAMM} is set, otherwise {@code false}.
      */
-    public boolean lsfAMM() {
+    public boolean lsfAmm() {
       return this.isSet(AccountRootFlags.AMM);
     }
   }

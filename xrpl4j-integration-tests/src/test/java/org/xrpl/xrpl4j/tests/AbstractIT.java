@@ -118,20 +118,6 @@ public abstract class AbstractIT {
   // Ledger Helpers
   //////////////////////
 
-  protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
-    return given()
-      .atMost(30, TimeUnit.SECONDS)
-      .pollInterval(100, TimeUnit.MILLISECONDS)
-      .await()
-      .until(() -> {
-        T result = resultSupplier.get();
-        if (result == null) {
-          return null;
-        }
-        return condition.test(result) ? result : null;
-      }, is(notNullValue()));
-  }
-
   protected Finality scanForFinality(
     Hash256 transactionHash,
     LedgerIndex submittedOnLedgerIndex,
@@ -153,14 +139,29 @@ public abstract class AbstractIT {
           account
         ),
         is(equalTo(
-          Finality.builder()
-            .finalityStatus(FinalityStatus.VALIDATED_SUCCESS)
-            .resultCode(TransactionResultCodes.TES_SUCCESS)
-            .build()
+            Finality.builder()
+              .finalityStatus(FinalityStatus.VALIDATED_SUCCESS)
+              .resultCode(TransactionResultCodes.TES_SUCCESS)
+              .build()
           )
         )
       );
   }
+
+  protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
+    return given()
+      .atMost(30, TimeUnit.SECONDS)
+      .pollInterval(100, TimeUnit.MILLISECONDS)
+      .await()
+      .until(() -> {
+        T result = resultSupplier.get();
+        if (result == null) {
+          return null;
+        }
+        return condition.test(result) ? result : null;
+      }, is(notNullValue()));
+  }
+
   protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()

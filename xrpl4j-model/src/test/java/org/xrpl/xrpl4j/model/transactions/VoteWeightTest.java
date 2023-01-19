@@ -50,7 +50,7 @@ public class VoteWeightTest {
     VoteWeight voteWeight = VoteWeight.of(UnsignedInteger.valueOf(1000));
     VoteWeightWrapper wrapper = VoteWeightWrapper.of(voteWeight);
 
-    String json = "{\"voteWeight\": \"1000\"}";
+    String json = "{\"voteWeight\": 1000}";
     assertSerializesAndDeserializes(wrapper, json);
   }
 

@@ -41,7 +41,7 @@ public interface AmmWithdraw extends Transaction {
   Asset asset();
 
   /**
-   * 	The definition for the other asset in the AMM's pool.
+   * The definition for the other asset in the AMM's pool.
    *
    * @return An {@link Asset}.
    */
@@ -77,7 +77,7 @@ public interface AmmWithdraw extends Transaction {
   /**
    * How many of the AMM's LP Tokens to buy.
    *
-   * @return @return An optionally present {@link IssuedCurrencyAmount}.
+   * @return An optionally present {@link IssuedCurrencyAmount}.
    */
   @JsonProperty("LPTokensIn")
   Optional<IssuedCurrencyAmount> lpTokensIn();
@@ -94,7 +94,7 @@ public interface AmmWithdraw extends Transaction {
       boolean amount2Present = amount2().isPresent();
       boolean effectivePricePresent = effectivePrice().isPresent();
 
-      if (flags().tfLPToken()) {
+      if (flags().tfLpToken()) {
         Preconditions.checkState(
           lpTokenPresent && !amountPresent && !amount2Present && !effectivePricePresent,
           "If the tfLPToken flag is set, amount, amount2, and effectivePrice cannot be present."
@@ -115,12 +115,12 @@ public interface AmmWithdraw extends Transaction {
           "If the tfSingleAsset or tfOneAssetWithdrawAll flag is set, lpTokensIn, amount2, and effectivePrice cannot " +
             "be present."
         );
-      } else if (flags().tfOneAssetLPToken()) {
+      } else if (flags().tfOneAssetLpToken()) {
         Preconditions.checkState(
           lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent,
           "If the tfOneAssetLPToken flag is set, amount2 and effectivePrice cannot be present."
         );
-      } else if (flags().tfLimitLPToken()) {
+      } else if (flags().tfLimitLpToken()) {
         Preconditions.checkState(
           !lpTokenPresent && amountPresent && !amount2Present && effectivePricePresent,
           "If the tfLimitLPToken flag is set, lpTokensIn and amount2 cannot be present."

@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
-import org.xrpl.xrpl4j.model.ledger.Asset;
-import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
-import org.xrpl.xrpl4j.model.ledger.VoteEntry;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -38,7 +35,7 @@ public interface AmmResult extends XrplResult {
   /**
    * The definition for one of the two assets this AMM holds.
    *
-   * @return An {@link Asset}.
+   * @return A {@link CurrencyAmount}.
    */
   @JsonProperty("amount")
   CurrencyAmount amount();
@@ -46,7 +43,7 @@ public interface AmmResult extends XrplResult {
   /**
    * The definition for the other asset this AMM holds.
    *
-   * @return An {@link Asset}.
+   * @return A {@link CurrencyAmount}.
    */
   @JsonProperty("amount2")
   CurrencyAmount amount2();
@@ -111,7 +108,7 @@ public interface AmmResult extends XrplResult {
   /**
    * A list of vote objects, representing votes on the pool's trading fee.
    *
-   * @return A {@link List} of {@link VoteEntry}s.
+   * @return A {@link List} of {@link AmmInfoVoteEntry}s.
    */
   @JsonProperty("vote_slots")
   List<AmmInfoVoteEntry> voteSlots();

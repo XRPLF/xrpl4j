@@ -46,7 +46,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfPasswordSpent,
     boolean lsfRequireAuth,
     boolean lsfRequireDestTag,
-    boolean lsfAMM
+    boolean lsfAmm
   ) {
     long expectedFlags = (lsfDefaultRipple ? Flags.AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
       (lsfDepositAuth ? Flags.AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
@@ -57,7 +57,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfPasswordSpent ? Flags.AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
       (lsfRequireAuth ? Flags.AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
       (lsfRequireDestTag ? Flags.AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
-      (lsfAMM ? Flags.AccountRootFlags.AMM.getValue() : 0L);
+      (lsfAmm ? Flags.AccountRootFlags.AMM.getValue() : 0L);
     Flags.AccountRootFlags flags = Flags.AccountRootFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -71,6 +71,6 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     assertThat(flags.lsfPasswordSpent()).isEqualTo(lsfPasswordSpent);
     assertThat(flags.lsfRequireAuth()).isEqualTo(lsfRequireAuth);
     assertThat(flags.lsfRequireDestTag()).isEqualTo(lsfRequireDestTag);
-    assertThat(flags.lsfAMM()).isEqualTo(lsfAMM);
+    assertThat(flags.lsfAmm()).isEqualTo(lsfAmm);
   }
 }

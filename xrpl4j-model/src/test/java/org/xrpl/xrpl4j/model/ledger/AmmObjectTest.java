@@ -18,19 +18,19 @@ class AmmObjectTest extends AbstractJsonTest {
   @Test
   void voteSlotsUnwrapped() {
     VoteEntry voteEntry1 = VoteEntry.builder()
-      .account(mock(Address.class))
+      .account(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
       .voteWeight(VoteWeight.of(UnsignedInteger.ONE))
       .tradingFee(TradingFee.of(UnsignedInteger.ONE))
       .build();
     VoteEntry voteEntry2 = VoteEntry.builder()
-      .account(mock(Address.class))
+      .account(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
       .voteWeight(VoteWeight.of(UnsignedInteger.valueOf(2)))
       .tradingFee(TradingFee.of(UnsignedInteger.valueOf(2)))
       .build();
     AmmObject ammObject = AmmObject.builder()
       .asset(mock(Asset.class))
       .asset2(mock(Asset.class))
-      .ammAccount(mock(Address.class))
+      .ammAccount(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
       .lpTokenBalance(mock(IssuedCurrencyAmount.class))
       .tradingFee(TradingFee.of(UnsignedInteger.ONE))
       .addVoteSlots(

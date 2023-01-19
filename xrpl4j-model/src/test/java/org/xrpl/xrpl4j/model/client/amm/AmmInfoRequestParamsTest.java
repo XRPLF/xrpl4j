@@ -1,7 +1,5 @@
 package org.xrpl.xrpl4j.model.client.amm;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;

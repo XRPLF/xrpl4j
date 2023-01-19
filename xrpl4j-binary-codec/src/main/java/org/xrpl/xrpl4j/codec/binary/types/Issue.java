@@ -39,6 +39,9 @@ public interface Issue {
    */
   Optional<JsonNode> issuer();
 
+  /**
+   * Validate that {@link #issuer()} is empty if {@link #currency()} is "XRP".
+   */
   @Value.Check
   default void checkIssuerEmptyForXrp() {
     if (currency().asText().equals("XRP")) {

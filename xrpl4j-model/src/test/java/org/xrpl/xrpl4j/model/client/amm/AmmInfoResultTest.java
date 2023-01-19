@@ -45,7 +45,6 @@ class AmmInfoResultTest extends AbstractJsonTest {
               .value("11080.00072727936")
               .build()
           )
-          .asset2Frozen(false)
           .auctionSlot(
             AmmInfoAuctionSlot.builder()
               .account(Address.of("rM7xXGzMUALmEhQ2y9FW5XG69WXwQ6xtDC"))
@@ -93,7 +92,6 @@ class AmmInfoResultTest extends AbstractJsonTest {
       )
       .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(102)))
       .status("success")
-      .validated(false)
       .build();
 
     String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
@@ -130,6 +128,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
 
     assertThat(result.ledgerCurrentIndexSafe()).isEqualTo(result.ledgerCurrentIndex().get());
     assertThatThrownBy(result::ledgerIndexSafe).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(result::ledgerHashSafe).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -232,6 +231,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(result, json);
 
     assertThat(result.ledgerIndexSafe()).isEqualTo(result.ledgerIndex().get());
+    assertThat(result.ledgerHashSafe()).isEqualTo(result.ledgerHash().get());
     assertThatThrownBy(result::ledgerCurrentIndexSafe).isInstanceOf(IllegalStateException.class);
   }
 }

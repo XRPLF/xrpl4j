@@ -35,14 +35,6 @@ import org.xrpl.xrpl4j.wallet.Wallet;
  */
 public class NfTokenIT extends AbstractIT {
 
-  @BeforeAll
-  protected static void initXrplEnvironment() {
-    xrplEnvironment = new CustomEnvironment(
-      HttpUrl.parse("http://xls20-sandbox.rippletest.net:51234"),
-      HttpUrl.parse("https://faucet-nft.ripple.com")
-    );
-  }
-
   @Test
   void mint() throws JsonRpcClientErrorException {
     Wallet wallet = createRandomAccount();

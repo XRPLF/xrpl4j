@@ -190,7 +190,6 @@ public abstract class AbstractIT {
         .build();
       return xrplClient.accountObjects(params);
     } catch (JsonRpcClientErrorException e) {
-      logger.error("Error occurred getting account objects: {}", e.getMessage(), e);
       throw new RuntimeException(e.getMessage(), e);
     }
   }
@@ -232,7 +231,6 @@ public abstract class AbstractIT {
         .build();
       return xrplClient.accountInfo(params);
     } catch (Exception e) {
-      logger.error("Error occurred while getting account info for {}: {}", classicAddress, e.getMessage(), e);
       throw new RuntimeException(e.getMessage(), e);
     }
   }

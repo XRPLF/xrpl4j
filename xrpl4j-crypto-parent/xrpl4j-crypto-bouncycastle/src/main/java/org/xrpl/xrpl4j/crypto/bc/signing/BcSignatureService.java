@@ -25,7 +25,7 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * <p>A {@link SignatureService} that uses BouncyCastle internally to signed with in-memory instance of
+ * <p>A {@link SignatureService} that uses BouncyCastle internally to sign with an in-memory instance of
  * {@link PrivateKey}.</p>
  *
  * <p>WARNING: This implementation utilizes in-memory private-key material. Consider instead using a

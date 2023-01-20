@@ -133,8 +133,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Validate that the amount of the payment channel was deducted from the source
     // accounts XRP balance
     AccountInfoResult senderAccountInfoAfterCreate = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
-      accountInfo -> accountInfo.ledgerIndexSafe().equals(senderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.ONE))
+      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
     );
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())

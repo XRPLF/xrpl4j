@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
-import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.core.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
@@ -65,8 +64,7 @@ class Ed25519KeyPairServiceTest {
       )
       .build();
     assertThat(keyPair).isEqualTo(expectedKeyPair);
-    assertThat(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()).value())
-      .isEqualTo("rpsAiz1JjunVeGk5QipvZt8QxY3hRcmKRR");
+    assertThat(keyPair.publicKey().deriveAddress().value()).isEqualTo("rpsAiz1JjunVeGk5QipvZt8QxY3hRcmKRR");
   }
 
   @Test

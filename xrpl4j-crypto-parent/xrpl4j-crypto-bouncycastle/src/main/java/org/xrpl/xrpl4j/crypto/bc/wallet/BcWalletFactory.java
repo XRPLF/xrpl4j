@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.crypto.bc.wallet;
 
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
 import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
@@ -89,7 +88,7 @@ public class BcWalletFactory implements WalletFactory {
     return Wallet.builder()
       .privateKey(keyPair.privateKey())
       .publicKey(keyPair.publicKey())
-      .address(BcAddressUtils.getInstance().deriveAddress(keyPair.publicKey()))
+      .address(keyPair.publicKey().deriveAddress())
       .build();
   }
 

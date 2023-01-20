@@ -177,8 +177,8 @@ public class EscrowIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofXrp(new BigDecimal(1)))
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverWallet.classicAddress())
-      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
-      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(1))))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
       .signingPublicKey(senderWallet.publicKey())
       .build();
 

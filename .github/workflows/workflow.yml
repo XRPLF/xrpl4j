@@ -6,7 +6,7 @@ on:
     types: [assigned]
 jobs:
   build_java8:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
         uses: codecov/codecov-action@v1.0.15
 
   build_android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
@@ -48,7 +48,7 @@ jobs:
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -Pandroid
 
   build_other_java:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         # test against each major Java version
@@ -73,7 +73,7 @@ jobs:
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
 
   build_open_jdk_non_us:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       # Set up Adopt OpenJDK Hotspot 16
@@ -93,3 +93,45 @@ jobs:
       # Maven install with JVM locale = de_DE
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
+
+  build_devnet_its:
+    runs-on: ubuntu-20.04
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v2
+      # Set up Java 8
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Cache mvn dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: mvn-deps
+        with:
+          path: ~/.m2
+          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
+          restore-keys: ${{ env.cache-name }}-
+      - name: Build
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseDevnet
+
+  build_testnet_its:
+    runs-on: ubuntu-20.04
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v2
+      # Set up Java 8
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Cache mvn dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: mvn-deps
+        with:
+          path: ~/.m2
+          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
+          restore-keys: ${{ env.cache-name }}-
+      - name: Build
+        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseTestnet

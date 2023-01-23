@@ -1,9 +1,11 @@
 package org.xrpl.xrpl4j.tests.v3;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedLong;
 import org.awaitility.Durations;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -30,20 +33,27 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
+import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
+import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.security.Key;
 import java.security.KeyStore;
@@ -325,6 +335,129 @@ public abstract class AbstractIT {
 
   protected Instant xrpTimestampToInstant(UnsignedLong xrpTimeStamp) {
     return Instant.ofEpochSecond(xrpTimeStamp.plus(UnsignedLong.valueOf(0x386d4380)).longValue());
+  }
+
+  /**
+   * Create a trustline between the given issuer and counterparty accounts for the given currency code and with the
+   * given limit.
+   *
+   * @param currency           The currency code of the trustline to create.
+   * @param value              The trustline limit of the trustline to create.
+   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
+   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
+   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
+   *
+   * @return The {@link TrustLine} that gets created.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  public TrustLine createTrustLine(
+    String currency,
+    String value,
+    KeyPair issuerKeyPair,
+    KeyPair counterpartyKeyPair,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
+    Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
+
+    AccountInfoResult counterpartyAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(counterpartyAddress)
+    );
+
+    TrustSet trustSet = TrustSet.builder()
+      .account(counterpartyAddress)
+      .fee(fee)
+      .sequence(counterpartyAccountInfo.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency(currency)
+        .issuer(issuerAddress)
+        .value(value)
+        .build())
+      .signingPublicKey(counterpartyKeyPair.publicKey().base16Value())
+      .build();
+
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(
+      counterpartyKeyPair.privateKey(),
+      trustSet
+    );
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
+    assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(trustSetSubmitResult.transactionResult().hash());
+
+    logInfo(
+      trustSetSubmitResult.transactionResult().transaction().transactionType(),
+      trustSetSubmitResult.transactionResult().hash()
+    );
+
+    return scanForResult(
+      () ->
+        getValidatedAccountLines(issuerAddress, counterpartyAddress),
+      linesResult -> !linesResult.lines().isEmpty()
+    )
+      .lines().get(0);
+  }
+
+  /**
+   * Send issued currency funds from an issuer to a counterparty.
+   *
+   * @param currency           The currency code to send.
+   * @param value              The amount of currency to send.
+   * @param issuerKeyPair       The {@link Wallet} of the issuer account.
+   * @param counterpartyKeyPair The {@link Wallet} of the counterparty account.
+   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  public void sendIssuedCurrency(
+    String currency,
+    String value,
+    KeyPair issuerKeyPair,
+    KeyPair counterpartyKeyPair,
+    XrpCurrencyAmount fee
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
+    Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
+
+    ///////////////////////////
+    // Issuer sends a payment with the issued currency to the counterparty
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> getValidatedAccountInfo(issuerAddress)
+    );
+
+    Payment fundCounterparty = Payment.builder()
+      .account(issuerAddress)
+      .fee(fee)
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .destination(counterpartyAddress)
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(issuerAddress)
+        .currency(currency)
+        .value(value)
+        .build())
+      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .build();
+
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      fundCounterparty
+    );
+    SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
+    assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(paymentResult.transactionResult().hash()).isEqualTo(paymentResult.transactionResult().hash());
+
+    logInfo(
+      paymentResult.transactionResult().transaction().transactionType(),
+      paymentResult.transactionResult().hash()
+    );
+
+    this.scanForResult(
+      () -> getValidatedTransaction(
+        paymentResult.transactionResult().hash(),
+        Payment.class)
+    );
+
   }
 
   //////////////////

@@ -7,8 +7,8 @@ import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 /**
  * Integration tests to validate submission of Check transactions.
  */
-@SuppressWarnings( {"UnstableApiUsage", "OptionalGetWithoutIsPresent"})
+@SuppressWarnings( {"OptionalGetWithoutIsPresent"})
 public class CheckIT extends AbstractIT {
 
   @Test
@@ -34,29 +34,29 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet destinationWallet = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
     SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
-      sourceWallet.privateKey(), checkCreate
+      sourceKeyPair.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
@@ -70,29 +70,29 @@ public class CheckIT extends AbstractIT {
     // it into the ledger
     CheckObject checkObject = (CheckObject) this
       .scanForResult(
-        () -> this.getValidatedAccountObjects(sourceWallet.address()),
-        result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+        () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+        result -> result.accountObjects().stream().anyMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       )
       .accountObjects().stream()
-      .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
     //////////////////////
     // Destination wallet cashes the Check
     feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.address())
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
     );
     CheckCash checkCash = CheckCash.builder()
-      .account(destinationWallet.address())
+      .account(destinationKeyPair.publicKey().deriveAddress())
       .amount(checkObject.sendMax())
       .sequence(destinationAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(destinationWallet.publicKey().base16Value())
+      .signingPublicKey(destinationKeyPair.publicKey().base16Value())
       .build();
     SingleSignedTransaction<CheckCash> signedCheckCash = signatureService.sign(
-      destinationWallet.privateKey(), checkCash
+      destinationKeyPair.privateKey(), checkCash
     );
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(signedCheckCash);
     assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");
@@ -104,7 +104,7 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Validate that the destination account balance increases by the check amount minus fees
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.address()),
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()),
       result -> {
         logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance().value());
         return result.accountData().balance().equals(
@@ -116,8 +116,8 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Validate that the Check object was deleted
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.address()),
-      result -> result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+      () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountObjects().stream().noneMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
     );
   }
 
@@ -126,29 +126,29 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet destinationWallet = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
     SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
-      sourceWallet.privateKey(), checkCreate
+      sourceKeyPair.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
@@ -161,26 +161,26 @@ public class CheckIT extends AbstractIT {
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
     CheckObject checkObject = (CheckObject) this
-      .scanForResult(() -> this.getValidatedAccountObjects(sourceWallet.address()),
-        result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .scanForResult(() -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+        result -> result.accountObjects().stream().anyMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       )
       .accountObjects().stream()
-      .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
     //////////////////////
     // Source account cancels the Check
     feeResult = xrplClient.fee();
     CheckCancel checkCancel = CheckCancel.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
     SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
-      sourceWallet.privateKey(), checkCancel
+      sourceKeyPair.privateKey(), checkCancel
     );
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
@@ -192,8 +192,8 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Validate that the Check does not exist after cancelling
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.address()),
-      result -> result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+      () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountObjects().stream().noneMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
     );
   }
 
@@ -202,32 +202,32 @@ public class CheckIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet destinationWallet = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
     SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
-      sourceWallet.privateKey(), checkCreate
+      sourceKeyPair.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
     assertThat(response.result()).isEqualTo("tesSUCCESS");
@@ -238,29 +238,29 @@ public class CheckIT extends AbstractIT {
 
     CheckObject checkObject = (CheckObject) this
       .scanForResult(
-        () -> this.getValidatedAccountObjects(sourceWallet.address()),
-        result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+        () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+        result -> result.accountObjects().stream().anyMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       )
       .accountObjects().stream()
-      .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
     //////////////////////
     // Destination account cancels the Check
     feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.address())
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
     );
     CheckCancel checkCancel = CheckCancel.builder()
-      .account(destinationWallet.address())
+      .account(destinationKeyPair.publicKey().deriveAddress())
       .sequence(destinationAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(destinationWallet.publicKey().base16Value())
+      .signingPublicKey(destinationKeyPair.publicKey().base16Value())
       .build();
 
     SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
-      destinationWallet.privateKey(), checkCancel
+      destinationKeyPair.privateKey(), checkCancel
     );
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
@@ -272,16 +272,16 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Validate that the Check does not exist after cancelling
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.address()),
-      result -> result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId)));
+      () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountObjects().stream().noneMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId)));
   }
 
-  private Predicate<LedgerObject> findCheck(Wallet sourceWallet, Wallet destinationWallet, Hash256 invoiceId) {
+  private Predicate<LedgerObject> findCheck(KeyPair sourceKeyPair, KeyPair destinationKeyPair, Hash256 invoiceId) {
     return object ->
       CheckObject.class.isAssignableFrom(object.getClass()) &&
         ((CheckObject) object).invoiceId().map(id -> id.equals(invoiceId)).orElse(false) &&
-        ((CheckObject) object).account().equals(sourceWallet.address()) &&
-        ((CheckObject) object).destination().equals(destinationWallet.address());
+        ((CheckObject) object).account().equals(sourceKeyPair.publicKey().deriveAddress()) &&
+        ((CheckObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress());
   }
 
 }

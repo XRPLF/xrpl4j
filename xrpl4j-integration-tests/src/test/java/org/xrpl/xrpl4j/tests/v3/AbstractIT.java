@@ -11,21 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
-import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcDerivedKeySignatureService;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
-import org.xrpl.xrpl4j.crypto.bc.wallet.BcWalletFactory;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
-import org.xrpl.xrpl4j.crypto.core.wallet.SeedWalletGenerationResult;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
-import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -74,11 +69,6 @@ public abstract class AbstractIT {
 
   protected final XrplClient xrplClient;
 
-  protected final WalletFactory walletFactory;
-
-  protected final Ed25519KeyPairService ed25519KeyPairService;
-  protected final Secp256k1KeyPairService secp256k1KeyPairService;
-
   protected final SignatureService<PrivateKey> signatureService;
   protected final SignatureService<PrivateKeyReference> derivedKeySignatureService;
 
@@ -87,12 +77,7 @@ public abstract class AbstractIT {
    */
   protected AbstractIT() {
     this.xrplClient = xrplEnvironment.getXrplClient();
-    this.walletFactory = BcWalletFactory.getInstance();
     this.signatureService = this.constructSignatureService();
-
-    this.ed25519KeyPairService = Ed25519KeyPairService.getInstance();
-    this.secp256k1KeyPairService = Secp256k1KeyPairService.getInstance();
-
     this.derivedKeySignatureService = this.constructDerivedKeySignatureService();
   }
 
@@ -108,30 +93,30 @@ public abstract class AbstractIT {
     logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
   }
 
-  @Deprecated
-  protected Wallet createRandomAccountEd25519() {
-    ///////////////////////
+  protected KeyPair createRandomAccountEd25519() {
     // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWalletEd25519();
-    final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with ClassicAddress={})", wallet.address());
+    final KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
+    logger.info(
+      "Generated testnet wallet with ClassicAddress={})",
+      randomKeyPair.publicKey().deriveAddress()
+    );
 
-    fundAccount(wallet);
+    fundAccount(randomKeyPair.publicKey().deriveAddress());
 
-    return wallet;
+    return randomKeyPair;
   }
 
-  @Deprecated
-  protected Wallet createRandomAccountSecp256k1() {
-    ///////////////////////
+  protected KeyPair createRandomAccountSecp256k1() {
     // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWalletSecp256k1();
-    final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with ClassicAddress={})", wallet.address());
+    final KeyPair randomKeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    logger.info(
+      "Generated testnet wallet with ClassicAddress={})",
+      randomKeyPair.publicKey().deriveAddress()
+    );
 
-    fundAccount(wallet);
+    fundAccount(randomKeyPair.publicKey().deriveAddress());
 
-    return wallet;
+    return randomKeyPair;
   }
 
   protected PrivateKeyReference createRandomPrivateKeyReferenceEd25519() {
@@ -172,16 +157,6 @@ public abstract class AbstractIT {
     fundAccount(publicKey.deriveAddress());
 
     return privateKeyReference;
-  }
-
-  /**
-   * Funds a wallet with 1000 XRP.
-   *
-   * @param wallet The {@link Wallet} to fund.
-   */
-  protected void fundAccount(Wallet wallet) {
-    Objects.requireNonNull(wallet);
-    fundAccount(wallet.address());
   }
 
   /**
@@ -312,14 +287,14 @@ public abstract class AbstractIT {
   }
 
   protected RipplePathFindResult getValidatedRipplePath(
-    Wallet sourceWallet,
-    Wallet destinationWallet,
+    KeyPair sourceKeyPair,
+    KeyPair destinationKeyPair,
     IssuedCurrencyAmount destinationAmount
   ) {
     try {
       RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
-        .sourceAccount(sourceWallet.address())
-        .destinationAccount(destinationWallet.address())
+        .sourceAccount(sourceKeyPair.publicKey().deriveAddress())
+        .destinationAccount(destinationKeyPair.publicKey().deriveAddress())
         .destinationAmount(destinationAmount)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
@@ -383,10 +358,10 @@ public abstract class AbstractIT {
 
     switch (versionType) {
       case ED25519: {
-        return ed25519KeyPairService.deriveKeyPair(Seed.ed25519Seed()).privateKey();
+        return Seed.ed25519Seed().deriveKeyPair().privateKey();
       }
       case SECP256K1: {
-        return secp256k1KeyPairService.deriveKeyPair(Seed.secp256k1Seed()).privateKey();
+        return Seed.secp256k1Seed().deriveKeyPair().privateKey();
       }
       default: {
         throw new RuntimeException("Unhandled VersionType: " + versionType);
@@ -407,16 +382,17 @@ public abstract class AbstractIT {
     return new BcSignatureService();
   }
 
-  protected Wallet constructRandomAccount() {
-    ///////////////////////
+  protected KeyPair constructRandomAccount() {
     // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet();
-    final Wallet wallet = seedResult.wallet();
-    logger.info("Generated testnet wallet with Address={}", wallet.address());
+    final KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
+    logger.info(
+      "Generated testnet wallet with ClassicAddress={})",
+      randomKeyPair.publicKey().deriveAddress()
+    );
 
-    fundAccount(wallet);
+    fundAccount(randomKeyPair.publicKey().deriveAddress());
 
-    return wallet;
+    return randomKeyPair;
   }
 
 

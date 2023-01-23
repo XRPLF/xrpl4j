@@ -5,7 +5,6 @@ import com.google.common.hash.Hashing;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 
 import java.util.Objects;
 
@@ -25,8 +24,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   private boolean destroyed;
 
   /**
-   * Instantiates a new instance of a private key using the supplied bytes. Note that in order to derive a private key,
-   * considering using instances of either {@link WalletFactory} or {@link KeyPairService}.
+   * Instantiates a new instance of {@link PrivateKey} using the supplied bytes.
    *
    * @param value An {@link UnsignedByteArray} containing this key's binary value.
    *
@@ -96,7 +94,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   }
 
   /**
-   * A SHA-256 hash of the private key material contained in this object.
+   * Provides the SHA-256 hash of the private key material contained in this object.
    *
    * @return A hex-encoded {@link String} representing the hash of this private key.
    */

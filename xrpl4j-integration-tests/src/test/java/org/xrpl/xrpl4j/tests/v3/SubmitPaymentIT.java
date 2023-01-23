@@ -6,9 +6,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -31,24 +31,24 @@ public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPayment() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet destinationWallet = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(amount)
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceWallet.privateKey(), payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
@@ -64,31 +64,31 @@ public class SubmitPaymentIT extends AbstractIT {
   }
 
   @Test
-  public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet senderWallet = walletFactory.fromSeed(Seed.fromBase58EncodedSecret(
-      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"))
-    );
-    logger.info("Generated source testnet wallet with address " + senderWallet.address());
+  public void sendPaymentFromSecp256k1KeyPair() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair senderKeyPair = Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5")
+    ).deriveKeyPair();
+    logger.info("Generated source testnet wallet with address " + senderKeyPair.publicKey().deriveAddress());
 
-    fundAccount(senderWallet);
+    fundAccount(senderKeyPair.publicKey().deriveAddress());
 
-    Wallet destinationWallet = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address())
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
 
     Payment payment = Payment.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.address())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderWallet.privateKey(), payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());

@@ -13,8 +13,6 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
-import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
-import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
@@ -47,10 +45,6 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
-  private final Ed25519KeyPairService ed25519KeyPairService;
-
-  private final Secp256k1KeyPairService secp256k1KeyPairService;
-
   private final LoadingCache<PrivateKeyReference, BcSingleKeyTransactionSigner> transactionSignerCache;
 
   private final ServerSecretSupplier serverSecretSupplier;
@@ -59,29 +53,13 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   private final BcSignatureService commonBcSignatureService;
 
   /**
-   * Required-args Constructor for use in development mode.
-   *
-   * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can then
-   *                             be used to generate private keys.
-   */
-  public BcDerivedKeySignatureService(final ServerSecretSupplier serverSecretSupplier) {
-    this(serverSecretSupplier, Ed25519KeyPairService.getInstance(), Secp256k1KeyPairService.getInstance());
-  }
-
-  /**
    * Required-args Constructor.
    *
-   * @param serverSecretSupplier    A {@link ServerSecretSupplier} that can be used to generate seed values, which can
-   * @param ed25519KeyPairService   An {@link Ed25519KeyPairService}.
-   * @param secp256k1KeyPairService A {@link Secp256k1KeyPairService}.
+   * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can
    */
-  public BcDerivedKeySignatureService(
-    final ServerSecretSupplier serverSecretSupplier,
-    final Ed25519KeyPairService ed25519KeyPairService,
-    final Secp256k1KeyPairService secp256k1KeyPairService
-  ) {
+  public BcDerivedKeySignatureService(final ServerSecretSupplier serverSecretSupplier) {
     this(
-      serverSecretSupplier, ed25519KeyPairService, secp256k1KeyPairService,
+      serverSecretSupplier,
       CaffeineSpec.parse("maximumSize=10000,expireAfterWrite=30s")
     );
   }
@@ -89,21 +67,15 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   /**
    * Required-args Constructor.
    *
-   * @param serverSecretSupplier    A {@link ServerSecretSupplier} that can be used to generate seed values, which can
-   * @param ed25519KeyPairService   An {@link Ed25519KeyPairService}.
-   * @param secp256k1KeyPairService A {@link Secp256k1KeyPairService}.
-   * @param caffeineSpec            A {@link CaffeineSpec} that can be initialized externally to configure the Caffeine
-   *                                cache constructed by this service.
+   * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can
+   * @param caffeineSpec         A {@link CaffeineSpec} that can be initialized externally to configure the Caffeine
+   *                             cache constructed by this service.
    */
   public BcDerivedKeySignatureService(
     final ServerSecretSupplier serverSecretSupplier,
-    final Ed25519KeyPairService ed25519KeyPairService,
-    final Secp256k1KeyPairService secp256k1KeyPairService,
     final CaffeineSpec caffeineSpec
   ) {
     this.serverSecretSupplier = Objects.requireNonNull(serverSecretSupplier);
-    this.ed25519KeyPairService = Objects.requireNonNull(ed25519KeyPairService);
-    this.secp256k1KeyPairService = Objects.requireNonNull(secp256k1KeyPairService);
     this.transactionSignerCache = Caffeine.from(Objects.requireNonNull(caffeineSpec))
       .build(this::constructTransactionSigner);
 
@@ -194,10 +166,10 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     final KeyPair keyPair;
     if (VersionType.ED25519 == privateKeyReference.versionType()) {
       final Seed seed = this.generateEd25519XrplSeed(privateKeyReference.keyIdentifier());
-      keyPair = ed25519KeyPairService.deriveKeyPair(seed);
+      keyPair = seed.deriveKeyPair();
     } else if (VersionType.SECP256K1 == privateKeyReference.versionType()) {
       final Seed seed = this.generateSecp256k1Seed(privateKeyReference.keyIdentifier());
-      keyPair = secp256k1KeyPairService.deriveKeyPair(seed);
+      keyPair =  seed.deriveKeyPair();
     } else {
       throw new IllegalArgumentException("Invalid VersionType: " + privateKeyReference.versionType());
     }

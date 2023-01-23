@@ -2,7 +2,6 @@ package org.xrpl.xrpl4j.crypto.bc.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.Lists;
@@ -16,8 +15,6 @@ import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.bc.keys.Ed25519KeyPairService;
-import org.xrpl.xrpl4j.crypto.bc.keys.Secp256k1KeyPairService;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
@@ -68,49 +65,15 @@ class BcDerivedKeySignatureServiceTest {
     // 2-arg Constructor
     assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(null));
 
-    // 4-arg Constructor
+    // 2-arg Constructor
     assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       null,
-      mock(Ed25519KeyPairService.class),
-      mock(Secp256k1KeyPairService.class)
+      CaffeineSpec.parse("")
     ));
     assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
-      null,
-      mock(Secp256k1KeyPairService.class)
-    ));
-    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
-      () -> ServerSecret.of(new byte[32]),
-      mock(Ed25519KeyPairService.class),
       null
     ));
-
-    // 5-arg Constructor
-    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
-      null,
-      mock(Ed25519KeyPairService.class),
-      mock(Secp256k1KeyPairService.class),
-      CaffeineSpec.parse("")
-    ));
-    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
-      () -> ServerSecret.of(new byte[32]),
-      null,
-      mock(Secp256k1KeyPairService.class),
-      CaffeineSpec.parse("")
-    ));
-    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
-      () -> ServerSecret.of(new byte[32]),
-      mock(Ed25519KeyPairService.class),
-      null,
-      CaffeineSpec.parse("")
-    ));
-    assertThrows(NullPointerException.class, () -> new BcDerivedKeySignatureService(
-      () -> ServerSecret.of(new byte[32]),
-      mock(Ed25519KeyPairService.class),
-      mock(Secp256k1KeyPairService.class),
-      null
-    ));
-
   }
 
   @Test
@@ -118,8 +81,6 @@ class BcDerivedKeySignatureServiceTest {
     // This test merely assert that construction succeeds.
     new BcDerivedKeySignatureService(
       () -> ServerSecret.of(new byte[32]),
-      mock(Ed25519KeyPairService.class),
-      mock(Secp256k1KeyPairService.class),
       CaffeineSpec.parse("maximumSize=200,expireAfterWrite=300s")
     );
   }

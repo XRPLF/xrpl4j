@@ -288,18 +288,7 @@ public interface Seed extends javax.security.auth.Destroyable {
           throw new DecodeException("Seed must use ED25519 algorithm. Algorithm was " + decoded.version());
         }
 
-        return deriveKeyPair(decoded.bytes());
-      }
-
-      /**
-       * Derive a {@link KeyPair} from the supplied {@code seed} as an {@link UnsignedByteArray}.
-       *
-       * @param seed A {@link Seed}.
-       *
-       * @return A newly generated {@link KeyPair}.
-       */
-      private static KeyPair deriveKeyPair(UnsignedByteArray seed) {
-        UnsignedByteArray rawPrivateKey = HashingUtils.sha512Half(seed);
+        UnsignedByteArray rawPrivateKey = HashingUtils.sha512Half(decoded.bytes());
         Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(rawPrivateKey.toByteArray(), 0);
 
         Ed25519PublicKeyParameters publicKey = privateKey.generatePublicKey();

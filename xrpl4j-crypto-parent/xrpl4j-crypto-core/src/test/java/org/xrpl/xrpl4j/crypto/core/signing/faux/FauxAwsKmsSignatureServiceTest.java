@@ -130,8 +130,8 @@ class FauxAwsKmsSignatureServiceTest {
 
   @Test
   void verifySingleSigned() {
-    signatureService.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
-    verify(abstractTransactionVerifier).verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    signatureService.verify(signatureWithPublicKeyMock, transactionMock);
+    verify(abstractTransactionVerifier).verify(signatureWithPublicKeyMock, transactionMock);
   }
 
   @Test

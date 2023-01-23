@@ -27,7 +27,7 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
   }
 
   @Override
-  public <T extends Transaction> boolean verifySingleSigned(
+  public <T extends Transaction> boolean verify(
     final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
   ) {
     Objects.requireNonNull(signatureWithPublicKey);

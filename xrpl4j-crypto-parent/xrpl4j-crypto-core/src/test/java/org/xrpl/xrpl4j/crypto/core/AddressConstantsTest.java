@@ -13,7 +13,7 @@ class AddressConstantsTest {
     Assertions.assertThat(AddressConstants.ACCOUNT_ZERO.value()).isEqualTo("rrrrrrrrrrrrrrrrrrrrrhoLvTp");
     Assertions.assertThat(AddressConstants.ACCOUNT_ONE.value()).isEqualTo("rrrrrrrrrrrrrrrrrrrrBZbvji");
     Assertions.assertThat(AddressConstants.GENESIS_ACCOUNT.value()).isEqualTo("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
-    Assertions.assertThat(AddressConstants.NAME_RESERVATION_BLACKHOLD.value()).isEqualTo("rrrrrrrrrrrrrrrrrNAMEtxvNvQ");
+    Assertions.assertThat(AddressConstants.NAME_RESERVATION_BLACKHOLE.value()).isEqualTo("rrrrrrrrrrrrrrrrrNAMEtxvNvQ");
     Assertions.assertThat(AddressConstants.NAN_ADDRESS.value()).isEqualTo("rrrrrrrrrrrrrrrrrrrn5RM1rHd");
   }
 

@@ -187,13 +187,13 @@ class BcSignatureServiceTest {
   @Test
   public void verifyWithNullMetadata() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verifySingleSigned(null, transactionMock));
+      () -> signatureService.verify(null, transactionMock));
   }
 
   @Test
   public void verifyWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verifySingleSigned(mock(SignatureWithPublicKey.class), null));
+      () -> signatureService.verify(mock(SignatureWithPublicKey.class), null));
   }
 
   @Test
@@ -204,7 +204,7 @@ class BcSignatureServiceTest {
     SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
       .transactionSignature(ed25519SignatureMock).signingPublicKey(ed25519KeyPair.publicKey()).build();
 
-    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKey, transactionMock);
+    boolean actual = signatureService.verify(signatureWithPublicKey, transactionMock);
 
     assertThat(actual).isTrue();
     verify(ed25519SignerMock).reset();
@@ -225,7 +225,7 @@ class BcSignatureServiceTest {
     SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
       .transactionSignature(secp256k1SignatureMock).signingPublicKey(secp256k1KeyPair.publicKey()).build();
 
-    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKey, transactionMock);
+    boolean actual = signatureService.verify(signatureWithPublicKey, transactionMock);
 
     assertThat(actual).isTrue();
     verify(ecdsaSignerMock).init(anyBoolean(), any());

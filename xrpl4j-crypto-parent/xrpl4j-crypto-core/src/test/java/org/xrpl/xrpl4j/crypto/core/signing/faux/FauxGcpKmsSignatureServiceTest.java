@@ -132,8 +132,8 @@ class FauxGcpKmsSignatureServiceTest {
 
   @Test
   void verifySingleSigned() {
-    gcpKmsSignatureService.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
-    verify(gcpKmsTransactionVerifierMock).verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    gcpKmsSignatureService.verify(signatureWithPublicKeyMock, transactionMock);
+    verify(gcpKmsTransactionVerifierMock).verify(signatureWithPublicKeyMock, transactionMock);
   }
 
   @Test

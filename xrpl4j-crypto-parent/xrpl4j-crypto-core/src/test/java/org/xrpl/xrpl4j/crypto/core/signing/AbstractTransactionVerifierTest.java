@@ -91,19 +91,19 @@ public class AbstractTransactionVerifierTest {
   @Test
   void verifyWithNullMetadata() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> transactionVerifier.verifySingleSigned(null, transactionMock));
+      () -> transactionVerifier.verifyMultiSigned(null, transactionMock));
   }
 
   @Test
   void verifyWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> transactionVerifier.verifySingleSigned(signatureWithPublicKeyMock, null));
+      () -> transactionVerifier.verify(signatureWithPublicKeyMock, null));
   }
 
   @Test
   void verifyEd25519() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(edPublicKeyMock);
-    boolean actual = transactionVerifier.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = transactionVerifier.verify(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -115,7 +115,7 @@ public class AbstractTransactionVerifierTest {
   @Test
   void verifySecp256k1() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(ecPublicKeyMock);
-    boolean actual = transactionVerifier.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = transactionVerifier.verify(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();

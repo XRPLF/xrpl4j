@@ -25,19 +25,21 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesAssets;
-import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesHotWallets;
-import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesObligations;
 import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesAssets;
 import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesHotWallets;
 import org.xrpl.xrpl4j.model.client.accounts.ImmutableGatewayBalancesObligations;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.TransferFee;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
@@ -69,6 +71,14 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(Hash256.class, new Hash256Serializer());
     addDeserializer(Hash256.class, new Hash256Deserializer());
 
+    addSerializer(NfTokenId.class, new NfTokenIdSerializer());
+    addDeserializer(NfTokenId.class, new NfTokenIdDeserializer());
+
+    addSerializer(TransferFee.class, new TransferFeeSerializer());
+    addDeserializer(TransferFee.class, new TransferFeeDeserializer());
+
+    addSerializer(NfTokenUri.class, new NfTokenUriSerializer());
+
     addSerializer(XrpCurrencyAmount.class, new XrpCurrencyAmountSerializer());
     addDeserializer(XrpCurrencyAmount.class, new XrpCurrencyAmountDeserializer());
 
@@ -95,5 +105,7 @@ public class Xrpl4jModule extends SimpleModule {
     addDeserializer(ImmutableGatewayBalancesAssets.class, new GatewayBalancesAssetsDeserializer());
     addDeserializer(ImmutableGatewayBalancesHotWallets.class, new GatewayBalancesHotWalletsDeserializer());
     addDeserializer(ImmutableGatewayBalancesObligations.class, new GatewayBalancesObligationsDeserializer());
+
+    addDeserializer(ServerInfo.class, new ServerInfoDeserializer());
   }
 }

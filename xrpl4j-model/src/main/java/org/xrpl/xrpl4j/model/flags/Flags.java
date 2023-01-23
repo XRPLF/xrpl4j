@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.model.flags;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
+import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -1596,6 +1597,337 @@ public class Flags {
       public PaymentChannelClaimFlags build() {
         return PaymentChannelClaimFlags.of(tfFullyCanonicalSig, tfRenew, tfClose);
       }
+    }
+  }
+
+  /**
+   * A set of static {@link TransactionFlags} which can be set on
+   * {@link org.xrpl.xrpl4j.model.transactions.NfTokenMint} transactions.
+   */
+  @SuppressWarnings("abbreviationaswordinname")
+  public static class NfTokenMintFlags extends TransactionFlags {
+
+    /**
+     * Constant {@link NfTokenMintFlags} for the {@code tfBurnable} flag.
+     */
+    protected static final NfTokenMintFlags BURNABLE = new NfTokenMintFlags(0x00000001);
+
+    /**
+     * Constant {@link NfTokenMintFlags} for the {@code tfOnlyXRP} flag.
+     */
+    protected static final NfTokenMintFlags ONLY_XRP = new NfTokenMintFlags(0x00000002);
+
+    /**
+     * Constant {@link NfTokenMintFlags} for the {@code tfTrustLine} flag.
+     */
+    protected static final NfTokenMintFlags TRUSTLINE = new NfTokenMintFlags(0x00000004);
+
+    /**
+     * Constant {@link NfTokenMintFlags} for the {@code tfTransferable} flag.
+     */
+    protected static final NfTokenMintFlags TRANSFERABLE = new NfTokenMintFlags(0x00000008);
+
+    private NfTokenMintFlags(long value) {
+      super(value);
+    }
+
+    /**
+     * Create a new {@link NfTokenMintFlags.Builder}.
+     *
+     * @return A new {@link NfTokenMintFlags.Builder}.
+     */
+    public static NfTokenMintFlags.Builder builder() {
+      return new Builder();
+    }
+
+    private static NfTokenMintFlags of(boolean tfFullyCanonicalSig, boolean tfBurnable, boolean tfOnlyXRP,
+                                       boolean tfTrustLine, boolean tfTransferable) {
+      return new NfTokenMintFlags(
+          TransactionFlags.of(
+              tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+              tfBurnable ? BURNABLE : UNSET,
+              tfOnlyXRP ? ONLY_XRP : UNSET,
+              tfTrustLine ? TRUSTLINE : UNSET,
+              tfTransferable ? TRANSFERABLE : UNSET
+          ).getValue()
+      );
+    }
+
+    /**
+     * Construct {@link NfTokenMintFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link NfTokenMintFlags}.
+     *
+     * @return New {@link NfTokenMintFlags}.
+     */
+    public static NfTokenMintFlags of(long value) {
+      return new NfTokenMintFlags(value);
+    }
+
+    /**
+     * If set, indicates that the minted token may be burned by the issuer even
+     * if the issuer does not currently hold the token. The current holder of
+     * the token may always burn it.
+     *
+     * @return {@code true} if {@code tfBurnable} is set, otherwise {@code false}.
+     */
+    public boolean tfBurnable() {
+      return this.isSet(BURNABLE);
+    }
+
+    /**
+     * If set, indicates that the token may only be offered or sold for XRP.
+     *
+     * @return {@code true} if {@code tfOnlyXRP} is set, otherwise {@code false}.
+     */
+    public boolean tfOnlyXRP() {
+      return this.isSet(ONLY_XRP);
+    }
+
+    /**
+     * If set, indicates that the issuer wants a trustline to be automatically created.
+     *
+     * @return {@code true} if {@code tfTrustLine} is set, otherwise {@code false}.
+     */
+    public boolean tfTrustLine() {
+      return this.isSet(TRUSTLINE);
+    }
+
+    /**
+     * If set, indicates that this NfT can be transferred. This flag has no
+     * effect if the token is being transferred from the issuer or to the
+     * issuer.
+     *
+     * @return {@code true} if {@code tfTransferable} is set, otherwise {@code false}.
+     */
+    public boolean tfTransferable() {
+      return this.isSet(TRANSFERABLE);
+    }
+
+    /**
+     * A builder class for {@link NfTokenMintFlags}.
+     */
+    public static class Builder {
+      boolean tfFullyCanonicalSig = true;
+      boolean tfBurnable = false;
+      boolean tfOnlyXRP = false;
+      boolean tfTrustLine = false;
+      boolean tfTransferable = false;
+
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenMintFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
+        return this;
+      }
+
+      /**
+       * Set {@code tfBurnable} to the given value.
+       *
+       * @param tfBurnable A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenMintFlags.Builder tfBurnable(boolean tfBurnable) {
+        this.tfBurnable = tfBurnable;
+        return this;
+      }
+
+      /**
+       * Set {@code tfOnlyXRP} to the given value.
+       *
+       * @param tfOnlyXRP A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenMintFlags.Builder tfOnlyXRP(boolean tfOnlyXRP) {
+        this.tfOnlyXRP = tfOnlyXRP;
+        return this;
+      }
+
+      /**
+       * Set {@code tfTrustLine} to the given value.
+       *
+       * @param tfTrustLine A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenMintFlags.Builder tfTrustLine(boolean tfTrustLine) {
+        this.tfTrustLine = tfTrustLine;
+        return this;
+      }
+
+      /**
+       * Set {@code tfTransferable} to the given value.
+       *
+       * @param tfTransferable A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenMintFlags.Builder tfTransferable(boolean tfTransferable) {
+        this.tfTransferable = tfTransferable;
+        return this;
+      }
+
+      /**
+       * Build a new {@link NfTokenMintFlags} from the current boolean values.
+       *
+       * @return A new {@link NfTokenMintFlags}.
+       */
+      public NfTokenMintFlags build() {
+        return NfTokenMintFlags.of(tfFullyCanonicalSig, tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+      }
+    }
+  }
+
+  /**
+   * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer}s.
+   */
+  public static class NfTokenCreateOfferFlags extends TransactionFlags {
+
+    /**
+     * Constant {@link NfTokenCreateOfferFlags} for the {@code tfSellNFToken} flag.
+     */
+    public static final NfTokenCreateOfferFlags SELL_NFTOKEN = new NfTokenCreateOfferFlags(0x00000001);
+
+    private NfTokenCreateOfferFlags(long value) {
+      super(value);
+    }
+
+    /**
+     * Create a new {@link NfTokenCreateOfferFlags.Builder}.
+     *
+     * @return A new {@link NfTokenCreateOfferFlags.Builder}.
+     */
+    public static NfTokenCreateOfferFlags.Builder builder() {
+      return new NfTokenCreateOfferFlags.Builder();
+    }
+
+    private static NfTokenCreateOfferFlags of(boolean tfFullyCanonicalSig, boolean tfSellToken) {
+      return new NfTokenCreateOfferFlags(
+        TransactionFlags.of(
+          tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+          tfSellToken ? SELL_NFTOKEN : UNSET
+        ).getValue()
+      );
+    }
+
+    /**
+     * Construct {@link NfTokenCreateOfferFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link NfTokenCreateOfferFlags}.
+     *
+     * @return New {@link NfTokenCreateOfferFlags}.
+     */
+    public static NfTokenCreateOfferFlags of(long value) {
+      return new NfTokenCreateOfferFlags(value);
+    }
+
+    /**
+     * If set, indicates that the minted token may be burned by the issuer even
+     * if the issuer does not currently hold the token. The current holder of
+     * the token may always burn it.
+     *
+     * @return {@code true} if {@code tfBurnable} is set, otherwise {@code false}.
+     */
+    public boolean tfSellNfToken() {
+      return this.isSet(SELL_NFTOKEN);
+    }
+
+    /**
+     * A builder class for {@link NfTokenCreateOfferFlags}.
+     */
+    public static class Builder {
+      boolean tfFullyCanonicalSig = true;
+      boolean tfSellNfToken = false;
+
+      /**
+       * Set {@code tfFullyCanonicalSig} to the given value.
+       *
+       * @param tfFullyCanonicalSig A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenCreateOfferFlags.Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
+        this.tfFullyCanonicalSig = tfFullyCanonicalSig;
+        return this;
+      }
+
+      /**
+       * Set {@code tfSellToken} to the given value.
+       *
+       * @param tfSellNfToken A boolean value.
+       *
+       * @return The same {@link NfTokenMintFlags.Builder}.
+       */
+      public NfTokenCreateOfferFlags.Builder tfSellToken(boolean tfSellNfToken) {
+        this.tfSellNfToken = tfSellNfToken;
+        return this;
+      }
+
+      /**
+       * Build a new {@link NfTokenCreateOfferFlags} from the current boolean values.
+       *
+       * @return A new {@link NfTokenCreateOfferFlags}.
+       */
+      public NfTokenCreateOfferFlags build() {
+        return NfTokenCreateOfferFlags.of(tfFullyCanonicalSig, tfSellNfToken);
+      }
+    }
+  }
+
+  /**
+   * A set of static {@link Flags} which can be set on {@link NfTokenOfferObject}s.
+   */
+  public static class NfTokenOfferFlags extends Flags {
+
+    /**
+     * Constant {@link NfTokenOfferFlags} for the {@code lsfBuyToken} flag.
+     */
+    public static final NfTokenOfferFlags BUY_TOKEN = new NfTokenOfferFlags(0x00000001);
+
+    /**
+     * Constant {@link NfTokenOfferFlags} for the {@code lsfAuthorized} flag.
+     */
+    public static final NfTokenOfferFlags AUTHORIZED = new NfTokenOfferFlags(0x00000002);
+
+
+    private NfTokenOfferFlags(long value) {
+      super(value);
+    }
+
+    /**
+     * Construct {@link NfTokenOfferFlags} with a given value.
+     *
+     * @param value The long-number encoded flags value of this {@link NfTokenOfferFlags}.
+     *
+     * @return New {@link NfTokenOfferFlags}.
+     */
+    public static NfTokenOfferFlags of(long value) {
+      return new NfTokenOfferFlags(value);
+    }
+
+    /**
+     * Indicates the offer is a buy offer.
+     *
+     * @return {@code true} if {@code lsfBuyToken} is set, otherwise {@code false}.
+     */
+    public boolean lsfBuyToken() {
+      return this.isSet(BUY_TOKEN);
+    }
+
+    /**
+     * Indicates the offer has been approved by the issuer.
+     *
+     * @return {@code true} if {@code lsfAuthorized} is set, otherwise {@code false}.
+     */
+    public boolean lsfAuthorized() {
+      return this.isSet(AUTHORIZED);
     }
   }
 }

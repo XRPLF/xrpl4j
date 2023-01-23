@@ -8,8 +8,8 @@ import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -37,21 +37,21 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     BaseEncoding.base16().encode("usd".getBytes()), 40, '0'
   );
 
-  private Wallet issuerWallet;
-  private Wallet badActorWallet;
-  private Wallet goodActorWallet;
+  private KeyPair issuerKeyPair;
+  private KeyPair badActorKeyPair;
+  private KeyPair goodActorKeyPair;
 
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   @BeforeEach
   public void setUp() throws JsonRpcClientErrorException, JsonProcessingException {
 
     // Create and fund random accounts for this harness.
-    issuerWallet = this.createRandomAccountEd25519();
+    issuerKeyPair = this.createRandomAccountEd25519();
     // This is necessary for non-issuers to be able to send money to other non-issuers.
-    this.enableDefaultRipple(issuerWallet);
+    this.enableDefaultRipple(issuerKeyPair);
 
-    badActorWallet = this.createRandomAccountEd25519();
-    goodActorWallet = this.createRandomAccountEd25519();
+    badActorKeyPair = this.createRandomAccountEd25519();
+    goodActorKeyPair = this.createRandomAccountEd25519();
   }
 
   /**
@@ -66,8 +66,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Create a Trust Line between issuer and the bad actor.
     TrustLine badActorTrustLine = this.createTrustLine(
-      issuerWallet,
-      badActorWallet,
+      issuerKeyPair,
+      badActorKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
@@ -78,8 +78,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Create a Trust Line between issuer and the good actor.
     TrustLine goodActorTrustLine = this.createTrustLine(
-      issuerWallet,
-      goodActorWallet,
+      issuerKeyPair,
+      goodActorKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
@@ -93,34 +93,36 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Send funds from issuer to the badActor.
     sendFunds(
-      TEN_THOUSAND, issuerWallet, badActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      TEN_THOUSAND, issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
     // The trust line returned is from the perspective of the issuer, so the balance should be negative.
-    this.scanForResult(() -> getValidatedAccountLines(issuerWallet.address(), badActorWallet.address()),
+    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        badActorKeyPair.publicKey().deriveAddress()),
       linesResult -> linesResult.lines().stream()
         .anyMatch(line -> line.balance().equals("-" + TEN_THOUSAND))
     );
 
     // Send funds from badActor to the goodActor.
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, goodActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
     // The trust line returned is from the perspective of the issuer, so the balance should be negative.
-    this.scanForResult(() -> getValidatedAccountLines(issuerWallet.address(), goodActorWallet.address()),
+    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        goodActorKeyPair.publicKey().deriveAddress()),
       linesResult -> linesResult.lines().stream()
         .anyMatch(line -> line.balance().equals("-" + FIVE_THOUSAND))
     );
 
     // Individual-Freeze the trustline between the issuer and bad actor.
     badActorTrustLine = this.adjustTrustlineFreeze(
-      issuerWallet,
-      badActorWallet,
+      issuerKeyPair,
+      badActorKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       FREEZE
     );
@@ -139,24 +141,24 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Try to send funds from badActor to goodActor should not work because the badActor is frozen.
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, goodActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       "tecPATH_DRY"
     );
 
     // Sending from the badActor to the issuer should still work
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, issuerWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FIVE_THOUSAND, badActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Sending from the goodActor to the badActor should still work
     sendFunds(
-      FIVE_THOUSAND, goodActorWallet, badActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FIVE_THOUSAND, goodActorKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Unfreeze the bad actor.
     badActorTrustLine = this.adjustTrustlineFreeze(
-      issuerWallet,
-      badActorWallet,
+      issuerKeyPair,
+      badActorKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       UN_FREEZE
     );
@@ -179,8 +181,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Create a Trust Line between issuer and the bad actor.
     TrustLine badActorTrustLine = this.createTrustLine(
-      issuerWallet,
-      badActorWallet,
+      issuerKeyPair,
+      badActorKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
@@ -191,8 +193,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Create a Trust Line between issuer and the good actor.
     TrustLine goodActorTrustLine = this.createTrustLine(
-      issuerWallet,
-      goodActorWallet,
+      issuerKeyPair,
+      goodActorKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
@@ -206,33 +208,35 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Send funds from issuer to the badActor.
     sendFunds(
-      TEN_THOUSAND, issuerWallet, badActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      TEN_THOUSAND, issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
     // The trust line returned is from the perspective of the issuer, so the balance should be negative.
-    this.scanForResult(() -> getValidatedAccountLines(issuerWallet.address(), badActorWallet.address()),
+    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        badActorKeyPair.publicKey().deriveAddress()),
       linesResult -> linesResult.lines().stream()
         .anyMatch(line -> line.balance().equals("-" + TEN_THOUSAND))
     );
 
     // Send funds from badActor to the goodActor.
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, goodActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
     // The trust line returned is from the perspective of the issuer, so the balance should be negative.
-    this.scanForResult(() -> getValidatedAccountLines(issuerWallet.address(), goodActorWallet.address()),
+    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        goodActorKeyPair.publicKey().deriveAddress()),
       linesResult -> linesResult.lines().stream()
         .anyMatch(line -> line.balance().equals("-" + FIVE_THOUSAND))
     );
 
     // Global-Freeze the trustline for the issuer.
     AccountInfoResult issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
-      issuerWallet,
+      issuerKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       FREEZE
     );
@@ -247,42 +251,42 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Try to send funds from badActor to goodActor should not work because the badActor is frozen.
     sendFunds(
-      "500", badActorWallet, goodActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      "500", badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       "tecPATH_DRY"
     );
     // Sending from the goodActor to the badActor should not work
     sendFunds(
-      "500", goodActorWallet, badActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      "500", goodActorKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       "tecPATH_DRY"
     );
 
     // Try to send funds from issuer to goodActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      "100", issuerWallet, goodActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      "100", issuerKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Try to send funds from issuer to badActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      "100", issuerWallet, badActorWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      "100", issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Try to send funds from issuer to goodActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      FIVE_THOUSAND, badActorWallet, issuerWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FIVE_THOUSAND, badActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Try to send funds from issuer to goodActor should work per
     // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
     sendFunds(
-      FIVE_THOUSAND, goodActorWallet, issuerWallet, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FIVE_THOUSAND, goodActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Unfreeze the bad actor.
     issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
-      issuerWallet,
+      issuerKeyPair,
       FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       UN_FREEZE
     );
@@ -293,8 +297,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * Send issued currency funds from an issuer to a badActor.
    *
    * @param value     The amount of currency to send.
-   * @param sender    The {@link Wallet} of the sender.
-   * @param recipient The {@link Wallet} of the recipient.
+   * @param sender    The {@link KeyPair} of the sender.
+   * @param recipient The {@link KeyPair} of the recipient.
    * @param fee       The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
@@ -302,8 +306,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    */
   private void sendFunds(
     String value,
-    Wallet sender,
-    Wallet recipient,
+    KeyPair sender,
+    KeyPair recipient,
     XrpCurrencyAmount fee
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     this.sendFunds(value, sender, recipient, fee, "tesSUCCESS");
@@ -313,8 +317,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * Send issued currency funds from an issuer to a badActor.
    *
    * @param valueToSend        The amount of currency to send.
-   * @param sender             The {@link Wallet} of the sender.
-   * @param recipient          The {@link Wallet} of the recipient.
+   * @param sender             The {@link KeyPair} of the sender.
+   * @param recipient          The {@link KeyPair} of the recipient.
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    * @param expectedResultCode The expected result code after submitting a payment transaction.
    *
@@ -323,29 +327,29 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    */
   private void sendFunds(
     String valueToSend,
-    Wallet sender,
-    Wallet recipient,
+    KeyPair sender,
+    KeyPair recipient,
     XrpCurrencyAmount fee,
     String expectedResultCode
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> getValidatedAccountInfo(sender.address())
+      () -> getValidatedAccountInfo(sender.publicKey().deriveAddress())
     );
 
     Payment payment = Payment.builder()
-      .account(sender.address())
+      .account(sender.publicKey().deriveAddress())
       .fee(fee)
       .sequence(senderAccountInfo.accountData().sequence())
-      .destination(recipient.address())
+      .destination(recipient.publicKey().deriveAddress())
       .amount(IssuedCurrencyAmount.builder()
-        .issuer(issuerWallet.address())
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
         .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
         .value(valueToSend)
         .build())
       .signingPublicKey(sender.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
     assertThat(paymentResult.result()).isEqualTo(expectedResultCode);
 
@@ -361,9 +365,9 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * Create a trustline between the given issuer and badActor accounts for the given currency code and with the given
    * limit.
    *
-   * @param issuerWallet      The {@link Wallet} of the issuer account.
-   * @param counterpartWallet The {@link Wallet} of the badActor account.
-   * @param fee               The current network fee, as an {@link XrpCurrencyAmount}.
+   * @param issuerKeyPair      The {@link KeyPair} of the issuer account.
+   * @param counterpartKeyPair The {@link KeyPair} of the badActor account.
+   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @return The {@link TrustLine} that gets created.
    *
@@ -371,30 +375,30 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @throws JsonProcessingException     If there are any problems parsing JSON.
    */
   private TrustLine createTrustLine(
-    Wallet issuerWallet,
-    Wallet counterpartWallet,
+    KeyPair issuerKeyPair,
+    KeyPair counterpartKeyPair,
     XrpCurrencyAmount fee
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult badActorAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(counterpartWallet.address())
+      () -> this.getValidatedAccountInfo(counterpartKeyPair.publicKey().deriveAddress())
     );
 
     TrustSet trustSet = TrustSet.builder()
-      .account(counterpartWallet.address())
+      .account(counterpartKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(badActorAccountInfo.accountData().sequence())
       .limitAmount(IssuedCurrencyAmount.builder()
         .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
-        .issuer(issuerWallet.address())
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
         .value(FreezeIssuedCurrencyIT.TEN_THOUSAND)
         .build())
       .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
         .build())
-      .signingPublicKey(counterpartWallet.publicKey().base16Value())
+      .signingPublicKey(counterpartKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartWallet.privateKey(), trustSet);
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartKeyPair.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -404,7 +408,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     return scanForResult(
       () ->
-        getValidatedAccountLines(issuerWallet.address(), counterpartWallet.address()),
+        getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+          counterpartKeyPair.publicKey().deriveAddress()),
       linesResult -> !linesResult.lines().isEmpty()
     )
       .lines().get(0);
@@ -417,23 +422,23 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @throws JsonProcessingException     If there are any problems parsing JSON.
    * @see "https://xrpl.org/become-an-xrp-ledger-gateway.html#default-ripple"
    */
-  protected void enableDefaultRipple(final Wallet wallet)
+  protected void enableDefaultRipple(final KeyPair wallet)
     throws JsonRpcClientErrorException, JsonProcessingException {
     FeeResult feeResult = xrplClient.fee();
 
-    AccountInfoResult issuerWalletAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.address())
+    AccountInfoResult issuerKeyPairAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress())
     );
 
     AccountSet accountSet = AccountSet.builder()
-      .sequence(issuerWalletAccountInfo.accountData().sequence())
-      .account(wallet.address())
+      .sequence(issuerKeyPairAccountInfo.accountData().sequence())
+      .account(wallet.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .setFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<AccountSet> signedTrustSet = signatureService.sign(wallet.privateKey(), accountSet);
+    SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(wallet.privateKey(), accountSet);
     SubmitResult<AccountSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -442,7 +447,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     scanForResult(
-      () -> getValidatedAccountInfo(wallet.address()),
+      () -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
       accountInfoResult -> accountInfoResult.accountData().flags().lsfDefaultRipple()
     );
   }
@@ -454,11 +459,11 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * Freeze an individual trustline that exists between the specified issuer and the specified counterparty for the
    * {@link #ISSUED_CURRENCY_CODE} (which is the only currency code this test uses).
    *
-   * @param issuerWallet       The {@link Wallet} of the trustline issuer.
-   * @param counterpartyWallet The {@link Wallet} of the trustline counterparty.
-   * @param fee                The fee to spend to get the "freeze" transaction into the ledger.
-   * @param freeze             A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and {@code
-   *                           true} to freeze).
+   * @param issuerKeyPair       The {@link KeyPair} of the trustline issuer.
+   * @param counterpartyKeyPair The {@link KeyPair} of the trustline counterparty.
+   * @param fee                 The fee to spend to get the "freeze" transaction into the ledger.
+   * @param freeze              A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and
+   *                            {@code true} to freeze).
    *
    * @return The {@link TrustLine} that was frozen or unfrozen.
    *
@@ -466,13 +471,13 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @throws JsonProcessingException     If there are any problems parsing JSON.
    */
   private TrustLine adjustTrustlineFreeze(
-    Wallet issuerWallet,
-    Wallet counterpartyWallet,
+    KeyPair issuerKeyPair,
+    KeyPair counterpartyKeyPair,
     XrpCurrencyAmount fee,
     boolean freeze
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerWallet.address())
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
     Builder flagsBuilder = TrustSetFlags.builder();
@@ -481,19 +486,19 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     }
 
     TrustSet trustSet = TrustSet.builder()
-      .account(issuerWallet.address())
+      .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
       .limitAmount(IssuedCurrencyAmount.builder()
         .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
-        .issuer(counterpartyWallet.address())
+        .issuer(counterpartyKeyPair.publicKey().deriveAddress())
         .value("0")
         .build())
       .flags(flagsBuilder.build())
-      .signingPublicKey(issuerWallet.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), trustSet);
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -502,9 +507,10 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     return scanForResult(
-      () -> getValidatedAccountLines(issuerWallet.address(), counterpartyWallet.address()),
+      () -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        counterpartyKeyPair.publicKey().deriveAddress()),
       accountLineResult -> accountLineResult.lines().stream()
-        .filter(trustLine -> trustLine.account().equals(counterpartyWallet.address()))
+        .filter(trustLine -> trustLine.account().equals(counterpartyKeyPair.publicKey().deriveAddress()))
         .anyMatch(TrustLine::freeze)
     )
       .lines().get(0);
@@ -514,10 +520,10 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
   /**
    * Globally freeze all trustlines that exists between the specified issuer and any counterparty.
    *
-   * @param issuerWallet The {@link Wallet} of the trustline issuer.
-   * @param fee          The fee to spend to get the "freeze" transaction into the ledger.
-   * @param freeze       A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and {@code true}
-   *                     to freeze).
+   * @param issuerKeyPair The {@link KeyPair} of the trustline issuer.
+   * @param fee           The fee to spend to get the "freeze" transaction into the ledger.
+   * @param freeze        A boolean to toggle the trustline operation (i.e., {@code false} to unfreeze and {@code true}
+   *                      to freeze).
    *
    * @return The {@link AccountInfoResult} of the issuer account after the operation has been validated by the ledger.
    *
@@ -525,19 +531,19 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @throws JsonProcessingException     If there are any problems parsing JSON.
    */
   private AccountInfoResult adjustGlobalTrustlineFreeze(
-    Wallet issuerWallet,
+    KeyPair issuerKeyPair,
     XrpCurrencyAmount fee,
     boolean freeze
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerWallet.address())
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
     ImmutableAccountSet.Builder builder = AccountSet.builder()
-      .account(issuerWallet.address())
+      .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
-      .signingPublicKey(issuerWallet.publicKey().base16Value());
+      .signingPublicKey(issuerKeyPair.publicKey().base16Value());
     if (freeze) {
       builder.setFlag(AccountSetFlag.GLOBAL_FREEZE);
     } else {
@@ -545,7 +551,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     }
     AccountSet accountSet = builder.build();
 
-    SingleSingedTransaction<AccountSet> signedTrustSet = signatureService.sign(issuerWallet.privateKey(), accountSet);
+    SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), accountSet);
     SubmitResult<AccountSet> transactionResult = xrplClient.submit(signedTrustSet);
     assertThat(transactionResult.result()).isEqualTo("tesSUCCESS");
     logger.info(
@@ -554,7 +560,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     return scanForResult(
-      () -> getValidatedAccountInfo(issuerWallet.address()),
+      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
       accountInfoResult -> accountInfoResult.accountData().flags().lsfGlobalFreeze() == freeze
     );
 

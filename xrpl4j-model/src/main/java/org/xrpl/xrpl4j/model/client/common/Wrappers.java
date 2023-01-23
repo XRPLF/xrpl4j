@@ -60,6 +60,8 @@ public class Wrappers {
       return LedgerIndexBound.of(Integer.valueOf(ledgerIndexBound).longValue());
     }
 
+    public static LedgerIndexBound UNBOUNDED = LedgerIndexBound.of(-1);
+
     @Override
     public String toString() {
       return value().toString();

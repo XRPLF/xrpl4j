@@ -11,7 +11,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
- * Unit tests for {@link SingleSingedTransaction}.
+ * Unit tests for {@link SingleSignedTransaction}.
  */
 class SignedTransactionTest {
 
@@ -37,7 +37,7 @@ class SignedTransactionTest {
           "43865800626F7FD02B369A875FA449E6204A46C5910E406018776CC08C948CA"))
     ).build();
 
-    SingleSingedTransaction<Payment> signedTransaction = SingleSingedTransaction.<Payment>builder()
+    SingleSignedTransaction<Payment> signedTransaction = SingleSignedTransaction.<Payment>builder()
       .signedTransaction(signedPayment)
       .signature(signature)
       .unsignedTransaction(unsignedTransaction)

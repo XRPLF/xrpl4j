@@ -7,9 +7,9 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -37,19 +37,19 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Create four accounts, one for the multisign account owner, one for their two friends,
     // and one to send a Payment to.
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet aliceWallet = createRandomAccountEd25519();
-    Wallet bobWallet = createRandomAccountEd25519();
-    Wallet destinationWallet = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair aliceKeyPair = createRandomAccountEd25519();
+    KeyPair bobKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     /////////////////////////////
     // Wait for all accounts to show up in a validated ledger
     final AccountInfoResult sourceAccountInfo = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
-    scanForResult(() -> this.getValidatedAccountInfo(aliceWallet.address()));
-    scanForResult(() -> this.getValidatedAccountInfo(bobWallet.address()));
-    scanForResult(() -> this.getValidatedAccountInfo(destinationWallet.address()));
+    scanForResult(() -> this.getValidatedAccountInfo(aliceKeyPair.publicKey().deriveAddress()));
+    scanForResult(() -> this.getValidatedAccountInfo(bobKeyPair.publicKey().deriveAddress()));
+    scanForResult(() -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()));
 
     /////////////////////////////
     // And validate that the source account has not set up any signer lists
@@ -59,29 +59,29 @@ public class SignerListSetIT extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(aliceWallet.address())
+            .account(aliceKeyPair.publicKey().deriveAddress())
             .signerWeight(UnsignedInteger.ONE)
             .build()
         ),
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(bobWallet.address())
+            .account(bobKeyPair.publicKey().deriveAddress())
             .signerWeight(UnsignedInteger.ONE)
             .build()
         )
       )
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
-      sourceWallet.privateKey(), signerListSet
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+      sourceKeyPair.privateKey(), signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
@@ -94,7 +94,7 @@ public class SignerListSetIT extends AbstractIT {
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     AccountInfoResult sourceAccountInfoAfterSignerListSet = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address()),
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
@@ -110,7 +110,7 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(
         FeeUtils.computeMultisigNetworkFees(
           feeResult,
@@ -119,17 +119,17 @@ public class SignerListSetIT extends AbstractIT {
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(destinationWallet.address())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .signingPublicKey("")
       .build();
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
-    List<SignerWrapper> signers = Lists.newArrayList(aliceWallet, bobWallet).stream()
+    List<SignerWrapper> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
       .map(wallet -> {
           Signature signedPayment = signatureService.multiSign(wallet.privateKey(), unsignedPayment);
           return SignerWrapper.of(Signer.builder()
-            .account(wallet.address())
+            .account(wallet.publicKey().deriveAddress())
             .signingPublicKey(wallet.publicKey().base16Value())
             .transactionSignature(signedPayment.base16Value())
             .build()
@@ -157,17 +157,17 @@ public class SignerListSetIT extends AbstractIT {
   void addSignersToSignerListThenDeleteSignerList() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////////
     // Create three accounts, one for the multisign account owner, one for their two friends
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet aliceWallet = createRandomAccountEd25519();
-    Wallet bobWallet = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair aliceKeyPair = createRandomAccountEd25519();
+    KeyPair bobKeyPair = createRandomAccountEd25519();
 
     /////////////////////////////
     // Wait for all accounts to show up in a validated ledger
     AccountInfoResult sourceAccountInfo = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
-    scanForResult(() -> this.getValidatedAccountInfo(aliceWallet.address()));
-    scanForResult(() -> this.getValidatedAccountInfo(bobWallet.address()));
+    scanForResult(() -> this.getValidatedAccountInfo(aliceKeyPair.publicKey().deriveAddress()));
+    scanForResult(() -> this.getValidatedAccountInfo(bobKeyPair.publicKey().deriveAddress()));
 
     /////////////////////////////
     // And validate that the source account has not set up any signer lists
@@ -177,29 +177,29 @@ public class SignerListSetIT extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-      .account(sourceWallet.address())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(aliceWallet.address())
+            .account(aliceKeyPair.publicKey().deriveAddress())
             .signerWeight(UnsignedInteger.ONE)
             .build()
         ),
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(bobWallet.address())
+            .account(bobKeyPair.publicKey().deriveAddress())
             .signerWeight(UnsignedInteger.ONE)
             .build()
         )
       )
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
-      sourceWallet.privateKey(), signerListSet
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+      sourceKeyPair.privateKey(), signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
@@ -212,7 +212,7 @@ public class SignerListSetIT extends AbstractIT {
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     AccountInfoResult sourceAccountInfoAfterSignerListSet = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address()),
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
@@ -235,8 +235,8 @@ public class SignerListSetIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedDeleteSignerList = signatureService.sign(
-      sourceWallet.privateKey(), deleteSignerList
+    SingleSignedTransaction<SignerListSet> signedDeleteSignerList = signatureService.sign(
+      sourceKeyPair.privateKey(), deleteSignerList
     );
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(signedDeleteSignerList);
     assertThat(signerListDeleteResult.result()).isEqualTo("tesSUCCESS");
@@ -248,7 +248,7 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Then wait until the transaction enters a validated ledger and the signer list has been deleted
     scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address()),
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 0
     );
 

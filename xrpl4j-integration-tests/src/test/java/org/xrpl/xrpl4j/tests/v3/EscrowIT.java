@@ -8,8 +8,8 @@ import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
@@ -34,30 +34,30 @@ public class EscrowIT extends AbstractIT {
   public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccountEd25519();
-    Wallet receiverWallet = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address())
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
     EscrowCreate escrowCreate = EscrowCreate.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
-      .destination(receiverWallet.address())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))
       .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
-      senderWallet.privateKey(), escrowCreate
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
@@ -88,19 +88,19 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Receiver submits an EscrowFinish transaction to release the Escrow funds
     AccountInfoResult receiverAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverWallet.address())
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress())
     );
     EscrowFinish escrowFinish = EscrowFinish.builder()
-      .account(receiverWallet.address())
+      .account(receiverKeyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(receiverAccountInfo.accountData().sequence())
-      .owner(senderWallet.address())
+      .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(receiverWallet.publicKey().base16Value())
+      .signingPublicKey(receiverKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
-      receiverWallet.privateKey(), escrowFinish
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+      receiverKeyPair.privateKey(), escrowFinish
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
@@ -118,7 +118,7 @@ public class EscrowIT extends AbstractIT {
     /////////////////////
     // Ensure that the funds were released to the receiver.
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverWallet.address()),
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         receiverAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
@@ -132,32 +132,32 @@ public class EscrowIT extends AbstractIT {
   public void createAndCancelTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccountEd25519();
-    Wallet receiverWallet = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Sender account creates an Escrow with the receiver account
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address())
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
 
-    scanForResult(() -> getValidatedAccountInfo(receiverWallet.address()));
+    scanForResult(() -> getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()));
     EscrowCreate escrowCreate = EscrowCreate.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
-      .destination(receiverWallet.address())
-      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
-      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(1))))
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
-      senderWallet.privateKey(), escrowCreate
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
@@ -173,11 +173,11 @@ public class EscrowIT extends AbstractIT {
     );
 
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(senderWallet.address()),
+      () -> this.getValidatedAccountObjects(senderKeyPair.publicKey().deriveAddress()),
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           EscrowObject.class.isAssignableFrom(object.getClass()) &&
-            ((EscrowObject) object).destination().equals(receiverWallet.address())
+            ((EscrowObject) object).destination().equals(receiverKeyPair.publicKey().deriveAddress())
         )
     );
 
@@ -197,16 +197,16 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Sender account cancels the Escrow
     EscrowCancel escrowCancel = EscrowCancel.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-      .owner(senderWallet.address())
+      .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
-      senderWallet.privateKey(), escrowCancel
+    SingleSignedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCancel
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
@@ -222,7 +222,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Ensure that the funds were released to the sender.
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address()),
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         senderAccountInfo.accountData().balance()
           .minus(feeResult.drops().openLedgerFee().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))
@@ -234,8 +234,8 @@ public class EscrowIT extends AbstractIT {
   public void createAndFinishCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccountEd25519();
-    Wallet receiverWallet = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Create Secret Escrow CryptoCondition/Fulfillment Pair.
@@ -246,15 +246,15 @@ public class EscrowIT extends AbstractIT {
     // Sender account creates an Escrow with the receiver account
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address())
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
     EscrowCreate escrowCreate = EscrowCreate.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
-      .destination(receiverWallet.address())
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       // With the fix1571 amendment enabled, you must supply FinishAfter, Condition, or both.
       .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
       .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
@@ -262,8 +262,8 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
-      senderWallet.privateKey(), escrowCreate
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
@@ -294,25 +294,25 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Execute the escrow using the secret fulfillment known only to the appropriate party.
     AccountInfoResult receiverAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverWallet.address())
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress())
     );
 
     final XrpCurrencyAmount feeForFulfillment = EscrowFinish
       .computeFee(feeResult.drops().openLedgerFee(), executeEscrowFulfillment);
     EscrowFinish escrowFinish = EscrowFinish.builder()
-      .account(receiverWallet.address())
+      .account(receiverKeyPair.publicKey().deriveAddress())
       // V-- Be sure to add more fee to process the Fulfillment
       .fee(EscrowFinish.computeFee(feeResult.drops().openLedgerFee(), executeEscrowFulfillment))
       .sequence(receiverAccountInfo.accountData().sequence())
-      .owner(senderWallet.address())
+      .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(receiverWallet.publicKey().base16Value())
+      .signingPublicKey(receiverKeyPair.publicKey().base16Value())
       .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- condition and fulfillment are required.
       .fulfillment(executeEscrowFulfillment) // <-- condition and fulfillment are required to finish an escrow
       .build();
 
-    SingleSingedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
-      receiverWallet.privateKey(), escrowFinish
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+      receiverKeyPair.privateKey(), escrowFinish
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
@@ -328,7 +328,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Ensure that the funds were released to the receiver.
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverWallet.address()),
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         receiverAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
@@ -342,8 +342,8 @@ public class EscrowIT extends AbstractIT {
   public void createAndCancelCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
-    Wallet senderWallet = createRandomAccountEd25519();
-    Wallet receiverWallet = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Create Secret Escrow CryptoCondition/Fulfillment Pair.
@@ -354,23 +354,23 @@ public class EscrowIT extends AbstractIT {
     // Sender account creates an Escrow with the receiver account
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address())
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
     EscrowCreate escrowCreate = EscrowCreate.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
-      .destination(receiverWallet.address())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
       .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
     //////////////////////
     // Submit the EscrowCreate transaction and validate that it was successful
-    SingleSingedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
-      senderWallet.privateKey(), escrowCreate
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.result()).isEqualTo("tesSUCCESS");
@@ -401,16 +401,16 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Sender account cancels the Escrow
     EscrowCancel escrowCancel = EscrowCancel.builder()
-      .account(senderWallet.address())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-      .owner(senderWallet.address())
+      .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(senderWallet.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
-      senderWallet.privateKey(), escrowCancel
+    SingleSignedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCancel
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
     assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
@@ -426,7 +426,7 @@ public class EscrowIT extends AbstractIT {
     //////////////////////
     // Ensure that the funds were released to the sender.
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.address()),
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         senderAccountInfo.accountData().balance()
           .minus(feeResult.drops().openLedgerFee().times(XrpCurrencyAmount.of(UnsignedLong.valueOf(2))))

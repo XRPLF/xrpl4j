@@ -6,8 +6,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -24,29 +25,29 @@ public class SetRegularKeyIT extends AbstractIT {
   void setRegularKeyOnAccount() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create a random account
-    Wallet wallet = createRandomAccountEd25519();
+    KeyPair wallet = createRandomAccountEd25519();
 
     //////////////////////////
     // Wait for the account to show up on ledger
-    AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(wallet.address()));
+    AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()));
 
     //////////////////////////
     // Generate a new wallet locally
-    Wallet newWallet = walletFactory.randomWallet().wallet();
+    KeyPair newKeyPair = Seed.ed25519Seed().deriveKeyPair();
 
     //////////////////////////
     // Submit a SetRegularKey transaction with the new wallet's address so that we
     // can sign future transactions with the new wallet's keypair
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
-      .account(wallet.address())
+      .account(wallet.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .regularKey(newWallet.address())
+      .regularKey(newKeyPair.publicKey().deriveAddress())
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+    SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
       wallet.privateKey(), setRegularKey
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
@@ -63,13 +64,13 @@ public class SetRegularKeyIT extends AbstractIT {
     scanForResult(
       () -> {
         AccountSet accountSet = AccountSet.builder()
-          .account(wallet.address())
+          .account(wallet.publicKey().deriveAddress())
           .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-          .signingPublicKey(newWallet.publicKey().base16Value())
+          .signingPublicKey(newKeyPair.publicKey().base16Value())
           .build();
-        SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
-          newWallet.privateKey(), accountSet
+        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+          newKeyPair.privateKey(), accountSet
         );
         try {
           return xrplClient.submit(signedAccountSet);
@@ -85,29 +86,29 @@ public class SetRegularKeyIT extends AbstractIT {
   void removeRegularKeyFromAccount() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create a random account
-    Wallet wallet = createRandomAccountEd25519();
+    KeyPair wallet = createRandomAccountEd25519();
 
     //////////////////////////
     // Wait for the account to show up on ledger
-    AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(wallet.address()));
+    AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()));
 
     //////////////////////////
     // Generate a new wallet locally
-    Wallet newWallet = walletFactory.randomWallet().wallet();
+    KeyPair newKeyPair = Seed.ed25519Seed().deriveKeyPair();
 
     //////////////////////////
     // Submit a SetRegularKey transaction with the new wallet's address so that we
     // can sign future transactions with the new wallet's keypair
     FeeResult feeResult = xrplClient.fee();
     SetRegularKey setRegularKey = SetRegularKey.builder()
-      .account(wallet.address())
+      .account(wallet.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .regularKey(newWallet.address())
+      .regularKey(newKeyPair.publicKey().deriveAddress())
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
+    SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
       wallet.privateKey(), setRegularKey
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
@@ -124,14 +125,14 @@ public class SetRegularKeyIT extends AbstractIT {
     scanForResult(
       () -> {
         AccountSet accountSet = AccountSet.builder()
-          .account(wallet.address())
+          .account(wallet.publicKey().deriveAddress())
           .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-          .signingPublicKey(newWallet.publicKey().base16Value())
+          .signingPublicKey(newKeyPair.publicKey().base16Value())
           .build();
 
-        SingleSingedTransaction<AccountSet> signedAccountSet = signatureService.sign(
-          newWallet.privateKey(), accountSet
+        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+          newKeyPair.privateKey(), accountSet
         );
         try {
           return xrplClient.submit(signedAccountSet);
@@ -142,12 +143,12 @@ public class SetRegularKeyIT extends AbstractIT {
     );
 
     SetRegularKey removeRegularKey = SetRegularKey.builder()
-      .account(wallet.address())
+      .account(wallet.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .signingPublicKey(wallet.publicKey().base16Value())
       .build();
-    SingleSingedTransaction<SetRegularKey> signedRemoveRegularKey = signatureService.sign(
+    SingleSignedTransaction<SetRegularKey> signedRemoveRegularKey = signatureService.sign(
       wallet.privateKey(), removeRegularKey
     );
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(signedRemoveRegularKey);
@@ -158,7 +159,7 @@ public class SetRegularKeyIT extends AbstractIT {
     );
 
     scanForResult(
-      () -> getValidatedAccountInfo(wallet.address()),
+      () -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
       infoResult -> !infoResult.accountData().regularKey().isPresent()
     );
   }

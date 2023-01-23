@@ -1,230 +1,126 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
-import com.google.common.base.Preconditions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.annotations.VisibleForTesting;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
 import java.util.Set;
 
 /**
- * An abstract implementation of {@link SignatureService} with common functionality that sub-classes can utilize.
+ * An abstract implementation of {@link SignatureService} with common functionality that subclasses can utilize.
  */
-public abstract class AbstractSignatureService implements SignatureService {
+public abstract class AbstractSignatureService<P extends PrivateKeyable> implements SignatureService<P> {
 
-  protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  private final SignatureUtils signatureUtils;
-  private final AddressUtils addressUtils;
+  private final AbstractTransactionSigner<P> abstractTransactionSigner;
+  private final AbstractTransactionVerifier abstractTransactionVerifier;
 
   /**
    * Required-args Constructor.
    *
    * @param signatureUtils A {@link SignatureUtils}.
-   * @param addressUtils   A {@link AddressUtils}.
    */
-  public AbstractSignatureService(
-    final SignatureUtils signatureUtils,
-    final AddressUtils addressUtils
-  ) {
-    this.signatureUtils = Objects.requireNonNull(signatureUtils);
-    this.addressUtils = Objects.requireNonNull(addressUtils);
-  }
+  public AbstractSignatureService(final SignatureUtils signatureUtils) {
+    this.abstractTransactionSigner = new AbstractTransactionSigner<P>(signatureUtils) {
+      @Override
+      protected Signature edDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes) {
+        return AbstractSignatureService.this.edDsaSign(privateKey, signableTransactionBytes);
+      }
 
-  @Override
-  public <T extends Transaction> SingleSingedTransaction<T> sign(final PrivateKey privateKey, final T transaction) {
-    Objects.requireNonNull(privateKey);
-    Objects.requireNonNull(transaction);
+      @Override
+      protected Signature ecDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes) {
+        return AbstractSignatureService.this.ecDsaSign(privateKey, signableTransactionBytes);
+      }
 
-    final UnsignedByteArray signableTransactionBytes = signatureUtils.toSignableBytes(transaction);
-    return this.signingHelper(privateKey, signableTransactionBytes, transaction);
-  }
+      @Override
+      public PublicKey derivePublicKey(P privateKey) {
+        return AbstractSignatureService.this.derivePublicKey(privateKey);
+      }
+    };
 
-  @Override
-  public Signature sign(final PrivateKey privateKey, final UnsignedClaim unsignedClaim) {
-    Objects.requireNonNull(privateKey);
-    Objects.requireNonNull(unsignedClaim);
+    this.abstractTransactionVerifier = new AbstractTransactionVerifier(signatureUtils) {
+      @Override
+      protected boolean edDsaVerify(PublicKey publicKey, UnsignedByteArray transactionBytes, Signature signature) {
+        return AbstractSignatureService.this.edDsaVerify(publicKey, transactionBytes, signature);
+      }
 
-    final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
-    return signingHelper(privateKey, signableBytes);
-  }
-
-  @Override
-  public <T extends Transaction> Signature multiSign(
-    final PrivateKey privateKey, final T transaction
-  ) {
-    Objects.requireNonNull(privateKey);
-    Objects.requireNonNull(transaction);
-
-    final Address signerAddress = addressUtils.deriveAddress(this.derivePublicKey(privateKey));
-    final UnsignedByteArray signableTransactionBytes = signatureUtils.toMultiSignableBytes(transaction, signerAddress);
-
-    return this.signingHelper(privateKey, signableTransactionBytes, transaction).signature();
+      @Override
+      protected boolean ecDsaVerify(PublicKey publicKey, UnsignedByteArray transactionBytes, Signature signature) {
+        return AbstractSignatureService.this.ecDsaVerify(publicKey, transactionBytes, signature);
+      }
+    };
   }
 
   /**
-   * Helper to sign a set of transaction bytes, and then add the signature to the supplied transaction.
+   * Required-args Constructor, for testing.
    *
-   * @param <T>                      A type of {@link Transaction}.
-   * @param privateKey               A {@link PrivateKey} used for signing.
-   * @param signableTransactionBytes The actual binary bytes of the transaction to sign.
-   * @param transaction              The {@link Transaction} to sign.
-   *
-   * @return A {@link SingleSingedTransaction}.
+   * @param abstractTransactionSigner   A {@link AbstractTransactionSigner}.
+   * @param abstractTransactionVerifier A {@link AbstractTransactionVerifier}.
    */
-  private <T extends Transaction> SingleSingedTransaction<T> signingHelper(
-    final PrivateKey privateKey, final UnsignedByteArray signableTransactionBytes, final T transaction
+  @VisibleForTesting
+  protected AbstractSignatureService(
+    final AbstractTransactionSigner<P> abstractTransactionSigner,
+    final AbstractTransactionVerifier abstractTransactionVerifier
   ) {
-    Objects.requireNonNull(privateKey);
-    Objects.requireNonNull(transaction);
-    Objects.requireNonNull(signableTransactionBytes);
-
-    final Signature signature = signingHelper(privateKey, signableTransactionBytes);
-    return this.signatureUtils.addSignatureToTransaction(transaction, signature);
+    this.abstractTransactionSigner = Objects.requireNonNull(abstractTransactionSigner);
+    this.abstractTransactionVerifier = Objects.requireNonNull(abstractTransactionVerifier);
   }
 
-  /**
-   * Helper to sign a pre-assembled set of transaction bytes.
-   *
-   * @param privateKey               A {@link PrivateKey} used for signing.
-   * @param signableTransactionBytes The actual binary bytes of the transaction to sign.
-   *
-   * @return A {@link SingleSingedTransaction}.
-   */
-  private Signature signingHelper(
-    final PrivateKey privateKey, final UnsignedByteArray signableTransactionBytes
-  ) {
-    Objects.requireNonNull(privateKey);
-    Objects.requireNonNull(signableTransactionBytes);
+  @Override
+  public <T extends Transaction> SingleSignedTransaction<T> sign(final P privateKeyable, final T transaction) {
+    return this.abstractTransactionSigner.sign(privateKeyable, transaction);
+  }
 
-    final Signature signature;
-    switch (privateKey.versionType()) {
-      case ED25519: {
-        signature = this.edDsaSign(privateKey, signableTransactionBytes);
-        break;
-      }
-      case SECP256K1: {
-        signature = this.ecDsaSign(privateKey, signableTransactionBytes);
-        break;
-      }
-      default: {
-        throw new IllegalArgumentException("Unhandled PrivateKey VersionType: {}" + privateKey.versionType());
-      }
-    }
+  @Override
+  public Signature sign(final P privateKeyable, final UnsignedClaim unsignedClaim) {
+    return this.abstractTransactionSigner.sign(privateKeyable, unsignedClaim);
+  }
 
-    return signature;
+  @Override
+  public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
+    return abstractTransactionSigner.multiSign(privateKeyable, transaction);
   }
 
   @Override
   public <T extends Transaction> boolean verify(
     final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
   ) {
-    Objects.requireNonNull(signatureWithPublicKey);
-    Objects.requireNonNull(unsignedTransaction);
-
-    final UnsignedByteArray transactionBytesUba = this.getSignatureUtils().toSignableBytes(unsignedTransaction);
-
-    final PublicKey publicKey = signatureWithPublicKey.signingPublicKey();
-    switch (publicKey.versionType()) {
-      case ED25519: {
-        return edDsaVerify(publicKey, transactionBytesUba, signatureWithPublicKey.transactionSignature());
-      }
-      case SECP256K1: {
-        return ecDsaVerify(publicKey, transactionBytesUba, signatureWithPublicKey.transactionSignature());
-      }
-      default: {
-        throw new IllegalArgumentException("Unhandled PublicKey VersionType: {}" + publicKey.versionType());
-      }
-    }
+    return abstractTransactionVerifier.verify(signatureWithPublicKey, unsignedTransaction);
   }
 
   @Override
-  public <T extends Transaction> boolean verify(
+  public <T extends Transaction> boolean verifyMultiSigned(
     final Set<SignatureWithPublicKey> signatureWithPublicKeys,
     final T unsignedTransaction,
     final int minSigners
   ) {
-    Objects.requireNonNull(signatureWithPublicKeys);
-    Objects.requireNonNull(unsignedTransaction);
-    Preconditions.checkArgument(minSigners > 0);
-
-    final long numValidSignatures = signatureWithPublicKeys.stream()
-      .map(signatureWithPublicKey -> {
-        // Check signature against all public keys, hoping for a valid verification against one.
-        final UnsignedByteArray unsignedTransactionBytes =
-          this.getSignatureUtils().toMultiSignableBytes(
-            unsignedTransaction, addressUtils.deriveAddress(signatureWithPublicKey.signingPublicKey())
-          );
-        final boolean oneValidSignature = verifyHelper(
-          signatureWithPublicKey.signingPublicKey(),
-          unsignedTransactionBytes,
-          signatureWithPublicKey.transactionSignature()
-        );
-        return oneValidSignature;
-      })
-      .filter($ -> $) // Only count it if it's 'true'
-      .count();
-
-    return numValidSignatures >= minSigners;
+    return abstractTransactionVerifier.verifyMultiSigned(signatureWithPublicKeys, unsignedTransaction, minSigners);
   }
 
   /**
-   * Helper to verify a signed transaction.
+   * Does the actual work of computing a signature using a ed25519 private-key, as locatable using {@code privateKey}.
    *
-   * @param publicKey                A {@link PublicKey} used to verify a signature.
-   * @param unsignedTransactionBytes The actual binary bytes of the transaction that was signed.
-   * @param signature                The {@link Signature} to verify.
-   *
-   * @return {@code true} if the signature was created by the private key corresponding to {@code publicKey}; otherwise
-   *   {@code false}.
-   */
-  private boolean verifyHelper(
-    final PublicKey publicKey, final UnsignedByteArray unsignedTransactionBytes, final Signature signature
-  ) {
-    Objects.requireNonNull(publicKey);
-    Objects.requireNonNull(signature);
-    Objects.requireNonNull(unsignedTransactionBytes);
-
-    switch (publicKey.versionType()) {
-      case ED25519: {
-        return edDsaVerify(publicKey, unsignedTransactionBytes, signature);
-      }
-      case SECP256K1: {
-        return ecDsaVerify(publicKey, unsignedTransactionBytes, signature);
-      }
-      default: {
-        throw new IllegalArgumentException("Unhandled PublicKey VersionType: {}" + publicKey.versionType());
-      }
-    }
-  }
-
-  /**
-   * Does the actual work of computing a signature using an Ed25519 private-key, as locatable using {@code privateKey}.
-   *
-   * @param privateKey               The {@link PrivateKey} to use for signing.
-   * @param signableTransactionBytes The {@link UnsignedByteArray} to sign.
+   * @param privateKey               A {@link P} used for signing.
+   * @param signableTransactionBytes A {@link UnsignedByteArray} to sign.
    *
    * @return A {@link Signature} with data that can be used to submit a transaction to the XRP Ledger.
    */
-  protected abstract Signature edDsaSign(PrivateKey privateKey, UnsignedByteArray signableTransactionBytes);
+  protected abstract Signature edDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes);
 
   /**
-   * Does the actual work of computing a signature using a secp256k1 private-key, as locatable using {@code
-   * privateKeyMetadata}.
+   * Does the actual work of computing a signature using a secp256k1 private-key, as locatable using
+   * {@code privateKey}.
    *
-   * @param privateKey               The {@link PrivateKey} to use for signing.
-   * @param signableTransactionBytes The {@link UnsignedByteArray} to sign.
+   * @param privateKey               A {@link P} used for signing.
+   * @param signableTransactionBytes A {@link UnsignedByteArray} to sign.
    *
    * @return A {@link Signature} with data that can be used to submit a transaction to the XRP Ledger.
    */
-  protected abstract Signature ecDsaSign(PrivateKey privateKey, UnsignedByteArray signableTransactionBytes);
+  protected abstract Signature ecDsaSign(P privateKey, UnsignedByteArray signableTransactionBytes);
 
   /**
    * Verify a signature.
@@ -255,14 +151,5 @@ public abstract class AbstractSignatureService implements SignatureService {
    *
    * @return A corresponding {@link PublicKey}.
    */
-  protected abstract PublicKey derivePublicKey(PrivateKey privateKey);
-
-  /**
-   * Accessor for the {@link SignatureUtils} used by this class.
-   *
-   * @return A {@link SignatureUtils} used by this class.
-   */
-  public SignatureUtils getSignatureUtils() {
-    return this.signatureUtils;
-  }
+  public abstract PublicKey derivePublicKey(P privateKey);
 }

@@ -98,7 +98,6 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
       "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
       "}";
-    System.out.println(ObjectMapperFactory.create().writerWithDefaultPrettyPrinter().writeValueAsString(claim));
     assertCanSerializeAndDeserialize(claim, json);
   }
 

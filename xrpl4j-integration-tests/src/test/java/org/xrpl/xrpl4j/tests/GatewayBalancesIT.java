@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,8 +34,10 @@ import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 public class GatewayBalancesIT extends AbstractIT {
@@ -58,7 +60,7 @@ public class GatewayBalancesIT extends AbstractIT {
       "10000",
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
@@ -68,7 +70,7 @@ public class GatewayBalancesIT extends AbstractIT {
       trustLine.limitPeer(),
       issuerWallet,
       counterpartyWallet,
-      feeResult.drops().minimumFee()
+      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////

@@ -48,6 +48,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountNftsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountNftsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
@@ -63,12 +65,19 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.server.ServerInfo;
 import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
+import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -89,6 +98,11 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -311,6 +325,7 @@ public class XrplClient {
    * Get the ledger index of a tx result response. If not present, throw an exception.
    *
    * @return A string containing value of last validated ledger index.
+   *
    * @throws JsonRpcClientErrorException when client encounters errors related to calling rippled JSON RPC API..
    */
   protected UnsignedInteger getMostRecentlyValidatedLedgerIndex() throws JsonRpcClientErrorException {
@@ -326,8 +341,8 @@ public class XrplClient {
    *
    * @param transactionHash {@link Hash256} of the transaction to get the TransactionResult for.
    *
-   * @return the {@link TransactionResult} for a validated transaction and empty response for a
-   *   {@link Transaction} that is expired or not found.
+   * @return the {@link TransactionResult} for a validated transaction and empty response for a {@link Transaction} that
+   *   is expired or not found.
    */
   protected Optional<? extends TransactionResult<? extends Transaction>> getValidatedTransaction(
     final Hash256 transactionHash
@@ -350,8 +365,8 @@ public class XrplClient {
    * Check if there missing ledgers in rippled in the given range.
    *
    * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
-   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the
-   *                                transaction will expire and won't be applied to the ledger.
+   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the transaction
+   *                                will expire and won't be applied to the ledger.
    *
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
@@ -376,14 +391,14 @@ public class XrplClient {
    * Check if the transaction is final on the ledger or not.
    *
    * @param transactionHash            {@link Hash256} of the submitted transaction to check the status for.
-   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash
-   *                                   was submitted. This can be obtained from submit() response of the tx as
+   * @param submittedOnLedgerIndex     {@link LedgerIndex} on which the transaction with hash transactionHash was
+   *                                   submitted. This can be obtained from submit() response of the tx as
    *                                   validatedLedgerIndex.
    * @param lastLedgerSequence         The ledger index/sequence of type {@link UnsignedInteger} after which the
    *                                   transaction will expire and won't be applied to the ledger.
-   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}.
-   *                                   A {@link Transaction} is only valid if the Sequence number is exactly 1
-   *                                   greater than the previous transaction from the same account.
+   * @param transactionAccountSequence The sequence number of the account submitting the {@link Transaction}. A
+   *                                   {@link Transaction} is only valid if the Sequence number is exactly 1 greater
+   *                                   than the previous transaction from the same account.
    * @param account                    The unique {@link Address} of the account that initiated this transaction.
    *
    * @return {@code true} if the {@link Transaction} is final/validated else {@code false}.
@@ -468,13 +483,36 @@ public class XrplClient {
    *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
+   * @deprecated This method is deprecated to accommodate 3 different types of server_info responses from the
+   *   specialised Clio {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the
+   *   generic rippled server {@link RippledServerInfo}. Use {@link XrplClient#serverInformation()}.
    */
+  @Deprecated
   public ServerInfo serverInfo() throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)
       .build();
 
     return jsonRpcClient.send(request, ServerInfoResult.class).info();
+  }
+
+  /**
+   * Get the "server_info" for the rippled node {@link RippledServerInfo}, clio server {@link ClioServerInfo} and
+   * reporting mode server {@link ReportingModeServerInfo}. You should be able to handle all these response types as
+   * {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+   *
+   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} containing information about the server.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @see "https://xrpl.org/server_info.html"
+   */
+  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInformation()
+    throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.SERVER_INFO)
+      .build();
+
+    return jsonRpcClient.send(request, org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.class);
   }
 
   /**
@@ -537,6 +575,75 @@ public class XrplClient {
   }
 
   /**
+   * Return AccountNftsResult for an {@link Address}.
+   *
+   * @param account to get the NFTs for.
+   *
+   * @return {@link AccountNftsResult} containing list of accounts for an address.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountNftsResult accountNfts(Address account) throws JsonRpcClientErrorException {
+    Objects.requireNonNull(account);
+    return this.accountNfts(
+      AccountNftsRequestParams.builder().account(account).build()
+    );
+  }
+
+  /**
+   * Get the {@link AccountNftsResult} for the account specified in {@code params} by making an account_channels
+   * method call.
+   *
+   * @param params The {@link AccountNftsRequestParams} to send in the request.
+   *
+   * @return The {@link AccountNftsResult} returned by the account_nfts method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountNftsResult accountNfts(AccountNftsRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_NFTS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountNftsResult.class);
+  }
+
+  /**
+   * Get the {@link NftBuyOffersResult} for the {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} specified in
+   * {@code params} by making an nft_buy_offers method call.
+   *
+   * @param params The {@link NftBuyOffersRequestParams} to send in the request.
+   *
+   * @return The {@link NftBuyOffersResult} returned by the nft_buy_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public NftBuyOffersResult nftBuyOffers(NftBuyOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_BUY_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftBuyOffersResult.class);
+  }
+
+  /**
+   * Get the {@link NftSellOffersResult} for the {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} specified in
+   * {@code params} by making an nft_sell_offers method call.
+   *
+   * @param params The {@link NftSellOffersRequestParams} to send in the request.
+   *
+   * @return The {@link NftSellOffersResult} returned by the nft_sell_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public NftSellOffersResult nftSellOffers(NftSellOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_SELL_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftSellOffersResult.class);
+  }
+
+  /**
    * Get the {@link AccountObjectsResult} for the account specified in {@code params} by making an account_objects
    * method call.
    *
@@ -579,6 +686,7 @@ public class XrplClient {
    * @param params A {@link DepositAuthorizedRequestParams} to send in the request.
    *
    * @return The {@link DepositAuthorizedResult} returned by the deposit_authorized method call.
+   *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public DepositAuthorizedResult depositAuthorized(DepositAuthorizedRequestParams params)
@@ -725,12 +833,12 @@ public class XrplClient {
   }
 
   /**
-   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled
-   * API method call.
+   * Get the issued currency balances of an issuing account by making a "gateway_balances" rippled API method call.
    *
    * @param params The {@link GatewayBalancesRequestParams} to send in the request.
    *
    * @return The result of the request, as a {@link GatewayBalancesResult}.
+   *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
   public GatewayBalancesResult gatewayBalances(
@@ -780,11 +888,11 @@ public class XrplClient {
    * a {@link Value.Immutable}, it does not have a generated builder like the subclasses.  Thus, this method needs to
    * rebuild transactions based on their runtime type.
    *
-   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to. {@link
-   *                            Transaction#transactionSignature()} must not be provided, and {@link
-   *                            Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it does not
-   *                            have a generated builder like the subclasses.  Thus, this method needs to rebuild
-   *                            transactions based on their runtime type.
+   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to.
+   *                            {@link Transaction#transactionSignature()} must not be provided, and
+   *                            {@link Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it
+   *                            does not have a generated builder like the subclasses.  Thus, this method needs to
+   *                            rebuild transactions based on their runtime type.
    * @param signature           The hex encoded {@link String} containing the transaction signature.
    *
    * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.
@@ -835,6 +943,26 @@ public class XrplClient {
         .build();
     } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenAcceptOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenBurn.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenBurn.builder().from((NfTokenBurn) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenCancelOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenCancelOffer.builder().from((NfTokenCancelOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenCreateOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenCreateOffer.builder().from((NfTokenCreateOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenMint.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenMint.builder().from((NfTokenMint) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {

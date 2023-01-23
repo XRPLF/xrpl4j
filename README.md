@@ -20,7 +20,7 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
     - Provides Java objects which model XRP Ledger objects, as well as request parameters and response results for the rippled websocket and JSON RPC APIs
     - Also provides a Jackson `ObjectMapper` and JSON bindings which can be used to serialize and deserialize to and from JSON
 - **xrpl4j-crypto**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-crypto-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-crypto-parent)
-    - **xrpl4j-crypto-core**: Provides core primitives like public/private keys definitions, signature interafaces and more.
+    - **xrpl4j-crypto-core**: Provides core primitives like public/private keys definitions, signature interfaces and more.
     - **xrpl4j-crypto-bouncycastle**: An implementation using [BouncyCastle](https://www.bouncycastle.org/) as the underlying library/provider.
 - **xrpl4j-client**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
     - Provides an example rippled JSON RPC client which can be used to communicate with a rippled node
@@ -61,24 +61,19 @@ Then you can add any of the xrpl4j modules found in the BOM to your `pom.xml`. F
 ```
 
 ## Development
-You can build and install the project locally using maven from the command line:
+You can build and test the entire project locally using maven from the command line:
 ```
-mvn clean install -DskipTests
+mvn clean install
 ```
 
-To run unit tests, use the following command:
+To build the project while skipping Integration tests, use the following command:
 ```
 mvn clean install -DskipITs
 ```
 
-To run the integration tests, you can either run
+To build the project while skipping Unit and Integration tests, use the following command:
 ```
-mvn clean install
-```
-which will run both the unit tests and integration tests, or to run only the integration tests, you can run the following commands:
-```
-cd xrpl4j-integration-tests
-mvn clean install
+mvn clean install -DskipITs -DskipTests
 ```
 
 [codecov-image]: https://codecov.io/gh/XRPLF/xrpl4j/branch/main/graph/badge.svg

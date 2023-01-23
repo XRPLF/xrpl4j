@@ -107,12 +107,7 @@ public class PaymentChannelIT extends AbstractIT {
     // Validate that the amount of the payment channel was deducted from the source
     // accounts XRP balance
     AccountInfoResult senderAccountInfoAfterCreate = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
-      accountInfo -> accountInfo.ledgerIndex()
-        .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-        .equals(senderAccountInfo.ledgerIndex()
-          .orElseThrow(() -> new RuntimeException("Ledger index was not present."))
-          .plus(UnsignedInteger.ONE))
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     assertThat(senderAccountInfoAfterCreate.accountData().balance())

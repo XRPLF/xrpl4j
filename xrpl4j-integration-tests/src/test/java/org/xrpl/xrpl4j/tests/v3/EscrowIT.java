@@ -149,8 +149,8 @@ public class EscrowIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverKeyPair.publicKey().deriveAddress())
-      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
-      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(1))))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
       .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 

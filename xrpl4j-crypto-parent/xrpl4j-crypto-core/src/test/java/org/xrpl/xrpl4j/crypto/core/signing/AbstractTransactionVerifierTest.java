@@ -91,13 +91,13 @@ public class AbstractTransactionVerifierTest {
   @Test
   void verifyWithNullMetadata() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> transactionVerifier.verifySingleSigned(null, transactionMock));
+      () -> transactionVerifier.verifyMultiSigned(null, transactionMock));
   }
 
   @Test
   void verifyWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> transactionVerifier.verifySingleSigned(signatureWithPublicKeyMock, null));
+      () -> transactionVerifier.verify(signatureWithPublicKeyMock, null));
   }
 
   @Test

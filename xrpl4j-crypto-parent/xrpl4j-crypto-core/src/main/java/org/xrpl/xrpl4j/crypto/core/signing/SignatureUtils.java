@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 
@@ -246,6 +247,10 @@ public class SignatureUtils {
         .build();
     } else if (NfTokenMint.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = NfTokenMint.builder().from((NfTokenMint) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = TicketCreate.builder().from((TicketCreate) transaction)
         .transactionSignature(signature.base16Value())
         .build();
     } else {

@@ -51,6 +51,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -518,6 +519,19 @@ public class SignatureUtilsTest {
       .tokenTaxon(taxon)
       .build();
     addSignatureToTransactionHelper(nfTokenMint);
+  }
+
+  @Test
+  void addSignatureToTicketCreate() {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.ONE)
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .build();
+
+    addSignatureToTransactionHelper(ticketCreate);
   }
 
   @Test

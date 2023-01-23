@@ -48,6 +48,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountNftsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountNftsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountOffersRequestParams;
@@ -63,6 +65,10 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
@@ -92,6 +98,11 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -567,6 +578,75 @@ public class XrplClient {
   }
 
   /**
+   * Return AccountNftsResult for an {@link Address}.
+   *
+   * @param account to get the NFTs for.
+   *
+   * @return {@link AccountNftsResult} containing list of accounts for an address.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountNftsResult accountNfts(Address account) throws JsonRpcClientErrorException {
+    Objects.requireNonNull(account);
+    return this.accountNfts(
+      AccountNftsRequestParams.builder().account(account).build()
+    );
+  }
+
+  /**
+   * Get the {@link AccountNftsResult} for the account specified in {@code params} by making an account_channels
+   * method call.
+   *
+   * @param params The {@link AccountNftsRequestParams} to send in the request.
+   *
+   * @return The {@link AccountNftsResult} returned by the account_nfts method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public AccountNftsResult accountNfts(AccountNftsRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.ACCOUNT_NFTS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AccountNftsResult.class);
+  }
+
+  /**
+   * Get the {@link NftBuyOffersResult} for the {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} specified in
+   * {@code params} by making an nft_buy_offers method call.
+   *
+   * @param params The {@link NftBuyOffersRequestParams} to send in the request.
+   *
+   * @return The {@link NftBuyOffersResult} returned by the nft_buy_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public NftBuyOffersResult nftBuyOffers(NftBuyOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_BUY_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftBuyOffersResult.class);
+  }
+
+  /**
+   * Get the {@link NftSellOffersResult} for the {@link org.xrpl.xrpl4j.model.transactions.NfTokenId} specified in
+   * {@code params} by making an nft_sell_offers method call.
+   *
+   * @param params The {@link NftSellOffersRequestParams} to send in the request.
+   *
+   * @return The {@link NftSellOffersResult} returned by the nft_sell_offers method call.
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   */
+  public NftSellOffersResult nftSellOffers(NftSellOffersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_SELL_OFFERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftSellOffersResult.class);
+  }
+
+  /**
    * Get the {@link AccountObjectsResult} for the account specified in {@code params} by making an account_objects
    * method call.
    *
@@ -869,6 +949,26 @@ public class XrplClient {
         .build();
     } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
       return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenAcceptOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenBurn.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenBurn.builder().from((NfTokenBurn) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenCancelOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenCancelOffer.builder().from((NfTokenCancelOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenCreateOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenCreateOffer.builder().from((NfTokenCreateOffer) unsignedTransaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (NfTokenMint.class.isAssignableFrom(unsignedTransaction.getClass())) {
+      return NfTokenMint.builder().from((NfTokenMint) unsignedTransaction)
         .transactionSignature(signature)
         .build();
     } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {

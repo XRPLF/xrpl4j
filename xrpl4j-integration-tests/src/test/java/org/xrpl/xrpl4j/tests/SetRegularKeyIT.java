@@ -35,7 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class SetRegularKeyIT extends AbstractIT {
-
+  
   @Test
   void setRegularKeyOnAccount() throws JsonRpcClientErrorException {
     //////////////////////////

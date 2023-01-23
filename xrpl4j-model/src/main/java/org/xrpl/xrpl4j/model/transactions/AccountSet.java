@@ -136,6 +136,15 @@ public interface AccountSet extends Transaction {
   Optional<UnsignedInteger> tickSize();
 
   /**
+   * Sets an alternate account that is allowed to mint NFTokens on this
+   * account's behalf using NFTokenMint's `Issuer` field.
+   *
+   * @return An {@link Optional} field MintAccount of type {@link Address}.
+   */
+  @JsonProperty("MintAccount")
+  Optional<Address> mintAccount();
+
+  /**
    * Check email hash length.
    */
   @Value.Check
@@ -247,7 +256,11 @@ public interface AccountSet extends Transaction {
      *
      * @see "https://xrpl.org/depositauth.html"
      */
-    DEPOSIT_AUTH(9);
+    DEPOSIT_AUTH(9),
+    /**
+     * Allow another account to mint and burn tokens on behalf of this account.
+     */
+    AUTHORIZED_MINTER(10);
 
     int value;
 

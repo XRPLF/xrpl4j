@@ -89,7 +89,7 @@ Construct and Sign an XRP Payment:
   Address senderAddress = senderPublicKey.deriveAddress();
 
   // Receiver (using secp256k1 key)
-  Address receiverAddress=Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+  Address receiverAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
   // Construct a Payment
   Payment payment=...; // See V3 ITs for examples.

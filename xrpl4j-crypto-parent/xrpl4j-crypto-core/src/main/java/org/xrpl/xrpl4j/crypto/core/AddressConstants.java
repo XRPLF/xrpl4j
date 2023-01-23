@@ -36,7 +36,7 @@ public interface AddressConstants {
    *
    * @see "https://xrpl.org/accounts.html#special-addresses"
    */
-  Address NAME_RESERVATION_BLACKHOLD = Address.of("rrrrrrrrrrrrrrrrrNAMEtxvNvQ");
+  Address NAME_RESERVATION_BLACKHOLE = Address.of("rrrrrrrrrrrrrrrrrNAMEtxvNvQ");
 
   /**
    * Previous versions of ripple-lib  generated this address when encoding the value NaN using the XRP Ledger's base58

@@ -1,7 +1,5 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
-import static org.xrpl.xrpl4j.crypto.core.keys.Seed.DefaultSeed.Secp256k1KeyPairService.Secp256k1.EC_DOMAIN_PARAMETERS;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
@@ -154,7 +152,6 @@ public interface Seed extends javax.security.auth.Destroyable {
    * @param base58EncodedSecret A base58-encoded {@link String} that represents an encoded seed.
    *
    * @return A {@link Seed}.
-   *
    * @see "https://xrpl.org/xrp-testnet-faucet.html"
    */
   static Seed fromBase58EncodedSecret(final Base58EncodedSecret base58EncodedSecret) {
@@ -320,16 +317,13 @@ public interface Seed extends javax.security.auth.Destroyable {
       /**
        * Static constants for Secp256k1.
        */
-      interface Secp256k1 {
-
-        X9ECParameters EC_PARAMETERS = SECNamedCurves.getByName("secp256k1");
-        ECDomainParameters EC_DOMAIN_PARAMETERS = new ECDomainParameters(
-          EC_PARAMETERS.getCurve(),
-          EC_PARAMETERS.getG(),
-          EC_PARAMETERS.getN(),
-          EC_PARAMETERS.getH()
-        );
-      }
+      static X9ECParameters EC_PARAMETERS = SECNamedCurves.getByName("secp256k1");
+      static ECDomainParameters EC_DOMAIN_PARAMETERS = new ECDomainParameters(
+        EC_PARAMETERS.getCurve(),
+        EC_PARAMETERS.getG(),
+        EC_PARAMETERS.getN(),
+        EC_PARAMETERS.getH()
+      );
 
       /**
        * Private, no-args constructor to prevent instantiation.

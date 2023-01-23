@@ -75,7 +75,10 @@ public class TicketIT extends AbstractIT {
         TicketCreate.class)
     );
 
-    List<TicketObject> tickets = getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress(), TicketObject.class);
+    List<TicketObject> tickets = getValidatedAccountObjects(
+      sourceKeyPair.publicKey().deriveAddress(),
+      TicketObject.class
+    );
     assertThat(tickets).asList().hasSize(1);
 
     AccountSet accountSet = AccountSet.builder()

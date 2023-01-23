@@ -37,8 +37,8 @@ import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 import java.util.Optional;
 
 /**
- * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses
- * rippled sends back.
+ * These tests ensure {@link LedgerResult}s can be constructed from all of the different JSON responses rippled sends
+ * back.
  */
 public class LedgerResultIT extends AbstractIT {
 

@@ -24,7 +24,6 @@ import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -59,10 +58,9 @@ import java.util.Optional;
 public class SignatureUtilsTest {
 
   private static final String HEX_PUBLIC_KEY = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
-
-  @Mock
-  Wallet sourceWalletMock;
-
+  
+  PublicKey sourcePublicKey;
+  
   @Mock
   Transaction transactionMock;
 
@@ -80,8 +78,8 @@ public class SignatureUtilsTest {
   @BeforeEach
   public void setUp() throws JsonProcessingException {
     MockitoAnnotations.openMocks(this);
-    when(sourceWalletMock.address()).thenReturn(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"));
-    when(sourceWalletMock.publicKey()).thenReturn(PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY));
+    
+    this.sourcePublicKey = PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY);
 
     when(objectMapperMock.writeValueAsString(any())).thenReturn("{foo}"); // <-- Unused JSON value.
     when(xrplBinaryCodecMock.encodeForSigning(anyString())).thenReturn("ED");
@@ -102,7 +100,7 @@ public class SignatureUtilsTest {
   @Test
   public void toMultiSignableBytesWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureUtils.toMultiSignableBytes(null, sourceWalletMock.address()));
+      () -> signatureUtils.toMultiSignableBytes(null, sourcePublicKey.deriveAddress()));
   }
 
   @Test
@@ -180,7 +178,7 @@ public class SignatureUtilsTest {
 
   @Test
   public void toMultiSignableBytes() throws JsonProcessingException {
-    UnsignedByteArray actual = signatureUtils.toMultiSignableBytes(transactionMock, sourceWalletMock.address());
+    UnsignedByteArray actual = signatureUtils.toMultiSignableBytes(transactionMock, sourcePublicKey.deriveAddress());
     assertThat(actual.length()).isEqualTo(1);
 
     verify(objectMapperMock).writeValueAsString(transactionMock);
@@ -225,12 +223,12 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionPayment() {
     Payment payment = Payment.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .destination(sourceWalletMock.address())
+      .destination(sourcePublicKey.deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .build();
     addSignatureToTransactionHelper(payment);
   }
@@ -238,10 +236,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionAccountSet() {
     AccountSet accountSet = AccountSet.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .build();
     addSignatureToTransactionHelper(accountSet);
   }
@@ -249,11 +247,11 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionAccountDelete() {
     AccountDelete accountDelete = AccountDelete.builder()
-      .account(sourceWalletMock.address())
-      .destination(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
+      .destination(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .build();
     addSignatureToTransactionHelper(accountDelete);
   }
@@ -261,10 +259,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionCheckCancel() {
     CheckCancel checkCancel = CheckCancel.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .checkId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .build();
     addSignatureToTransactionHelper(checkCancel);
@@ -273,10 +271,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionCheckCash() {
     CheckCash checkCash = CheckCash.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .checkId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .amount(XrpCurrencyAmount.ofDrops(100))
       .build();
@@ -286,11 +284,11 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionCheckCreate() {
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
-      .destination(sourceWalletMock.address())
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .destination(sourcePublicKey.deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(100))
       .build();
     addSignatureToTransactionHelper(checkCreate);
@@ -299,11 +297,11 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionDepositPreAuth() {
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
-      .authorize(sourceWalletMock.address())
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .authorize(sourcePublicKey.deriveAddress())
       .build();
     addSignatureToTransactionHelper(depositPreAuth);
   }
@@ -311,12 +309,12 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionEscrowCancel() {
     EscrowCancel escrowCancel = EscrowCancel.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .offerSequence(UnsignedInteger.ONE)
-      .owner(sourceWalletMock.address())
+      .owner(sourcePublicKey.deriveAddress())
       .build();
     addSignatureToTransactionHelper(escrowCancel);
   }
@@ -324,12 +322,12 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionEscrowFinish() {
     EscrowFinish escrowFinish = EscrowFinish.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .offerSequence(UnsignedInteger.ONE)
-      .owner(sourceWalletMock.address())
+      .owner(sourcePublicKey.deriveAddress())
       .build();
     addSignatureToTransactionHelper(escrowFinish);
   }
@@ -337,12 +335,12 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionEscrowCreate() {
     EscrowCreate escrowCreate = EscrowCreate.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .amount(XrpCurrencyAmount.ofDrops(100))
-      .destination(sourceWalletMock.address())
+      .destination(sourcePublicKey.deriveAddress())
       .build();
     addSignatureToTransactionHelper(escrowCreate);
   }
@@ -350,12 +348,12 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionTrustSet() {
     TrustSet trustSet = TrustSet.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .limitAmount(IssuedCurrencyAmount.builder()
-        .issuer(sourceWalletMock.address())
+        .issuer(sourcePublicKey.deriveAddress())
         .currency("USD")
         .value("10")
         .build())
@@ -366,10 +364,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionOfferOfferCreate() {
     OfferCreate offerCreate = OfferCreate.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .takerPays(XrpCurrencyAmount.ofDrops(100))
       .takerGets(XrpCurrencyAmount.ofDrops(100))
       .build();
@@ -379,10 +377,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionOfferCancel() {
     OfferCancel offerCancel = OfferCancel.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .build();
     addSignatureToTransactionHelper(offerCancel);
   }
@@ -390,12 +388,12 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionPaymentChannelCreate() {
     PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .amount(XrpCurrencyAmount.ofDrops(100))
-      .destination(sourceWalletMock.address())
+      .destination(sourcePublicKey.deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey("123")
       .build();
@@ -405,10 +403,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionPaymentChannelClaim() {
     PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .build();
     addSignatureToTransactionHelper(paymentChannelClaim);
@@ -417,10 +415,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionPaymentChannelFund() {
     PaymentChannelFund paymentChannelFund = PaymentChannelFund.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .amount(XrpCurrencyAmount.ofDrops(100L))
       .build();
@@ -430,10 +428,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionSetRegularKey() {
     SetRegularKey setRegularKey = SetRegularKey.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .build();
     addSignatureToTransactionHelper(setRegularKey);
   }
@@ -441,10 +439,10 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionSignerListSet() {
     SignerListSet signerListSet = SignerListSet.builder()
-      .account(sourceWalletMock.address())
+      .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWalletMock.publicKey().base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .signerQuorum(UnsignedInteger.ONE)
       .build();
     addSignatureToTransactionHelper(signerListSet);
@@ -459,7 +457,7 @@ public class SignatureUtilsTest {
   private void addSignatureToTransactionHelper(final Transaction transaction) {
     Objects.requireNonNull(transaction);
     when(signatureMock.base16Value()).thenReturn("ED");
-    SingleSingedTransaction<?> result = signatureUtils.addSignatureToTransaction(transaction, signatureMock);
+    SingleSignedTransaction<?> result = signatureUtils.addSignatureToTransaction(transaction, signatureMock);
     assertThat(result.unsignedTransaction()).isEqualTo(transaction);
     assertThat(result.signature().base16Value()).isEqualTo("ED");
     assertThat(result.signedTransaction().transactionSignature()).isPresent();

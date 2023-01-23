@@ -10,8 +10,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -36,7 +36,7 @@ public class OfferIT extends AbstractIT {
 
   public static final String CURRENCY = "USD";
 
-  private static Wallet issuerWallet;
+  private static KeyPair issuerKeyPair;
 
   private static boolean usdIssued = false;
 
@@ -52,22 +52,22 @@ public class OfferIT extends AbstractIT {
     if (usdIssued) {
       return;
     }
-    issuerWallet = createRandomAccountEd25519();
+    issuerKeyPair = createRandomAccountEd25519();
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult =
-      this.scanForResult(() -> this.getValidatedAccountInfo(issuerWallet.address()));
+      this.scanForResult(() -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()));
 
     //////////////////////
     // Create an Offer
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
-      .account(issuerWallet.address())
+      .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
-      .signingPublicKey(issuerWallet.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
       .takerGets(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(issuerWallet.address())
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
         .value("100")
         .build()
       )
@@ -78,8 +78,8 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
-      issuerWallet.privateKey(), offerCreate
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      issuerKeyPair.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
@@ -100,24 +100,24 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund purchaser's account
-    Wallet purchaser = createRandomAccountEd25519();
+    KeyPair purchaser = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(purchaser.address())
+      () -> this.getValidatedAccountInfo(purchaser.publicKey().deriveAddress())
     );
 
     //////////////////////
     // Create an Offer
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
-      .account(purchaser.address())
+      .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
       .takerPays(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(issuerWallet.address())
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
         .value("1000")
         .build()
       )
@@ -128,7 +128,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
@@ -153,37 +153,39 @@ public class OfferIT extends AbstractIT {
   /**
    * Cancels an offer and verifies the offer no longer exists on ledger for the account.
    *
-   * @param purchaser     The {@link Wallet} of the buyer.
+   * @param purchaser     The {@link KeyPair} of the buyer.
    * @param offerSequence The sequence of the offer.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   private void cancelOffer(
-    Wallet purchaser,
+    KeyPair purchaser,
     UnsignedInteger offerSequence,
     String expectedResult
   ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult infoResult = this.scanForResult(() -> this.getValidatedAccountInfo(purchaser.address()));
+    AccountInfoResult infoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaser.publicKey().deriveAddress()));
     UnsignedInteger nextSequence = infoResult.accountData().sequence();
 
     FeeResult feeResult = xrplClient.fee();
 
     OfferCancel offerCancel = OfferCancel.builder()
-      .account(purchaser.address())
+      .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(nextSequence)
       .offerSequence(offerSequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
       .build();
 
-    SingleSingedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
+    SingleSignedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
       purchaser.privateKey(), offerCancel
     );
     SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(signedOfferCancel);
     assertThat(cancelResponse.result()).isEqualTo(expectedResult);
 
-    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.address(), OfferObject.class));
-    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.address(), RippleStateObject.class));
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
+    assertEmptyResults(
+      () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class));
   }
 
   @Test
@@ -193,24 +195,24 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund purchaser's account
-    Wallet purchaser = createRandomAccountEd25519();
+    KeyPair purchaser = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(purchaser.address())
+      () -> this.getValidatedAccountInfo(purchaser.publicKey().deriveAddress())
     );
 
     //////////////////////
     // Create an Offer
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     OfferCreate offerCreate = OfferCreate.builder()
-      .account(purchaser.address())
+      .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
       .takerPays(IssuedCurrencyAmount.builder()
         .currency("USD")
-        .issuer(issuerWallet.address())
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
         .value("1000")
         .build()
       )
@@ -221,7 +223,7 @@ public class OfferIT extends AbstractIT {
         .build())
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
@@ -233,8 +235,9 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Poll the ledger for the source purchaser's offers, and validate no offers or balances (ripple states) exist
-    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.address(), OfferObject.class));
-    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.address(), RippleStateObject.class));
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
+    assertEmptyResults(
+      () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class));
   }
 
   /**
@@ -255,11 +258,11 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Generate and fund purchaser's account
-    Wallet purchaser = createRandomAccountEd25519();
+    KeyPair purchaser = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(purchaser.address())
+      () -> this.getValidatedAccountInfo(purchaser.publicKey().deriveAddress())
     );
 
     //////////////////////
@@ -267,12 +270,12 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
     IssuedCurrencyAmount requestCurrencyAmount = IssuedCurrencyAmount.builder()
       .currency(CURRENCY)
-      .issuer(issuerWallet.address())
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
       .value("0.01")
       .build();
 
     OfferCreate offerCreate = OfferCreate.builder()
-      .account(purchaser.address())
+      .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(purchaser.publicKey().base16Value())
@@ -280,7 +283,7 @@ public class OfferIT extends AbstractIT {
       .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
       .build();
 
-    SingleSingedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
@@ -292,13 +295,14 @@ public class OfferIT extends AbstractIT {
 
     //////////////////////
     // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
-    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaser, CURRENCY, issuerWallet.address());
+    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaser, CURRENCY,
+      issuerKeyPair.publicKey().deriveAddress());
     // The "issuer" for the balance in a trust line depends on whether the balance is positive or negative.
     // If a RippleState object shows a positive balance, the high account is the issuer.
     // If the balance is negative, the low account is the issuer.
     // Often, the issuer has its limit set to 0 and the other account has a positive limit, but this is not reliable
     // because limits can change without affecting an existing balance.
-    if (issuedCurrency.lowLimit().issuer().equals(issuerWallet.address())) {
+    if (issuedCurrency.lowLimit().issuer().equals(issuerKeyPair.publicKey().deriveAddress())) {
       assertThat(issuedCurrency.balance().value()).isEqualTo("-" + requestCurrencyAmount.value());
     } else {
       assertThat(issuedCurrency.balance().value()).isEqualTo(requestCurrencyAmount.value());
@@ -307,7 +311,7 @@ public class OfferIT extends AbstractIT {
 
   @Test
   public void cancelNonExistentOffer() throws JsonRpcClientErrorException, JsonProcessingException {
-    Wallet purchaser = createRandomAccountEd25519();
+    KeyPair purchaser = createRandomAccountEd25519();
     UnsignedInteger nonExistentOfferSequence = UnsignedInteger.valueOf(111111111);
     // cancel offer does the assertions
     cancelOffer(purchaser, nonExistentOfferSequence, "temBAD_SEQUENCE");
@@ -316,16 +320,17 @@ public class OfferIT extends AbstractIT {
   /**
    * Scan the ledger for a specific Offer.
    *
-   * @param purchaser The {@link Wallet} of the offer owner.
+   * @param purchaser The {@link KeyPair} of the offer owner.
    * @param sequence  The sequence of the offer.
    *
    * @return An {@link OfferObject}.
    */
-  public OfferObject scanForOffer(Wallet purchaser, UnsignedInteger sequence) {
+  public OfferObject scanForOffer(KeyPair purchaser, UnsignedInteger sequence) {
     return this.scanForLedgerObject(
-      () -> this.getValidatedAccountObjects(purchaser.address(), OfferObject.class)
+      () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class)
         .stream()
-        .filter(object -> object.sequence().equals(sequence) && object.account().equals(purchaser.address()))
+        .filter(object -> object.sequence().equals(sequence) && object.account()
+          .equals(purchaser.publicKey().deriveAddress()))
         .findFirst()
         .orElse(null));
   }
@@ -333,15 +338,15 @@ public class OfferIT extends AbstractIT {
   /**
    * Scan the ledger until the purchaser account has a trustline with the issuer account for a given currency.
    *
-   * @param purchaser The {@link Wallet} of the source account.
+   * @param purchaser The {@link KeyPair} of the source account.
    * @param currency  A {@link String} denoting the currency code.
    * @param issuer    The {@link Address} of the issuer account.
    *
    * @return The {@link RippleStateObject} between the purchaser and issuer, if found.
    */
-  public RippleStateObject scanForIssuedCurrency(Wallet purchaser, String currency, Address issuer) {
+  public RippleStateObject scanForIssuedCurrency(KeyPair purchaser, String currency, Address issuer) {
     return this.scanForLedgerObject(
-      () -> this.getValidatedAccountObjects(purchaser.address(), RippleStateObject.class)
+      () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class)
         .stream()
         .filter(state ->
           state.balance().currency().equals(currency) &&

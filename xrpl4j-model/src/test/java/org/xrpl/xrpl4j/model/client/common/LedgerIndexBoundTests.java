@@ -186,6 +186,11 @@ public class LedgerIndexBoundTests {
   }
 
   @Test
+  void testUnbounded() {
+    assertThat(LedgerIndexBound.UNBOUNDED.value()).isEqualTo(-1);
+  }
+
+  @Test
   void testJson() throws JsonProcessingException, JSONException {
     LedgerIndexBound ledgerIndexBound = LedgerIndexBound.of(0);
     LedgerIndexBoundWrapper wrapper = LedgerIndexBoundWrapper.of(ledgerIndexBound);

@@ -320,7 +320,14 @@ public class FeeUtils {
   @Immutable
   public interface DecomposedFees {
 
+    /**
+     * The number 1.5, as a {@link BigDecimal}.
+     */
     BigDecimal ONE_POINT_FIVE = new BigDecimal("1.5");
+
+    /**
+     * The maximum number of XRP drops, as a {@link BigInteger}.
+     */
     BigInteger MAX_XRP_IN_DROPS_BIG_INT = BigInteger.valueOf(MAX_XRP_IN_DROPS);
 
     /**

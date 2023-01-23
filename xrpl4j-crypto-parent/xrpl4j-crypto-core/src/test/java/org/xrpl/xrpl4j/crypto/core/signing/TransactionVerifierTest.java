@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -37,7 +36,7 @@ class TransactionVerifierTest {
       }
 
       @Override
-      public <T extends Transaction> boolean verify(
+      public <T extends Transaction> boolean verifyMultiSigned(
         Set<SignatureWithPublicKey> signatureWithPublicKeys, T unsignedTransaction, int minSigners
       ) {
         verify2Called.set(true);
@@ -48,7 +47,7 @@ class TransactionVerifierTest {
 
   @Test
   void verify() {
-    transactionVerifier.verify(mock(Set.class), mock(Payment.class));
+    transactionVerifier.verifyMultiSigned(mock(Set.class), mock(Payment.class));
     assertThat(verify1Called.get()).isFalse();
     assertThat(verify2Called.get()).isTrue();
   }

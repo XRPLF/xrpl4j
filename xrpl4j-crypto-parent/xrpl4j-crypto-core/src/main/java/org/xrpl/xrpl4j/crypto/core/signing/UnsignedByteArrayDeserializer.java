@@ -14,6 +14,9 @@ import java.io.IOException;
  */
 public class UnsignedByteArrayDeserializer extends StdDeserializer<UnsignedByteArray> {
 
+  /**
+   * No-args Constructor.
+   */
   public UnsignedByteArrayDeserializer() {
     super(UnsignedByteArray.class);
   }

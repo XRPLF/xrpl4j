@@ -41,6 +41,7 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.tests.environment.TestnetEnvironment;
 import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
@@ -119,7 +120,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Create a TrustLine between alice and the issuer
-    TrustLine aliceTrustLine = createTrustLine(
+    createTrustLine(
       "USD",
       "10000",
       issuerWallet,
@@ -202,9 +203,24 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
   }
 
+  /**
+   * Send and verify a multi-hop payment that transits the following path.
+   *
+   * <pre>
+   * ┌────────────┐         ┌────────────┐        ┌────────────┐         ┌────────────┐        ┌────────────┐
+   * │  Charlie   │◁───TL──▷│  IssuerA   │◁──TL──▷│   Emily    │◁──TL───▷│  IssuerB   │◁──TL──▷│   Daniel   │
+   * └────────────┘         └────────────┘        └────────────┘         └────────────┘        └────────────┘
+   * </pre>
+   */
   @Test
   @Disabled
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException {
+
+    // NOTE: Only run this on non-testnet and non-devnet evironmens.
+    if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
+      return;
+    }
+
     ///////////////////////////
     // Create two issuer wallets and three non-issuer wallets
     final Wallet issuerAWallet = createRandomAccount();
@@ -234,7 +250,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Create a Trustline between emily and issuerA
-    final TrustLine emilyTrustLineWithIssuerA = createTrustLine(
+    createTrustLine(
       "USD",
       "10000",
       issuerAWallet,
@@ -244,7 +260,7 @@ public class IssuedCurrencyIT extends AbstractIT {
 
     ///////////////////////////
     // Create a Trustline between emily and issuerB
-    final TrustLine emilyTrustLineWithIssuerB = createTrustLine(
+    createTrustLine(
       "USD",
       "10000",
       issuerBWallet,
@@ -313,7 +329,6 @@ public class IssuedCurrencyIT extends AbstractIT {
       )
       .findFirst().orElseThrow(() -> new RuntimeException("No path found."))
       .pathsComputed();
-
 
     ///////////////////////////
     // Send a Payment from charlie to Daniel using the previously found paths.

@@ -5,14 +5,13 @@ import com.google.common.hash.Hashing;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.wallet.WalletFactory;
 
 import java.util.Objects;
 
 /**
  * A typed instance of an XRPL private-key.
  */
-public class PrivateKey implements javax.security.auth.Destroyable {
+public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyable {
 
   /**
    * Keys generated from the secp256k1 curve have 33 bytes in XRP Ledger. However, keys derived from the ed25519 curve
@@ -25,8 +24,7 @@ public class PrivateKey implements javax.security.auth.Destroyable {
   private boolean destroyed;
 
   /**
-   * Instantiates a new instance of a private key using the supplied bytes. Note that in order to derive a private key,
-   * considering using instances of either {@link WalletFactory} or {@link KeyPairService}.
+   * Instantiates a new instance of {@link PrivateKey} using the supplied bytes.
    *
    * @param value An {@link UnsignedByteArray} containing this key's binary value.
    *
@@ -96,7 +94,7 @@ public class PrivateKey implements javax.security.auth.Destroyable {
   }
 
   /**
-   * A SHA-256 hash of the private key material contained in this object.
+   * Provides the SHA-256 hash of the private key material contained in this object.
    *
    * @return A hex-encoded {@link String} representing the hash of this private key.
    */

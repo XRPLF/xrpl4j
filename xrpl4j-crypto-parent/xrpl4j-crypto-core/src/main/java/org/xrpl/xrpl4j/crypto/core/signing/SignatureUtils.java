@@ -135,7 +135,7 @@ public class SignatureUtils {
    *
    * @return A copy of {@code transaction} with the {@link Transaction#transactionSignature()} field added.
    */
-  public <T extends Transaction> SingleSingedTransaction<T> addSignatureToTransaction(
+  public <T extends Transaction> SingleSignedTransaction<T> addSignatureToTransaction(
     final T transaction, final Signature signature
   ) {
     Objects.requireNonNull(transaction);
@@ -230,7 +230,7 @@ public class SignatureUtils {
     try {
       String signedJson = objectMapper.writeValueAsString(transactionWithSignature);
       String signedBlob = binaryCodec.encode(signedJson); // <-- txBlob must be binary-encoded.
-      return SingleSingedTransaction.<T>builder()
+      return SingleSignedTransaction.<T>builder()
         .unsignedTransaction(transaction)
         .signature(signature)
         .signedTransaction((T) transactionWithSignature)

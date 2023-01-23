@@ -34,7 +34,7 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.Finality;
@@ -196,7 +196,9 @@ public class XrplClient {
    * @return The {@link SubmitResult} resulting from the submission request.
    *
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
+   * @deprecated Prefer the submit method with the variant from the new crypto package.
    */
+  @Deprecated
   public <T extends Transaction> SubmitResult<T> submit(
     SignedTransaction<T> signedTransaction
   ) throws JsonRpcClientErrorException {
@@ -247,10 +249,10 @@ public class XrplClient {
   }
 
   /**
-   * Submit a {@link SingleSingedTransaction} to the XRP Ledger.
+   * Submit a {@link SingleSignedTransaction} to the XRP Ledger.
    *
    * @param <T>               The type of signed {@link Transaction} that is being submitted.
-   * @param signedTransaction A {@link SingleSingedTransaction} to submit.
+   * @param signedTransaction A {@link SingleSignedTransaction} to submit.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
    *
@@ -258,9 +260,9 @@ public class XrplClient {
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(
-    final SingleSingedTransaction signedTransaction
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction signedTransaction)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(signedTransaction);
 
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("About to submit signedTransaction: {}", signedTransaction);
@@ -292,9 +294,10 @@ public class XrplClient {
    *
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(
-    T transaction
-  ) throws JsonRpcClientErrorException {
+  public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(T transaction)
+    throws JsonRpcClientErrorException {
+    Objects.requireNonNull(transaction);
+
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SUBMIT_MULTISIGNED)
       .addParams(SubmitMultiSignedRequestParams.of(transaction))
@@ -746,9 +749,12 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <T extends Transaction> TransactionResult<T> transaction(
-    TransactionRequestParams params,
-    Class<T> transactionType
+    final TransactionRequestParams params,
+    final Class<T> transactionType
   ) throws JsonRpcClientErrorException {
+    Objects.requireNonNull(params);
+    Objects.requireNonNull(transactionType);
+
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.TX)
       .addParams(params)

@@ -7,12 +7,12 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -33,21 +33,24 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Integration tests for submitting payment transactions to the XRPL using a {@link DelegatedSignatureService} for all
- * signing operations.
+ * Integration tests for submitting payment transactions to the XRPL using a {@link SignatureService} that uses
+ * instances of {@link PrivateKeyReference} for all signing operations.
  */
-public class TransactUsingDelegatedSignatureService extends AbstractIT {
+public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromEd25519Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureServiceEd25519.getPublicKey(sourceKeyMetadata);
-    final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.ED25519);
+    final PublicKey sourceWalletPublicKey = derivedKeySignatureService.derivePublicKey(sourceKeyMetadata);
+    final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureServiceEd25519.getPublicKey(destinationKeyMetadata);
-    final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    final PrivateKeyReference destinationKeyMetadata = constructPrivateKeyReference(
+      "destinationWallet", VersionType.ED25519
+    );
+    final PublicKey destinationWalletPublicKey = derivedKeySignatureService.derivePublicKey(
+      destinationKeyMetadata);
+    final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
@@ -61,7 +64,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       .signingPublicKey(sourceWalletPublicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedTransaction = delegatedSignatureServiceEd25519.sign(sourceKeyMetadata,
+    SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourceKeyMetadata,
       payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
@@ -72,15 +75,15 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureServiceSecp256k1.getPublicKey(sourceKeyMetadata);
-    final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.SECP256K1);
+    final PublicKey sourceWalletPublicKey = derivedKeySignatureService.derivePublicKey(sourceKeyMetadata);
+    final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureServiceSecp256k1.getPublicKey(
-      destinationKeyMetadata);
-    final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    final PrivateKeyReference destinationKeyMetadata
+      = constructPrivateKeyReference("destinationWallet", VersionType.SECP256K1);
+    final PublicKey destinationWalletPublicKey = derivedKeySignatureService.derivePublicKey(destinationKeyMetadata);
+    final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
@@ -95,8 +98,8 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       .signingPublicKey(sourceWalletPublicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> transactionWithSignature = delegatedSignatureServiceSecp256k1
-      .sign(sourceKeyMetadata, payment);
+    SingleSignedTransaction<Payment> transactionWithSignature
+      = derivedKeySignatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
@@ -106,59 +109,69 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
 
   @Test
   void multiSigSendPaymentFromEd25519Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    this.multiSigSendPaymentHelper(this.delegatedSignatureServiceEd25519);
+    // Create four accounts: one for the source account; two for the signers; one for the destination
+    PrivateKeyReference sourcePrivateKey = createRandomPrivateKeyReferenceEd25519();
+    fundAccount(toAddress(sourcePrivateKey));
+
+    PrivateKeyReference alicePrivateKey = createRandomPrivateKeyReferenceEd25519();
+    fundAccount(toAddress(alicePrivateKey));
+
+    PrivateKeyReference bobPrivateKey = createRandomPrivateKeyReferenceEd25519();
+    fundAccount(toAddress(bobPrivateKey));
+
+    PrivateKeyReference destinationPrivateKey = createRandomPrivateKeyReferenceEd25519();
+    fundAccount(toAddress(destinationPrivateKey));
+
+    this.multiSigSendPaymentHelper(sourcePrivateKey, alicePrivateKey, bobPrivateKey, destinationPrivateKey);
   }
 
   @Test
   void multiSigSendPaymentFromSecp256k1Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    this.multiSigSendPaymentHelper(this.delegatedSignatureServiceSecp256k1);
+    // Create four accounts: one for the source account; two for the signers; one for the destination
+    PrivateKeyReference sourcePrivateKey = createRandomPrivateKeyReferenceSecp256k1();
+    fundAccount(toAddress(sourcePrivateKey));
+
+    PrivateKeyReference alicePrivateKey = createRandomPrivateKeyReferenceSecp256k1();
+    fundAccount(toAddress(alicePrivateKey));
+
+    PrivateKeyReference bobPrivateKey = createRandomPrivateKeyReferenceSecp256k1();
+    fundAccount(toAddress(bobPrivateKey));
+
+    PrivateKeyReference destinationPrivateKey = createRandomPrivateKeyReferenceSecp256k1();
+    fundAccount(toAddress(destinationPrivateKey));
+
+    this.multiSigSendPaymentHelper(sourcePrivateKey, alicePrivateKey, bobPrivateKey, destinationPrivateKey);
   }
 
   /**
-   * Helper to send a multisign payment using a designated {@link DelegatedSignatureService}.
-   *
-   * @param delegatedSignatureService A particular type of {@link DelegatedSignatureService} for a given key type.
+   * Helper to send a multisign payment using a designated {@link SignatureService}.
    */
-  private void multiSigSendPaymentHelper(final DelegatedSignatureService delegatedSignatureService)
-    throws JsonRpcClientErrorException, JsonProcessingException {
-    Objects.requireNonNull(delegatedSignatureService);
-
-    KeyMetadata sourceKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("source")
-      .build();
-    final Address sourceAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(sourceKeyMetadata));
-    this.fundAccount(sourceAddress);
-
-    KeyMetadata aliceKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("alice")
-      .build();
-    final Address aliceAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(aliceKeyMetadata));
-    this.fundAccount(aliceAddress);
-
-    KeyMetadata bobKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("bob")
-      .build();
-    final Address bobAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(bobKeyMetadata));
-    this.fundAccount(bobAddress);
-
-    KeyMetadata destinationKeyMetadata = KeyMetadata.builder().from(KeyMetadata.EMPTY)
-      .keyIdentifier("destination")
-      .build();
-    final Address destinationAddress = BcAddressUtils.getInstance()
-      .deriveAddress(delegatedSignatureService.getPublicKey(destinationKeyMetadata));
-    this.fundAccount(destinationAddress);
+  private void multiSigSendPaymentHelper(
+    final PrivateKeyReference sourcePrivateKeyReference,
+    final PrivateKeyReference alicePrivateKeyReference,
+    final PrivateKeyReference bobKeyPrivateKeyReference,
+    final PrivateKeyReference destinationPrivateKeyReference
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(sourcePrivateKeyReference);
+    Objects.requireNonNull(alicePrivateKeyReference);
+    Objects.requireNonNull(bobKeyPrivateKeyReference);
+    Objects.requireNonNull(destinationPrivateKeyReference);
 
     /////////////////////////////
     // Wait for all accounts to show up in a validated ledger
     final AccountInfoResult sourceAccountInfo = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceAddress)
+      () -> this.getValidatedAccountInfo(
+        toPublicKey(sourcePrivateKeyReference).deriveAddress())
     );
-    scanForResult(() -> this.getValidatedAccountInfo(aliceAddress));
-    scanForResult(() -> this.getValidatedAccountInfo(bobAddress));
-    scanForResult(() -> this.getValidatedAccountInfo(destinationAddress));
+    scanForResult(() -> this.getValidatedAccountInfo(
+      toPublicKey(alicePrivateKeyReference).deriveAddress())
+    );
+    scanForResult(() -> this.getValidatedAccountInfo(
+      toPublicKey(bobKeyPrivateKeyReference).deriveAddress())
+    );
+    scanForResult(() -> this.getValidatedAccountInfo(
+      toPublicKey(destinationPrivateKeyReference).deriveAddress())
+    );
 
     /////////////////////////////
     // And validate that the source account has not set up any signer lists
@@ -168,29 +181,29 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-      .account(sourceAddress)
+      .account(toAddress(sourcePrivateKeyReference))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(aliceAddress)
+            .account(toAddress(alicePrivateKeyReference))
             .signerWeight(UnsignedInteger.ONE)
             .build()
         ),
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(bobAddress)
+            .account(toAddress(bobKeyPrivateKeyReference))
             .signerWeight(UnsignedInteger.ONE)
             .build()
         )
       )
-      .signingPublicKey(toPublicKey(sourceKeyMetadata, delegatedSignatureService).base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKeyReference).base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = delegatedSignatureService.sign(
-      sourceKeyMetadata, signerListSet
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = derivedKeySignatureService.sign(
+      sourcePrivateKeyReference, signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
@@ -203,7 +216,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     AccountInfoResult sourceAccountInfoAfterSignerListSet = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceAddress),
+      () -> this.getValidatedAccountInfo(toAddress(sourcePrivateKeyReference)),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
@@ -219,7 +232,7 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
-      .account(sourceAddress)
+      .account(toAddress(sourcePrivateKeyReference))
       .fee(
         FeeUtils.computeMultisigNetworkFees(
           feeResult,
@@ -228,23 +241,24 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(destinationAddress)
+      .destination(toAddress(destinationPrivateKeyReference))
       .signingPublicKey("")
       .build();
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
-    List<SignerWrapper> signers = Lists.newArrayList(aliceKeyMetadata, bobKeyMetadata).stream()
-      .map(keyMetadata -> {
-          Signature signatureWithKeyMetadata = delegatedSignatureService.multiSign(keyMetadata, unsignedPayment);
-          return SignerWrapper.of(Signer.builder()
-            .account(toAddress(keyMetadata, delegatedSignatureService))
-            .signingPublicKey(toPublicKey(keyMetadata, delegatedSignatureService).base16Value())
-            .transactionSignature(signatureWithKeyMetadata.base16Value())
-            .build()
-          );
-        }
-      )
+    List<SignerWrapper> signers = Lists.newArrayList(alicePrivateKeyReference, bobKeyPrivateKeyReference)
+      .stream()
+      .map(privateKeyReference -> {
+        Signature signatureWithKeyMetadata
+          = derivedKeySignatureService.multiSign(privateKeyReference, unsignedPayment);
+        return SignerWrapper.of(Signer.builder()
+          .account(toAddress(privateKeyReference))
+          .signingPublicKey(toPublicKey(privateKeyReference).base16Value())
+          .transactionSignature(signatureWithKeyMetadata.base16Value())
+          .build()
+        );
+      })
       .collect(Collectors.toList());
 
     /////////////////////////////
@@ -260,14 +274,5 @@ public class TransactUsingDelegatedSignatureService extends AbstractIT {
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transaction().hash()
     );
-  }
-
-  private PublicKey toPublicKey(final KeyMetadata keyMetadata,
-    final DelegatedSignatureService delegatedSignatureService) {
-    return delegatedSignatureService.getPublicKey(keyMetadata);
-  }
-
-  private Address toAddress(final KeyMetadata keyMetadata, final DelegatedSignatureService delegatedSignatureService) {
-    return BcAddressUtils.getInstance().deriveAddress(toPublicKey(keyMetadata, delegatedSignatureService));
   }
 }

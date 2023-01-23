@@ -12,19 +12,19 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
  * @param <T> The type of {@link Transaction} that was signed.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableSingleSingedTransaction.class)
-@JsonDeserialize(as = ImmutableSingleSingedTransaction.class)
-public interface SingleSingedTransaction<T extends Transaction> extends SignedTransaction<T> {
+@JsonSerialize(as = ImmutableSingleSignedTransaction.class)
+@JsonDeserialize(as = ImmutableSingleSignedTransaction.class)
+public interface SingleSignedTransaction<T extends Transaction> extends SignedTransaction<T> {
 
   /**
    * A builder.
    *
    * @param <T> An instance of {@link Transaction}.
    *
-   * @return An {@link ImmutableSingleSingedTransaction.Builder}.
+   * @return An {@link ImmutableSingleSignedTransaction.Builder}.
    */
-  static <T extends Transaction> ImmutableSingleSingedTransaction.Builder<T> builder() {
-    return ImmutableSingleSingedTransaction.builder();
+  static <T extends Transaction> ImmutableSingleSignedTransaction.Builder<T> builder() {
+    return ImmutableSingleSignedTransaction.builder();
   }
 
   /**

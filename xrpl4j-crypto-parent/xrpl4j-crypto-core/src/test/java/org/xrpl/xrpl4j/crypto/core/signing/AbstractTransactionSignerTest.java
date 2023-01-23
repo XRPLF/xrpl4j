@@ -16,38 +16,40 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.AddressUtils;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.TestConstants;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class AbstractDelegatedTransactionSignerTest {
+/**
+ * Unit tests for {@link AbstractTransactionSigner}.
+ */
+public class AbstractTransactionSignerTest {
 
   @Mock
-  private SignatureUtils signatureUtilsMock;
+  SignatureUtils signatureUtilsMock;
   @Mock
-  private Signature ed25519SignatureMock;
+  Signature ed25519SignatureMock;
   @Mock
-  private Signature secp256k1SignatureMock;
+  Signature secp256k1SignatureMock;
   @Mock
-  private KeyMetadata keyMetadataMock;
+  PrivateKeyable privateKeyableMock;
   @Mock
-  private Transaction transactionMock;
+  PublicKey publicKeyMock;
   @Mock
-  private AddressUtils addressServiceMock;
+  Transaction transactionMock;
   @Mock
-  private SignatureWithKeyMetadata signatureWithKeyMetaMock;
+  SignatureWithPublicKey signatureWithPublicKeyMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
 
   private VersionType keyType;
 
-  private AbstractDelegatedTransactionSigner transactionSigner;
+  private AbstractTransactionSigner transactionSigner;
 
   @BeforeEach
   void setUp() {
@@ -59,22 +61,22 @@ public class AbstractDelegatedTransactionSignerTest {
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
-    when(signatureWithKeyMetaMock.signingKeyMetadata()).thenReturn(keyMetadataMock);
-    when(signatureWithKeyMetaMock.transactionSignature()).thenReturn(ed25519SignatureMock);
+    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(publicKeyMock);
+    when(signatureWithPublicKeyMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
-    this.transactionSigner = new AbstractDelegatedTransactionSigner(signatureUtilsMock, addressServiceMock) {
+    this.transactionSigner = new AbstractTransactionSigner(signatureUtilsMock) {
       @Override
-      protected Signature edDsaSign(KeyMetadata privateKeyMetadata, UnsignedByteArray signableTransactionBytes) {
+      protected Signature edDsaSign(PrivateKeyable privateKeyable, UnsignedByteArray signableTransactionBytes) {
         return ed25519SignatureMock;
       }
 
       @Override
-      protected Signature ecDsaSign(KeyMetadata privateKeyMetadata, UnsignedByteArray signableTransactionBytes) {
+      protected Signature ecDsaSign(PrivateKeyable privateKeyable, UnsignedByteArray signableTransactionBytes) {
         return secp256k1SignatureMock;
       }
 
       @Override
-      public PublicKey getPublicKey(KeyMetadata keyMetadata) {
+      public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
         return keyType == VersionType.ED25519 ? TestConstants.ED_PUBLIC_KEY : TestConstants.EC_PUBLIC_KEY;
       }
     };
@@ -92,13 +94,13 @@ public class AbstractDelegatedTransactionSignerTest {
   @Test
   void signWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> transactionSigner.sign(keyMetadataMock, (Transaction) null));
+      () -> transactionSigner.sign(privateKeyableMock, (Transaction) null));
   }
 
   @Test
   void signEd25519() {
     keyType = VersionType.ED25519;
-    transactionSigner.sign(keyMetadataMock, transactionMock);
+    transactionSigner.sign(privateKeyableMock, transactionMock);
 
     verify(signatureUtilsMock).toSignableBytes(transactionMock);
     verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, ed25519SignatureMock);
@@ -109,7 +111,7 @@ public class AbstractDelegatedTransactionSignerTest {
   void signSecp256k1() {
     keyType = VersionType.SECP256K1;
 
-    transactionSigner.sign(keyMetadataMock, transactionMock);
+    transactionSigner.sign(privateKeyableMock, transactionMock);
 
     verify(signatureUtilsMock).toSignableBytes(transactionMock);
     verify(signatureUtilsMock).addSignatureToTransaction(transactionMock, secp256k1SignatureMock);
@@ -129,7 +131,7 @@ public class AbstractDelegatedTransactionSignerTest {
   @Test
   void signUnsignedClaimWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> transactionSigner.sign(keyMetadataMock, (UnsignedClaim) null));
+      () -> transactionSigner.sign(privateKeyableMock, (UnsignedClaim) null));
   }
 
   @Test
@@ -138,7 +140,7 @@ public class AbstractDelegatedTransactionSignerTest {
     UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
     when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
 
-    Signature actual = transactionSigner.sign(keyMetadataMock, unsignedClaimMock);
+    Signature actual = transactionSigner.sign(privateKeyableMock, unsignedClaimMock);
 
     verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
     verifyNoMoreInteractions(signatureUtilsMock);
@@ -151,7 +153,7 @@ public class AbstractDelegatedTransactionSignerTest {
     UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
     when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
 
-    Signature actual = transactionSigner.sign(keyMetadataMock, unsignedClaimMock);
+    Signature actual = transactionSigner.sign(privateKeyableMock, unsignedClaimMock);
 
     verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
     verifyNoMoreInteractions(signatureUtilsMock);
@@ -169,19 +171,16 @@ public class AbstractDelegatedTransactionSignerTest {
 
   @Test
   void multiSignWithNullTransaction() {
-    Assertions.assertThrows(NullPointerException.class, () -> transactionSigner.multiSign(keyMetadataMock, null));
+    Assertions.assertThrows(NullPointerException.class, () -> transactionSigner.multiSign(privateKeyableMock, null));
   }
 
   @Test
   void multiSignEd25519() {
     keyType = VersionType.ED25519;
-    when(addressServiceMock.deriveAddress(any())).thenReturn(TestConstants.ED_ADDRESS);
 
-    Signature signature = transactionSigner.multiSign(keyMetadataMock, transactionMock);
+    Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
     assertThat(signature).isEqualTo(ed25519SignatureMock);
 
-    verify(addressServiceMock).deriveAddress(any());
-    verifyNoMoreInteractions(addressServiceMock);
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
     verifyNoMoreInteractions(signatureUtilsMock);
@@ -190,14 +189,11 @@ public class AbstractDelegatedTransactionSignerTest {
   @Test
   void multiSignSecp256k1() {
     keyType = VersionType.SECP256K1;
-    when(addressServiceMock.deriveAddress(any())).thenReturn(TestConstants.EC_ADDRESS);
 
-    Signature signature = transactionSigner.multiSign(keyMetadataMock, transactionMock);
+    Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
 
     assertThat(signature).isEqualTo(secp256k1SignatureMock);
 
-    verify(addressServiceMock).deriveAddress(any());
-    verifyNoMoreInteractions(addressServiceMock);
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
     verifyNoMoreInteractions(signatureUtilsMock);
@@ -211,7 +207,7 @@ public class AbstractDelegatedTransactionSignerTest {
   void edDsaSign() {
     this.keyType = VersionType.ED25519;
 
-    Signature actual = transactionSigner.edDsaSign(keyMetadataMock, UnsignedByteArray.empty());
+    Signature actual = transactionSigner.edDsaSign(privateKeyableMock, UnsignedByteArray.empty());
 
     assertThat(actual).isEqualTo(ed25519SignatureMock);
     assertThat(ed25519VerifyCalled.get()).isFalse();
@@ -227,7 +223,7 @@ public class AbstractDelegatedTransactionSignerTest {
   void ecDsaSign() {
     this.keyType = VersionType.SECP256K1;
 
-    Signature actual = transactionSigner.ecDsaSign(keyMetadataMock, UnsignedByteArray.empty());
+    Signature actual = transactionSigner.ecDsaSign(privateKeyableMock, UnsignedByteArray.empty());
 
     assertThat(actual).isEqualTo(secp256k1SignatureMock);
 

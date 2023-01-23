@@ -5,17 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.crypto.bc.BcAddressUtils;
-import org.xrpl.xrpl4j.crypto.core.KeyMetadata;
+import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.signing.DelegatedSignatureService;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
-import org.xrpl.xrpl4j.crypto.core.signing.SingleSingedTransaction;
-import org.xrpl.xrpl4j.crypto.core.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -36,28 +33,21 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Integration tests for submitting payment transactions to the XRPL using a {@link SignatureService} for all signing
- * operations.
+ * Integration tests for submitting payment transactions to the XRPL using a {@link SignatureService} that uses *
+ * instances of {@link PrivateKey}  for all signing operations.
  */
-public class TransactUsingSignatureService extends AbstractIT {
-
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
-  @BeforeEach
-  public void setUp() {
-  }
+public class TransactUsingSignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final DelegatedSignatureService delegatedSignatureService = this.constructDelegatedSignatureServiceEd25519();
-
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
-    final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    final PrivateKey sourcePrivateKey = constructPrivateKey("sourceWallet", VersionType.ED25519);
+    final PublicKey sourcePublicKey = signatureService.derivePublicKey(sourcePrivateKey);
+    final Address sourceWalletAddress = sourcePublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
-    final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    final PrivateKey destinationPrivateKey = constructPrivateKey("destinationWallet", VersionType.ED25519);
+    final PublicKey destinationWalletPublicKey = signatureService.derivePublicKey(destinationPrivateKey);
+    final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
@@ -68,10 +58,10 @@ public class TransactUsingSignatureService extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourcePublicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> signedTransaction = delegatedSignatureService.sign(sourceKeyMetadata, payment);
+    SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
@@ -81,16 +71,14 @@ public class TransactUsingSignatureService extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final DelegatedSignatureService delegatedSignatureService = this.constructDelegatedSignatureServiceSecp256k1();
-
-    final KeyMetadata sourceKeyMetadata = constructKeyMetadata("sourceWallet");
-    final PublicKey sourceWalletPublicKey = delegatedSignatureService.getPublicKey(sourceKeyMetadata);
-    final Address sourceWalletAddress = BcAddressUtils.getInstance().deriveAddress(sourceWalletPublicKey);
+    final PrivateKey sourcePrivateKey = constructPrivateKey("sourceWallet", VersionType.SECP256K1);
+    final PublicKey sourceWalletPublicKey = signatureService.derivePublicKey(sourcePrivateKey);
+    final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
-    final KeyMetadata destinationKeyMetadata = constructKeyMetadata("destinationWallet");
-    final PublicKey destinationWalletPublicKey = delegatedSignatureService.getPublicKey(destinationKeyMetadata);
-    final Address destinationWalletAddress = BcAddressUtils.getInstance().deriveAddress(destinationWalletPublicKey);
+    final PrivateKey destinationPrivateKey = constructPrivateKey("destinationWallet", VersionType.SECP256K1);
+    final PublicKey destinationWalletPublicKey = signatureService.derivePublicKey(destinationPrivateKey);
+    final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
 
     FeeResult feeResult = xrplClient.fee();
@@ -105,8 +93,7 @@ public class TransactUsingSignatureService extends AbstractIT {
       .signingPublicKey(sourceWalletPublicKey.base16Value())
       .build();
 
-    SingleSingedTransaction<Payment> transactionWithSignature = delegatedSignatureService
-      .sign(sourceKeyMetadata, payment);
+    SingleSignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.result()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
@@ -117,52 +104,62 @@ public class TransactUsingSignatureService extends AbstractIT {
   @Test
   void multiSigPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     // Create four accounts: one for the source account; two for the signers; one for the destination
-    Wallet sourceWallet = createRandomAccountEd25519();
-    Wallet aliceWallet = createRandomAccountEd25519();
-    Wallet bobWallet = createRandomAccountEd25519();
-    Wallet destinationWallet = createRandomAccountEd25519();
+    PrivateKey sourcePrivateKey = constructPrivateKey("source", VersionType.ED25519);
+    fundAccount(toAddress(sourcePrivateKey));
 
-    this.multiSigSendPaymentHelper(sourceWallet, aliceWallet, bobWallet, destinationWallet, signatureService);
+    PrivateKey alicePrivateKey = constructPrivateKey("alice", VersionType.ED25519);
+    fundAccount(toAddress(alicePrivateKey));
+
+    PrivateKey bobPrivateKey = constructPrivateKey("bob", VersionType.ED25519);
+    fundAccount(toAddress(bobPrivateKey));
+
+    PrivateKey destinationPrivateKey = constructPrivateKey("destination", VersionType.ED25519);
+    fundAccount(toAddress(destinationPrivateKey));
+
+    this.multiSigSendPaymentHelper(sourcePrivateKey, alicePrivateKey, bobPrivateKey, destinationPrivateKey);
   }
 
   @Test
   void multiSigPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     // Create four accounts: one for the source account; two for the signers; one for the destination
-    Wallet sourceWallet = createRandomAccountSecp256k1();
-    Wallet aliceWallet = createRandomAccountSecp256k1();
-    Wallet bobWallet = createRandomAccountSecp256k1();
-    Wallet destinationWallet = createRandomAccountSecp256k1();
+    PrivateKey sourcePrivateKey = constructPrivateKey("source", VersionType.SECP256K1);
+    fundAccount(toAddress(sourcePrivateKey));
 
-    this.multiSigSendPaymentHelper(sourceWallet, aliceWallet, bobWallet, destinationWallet, signatureService);
+    PrivateKey alicePrivateKey = constructPrivateKey("alice", VersionType.SECP256K1);
+    fundAccount(toAddress(alicePrivateKey));
+
+    PrivateKey bobPrivateKey = constructPrivateKey("bob", VersionType.SECP256K1);
+    fundAccount(toAddress(bobPrivateKey));
+
+    PrivateKey destinationPrivateKey = constructPrivateKey("destination", VersionType.SECP256K1);
+    fundAccount(toAddress(destinationPrivateKey));
+
+    this.multiSigSendPaymentHelper(sourcePrivateKey, alicePrivateKey, bobPrivateKey, destinationPrivateKey);
   }
 
   /**
    * Helper to send a multisign payment using a designated {@link SignatureService}.
-   *
-   * @param signatureService A particular type of {@link SignatureService} for a given key type.
    */
   private void multiSigSendPaymentHelper(
-    final Wallet sourceWallet,
-    final Wallet aliceWallet,
-    final Wallet bobWallet,
-    final Wallet destinationWallet,
-    final SignatureService signatureService
+    final PrivateKey sourcePrivateKey,
+    final PrivateKey alicePrivateKey,
+    final PrivateKey bobPrivateKey,
+    final PrivateKey destinationPrivateKey
   ) throws JsonRpcClientErrorException, JsonProcessingException {
 
-    Objects.requireNonNull(sourceWallet);
-    Objects.requireNonNull(aliceWallet);
-    Objects.requireNonNull(bobWallet);
-    Objects.requireNonNull(destinationWallet);
-    Objects.requireNonNull(signatureService);
+    Objects.requireNonNull(sourcePrivateKey);
+    Objects.requireNonNull(alicePrivateKey);
+    Objects.requireNonNull(bobPrivateKey);
+    Objects.requireNonNull(destinationPrivateKey);
 
     /////////////////////////////
     // Wait for all accounts to show up in a validated ledger
     final AccountInfoResult sourceAccountInfo = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address())
+      () -> this.getValidatedAccountInfo(toAddress(sourcePrivateKey))
     );
-    scanForResult(() -> this.getValidatedAccountInfo(aliceWallet.address()));
-    scanForResult(() -> this.getValidatedAccountInfo(bobWallet.address()));
-    scanForResult(() -> this.getValidatedAccountInfo(destinationWallet.address()));
+    scanForResult(() -> this.getValidatedAccountInfo(toAddress(alicePrivateKey)));
+    scanForResult(() -> this.getValidatedAccountInfo(toAddress(bobPrivateKey)));
+    scanForResult(() -> this.getValidatedAccountInfo(toAddress(destinationPrivateKey)));
 
     /////////////////////////////
     // And validate that the source account has not set up any signer lists
@@ -172,29 +169,29 @@ public class TransactUsingSignatureService extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     FeeResult feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-      .account(sourceWallet.address())
+      .account(toAddress(sourcePrivateKey))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(aliceWallet.address())
+            .account(toAddress(alicePrivateKey))
             .signerWeight(UnsignedInteger.ONE)
             .build()
         ),
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(bobWallet.address())
+            .account(toAddress(bobPrivateKey))
             .signerWeight(UnsignedInteger.ONE)
             .build()
         )
       )
-      .signingPublicKey(sourceWallet.publicKey().base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKey).base16Value())
       .build();
 
-    SingleSingedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
-      sourceWallet.privateKey(), signerListSet
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+      sourcePrivateKey, signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
@@ -207,7 +204,7 @@ public class TransactUsingSignatureService extends AbstractIT {
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     AccountInfoResult sourceAccountInfoAfterSignerListSet = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.address()),
+      () -> this.getValidatedAccountInfo(toAddress(sourcePrivateKey)),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
@@ -223,7 +220,7 @@ public class TransactUsingSignatureService extends AbstractIT {
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
-      .account(sourceWallet.address())
+      .account(toAddress(sourcePrivateKey))
       .fee(
         FeeUtils.computeMultisigNetworkFees(
           feeResult,
@@ -232,18 +229,18 @@ public class TransactUsingSignatureService extends AbstractIT {
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(destinationWallet.address())
+      .destination(toAddress(destinationPrivateKey))
       .signingPublicKey("")
       .build();
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
-    List<SignerWrapper> signers = Lists.newArrayList(aliceWallet, bobWallet).stream()
-      .map(wallet -> {
-          Signature signedPayment = signatureService.multiSign(wallet.privateKey(), unsignedPayment);
+    List<SignerWrapper> signers = Lists.newArrayList(alicePrivateKey, bobPrivateKey).stream()
+      .map(privateKey -> {
+          Signature signedPayment = signatureService.multiSign(privateKey, unsignedPayment);
           return SignerWrapper.of(Signer.builder()
-            .account(wallet.address())
-            .signingPublicKey(wallet.publicKey().base16Value())
+            .account(toAddress(privateKey))
+            .signingPublicKey(toPublicKey(privateKey).base16Value())
             .transactionSignature(signedPayment.base16Value())
             .build()
           );
@@ -264,5 +261,14 @@ public class TransactUsingSignatureService extends AbstractIT {
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transaction().hash()
     );
+  }
+
+  private PublicKey toPublicKey(final PrivateKey privateKey) {
+    Objects.requireNonNull(privateKey);
+    return signatureService.derivePublicKey(privateKey);
+  }
+
+  private Address toAddress(final PrivateKey privateKey) {
+    return toPublicKey(privateKey).deriveAddress();
   }
 }

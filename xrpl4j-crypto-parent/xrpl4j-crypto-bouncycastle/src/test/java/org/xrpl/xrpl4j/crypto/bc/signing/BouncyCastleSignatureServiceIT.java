@@ -78,12 +78,12 @@ class BouncyCastleSignatureServiceIT {
     assertThat(signedTransaction).isNotNull();
     assertThat(signedTransaction.unsignedTransaction()).isEqualTo(payment);
 
-    boolean actual = signatureService.verifySingleSigned(
+    boolean actual = signatureService.verify(
       SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519KeyPair.publicKey()).build(), payment);
     assertThat(actual).isTrue();
 
-    actual = signatureService.verifySingleSigned(
+    actual = signatureService.verify(
       SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519KeyPairOther.publicKey()).build(), payment);
     assertThat(actual).isFalse();
@@ -96,12 +96,12 @@ class BouncyCastleSignatureServiceIT {
       payment);
     assertThat(signedTransaction).isNotNull();
 
-    boolean actual = signatureService.verifySingleSigned(
+    boolean actual = signatureService.verify(
       SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(secp256k1KeyPair.publicKey()).build(), payment);
     assertThat(actual).isTrue();
 
-    actual = signatureService.verifySingleSigned(
+    actual = signatureService.verify(
       SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519KeyPair.publicKey()).build(), payment);
     assertThat(actual).isFalse();
@@ -143,7 +143,7 @@ class BouncyCastleSignatureServiceIT {
   void signAndVerifyEdMultithreaded() {
     final Callable<Boolean> signedTxCallable = () -> {
       SingleSignedTransaction<Payment> signedTx = signatureService.sign(ed25519KeyPair.privateKey(), payment);
-      return signatureService.verifySingleSigned(
+      return signatureService.verify(
         SignatureWithPublicKey.builder().transactionSignature(signedTx.signature())
           .signingPublicKey(ed25519KeyPair.publicKey()).build(), payment);
     };
@@ -223,7 +223,7 @@ class BouncyCastleSignatureServiceIT {
     final Callable<Boolean> signedTxCallable = () -> {
 
       SingleSignedTransaction<Payment> signedTx = signatureService.sign(secp256k1KeyPair.privateKey(), payment);
-      return signatureService.verifySingleSigned(
+      return signatureService.verify(
         SignatureWithPublicKey.builder().transactionSignature(signedTx.signature())
           .signingPublicKey(secp256k1KeyPair.publicKey()).build(), payment);
     };

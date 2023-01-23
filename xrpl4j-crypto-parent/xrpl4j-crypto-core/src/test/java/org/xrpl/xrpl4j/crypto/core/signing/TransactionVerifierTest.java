@@ -28,7 +28,7 @@ class TransactionVerifierTest {
 
     transactionVerifier = new TransactionVerifier() {
       @Override
-      public <T extends Transaction> boolean verifySingleSigned(
+      public <T extends Transaction> boolean verify(
         SignatureWithPublicKey signatureWithPublicKey, T unsignedTransaction
       ) {
         verify1Called.set(true);

@@ -103,7 +103,7 @@ public class AbstractTransactionVerifierTest {
   @Test
   void verifyEd25519() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(edPublicKeyMock);
-    boolean actual = transactionVerifier.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = transactionVerifier.verify(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -115,7 +115,7 @@ public class AbstractTransactionVerifierTest {
   @Test
   void verifySecp256k1() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(ecPublicKeyMock);
-    boolean actual = transactionVerifier.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = transactionVerifier.verify(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();

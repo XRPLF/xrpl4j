@@ -106,7 +106,7 @@ class BcDerivedKeySignatureServiceTest {
     final Callable<Boolean> signedTxCallable = () -> {
       SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(privateKeyReference,
         paymentTransaction);
-      return this.derivedKeySignatureService.verifySingleSigned(
+      return this.derivedKeySignatureService.verify(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
           .signingPublicKey(publicKey)
@@ -148,7 +148,7 @@ class BcDerivedKeySignatureServiceTest {
     SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(
       privateKeyReference, paymentTransaction
     );
-    final boolean verified = this.derivedKeySignatureService.verifySingleSigned(
+    final boolean verified = this.derivedKeySignatureService.verify(
       SignatureWithPublicKey.builder()
         .transactionSignature(Signature.builder().from(signedTx.signature())
           .value(UnsignedByteArray.fromHex("00000000000000000000000000000000"))
@@ -351,7 +351,7 @@ class BcDerivedKeySignatureServiceTest {
 
       SingleSignedTransaction<Payment> signedTx
         = this.derivedKeySignatureService.sign(privateKeyReference, paymentTransaction);
-      return this.derivedKeySignatureService.verifySingleSigned(
+      return this.derivedKeySignatureService.verify(
         SignatureWithPublicKey.builder()
           .transactionSignature(signedTx.signature())
           .signingPublicKey(publicKey)
@@ -395,7 +395,7 @@ class BcDerivedKeySignatureServiceTest {
     SingleSignedTransaction<Payment> signedTx
       = this.derivedKeySignatureService.sign(privateKeyReferenceFoo, paymentTransaction);
 
-    final boolean verified = this.derivedKeySignatureService.verifySingleSigned(
+    final boolean verified = this.derivedKeySignatureService.verify(
       SignatureWithPublicKey.builder()
         .transactionSignature(signedTx.signature())
         .signingPublicKey(publicKeyBar)

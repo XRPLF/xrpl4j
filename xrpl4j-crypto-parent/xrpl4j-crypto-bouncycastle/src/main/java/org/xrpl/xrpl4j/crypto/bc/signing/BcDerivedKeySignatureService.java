@@ -117,13 +117,13 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
-  public <T extends Transaction> boolean verifySingleSigned(
+  public <T extends Transaction> boolean verify(
     final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
   ) {
     Objects.requireNonNull(signatureWithPublicKey);
     Objects.requireNonNull(unsignedTransaction);
 
-    return this.commonBcSignatureService.verifySingleSigned(signatureWithPublicKey, unsignedTransaction);
+    return this.commonBcSignatureService.verify(signatureWithPublicKey, unsignedTransaction);
   }
 
   @Override

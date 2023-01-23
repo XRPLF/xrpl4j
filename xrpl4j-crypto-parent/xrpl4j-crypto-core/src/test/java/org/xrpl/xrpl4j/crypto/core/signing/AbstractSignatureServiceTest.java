@@ -254,20 +254,20 @@ public class AbstractSignatureServiceTest {
   @Test
   public void verifyWithNullSigPubKey() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verifySingleSigned(null, transactionMock));
+      () -> signatureService.verify(null, transactionMock));
   }
 
   @Test
   public void verifyWithNullTransaction() {
     Assertions.assertThrows(NullPointerException.class,
-      () -> signatureService.verifySingleSigned(mock(SignatureWithPublicKey.class), null));
+      () -> signatureService.verify(mock(SignatureWithPublicKey.class), null));
   }
 
   @Test
   public void verifyEd25519() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.ED_PUBLIC_KEY);
 
-    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = signatureService.verify(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -280,7 +280,7 @@ public class AbstractSignatureServiceTest {
   public void verifySecp256k1() {
     when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.EC_PUBLIC_KEY);
 
-    boolean actual = signatureService.verifySingleSigned(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = signatureService.verify(signatureWithPublicKeyMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();

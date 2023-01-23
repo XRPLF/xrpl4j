@@ -86,10 +86,10 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
-  public <T extends Transaction> boolean verifySingleSigned(
+  public <T extends Transaction> boolean verify(
     final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
   ) {
-    return abstractTransactionVerifier.verifySingleSigned(signatureWithPublicKey, unsignedTransaction);
+    return abstractTransactionVerifier.verify(signatureWithPublicKey, unsignedTransaction);
   }
 
   @Override

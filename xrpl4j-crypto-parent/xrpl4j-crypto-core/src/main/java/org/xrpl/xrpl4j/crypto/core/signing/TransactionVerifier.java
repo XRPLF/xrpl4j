@@ -19,7 +19,7 @@ public interface TransactionVerifier {
    *
    * @return {@code true} if the signature is valid and verified; {@code false} otherwise.
    */
-  <T extends Transaction> boolean verifySingleSigned(
+  <T extends Transaction> boolean verify(
     SignatureWithPublicKey signatureWithPublicKey, T unsignedTransaction
   );
 

@@ -191,4 +191,13 @@ public class UnsignedByteArrayTest {
     assertThat(array1.equals(new Object())).isFalse();
   }
 
+  @Test
+  void destroy() {
+    UnsignedByteArray uba = UnsignedByteArray.of(new byte[] {0, MAX_BYTE});
+    uba.destroy();
+    assertThat(uba.isDestroyed()).isTrue();
+    assertThat(uba.toByteArray()).isEqualTo(new byte[0]);
+    assertThat(uba.hexValue()).isEqualTo("");
+    assertThat(uba.hashCode()).isEqualTo(32);
+  }
 }

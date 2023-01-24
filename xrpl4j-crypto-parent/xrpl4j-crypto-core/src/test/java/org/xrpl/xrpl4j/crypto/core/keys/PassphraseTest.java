@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -20,6 +21,13 @@ class PassphraseTest {
   public void setUp() {
     passphrase1 = Passphrase.of("hello");
     passphrase2 = Passphrase.of("world");
+  }
+
+  @Test
+  void constructWithBytes() {
+    byte[] bytes = "hello world".getBytes(StandardCharsets.UTF_8);
+    Passphrase passphrase = Passphrase.of(bytes);
+    assertThat(passphrase.value()).isEqualTo(bytes);
   }
 
   @Test
@@ -51,6 +59,7 @@ class PassphraseTest {
     assertThat(passphrase1).isEqualTo(passphrase1);
     assertThat(passphrase1).isNotEqualTo(passphrase2);
     assertThat(passphrase2).isNotEqualTo(passphrase1);
+    assertThat(passphrase1).isNotEqualTo(new Object());
   }
 
   @Test

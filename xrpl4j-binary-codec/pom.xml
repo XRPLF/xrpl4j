@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.xrpl</groupId>
     <artifactId>xrpl4j-parent</artifactId>
-    <version>v3-dev-preview-SNAPSHOT</version>
+    <version>HEAD-SNAPSHOT</version>
   </parent>
 
   <artifactId>xrpl4j-binary-codec</artifactId>

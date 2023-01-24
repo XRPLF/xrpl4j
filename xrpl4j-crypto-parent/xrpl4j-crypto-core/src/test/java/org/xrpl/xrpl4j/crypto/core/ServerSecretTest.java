@@ -44,6 +44,7 @@ class ServerSecretTest {
     assertThat(serverSecret1).isEqualTo(serverSecret1);
     assertThat(serverSecret1).isNotEqualTo(serverSecret2);
     assertThat(serverSecret2).isNotEqualTo(serverSecret1);
+    assertThat(serverSecret1).isNotEqualTo(new Object());
   }
 
   @Test

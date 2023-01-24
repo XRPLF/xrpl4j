@@ -99,6 +99,13 @@ class BcSignatureServiceTest {
   }
 
   @Test
+  void defaultConstructor() {
+    // Obvious test, but nothing else covers the default constructor
+    BcSignatureService signatureService = new BcSignatureService();
+    assertThat(signatureService).isInstanceOf(BcSignatureService.class);
+  }
+
+  @Test
   void constructorWithNulls() {
     // 4-arg Constructor
     assertThrows(NullPointerException.class, () -> new BcSignatureService(null, ed25519SignerMock, ecdsaSignerMock));

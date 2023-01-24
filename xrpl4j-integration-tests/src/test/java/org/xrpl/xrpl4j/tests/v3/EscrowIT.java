@@ -362,7 +362,7 @@ public class EscrowIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverKeyPair.publicKey().deriveAddress())
-      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
       .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
       .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();

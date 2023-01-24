@@ -17,6 +17,8 @@ public class UnsignedByteTest {
     assertThat(UnsignedByte.of(127).hexValue()).isEqualTo("7F");
     assertThat(UnsignedByte.of(128).hexValue()).isEqualTo("80");
     assertThat(UnsignedByte.of(255).hexValue()).isEqualTo("FF");
+    assertThat(UnsignedByte.of((byte) 255).hexValue()).isEqualTo("FF");
+    assertThat(UnsignedByte.of("FF").hexValue()).isEqualTo("FF");
     assertThat(UnsignedByte.of((byte) 15, (byte) 15).hexValue()).isEqualTo("FF");
   }
 
@@ -58,6 +60,53 @@ public class UnsignedByteTest {
     assertThat(UnsignedByte.of(0).asInt()).isEqualTo(0);
     assertThat(UnsignedByte.of(15).asInt()).isEqualTo(15);
     assertThat(UnsignedByte.of(255).asInt()).isEqualTo(255);
+  }
+
+  @Test
+  void byteValue() {
+    assertThat(UnsignedByte.of(0x00).asByte()).isEqualTo((byte) 0);
+    assertThat(UnsignedByte.of(0x0F).asByte()).isEqualTo((byte) 15);
+    assertThat(UnsignedByte.of(0xFF).asByte()).isEqualTo((byte) 255);
+
+    assertThat(UnsignedByte.of(0).asByte()).isEqualTo((byte) 0);
+    assertThat(UnsignedByte.of(15).asByte()).isEqualTo((byte) 15);
+    assertThat(UnsignedByte.of(255).asByte()).isEqualTo((byte) 255);
+  }
+
+  @Test
+  void getHighAndLowBits() {
+    UnsignedByte unsignedByte = UnsignedByte.of((byte) 15, (byte) 14);
+    assertThat(unsignedByte.getHighBits()).isEqualTo(15);
+    assertThat(unsignedByte.getLowBits()).isEqualTo(14);
+  }
+
+  @Test
+  void testOr() {
+    UnsignedByte unsignedByte1 = UnsignedByte.of(1);
+    UnsignedByte unsignedByte2 = UnsignedByte.of(10);
+    assertThat(unsignedByte1.or(unsignedByte2).asInt()).isEqualTo((byte) 1 | (byte) 10);
+  }
+
+  @Test
+  void testEquals() {
+    UnsignedByte unsignedByte = UnsignedByte.of(1);
+    assertThat(unsignedByte).isEqualTo(unsignedByte);
+
+    assertThat(unsignedByte).isNotEqualTo(new Object());
+    assertThat(unsignedByte).isEqualTo(UnsignedByte.of(1));
+  }
+
+  @Test
+  void testHashCode() {
+    assertThat(UnsignedByte.of(1).hashCode()).isEqualTo(32);
+  }
+
+  @Test
+  void destroy() {
+    UnsignedByte ub = UnsignedByte.of(0x00);
+    ub.destroy();
+    assertThat(ub.isDestroyed()).isTrue();
+    assertThat(ub.asByte()).isEqualTo((byte) 0);
   }
 
 }

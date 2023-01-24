@@ -18,6 +18,11 @@ import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -26,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 
@@ -221,6 +227,30 @@ public class SignatureUtils {
         .build();
     } else if (SignerListSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = SignerListSet.builder().from((SignerListSet) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenAcceptOffer.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenBurn.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = NfTokenBurn.builder().from((NfTokenBurn) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenCancelOffer.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = NfTokenCancelOffer.builder().from((NfTokenCancelOffer) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenCreateOffer.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = NfTokenCreateOffer.builder().from((NfTokenCreateOffer) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (NfTokenMint.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = NfTokenMint.builder().from((NfTokenMint) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = TicketCreate.builder().from((TicketCreate) transaction)
         .transactionSignature(signature.base16Value())
         .build();
     } else {

@@ -45,6 +45,10 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.crypto.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
+import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.SingleKeySignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
@@ -972,6 +976,40 @@ public class XrplClientTest {
     org.xrpl.xrpl4j.crypto.signing.SignedTransaction<Payment> paymentSignedTransaction = ecSignatureService.sign(
       mock(KeyMetadata.class), payment
     );
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
+  }
+
+  @Test
+  public void submitSingleSignedTransaction() {
+    BcSignatureService bcSignatureService = new BcSignatureService();
+    jsonRpcClientMock = new JsonRpcClient() {
+
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        return (T) mock(SubmitResult.class);
+      }
+    };
+
+    KeyPair keypair = Seed.ed25519Seed().deriveKeyPair();
+    Payment payment = Payment.builder()
+      .ticketSequence(UnsignedInteger.ONE)
+      .account(wallet.classicAddress())
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .signingPublicKey(wallet.publicKey())
+      .build();
+
+    SingleSignedTransaction<Payment> paymentSignedTransaction = bcSignatureService.sign(keypair.privateKey(), payment);
     xrplClient = new XrplClient(jsonRpcClientMock);
     assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
   }

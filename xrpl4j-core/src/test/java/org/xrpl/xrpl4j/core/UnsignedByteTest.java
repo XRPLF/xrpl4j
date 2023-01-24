@@ -60,5 +60,13 @@ public class UnsignedByteTest {
     assertThat(UnsignedByte.of(255).asInt()).isEqualTo(255);
   }
 
+  @Test
+  void destroy() {
+    UnsignedByte ub = UnsignedByte.of(0x00);
+    ub.destroy();
+    assertThat(ub.isDestroyed()).isTrue();
+    assertThat(ub.asByte()).isEqualTo((byte) 0);
+  }
+
 }
 

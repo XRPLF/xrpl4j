@@ -6,12 +6,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
@@ -156,6 +158,125 @@ public class AccountSetIT extends AbstractIT {
     assertClearFlag(keyPair, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
     assertClearFlag(keyPair, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
+  }
+
+  @Test
+  void enableAndDisableFlagsUsingTransactionFlags() throws JsonRpcClientErrorException, JsonProcessingException {
+    BcSignatureService bcSignatureService = new BcSignatureService();
+    KeyPair keyPair = constructRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()));
+    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
+    assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
+
+    UnsignedInteger sequence = accountInfo.accountData().sequence();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet enableAccountSet = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sequence)
+      .signingPublicKey(keyPair.publicKey().base16Value())
+      .flags(
+        Flags.AccountSetTransactionFlags.builder()
+          .tfRequireDestTag()
+          .tfRequireAuth()
+          .tfDisallowXrp()
+          .build()
+      )
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedTransaction
+      = bcSignatureService.sign(keyPair.privateKey(), enableAccountSet);
+    SubmitResult<AccountSet> enableResponse = xrplClient.submit(signedTransaction);
+    assertThat(enableResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(enableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(enableResponse.transactionResult().hash());
+    logger.info(
+      "AccountSet SetFlag transaction successful: https://testnet.xrpl.org/transactions/{}",
+      enableResponse.transactionResult().hash()
+    );
+
+    /////////////////////////
+    // Validate Account State
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
+      accountInfoResult -> {
+        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+        return accountInfoResult.accountData().flags().isSet(AccountRootFlags.REQUIRE_DEST_TAG) &&
+          accountInfoResult.accountData().flags().isSet(AccountRootFlags.REQUIRE_AUTH) &&
+          accountInfoResult.accountData().flags().isSet(AccountRootFlags.DISALLOW_XRP);
+      });
+
+    AccountSet disableAccountSet = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sequence.plus(UnsignedInteger.ONE))
+      .signingPublicKey(keyPair.publicKey().base16Value())
+      .flags(
+        Flags.AccountSetTransactionFlags.builder()
+          .tfOptionalDestTag()
+          .tfOptionalAuth()
+          .tfAllowXrp()
+          .build()
+      )
+      .build();
+
+    signedTransaction = bcSignatureService.sign(keyPair.privateKey(), disableAccountSet);
+    SubmitResult<AccountSet> disableResponse = xrplClient.submit(signedTransaction);
+    assertThat(disableResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(disableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(disableResponse.transactionResult().hash());
+    logger.info(
+      "AccountSet SetFlag transaction successful: https://testnet.xrpl.org/transactions/{}",
+      disableResponse.transactionResult().hash()
+    );
+
+    /////////////////////////
+    // Validate Account State
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
+      accountInfoResult -> {
+        logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
+        return !accountInfoResult.accountData().flags().isSet(AccountRootFlags.REQUIRE_DEST_TAG) &&
+          !accountInfoResult.accountData().flags().isSet(AccountRootFlags.REQUIRE_AUTH) &&
+          !accountInfoResult.accountData().flags().isSet(AccountRootFlags.DISALLOW_XRP);
+      });
+  }
+
+  @Test
+  void disableMasterFailsWithNoSignerList() throws JsonRpcClientErrorException, JsonProcessingException {
+    BcSignatureService bcSignatureService = new BcSignatureService();
+    KeyPair keyPair = constructRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(
+      keyPair.publicKey().deriveAddress()
+    ));
+    assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
+
+    UnsignedInteger sequence = accountInfo.accountData().sequence();
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet enableAccountSet = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(sequence)
+      .signingPublicKey(keyPair.publicKey().base16Value())
+      .setFlag(AccountSetFlag.DISABLE_MASTER)
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedTransaction
+      = bcSignatureService.sign(keyPair.privateKey(), enableAccountSet);
+    SubmitResult<AccountSet> enableResponse = xrplClient.submit(signedTransaction);
+    assertThat(enableResponse.result()).isEqualTo("tecNO_ALTERNATIVE_KEY");
+    assertThat(enableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
+      .isEqualTo(enableResponse.transactionResult().hash());
+    logger.info("AccountSet SetFlag transaction failed successfully:");
   }
 
   //////////////////////

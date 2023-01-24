@@ -260,7 +260,7 @@ public class XrplClient {
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction signedTransaction)
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction<T> signedTransaction)
     throws JsonRpcClientErrorException, JsonProcessingException {
     Objects.requireNonNull(signedTransaction);
 

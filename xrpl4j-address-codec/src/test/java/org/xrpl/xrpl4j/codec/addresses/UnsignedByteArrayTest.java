@@ -191,4 +191,11 @@ public class UnsignedByteArrayTest {
     assertThat(array1.equals(new Object())).isFalse();
   }
 
+  @Test
+  void destroyTest() {
+    UnsignedByteArray unsignedByteArray = of(new byte[] {8, 9});
+    unsignedByteArray.destroy();
+    assertThat(unsignedByteArray.length()).isEqualTo(0);
+    assertThat(unsignedByteArray.isDestroyed()).isTrue();
+  }
 }

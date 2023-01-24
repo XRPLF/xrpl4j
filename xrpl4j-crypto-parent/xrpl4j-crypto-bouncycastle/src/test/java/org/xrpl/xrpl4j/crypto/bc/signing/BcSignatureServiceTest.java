@@ -99,6 +99,12 @@ class BcSignatureServiceTest {
   }
 
   @Test
+  void defaultConstructor() {
+    BcSignatureService signatureService = new BcSignatureService();
+    assertThat(signatureService).isInstanceOf(BcSignatureService.class);
+  }
+
+  @Test
   void constructorWithNulls() {
     // 4-arg Constructor
     assertThrows(NullPointerException.class, () -> new BcSignatureService(null, ed25519SignerMock, ecdsaSignerMock));
@@ -426,5 +432,4 @@ class BcSignatureServiceTest {
     verifyNoMoreInteractions(ecdsaSignerMock);
     verifyNoMoreInteractions(ed25519SignerMock);
   }
-
 }

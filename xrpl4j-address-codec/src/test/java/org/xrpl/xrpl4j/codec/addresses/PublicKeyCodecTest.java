@@ -12,7 +12,7 @@ class PublicKeyCodecTest extends AbstractCodecTest {
 
   @BeforeEach
   public void setUp() {
-    publicKeyCodec = new PublicKeyCodec();
+    publicKeyCodec = PublicKeyCodec.getInstance();
   }
 
   @Test

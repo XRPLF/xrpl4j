@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.core;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +90,8 @@ public class UnsignedByteArray implements Destroyable {
     return new UnsignedByteArray(unsignedBytes);
   }
 
-  private static List<UnsignedByte> fill(int amount) {
+  @VisibleForTesting
+  protected static List<UnsignedByte> fill(int amount) {
     List<UnsignedByte> unsignedBytes = new ArrayList<>();
     for (int i = 0; i < amount; i++) {
       unsignedBytes.add(i, UnsignedByte.of(0));

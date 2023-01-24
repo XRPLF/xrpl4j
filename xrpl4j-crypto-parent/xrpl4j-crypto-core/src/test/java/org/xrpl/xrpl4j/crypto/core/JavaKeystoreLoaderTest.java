@@ -1,11 +1,13 @@
 package org.xrpl.xrpl4j.crypto.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
 import java.security.KeyStore;
 
 /**
@@ -29,6 +31,14 @@ public class JavaKeystoreLoaderTest {
   public void testLoadFromClasspathWithInvalidPassword() {
     Assertions.assertThrows(RuntimeException.class,
       () -> JavaKeystoreLoader.loadFromClasspath("crypto/crypto.p12", "foo".toCharArray()));
+  }
+
+  @Test
+  void testLoadFromClasspathWithInvalidResource() {
+    assertThatThrownBy(
+      () -> JavaKeystoreLoader.loadFromClasspath("crypto/foo.p12", "password".toCharArray())
+    ).isInstanceOf(RuntimeException.class)
+      .hasCauseInstanceOf(FileNotFoundException.class);
   }
 
   @Test

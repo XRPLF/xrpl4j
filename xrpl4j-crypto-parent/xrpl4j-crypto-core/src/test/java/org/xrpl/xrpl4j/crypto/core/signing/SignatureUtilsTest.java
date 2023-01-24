@@ -37,6 +37,12 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -45,10 +51,13 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -58,9 +67,9 @@ import java.util.Optional;
 public class SignatureUtilsTest {
 
   private static final String HEX_PUBLIC_KEY = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
-  
+
   PublicKey sourcePublicKey;
-  
+
   @Mock
   Transaction transactionMock;
 
@@ -78,7 +87,7 @@ public class SignatureUtilsTest {
   @BeforeEach
   public void setUp() throws JsonProcessingException {
     MockitoAnnotations.openMocks(this);
-    
+
     this.sourcePublicKey = PublicKey.fromBase16EncodedPublicKey(HEX_PUBLIC_KEY);
 
     when(objectMapperMock.writeValueAsString(any())).thenReturn("{foo}"); // <-- Unused JSON value.
@@ -446,6 +455,83 @@ public class SignatureUtilsTest {
       .signerQuorum(UnsignedInteger.ONE)
       .build();
     addSignatureToTransactionHelper(signerListSet);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenAcceptOffer() {
+
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .buyOffer(offer)
+      .build();
+    addSignatureToTransactionHelper(nfTokenAcceptOffer);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenBurn() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .nfTokenId(id)
+      .build();
+    addSignatureToTransactionHelper(nfTokenBurn);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenCancelOffer() {
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
+    offers.add(offer);
+    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenOffers(offers)
+      .build();
+    addSignatureToTransactionHelper(nfTokenCancelOffer);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenCreateOffer() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .nfTokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .build();
+    addSignatureToTransactionHelper(nfTokenCreateOffer);
+  }
+
+  @Test
+  public void addSignatureToTransactionNfTokenMint() {
+    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .tokenTaxon(taxon)
+      .build();
+    addSignatureToTransactionHelper(nfTokenMint);
+  }
+
+  @Test
+  void addSignatureToTicketCreate() {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.ONE)
+      .signingPublicKey(sourcePublicKey.base16Value())
+      .build();
+
+    addSignatureToTransactionHelper(ticketCreate);
   }
 
   @Test

@@ -1,0 +1,82 @@
+package org.xrpl.xrpl4j.model.client.fees;
+
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: model
+ * %%
+ * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+/**
+ * A sub-object of {@link FeeResult} containing various information about the transaction cost, in drops of XRP,
+ * for the current open ledger.
+ */
+@Immutable
+@JsonSerialize(as = ImmutableFeeDrops.class)
+@JsonDeserialize(as = ImmutableFeeDrops.class)
+public interface FeeDrops {
+
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableFeeDrops.Builder}.
+   */
+  static ImmutableFeeDrops.Builder builder() {
+    return ImmutableFeeDrops.builder();
+  }
+
+  /**
+   * The transaction cost required for a reference transaction to be included in a ledger under minimum load,
+   * represented in drops of XRP.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the base fee.
+   */
+  @JsonProperty("base_fee")
+  XrpCurrencyAmount baseFee();
+
+  /**
+   * The minimum transaction cost for a reference transaction to be queued for a later ledger, represented
+   * in drops of XRP. If greater than {@code base_fee}, the transaction queue is full.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the minimum fee.
+   */
+  @JsonProperty("minimum_fee")
+  XrpCurrencyAmount minimumFee();
+
+  /**
+   * An approximation of the median transaction cost among transactions included in the previous
+   * validated ledger, represented in drops of XRP.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the median fee.
+   */
+  @JsonProperty("median_fee")
+  XrpCurrencyAmount medianFee();
+
+  /**
+   * The minimum transaction cost that a reference transaction must pay to be included in the current
+   * open ledger, represented in drops of XRP.
+   *
+   * @return An {@link XrpCurrencyAmount} representing the open ledger fee.
+   */
+  @JsonProperty("open_ledger_fee")
+  XrpCurrencyAmount openLedgerFee();
+}

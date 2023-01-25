@@ -3,24 +3,24 @@ Contains a suite of integration tests which use the xrpl4j modules to perform XR
 
 ## Tests
 ### [AccountSetIT](./src/test/java/org/xrpl/xrpl4j/tests/AccountSetIT.java)
-- Uses [`AccountSet`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/AccountSet.java) transactions to enable and disable all 
+- Uses [`AccountSet`](../xrpl4j-core/src/main/java/model/transactions/AccountSet.java) transactions to enable and disable all 
 [account flags](https://xrpl.org/accountroot.html#accountroot-flags) on a random Testnet account
 
 ### [CheckIT](./src/test/java/org/xrpl/xrpl4j/tests/CheckIT.java)
 - Creates [Checks](https://xrpl.org/checks.html#checks) between two accounts using 
-[`CheckCreate`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/CheckCreate.java) transactions 
-and cancels or cashes those [Checks]() using [`CheckCancel`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/CheckCancel.java) and 
-[`CheckCash`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/CheckCash.java) transactions
+[`CheckCreate`](../xrpl4j-core/src/main/java/model/transactions/CheckCreate.java) transactions 
+and cancels or cashes those [Checks]() using [`CheckCancel`](../xrpl4j-core/src/main/java/model/transactions/CheckCancel.java) and 
+[`CheckCash`](../xrpl4j-core/src/main/java/model/transactions/CheckCash.java) transactions
 
 ### [DepositPreAuth](./src/test/java/org/xrpl/xrpl4j/tests/DepositPreAuthIT.java)
 - Shows how to enable [Deposit Preauthorization](https://xrpl.org/depositauth.html#deposit-authorization) and grant authorization to other accounts using the 
-[`DepositPreAuth`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/DepositPreAuth.java) transaction
+[`DepositPreAuth`](../xrpl4j-core/src/main/java/model/transactions/DepositPreAuth.java) transaction
 
 ### [EscrowIT](./src/test/java/org/xrpl/xrpl4j/tests/EscrowIT.java)
 - Creates, cancels, and finishes time-based and condition-based [Escrows](https://xrpl.org/escrow.html#escrow) using 
-[`EscrowCreate`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/EscrowCreate.java), 
-[`EscrowFinish`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/EscrowFinish.java), and 
-[`EscrowCancel`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/EscrowCancel.java) transactions
+[`EscrowCreate`](../xrpl4j-core/src/main/java/model/transactions/EscrowCreate.java), 
+[`EscrowFinish`](../xrpl4j-core/src/main/java/model/transactions/EscrowFinish.java), and 
+[`EscrowCancel`](../xrpl4j-core/src/main/java/model/transactions/EscrowCancel.java) transactions
 
 ### [IssuedCurrencyIT](./src/test/java/org/xrpl/xrpl4j/tests/IssuedCurrencyIT.java)
 - Issues a currency on the Testnet using [Trustlines](https://xrpl.org/trust-lines-and-issuing.html#trust-lines-and-issuing) and shows how to send 
@@ -30,7 +30,7 @@ that issued currency across multiple hops using [rippling](https://xrpl.org/ripp
 - Shows example usage of the [XRPL DEX](https://xrpl.org/decentralized-exchange.html)
 
 ### [SetRegularKeyIT](./src/test/java/org/xrpl/xrpl4j/tests/SetRegularKeyIT.java)
-- Sets the regular key using a newly-generated keypair using the [`SetRegularKey`](../xrpl4j-model/src/main/java/org/xrpl/xrpl4j/model/transactions/SetRegularKey.java)
+- Sets the regular key using a newly-generated keypair using the [`SetRegularKey`](../xrpl4j-core/src/main/java/model/transactions/SetRegularKey.java)
 transaction
 
 ### [SignerListSet](./src/test/java/org/xrpl/xrpl4j/tests/SignerListSetIT.java)

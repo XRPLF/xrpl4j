@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -128,7 +129,7 @@ public class UnsignedByteArrayTest {
     UnsignedByteArray array2 = UnsignedByteArray.of(new byte[] {8, 9});
     assertThat(array1).isNotEqualTo(array2);
     assertThat(array1.slice(1, 3)).isEqualTo(array2);
-    Assertions.assertThrows(IndexOutOfBoundsException.class, () -> array1.slice(1, 5));
+    assertThrows(IndexOutOfBoundsException.class, () -> array1.slice(1, 5));
   }
 
   @Test

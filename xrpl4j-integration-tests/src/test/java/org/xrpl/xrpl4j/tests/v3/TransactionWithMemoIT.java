@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.tests.v3;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.xrpl.xrpl4j.tests.v3.SubmitPaymentIT.SUCCESS_STATUS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;

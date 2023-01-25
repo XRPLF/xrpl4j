@@ -25,7 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +51,6 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.signing.ImmutableMultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
@@ -169,7 +170,7 @@ public class XrplClientTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    openMocks(this);
     xrplClient = new XrplClient(jsonRpcClientMock);
   }
 
@@ -183,7 +184,7 @@ public class XrplClientTest {
     xrplClient.depositAuthorized(depositAuthorized);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(DepositAuthorizedResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(DepositAuthorizedResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.DEPOSIT_AUTHORIZED);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().size()).isEqualTo(1);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(depositAuthorized);
@@ -1064,8 +1065,8 @@ public class XrplClientTest {
     xrplClient = new XrplClient(jsonRpcClientMock);
     Payment mockPayment = mock(Payment.class);
 
-    IllegalArgumentException thrownException = Assertions.assertThrows(
-      IllegalArgumentException.class, () -> xrplClient.submit(wallet, mockPayment));
+    IllegalArgumentException thrownException =
+      assertThrows(IllegalArgumentException.class, () -> xrplClient.submit(wallet, mockPayment));
     assertThat(thrownException.getMessage())
       .isEqualTo("Transaction.signingPublicKey() must be set.");
   }
@@ -1214,7 +1215,7 @@ public class XrplClientTest {
     xrplClient.fee();
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(FeeResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(FeeResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.FEE);
   }
 
@@ -1337,7 +1338,7 @@ public class XrplClientTest {
     xrplClient.accountChannels(accountChannelsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountChannelsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountChannelsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_CHANNELS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountChannelsRequestParams);
   }
@@ -1350,7 +1351,7 @@ public class XrplClientTest {
     xrplClient.accountCurrencies(accountCurrenciesRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountCurrenciesResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountCurrenciesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_CURRENCIES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountCurrenciesRequestParams);
   }
@@ -1363,7 +1364,7 @@ public class XrplClientTest {
     xrplClient.accountInfo(accountInfoRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountInfoResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountInfoResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_INFO);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountInfoRequestParams);
   }
@@ -1376,7 +1377,7 @@ public class XrplClientTest {
     xrplClient.accountObjects(accountObjectsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountObjectsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountObjectsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_OBJECTS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountObjectsRequestParams);
   }
@@ -1389,7 +1390,7 @@ public class XrplClientTest {
     xrplClient.accountOffers(accountOffersRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountOffersResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountOffersRequestParams);
   }
@@ -1402,7 +1403,7 @@ public class XrplClientTest {
     xrplClient.accountTransactions(accountTransactionsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountTransactionsRequestParams);
   }
@@ -1413,7 +1414,7 @@ public class XrplClientTest {
     xrplClient.accountTransactions(account);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
       .isEqualTo(AccountTransactionsRequestParams.builder()
@@ -1429,7 +1430,7 @@ public class XrplClientTest {
     xrplClient.accountNfts(accountNftsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_NFTS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountNftsRequestParams);
   }
@@ -1440,7 +1441,7 @@ public class XrplClientTest {
     xrplClient.accountNfts(account);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_NFTS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
       .isEqualTo(AccountNftsRequestParams.builder()
@@ -1488,7 +1489,7 @@ public class XrplClientTest {
     xrplClient.ledger(ledgerRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(LedgerResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(LedgerResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.LEDGER);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ledgerRequestParams);
   }
@@ -1505,7 +1506,7 @@ public class XrplClientTest {
     xrplClient.ripplePathFind(ripplePathFindRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(RipplePathFindResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(RipplePathFindResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.RIPPLE_PATH_FIND);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ripplePathFindRequestParams);
   }
@@ -1518,7 +1519,7 @@ public class XrplClientTest {
     xrplClient.accountLines(accountLinesRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_LINES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountLinesRequestParams);
   }
@@ -1534,7 +1535,7 @@ public class XrplClientTest {
     xrplClient.channelVerify(channelVerifyRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.CHANNEL_VERIFY);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(channelVerifyRequestParams);
   }
@@ -1548,7 +1549,7 @@ public class XrplClientTest {
     xrplClient.gatewayBalances(gatewayBalancesRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(GatewayBalancesResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(GatewayBalancesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.GATEWAY_BALANCES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(gatewayBalancesRequestParams);
   }
@@ -1561,7 +1562,7 @@ public class XrplClientTest {
     xrplClient.nftBuyOffers(nftBuyOffersRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftBuyOffersResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftBuyOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_BUY_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftBuyOffersRequestParams);
   }
@@ -1574,7 +1575,7 @@ public class XrplClientTest {
     xrplClient.nftSellOffers(nftSellOffersRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_SELL_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
   }

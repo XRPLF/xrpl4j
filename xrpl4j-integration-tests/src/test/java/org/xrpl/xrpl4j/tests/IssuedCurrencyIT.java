@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;

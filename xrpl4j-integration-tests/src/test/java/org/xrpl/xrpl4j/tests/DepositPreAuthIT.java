@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.tests;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -206,7 +207,7 @@ public class DepositPreAuthIT extends AbstractIT {
     Wallet receiverWallet = createRandomAccount();
     Wallet senderWallet = createRandomAccount();
 
-    Assertions.assertThrows(JsonRpcClientErrorException.class, () -> {
+    assertThrows(JsonRpcClientErrorException.class, () -> {
         xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
           .sourceAccount(senderWallet.classicAddress())
           .destinationAccount(receiverWallet.classicAddress())

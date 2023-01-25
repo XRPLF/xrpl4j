@@ -43,42 +43,12 @@
     <dependencies>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-address-codec</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
         <artifactId>xrpl4j-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-model</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-binary-codec</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
         <artifactId>xrpl4j-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-keypairs</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-crypto-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>xrpl4j-crypto-bouncycastle</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -328,11 +298,6 @@
 
   <modules>
     <module>xrpl4j-core</module>
-    <module>xrpl4j-binary-codec</module>
-    <module>xrpl4j-model</module>
-    <module>xrpl4j-address-codec</module>
-    <module>xrpl4j-keypairs</module>
-    <module>xrpl4j-crypto-parent</module>
     <module>xrpl4j-integration-tests</module>
     <module>xrpl4j-client</module>
     <module>xrpl4j-bom</module>

@@ -30,7 +30,6 @@ import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 
 /**
  * A Payment transaction represents a transfer of value from one account to another. (Depending on the path taken, this

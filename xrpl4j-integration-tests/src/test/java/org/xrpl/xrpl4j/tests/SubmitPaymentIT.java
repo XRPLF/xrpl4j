@@ -1,29 +1,14 @@
 package org.xrpl.xrpl4j.tests;
 
-/*-
- * ========================LICENSE_START=================================
- * xrpl4j :: integration-tests
- * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -33,106 +18,95 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
+/**
+ * Integration test to validate submission of Payment transactions.
+ */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class SubmitPaymentIT extends AbstractIT {
 
+  public static final String SUCCESS_STATUS = "tesSUCCESS";
+
   @Test
-  public void sendPayment() throws JsonRpcClientErrorException {
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+  public void sendPayment() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(amount)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
+    SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
-    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(result.transactionResult().hash());
-
-    logInfo(
-      result.transactionResult().transaction().transactionType(),
-      result.transactionResult().hash()
-    );
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
-      () -> this.getValidatedTransaction(
-        result.transactionResult().hash(),
-        Payment.class)
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class)
     );
 
-    assertThat(validatedPayment.metadata().get().deliveredAmount()).hasValue(amount);
+    assertThat(validatedPayment.metadata().flatMap(TransactionMetadata::deliveredAmount)).hasValue(amount);
     assertThat(validatedPayment.metadata().get().transactionResult()).isEqualTo(SUCCESS_STATUS);
 
     assertPaymentCloseTimeMatchesLedgerCloseTime(validatedPayment);
   }
 
   @Test
-  public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException {
-    Wallet senderWallet = walletFactory.fromSeed("sp5fghtJtpUorTwvof1NpDXAzNwf5", true);
-    logger.info("Generated source testnet wallet with address " + senderWallet.xAddress());
+  public void sendPaymentFromSecp256k1KeyPair() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair senderKeyPair = Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5")
+    ).deriveKeyPair();
+    logger.info("Generated source testnet wallet with address " + senderKeyPair.publicKey().deriveAddress());
 
-    fundAccount(senderWallet);
+    fundAccount(senderKeyPair.publicKey().deriveAddress());
 
-    Wallet destinationWallet = createRandomAccount();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
 
     Payment payment = Payment.builder()
-      .account(senderWallet.classicAddress())
+      .account(senderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(senderWallet.publicKey())
+      .signingPublicKey(senderKeyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(senderWallet, payment);
-    assertThat(result.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(result.transactionResult().hash());
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderKeyPair.privateKey(), payment);
+    SubmitResult<Payment> result = xrplClient.submit(signedPayment);
+    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
-    logInfo(
-      result.transactionResult().transaction().transactionType(),
-      result.transactionResult().hash()
-    );
-
-    this.scanForResult(
-      () -> this.getValidatedTransaction(
-        result.transactionResult().hash(),
-        Payment.class)
-    );
+    this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }
 
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
     LedgerResult ledger = xrplClient.ledger(
       LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndexSafe()))
+        .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
         .build()
     );
 
-    assertThat(validatedPayment.transaction().closeDateHuman()).isNotEmpty()
-      .isEqualTo(validatedPayment.closeDateHuman());
+    assertThat(validatedPayment.closeDateHuman()).isNotEmpty();
     assertThat(ledger.ledger().closeTimeHuman()).isNotEmpty();
-    assertThat(validatedPayment.closeDateHuman()).isNotEmpty().get()
-      .isEqualTo(ledger.ledger().closeTimeHuman().get());
+    assertThat(validatedPayment.closeDateHuman()).isEqualTo(ledger.ledger().closeTimeHuman());
   }
 
 }

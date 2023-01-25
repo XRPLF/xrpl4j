@@ -22,9 +22,12 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -32,30 +35,33 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.List;
 
 public class TicketIT extends AbstractIT {
 
   @Test
-  void createTicketAndUseSequenceNumber() throws JsonRpcClientErrorException {
-    Wallet sourceWallet = createRandomAccount();
+  void createTicketAndUseSequenceNumber() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     TicketCreate ticketCreate = TicketCreate.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .sequence(accountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .ticketCount(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<TicketCreate> submitResult = xrplClient.submit(sourceWallet, ticketCreate);
+    SingleSignedTransaction<TicketCreate> signedCreate = signatureService.sign(
+      sourceKeyPair.privateKey(),
+      ticketCreate
+    );
+    SubmitResult<TicketCreate> submitResult = xrplClient.submit(signedCreate);
     assertThat(submitResult.result()).isEqualTo(SUCCESS_STATUS);
 
     logInfo(
@@ -69,17 +75,24 @@ public class TicketIT extends AbstractIT {
         TicketCreate.class)
     );
 
-    List<TicketObject> tickets = getValidatedAccountObjects(sourceWallet.classicAddress(), TicketObject.class);
+    List<TicketObject> tickets = getValidatedAccountObjects(
+      sourceKeyPair.publicKey().deriveAddress(),
+      TicketObject.class
+    );
     assertThat(tickets).asList().hasSize(1);
 
     AccountSet accountSet = AccountSet.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .ticketSequence(tickets.get(0).ticketSequence())
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(sourceWallet, accountSet);
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      sourceKeyPair.privateKey(),
+      accountSet
+    );
+    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
     assertThat(accountSetResult.result()).isEqualTo(SUCCESS_STATUS);
 
     logInfo(

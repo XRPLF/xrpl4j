@@ -29,8 +29,6 @@ import javax.security.auth.Destroyable;
 
 /**
  * Unsigned byte where value can be 0 to 255.
- *
- * @deprecated Prefer the version in the xrpl4j-core module instead.
  */
 public class UnsignedByte implements Destroyable {
 

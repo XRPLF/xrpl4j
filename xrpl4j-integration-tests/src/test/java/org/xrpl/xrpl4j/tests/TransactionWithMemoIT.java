@@ -22,8 +22,11 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -33,7 +36,6 @@ import org.xrpl.xrpl4j.model.transactions.Memo;
 import org.xrpl.xrpl4j.model.transactions.MemoWrapper;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 public class TransactionWithMemoIT extends AbstractIT {
 
@@ -41,22 +43,22 @@ public class TransactionWithMemoIT extends AbstractIT {
    * Tests a transaction that has a memo containing only a nibble (i.e., a half byte).
    */
   @Test
-  public void transactionWithMemoNibble() throws JsonRpcClientErrorException {
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+  public void transactionWithMemoNibble() throws JsonRpcClientErrorException, JsonProcessingException {
+    PrivateKeyReference sourcePrivateKey = createRandomPrivateKeyReferenceEd25519();
+    PrivateKeyReference destinationPrivateKey = createRandomPrivateKeyReferenceEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(toAddress(sourcePrivateKey))
     );
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
-      .account(sourceWallet.classicAddress())
+      .account(toAddress(sourcePrivateKey))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(toAddress(destinationPrivateKey))
       .amount(amount)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(toPublicKey(sourcePrivateKey).base16Value())
       .addMemos(MemoWrapper.builder()
         .memo(Memo.builder()
           .memoData("A")
@@ -64,7 +66,8 @@ public class TransactionWithMemoIT extends AbstractIT {
         .build())
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourcePrivateKey, payment);
+    SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());
@@ -88,29 +91,31 @@ public class TransactionWithMemoIT extends AbstractIT {
    * Tests a transaction that has a memo containing only a nibble (i.e., a half byte).
    */
   @Test
-  public void transactionWithPlaintextMemo() throws JsonRpcClientErrorException {
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+  public void transactionWithPlaintextMemo() throws JsonRpcClientErrorException, JsonProcessingException {
+    PrivateKeyReference sourcePrivateKey = createRandomPrivateKeyReferenceEd25519();
+    PrivateKeyReference destinationPrivateKey = createRandomPrivateKeyReferenceEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(toAddress(sourcePrivateKey))
     );
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(12345);
     Payment payment = Payment.builder()
-      .account(sourceWallet.classicAddress())
+      .account(toAddress(sourcePrivateKey))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(toAddress(destinationPrivateKey))
       .amount(amount)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(toPublicKey(sourcePrivateKey).base16Value())
       .addMemos(MemoWrapper.builder()
         .memo(Memo.withPlaintext("Hello World").build())
         .build()
       )
       .build();
 
-    SubmitResult<Payment> result = xrplClient.submit(sourceWallet, payment);
+    SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourcePrivateKey, payment);
+    SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
+
     assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
     assertThat(result.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(result.transactionResult().hash());

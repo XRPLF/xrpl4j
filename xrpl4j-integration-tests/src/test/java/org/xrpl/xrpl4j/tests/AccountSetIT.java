@@ -1,30 +1,14 @@
 package org.xrpl.xrpl4j.tests;
 
-/*-
- * ========================LICENSE_START=================================
- * xrpl4j :: integration-tests
- * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -33,8 +17,7 @@ import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
-import org.xrpl.xrpl4j.wallet.Wallet;
+import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 
 import java.util.Objects;
 
@@ -47,13 +30,15 @@ import java.util.Objects;
 public class AccountSetIT extends AbstractIT {
 
   @Test
-  public void enableAllAndDisableOne() throws JsonRpcClientErrorException {
+  public void enableAllAndDisableOne() throws JsonRpcClientErrorException, JsonProcessingException {
 
-    Wallet wallet = createRandomAccount();
+    KeyPair keyPair = constructRandomAccount();
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -62,46 +47,48 @@ public class AccountSetIT extends AbstractIT {
     // Set asfAccountTxnID (no corresponding ledger flag)
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
-      response.transactionResult().hash()
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      keyPair.privateKey(), accountSet
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
 
     ///////////////////////
     // Set flags one-by-one
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
     sequence = sequence.plus(UnsignedInteger.ONE);
 
     AccountRootFlags flags1 = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     ).accountData().flags();
 
-    assertClearFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
 
     AccountRootFlags flags2 = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     ).accountData().flags();
 
     assertThat(flags1.getValue() - flags2.getValue())
@@ -109,13 +96,15 @@ public class AccountSetIT extends AbstractIT {
   }
 
   @Test
-  public void disableAndEnableAllFlags() throws JsonRpcClientErrorException {
+  public void disableAndEnableAllFlags() throws JsonRpcClientErrorException, JsonProcessingException {
 
-    Wallet wallet = createRandomAccount();
+    KeyPair keyPair = constructRandomAccount();
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -124,59 +113,62 @@ public class AccountSetIT extends AbstractIT {
     // Set asfAccountTxnID (no corresponding ledger flag)
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      keyPair.privateKey(), accountSet
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
 
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
-      response.transactionResult().hash()
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
 
     ///////////////////////
     // Set flags one-by-one
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertSetFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
     sequence = sequence.plus(UnsignedInteger.ONE);
 
-    assertClearFlag(wallet, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertClearFlag(wallet, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.REQUIRE_DEST, AccountRootFlags.REQUIRE_DEST_TAG);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertClearFlag(wallet, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.REQUIRE_AUTH, AccountRootFlags.REQUIRE_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertClearFlag(wallet, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DISALLOW_XRP, AccountRootFlags.DISALLOW_XRP);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertClearFlag(wallet, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
-    assertClearFlag(wallet, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
   }
 
   @Test
-  void enableAndDisableFlagsUsingTransactionFlags() throws JsonRpcClientErrorException {
-    Wallet wallet = createRandomAccount();
+  void enableAndDisableFlagsUsingTransactionFlags() throws JsonRpcClientErrorException, JsonProcessingException {
+    BcSignatureService bcSignatureService = new BcSignatureService();
+    KeyPair keyPair = constructRandomAccount();
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()));
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
 
@@ -184,10 +176,10 @@ public class AccountSetIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet enableAccountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(sequence)
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .flags(
         Flags.AccountSetTransactionFlags.builder()
           .tfRequireDestTag()
@@ -197,7 +189,9 @@ public class AccountSetIT extends AbstractIT {
       )
       .build();
 
-    SubmitResult<AccountSet> enableResponse = xrplClient.submit(wallet, enableAccountSet);
+    SingleSignedTransaction<AccountSet> signedTransaction
+      = bcSignatureService.sign(keyPair.privateKey(), enableAccountSet);
+    SubmitResult<AccountSet> enableResponse = xrplClient.submit(signedTransaction);
     assertThat(enableResponse.result()).isEqualTo("tesSUCCESS");
     assertThat(enableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(enableResponse.transactionResult().hash());
@@ -209,7 +203,7 @@ public class AccountSetIT extends AbstractIT {
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
       accountInfoResult -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return accountInfoResult.accountData().flags().isSet(AccountRootFlags.REQUIRE_DEST_TAG) &&
@@ -217,12 +211,11 @@ public class AccountSetIT extends AbstractIT {
           accountInfoResult.accountData().flags().isSet(AccountRootFlags.DISALLOW_XRP);
       });
 
-
     AccountSet disableAccountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(sequence.plus(UnsignedInteger.ONE))
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .flags(
         Flags.AccountSetTransactionFlags.builder()
           .tfOptionalDestTag()
@@ -232,7 +225,8 @@ public class AccountSetIT extends AbstractIT {
       )
       .build();
 
-    SubmitResult<AccountSet> disableResponse = xrplClient.submit(wallet, disableAccountSet);
+    signedTransaction = bcSignatureService.sign(keyPair.privateKey(), disableAccountSet);
+    SubmitResult<AccountSet> disableResponse = xrplClient.submit(signedTransaction);
     assertThat(disableResponse.result()).isEqualTo("tesSUCCESS");
     assertThat(disableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(disableResponse.transactionResult().hash());
@@ -244,7 +238,7 @@ public class AccountSetIT extends AbstractIT {
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
       accountInfoResult -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return !accountInfoResult.accountData().flags().isSet(AccountRootFlags.REQUIRE_DEST_TAG) &&
@@ -254,26 +248,31 @@ public class AccountSetIT extends AbstractIT {
   }
 
   @Test
-  void disableMasterFailsWithNoSignerList() throws JsonRpcClientErrorException {
-    Wallet wallet = createRandomAccount();
+  void disableMasterFailsWithNoSignerList() throws JsonRpcClientErrorException, JsonProcessingException {
+    BcSignatureService bcSignatureService = new BcSignatureService();
+    KeyPair keyPair = constructRandomAccount();
 
     ///////////////////////
     // Get validated account info and validate account state
-    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(wallet.classicAddress()));
+    AccountInfoResult accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(
+      keyPair.publicKey().deriveAddress()
+    ));
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
 
     UnsignedInteger sequence = accountInfo.accountData().sequence();
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet enableAccountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(sequence)
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .setFlag(AccountSetFlag.DISABLE_MASTER)
       .build();
 
-    SubmitResult<AccountSet> enableResponse = xrplClient.submit(wallet, enableAccountSet);
+    SingleSignedTransaction<AccountSet> signedTransaction
+      = bcSignatureService.sign(keyPair.privateKey(), enableAccountSet);
+    SubmitResult<AccountSet> enableResponse = xrplClient.submit(signedTransaction);
     assertThat(enableResponse.result()).isEqualTo("tecNO_ALTERNATIVE_KEY");
     assertThat(enableResponse.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(enableResponse.transactionResult().hash());
@@ -285,36 +284,39 @@ public class AccountSetIT extends AbstractIT {
   //////////////////////
 
   private void assertSetFlag(
-    final Wallet wallet,
+    final KeyPair keyPair,
     final UnsignedInteger sequence,
     final AccountSetFlag accountSetFlag,
     final AccountRootFlags accountRootFlag
-  ) throws JsonRpcClientErrorException {
-    Objects.requireNonNull(wallet);
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(keyPair);
     Objects.requireNonNull(accountSetFlag);
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .setFlag(accountSetFlag)
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .build();
 
-    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
-      response.transactionResult().hash()
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      keyPair.privateKey(), accountSet
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
+      accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
       accountInfoResult -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return accountInfoResult.accountData().flags().isSet(accountRootFlag);
@@ -322,35 +324,39 @@ public class AccountSetIT extends AbstractIT {
   }
 
   private void assertClearFlag(
-    final Wallet wallet,
+    final KeyPair keyPair,
     final UnsignedInteger sequence,
     final AccountSetFlag accountSetFlag,
     final AccountRootFlags accountRootFlag
-  ) throws JsonRpcClientErrorException {
-    Objects.requireNonNull(wallet);
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(keyPair);
     Objects.requireNonNull(accountSetFlag);
 
     FeeResult feeResult = xrplClient.fee();
     AccountSet accountSet = AccountSet.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .clearFlag(accountSetFlag)
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey().base16Value())
       .build();
-    SubmitResult<AccountSet> response = xrplClient.submit(wallet, accountSet);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
-      response.transactionResult().hash()
+
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      keyPair.privateKey(), accountSet
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+
+    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
+      accountSetFlag, accountRootFlag, response.transactionResult().hash()
     );
 
     /////////////////////////
     // Validate Account State
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.classicAddress()),
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
       accountInfoResult -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return !accountInfoResult.accountData().flags().isSet(accountRootFlag);

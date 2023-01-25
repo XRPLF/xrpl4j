@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests.v3;
+package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

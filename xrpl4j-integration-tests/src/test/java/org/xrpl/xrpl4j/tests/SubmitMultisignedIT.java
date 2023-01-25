@@ -9,29 +9,25 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
-import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.Signature;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
+import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
-import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
-import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
-import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
-import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,31 +36,30 @@ public class SubmitMultisignedIT extends AbstractIT {
 
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
   protected final XrplBinaryCodec binaryCodec = XrplBinaryCodec.getInstance();
-  protected final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
 
   /////////////////////////////
   // Create four accounts, one for the multisign account owner, one for their two friends,
   // and one to send a Payment to.
-  Wallet sourceWallet = createRandomAccount();
-  Wallet aliceWallet = createRandomAccount();
-  Wallet bobWallet = createRandomAccount();
-  Wallet destinationWallet = createRandomAccount();
+  KeyPair sourceKeyPair = createRandomAccountEd25519();
+  KeyPair aliceKeyPair = createRandomAccountEd25519();
+  KeyPair bobKeyPair = createRandomAccountEd25519();
+  KeyPair destinationKeyPair = createRandomAccountEd25519();
 
   FeeResult feeResult;
   AccountInfoResult sourceAccountInfoAfterSignerListSet;
   SubmitResult<SignerListSet> signerListSetResult;
 
   @BeforeEach
-  public void setUp() throws JsonRpcClientErrorException {
+  public void setUp() throws JsonRpcClientErrorException, JsonProcessingException {
 
     /////////////////////////////
     // Wait for all of the accounts to show up in a validated ledger
     final AccountInfoResult sourceAccountInfo = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
-    scanForResult(() -> this.getValidatedAccountInfo(aliceWallet.classicAddress()));
-    scanForResult(() -> this.getValidatedAccountInfo(bobWallet.classicAddress()));
-    scanForResult(() -> this.getValidatedAccountInfo(destinationWallet.classicAddress()));
+    scanForResult(() -> this.getValidatedAccountInfo(aliceKeyPair.publicKey().deriveAddress()));
+    scanForResult(() -> this.getValidatedAccountInfo(bobKeyPair.publicKey().deriveAddress()));
+    scanForResult(() -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()));
 
     /////////////////////////////
     // And validate that the source account has not set up any signer lists
@@ -74,30 +69,33 @@ public class SubmitMultisignedIT extends AbstractIT {
     // Then submit a SignerListSet transaction to add alice and bob as signers on the account
     feeResult = xrplClient.fee();
     SignerListSet signerListSet = SignerListSet.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .signerQuorum(UnsignedInteger.valueOf(2))
       .addSignerEntries(
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(aliceWallet.classicAddress())
+            .account(aliceKeyPair.publicKey().deriveAddress())
             .signerWeight(UnsignedInteger.ONE)
             .build()
         ),
         SignerEntryWrapper.of(
           SignerEntry.builder()
-            .account(bobWallet.classicAddress())
+            .account(bobKeyPair.publicKey().deriveAddress())
             .signerWeight(UnsignedInteger.ONE)
             .build()
         )
       )
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
       .build();
 
     /////////////////////////////
     // Validate that the transaction was submitted successfully
-    signerListSetResult = xrplClient.submit(sourceWallet, signerListSet);
+    SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
+      sourceKeyPair.privateKey(), signerListSet
+    );
+    signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
       .isEqualTo(signerListSetResult.transactionResult().hash());
@@ -110,7 +108,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     // Then wait until the transaction enters a validated ledger and the source account's signer list
     // exists
     sourceAccountInfoAfterSignerListSet = scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress()),
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
@@ -130,7 +128,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(
         FeeUtils.computeMultisigNetworkFees(
           feeResult,
@@ -139,47 +137,33 @@ public class SubmitMultisignedIT extends AbstractIT {
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .signingPublicKey("")
       .build();
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
-    List<SignerWrapper> signers = Lists.newArrayList(aliceWallet, bobWallet).stream()
-      .map(wallet -> {
-          try {
-            String unsignedJson = objectMapper.writeValueAsString(unsignedPayment);
-
-            String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, wallet.classicAddress().value());
-            String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-              .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
-            return SignerWrapper.of(Signer.builder()
-              .account(wallet.classicAddress())
-              .signingPublicKey(wallet.publicKey())
-              .transactionSignature(signature)
-              .build()
-            );
-          } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
+    List<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
+      .map(keyPair -> {
+          Signature multiSignature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
+          return SignatureWithPublicKey.builder()
+            .transactionSignature(multiSignature)
+            .signingPublicKey(keyPair.publicKey())
+            .build();
         }
       )
       .collect(Collectors.toList());
 
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
-    Payment multiSigPayment = Payment.builder()
-      .from(unsignedPayment)
-      .signers(signers)
+    MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
+      .unsignedTransaction(unsignedPayment)
+      .signatureWithPublicKeySet(signers)
       .build();
 
-    SignedTransaction<Payment> signedTransaction = SignedTransaction.<Payment>builder()
-      .signedTransaction(multiSigPayment)
-      .signedTransactionBlob(binaryCodec.encode(objectMapper.writeValueAsString(multiSigPayment)))
-      .build();
     String libraryCalculatedHash = signedTransaction.hash().value();
 
-    SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(signedTransaction);
 
     assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
 
@@ -199,7 +183,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
     Payment unsignedPayment = Payment.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(
         FeeUtils.computeMultisigNetworkFees(
           feeResult,
@@ -208,57 +192,33 @@ public class SubmitMultisignedIT extends AbstractIT {
       )
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .signingPublicKey("")
       .build();
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
-    List<SignerWrapper> signers = Lists.newArrayList(aliceWallet, bobWallet).stream()
-      .map(wallet -> {
-          try {
-            String unsignedJson = objectMapper.writeValueAsString(unsignedPayment);
-
-            String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, wallet.classicAddress().value());
-            String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-              .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
-            return SignerWrapper.of(Signer.builder()
-              .account(wallet.classicAddress())
-              .signingPublicKey(wallet.publicKey())
-              .transactionSignature(signature)
-              .build()
-            );
-          } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
+    List<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
+      .map(keyPair -> {
+          Signature multiSignature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
+          return SignatureWithPublicKey.builder()
+            .transactionSignature(multiSignature)
+            .signingPublicKey(keyPair.publicKey())
+            .build();
         }
       )
       .collect(Collectors.toList());
 
-    final AddressCodec addressCodec = AddressCodec.getInstance();
-    signers = signers.stream().sorted(
-      Comparator.comparing(
-        signature -> new BigInteger(addressCodec.decodeAccountId(
-          Address.of(signature.signer().account().value())
-        ).hexValue(), 16),
-        Comparator.reverseOrder()
-      )
-    ).collect(Collectors.toList());
-
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
-    Payment multiSigPayment = Payment.builder()
-      .from(unsignedPayment)
-      .signers(signers)
+    MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
+      .unsignedTransaction(unsignedPayment)
+      .signatureWithPublicKeySet(signers)
       .build();
 
-    SignedTransaction<Payment> signedTransaction = SignedTransaction.<Payment>builder()
-      .signedTransaction(multiSigPayment)
-      .signedTransactionBlob(binaryCodec.encode(objectMapper.writeValueAsString(multiSigPayment)))
-      .build();
     String libraryCalculatedHash = signedTransaction.hash().value();
 
-    SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(multiSigPayment);
+    SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(signedTransaction);
     assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
     assertThat(submitMultiSignedResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()

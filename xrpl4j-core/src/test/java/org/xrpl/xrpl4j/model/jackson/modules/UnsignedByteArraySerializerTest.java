@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.signing;
+package org.xrpl.xrpl4j.model.jackson.modules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,16 +8,12 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.model.jackson.modules.UnsignedByteArraySerializer;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**
  * Unit test for {@link UnsignedByteArraySerializer}.
- *
- * @deprecated This will move to the xrpl4j-core module.
  */
-@Deprecated
-class UnsignedBytesSerializerTest {
+class UnsignedByteArraySerializerTest {
 
   private ObjectMapper objectMapper;
 

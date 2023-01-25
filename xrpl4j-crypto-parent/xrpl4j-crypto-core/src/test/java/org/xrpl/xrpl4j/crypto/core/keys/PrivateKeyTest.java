@@ -79,7 +79,6 @@ public class PrivateKeyTest {
   void testToString() {
     assertThat(ED_PRIVATE_KEY.toString()).isEqualTo(
       "PrivateKey{" +
-        "sha256=b0eb137e61d77a24cead03e13a50d892f3845c597dd754cfa1b6a7954dc3b54b, " +
         "value=[redacted], " +
         "destroyed=false" +
         "}"
@@ -87,7 +86,6 @@ public class PrivateKeyTest {
 
     assertThat(EC_PRIVATE_KEY.toString()).isEqualTo(
       "PrivateKey{" +
-        "sha256=f9b6a54c0a839fa4d60763525eb0b0b7e959a5ebd76e00fccec822a674605bb4, " +
         "value=[redacted], " +
         "destroyed=false" +
         "}"

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Assertions;
@@ -51,6 +53,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
@@ -75,6 +78,12 @@ public class SignatureUtilsTest {
 
   @Mock
   Signature signatureMock;
+
+  @Mock
+  SignerWrapper signer1;
+
+  @Mock
+  SignerWrapper signer2;
 
   @Mock
   ObjectMapper objectMapperMock;
@@ -171,6 +180,17 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  public void unsignedClaimToSignableBytesWithJsonException() throws JsonProcessingException {
+    UnsignedClaim unsignedClaim = UnsignedClaim.builder()
+      .amount(XrpCurrencyAmount.of(UnsignedLong.ONE))
+      .channel(Hash256.of("ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD"))
+      .build();
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(unsignedClaim);
+    Assertions.assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(unsignedClaim));
+  }
+
+  @Test
   void unsignedClaimToSignableBytesActual() {
     UnsignedClaim unsignedClaim = UnsignedClaim.builder()
       .amount(XrpCurrencyAmount.of(UnsignedLong.ONE))
@@ -194,6 +214,16 @@ public class SignatureUtilsTest {
     verifyNoMoreInteractions(objectMapperMock);
     verify(xrplBinaryCodecMock).encodeForMultiSigning(anyString(), anyString());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  public void toMultiSignableBytesWithJsonException() throws JsonProcessingException {
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(any());
+    Assertions.assertThrows(
+      RuntimeException.class,
+      () -> signatureUtils.toMultiSignableBytes(transactionMock, sourcePublicKey.deriveAddress())
+    );
   }
 
   ////////////////////////////
@@ -539,6 +569,363 @@ public class SignatureUtilsTest {
     Assertions.assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
 
+  @Test
+  void addMultiSignaturesWithNulls() {
+    assertThatThrownBy(
+      () -> signatureUtils.addMultiSignaturesToTransaction(null, Lists.newArrayList(signer1))
+    ).isInstanceOf(NullPointerException.class);
+
+    assertThatThrownBy(
+      () -> signatureUtils.addMultiSignaturesToTransaction(mock(Transaction.class), null)
+    ).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void addMultiSignaturesWithTransactionSignaturePresent() {
+    when(transactionMock.transactionSignature()).thenReturn(Optional.of("sig"));
+    assertThatThrownBy(
+      () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Transactions to be signed must not already include a signature.");
+  }
+
+  @Test
+  void addMultiSignaturesWithSigningPublicKeyEmpty() {
+    when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
+    when(transactionMock.signingPublicKey()).thenReturn(Optional.empty());
+    assertThatThrownBy(
+      () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Transactions to be multisigned must set signingPublicKey to an empty String.");
+  }
+
+  @Test
+  void addMultiSignaturesWithSigningPublicKeyNonBlank() {
+    when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
+    when(transactionMock.signingPublicKey()).thenReturn(Optional.of("pub_key"));
+    assertThatThrownBy(
+      () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Transactions to be multisigned must set signingPublicKey to an empty String.");
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionPayment() {
+    Payment payment = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .signingPublicKey("")
+      .build();
+    addMultiSignatureToTransactionHelper(payment);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionAccountSet() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .build();
+    addMultiSignatureToTransactionHelper(accountSet);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionAccountDelete() {
+    AccountDelete accountDelete = AccountDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .destination(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .build();
+    addMultiSignatureToTransactionHelper(accountDelete);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionCheckCancel() {
+    CheckCancel checkCancel = CheckCancel.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .checkId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .build();
+    addMultiSignatureToTransactionHelper(checkCancel);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionCheckCash() {
+    CheckCash checkCash = CheckCash.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .checkId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .build();
+    addMultiSignatureToTransactionHelper(checkCash);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionCheckCreate() {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .destination(sourcePublicKey.deriveAddress())
+      .sendMax(XrpCurrencyAmount.ofDrops(100))
+      .build();
+    addMultiSignatureToTransactionHelper(checkCreate);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionDepositPreAuth() {
+    DepositPreAuth depositPreAuth = DepositPreAuth.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .authorize(sourcePublicKey.deriveAddress())
+      .build();
+    addMultiSignatureToTransactionHelper(depositPreAuth);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionEscrowCancel() {
+    EscrowCancel escrowCancel = EscrowCancel.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .offerSequence(UnsignedInteger.ONE)
+      .owner(sourcePublicKey.deriveAddress())
+      .build();
+    addMultiSignatureToTransactionHelper(escrowCancel);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionEscrowFinish() {
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .offerSequence(UnsignedInteger.ONE)
+      .owner(sourcePublicKey.deriveAddress())
+      .build();
+    addMultiSignatureToTransactionHelper(escrowFinish);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionEscrowCreate() {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .destination(sourcePublicKey.deriveAddress())
+      .build();
+    addMultiSignatureToTransactionHelper(escrowCreate);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionTrustSet() {
+    TrustSet trustSet = TrustSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .issuer(sourcePublicKey.deriveAddress())
+        .currency("USD")
+        .value("10")
+        .build())
+      .build();
+    addMultiSignatureToTransactionHelper(trustSet);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionOfferOfferCreate() {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .takerPays(XrpCurrencyAmount.ofDrops(100))
+      .takerGets(XrpCurrencyAmount.ofDrops(100))
+      .build();
+    addMultiSignatureToTransactionHelper(offerCreate);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionOfferCancel() {
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .build();
+    addMultiSignatureToTransactionHelper(offerCancel);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionPaymentChannelCreate() {
+    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .destination(sourcePublicKey.deriveAddress())
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("123")
+      .build();
+    addMultiSignatureToTransactionHelper(paymentChannelCreate);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionPaymentChannelClaim() {
+    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .build();
+    addMultiSignatureToTransactionHelper(paymentChannelClaim);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionPaymentChannelFund() {
+    PaymentChannelFund paymentChannelFund = PaymentChannelFund.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .amount(XrpCurrencyAmount.ofDrops(100L))
+      .build();
+    addMultiSignatureToTransactionHelper(paymentChannelFund);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionSetRegularKey() {
+    SetRegularKey setRegularKey = SetRegularKey.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .build();
+    addMultiSignatureToTransactionHelper(setRegularKey);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionSignerListSet() {
+    SignerListSet signerListSet = SignerListSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .signerQuorum(UnsignedInteger.ONE)
+      .build();
+    addMultiSignatureToTransactionHelper(signerListSet);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionNfTokenAcceptOffer() {
+
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .signingPublicKey("")
+      .buyOffer(offer)
+      .build();
+    addMultiSignatureToTransactionHelper(nfTokenAcceptOffer);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionNfTokenBurn() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey("")
+      .nfTokenId(id)
+      .build();
+    addMultiSignatureToTransactionHelper(nfTokenBurn);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionNfTokenCancelOffer() {
+    Hash256 offer = Hash256.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    List<Hash256> offers = new ArrayList<>();
+    offers.add(offer);
+    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey("")
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .tokenOffers(offers)
+      .build();
+    addMultiSignatureToTransactionHelper(nfTokenCancelOffer);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionNfTokenCreateOffer() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey("")
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .nfTokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .build();
+    addMultiSignatureToTransactionHelper(nfTokenCreateOffer);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionNfTokenMint() {
+    UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(sourcePublicKey.deriveAddress())
+      .signingPublicKey("")
+      .tokenTaxon(taxon)
+      .build();
+    addMultiSignatureToTransactionHelper(nfTokenMint);
+  }
+
+  @Test
+  void addMultiSignaturesToTicketCreate() {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.ONE)
+      .signingPublicKey("")
+      .build();
+
+    addMultiSignatureToTransactionHelper(ticketCreate);
+  }
+
+  @Test
+  public void addMultiSignaturesToTransactionUnsupported() {
+    when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
+    when(transactionMock.signingPublicKey()).thenReturn(Optional.of(""));
+    assertThatThrownBy(
+      () -> addMultiSignatureToTransactionHelper(transactionMock)
+    )
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Signing fields could not be added to the transaction.");
+  }
+
+
   @SuppressWarnings("OptionalGetWithoutIsPresent")
   private void addSignatureToTransactionHelper(final Transaction transaction) {
     Objects.requireNonNull(transaction);
@@ -550,4 +937,15 @@ public class SignatureUtilsTest {
     assertThat(result.signedTransaction().transactionSignature().get()).isEqualTo("ED");
   }
 
+  private void addMultiSignatureToTransactionHelper(final Transaction transaction) {
+    Objects.requireNonNull(transaction);
+
+    Transaction signedTransaction = signatureUtils.addMultiSignaturesToTransaction(
+      transaction,
+      Lists.newArrayList(signer1, signer2)
+    );
+
+    assertThat(signedTransaction).usingRecursiveComparison().ignoringFields("signers").isEqualTo(transaction);
+    assertThat(signedTransaction.signers()).asList().containsExactly(signer1, signer2);
+  }
 }

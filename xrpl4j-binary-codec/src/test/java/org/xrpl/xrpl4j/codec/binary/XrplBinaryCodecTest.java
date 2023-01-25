@@ -59,7 +59,7 @@ class XrplBinaryCodecTest {
   public static final String SINGLE_OBJECT_HEX = "EAEA021002E1E1";
   public static final String MULTI_LEVEL_OBJECT_HEX = "EAEA011001021002E1E1";
 
-  private XrplBinaryCodec encoder = new XrplBinaryCodec();
+  private XrplBinaryCodec encoder = XrplBinaryCodec.getInstance();
   private ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   private static Stream<Arguments> dataDrivenFixtures() throws IOException {
@@ -363,7 +363,7 @@ class XrplBinaryCodecTest {
 
     Payment paymentWithoutSigners = paymentBuilder.build();
     Payment paymentWithSigners = paymentBuilder.signers(signers).build();
-    
+
     final String unsignedJson = objectMapper.writeValueAsString(paymentWithSigners);
     final String unsignedBinaryHex = encoder.encodeForMultiSigning(unsignedJson, signerAccountId);
     String decoded = encoder.decode(unsignedBinaryHex);

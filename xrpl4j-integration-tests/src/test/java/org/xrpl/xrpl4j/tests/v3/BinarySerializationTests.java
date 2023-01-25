@@ -49,7 +49,7 @@ import java.math.BigDecimal;
 public class BinarySerializationTests {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
-  XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
+  XrplBinaryCodec binaryCodec = XrplBinaryCodec.getInstance();
 
   private static IssuedCurrencyAmount currencyAmount(int amount) {
     return IssuedCurrencyAmount.builder()

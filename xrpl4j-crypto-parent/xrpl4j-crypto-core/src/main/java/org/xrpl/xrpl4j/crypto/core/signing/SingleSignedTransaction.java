@@ -34,10 +34,4 @@ public interface SingleSignedTransaction<T extends Transaction> extends SignedTr
    */
   Signature signature();
 
-  @Value.Derived
-  @Override
-  default Hash256 hash() {
-    return SignedTransaction.super.hash();
-  }
-
 }

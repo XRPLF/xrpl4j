@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -48,6 +49,10 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.core.signing.ImmutableMultiSignedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
+import org.xrpl.xrpl4j.crypto.core.signing.Signature;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.SingleKeySignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
@@ -147,6 +152,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -1141,6 +1147,63 @@ public class XrplClientTest {
 
     xrplClient = new XrplClient(jsonRpcClientMock);
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
+    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.resultCode()).isEqualTo(200);
+    assertThat(paymentResult.transactionBlob()).isEqualTo("blob");
+  }
+
+  @Test
+  public void submitTypedMultiSignedTest() throws JsonRpcClientErrorException {
+    jsonRpcClientMock = new JsonRpcClient() {
+
+      @Override
+      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
+        return mock(JsonNode.class);
+      }
+
+      @Override
+      public <T extends XrplResult> T send(
+        JsonRpcRequest request,
+        JavaType resultType
+      ) {
+        SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
+          .result("tesSUCCESS")
+          .resultCode(200)
+          .resultMessage("Submitted")
+          .transactionBlob("blob")
+          .transaction(mock(TransactionResult.class))
+          .build();
+        return (T) submitMultiSignedResult;
+      }
+    };
+    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
+    final Wallet wallet2 = seedResult.wallet();
+
+    Payment unsignedPayment = Payment.builder()
+      .account(wallet.classicAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(wallet2.classicAddress())
+      .signingPublicKey("")
+      .build();
+
+    SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
+      .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+      .transactionSignature(Signature.fromBase16("ABCD"))
+      .build();
+    /////////////////////////////
+    // Then we add the signatures to the Payment object and submit it
+    Set<SignatureWithPublicKey> signers = Sets.newHashSet(
+      signatureWithPublicKey
+    );
+    MultiSignedTransaction<Payment> multiSignedPayment = MultiSignedTransaction.<Payment>builder()
+      .unsignedTransaction(unsignedPayment)
+      .signatureWithPublicKeySet(signers)
+      .build();
+
+    xrplClient = new XrplClient(jsonRpcClientMock);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSignedPayment);
     assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
     assertThat(paymentResult.resultCode()).isEqualTo(200);
     assertThat(paymentResult.transactionBlob()).isEqualTo("blob");

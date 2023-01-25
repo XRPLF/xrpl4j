@@ -42,7 +42,6 @@ class SingleSingedTransactionTest {
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
         .build())
-      .signedTransactionBytes(UnsignedByteArray.fromHex(HEX_32_BYTES))
       .signature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())
@@ -52,7 +51,7 @@ class SingleSingedTransactionTest {
   @Test
   void value() {
     assertThat(singleSingedTransaction.hash().value())
-      .isEqualTo("C68144B000C9C53DAA172705BF06D4B52DB7775A639F783C02741DE390625793");
+      .isEqualTo("3C9BE23F7820DDC3D93CF69A7E47C6A89FEB0EF27A1F25E62F87F9E1F7E6E910");
   }
 
   @Test

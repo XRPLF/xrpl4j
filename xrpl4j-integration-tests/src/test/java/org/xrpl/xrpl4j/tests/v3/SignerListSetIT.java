@@ -8,7 +8,9 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
+import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -25,6 +27,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -125,24 +128,22 @@ public class SignerListSetIT extends AbstractIT {
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
-    List<SignerWrapper> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
+    Set<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
       .map(wallet -> {
           Signature signedPayment = signatureService.multiSign(wallet.privateKey(), unsignedPayment);
-          return SignerWrapper.of(Signer.builder()
-            .account(wallet.publicKey().deriveAddress())
-            .signingPublicKey(wallet.publicKey().base16Value())
-            .transactionSignature(signedPayment.base16Value())
-            .build()
-          );
+          return SignatureWithPublicKey.builder()
+            .signingPublicKey(wallet.publicKey())
+            .transactionSignature(signedPayment)
+            .build();
         }
       )
-      .collect(Collectors.toList());
+      .collect(Collectors.toSet());
 
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
-    Payment multiSigPayment = Payment.builder()
-      .from(unsignedPayment)
-      .signers(signers)
+    MultiSignedTransaction<Payment> multiSigPayment = MultiSignedTransaction.<Payment>builder()
+      .unsignedTransaction(unsignedPayment)
+      .signatureWithPublicKeySet(signers)
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);

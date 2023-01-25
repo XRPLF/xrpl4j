@@ -3,7 +3,6 @@ package org.xrpl.xrpl4j.crypto.core.signing;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.google.common.io.BaseEncoding;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
@@ -31,10 +30,12 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
+import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -44,7 +45,7 @@ public class SignatureUtils {
 
   private static final SignatureUtils INSTANCE = new SignatureUtils(
     ObjectMapperFactory.create(),
-    new XrplBinaryCodec()
+    XrplBinaryCodec.getInstance()
   );
 
   /**
@@ -257,17 +258,141 @@ public class SignatureUtils {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
     }
-    try {
-      String signedJson = objectMapper.writeValueAsString(transactionWithSignature);
-      String signedBlob = binaryCodec.encode(signedJson); // <-- txBlob must be binary-encoded.
-      return SingleSignedTransaction.<T>builder()
-        .unsignedTransaction(transaction)
-        .signature(signature)
-        .signedTransaction((T) transactionWithSignature)
-        .signedTransactionBytes(UnsignedByteArray.of(BaseEncoding.base16().decode(signedBlob.toUpperCase())))
+    return SingleSignedTransaction.<T>builder()
+      .unsignedTransaction(transaction)
+      .signature(signature)
+      .signedTransaction((T) transactionWithSignature)
+      .build();
+  }
+
+  /**
+   * Add {@link Transaction#signers()}} to the given transaction. Because {@link Transaction} is not an
+   * Immutable object, it does not have a generated builder like its subclasses do. Thus, this method needs to rebuild
+   * transactions based on their runtime type.
+   *
+   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that {@link
+   *                    Transaction#transactionSignature()} must not be provided, and {@link
+   *                    Transaction#signingPublicKey()} must be an empty string.
+   * @param signers     A {@link List} of {@link SignerWrapper}s containing the transaction signatures.
+   * @param <T>         extends {@link Transaction}.
+   *
+   * @return A copy of {@code transaction} with the {@link Transaction#signers()}} field added.
+   */
+  public <T extends Transaction> T addMultiSignaturesToTransaction(T transaction, List<SignerWrapper> signers) {
+    Objects.requireNonNull(transaction);
+    Objects.requireNonNull(signers);
+
+    Preconditions.checkArgument(
+      !transaction.transactionSignature().isPresent(),
+      "Transactions to be signed must not already include a signature."
+    );
+    Preconditions.checkArgument(
+      transaction.signingPublicKey().isPresent() && transaction.signingPublicKey().get().equals(""),
+      "Transactions to be multisigned must set signingPublicKey to an empty String."
+    );
+
+    final Transaction transactionWithSignatures;
+    if (Payment.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = Payment.builder().from((Payment) transaction)
+        .signers(signers)
         .build();
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e.getMessage(), e);
+    } else if (AccountSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AccountSet.builder().from((AccountSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (AccountDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AccountDelete.builder().from((AccountDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (CheckCancel.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CheckCancel.builder().from((CheckCancel) transaction)
+        .signers(signers)
+        .build();
+    } else if (CheckCash.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CheckCash.builder().from((CheckCash) transaction)
+        .signers(signers)
+        .build();
+    } else if (CheckCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CheckCreate.builder().from((CheckCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = DepositPreAuth.builder().from((DepositPreAuth) transaction)
+        .signers(signers)
+        .build();
+    } else if (EscrowCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = EscrowCreate.builder().from((EscrowCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (EscrowCancel.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = EscrowCancel.builder().from((EscrowCancel) transaction)
+        .signers(signers)
+        .build();
+    } else if (EscrowFinish.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = EscrowFinish.builder().from((EscrowFinish) transaction)
+        .signers(signers)
+        .build();
+    } else if (TrustSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = TrustSet.builder().from((TrustSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (OfferCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = OfferCreate.builder().from((OfferCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (OfferCancel.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = OfferCancel.builder().from((OfferCancel) transaction)
+        .signers(signers)
+        .build();
+    } else if (PaymentChannelCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = PaymentChannelCreate.builder().from((PaymentChannelCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (PaymentChannelClaim.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = PaymentChannelClaim.builder().from((PaymentChannelClaim) transaction)
+        .signers(signers)
+        .build();
+    } else if (PaymentChannelFund.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = PaymentChannelFund.builder().from((PaymentChannelFund) transaction)
+        .signers(signers)
+        .build();
+    } else if (SetRegularKey.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = SetRegularKey.builder().from((SetRegularKey) transaction)
+        .signers(signers)
+        .build();
+    } else if (SignerListSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = SignerListSet.builder().from((SignerListSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (NfTokenAcceptOffer.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) transaction)
+        .signers(signers)
+        .build();
+    } else if (NfTokenBurn.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = NfTokenBurn.builder().from((NfTokenBurn) transaction)
+        .signers(signers)
+        .build();
+    } else if (NfTokenCancelOffer.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = NfTokenCancelOffer.builder().from((NfTokenCancelOffer) transaction)
+        .signers(signers)
+        .build();
+    } else if (NfTokenCreateOffer.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = NfTokenCreateOffer.builder().from((NfTokenCreateOffer) transaction)
+        .signers(signers)
+        .build();
+    } else if (NfTokenMint.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = NfTokenMint.builder().from((NfTokenMint) transaction)
+        .signers(signers)
+        .build();
+    } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = TicketCreate.builder().from((TicketCreate) transaction)
+        .signers(signers)
+        .build();
+    } else {
+      // Should never happen, but will in a unit test if we miss one.
+      throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
     }
+
+    return (T) transactionWithSignatures;
   }
 }

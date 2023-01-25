@@ -20,7 +20,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   public static final UnsignedByte PREFIX = UnsignedByte.of(0xED);
 
   private final UnsignedByteArray value;
-  private final HashCode sha256HashCode;
   private boolean destroyed;
 
   /**
@@ -41,7 +40,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   private PrivateKey(final UnsignedByteArray value) {
     this.value = Objects.requireNonNull(value);
-    this.sha256HashCode = Hashing.sha256().hashBytes(this.value().toByteArray());
   }
 
   /**
@@ -93,20 +91,10 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     return value.hashCode();
   }
 
-  /**
-   * Provides the SHA-256 hash of the private key material contained in this object.
-   *
-   * @return A hex-encoded {@link String} representing the hash of this private key.
-   */
-  public String sha256() {
-    return sha256HashCode.toString();
-  }
-
   @Override
   public String toString() {
     return "PrivateKey{" +
-      "sha256=" + sha256() +
-      ", value=[redacted]" +
+      "value=[redacted]" +
       ", destroyed=" + destroyed +
       '}';
   }

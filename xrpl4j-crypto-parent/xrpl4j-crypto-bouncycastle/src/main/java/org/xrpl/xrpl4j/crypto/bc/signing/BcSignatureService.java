@@ -44,7 +44,7 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
    */
   public BcSignatureService() {
     this(
-      new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
+      new SignatureUtils(ObjectMapperFactory.create(), XrplBinaryCodec.getInstance()),
       new Ed25519Signer(),
       new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()))
     );

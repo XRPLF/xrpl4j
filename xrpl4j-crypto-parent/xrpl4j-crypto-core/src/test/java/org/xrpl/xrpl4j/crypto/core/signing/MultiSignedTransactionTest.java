@@ -5,16 +5,18 @@ import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_ADDRESS;
 import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_ADDRESS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.jayway.jsonassert.JsonAssert;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
@@ -23,19 +25,26 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 class MultiSignedTransactionTest {
 
   private static final String HEX_32_BYTES = "0000000000000000000000000000000000000000000000000000000000000000";
-  private MultiSignedTransaction multiSignedTransaction;
+  private SignatureWithPublicKey signature1;
+  private SignatureWithPublicKey signature2;
+  private MultiSignedTransaction<Payment> multiSignedTransaction;
+
 
   @BeforeEach
   void setUp() {
-    multiSignedTransaction = MultiSignedTransaction.builder()
-      .signedTransaction(Payment.builder()
-        .account(ED_ADDRESS)
-        .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
-        .sequence(UnsignedInteger.ONE)
-        .signingPublicKey("")
-        .amount(XrpCurrencyAmount.ofDrops(12345))
-        .destination(EC_ADDRESS)
+    signature1 = SignatureWithPublicKey.builder()
+      .transactionSignature(Signature.builder()
+        .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
+      .build();
+    signature2 = SignatureWithPublicKey.builder()
+      .transactionSignature(Signature.builder()
+        .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
+        .build())
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00"))
+      .build();
+    multiSignedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(Payment.builder()
         .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
@@ -44,20 +53,43 @@ class MultiSignedTransactionTest {
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
         .build())
-      .signedTransactionBytes(UnsignedByteArray.fromHex(HEX_32_BYTES))
-      .signatureWithPublicKeySet(Sets.newHashSet(SignatureWithPublicKey.builder()
-        .transactionSignature(Signature.builder()
-          .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
-          .build())
-        .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "00"))
-        .build()))
+      .addSignatureWithPublicKeySet(
+        signature1,
+        signature2
+      )
       .build();
   }
 
   @Test
-  void value() {
+  void testHash() {
     assertThat(multiSignedTransaction.hash().value())
-      .isEqualTo("C68144B000C9C53DAA172705BF06D4B52DB7775A639F783C02741DE390625793");
+      .isEqualTo("53F05196A66B08F30D1968A38BF8A9D85C624B03CF7AD2E8A7381AF1A7152043");
+  }
+
+  @Test
+  void testSignedTransactionBytes() throws JsonProcessingException {
+    assertThat(multiSignedTransaction.signedTransactionBytes().hexValue()).isEqualTo(
+      XrplBinaryCodec.getInstance().encode(ObjectMapperFactory.create().writeValueAsString(
+        multiSignedTransaction.signedTransaction()
+      ))
+    );
+  }
+
+  @Test
+  void testSignedTransactionConstructed() {
+    Transaction signedTransaction = multiSignedTransaction.signedTransaction();
+    assertThat(signedTransaction.signers()).asList().hasSize(2)
+      .extracting("signer.account", "signer.signingPublicKey", "signer.transactionSignature")
+      .containsExactly(Tuple.tuple(
+          signature2.signingPublicKey().deriveAddress(),
+          signature2.signingPublicKey().base16Value(),
+          signature2.transactionSignature().base16Value()
+        ),
+        Tuple.tuple(
+          signature1.signingPublicKey().deriveAddress(),
+          signature1.signingPublicKey().base16Value(),
+          signature1.transactionSignature().base16Value()
+        ));
   }
 
   @Test

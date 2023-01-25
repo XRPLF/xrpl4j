@@ -80,8 +80,7 @@ class MultiSignedTransactionTest {
     Transaction signedTransaction = multiSignedTransaction.signedTransaction();
     assertThat(signedTransaction.signers()).asList().hasSize(2)
       .extracting("signer.account", "signer.signingPublicKey", "signer.transactionSignature")
-      .containsExactly(
-        Tuple.tuple(
+      .containsExactly(Tuple.tuple(
           signature2.signingPublicKey().deriveAddress(),
           signature2.signingPublicKey().base16Value(),
           signature2.transactionSignature().base16Value()
@@ -90,9 +89,7 @@ class MultiSignedTransactionTest {
           signature1.signingPublicKey().deriveAddress(),
           signature1.signingPublicKey().base16Value(),
           signature1.transactionSignature().base16Value()
-        )
-      );
-
+        ));
   }
 
   @Test

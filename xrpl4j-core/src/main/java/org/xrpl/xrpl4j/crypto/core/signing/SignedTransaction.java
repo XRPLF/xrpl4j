@@ -1,8 +1,6 @@
 package org.xrpl.xrpl4j.crypto.core.signing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
@@ -45,9 +43,6 @@ public interface SignedTransaction<T extends Transaction> {
    *
    * @return A byte-array containing the signed transaction blob.
    */
-  // TODO: Remove @JsonSerialize and deserialize after module condensation
-  @JsonSerialize(using = UnsignedByteArraySerializer.class)
-  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   @Value.Derived
   default UnsignedByteArray signedTransactionBytes() {
     try {

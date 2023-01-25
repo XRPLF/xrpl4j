@@ -52,8 +52,6 @@ public interface Signature {
    *
    * @return A {@link UnsignedByteArray}.
    */
-  @JsonSerialize(using = UnsignedByteArraySerializer.class)
-  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray value();
 
   /**

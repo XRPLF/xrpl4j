@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArraySerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.UnsignedByteArraySerializer;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**

@@ -75,4 +75,4 @@ class NetworkFeeResultTests {
     assertThat(feeOptions.isTranactionQueueFull()).isTrue();
     assertThat(feeOptions.isTransactionQueueEmpty()).isFalse();
   }
-} 
+}

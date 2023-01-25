@@ -36,7 +36,6 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
-import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -52,9 +51,6 @@ public class AbstractSignatureServiceTest {
 
   @Mock
   private SignatureUtils signatureUtilsMock;
-
-  @Mock
-  private PrivateKey privateKeyMock;
   @Mock
   private PublicKey publicKeyMock;
   @Mock

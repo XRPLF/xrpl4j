@@ -50,7 +50,11 @@ import java.util.Objects;
  *
  * <p>WARNING: This implementation stores private seed-generation material in-memory, and is thus only meant for
  * lower-security environments. For higher security deployments, prefer an HSM-based implementation instead.</p>
+ *
+ * @deprecated This implementation will go away in a future release. Consider using the version of this class in the
+ *   "bc" package instead.
  */
+@Deprecated
 public class DerivedKeysSignatureService implements SignatureService {
 
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
@@ -196,6 +200,7 @@ public class DerivedKeysSignatureService implements SignatureService {
    *                          generate a seed for entropy.
    *
    * @return A {@link Seed} that can be used to generate an XRPL public/private key pair.
+   *
    * @see "https://xrpl.org/cryptographic-keys.html#key-derivation"
    */
   @VisibleForTesting
@@ -225,6 +230,7 @@ public class DerivedKeysSignatureService implements SignatureService {
    *                          generate a seed for entropy.
    *
    * @return A {@link Seed} that can be used to generate an XRPL public/private key pair.
+   *
    * @see "https://xrpl.org/cryptographic-keys.html#key-derivation"
    */
   @VisibleForTesting

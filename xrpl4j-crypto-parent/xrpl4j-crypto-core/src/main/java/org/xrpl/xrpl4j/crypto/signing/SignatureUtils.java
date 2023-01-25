@@ -56,7 +56,10 @@ import java.util.Objects;
 
 /**
  * Utility methods to help with generating, validating, and manipulating digital signatures.
+ *
+ * @deprecated Prefer the variant found in {@link org.xrpl.xrpl4j.crypto.core} instead.
  */
+@Deprecated
 public class SignatureUtils {
 
   private final ObjectMapper objectMapper;
@@ -92,8 +95,8 @@ public class SignatureUtils {
   }
 
   /**
-   * Helper method to convert a {@link Transaction} into bytes that can be signed by multiple signers, as
-   * is the case when the source account has set a SignerList.
+   * Helper method to convert a {@link Transaction} into bytes that can be signed by multiple signers, as is the case
+   * when the source account has set a SignerList.
    *
    * @param transaction   A {@link Transaction} to be signed.
    * @param signerAddress The address of the signer of the transaction.
@@ -249,7 +252,7 @@ public class SignatureUtils {
         .unsignedTransaction(unsignedTransaction)
         .signature(signature)
         .signedTransaction(signedTransaction)
-        .signedTransactionBytes(UnsignedByteArray.of(BaseEncoding.base16().decode(signedBlob)))
+        .signedTransactionBytes(UnsignedByteArray.of(BaseEncoding.base16().decode(signedBlob.toUpperCase())))
         .build();
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e.getMessage(), e);

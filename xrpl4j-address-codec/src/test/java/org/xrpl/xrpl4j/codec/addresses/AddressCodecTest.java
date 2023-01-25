@@ -24,7 +24,6 @@ package org.xrpl.xrpl4j.codec.addresses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
@@ -32,17 +31,14 @@ import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodingFormatException;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.XAddress;
 
-import java.util.function.Function;
 
+/**
+ * Unit tests for {@link AddressCodec}.
+ */
 @SuppressWarnings( {"ParameterName", "MethodName", "LocalVariableName"})
-public class AddressCodecTest {
+public class AddressCodecTest extends AbstractCodecTest {
 
   AddressCodec addressCodec;
-
-  private static UnsignedByteArray unsignedByteArrayFromHex(String hexValue) {
-    byte[] decodedHex = BaseEncoding.base16().decode(hexValue);
-    return UnsignedByteArray.of(decodedHex);
-  }
 
   @BeforeEach
   public void setUp() {
@@ -196,18 +192,5 @@ public class AddressCodecTest {
       () -> addressCodec.xAddressToClassicAddress(xAddress),
       "Checksum does not validate"
     );
-  }
-
-  private void testEncodeDecode(
-    Function<UnsignedByteArray, String> encoder,
-    Function<String, UnsignedByteArray> decoder,
-    UnsignedByteArray bytes,
-    String base58
-  ) {
-    String encoded = encoder.apply(bytes);
-    assertThat(encoded).isEqualTo(base58);
-
-    UnsignedByteArray decoded = decoder.apply(base58);
-    assertThat(decoded).isEqualTo(bytes);
   }
 }

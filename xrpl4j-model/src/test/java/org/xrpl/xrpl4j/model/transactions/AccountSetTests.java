@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.flags.Flags;
 
 public class AccountSetTests {
 
@@ -51,6 +52,38 @@ public class AccountSetTests {
     assertThat(accountSet.messageKey()).isNotEmpty().get()
       .isEqualTo("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB");
     assertThat(accountSet.transferRate()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(1000000001));
+    assertThat(accountSet.flags()).isEqualTo(Flags.AccountSetTransactionFlags.builder().build());
+  }
+
+  @Test
+  void accountSetWithSetFlagAndTransactionFlags() {
+    Flags.AccountSetTransactionFlags flags = Flags.AccountSetTransactionFlags.builder()
+      .tfRequireAuth()
+      .tfRequireDestTag()
+      .tfDisallowXrp()
+      .build();
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .domain("6578616D706C652E636F6D")
+      .setFlag(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID)
+      .flags(flags)
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .transferRate(UnsignedInteger.valueOf(1000000001))
+      .tickSize(UnsignedInteger.valueOf(15))
+      .build();
+
+    assertThat(accountSet.transactionType()).isEqualTo(TransactionType.ACCOUNT_SET);
+    assertThat(accountSet.account()).isEqualTo(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"));
+    assertThat(accountSet.fee().value()).isEqualTo(UnsignedLong.valueOf(12));
+    assertThat(accountSet.sequence()).isEqualTo(UnsignedInteger.valueOf(5));
+    assertThat(accountSet.domain()).isNotEmpty().get().isEqualTo("6578616D706C652E636F6D");
+    assertThat(accountSet.setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.ACCOUNT_TXN_ID);
+    assertThat(accountSet.messageKey()).isNotEmpty().get()
+      .isEqualTo("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB");
+    assertThat(accountSet.transferRate()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(1000000001));
+    assertThat(accountSet.flags()).isEqualTo(flags);
   }
 
   @Test

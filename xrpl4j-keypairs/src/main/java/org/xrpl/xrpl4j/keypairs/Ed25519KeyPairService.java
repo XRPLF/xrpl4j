@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.keypairs;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.keypairs;
 
 import com.google.common.io.BaseEncoding;
 import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
@@ -37,10 +38,14 @@ import org.xrpl.xrpl4j.keypairs.exceptions.SigningException;
 import java.util.Objects;
 
 /**
- * Implementation of {@link KeyPairService} which uses the ED25519 algorithm to derive keys and sign/verify
- * signatures.
+ * Implementation of {@link KeyPairService} which uses the ED25519 algorithm to derive keys and sign/verify signatures.
+ *
+ * @deprecated This class will go away in a future version.
  */
+@Deprecated
 public class Ed25519KeyPairService extends AbstractKeyPairService {
+
+  private final Signer signer;
 
   private static final Ed25519KeyPairService INSTANCE = new Ed25519KeyPairService(AddressCodec.getInstance());
 
@@ -93,7 +98,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   @Override
   public String sign(UnsignedByteArray message, String privateKey) {
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(privateKey.substring(2)), // Remove ED prefix byte
+      BaseEncoding.base16().decode(privateKey.substring(2).toUpperCase()), // Remove ED prefix byte
       0
     );
 
@@ -112,13 +117,13 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     Ed25519PublicKeyParameters publicKeyParameters = new Ed25519PublicKeyParameters(
-      BaseEncoding.base16().decode(publicKey.substring(2)), // Remove ED prefix byte
+      BaseEncoding.base16().decode(publicKey.substring(2).toUpperCase()), // Remove ED prefix byte
       0
     );
 
     signer.reset();
     signer.init(false, publicKeyParameters);
     signer.update(message.toByteArray(), 0, message.getUnsignedBytes().size());
-    return signer.verifySignature(BaseEncoding.base16().decode(signature));
+    return signer.verifySignature(BaseEncoding.base16().decode(signature.toUpperCase()));
   }
 }

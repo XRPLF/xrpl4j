@@ -53,6 +53,17 @@ public class XrplBinaryCodec {
   private static final DefinitionsService definitionsService = DefinitionsService.getInstance();
   private static final ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
 
+  private static final XrplBinaryCodec INSTANCE = new XrplBinaryCodec();
+
+  /**
+   * Get a singleton instance of {@link XrplBinaryCodec}.
+   *
+   * @return A singleton instance of {@link XrplBinaryCodec}.
+   */
+  public static XrplBinaryCodec getInstance() {
+    return INSTANCE;
+  }
+
   /**
    * Encodes JSON to canonical XRPL binary as a hex string.
    *

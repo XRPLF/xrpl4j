@@ -44,7 +44,10 @@ import java.util.Objects;
 
 /**
  * Utility class for converting between XRPL-4j public/private keys and BouncyCastle implementations.
+ *
+ * @deprecated Prefer the variant of this class found in the org.xrpl.xrpl4j.crypto.bc package.
  */
+@Deprecated
 public final class BcKeyUtils {
 
   private static final String SECP256K1 = "secp256k1";

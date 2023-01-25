@@ -32,7 +32,10 @@ import java.util.Objects;
 
 /**
  * A typed instance of an XRPL private-key.
+ *
+ * @deprecated consider using the variant from org.xrpl.xrpl4j.crypto.core.
  */
+@Deprecated
 public interface PrivateKey {
 
   /**
@@ -74,7 +77,7 @@ public interface PrivateKey {
     Objects.requireNonNull(base16EncodedPrivateKey);
 
     return PrivateKey.builder()
-      .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPrivateKey)))
+      .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPrivateKey.toUpperCase())))
       .build();
   }
 

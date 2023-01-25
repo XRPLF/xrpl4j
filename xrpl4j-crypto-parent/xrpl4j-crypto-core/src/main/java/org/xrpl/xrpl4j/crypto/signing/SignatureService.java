@@ -25,8 +25,11 @@ import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PublicKey;
 
 /**
- * Defines how to sign and verify an XRPL transaction.
+ * Defines how to sign and verify an XRPL transaction using a single in-memory public/private key-pair.
+ *
+ * @deprecated Prefer the variant found in {@link org.xrpl.xrpl4j.crypto.core} instead.
  */
+@Deprecated
 public interface SignatureService extends TransactionSigner, TransactionVerifier {
 
   /**

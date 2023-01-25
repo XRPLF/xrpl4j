@@ -123,8 +123,6 @@ public class FluentCompareTo<T extends Comparable<? super T>> {
     return !lessThanOrEqualTo(other);
   }
 
-  // TODO: Check with coverage and add more unit tests.
-
   /**
    * Checks if wrapped value is greater than than the given one.
    *

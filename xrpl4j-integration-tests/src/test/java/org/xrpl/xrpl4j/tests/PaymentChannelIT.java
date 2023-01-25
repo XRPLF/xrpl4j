@@ -56,7 +56,7 @@ import java.time.Instant;
 
 public class PaymentChannelIT extends AbstractIT {
 
-  private final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
+  private final XrplBinaryCodec binaryCodec = XrplBinaryCodec.getInstance();
   private final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 

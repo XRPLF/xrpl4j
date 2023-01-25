@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 public class SignerListSetIT extends AbstractIT {
 
   protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
-  protected final XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
+  protected final XrplBinaryCodec binaryCodec = XrplBinaryCodec.getInstance();
   protected final KeyPairService keyPairService = DefaultKeyPairService.getInstance();
 
   @Test

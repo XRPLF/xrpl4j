@@ -33,7 +33,10 @@ import java.util.Objects;
 
 /**
  * An abstract implementation of {@link SignatureService} with common functionality that sub-classes can utilize.
+ *
+ * @deprecated Prefer the variant found in {@link org.xrpl.xrpl4j.crypto.core} instead.
  */
+@Deprecated
 public abstract class AbstractSignatureService implements SignatureService {
 
   /**
@@ -108,9 +111,9 @@ public abstract class AbstractSignatureService implements SignatureService {
   }
 
   @Override
-  public boolean verify(
+  public <T extends Transaction> boolean verify(
     final KeyMetadata keyMetadata,
-    final SignedTransaction transactionWithSignature
+    final SignedTransaction<T> transactionWithSignature
   ) {
     Objects.requireNonNull(keyMetadata);
     Objects.requireNonNull(transactionWithSignature);

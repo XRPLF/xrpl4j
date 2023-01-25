@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.keypairs;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,12 @@ import java.math.BigInteger;
 import java.util.Optional;
 
 /**
- * Implementation of {@link KeyPairService} which uses the ECDSA algorithm with the secp256k1 curve to derive keys
- * and sign/verify signatures.
+ * Implementation of {@link KeyPairService} which uses the ECDSA algorithm with the secp256k1 curve to derive keys and
+ * sign/verify signatures.
+ *
+ * @deprecated This class will go away in a future version.
  */
+@Deprecated
 public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   private static final Secp256k1KeyPairService INSTANCE = new Secp256k1KeyPairService();
@@ -59,10 +62,10 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   }
 
   /**
-   * Note that multiple keypairs can be derived from the same seed using the secp2551k algorithm by
-   * deriving the keys from a seed and an account index UInt32. However, this use case is incredibly uncommon,
-   * and a vast majority of users use 0 for the account index. Thus, this implementation does not allow for custom
-   * account indexes for deriving secp2551k keys.
+   * Note that multiple keypairs can be derived from the same seed using the secp2551k algorithm by deriving the keys
+   * from a seed and an account index UInt32. However, this use case is incredibly uncommon, and a vast majority of
+   * users use 0 for the account index. Thus, this implementation does not allow for custom account indexes for deriving
+   * secp2551k keys.
    *
    * @param seed An {@link UnsignedByteArray} of length 16 containing a seed.
    *
@@ -154,13 +157,15 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
   @Override
   public boolean verify(UnsignedByteArray message, String signature, String publicKey) {
     UnsignedByteArray messageHash = HashUtils.sha512Half(message);
-    EcDsaSignature sig = EcDsaSignature.fromDer(BaseEncoding.base16().decode(signature));
+    EcDsaSignature sig = EcDsaSignature.fromDer(BaseEncoding.base16().decode(signature.toUpperCase()));
     if (sig == null) {
       return false;
     }
 
     ECDSASigner signer = new ECDSASigner();
-    ECPoint publicKeyPoint = ecDomainParameters.getCurve().decodePoint(BaseEncoding.base16().decode(publicKey));
+    ECPoint publicKeyPoint = ecDomainParameters.getCurve().decodePoint(
+      BaseEncoding.base16().decode(publicKey.toUpperCase())
+    );
     ECPublicKeyParameters params = new ECPublicKeyParameters(publicKeyPoint, ecDomainParameters);
     signer.init(false, params);
     return signer.verifySignature(messageHash.toByteArray(), sig.r(), sig.s());

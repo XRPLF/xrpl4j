@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.common;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,6 +60,8 @@ public class Wrappers {
       return LedgerIndexBound.of(Integer.valueOf(ledgerIndexBound).longValue());
     }
 
+    public static LedgerIndexBound UNBOUNDED = LedgerIndexBound.of(-1);
+
     @Override
     public String toString() {
       return value().toString();
@@ -70,8 +72,8 @@ public class Wrappers {
      *
      * @param other Another {@link LedgerIndexBound} to add.
      *
-     * @return A {@link LedgerIndexBound} wrapping the sum of the two wrapped {@link Long} values of this {@link
-     *   LedgerIndexBound} and {@code other}.
+     * @return A {@link LedgerIndexBound} wrapping the sum of the two wrapped {@link Long} values of this
+     *   {@link LedgerIndexBound} and {@code other}.
      */
     public LedgerIndexBound plus(LedgerIndexBound other) {
       checkAdditionOverflow(other.value());
@@ -83,8 +85,8 @@ public class Wrappers {
      *
      * @param ledgerIndex A {@link LedgerIndex} to add to this {@link LedgerIndexBound}.
      *
-     * @return A {@link LedgerIndexBound} wrapping the sum of the two values of this {@link LedgerIndexBound} and {@code
-     *   ledgerIndex}.
+     * @return A {@link LedgerIndexBound} wrapping the sum of the two values of this {@link LedgerIndexBound} and
+     *   {@code ledgerIndex}.
      */
     public LedgerIndexBound plus(LedgerIndex ledgerIndex) {
       checkAdditionOverflow(ledgerIndex.unsignedIntegerValue().longValue());
@@ -119,8 +121,8 @@ public class Wrappers {
      *
      * @param other Another {@link LedgerIndexBound} to subtract.
      *
-     * @return A {@link LedgerIndexBound} wrapping the difference of the two wrapped {@link Long} values of this {@link
-     *   LedgerIndexBound} and {@code other}.
+     * @return A {@link LedgerIndexBound} wrapping the difference of the two wrapped {@link Long} values of this
+     *   {@link LedgerIndexBound} and {@code other}.
      */
     public LedgerIndexBound minus(LedgerIndexBound other) {
       checkSubtractionInBounds(other.value());
@@ -145,8 +147,8 @@ public class Wrappers {
      *
      * @param value A {@link Long} to subtract.
      *
-     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and {@code
-     *   value}.
+     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and
+     *   {@code value}.
      */
     public LedgerIndexBound minus(Long value) {
       checkSubtractionInBounds(value);
@@ -158,8 +160,8 @@ public class Wrappers {
      *
      * @param value An {@link Integer} to subtract.
      *
-     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and {@code
-     *   value}.
+     * @return A {@link LedgerIndexBound} wrapping the difference of this {@link LedgerIndexBound}'s value and
+     *   {@code value}.
      */
     public LedgerIndexBound minus(Integer value) {
       return minus(value.longValue());
@@ -171,7 +173,6 @@ public class Wrappers {
     @Value.Check
     public void checkBounds() {
       Preconditions.checkArgument(value() >= -1, "LedgerIndexBounds must be greater than or equal to -1.");
-      Preconditions.checkArgument(value() != 0, "LedgerIndexBounds cannot be 0.");
       Preconditions.checkArgument(
         value() <= UnsignedInteger.MAX_VALUE.longValue(),
         "LedgerIndexBounds cannot be larger than max unsigned integer value " + UnsignedInteger.MAX_VALUE.toString()

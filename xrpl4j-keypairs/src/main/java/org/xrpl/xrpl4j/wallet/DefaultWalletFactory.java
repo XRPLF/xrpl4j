@@ -28,7 +28,11 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Default implementation of {@link WalletFactory}.
+ *
+ * @deprecated This class will be removed in a future version. Consider using classes from org.xrpl.xrpl4j.core.wallet
+ *   instead.
  */
+@Deprecated
 public class DefaultWalletFactory implements WalletFactory {
 
   private static final WalletFactory INSTANCE = new DefaultWalletFactory(

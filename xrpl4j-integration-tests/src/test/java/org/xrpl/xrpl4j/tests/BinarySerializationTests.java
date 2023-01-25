@@ -82,7 +82,7 @@ import java.util.stream.Collectors;
 public class BinarySerializationTests {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
-  XrplBinaryCodec binaryCodec = new XrplBinaryCodec();
+  XrplBinaryCodec binaryCodec = XrplBinaryCodec.getInstance();
 
   private static IssuedCurrencyAmount currencyAmount(int amount) {
     return IssuedCurrencyAmount.builder()
@@ -415,7 +415,6 @@ public class BinarySerializationTests {
         .value("10000000")
         .build())
       .build();
-
 
     String expectedBinary = "1200142200020000240000002C63D6438D7EA4C680000000000000000000000000005743470000" +
       "000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C8114BE6C30732AE33CF2AF3344CE8172A6B9300183E3";

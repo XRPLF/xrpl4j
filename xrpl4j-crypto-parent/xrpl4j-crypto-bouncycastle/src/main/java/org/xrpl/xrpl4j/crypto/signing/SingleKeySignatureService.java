@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,6 +36,7 @@ import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
+import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.EcDsaSignature;
 import org.xrpl.xrpl4j.keypairs.HashUtils;
@@ -53,7 +54,11 @@ import java.util.Objects;
  *
  * <p>WARNING: This implementation _might_ be appropriate for Android use, but should likely not be used in a
  * server-side context. In general, prefer an implementation that offers a higher level of security.</p>
+ *
+ * @deprecated This class will go away in a future release. Consider using {@link BcSignatureService} instead
+ *   and manage a single private key in your application.
  */
+@Deprecated
 public class SingleKeySignatureService extends AbstractSignatureService implements SignatureService {
 
   private static final KeyStoreType KEY_STORE_TYPE = KeyStoreType.fromKeystoreTypeId("in-memory-single-key");
@@ -69,7 +74,7 @@ public class SingleKeySignatureService extends AbstractSignatureService implemen
    */
   public SingleKeySignatureService(final PrivateKey privateKey) {
     this(
-      new SignatureUtils(ObjectMapperFactory.create(), new XrplBinaryCodec()),
+      new SignatureUtils(ObjectMapperFactory.create(), XrplBinaryCodec.getInstance()),
       new Ed25519Signer(),
       new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest())),
       DefaultKeyPairService.getInstance(),
@@ -113,7 +118,7 @@ public class SingleKeySignatureService extends AbstractSignatureService implemen
     Objects.requireNonNull(signableTransactionBytes);
 
     Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(privateKey.base16Encoded().substring(2)), // Remove ED prefix byte
+      BaseEncoding.base16().decode(privateKey.base16Encoded().substring(2).toUpperCase()), // Remove ED prefix byte
       0
     );
 

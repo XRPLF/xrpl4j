@@ -192,16 +192,7 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionWithMissingSignature() {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
-    when(transactionMock.signingPublicKey()).thenReturn(Optional.of(""));
-    assertThrows(IllegalArgumentException.class,
-      () -> signatureUtils.addSignatureToTransaction(transactionMock, signatureMock));
-  }
-
-  @Test
-  public void addSignatureToTransactionWithMissingPublicKey() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.of(""));
-    when(transactionMock.signingPublicKey()).thenReturn(Optional.empty());
-
+    when(transactionMock.signingPublicKey()).thenReturn("");
     assertThrows(IllegalArgumentException.class,
       () -> signatureUtils.addSignatureToTransaction(transactionMock, signatureMock));
   }

@@ -1061,17 +1061,6 @@ public class XrplClientTest {
   }
 
   @Test
-  public void submitUnsignedTxWithoutSigningPubKey_Throws() {
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    Payment mockPayment = mock(Payment.class);
-
-    IllegalArgumentException thrownException =
-      assertThrows(IllegalArgumentException.class, () -> xrplClient.submit(wallet, mockPayment));
-    assertThat(thrownException.getMessage())
-      .isEqualTo("Transaction.signingPublicKey() must be set.");
-  }
-
-  @Test
   public void submitUnsignedTxWithSigningPubKey() {
     SubmitResult mockSubmitResult = mock(SubmitResult.class);
     SignedTransaction mockSignedTransaction = mock(SignedTransaction.class);
@@ -1135,7 +1124,6 @@ public class XrplClientTest {
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(wallet2.classicAddress())
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////
@@ -1186,7 +1174,6 @@ public class XrplClientTest {
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(wallet2.classicAddress())
-      .signingPublicKey("")
       .build();
 
     SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()

@@ -17,7 +17,6 @@ public class SetFeeTest {
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .signingPublicKey("")
       .baseFee("000000000000000A")
       .referenceFeeUnits(UnsignedInteger.valueOf(10))
       .reserveBase(UnsignedInteger.valueOf(20000000))

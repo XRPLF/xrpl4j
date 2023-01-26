@@ -15,7 +15,6 @@ public class UnlModifyTest {
     UnlModify unlModify = UnlModify.builder()
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .signingPublicKey("")
       .ledgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(67850752)))
       .unlModifyValidator(validator)
       .unlModifyDisabling(UnsignedInteger.valueOf(1))

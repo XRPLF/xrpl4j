@@ -120,7 +120,6 @@ public class SignerListSetIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(destinationKeyPair.publicKey().deriveAddress())
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////

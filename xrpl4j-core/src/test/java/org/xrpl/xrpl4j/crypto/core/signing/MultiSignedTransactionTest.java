@@ -49,7 +49,6 @@ class MultiSignedTransactionTest {
         .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
         .sequence(UnsignedInteger.ONE)
-        .signingPublicKey("")
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
         .build())

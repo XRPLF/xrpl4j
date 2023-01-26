@@ -178,11 +178,6 @@ public class XrplClient {
     Wallet wallet,
     T unsignedTransaction
   ) throws JsonRpcClientErrorException {
-    Preconditions.checkArgument(
-      unsignedTransaction.signingPublicKey().isPresent(),
-      "Transaction.signingPublicKey() must be set."
-    );
-
     SignedTransaction<T> signedTransaction = signTransaction(wallet, unsignedTransaction);
     return submit(signedTransaction);
   }

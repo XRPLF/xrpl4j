@@ -41,6 +41,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
       .sequence(UnsignedInteger.valueOf(12))
       .fee(XrpCurrencyAmount.ofDrops(12))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -49,6 +50,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"CheckID\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\",\n" +
       "    \"Sequence\": 12,\n" +
       "    \"Flags\": 2147483648,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
 
@@ -63,6 +65,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(12))
       .deliverMin(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -72,6 +75,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
       "    \"Sequence\": 1,\n" +
       "    \"Flags\": 2147483648,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
 
@@ -86,6 +90,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(12))
       .amount(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -95,6 +100,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
       "    \"Sequence\": 1,\n" +
       "    \"Flags\": 2147483648,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
 
@@ -112,6 +118,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .sendMax(XrpCurrencyAmount.ofDrops(100000000))
       .expiration(UnsignedInteger.valueOf(570113521))
       .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -124,6 +131,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "  \"DestinationTag\": 1,\n" +
       "  \"Sequence\": 1,\n" +
       "  \"Flags\": 2147483648,\n" +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "  \"Fee\": \"12\"\n" +
       "}";
 
@@ -138,6 +146,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
       .sendMax(XrpCurrencyAmount.ofDrops(100000000))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -147,6 +156,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "  \"SendMax\": \"100000000\",\n" +
       "  \"Sequence\": 1,\n" +
       "  \"Flags\": 2147483648,\n" +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "  \"Fee\": \"12\"\n" +
       "}";
 

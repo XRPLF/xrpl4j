@@ -230,7 +230,6 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(toAddress(destinationPrivateKey))
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////

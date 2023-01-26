@@ -60,6 +60,7 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
             .build()
         )
       )
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -69,6 +70,7 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"SignerQuorum\": 3,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"SignerEntries\": [\n" +
       "        {\n" +
       "            \"SignerEntry\": {\n" +
@@ -101,6 +103,7 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
       .signerQuorum(UnsignedInteger.ZERO)
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -109,6 +112,7 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       "    \"TransactionType\": \"SignerListSet\",\n" +
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"12\",\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"SignerQuorum\": 0\n" +
       "}";
 

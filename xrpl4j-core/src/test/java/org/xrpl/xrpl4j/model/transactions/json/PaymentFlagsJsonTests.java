@@ -46,6 +46,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.builder().tfFullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(2))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -55,6 +56,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       "                \"Amount\": \"25000000\",\n" +
       "                \"Fee\": \"10\",\n" +
       "                \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"Sequence\": 2\n" +
       "            }";
 
@@ -70,6 +72,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(25000000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -79,6 +82,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       "                \"Amount\": \"25000000\",\n" +
       "                \"Fee\": \"10\",\n" +
       "                \"Flags\": 2147483648,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"Sequence\": 2\n" +
       "            }";
 
@@ -112,6 +116,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
           .build()
       ))
       .destinationTag(UnsignedInteger.valueOf(736049272))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -134,6 +139,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       "                \"Paths\": [[{\n" +
       "                    \"account\": \"razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA\"\n" +
       "                }]],\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"DestinationTag\": 736049272\n" +
       "            }";
 

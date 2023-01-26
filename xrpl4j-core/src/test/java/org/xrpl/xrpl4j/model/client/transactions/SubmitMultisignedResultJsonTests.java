@@ -60,7 +60,6 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
             .account(Address.of("rEuLyBCvcw4CFmzv8RepSiAoNgF8tTGJQC"))
             .fee(XrpCurrencyAmount.ofDrops(30000))
             .flags(Flags.TrustSetFlags.of(262144))
-            .signingPublicKey("")
             .limitAmount(IssuedCurrencyAmount.builder()
               .currency("USD")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))

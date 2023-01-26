@@ -308,7 +308,6 @@ class XrplBinaryCodecTest {
       .account(Address.of("rEuLyBCvcw4CFmzv8RepSiAoNgF8tTGJQC"))
       .fee(XrpCurrencyAmount.ofDrops(30000))
       .sequence(UnsignedInteger.valueOf(2))
-      .signingPublicKey("")
       .limitAmount(IssuedCurrencyAmount.builder()
         .value("100")
         .currency("USD")
@@ -359,8 +358,7 @@ class XrplBinaryCodecTest {
       .fee(XrpCurrencyAmount.ofDrops(30000))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .destination(Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK"))
-      .sequence(UnsignedInteger.ONE)
-      .signingPublicKey("");
+      .sequence(UnsignedInteger.ONE);
 
     Payment paymentWithoutSigners = paymentBuilder.build();
     Payment paymentWithSigners = paymentBuilder.signers(signers).build();

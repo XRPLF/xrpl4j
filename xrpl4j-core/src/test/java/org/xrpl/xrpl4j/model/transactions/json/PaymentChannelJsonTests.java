@@ -49,6 +49,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .settleDelay(UnsignedInteger.valueOf(86400))
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .cancelAfter(UnsignedLong.valueOf(533171558))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -63,6 +64,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
       "    \"CancelAfter\": 533171558,\n" +
       "    \"DestinationTag\": 23480,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"SourceTag\": 11747\n" +
       "}";
 
@@ -82,6 +84,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
         "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -95,6 +98,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "  \"Amount\": \"1000000\",\n" +
       "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
       "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
       "}";
     assertCanSerializeAndDeserialize(claim, json);
@@ -109,6 +113,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
       .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
+      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       .build();
 
     String json = "{\n" +
@@ -119,6 +124,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "    \"TransactionType\": \"PaymentChannelFund\",\n" +
       "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
       "    \"Amount\": \"200000\",\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Expiration\": 543171558\n" +
       "}";
 

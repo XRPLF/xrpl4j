@@ -220,13 +220,14 @@ public interface Transaction {
    * Hex representation of the public key that corresponds to the private key used to sign this transaction. If an empty
    * string, indicates a multi-signature is present in the {@link Transaction#signers()} field instead.
    *
-   * <p>This field is automatically added when signing this {@link Transaction}.
-   *
    * @return An {@link Optional} {@link String} containing the public key of the account submitting the transaction.
    */
   @JsonInclude(JsonInclude.Include.NON_ABSENT)
   @JsonProperty("SigningPubKey")
-  Optional<String> signingPublicKey();
+  @Value.Default
+  default String signingPublicKey() {
+    return "";
+  }
 
   /**
    * The signature that verifies this transaction as originating from the account it says it is from.

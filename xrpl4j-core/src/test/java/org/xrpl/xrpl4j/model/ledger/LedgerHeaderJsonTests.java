@@ -93,6 +93,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
               .destinationTag(UnsignedInteger.valueOf(23480))
               .sourceTag(UnsignedInteger.valueOf(11747))
               .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
+              .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
               .build()
           )
           .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
@@ -133,6 +134,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
       "    \"Flags\" : 2147483648,\n" +
       "    \"Amount\" : \"10000\",\n" +
       "    \"Destination\" : \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"DestinationTag\" : 23480,\n" +
       "    \"CancelAfter\" : 533257958,\n" +
       "    \"FinishAfter\" : 533171558,\n" +
@@ -203,6 +205,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
               .sequence(UnsignedInteger.ONE)
               .destinationTag(UnsignedInteger.valueOf(23480))
               .sourceTag(UnsignedInteger.valueOf(11747))
+              .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
               .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
               .build()
           )
@@ -245,6 +248,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
       "    \"Amount\" : \"10000\",\n" +
       "    \"Destination\" : \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
       "    \"DestinationTag\" : 23480,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"CancelAfter\" : 533257958,\n" +
       "    \"FinishAfter\" : 533171558,\n" +
       "    \"TransactionType\" : \"EscrowCreate\",\n" +

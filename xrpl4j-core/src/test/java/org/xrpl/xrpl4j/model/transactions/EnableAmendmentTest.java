@@ -19,7 +19,6 @@ public class EnableAmendmentTest {
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .signingPublicKey("")
       .amendment(amendment)
       .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(67850752))))
       .build();

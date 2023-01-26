@@ -180,7 +180,6 @@ class BcDerivedKeySignatureServiceTest {
       .flags(Flags.PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
-      .signingPublicKey("")
       .build();
 
     final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", VersionType.ED25519);
@@ -285,7 +284,6 @@ class BcDerivedKeySignatureServiceTest {
       .flags(Flags.PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
-      .signingPublicKey("")
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);

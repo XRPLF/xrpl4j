@@ -64,7 +64,7 @@ public class OfferIT extends AbstractIT {
       .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .takerGets(IssuedCurrencyAmount.builder()
         .currency("USD")
         .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -114,7 +114,7 @@ public class OfferIT extends AbstractIT {
       .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
-      .signingPublicKey(purchaser.publicKey().base16Value())
+      .signingPublicKey(purchaser.publicKey())
       .takerPays(IssuedCurrencyAmount.builder()
         .currency("USD")
         .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -174,7 +174,7 @@ public class OfferIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(nextSequence)
       .offerSequence(offerSequence)
-      .signingPublicKey(purchaser.publicKey().base16Value())
+      .signingPublicKey(purchaser.publicKey())
       .build();
 
     SingleSignedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
@@ -209,7 +209,7 @@ public class OfferIT extends AbstractIT {
       .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
-      .signingPublicKey(purchaser.publicKey().base16Value())
+      .signingPublicKey(purchaser.publicKey())
       .takerPays(IssuedCurrencyAmount.builder()
         .currency("USD")
         .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -278,7 +278,7 @@ public class OfferIT extends AbstractIT {
       .account(purchaser.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
-      .signingPublicKey(purchaser.publicKey().base16Value())
+      .signingPublicKey(purchaser.publicKey())
       .takerPays(requestCurrencyAmount)
       .takerGets(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10.0)))
       .build();

@@ -173,7 +173,9 @@ class DerivedKeysSignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -303,7 +305,9 @@ class DerivedKeysSignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);

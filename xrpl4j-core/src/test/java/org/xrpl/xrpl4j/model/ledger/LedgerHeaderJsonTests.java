@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -72,7 +73,11 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
               .flags(Flags.PaymentFlags.of(2147483648L))
               .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
               .sequence(UnsignedInteger.valueOf(2062124))
-              .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+              .signingPublicKey(
+                PublicKey.fromBase16EncodedPublicKey(
+                  "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+                  )
+              )
               .transactionSignature("3045022100E1F74E892839A9818D991F1E7B3D069ED499A5D412DD6C8C2634E87" +
                 "D0A37D3750220141AF3DCE6DA4D134614E49C99FFB1E498C238B46FC47CF3F79A989C4A2053AC")
               .hash(Hash256.of("E22068A818EA853DD3B7B574FF58C3A84D1F664495FF6ECD11D3B03B1D2FC2F7"))
@@ -93,7 +98,11 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
               .destinationTag(UnsignedInteger.valueOf(23480))
               .sourceTag(UnsignedInteger.valueOf(11747))
               .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
-              .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+              .signingPublicKey(
+                PublicKey.fromBase16EncodedPublicKey(
+                  "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+                  )
+              )
               .build()
           )
           .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
@@ -185,7 +194,11 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
               .flags(Flags.PaymentFlags.of(2147483648L))
               .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
               .sequence(UnsignedInteger.valueOf(2062124))
-              .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+              .signingPublicKey(
+                PublicKey.fromBase16EncodedPublicKey(
+                  "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+                )
+              )
               .transactionSignature("3045022100E1F74E892839A9818D991F1E7B3D069ED499A5D412DD6C8C2634E87" +
                 "D0A37D3750220141AF3DCE6DA4D134614E49C99FFB1E498C238B46FC47CF3F79A989C4A2053AC")
               .hash(Hash256.of("E22068A818EA853DD3B7B574FF58C3A84D1F664495FF6ECD11D3B03B1D2FC2F7"))
@@ -205,7 +218,11 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
               .sequence(UnsignedInteger.ONE)
               .destinationTag(UnsignedInteger.valueOf(23480))
               .sourceTag(UnsignedInteger.valueOf(11747))
-              .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+              .signingPublicKey(
+                PublicKey.fromBase16EncodedPublicKey(
+                  "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+                  )
+              )
               .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
               .build()
           )

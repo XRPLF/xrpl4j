@@ -61,7 +61,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourceWalletPublicKey)
       .build();
 
     SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourceKeyMetadata,
@@ -95,7 +95,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourceWalletPublicKey)
       .build();
 
     SingleSignedTransaction<Payment> transactionWithSignature
@@ -199,7 +199,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(toPublicKey(sourcePrivateKeyReference).base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKeyReference))
       .build();
 
     SingleSignedTransaction<SignerListSet> signedSignerListSet = derivedKeySignatureService.sign(

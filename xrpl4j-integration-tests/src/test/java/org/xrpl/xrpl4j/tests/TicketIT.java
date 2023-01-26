@@ -54,7 +54,7 @@ public class TicketIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .ticketCount(UnsignedInteger.ONE)
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<TicketCreate> signedCreate = signatureService.sign(
@@ -85,7 +85,7 @@ public class TicketIT extends AbstractIT {
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .ticketSequence(tickets.get(0).ticketSequence())
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(

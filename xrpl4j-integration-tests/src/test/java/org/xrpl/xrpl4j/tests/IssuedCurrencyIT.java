@@ -259,7 +259,7 @@ public class IssuedCurrencyIT extends AbstractIT {
         .currency("USD")
         .value("10")
         .build())
-      .signingPublicKey(aliceKeyPair.publicKey().base16Value())
+      .signingPublicKey(aliceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedAliceToBobPayment = signatureService.sign(
@@ -419,7 +419,7 @@ public class IssuedCurrencyIT extends AbstractIT {
         .value("10")
         .build())
       .paths(pathSteps)
-      .signingPublicKey(charlieKeyPair.publicKey().base16Value())
+      .signingPublicKey(charlieKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedCharlieToDanielPayment = signatureService.sign(
@@ -482,7 +482,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(issuerAccountInfo.accountData().sequence())
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
       .build();
 
@@ -536,7 +536,7 @@ public class IssuedCurrencyIT extends AbstractIT {
         .currency(currency)
         .value(value)
         .build())
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedFundCounterparty = signatureService.sign(
@@ -586,7 +586,7 @@ public class IssuedCurrencyIT extends AbstractIT {
         .issuer(issuerKeyPair.publicKey().deriveAddress())
         .value(value)
         .build())
-      .signingPublicKey(counterpartyKeyPair.publicKey().base16Value())
+      .signingPublicKey(counterpartyKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartyKeyPair.privateKey(),

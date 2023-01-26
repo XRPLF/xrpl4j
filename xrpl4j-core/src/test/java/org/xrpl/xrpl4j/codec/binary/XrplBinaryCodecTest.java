@@ -34,6 +34,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -274,7 +275,9 @@ class XrplBinaryCodecTest {
         .value("1234567890123456")
         .build())
       .destination(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
+      )
       .flags(Flags.PaymentFlags.builder().tfPartialPayment(true).build())
       .destinationTag(UnsignedInteger.valueOf(2))
       .sequence(UnsignedInteger.ONE)

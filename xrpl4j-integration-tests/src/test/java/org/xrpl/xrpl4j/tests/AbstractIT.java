@@ -376,7 +376,7 @@ public abstract class AbstractIT {
         .issuer(issuerAddress)
         .value(value)
         .build())
-      .signingPublicKey(counterpartyKeyPair.publicKey().base16Value())
+      .signingPublicKey(counterpartyKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(
@@ -438,7 +438,7 @@ public abstract class AbstractIT {
         .currency(currency)
         .value(value)
         .build())
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(

@@ -13,6 +13,7 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
@@ -402,7 +403,9 @@ public class BinarySerializationTests {
         .issuer(Address.of("rwk7evAoUG1YoH1k3KVps3Zm1MtHuwHadj"))
         .value(IssuedCurrencyAmount.MAX_VALUE)
         .build())
-      .signingPublicKey("EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156")
+      )
       .build();
 
     String expectedBinary = "1200142280000000240000000563EC6386F26FC0FFFF7872706C346A436F696E00000000000000000000" +
@@ -435,7 +438,9 @@ public class BinarySerializationTests {
         .issuer(Address.of("rUcccYgErfgMifUHYDHed4ibTArjqfkU5R"))
         .value(new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toString())
         .build())
-      .signingPublicKey("ED930B5CBBBCA68DE43CC928E4F3860151E1E5F10D52478B38512651363F4DE8D0")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED930B5CBBBCA68DE43CC928E4F3860151E1E5F10D52478B38512651363F4DE8D0")
+      )
       .build();
 
     String expectedBinary = "1200142280000000240000000563EC2386F26FC0FFFF7872706C346A436F696E00000000000000000000" +
@@ -514,7 +519,9 @@ public class BinarySerializationTests {
         .issuer(Address.of("rEPgyyv4xdWkKuavTmHLYPV2Ryqt7NNmH"))
         .value(IssuedCurrencyAmount.MIN_POSITIVE_VALUE)
         .build())
-      .signingPublicKey("ED55D61E72F14EC798ABC10BC96381573717658B46F58E416EC0C74A467835AB4D")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED55D61E72F14EC798ABC10BC96381573717658B46F58E416EC0C74A467835AB4D")
+      )
       .build();
 
     String expectedBinary = "1200142280000000240000000563C0438D7EA4C680007872706C346A436F696E00000000000" +
@@ -549,7 +556,9 @@ public class BinarySerializationTests {
         .issuer(Address.of("r4e6zHaTwNK5WLtRdFiSY3UitarXqCMyoD"))
         .value(value.toString())
         .build())
-      .signingPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83")
+      )
       .build();
 
     String expectedBinary = "1200142280000000240000000563C043E871B540C0007872706C346A436F696E000000000000000" +
@@ -584,7 +593,9 @@ public class BinarySerializationTests {
         .issuer(Address.of("r4e6zHaTwNK5WLtRdFiSY3UitarXqCMyoD"))
         .value(value.toString())
         .build())
-      .signingPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED098659726D4B0CDCD35E37135766FF2038579291351CC08DE70C32851D049A83")
+      )
       .build();
 
     String transactionJson = objectMapper.writeValueAsString(trustSet);

@@ -25,6 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -46,7 +47,9 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .flags(PaymentFlags.builder().tfFullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(2))
-      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -72,7 +75,9 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(25000000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
-      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -116,7 +121,9 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
           .build()
       ))
       .destinationTag(UnsignedInteger.valueOf(736049272))
-      .signingPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +

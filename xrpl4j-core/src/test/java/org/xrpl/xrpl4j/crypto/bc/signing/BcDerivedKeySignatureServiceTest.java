@@ -99,7 +99,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Value())
+      .signingPublicKey(publicKey)
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -142,7 +142,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Value())
+      .signingPublicKey(publicKey)
       .build();
 
     SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(
@@ -341,7 +341,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Value())
+      .signingPublicKey(publicKey)
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -388,7 +388,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKeyFoo.base16Value())
+      .signingPublicKey(publicKeyFoo)
       .build();
     SingleSignedTransaction<Payment> signedTx
       = this.derivedKeySignatureService.sign(privateKeyReferenceFoo, paymentTransaction);

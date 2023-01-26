@@ -29,6 +29,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Auxiliary;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -101,7 +102,6 @@ public interface Transaction {
    * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
    *
    * @return An {@link XrpCurrencyAmount} representing the multisig fee.
-   *
    * @deprecated Use {@link FeeUtils#computeMultisigNetworkFees(FeeResult, SignerListObject)} instead.
    */
   @Deprecated
@@ -141,7 +141,6 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link XrpCurrencyAmount} representing the transaction cost.
-   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
@@ -154,7 +153,6 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link UnsignedInteger} representing the sequence of the transaction.
-   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @Value.Default
@@ -217,16 +215,18 @@ public interface Transaction {
   Optional<UnsignedInteger> sourceTag();
 
   /**
-   * Hex representation of the public key that corresponds to the private key used to sign this transaction. If an empty
-   * string, indicates a multi-signature is present in the {@link Transaction#signers()} field instead.
+   * The {@link PublicKey} that corresponds to the private key used to sign this transaction. If an empty
+   * string, ie {@link PublicKey#MULTI_SIGN_PUBLIC_KEY}, indicates a multi-signature is present in the
+   * {@link Transaction#signers()} field instead.
    *
-   * @return An {@link Optional} {@link String} containing the public key of the account submitting the transaction.
+   * @return A {@link PublicKey} containing the public key of the account submitting the transaction, or
+   *   {@link PublicKey#MULTI_SIGN_PUBLIC_KEY} if the transaction is multi-signed.
    */
   @JsonInclude(JsonInclude.Include.NON_ABSENT)
   @JsonProperty("SigningPubKey")
   @Value.Default
-  default String signingPublicKey() {
-    return "";
+  default PublicKey signingPublicKey() {
+    return PublicKey.MULTI_SIGN_PUBLIC_KEY;
   }
 
   /**
@@ -244,7 +244,6 @@ public interface Transaction {
    * field.
    *
    * @return An optionally-present {@link UnsignedLong}.
-   *
    * @deprecated This field will be removed in favor of
    *   {@link org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
    */
@@ -256,7 +255,6 @@ public interface Transaction {
    * The approximate close time in UTC offset. This is derived from undocumented field.
    *
    * @return An optionally-present {@link ZonedDateTime}.
-   *
    * @deprecated This field will be removed in favor of
    *   {@link org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
    */
@@ -273,7 +271,6 @@ public interface Transaction {
    * The transaction hash of this transaction.  Only present in responses to {@code account_tx} rippled calls.
    *
    * @return An optionally present {@link Hash256} containing the transaction hash.
-   *
    * @deprecated This field will be removed in a future release. Instead, use
    *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in
    *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
@@ -286,7 +283,6 @@ public interface Transaction {
    * rippled calls.
    *
    * @return An optionally-present {@link LedgerIndex}.
-   *
    * @deprecated This field will be removed in a future release. Instead, use
    *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in
    *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.

@@ -60,7 +60,7 @@ public class PaymentChannelIT extends AbstractIT {
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
       .cancelAfter(UnsignedLong.valueOf(533171558))
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
     SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
       sourceKeyPair.privateKey(), paymentChannelCreate
@@ -141,7 +141,7 @@ public class PaymentChannelIT extends AbstractIT {
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
       .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     //////////////////////////
@@ -210,7 +210,7 @@ public class PaymentChannelIT extends AbstractIT {
       .amount(unsignedClaim.amount())
       .signature(signedClaimSignature.base16Value())
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .signingPublicKey(destinationKeyPair.publicKey().base16Value())
+      .signingPublicKey(destinationKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<PaymentChannelClaim> signedPaymentChannelClaim = signatureService.sign(
@@ -259,7 +259,7 @@ public class PaymentChannelIT extends AbstractIT {
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
       .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     //////////////////////////
@@ -296,7 +296,7 @@ public class PaymentChannelIT extends AbstractIT {
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .channel(paymentChannel.channelId())
       .amount(XrpCurrencyAmount.ofDrops(10000))
       .build();
@@ -336,7 +336,7 @@ public class PaymentChannelIT extends AbstractIT {
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .channel(paymentChannel.channelId())
       .amount(XrpCurrencyAmount.ofDrops(1))
       .expiration(newExpiry)
@@ -392,7 +392,7 @@ public class PaymentChannelIT extends AbstractIT {
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
       .cancelAfter(UnsignedLong.valueOf(533171558))
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     //////////////////////////

@@ -62,7 +62,7 @@ public class IsFinalIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(10))
-      .signingPublicKey(keyPair.publicKey().base16Value());
+      .signingPublicKey(keyPair.publicKey());
   }
 
   @Test

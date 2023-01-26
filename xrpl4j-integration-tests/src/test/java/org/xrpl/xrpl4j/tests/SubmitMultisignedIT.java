@@ -87,7 +87,7 @@ public class SubmitMultisignedIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     /////////////////////////////

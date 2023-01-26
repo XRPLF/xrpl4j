@@ -51,7 +51,7 @@ public class AccountSetIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
@@ -117,7 +117,7 @@ public class AccountSetIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
@@ -179,7 +179,7 @@ public class AccountSetIT extends AbstractIT {
       .account(keyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(sequence)
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .flags(
         Flags.AccountSetTransactionFlags.builder()
           .tfRequireDestTag()
@@ -215,7 +215,7 @@ public class AccountSetIT extends AbstractIT {
       .account(keyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(sequence.plus(UnsignedInteger.ONE))
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .flags(
         Flags.AccountSetTransactionFlags.builder()
           .tfOptionalDestTag()
@@ -266,7 +266,7 @@ public class AccountSetIT extends AbstractIT {
       .account(keyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())
       .sequence(sequence)
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .setFlag(AccountSetFlag.DISABLE_MASTER)
       .build();
 
@@ -298,7 +298,7 @@ public class AccountSetIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .setFlag(accountSetFlag)
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
@@ -338,7 +338,7 @@ public class AccountSetIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .clearFlag(accountSetFlag)
-      .signingPublicKey(keyPair.publicKey().base16Value())
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
@@ -61,7 +62,11 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                 .flags(Flags.PaymentFlags.of(2147483648L))
                 .lastLedgerSequence(UnsignedInteger.valueOf(57112037))
                 .sequence(UnsignedInteger.valueOf(702819))
-                .signingPublicKey("020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A")
+                .signingPublicKey(
+                  PublicKey.fromBase16EncodedPublicKey(
+                    "020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A"
+                  )
+                )
                 .transactionSignature("30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB79C2C8431722C0ADB9110" +
                   "22024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576")
                 .closeDate(UnsignedLong.valueOf(649200322))
@@ -92,7 +97,11 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
               .flags(Flags.PaymentFlags.of(2147483648L))
               .lastLedgerSequence(UnsignedInteger.valueOf(57112032))
               .sequence(UnsignedInteger.valueOf(466334))
-              .signingPublicKey("0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01")
+              .signingPublicKey(
+                PublicKey.fromBase16EncodedPublicKey(
+                  "0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01"
+                )
+              )
               .transactionSignature("3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB48AB99AEA960BFA360AE163" +
                 "ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7")
               .closeDate(UnsignedLong.valueOf(649200302))

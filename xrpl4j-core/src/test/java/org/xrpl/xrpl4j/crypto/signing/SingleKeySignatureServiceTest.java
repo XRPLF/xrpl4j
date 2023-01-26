@@ -130,7 +130,9 @@ class SingleKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     SignedTransaction<Payment> transactionWithSignature = this.edSignatureService.sign(keyMetadata, paymentTransaction);
@@ -147,7 +149,9 @@ class SingleKeySignatureServiceTest {
       .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
       .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     SignedTransaction<NfTokenMint> mintTxWithSignature = this.edSignatureService.sign(keyMetadata, nfTokenMint);
@@ -168,7 +172,9 @@ class SingleKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     SignedTransaction<Payment> transactionWithSignature = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
@@ -191,7 +197,9 @@ class SingleKeySignatureServiceTest {
       .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
       .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .signingPublicKey(testWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(testWallet.publicKey())
+      )
       .build();
 
     // Sign transaction -----------------------------------------------------------

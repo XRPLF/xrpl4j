@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeyDeserializer;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeySerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -104,11 +104,11 @@ public interface PublicKey {
   /**
    * The type of this key.
    *
-   * @return A {@link VersionType}.
+   * @return A {@link KeyType}.
    */
   @Derived
-  default VersionType versionType() {
-    return this.base16Value().startsWith("ED") ? VersionType.ED25519 : VersionType.SECP256K1;
+  default KeyType versionType() {
+    return this.base16Value().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
   }
 
   /**

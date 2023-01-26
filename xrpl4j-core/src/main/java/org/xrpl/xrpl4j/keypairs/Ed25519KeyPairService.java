@@ -31,7 +31,7 @@ import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.keypairs.exceptions.SigningException;
 
@@ -61,7 +61,7 @@ public class Ed25519KeyPairService extends AbstractKeyPairService {
 
   @Override
   public String generateSeed(UnsignedByteArray entropy) {
-    return addressCodec.encodeSeed(entropy, VersionType.ED25519);
+    return addressCodec.encodeSeed(entropy, KeyType.ED25519);
   }
 
   @Override

@@ -6,7 +6,7 @@ import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PRIVATE_KEY;
 
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.core.TestConstants;
 
 /**
@@ -26,12 +26,12 @@ public class PrivateKeyTest {
 
   @Test
   public void versionTypeEd25519() {
-    assertThat(ED_PRIVATE_KEY.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(ED_PRIVATE_KEY.versionType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
   public void versionTypeSecp256k1() {
-    assertThat(EC_PRIVATE_KEY.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(EC_PRIVATE_KEY.versionType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test

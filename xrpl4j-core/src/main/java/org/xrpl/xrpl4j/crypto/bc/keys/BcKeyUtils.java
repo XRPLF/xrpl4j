@@ -1,6 +1,6 @@
 package org.xrpl.xrpl4j.crypto.bc.keys;
 
-import static org.xrpl.xrpl4j.codec.addresses.VersionType.ED25519;
+import static org.xrpl.xrpl4j.codec.addresses.KeyType.ED25519;
 import static org.xrpl.xrpl4j.crypto.bc.signing.Secp256k1.EC_DOMAIN_PARAMETERS;
 
 import com.google.common.base.Preconditions;
@@ -15,7 +15,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 
@@ -165,7 +165,7 @@ public final class BcKeyUtils {
     if (privateKey.versionType() == ED25519) {
       final Ed25519PrivateKeyParameters ed25519PrivateKeyParameters = toEd25519PrivateKeyParams(privateKey);
       return toPublicKey(ed25519PrivateKeyParameters.generatePublicKey());
-    } else if (privateKey.versionType() == VersionType.SECP256K1) {
+    } else if (privateKey.versionType() == KeyType.SECP256K1) {
       final ECPrivateKeyParameters ecPrivateKeyParameters = toEcPrivateKeyParams(privateKey);
       final ECPublicKeyParameters ecPublicKeyParameters = toPublicKey(ecPrivateKeyParameters);
       return toPublicKey(ecPublicKeyParameters);
@@ -196,7 +196,7 @@ public final class BcKeyUtils {
    */
   public static ECPublicKeyParameters toEcPublicKeyParameters(final PublicKey publicKey) {
     Objects.requireNonNull(publicKey);
-    Preconditions.checkArgument(publicKey.versionType() == VersionType.SECP256K1);
+    Preconditions.checkArgument(publicKey.versionType() == KeyType.SECP256K1);
 
     ECPoint ecPoint = PARAMS.getCurve()
       .decodePoint(publicKey.value().toByteArray());
@@ -212,7 +212,7 @@ public final class BcKeyUtils {
    */
   public static ECPrivateKeyParameters toEcPrivateKeyParams(final PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
-    Preconditions.checkArgument(privateKey.versionType() == VersionType.SECP256K1, "VersionType must be SECP256K1");
+    Preconditions.checkArgument(privateKey.versionType() == KeyType.SECP256K1, "VersionType must be SECP256K1");
 
     final BigInteger privateKeyInt = new BigInteger(
       BaseEncoding.base16().encode(privateKey.value().toByteArray()), 16

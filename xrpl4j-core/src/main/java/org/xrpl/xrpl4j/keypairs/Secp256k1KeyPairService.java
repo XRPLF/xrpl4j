@@ -30,7 +30,7 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 
 import java.math.BigInteger;
 import java.util.Optional;
@@ -52,7 +52,7 @@ public class Secp256k1KeyPairService extends AbstractKeyPairService {
 
   @Override
   public String generateSeed(UnsignedByteArray entropy) {
-    return addressCodec.encodeSeed(entropy, VersionType.SECP256K1);
+    return addressCodec.encodeSeed(entropy, KeyType.SECP256K1);
   }
 
 

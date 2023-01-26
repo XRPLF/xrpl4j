@@ -93,7 +93,7 @@ public class AddressBase58 extends Base58 {
   }
 
   /**
-   * Decode a Base58Check {@link String} with no specified {@link VersionType}s or expected length.
+   * Decode a Base58Check {@link String} with no specified {@link KeyType}s or expected length.
    *
    * @param base58Value The Base58Check encoded {@link String} to be decoded.
    * @param version     The {@link Version} to try decoding with.
@@ -112,7 +112,7 @@ public class AddressBase58 extends Base58 {
   }
 
   /**
-   * Decode a Base58Check {@link String} with no specified {@link VersionType}s.
+   * Decode a Base58Check {@link String} with no specified {@link KeyType}s.
    *
    * @param base58Value    The Base58Check encoded {@link String} to be decoded.
    * @param versions       A {@link List} of {@link Version}s to try decoding with.
@@ -136,7 +136,7 @@ public class AddressBase58 extends Base58 {
    * Decode a Base58Check {@link String}.
    *
    * @param base58Value    The Base58Check encoded {@link String} to be decoded.
-   * @param versionTypes   A {@link List} of {@link VersionType}s which can be associated with the result of this
+   * @param keyTypes   A {@link List} of {@link KeyType}s which can be associated with the result of this
    *                       method.
    * @param versions       A {@link List} of {@link Version}s to try decoding with.
    * @param expectedLength The expected length of the decoded value.
@@ -148,12 +148,12 @@ public class AddressBase58 extends Base58 {
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static Decoded decode(
     final String base58Value,
-    final List<VersionType> versionTypes,
+    final List<KeyType> keyTypes,
     final List<Version> versions,
     final Optional<UnsignedInteger> expectedLength
   ) throws EncodingFormatException {
     Objects.requireNonNull(base58Value);
-    Objects.requireNonNull(versionTypes);
+    Objects.requireNonNull(keyTypes);
     Objects.requireNonNull(versions);
     Objects.requireNonNull(expectedLength);
 
@@ -186,7 +186,7 @@ public class AddressBase58 extends Base58 {
         return Decoded.builder()
           .version(version)
           .bytes(UnsignedByteArray.of(payload))
-          .type(i < versionTypes.size() ? Optional.of(versionTypes.get(i)) : Optional.empty())
+          .type(i < keyTypes.size() ? Optional.of(keyTypes.get(i)) : Optional.empty())
           .build();
       }
     }

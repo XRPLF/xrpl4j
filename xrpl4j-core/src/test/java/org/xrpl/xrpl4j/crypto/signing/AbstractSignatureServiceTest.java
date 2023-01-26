@@ -29,13 +29,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PublicKey;
@@ -155,7 +153,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void signEd25519() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.ED25519);
 
     signatureService.sign(keyMetadataMock, transactionMock);
 
@@ -166,7 +164,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void signSecp256k1() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     signatureService.sign(keyMetadataMock, transactionMock);
 
@@ -177,7 +175,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   void signWithSingleBehaviorEd25519() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.ED25519);
 
     final Signature signature = signatureService.signWithBehavior(
       keyMetadataMock,
@@ -193,7 +191,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   void signWithSingleBehaviorSecp256k1() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     final Signature signature = signatureService.signWithBehavior(
       keyMetadataMock,
@@ -209,7 +207,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   void signWithMultiBehaviorEd25519() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.ED25519);
 
     final Signature signature = signatureService.signWithBehavior(
       keyMetadataMock,
@@ -225,7 +223,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   void signWithMultiBehaviorSecp256k1() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     final Signature signature = signatureService.signWithBehavior(
       keyMetadataMock,
@@ -255,7 +253,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void verifyEd25519() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.ED25519);
 
     boolean actual = signatureService.verify(keyMetadataMock, transactionWithSignatureMock);
 
@@ -268,7 +266,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void verifySecp256k1() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     boolean actual = signatureService.verify(keyMetadataMock, transactionWithSignatureMock);
 
@@ -285,7 +283,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void edDsaSign() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.ED25519);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.ED25519);
 
     Signature actual = signatureService.edDsaSign(keyMetadataMock, UnsignedByteArray.empty());
 
@@ -301,7 +299,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void ecDsaSign() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     Signature actual = signatureService.ecDsaSign(keyMetadataMock, UnsignedByteArray.empty());
 
@@ -318,7 +316,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void edDsaVerify() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     boolean actual = signatureService.edDsaVerify(
       keyMetadataMock, transactionWithSignatureMock, UnsignedByteArray.empty()
@@ -336,7 +334,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void ecDsaVerify() {
-    when(publicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(publicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     boolean actual = signatureService.ecDsaVerify(
       keyMetadataMock, transactionWithSignatureMock, UnsignedByteArray.empty()

@@ -34,21 +34,21 @@ public class SeedCodec {
 
     return AddressBase58.decode(
       base58EncodedSeed,
-      Lists.newArrayList(VersionType.ED25519, VersionType.SECP256K1),
+      Lists.newArrayList(KeyType.ED25519, KeyType.SECP256K1),
       Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
       Optional.of(UnsignedInteger.valueOf(16))
     );
   }
 
   /**
-   * Encodes a byte array to a Base58Check {@link String} using the given {@link VersionType}.
+   * Encodes a byte array to a Base58Check {@link String} using the given {@link KeyType}.
    *
    * @param entropy An {@link UnsignedByteArray} containing the seed entropy to encode.
    * @param type    The cryptographic algorithm type to be encoded in the resulting seed.
    *
    * @return A Base58Check encoded XRPL keypair seed.
    */
-  public String encodeSeed(final UnsignedByteArray entropy, final VersionType type) {
+  public String encodeSeed(final UnsignedByteArray entropy, final KeyType type) {
     Objects.requireNonNull(entropy);
     Objects.requireNonNull(type);
 
@@ -56,7 +56,7 @@ public class SeedCodec {
       throw new EncodeException("entropy must have length 16.");
     }
 
-    Version version = type.equals(VersionType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
+    Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
     return AddressBase58.encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
   }
 }

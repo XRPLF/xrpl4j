@@ -54,10 +54,10 @@ public interface Decoded {
   UnsignedByteArray bytes();
 
   /**
-   * The {@link VersionType} of the decoded Base58 {@link String}.
+   * The {@link KeyType} of the decoded Base58 {@link String}.
    *
-   * @return An optionally present {@link VersionType}.
+   * @return An optionally present {@link KeyType}.
    */
-  Optional<VersionType> type();
+  Optional<KeyType> type();
 
 }

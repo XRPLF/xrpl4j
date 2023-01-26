@@ -10,13 +10,12 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY;
 
 import org.assertj.core.util.Sets;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -57,8 +56,8 @@ public class AbstractTransactionVerifierTest {
     ed25519VerifyCalled = new AtomicBoolean(false);
     secp256k1VerifyCalled = new AtomicBoolean(false);
 
-    when(edPublicKeyMock.versionType()).thenReturn(VersionType.ED25519);
-    when(ecPublicKeyMock.versionType()).thenReturn(VersionType.SECP256K1);
+    when(edPublicKeyMock.versionType()).thenReturn(KeyType.ED25519);
+    when(ecPublicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
 
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());

@@ -2,7 +2,7 @@ package org.xrpl.xrpl4j.crypto.core.keys;
 
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 
 import java.util.Objects;
 
@@ -50,13 +50,13 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   }
 
   /**
-   * The type of this key (either {@link VersionType#ED25519} or {@link VersionType#SECP256K1}).
+   * The type of this key (either {@link KeyType#ED25519} or {@link KeyType#SECP256K1}).
    *
-   * @return A {@link VersionType}.
+   * @return A {@link KeyType}.
    */
-  public final VersionType versionType() {
+  public final KeyType versionType() {
     final UnsignedByte prefixByte = this.value().get(0);
-    return prefixByte.equals(PREFIX) ? VersionType.ED25519 : VersionType.SECP256K1;
+    return prefixByte.equals(PREFIX) ? KeyType.ED25519 : KeyType.SECP256K1;
   }
 
   @Override

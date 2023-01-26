@@ -27,6 +27,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +54,7 @@ public interface Payment extends Transaction {
 
   /**
    * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
-   * Flags} object containing the {@link Long} representation of the set bits.
+   * PaymentFlags} object containing the {@link Long} representation of the set bits.
    *
    * <p>The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
    *

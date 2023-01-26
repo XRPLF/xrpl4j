@@ -378,7 +378,6 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
-        .tfFullyCanonicalSig(false)
         .build())
       .sequence(UnsignedInteger.valueOf(44))
       .limitAmount(IssuedCurrencyAmount.builder()
@@ -389,7 +388,7 @@ public class BinarySerializationTests {
       .build();
 
 
-    String expectedBinary = "1200142200020000240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
+    String expectedBinary = "1200142280020000240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
       "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
       "300183E3";
     assertSerializesAndDeserializes(trustSet, expectedBinary);
@@ -472,7 +471,6 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
-        .tfFullyCanonicalSig(false)
         .build())
       .sequence(UnsignedInteger.valueOf(44))
       .limitAmount(IssuedCurrencyAmount.builder()
@@ -495,7 +493,6 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
-        .tfFullyCanonicalSig(false)
         .build())
       .sequence(UnsignedInteger.valueOf(44))
       .limitAmount(IssuedCurrencyAmount.builder()

@@ -50,11 +50,11 @@ public interface TrustSet extends Transaction {
 
   /**
    * Set of {@link TrustSetFlags}s for this {@link TrustSet}, which have been properly combined to yield a
-   * {@link Flags} object containing the {@link Long} representation of the set bits.
+   * {@link TrustSetFlags} object containing the {@link Long} representation of the set bits.
    *
    * <p>The value of the flags can either be set manually, or constructed using {@link TrustSetFlags.Builder}.
    *
-   * @return The {@link PaymentFlags} for this transaction.
+   * @return The {@link TrustSetFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default

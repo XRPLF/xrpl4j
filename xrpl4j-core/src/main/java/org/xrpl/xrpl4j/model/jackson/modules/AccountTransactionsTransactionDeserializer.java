@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  */
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +50,7 @@ public class AccountTransactionsTransactionDeserializer extends StdDeserializer<
   public AccountTransactionsTransaction<?> deserialize(
     JsonParser jsonParser,
     DeserializationContext ctxt
-  ) throws IOException, JsonProcessingException {
+  ) throws IOException {
     ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
     JsonNode node = objectMapper.readTree(jsonParser);
 

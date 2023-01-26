@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.client.accounts;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.GatewayBalancesHotWalletsDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Collections;
@@ -34,7 +35,7 @@ import java.util.Map;
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableGatewayBalancesHotWallets.class)
-@JsonDeserialize(as = ImmutableGatewayBalancesHotWallets.class)
+@JsonDeserialize(as = ImmutableGatewayBalancesHotWallets.class, using = GatewayBalancesHotWalletsDeserializer.class)
 public interface GatewayBalancesHotWallets {
 
   /**

@@ -44,7 +44,7 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetFreeze,
     boolean tfClearFreeze
   ) {
-    Flags.TrustSetFlags.Builder builder = Flags.TrustSetFlags.builder()
+    TrustSetFlags.Builder builder = TrustSetFlags.builder()
       .tfFullyCanonicalSig(tfFullyCanonicalSig)
       .tfSetfAuth(tfSetfAuth);
 
@@ -64,7 +64,7 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       builder.tfClearFreeze();
     }
 
-    Flags.TrustSetFlags flags = builder.build();
+    TrustSetFlags flags = builder.build();
 
     long expectedFlags = getExpectedFlags(
       tfFullyCanonicalSig,
@@ -95,7 +95,7 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       tfSetFreeze,
       tfClearFreeze
     );
-    Flags.TrustSetFlags flags = Flags.TrustSetFlags.of(expectedFlags);
+    TrustSetFlags flags = TrustSetFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
@@ -114,11 +114,11 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetFreeze,
     boolean tfClearFreeze
   ) {
-    return (tfFullyCanonicalSig ? Flags.TrustSetFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfSetfAuth ? Flags.TrustSetFlags.SET_F_AUTH.getValue() : 0L) |
-      (tfSetNoRipple ? Flags.TrustSetFlags.SET_NO_RIPPLE.getValue() : 0L) |
-      (tfClearNoRipple ? Flags.TrustSetFlags.CLEAR_NO_RIPPLE.getValue() : 0L) |
-      (tfSetFreeze ? Flags.TrustSetFlags.SET_FREEZE.getValue() : 0L) |
-      (tfClearFreeze ? Flags.TrustSetFlags.CLEAR_FREEZE.getValue() : 0L);
+    return (tfFullyCanonicalSig ? TrustSetFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+      (tfSetfAuth ? TrustSetFlags.SET_F_AUTH.getValue() : 0L) |
+      (tfSetNoRipple ? TrustSetFlags.SET_NO_RIPPLE.getValue() : 0L) |
+      (tfClearNoRipple ? TrustSetFlags.CLEAR_NO_RIPPLE.getValue() : 0L) |
+      (tfSetFreeze ? TrustSetFlags.SET_FREEZE.getValue() : 0L) |
+      (tfClearFreeze ? TrustSetFlags.CLEAR_FREEZE.getValue() : 0L);
   }
 }

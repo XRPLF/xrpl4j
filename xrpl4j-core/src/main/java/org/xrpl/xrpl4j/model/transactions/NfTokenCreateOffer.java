@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 
 import java.util.Optional;
 
@@ -100,13 +100,13 @@ public interface NfTokenCreateOffer extends Transaction {
   Optional<Address> destination();
 
   /**
-   * Set of {@link Flags.NfTokenCreateOfferFlags}s for this {@link NfTokenCreateOffer}.
+   * Set of {@link NfTokenCreateOfferFlags}s for this {@link NfTokenCreateOffer}.
    *
-   * @return The {@link Flags.NfTokenCreateOfferFlags} for this transaction.
+   * @return The {@link NfTokenCreateOfferFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags.NfTokenCreateOfferFlags flags() {
-    return new Flags.NfTokenCreateOfferFlags.Builder().tfFullyCanonicalSig(true).build();
+  default NfTokenCreateOfferFlags flags() {
+    return new NfTokenCreateOfferFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 }

@@ -26,7 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -46,7 +46,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
             .issuer(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
             .value("0")
             .build())
-          .flags(Flags.RippleStateFlags.of(65536))
+          .flags(RippleStateFlags.of(65536))
           .highLimit(IssuedCurrencyAmount.builder()
             .currency("ASP")
             .issuer(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
@@ -69,7 +69,7 @@ public class AccountObjectsResultJsonTests extends AbstractJsonTest {
             .issuer(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
             .value("0")
             .build())
-          .flags(Flags.RippleStateFlags.of(3342336))
+          .flags(RippleStateFlags.of(3342336))
           .highLimit(IssuedCurrencyAmount.builder()
             .currency("XAU")
             .issuer(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))

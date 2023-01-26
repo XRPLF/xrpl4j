@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -36,13 +36,13 @@ public interface BuyOffer {
   XrpCurrencyAmount amount();
 
   /**
-   * A set of boolean {@link Flags.NfTokenOfferFlags} containing options
+   * A set of boolean {@link NfTokenOfferFlags} containing options
    * enabled for this object.
    *
-   * @return The {@link Flags.NfTokenOfferFlags} for this object.
+   * @return The {@link NfTokenOfferFlags} for this object.
    */
   @JsonProperty("Flags")
-  Flags.NfTokenOfferFlags flags();
+  NfTokenOfferFlags flags();
 
   /**
    * The ledger object ID of this offer.

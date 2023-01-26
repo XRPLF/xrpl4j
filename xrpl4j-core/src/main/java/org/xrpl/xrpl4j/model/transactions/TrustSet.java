@@ -26,6 +26,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 
 import java.util.Optional;
 
@@ -47,17 +49,17 @@ public interface TrustSet extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TrustSetFlags}s for this {@link TrustSet}, which have been properly combined to yield a
+   * Set of {@link TrustSetFlags}s for this {@link TrustSet}, which have been properly combined to yield a
    * {@link Flags} object containing the {@link Long} representation of the set bits.
    *
-   * <p>The value of the flags can either be set manually, or constructed using {@link Flags.TrustSetFlags.Builder}.
+   * <p>The value of the flags can either be set manually, or constructed using {@link TrustSetFlags.Builder}.
    *
-   * @return The {@link Flags.PaymentFlags} for this transaction.
+   * @return The {@link PaymentFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags.TrustSetFlags flags() {
-    return Flags.TrustSetFlags.builder().build();
+  default TrustSetFlags flags() {
+    return TrustSetFlags.builder().build();
   }
 
   /**

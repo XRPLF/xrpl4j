@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -78,12 +78,12 @@ public interface AccountRootObject extends LedgerObject {
   XrpCurrencyAmount balance();
 
   /**
-   * A bit-map of boolean {@link Flags.AccountRootFlags} enabled for this account.
+   * A bit-map of boolean {@link AccountRootFlags} enabled for this account.
    *
-   * @return An {@link org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags}.
+   * @return An {@link AccountRootFlags}.
    */
   @JsonProperty("Flags")
-  Flags.AccountRootFlags flags();
+  AccountRootFlags flags();
 
   /**
    * The number of objects this account owns in the ledger, which contributes to its owner reserve.

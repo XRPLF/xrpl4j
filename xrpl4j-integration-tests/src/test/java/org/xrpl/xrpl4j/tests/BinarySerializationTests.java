@@ -14,8 +14,11 @@ import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
@@ -333,7 +336,7 @@ public class BinarySerializationTests {
       .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
-      .flags(Flags.PaymentChannelClaimFlags.builder().tfClose(true).build())
+      .flags(PaymentChannelClaimFlags.builder().tfClose(true).build())
       .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
       .balance(XrpCurrencyAmount.ofDrops(1000000))
       .amount(XrpCurrencyAmount.ofDrops(1000000))
@@ -373,7 +376,7 @@ public class BinarySerializationTests {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
       .fee(XrpCurrencyAmount.ofDrops(12))
-      .flags(Flags.TrustSetFlags.builder()
+      .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
         .tfFullyCanonicalSig(false)
         .build())
@@ -467,7 +470,7 @@ public class BinarySerializationTests {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
       .fee(XrpCurrencyAmount.ofDrops(12))
-      .flags(Flags.TrustSetFlags.builder()
+      .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
         .tfFullyCanonicalSig(false)
         .build())
@@ -490,7 +493,7 @@ public class BinarySerializationTests {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
       .fee(XrpCurrencyAmount.ofDrops(12))
-      .flags(Flags.TrustSetFlags.builder()
+      .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
         .tfFullyCanonicalSig(false)
         .build())
@@ -607,7 +610,7 @@ public class BinarySerializationTests {
   @Test
   void serializeRippleStateObjectWithMinBalanceValue() throws JsonProcessingException {
     RippleStateObject rippleStateObject = RippleStateObject.builder()
-      .flags(Flags.RippleStateFlags.HIGH_NO_RIPPLE)
+      .flags(RippleStateFlags.HIGH_NO_RIPPLE)
       .balance(
         IssuedCurrencyAmount.builder()
           .issuer(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
@@ -649,7 +652,7 @@ public class BinarySerializationTests {
         new BigDecimal("-0.100000000000000E+95"))
       .toString();
     RippleStateObject rippleStateObject = RippleStateObject.builder()
-      .flags(Flags.RippleStateFlags.HIGH_NO_RIPPLE)
+      .flags(RippleStateFlags.HIGH_NO_RIPPLE)
       .balance(
         IssuedCurrencyAmount.builder()
           .issuer(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
@@ -692,7 +695,7 @@ public class BinarySerializationTests {
     String value = new BigDecimal(IssuedCurrencyAmount.MIN_VALUE).subtract(new BigDecimal("1e80"))
       .toString();
     RippleStateObject rippleStateObject = RippleStateObject.builder()
-      .flags(Flags.RippleStateFlags.HIGH_NO_RIPPLE)
+      .flags(RippleStateFlags.HIGH_NO_RIPPLE)
       .balance(
         IssuedCurrencyAmount.builder()
           .issuer(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
@@ -731,7 +734,7 @@ public class BinarySerializationTests {
   @Test
   void serializeRippleStateObjectWithMaxNegativeValue() throws JsonProcessingException {
     RippleStateObject rippleStateObject = RippleStateObject.builder()
-      .flags(Flags.RippleStateFlags.HIGH_NO_RIPPLE)
+      .flags(RippleStateFlags.HIGH_NO_RIPPLE)
       .balance(
         IssuedCurrencyAmount.builder()
           .issuer(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
@@ -773,7 +776,7 @@ public class BinarySerializationTests {
     String value = new BigDecimal(IssuedCurrencyAmount.MAX_NEGATIVE_VALUE)
       .add(new BigDecimal(IssuedCurrencyAmount.MAX_NEGATIVE_VALUE).scaleByPowerOfTen(-1)).toString();
     RippleStateObject rippleStateObject = RippleStateObject.builder()
-      .flags(Flags.RippleStateFlags.HIGH_NO_RIPPLE)
+      .flags(RippleStateFlags.HIGH_NO_RIPPLE)
       .balance(
         IssuedCurrencyAmount.builder()
           .issuer(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
@@ -814,7 +817,7 @@ public class BinarySerializationTests {
     String value = new BigDecimal(IssuedCurrencyAmount.MAX_NEGATIVE_VALUE)
       .subtract(new BigDecimal(IssuedCurrencyAmount.MAX_NEGATIVE_VALUE).scaleByPowerOfTen(-1)).toString();
     RippleStateObject rippleStateObject = RippleStateObject.builder()
-      .flags(Flags.RippleStateFlags.HIGH_NO_RIPPLE)
+      .flags(RippleStateFlags.HIGH_NO_RIPPLE)
       .balance(
         IssuedCurrencyAmount.builder()
           .issuer(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
@@ -856,7 +859,7 @@ public class BinarySerializationTests {
       .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .sequence(UnsignedInteger.valueOf(11223344))
       .offerSequence(UnsignedInteger.valueOf(123))
-      .flags(Flags.OfferCreateFlags.builder().tfFullyCanonicalSig(true).tfSell(true).build())
+      .flags(OfferCreateFlags.builder().tfFullyCanonicalSig(true).tfSell(true).build())
       .expiration(UnsignedInteger.valueOf(456))
       .build();
 

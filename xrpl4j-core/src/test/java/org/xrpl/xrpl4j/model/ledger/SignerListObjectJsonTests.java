@@ -25,7 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.SignerListFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -34,7 +34,7 @@ public class SignerListObjectJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     SignerListObject object = SignerListObject.builder()
-      .flags(Flags.SignerListFlags.UNSET)
+      .flags(SignerListFlags.UNSET)
       .ownerNode("0000000000000000")
       .previousTransactionId(Hash256.of("5904C0DC72C58A83AEFED2FFC5386356AA83FCA6A88C89D00646E51E687CDBE4"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(16061435))

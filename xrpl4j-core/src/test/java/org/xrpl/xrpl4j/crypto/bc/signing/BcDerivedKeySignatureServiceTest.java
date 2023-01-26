@@ -24,7 +24,7 @@ import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -177,7 +177,7 @@ class BcDerivedKeySignatureServiceTest {
         .build())
       .destination(Address.of(destinationClassicAddress))
       .fee(XrpCurrencyAmount.ofDrops(0))
-      .flags(Flags.PaymentFlags.of(2147483648L))
+      .flags(PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
       .build();
@@ -281,7 +281,7 @@ class BcDerivedKeySignatureServiceTest {
         .build())
       .destination(Address.of(destinationClassicAddress))
       .fee(XrpCurrencyAmount.ofDrops(0))
-      .flags(Flags.PaymentFlags.of(2147483648L))
+      .flags(PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
       .build();

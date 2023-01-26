@@ -26,7 +26,7 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     boolean tfTrustLine,
     boolean tfTransferable
   ) {
-    Flags.NfTokenMintFlags flags = Flags.NfTokenMintFlags.builder()
+    NfTokenMintFlags flags = NfTokenMintFlags.builder()
       .tfFullyCanonicalSig(tfFullyCanonicalSig)
       .tfBurnable(tfBurnable)
       .tfOnlyXRP(tfOnlyXRP)
@@ -48,7 +48,7 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     boolean tfTransferable
   ) {
     long expectedFlags = getExpectedFlags(tfFullyCanonicalSig,tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
-    Flags.NfTokenMintFlags flags = Flags.NfTokenMintFlags.of(expectedFlags);
+    NfTokenMintFlags flags = NfTokenMintFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
@@ -65,11 +65,11 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     boolean tfTrustLine,
     boolean tfTransferable
   ) {
-    return (tfFullyCanonicalSig ? Flags.NfTokenMintFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfBurnable ? Flags.NfTokenMintFlags.BURNABLE.getValue() : 0L) |
-      (tfOnlyXRP ? Flags.NfTokenMintFlags.ONLY_XRP.getValue() : 0L) |
-      (tfTrustLine ? Flags.NfTokenMintFlags.TRUSTLINE.getValue() : 0L) |
-      (tfTransferable ? Flags.NfTokenMintFlags.TRANSFERABLE.getValue() : 0L);
+    return (tfFullyCanonicalSig ? NfTokenMintFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+      (tfBurnable ? NfTokenMintFlags.BURNABLE.getValue() : 0L) |
+      (tfOnlyXRP ? NfTokenMintFlags.ONLY_XRP.getValue() : 0L) |
+      (tfTrustLine ? NfTokenMintFlags.TRUSTLINE.getValue() : 0L) |
+      (tfTransferable ? NfTokenMintFlags.TRANSFERABLE.getValue() : 0L);
   }
 }
 

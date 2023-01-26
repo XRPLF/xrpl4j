@@ -41,7 +41,7 @@ import org.xrpl.xrpl4j.crypto.PublicKey;
 import org.xrpl.xrpl4j.crypto.Seed;
 import org.xrpl.xrpl4j.crypto.ServerSecretSupplier;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -212,7 +212,7 @@ class DerivedKeysSignatureServiceTest {
         .build())
       .destination(Address.of(destinationClassicAddress))
       .fee(XrpCurrencyAmount.ofDrops(0))
-      .flags(Flags.PaymentFlags.of(2147483648L))
+      .flags(PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
       .build();
@@ -259,7 +259,7 @@ class DerivedKeysSignatureServiceTest {
         .build())
       .destination(Address.of(destinationClassicAddress))
       .fee(XrpCurrencyAmount.ofDrops(0))
-      .flags(Flags.PaymentFlags.of(2147483648L))
+      .flags(PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
       .build();

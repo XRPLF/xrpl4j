@@ -37,8 +37,8 @@ public class SignerListObjectFlagsTests extends AbstractFlagsTest {
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(boolean lsfOneOwnerCount) {
-    long expectedFlags = lsfOneOwnerCount ? Flags.SignerListFlags.ONE_OWNER_COUNT.getValue() : 0L;
-    Flags.SignerListFlags flags = Flags.SignerListFlags.of(expectedFlags);
+    long expectedFlags = lsfOneOwnerCount ? SignerListFlags.ONE_OWNER_COUNT.getValue() : 0L;
+    SignerListFlags flags = SignerListFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfOneOwnerCount()).isEqualTo(lsfOneOwnerCount);

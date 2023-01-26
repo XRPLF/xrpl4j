@@ -20,7 +20,7 @@ public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
     boolean tfFullyCanonicalSig,
     boolean tfSellToken
   ) {
-    Flags.NfTokenCreateOfferFlags flags = Flags.NfTokenCreateOfferFlags.builder()
+    NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.builder()
       .tfFullyCanonicalSig(tfFullyCanonicalSig)
       .tfSellToken(tfSellToken)
       .build();
@@ -36,7 +36,7 @@ public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
     boolean tfSellToken
   ) {
     long expectedFlags = getExpectedFlags(tfFullyCanonicalSig,tfSellToken);
-    Flags.NfTokenCreateOfferFlags flags = Flags.NfTokenCreateOfferFlags.of(expectedFlags);
+    NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
@@ -47,7 +47,7 @@ public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
     boolean tfFullyCanonicalSig,
     boolean tfSellToken
   ) {
-    return (tfFullyCanonicalSig ? Flags.TransactionFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfSellToken ? Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN.getValue() : 0L);
+    return (tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+      (tfSellToken ? NfTokenCreateOfferFlags.SELL_NFTOKEN.getValue() : 0L);
   }
 }

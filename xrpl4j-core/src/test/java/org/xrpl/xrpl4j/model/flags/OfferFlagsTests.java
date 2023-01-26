@@ -40,10 +40,10 @@ public class OfferFlagsTests extends AbstractFlagsTest {
     boolean lsfPassive,
     boolean lsfSell
   ) {
-    long expectedFlags = (lsfPassive ? Flags.OfferFlags.PASSIVE.getValue() : 0L) |
-      (lsfSell ? Flags.OfferFlags.SELL.getValue() : 0L);
+    long expectedFlags = (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
+      (lsfSell ? OfferFlags.SELL.getValue() : 0L);
 
-    Flags.OfferFlags flags = Flags.OfferFlags.of(expectedFlags);
+    OfferFlags flags = OfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfPassive()).isEqualTo(lsfPassive);

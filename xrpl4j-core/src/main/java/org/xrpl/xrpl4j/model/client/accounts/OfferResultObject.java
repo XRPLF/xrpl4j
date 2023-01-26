@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 
 import java.util.Optional;
@@ -52,9 +52,9 @@ public interface OfferResultObject extends XrplResult {
   /**
    * Options set for this offer entry.
    *
-   * @return The {@link Flags.OfferCreateFlags} for this offer.
+   * @return The {@link OfferCreateFlags} for this offer.
    */
-  Flags.OfferCreateFlags flags();
+  OfferCreateFlags flags();
 
   /**
    * Sequence number of the transaction that created this entry. (Transaction sequence numbers are relative to

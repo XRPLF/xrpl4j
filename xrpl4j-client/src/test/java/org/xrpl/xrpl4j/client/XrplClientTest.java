@@ -39,13 +39,10 @@ import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
 import org.assertj.core.util.Lists;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.xrpl.xrpl4j.crypto.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
@@ -107,7 +104,8 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
@@ -512,7 +510,7 @@ public class XrplClientTest {
           .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
           .previousTransactionLedgerSequence(UnsignedInteger.ONE)
           .sequence(UnsignedInteger.ONE)
-          .flags(Flags.AccountRootFlags.DISABLE_MASTER)
+          .flags(AccountRootFlags.DISABLE_MASTER)
           .index(Hash256.of(Strings.repeat("0", 64)))
           .build();
         AccountInfoResult accountInfoResult = AccountInfoResult.builder()
@@ -598,7 +596,7 @@ public class XrplClientTest {
           .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
           .previousTransactionLedgerSequence(UnsignedInteger.ONE)
           .sequence(UnsignedInteger.ONE)
-          .flags(Flags.AccountRootFlags.DISABLE_MASTER)
+          .flags(AccountRootFlags.DISABLE_MASTER)
           .index(Hash256.of(Strings.repeat("0", 64)))
           .build();
         AccountInfoResult accountInfoResult = AccountInfoResult.builder()
@@ -835,7 +833,7 @@ public class XrplClientTest {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .flags(Flags.NfTokenCreateOfferFlags.builder()
+      .flags(NfTokenCreateOfferFlags.builder()
         .tfSellToken(true)
         .build())
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))

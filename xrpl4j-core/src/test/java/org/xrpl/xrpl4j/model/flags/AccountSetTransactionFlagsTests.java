@@ -26,7 +26,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfDisallowXrp,
     boolean tfAllowXrp
   ) {
-    Flags.AccountSetTransactionFlags.Builder builder = Flags.AccountSetTransactionFlags.builder()
+    AccountSetTransactionFlags.Builder builder = AccountSetTransactionFlags.builder()
       .tfFullyCanonicalSig(tfFullyCanonicalSig);
 
     if (tfRequireDestTag) {
@@ -77,7 +77,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       return;
     }
 
-    Flags.AccountSetTransactionFlags flags = builder.build();
+    AccountSetTransactionFlags flags = builder.build();
     long expectedFlags = getExpectedFlags(
       tfFullyCanonicalSig,
       tfRequireDestTag,
@@ -113,7 +113,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
 
     if (tfRequireDestTag && tfOptionalDestTag) {
       assertThatThrownBy(
-        () -> Flags.AccountSetTransactionFlags.of(expectedFlags)
+        () -> AccountSetTransactionFlags.of(expectedFlags)
       ).isInstanceOf(IllegalArgumentException.class)
         .hasMessage("tfRequireDestTag and tfOptionalDestTag cannot both be set to true.");
       return;
@@ -121,7 +121,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
 
     if (tfRequireAuth && tfOptionalAuth) {
       assertThatThrownBy(
-        () -> Flags.AccountSetTransactionFlags.of(expectedFlags)
+        () -> AccountSetTransactionFlags.of(expectedFlags)
       ).isInstanceOf(IllegalArgumentException.class)
         .hasMessage("tfRequireAuth and tfOptionalAuth cannot both be set to true.");
       return;
@@ -129,13 +129,13 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
 
     if (tfDisallowXrp && tfAllowXrp) {
       assertThatThrownBy(
-        () -> Flags.AccountSetTransactionFlags.of(expectedFlags)
+        () -> AccountSetTransactionFlags.of(expectedFlags)
       ).isInstanceOf(IllegalArgumentException.class)
         .hasMessage("tfDisallowXrp and tfAllowXrp cannot both be set to true.");
       return;
     }
 
-    Flags.AccountSetTransactionFlags flags = Flags.AccountSetTransactionFlags.of(expectedFlags);
+    AccountSetTransactionFlags flags = AccountSetTransactionFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
@@ -155,12 +155,12 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfDisallowXrp,
     boolean tfAllowXrp
   ) {
-    return (tfFullyCanonicalSig ? Flags.AccountSetTransactionFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfRequireDestTag ? Flags.AccountSetTransactionFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
-      (tfOptionalDestTag ? Flags.AccountSetTransactionFlags.OPTIONAL_DEST_TAG.getValue() : 0L) |
-      (tfRequireAuth ? Flags.AccountSetTransactionFlags.REQUIRE_AUTH.getValue() : 0L) |
-      (tfOptionalAuth ? Flags.AccountSetTransactionFlags.OPTIONAL_AUTH.getValue() : 0L) |
-      (tfDisallowXrp ? Flags.AccountSetTransactionFlags.DISALLOW_XRP.getValue() : 0L) |
-      (tfAllowXrp ? Flags.AccountSetTransactionFlags.ALLOW_XRP.getValue() : 0L);
+    return (tfFullyCanonicalSig ? AccountSetTransactionFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+      (tfRequireDestTag ? AccountSetTransactionFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
+      (tfOptionalDestTag ? AccountSetTransactionFlags.OPTIONAL_DEST_TAG.getValue() : 0L) |
+      (tfRequireAuth ? AccountSetTransactionFlags.REQUIRE_AUTH.getValue() : 0L) |
+      (tfOptionalAuth ? AccountSetTransactionFlags.OPTIONAL_AUTH.getValue() : 0L) |
+      (tfDisallowXrp ? AccountSetTransactionFlags.DISALLOW_XRP.getValue() : 0L) |
+      (tfAllowXrp ? AccountSetTransactionFlags.ALLOW_XRP.getValue() : 0L);
   }
 }

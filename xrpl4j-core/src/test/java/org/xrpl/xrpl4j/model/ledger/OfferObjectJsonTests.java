@@ -25,7 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.OfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -39,7 +39,7 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
       .account(Address.of("rBqb89MRQJnMPq8wTwEbtz4kvxrEDfcYvt"))
       .bookDirectory(Hash256.of("ACC27DE91DBA86FC509069EAF4BC511D73128B780F2E54BF5E07A369E2446000"))
       .bookNode("0000000000000000")
-      .flags(Flags.OfferFlags.of(131072))
+      .flags(OfferFlags.of(131072))
       .ownerNode("0000000000000000")
       .previousTransactionId(Hash256.of("F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14524914))

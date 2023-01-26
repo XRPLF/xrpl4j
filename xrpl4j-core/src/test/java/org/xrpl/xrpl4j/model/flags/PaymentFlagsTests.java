@@ -42,7 +42,7 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     boolean tfPartialPayment,
     boolean tfLimitQuality
   ) {
-    Flags.PaymentFlags flags = Flags.PaymentFlags.builder()
+    PaymentFlags flags = PaymentFlags.builder()
       .tfFullyCanonicalSig(tfFullyCanonicalSig)
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
@@ -62,7 +62,7 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     boolean tfLimitQuality
   ) {
     long expectedFlags = getExpectedFlags(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
-    Flags.PaymentFlags flags = Flags.PaymentFlags.of(expectedFlags);
+    PaymentFlags flags = PaymentFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
@@ -77,9 +77,9 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     boolean tfPartialPayment,
     boolean tfLimitQuality
   ) {
-    return (tfFullyCanonicalSig ? Flags.PaymentFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfNoDirectRipple ? Flags.PaymentFlags.NO_DIRECT_RIPPLE.getValue() : 0L) |
-      (tfPartialPayment ? Flags.PaymentFlags.PARTIAL_PAYMENT.getValue() : 0L) |
-      (tfLimitQuality ? Flags.PaymentFlags.LIMIT_QUALITY.getValue() : 0L);
+    return (tfFullyCanonicalSig ? PaymentFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+      (tfNoDirectRipple ? PaymentFlags.NO_DIRECT_RIPPLE.getValue() : 0L) |
+      (tfPartialPayment ? PaymentFlags.PARTIAL_PAYMENT.getValue() : 0L) |
+      (tfLimitQuality ? PaymentFlags.LIMIT_QUALITY.getValue() : 0L);
   }
 }

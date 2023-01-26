@@ -26,7 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
@@ -39,7 +39,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
       .fee(XrpCurrencyAmount.ofDrops(12))
-      .flags(Flags.TrustSetFlags.builder()
+      .flags(TrustSetFlags.builder()
         .tfClearNoRipple()
         .tfFullyCanonicalSig(false)
         .build())
@@ -76,7 +76,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
       .fee(XrpCurrencyAmount.ofDrops(12))
-      .flags(Flags.TrustSetFlags.builder()
+      .flags(TrustSetFlags.builder()
         .tfClearNoRipple()
         .tfFullyCanonicalSig(false)
         .build())

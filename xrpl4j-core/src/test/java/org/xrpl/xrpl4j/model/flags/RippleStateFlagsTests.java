@@ -56,7 +56,7 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
       lsfLowFreeze,
       lsfHighFreeze
     );
-    Flags.RippleStateFlags flags = Flags.RippleStateFlags.of(expectedFlags);
+    RippleStateFlags flags = RippleStateFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfLowReserve()).isEqualTo(lsfLowReserve);
@@ -79,13 +79,13 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     boolean lsfLowFreeze,
     boolean lsfHighFreeze
   ) {
-    return (lsfLowReserve ? Flags.RippleStateFlags.LOW_RESERVE.getValue() : 0L) |
-      (lsfHighReserve ? Flags.RippleStateFlags.HIGH_RESERVE.getValue() : 0L) |
-      (lsfLowAuth ? Flags.RippleStateFlags.LOW_AUTH.getValue() : 0L) |
-      (lsfHighAuth ? Flags.RippleStateFlags.HIGH_AUTH.getValue() : 0L) |
-      (lsfLowNoRipple ? Flags.RippleStateFlags.LOW_NO_RIPPLE.getValue() : 0L) |
-      (lsfHighNoRipple ? Flags.RippleStateFlags.HIGH_NO_RIPPLE.getValue() : 0L) |
-      (lsfLowFreeze ? Flags.RippleStateFlags.LOW_FREEZE.getValue() : 0L) |
-      (lsfHighFreeze ? Flags.RippleStateFlags.HIGH_FREEZE.getValue() : 0L);
+    return (lsfLowReserve ? RippleStateFlags.LOW_RESERVE.getValue() : 0L) |
+      (lsfHighReserve ? RippleStateFlags.HIGH_RESERVE.getValue() : 0L) |
+      (lsfLowAuth ? RippleStateFlags.LOW_AUTH.getValue() : 0L) |
+      (lsfHighAuth ? RippleStateFlags.HIGH_AUTH.getValue() : 0L) |
+      (lsfLowNoRipple ? RippleStateFlags.LOW_NO_RIPPLE.getValue() : 0L) |
+      (lsfHighNoRipple ? RippleStateFlags.HIGH_NO_RIPPLE.getValue() : 0L) |
+      (lsfLowFreeze ? RippleStateFlags.LOW_FREEZE.getValue() : 0L) |
+      (lsfHighFreeze ? RippleStateFlags.HIGH_FREEZE.getValue() : 0L);
   }
 }

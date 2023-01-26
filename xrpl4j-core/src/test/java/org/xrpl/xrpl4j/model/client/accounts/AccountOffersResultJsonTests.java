@@ -26,7 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -47,7 +47,7 @@ public class AccountOffersResultJsonTests extends AbstractJsonTest {
       .marker(Marker.of("marker"))
       .addOffers(
         OfferResultObject.builder()
-          .flags(Flags.OfferCreateFlags.of(65536L))
+          .flags(OfferCreateFlags.of(65536L))
           .seq(UnsignedInteger.valueOf(13))
           .takerGets(
             IssuedCurrencyAmount.builder()
@@ -63,7 +63,7 @@ public class AccountOffersResultJsonTests extends AbstractJsonTest {
       )
       .addOffers(
         OfferResultObject.builder()
-          .flags(Flags.OfferCreateFlags.of(65536L))
+          .flags(OfferCreateFlags.of(65536L))
           .seq(UnsignedInteger.valueOf(13))
           .takerGets(
             IssuedCurrencyAmount.builder()

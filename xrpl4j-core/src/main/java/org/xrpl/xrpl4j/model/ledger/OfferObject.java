@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.OfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -74,10 +74,10 @@ public interface OfferObject extends LedgerObject {
   /**
    * A bit-map of boolean flags.
    *
-   * @return A {@link org.xrpl.xrpl4j.model.flags.Flags.OfferFlags}.
+   * @return A {@link OfferFlags}.
    */
   @JsonProperty("Flags")
-  Flags.OfferFlags flags();
+  OfferFlags flags();
 
   /**
    * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that

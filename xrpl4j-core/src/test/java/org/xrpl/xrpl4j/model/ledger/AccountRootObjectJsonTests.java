@@ -25,7 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -40,7 +40,7 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
       .balance(XrpCurrencyAmount.ofDrops(148446663))
       .domain("6D64756F31332E636F6D")
       .emailHash("98B4375E1D753E5B91627516F6D70977")
-      .flags(Flags.AccountRootFlags.of(8388608))
+      .flags(AccountRootFlags.of(8388608))
       .messageKey("0000000000000000000000070000000300")
       .ownerCount(UnsignedInteger.valueOf(3))
       .previousTransactionId(Hash256.of("0D5FB50FA65C9FE1538FD7E398FFFE9D1908DFA4576D8D7A020040686F93C77D"))

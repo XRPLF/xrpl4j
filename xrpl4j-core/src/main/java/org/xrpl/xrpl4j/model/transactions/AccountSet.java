@@ -28,7 +28,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
@@ -50,18 +51,18 @@ public interface AccountSet extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link AccountDelete}, which only allows the
+   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the
    * {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    *
-   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return Always {@link TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags.AccountSetTransactionFlags flags() {
-    return new Flags.AccountSetTransactionFlags.Builder().tfFullyCanonicalSig(true).build();
+  default AccountSetTransactionFlags flags() {
+    return new AccountSetTransactionFlags.Builder().tfFullyCanonicalSig(true).build();
   }
 
   /**

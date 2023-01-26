@@ -26,7 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -40,7 +40,7 @@ public class AccountInfoResultJsonTests extends AbstractJsonTest {
       .accountData(AccountRootObject.builder()
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
         .balance(XrpCurrencyAmount.ofDrops(999999999960L))
-        .flags(Flags.AccountRootFlags.of(8388608))
+        .flags(AccountRootFlags.of(8388608))
         .ownerCount(UnsignedInteger.ZERO)
         .previousTransactionId(Hash256.of("4294BEBE5B569A18C0A2702387C9B1E7146DC3A5850C1E87204951C6FDAA4C42"))
         .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3))

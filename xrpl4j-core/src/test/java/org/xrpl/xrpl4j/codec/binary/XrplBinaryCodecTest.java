@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -293,14 +293,22 @@ class XrplBinaryCodecTest {
     List<SignerWrapper> signers = Lists.newArrayList(
       SignerWrapper.of(Signer.builder()
         .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-        .signingPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF")
+        .signingPublicKey(
+          PublicKey.fromBase16EncodedPublicKey(
+            "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF"
+          )
+        )
         .transactionSignature("30450221009C195DBBF7967E223D8626CA19CF02073667F2B22E206727BFE848" +
           "FF42BEAC8A022048C323B0BED19A988BDBEFA974B6DE8AA9DCAE250AA82BBD1221787032A864E5")
         .build()
       ),
       SignerWrapper.of(Signer.builder()
         .account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"))
-        .signingPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B")
+        .signingPublicKey(
+          PublicKey.fromBase16EncodedPublicKey(
+            "028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B"
+          )
+        )
         .transactionSignature("30440220680BBD745004E9CFB6B13A137F505FB92298AD309071D16C7B982825" +
           "188FD1AE022004200B1F7E4A6A84BB0E4FC09E1E3BA2B66EBD32F0E6D121A34BA3B04AD99BC1")
         .build()
@@ -342,14 +350,18 @@ class XrplBinaryCodecTest {
     List<SignerWrapper> signers = Lists.newArrayList(
       SignerWrapper.of(Signer.builder()
         .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-        .signingPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF")
+        .signingPublicKey(
+          PublicKey.fromBase16EncodedPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF")
+        )
         .transactionSignature("30450221009C195DBBF7967E223D8626CA19CF02073667F2B22E206727BFE848" +
           "FF42BEAC8A022048C323B0BED19A988BDBEFA974B6DE8AA9DCAE250AA82BBD1221787032A864E5")
         .build()
       ),
       SignerWrapper.of(Signer.builder()
         .account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"))
-        .signingPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B")
+        .signingPublicKey(
+          PublicKey.fromBase16EncodedPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B")
+        )
         .transactionSignature("30440220680BBD745004E9CFB6B13A137F505FB92298AD309071D16C7B982825" +
           "188FD1AE022004200B1F7E4A6A84BB0E4FC09E1E3BA2B66EBD32F0E6D121A34BA3B04AD99BC1")
         .build()

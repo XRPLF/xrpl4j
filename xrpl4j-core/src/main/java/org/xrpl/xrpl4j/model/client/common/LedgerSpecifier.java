@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.jackson.modules.LedgerSpecifierDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LedgerSpecifierSerializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Objects;
@@ -39,7 +40,7 @@ import java.util.function.Function;
  * @see "https://xrpl.org/basic-data-types.html#specifying-ledgers"
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableLedgerSpecifier.class)
+@JsonSerialize(as = ImmutableLedgerSpecifier.class, using = LedgerSpecifierSerializer.class)
 @JsonDeserialize(as = ImmutableLedgerSpecifier.class, using = LedgerSpecifierDeserializer.class)
 public interface LedgerSpecifier {
 

@@ -28,6 +28,8 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
+import org.xrpl.xrpl4j.model.jackson.modules.LedgerIndexBoundDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.LedgerIndexBoundSerializer;
 
 import java.io.Serializable;
 
@@ -45,8 +47,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = LedgerIndexBound.class)
-  @JsonDeserialize(as = LedgerIndexBound.class)
+  @JsonSerialize(as = LedgerIndexBound.class, using = LedgerIndexBoundSerializer.class)
+  @JsonDeserialize(as = LedgerIndexBound.class, using = LedgerIndexBoundDeserializer.class)
   abstract static class _LedgerIndexBound extends Wrapper<Long> implements Serializable {
 
     /**

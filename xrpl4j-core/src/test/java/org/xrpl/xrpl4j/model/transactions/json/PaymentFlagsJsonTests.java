@@ -45,7 +45,35 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.ofDrops(25000000))
       .fee(XrpCurrencyAmount.ofDrops(10))
-      .flags(PaymentFlags.builder().build())
+      .flags(PaymentFlags.UNSET)
+      .sequence(UnsignedInteger.valueOf(2))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = "{\n" +
+      "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
+      "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
+      "                \"TransactionType\": \"Payment\",\n" +
+      "                \"Amount\": \"25000000\",\n" +
+      "                \"Fee\": \"10\",\n" +
+      "                \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "                \"Sequence\": 2\n" +
+      "            }";
+
+    assertCanSerializeAndDeserialize(payment, json);
+  }
+
+  @Test
+  public void testJsonWithFlags() throws JsonProcessingException, JSONException {
+
+    Payment payment = Payment.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
+      .amount(XrpCurrencyAmount.ofDrops(25000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -62,6 +90,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"Sequence\": 2\n" +
       "            }";
+
 
     assertCanSerializeAndDeserialize(payment, json);
   }
@@ -84,7 +113,6 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
         .issuer(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
         .build()
       )
-      .flags(PaymentFlags.builder().build())
       .sequence(UnsignedInteger.valueOf(6))
       .addPaths(Lists.newArrayList(
         PathStep.builder()

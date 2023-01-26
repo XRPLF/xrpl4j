@@ -73,7 +73,6 @@ public class OfferIT extends AbstractIT {
       )
       .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0)))
       .flags(OfferCreateFlags.builder()
-        .tfFullyCanonicalSig(true)
         .tfSell(true)
         .build())
       .build();
@@ -123,7 +122,6 @@ public class OfferIT extends AbstractIT {
       )
       .takerGets(XrpCurrencyAmount.ofDrops(1000))
       .flags(OfferCreateFlags.builder()
-        .tfFullyCanonicalSig(true)
         .tfSell(true)
         .build())
       .build();
@@ -218,7 +216,6 @@ public class OfferIT extends AbstractIT {
       )
       .takerGets(XrpCurrencyAmount.ofDrops(1000))
       .flags(OfferCreateFlags.builder()
-        .tfFullyCanonicalSig(true)
         .tfImmediateOrCancel(true)
         .build())
       .build();

@@ -62,7 +62,7 @@ public interface Payment extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default PaymentFlags flags() {
-    return PaymentFlags.builder().tfFullyCanonicalSig(true).build();
+    return PaymentFlags.builder().build();
   }
 
   /**

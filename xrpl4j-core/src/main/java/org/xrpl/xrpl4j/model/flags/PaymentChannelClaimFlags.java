@@ -99,21 +99,8 @@ public class PaymentChannelClaimFlags extends TransactionFlags {
    * A builder class for {@link PaymentChannelClaimFlags}.
    */
   public static class Builder {
-    boolean tfFullyCanonicalSig = true;
     boolean tfRenew = false;
     boolean tfClose = false;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfRenew} to the given value.
@@ -145,7 +132,7 @@ public class PaymentChannelClaimFlags extends TransactionFlags {
      * @return A new {@link PaymentChannelClaimFlags}.
      */
     public PaymentChannelClaimFlags build() {
-      return PaymentChannelClaimFlags.of(tfFullyCanonicalSig, tfRenew, tfClose);
+      return PaymentChannelClaimFlags.of(true, tfRenew, tfClose);
     }
   }
 }

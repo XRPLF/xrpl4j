@@ -11,43 +11,39 @@ import java.util.stream.Stream;
 public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(5);
+    return getBooleanCombinations(4);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfSellToken
   ) {
     NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.builder()
-      .tfFullyCanonicalSig(tfFullyCanonicalSig)
       .tfSellToken(tfSellToken)
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfFullyCanonicalSig,tfSellToken));
+      .isEqualTo(getExpectedFlags(tfSellToken));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfSellToken
   ) {
-    long expectedFlags = getExpectedFlags(tfFullyCanonicalSig,tfSellToken);
+    long expectedFlags = getExpectedFlags(tfSellToken);
     NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
-    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfSellNfToken()).isEqualTo(tfSellToken);
   }
 
   private long getExpectedFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfSellToken
   ) {
-    return (tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+    return (TransactionFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfSellToken ? NfTokenCreateOfferFlags.SELL_NFTOKEN.getValue() : 0L);
   }
 }

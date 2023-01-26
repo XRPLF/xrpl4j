@@ -85,7 +85,7 @@ public interface NfTokenMint extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default NfTokenMintFlags flags() {
-    return NfTokenMintFlags.builder().tfFullyCanonicalSig(true).build();
+    return NfTokenMintFlags.builder().build();
   }
 
   /**

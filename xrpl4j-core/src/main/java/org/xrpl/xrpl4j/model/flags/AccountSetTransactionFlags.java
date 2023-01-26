@@ -187,25 +187,12 @@ public class AccountSetTransactionFlags extends TransactionFlags {
    * A builder class for {@link AccountSetTransactionFlags}.
    */
   public static class Builder {
-    private boolean tfFullyCanonicalSig = true;
     private boolean tfRequireDestTag = false;
     private boolean tfOptionalDestTag = false;
     private boolean tfRequireAuth = false;
     private boolean tfOptionalAuth = false;
     private boolean tfDisallowXrp = false;
     private boolean tfAllowXrp = false;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfRequireDestTag} to the given value.
@@ -274,7 +261,7 @@ public class AccountSetTransactionFlags extends TransactionFlags {
      */
     public AccountSetTransactionFlags build() {
       return AccountSetTransactionFlags.of(
-        tfFullyCanonicalSig,
+        true,
         tfRequireDestTag,
         tfOptionalDestTag,
         tfRequireAuth,

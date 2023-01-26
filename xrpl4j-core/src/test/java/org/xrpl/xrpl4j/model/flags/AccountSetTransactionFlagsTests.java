@@ -12,13 +12,12 @@ import java.util.stream.Stream;
 public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(7);
+    return getBooleanCombinations(6);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfRequireDestTag,
     boolean tfOptionalDestTag,
     boolean tfRequireAuth,
@@ -26,8 +25,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfDisallowXrp,
     boolean tfAllowXrp
   ) {
-    AccountSetTransactionFlags.Builder builder = AccountSetTransactionFlags.builder()
-      .tfFullyCanonicalSig(tfFullyCanonicalSig);
+    AccountSetTransactionFlags.Builder builder = AccountSetTransactionFlags.builder();
 
     if (tfRequireDestTag) {
       builder.tfRequireDestTag();
@@ -79,7 +77,6 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
 
     AccountSetTransactionFlags flags = builder.build();
     long expectedFlags = getExpectedFlags(
-      tfFullyCanonicalSig,
       tfRequireDestTag,
       tfOptionalDestTag,
       tfRequireAuth,
@@ -93,7 +90,6 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfRequireDestTag,
     boolean tfOptionalDestTag,
     boolean tfRequireAuth,
@@ -102,7 +98,6 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfAllowXrp
   ) {
     long expectedFlags = getExpectedFlags(
-      tfFullyCanonicalSig,
       tfRequireDestTag,
       tfOptionalDestTag,
       tfRequireAuth,
@@ -138,7 +133,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     AccountSetTransactionFlags flags = AccountSetTransactionFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
-    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfRequireDestTag()).isEqualTo(tfRequireDestTag);
     assertThat(flags.tfRequireAuth()).isEqualTo(tfRequireAuth);
     assertThat(flags.tfOptionalAuth()).isEqualTo(tfOptionalAuth);
@@ -147,7 +142,6 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
   }
 
   private long getExpectedFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfRequireDestTag,
     boolean tfOptionalDestTag,
     boolean tfRequireAuth,
@@ -155,7 +149,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfDisallowXrp,
     boolean tfAllowXrp
   ) {
-    return (tfFullyCanonicalSig ? AccountSetTransactionFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
+    return (AccountSetTransactionFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfRequireDestTag ? AccountSetTransactionFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
       (tfOptionalDestTag ? AccountSetTransactionFlags.OPTIONAL_DEST_TAG.getValue() : 0L) |
       (tfRequireAuth ? AccountSetTransactionFlags.REQUIRE_AUTH.getValue() : 0L) |

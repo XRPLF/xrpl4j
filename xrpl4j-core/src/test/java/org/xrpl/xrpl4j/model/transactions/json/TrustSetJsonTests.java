@@ -41,7 +41,6 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(TrustSetFlags.builder()
         .tfClearNoRipple()
-        .tfFullyCanonicalSig(false)
         .build())
       .sequence(UnsignedInteger.valueOf(12))
       .limitAmount(IssuedCurrencyAmount.builder()
@@ -58,7 +57,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       "    \"TransactionType\": \"TrustSet\",\n" +
       "    \"Account\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\",\n" +
       "    \"Fee\": \"12\",\n" +
-      "    \"Flags\": 262144,\n" +
+      "    \"Flags\": 2147745792,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"LimitAmount\": {\n" +
       "      \"currency\": \"USD\",\n" +
@@ -78,7 +77,6 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .flags(TrustSetFlags.builder()
         .tfClearNoRipple()
-        .tfFullyCanonicalSig(false)
         .build())
       .sequence(UnsignedInteger.valueOf(12))
       .limitAmount(IssuedCurrencyAmount.builder()
@@ -97,7 +95,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       "    \"TransactionType\": \"TrustSet\",\n" +
       "    \"Account\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\",\n" +
       "    \"Fee\": \"12\",\n" +
-      "    \"Flags\": 262144,\n" +
+      "    \"Flags\": 2147745792,\n" +
       "    \"LimitAmount\": {\n" +
       "      \"currency\": \"USD\",\n" +
       "      \"issuer\": \"rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc\",\n" +

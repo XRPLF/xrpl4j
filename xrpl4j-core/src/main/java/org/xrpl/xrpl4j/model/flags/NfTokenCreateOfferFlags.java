@@ -60,20 +60,7 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
    * A builder class for {@link NfTokenCreateOfferFlags}.
    */
   public static class Builder {
-    boolean tfFullyCanonicalSig = true;
     boolean tfSellNfToken = false;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link NfTokenMintFlags.Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfSellToken} to the given value.
@@ -93,7 +80,7 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
      * @return A new {@link NfTokenCreateOfferFlags}.
      */
     public NfTokenCreateOfferFlags build() {
-      return NfTokenCreateOfferFlags.of(tfFullyCanonicalSig, tfSellNfToken);
+      return NfTokenCreateOfferFlags.of(true, tfSellNfToken);
     }
   }
 }

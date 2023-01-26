@@ -117,23 +117,10 @@ public class OfferCreateFlags extends TransactionFlags {
    */
   public static class Builder {
 
-    private boolean tfFullyCanonicalSig = true;
     private boolean tfPassive = false;
     private boolean tfImmediateOrCancel = false;
     private boolean tfFillOrKill = false;
     private boolean tfSell = false;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfPassive} to the given value.
@@ -190,7 +177,7 @@ public class OfferCreateFlags extends TransactionFlags {
      */
     public OfferCreateFlags build() {
       return OfferCreateFlags.of(
-        tfFullyCanonicalSig,
+        true,
         tfPassive,
         tfImmediateOrCancel,
         tfFillOrKill,

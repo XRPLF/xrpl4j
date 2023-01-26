@@ -859,7 +859,7 @@ public class BinarySerializationTests {
       .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .sequence(UnsignedInteger.valueOf(11223344))
       .offerSequence(UnsignedInteger.valueOf(123))
-      .flags(OfferCreateFlags.builder().tfFullyCanonicalSig(true).tfSell(true).build())
+      .flags(OfferCreateFlags.builder().tfSell(true).build())
       .expiration(UnsignedInteger.valueOf(456))
       .build();
 

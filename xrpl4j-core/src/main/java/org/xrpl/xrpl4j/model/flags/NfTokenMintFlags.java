@@ -110,23 +110,10 @@ public class NfTokenMintFlags extends TransactionFlags {
    * A builder class for {@link NfTokenMintFlags}.
    */
   public static class Builder {
-    boolean tfFullyCanonicalSig = true;
     boolean tfBurnable = false;
     boolean tfOnlyXRP = false;
     boolean tfTrustLine = false;
     boolean tfTransferable = false;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfBurnable} to the given value.
@@ -182,7 +169,7 @@ public class NfTokenMintFlags extends TransactionFlags {
      * @return A new {@link NfTokenMintFlags}.
      */
     public NfTokenMintFlags build() {
-      return NfTokenMintFlags.of(tfFullyCanonicalSig, tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+      return NfTokenMintFlags.of(true, tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
     }
   }
 }

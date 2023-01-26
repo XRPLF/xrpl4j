@@ -61,7 +61,7 @@ public interface OfferCancel extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
+    return new TransactionFlags.Builder().build();
   }
 
   /**

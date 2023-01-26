@@ -98,23 +98,9 @@ public class PaymentFlags extends TransactionFlags {
    */
   public static class Builder {
 
-    private boolean tfFullyCanonicalSig = true;
     private boolean tfNoDirectRipple = false;
     private boolean tfPartialPayment = false;
     private boolean tfLimitQuality = false;
-
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfNoDirectRipple} to the given value.
@@ -158,7 +144,7 @@ public class PaymentFlags extends TransactionFlags {
      * @return A new {@link PaymentFlags}.
      */
     public PaymentFlags build() {
-      return PaymentFlags.of(tfFullyCanonicalSig, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
+      return PaymentFlags.of(true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
     }
   }
 }

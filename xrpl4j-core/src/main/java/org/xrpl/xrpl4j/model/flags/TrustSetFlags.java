@@ -142,24 +142,11 @@ public class TrustSetFlags extends TransactionFlags {
    * A builder class for {@link TrustSetFlags}.
    */
   public static class Builder {
-    private boolean tfFullyCanonicalSig = true;
     private boolean tfSetfAuth = false;
     private boolean tfSetNoRipple = false;
     private boolean tfClearNoRipple = false;
     private boolean tfSetFreeze = false;
     private boolean tfClearFreeze = false;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return The same {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
 
     /**
      * Set {@code tfSetfAuth} to the given value.
@@ -220,7 +207,7 @@ public class TrustSetFlags extends TransactionFlags {
      */
     public TrustSetFlags build() {
       return TrustSetFlags.of(
-        tfFullyCanonicalSig,
+        true,
         tfSetfAuth,
         tfSetNoRipple,
         tfClearNoRipple,

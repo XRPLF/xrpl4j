@@ -31,20 +31,6 @@ public class TransactionFlags extends Flags {
    */
   public static class Builder {
 
-    private boolean tfFullyCanonicalSig = true;
-
-    /**
-     * Set {@code tfFullyCanonicalSig} to the given boolean value.
-     *
-     * @param tfFullyCanonicalSig A boolean value.
-     *
-     * @return A {@link Builder}.
-     */
-    public Builder tfFullyCanonicalSig(boolean tfFullyCanonicalSig) {
-      this.tfFullyCanonicalSig = tfFullyCanonicalSig;
-      return this;
-    }
-
     /**
      * Build a {@link TransactionFlags}.
      *
@@ -52,7 +38,7 @@ public class TransactionFlags extends Flags {
      */
     public TransactionFlags build() {
       return new TransactionFlags(
-        tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG.getValue() : UNSET.getValue()
+        TransactionFlags.FULLY_CANONICAL_SIG.getValue()
       );
     }
   }

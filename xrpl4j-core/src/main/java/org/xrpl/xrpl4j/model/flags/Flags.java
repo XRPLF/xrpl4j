@@ -110,7 +110,6 @@ public class Flags {
    *
    * @return true if the flag is set, false if not.
    */
-  // TODO: Unit test.
   public boolean isSet(Flags flag) {
     return !flag.equals(Flags.UNSET) && this.bitwiseAnd(flag).equals(flag);
   }

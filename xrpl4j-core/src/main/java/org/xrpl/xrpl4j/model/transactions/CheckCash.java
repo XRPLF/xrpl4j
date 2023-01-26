@@ -65,7 +65,7 @@ public interface CheckCash extends Transaction {
   @JsonProperty("Flags")
   @Value.Derived
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
+    return new TransactionFlags.Builder().build();
   }
 
   /**

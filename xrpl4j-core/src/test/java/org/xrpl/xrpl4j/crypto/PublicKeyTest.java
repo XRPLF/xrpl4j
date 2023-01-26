@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
 import org.xrpl.xrpl4j.keypairs.KeyPair;
 import org.xrpl.xrpl4j.keypairs.KeyPairService;
@@ -93,7 +93,7 @@ public class PublicKeyTest {
     final Seed seed = Seed.secp256k1SeedFromPassphrase("hello".getBytes());
     final String publicKeyString = keyPairService.deriveKeyPair(seed.value()).publicKey();
     final PublicKey publicKey = PublicKey.fromBase16EncodedPublicKey(publicKeyString);
-    assertThat(publicKey.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(publicKey.versionType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test
@@ -101,6 +101,6 @@ public class PublicKeyTest {
     final Seed seed = Seed.ed25519SeedFromPassphrase("hello".getBytes());
     final String publicKeyString = keyPairService.deriveKeyPair(seed.value()).publicKey();
     final PublicKey publicKey = PublicKey.fromBase16EncodedPublicKey(publicKeyString);
-    assertThat(publicKey.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(publicKey.versionType()).isEqualTo(KeyType.ED25519);
   }
 }

@@ -12,9 +12,9 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
@@ -90,7 +90,7 @@ class BcDerivedKeySignatureServiceTest {
    */
   @Test
   void signAndVerifyEd() {
-    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.ED25519);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
     final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
 
     final Payment paymentTransaction = Payment.builder()
@@ -133,7 +133,7 @@ class BcDerivedKeySignatureServiceTest {
 
   @Test
   void signAndVerifyEdFailure() {
-    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.ED25519);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
     final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
 
     final Payment paymentTransaction = Payment.builder()
@@ -182,9 +182,9 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.valueOf(4101911))
       .build();
 
-    final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", VersionType.ED25519);
+    final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", KeyType.ED25519);
     final PublicKey publicKeyFoo = this.derivedKeySignatureService.derivePublicKey(privateKeyReferenceFoo);
-    final PrivateKeyReference privateKeyReferenceBar = privateKeyReference("bar", VersionType.ED25519);
+    final PrivateKeyReference privateKeyReferenceBar = privateKeyReference("bar", KeyType.ED25519);
     final PublicKey publicKeyBar = this.derivedKeySignatureService.derivePublicKey(privateKeyReferenceBar);
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -269,7 +269,7 @@ class BcDerivedKeySignatureServiceTest {
    */
   @Test
   void multiSignEc() {
-    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.SECP256K1);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
     final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
 
     final Payment payment = Payment.builder()
@@ -332,7 +332,7 @@ class BcDerivedKeySignatureServiceTest {
 
   @Test
   void signAndVerifyEc() {
-    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.SECP256K1);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
     final PublicKey publicKey = this.derivedKeySignatureService.derivePublicKey(privateKeyReference);
 
     final Payment paymentTransaction = Payment.builder()
@@ -376,10 +376,10 @@ class BcDerivedKeySignatureServiceTest {
 
   @Test
   void signAndVerifyEcFailure() {
-    final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", VersionType.SECP256K1);
+    final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", KeyType.SECP256K1);
     final PublicKey publicKeyFoo = this.derivedKeySignatureService.derivePublicKey(privateKeyReferenceFoo);
 
-    final PrivateKeyReference privateKeyReferenceBar = privateKeyReference("bar", VersionType.SECP256K1);
+    final PrivateKeyReference privateKeyReferenceBar = privateKeyReference("bar", KeyType.SECP256K1);
     final PublicKey publicKeyBar = this.derivedKeySignatureService.derivePublicKey(privateKeyReferenceBar);
 
     final Payment paymentTransaction = Payment.builder()
@@ -406,27 +406,27 @@ class BcDerivedKeySignatureServiceTest {
   @Test
   void getPublicKeyEd() {
     PublicKey actualEcPublicKey = this.derivedKeySignatureService.derivePublicKey(
-      privateKeyReference("ed_key", VersionType.ED25519)
+      privateKeyReference("ed_key", KeyType.ED25519)
     );
     assertThat(actualEcPublicKey.base16Value())
       .isEqualTo("ED9909CDE4F59EA84686FCEE2149BE37CC05317F6C4F1434D96EE0E476F78C4C70");
     assertThat(actualEcPublicKey.base58Value()).isEqualTo("aKEvqcjfwFvcRSUd6fF5QL6N14xxNzNMDVZ2xmspAknpzf2LJfTy");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
   void getPublicKeyEc() {
     PublicKey actualEcPublicKey = this.derivedKeySignatureService.derivePublicKey(
-      privateKeyReference("ec_key", VersionType.SECP256K1));
+      privateKeyReference("ec_key", KeyType.SECP256K1));
     assertThat(actualEcPublicKey.base16Value())
       .isEqualTo("021ABFB4DDB4F25162D858BD02289D5B7D0F4D143082C1781DEFBC5EF9662E6263");
     assertThat(actualEcPublicKey.base58Value()).isEqualTo("aB4wHG4rW8bF9HSXg6Q7BNxddwNQ1EtvgF2AyPqQyeAgZ27tQxSP");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test
   void signUnsignedClaimEd() {
-    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.ED25519);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
 
     final UnsignedClaim unsignedClaim = UnsignedClaim.builder()
       .channel(Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString()))
@@ -462,7 +462,7 @@ class BcDerivedKeySignatureServiceTest {
 
   @Test
   void signUnsignedClaimEc() {
-    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", VersionType.SECP256K1);
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
 
     final UnsignedClaim unsignedClaim = UnsignedClaim.builder()
       .channel(Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString()))
@@ -572,9 +572,9 @@ class BcDerivedKeySignatureServiceTest {
    *
    * @return A {@link PrivateKeyReference}.
    */
-  private PrivateKeyReference privateKeyReference(final String keyIdentifier, final VersionType versionType) {
+  private PrivateKeyReference privateKeyReference(final String keyIdentifier, final KeyType keyType) {
     Objects.requireNonNull(keyIdentifier);
-    Objects.requireNonNull(versionType);
+    Objects.requireNonNull(keyType);
 
     return new PrivateKeyReference() {
       @Override
@@ -583,8 +583,8 @@ class BcDerivedKeySignatureServiceTest {
       }
 
       @Override
-      public VersionType versionType() {
-        return versionType;
+      public KeyType versionType() {
+        return keyType;
       }
     };
   }

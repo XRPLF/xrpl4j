@@ -16,7 +16,7 @@ import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.core.HashingUtils;
 
@@ -208,7 +208,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
     @Override
     public KeyPair deriveKeyPair() {
-      VersionType type = this.decodedSeed().type()
+      KeyType type = this.decodedSeed().type()
         .orElseThrow(() -> new IllegalArgumentException("Unsupported seed type."));
 
       switch (type) {

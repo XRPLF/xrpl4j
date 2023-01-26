@@ -50,7 +50,7 @@ public class AddressCodecTest extends AbstractCodecTest {
     String seed = "sEdTM1uX8pu2do5XvTnutH6HsouMaM2";
     Decoded decoded = addressCodec.decodeSeed(seed);
     assertThat(decoded.bytes().hexValue()).isEqualTo("4C3A1D213FBDFB14C7C28D609469B341");
-    assertThat(decoded.type()).isNotEmpty().get().isEqualTo(VersionType.ED25519);
+    assertThat(decoded.type()).isNotEmpty().get().isEqualTo(KeyType.ED25519);
     assertThat(decoded.version()).isEqualTo(Version.ED25519_SEED);
   }
 
@@ -59,7 +59,7 @@ public class AddressCodecTest extends AbstractCodecTest {
     String seed = "sn259rEFXrQrWyx3Q7XneWcwV6dfL";
     Decoded decoded = addressCodec.decodeSeed(seed);
     assertThat(decoded.bytes().hexValue()).isEqualTo("CF2DE378FBDD7E2EE87D486DFB5A7BFF");
-    assertThat(decoded.type()).isNotEmpty().get().isEqualTo(VersionType.SECP256K1);
+    assertThat(decoded.type()).isNotEmpty().get().isEqualTo(KeyType.SECP256K1);
     assertThat(decoded.version()).isEqualTo(Version.FAMILY_SEED);
   }
 
@@ -67,7 +67,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeSecp256k1Seed() {
     String encoded = addressCodec.encodeSeed(
       unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFF"),
-      VersionType.SECP256K1
+      KeyType.SECP256K1
     );
 
     assertThat(encoded).isEqualTo("sn259rEFXrQrWyx3Q7XneWcwV6dfL");
@@ -77,7 +77,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeLowSecp256k1Seed() {
     String encoded = addressCodec.encodeSeed(
       unsignedByteArrayFromHex("00000000000000000000000000000000"),
-      VersionType.SECP256K1
+      KeyType.SECP256K1
     );
 
     assertThat(encoded).isEqualTo("sp6JS7f14BuwFY8Mw6bTtLKWauoUs");
@@ -87,7 +87,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeHighSecp256k1Seed() {
     String encoded = addressCodec.encodeSeed(
       unsignedByteArrayFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
-      VersionType.SECP256K1
+      KeyType.SECP256K1
     );
 
     assertThat(encoded).isEqualTo("saGwBRReqUNKuWNLpUAq8i8NkXEPN");
@@ -97,7 +97,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeEd25519Seed() {
     String encoded = addressCodec.encodeSeed(
       unsignedByteArrayFromHex("4C3A1D213FBDFB14C7C28D609469B341"),
-      VersionType.ED25519
+      KeyType.ED25519
     );
 
     assertThat(encoded).isEqualTo("sEdTM1uX8pu2do5XvTnutH6HsouMaM2");
@@ -107,7 +107,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeLowEd25519Seed() {
     String encoded = addressCodec.encodeSeed(
       unsignedByteArrayFromHex("00000000000000000000000000000000"),
-      VersionType.ED25519
+      KeyType.ED25519
     );
 
     assertThat(encoded).isEqualTo("sEdSJHS4oiAdz7w2X2ni1gFiqtbJHqE");
@@ -117,7 +117,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeHighEd25519Seed() {
     String encoded = addressCodec.encodeSeed(
       unsignedByteArrayFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
-      VersionType.ED25519
+      KeyType.ED25519
     );
 
     assertThat(encoded).isEqualTo("sEdV19BLfeQeKdEXyYA4NhjPJe6XBfG");
@@ -127,7 +127,7 @@ public class AddressCodecTest extends AbstractCodecTest {
   public void encodeSeedWithFewerThanSixteenBytes() {
     assertThrows(
       EncodeException.class,
-      () -> addressCodec.encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7B"), VersionType.SECP256K1),
+      () -> addressCodec.encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7B"), KeyType.SECP256K1),
       "entropy must have length 16."
     );
   }
@@ -137,7 +137,7 @@ public class AddressCodecTest extends AbstractCodecTest {
     assertThrows(
       EncodeException.class,
       () -> addressCodec
-        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), VersionType.SECP256K1),
+        .encodeSeed(unsignedByteArrayFromHex("CF2DE378FBDD7E2EE87D486DFB5A7BFFFF"), KeyType.SECP256K1),
       "entropy must have length 16."
     );
   }

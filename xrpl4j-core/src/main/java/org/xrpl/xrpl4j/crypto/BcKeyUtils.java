@@ -20,7 +20,7 @@ package org.xrpl.xrpl4j.crypto;
  * =========================LICENSE_END==================================
  */
 
-import static org.xrpl.xrpl4j.codec.addresses.VersionType.ED25519;
+import static org.xrpl.xrpl4j.codec.addresses.KeyType.ED25519;
 import static org.xrpl.xrpl4j.keypairs.Secp256k1.ecDomainParameters;
 
 import com.google.common.base.Preconditions;
@@ -34,8 +34,8 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
 import java.math.BigInteger;
 import java.security.Security;
@@ -187,12 +187,12 @@ public final class BcKeyUtils {
   public static PublicKey toPublicKey(final PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
 
-    final VersionType privateKeyType =
-      privateKey.base16Encoded().startsWith("ED") ? ED25519 : VersionType.SECP256K1;
+    final KeyType privateKeyType =
+      privateKey.base16Encoded().startsWith("ED") ? ED25519 : KeyType.SECP256K1;
     if (ED25519 == privateKeyType) {
       final Ed25519PrivateKeyParameters ed25519PrivateKeyParameters = toEd25519PrivateKeyParams(privateKey);
       return toPublicKey(ed25519PrivateKeyParameters.generatePublicKey());
-    } else if (VersionType.SECP256K1 == privateKeyType) {
+    } else if (KeyType.SECP256K1 == privateKeyType) {
       final ECPrivateKeyParameters ecPrivateKeyParameters = toEc25519PrivateKeyParams(privateKey);
       final ECPublicKeyParameters ecPublicKeyParameters = toPublicKey(ecPrivateKeyParameters);
       return toPublicKey(ecPublicKeyParameters);
@@ -223,7 +223,7 @@ public final class BcKeyUtils {
    */
   public static ECPublicKeyParameters toEcPublicKeyParameters(final PublicKey publicKey) {
     Objects.requireNonNull(publicKey);
-    Preconditions.checkArgument(publicKey.versionType() == VersionType.SECP256K1);
+    Preconditions.checkArgument(publicKey.versionType() == KeyType.SECP256K1);
 
     org.bouncycastle.math.ec.ECPoint ecPoint = PARAMS.getCurve()
       .decodePoint(publicKey.value().toByteArray());
@@ -239,7 +239,7 @@ public final class BcKeyUtils {
    */
   public static ECPrivateKeyParameters toEc25519PrivateKeyParams(final PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
-    Preconditions.checkArgument(privateKey.versionType() == VersionType.SECP256K1, "VersionType must be SECP256K1");
+    Preconditions.checkArgument(privateKey.versionType() == KeyType.SECP256K1, "VersionType must be SECP256K1");
 
     final BigInteger privateKeyInt = new BigInteger(privateKey.base16Encoded(), 16);
     return new ECPrivateKeyParameters(privateKeyInt, ecDomainParameters);

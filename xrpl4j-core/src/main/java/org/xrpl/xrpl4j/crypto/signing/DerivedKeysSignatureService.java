@@ -27,7 +27,7 @@ import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.hash.Hashing;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
@@ -59,7 +59,7 @@ public class DerivedKeysSignatureService implements SignatureService {
 
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
-  private final VersionType versionType;
+  private final KeyType keyType;
   private final KeyPairService keyPairService;
 
   private final LoadingCache<KeyMetadata, SingleKeySignatureService> keyMetadataLoadingCache;
@@ -71,30 +71,30 @@ public class DerivedKeysSignatureService implements SignatureService {
    *
    * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can then
    *                             be used to generate private keys.
-   * @param versionType          A {@link VersionType} that defines which type of key this signature service uses.
+   * @param keyType          A {@link KeyType} that defines which type of key this signature service uses.
    */
   public DerivedKeysSignatureService(
     final ServerSecretSupplier serverSecretSupplier,
-    final VersionType versionType
+    final KeyType keyType
   ) {
-    this(serverSecretSupplier, versionType, new DefaultKeyPairService());
+    this(serverSecretSupplier, keyType, new DefaultKeyPairService());
   }
 
   /**
    * Required-args Constructor.
    *
    * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can
-   * @param versionType          A {@link VersionType} that defines which type of key this signature service uses.
+   * @param keyType          A {@link KeyType} that defines which type of key this signature service uses.
    * @param keyPairService       A {@link KeyPairService}.
    */
   public DerivedKeysSignatureService(
     final ServerSecretSupplier serverSecretSupplier,
-    final VersionType versionType,
+    final KeyType keyType,
     final KeyPairService keyPairService
   ) {
     this(
       serverSecretSupplier,
-      versionType,
+      keyType,
       keyPairService,
       CaffeineSpec.parse("maximumSize=10000,expireAfterWrite=30s")
     );
@@ -104,19 +104,19 @@ public class DerivedKeysSignatureService implements SignatureService {
    * Required-args Constructor.
    *
    * @param serverSecretSupplier A {@link ServerSecretSupplier} that can be used to generate seed values, which can
-   * @param versionType          A {@link VersionType} that defines which type of key this signature service uses.
+   * @param keyType          A {@link KeyType} that defines which type of key this signature service uses.
    * @param keyPairService       A {@link KeyPairService}.
    * @param caffeineSpec         A {@link CaffeineSpec} that can be initialized externally to configure the Caffeine
    *                             cache constructed by this service.
    */
   public DerivedKeysSignatureService(
     final ServerSecretSupplier serverSecretSupplier,
-    final VersionType versionType,
+    final KeyType keyType,
     final KeyPairService keyPairService,
     final CaffeineSpec caffeineSpec
   ) {
     this.serverSecretSupplier = Objects.requireNonNull(serverSecretSupplier);
-    this.versionType = Objects.requireNonNull(versionType);
+    this.keyType = Objects.requireNonNull(keyType);
     this.keyPairService = Objects.requireNonNull(keyPairService);
     this.keyMetadataLoadingCache = Caffeine
       .from(Objects.requireNonNull(caffeineSpec))
@@ -177,9 +177,9 @@ public class DerivedKeysSignatureService implements SignatureService {
     Objects.requireNonNull(privateKeyMetadata);
 
     final Seed seed;
-    if (VersionType.ED25519 == getVersionType()) {
+    if (KeyType.ED25519 == getVersionType()) {
       seed = this.generateEd25519XrplSeed(privateKeyMetadata.keyIdentifier());
-    } else if (VersionType.SECP256K1 == getVersionType()) {
+    } else if (KeyType.SECP256K1 == getVersionType()) {
       seed = this.generateSecp256k1Seed(privateKeyMetadata.keyIdentifier());
     } else {
       throw new IllegalArgumentException("Invalid VersionType: " + getVersionType());
@@ -255,9 +255,9 @@ public class DerivedKeysSignatureService implements SignatureService {
   /**
    * Accessor for the type of this service.
    *
-   * @return A {@link VersionType}.
+   * @return A {@link KeyType}.
    */
-  public VersionType getVersionType() {
-    return versionType;
+  public KeyType getVersionType() {
+    return keyType;
   }
 }

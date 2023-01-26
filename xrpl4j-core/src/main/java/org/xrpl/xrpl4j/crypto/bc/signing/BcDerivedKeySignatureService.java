@@ -11,7 +11,7 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.core.ServerSecret;
 import org.xrpl.xrpl4j.crypto.core.ServerSecretSupplier;
@@ -164,10 +164,10 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     Objects.requireNonNull(privateKeyReference);
 
     final KeyPair keyPair;
-    if (VersionType.ED25519 == privateKeyReference.versionType()) {
+    if (KeyType.ED25519 == privateKeyReference.versionType()) {
       final Seed seed = this.generateEd25519XrplSeed(privateKeyReference.keyIdentifier());
       keyPair = seed.deriveKeyPair();
-    } else if (VersionType.SECP256K1 == privateKeyReference.versionType()) {
+    } else if (KeyType.SECP256K1 == privateKeyReference.versionType()) {
       final Seed seed = this.generateSecp256k1Seed(privateKeyReference.keyIdentifier());
       keyPair =  seed.deriveKeyPair();
     } else {

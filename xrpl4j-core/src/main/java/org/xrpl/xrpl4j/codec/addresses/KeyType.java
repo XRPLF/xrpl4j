@@ -20,7 +20,7 @@ package org.xrpl.xrpl4j.codec.addresses;
  * =========================LICENSE_END==================================
  */
 
-public enum VersionType {
+public enum KeyType {
 
   ED25519,
   SECP256K1

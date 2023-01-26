@@ -10,13 +10,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.TestConstants;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
@@ -48,7 +47,7 @@ public class AbstractTransactionSignerTest {
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
 
-  private VersionType keyType;
+  private KeyType keyType;
 
   private AbstractTransactionSigner transactionSigner;
 
@@ -78,7 +77,7 @@ public class AbstractTransactionSignerTest {
 
       @Override
       public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
-        return keyType == VersionType.ED25519 ? TestConstants.ED_PUBLIC_KEY : TestConstants.EC_PUBLIC_KEY;
+        return keyType == KeyType.ED25519 ? TestConstants.ED_PUBLIC_KEY : TestConstants.EC_PUBLIC_KEY;
       }
     };
   }
@@ -100,7 +99,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void signEd25519() {
-    keyType = VersionType.ED25519;
+    keyType = KeyType.ED25519;
     transactionSigner.sign(privateKeyableMock, transactionMock);
 
     verify(signatureUtilsMock).toSignableBytes(transactionMock);
@@ -110,7 +109,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void signSecp256k1() {
-    keyType = VersionType.SECP256K1;
+    keyType = KeyType.SECP256K1;
 
     transactionSigner.sign(privateKeyableMock, transactionMock);
 
@@ -137,7 +136,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void signUnsignedClaimEd25519() {
-    keyType = VersionType.ED25519;
+    keyType = KeyType.ED25519;
     UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
     when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
 
@@ -150,7 +149,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void signUnsignedClaimSecp256k1() {
-    keyType = VersionType.SECP256K1;
+    keyType = KeyType.SECP256K1;
     UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
     when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
 
@@ -177,7 +176,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void multiSignEd25519() {
-    keyType = VersionType.ED25519;
+    keyType = KeyType.ED25519;
 
     Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
     assertThat(signature).isEqualTo(ed25519SignatureMock);
@@ -189,7 +188,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void multiSignSecp256k1() {
-    keyType = VersionType.SECP256K1;
+    keyType = KeyType.SECP256K1;
 
     Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
 
@@ -206,7 +205,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void edDsaSign() {
-    this.keyType = VersionType.ED25519;
+    this.keyType = KeyType.ED25519;
 
     Signature actual = transactionSigner.edDsaSign(privateKeyableMock, UnsignedByteArray.empty());
 
@@ -222,7 +221,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void ecDsaSign() {
-    this.keyType = VersionType.SECP256K1;
+    this.keyType = KeyType.SECP256K1;
 
     Signature actual = transactionSigner.ecDsaSign(privateKeyableMock, UnsignedByteArray.empty());
 

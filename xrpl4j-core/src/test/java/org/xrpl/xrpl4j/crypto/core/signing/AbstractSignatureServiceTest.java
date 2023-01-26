@@ -11,14 +11,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.assertj.core.util.Sets;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.TestConstants;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
@@ -90,7 +88,7 @@ public class AbstractSignatureServiceTest {
 
       @Override
       public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
-        return privateKeyable.versionType() == VersionType.ED25519 ? TestConstants.ED_PUBLIC_KEY
+        return privateKeyable.versionType() == KeyType.ED25519 ? TestConstants.ED_PUBLIC_KEY
           : TestConstants.EC_PUBLIC_KEY;
       }
     };

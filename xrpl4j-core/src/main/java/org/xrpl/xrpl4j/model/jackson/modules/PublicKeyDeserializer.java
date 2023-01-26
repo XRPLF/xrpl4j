@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * A custom Jackson deserializer to deserialize {@link PublicKey}s from a hex string in JSON.
  */
-public class PublicKeyDeserializer extends StdDeserializer<ImmutablePublicKey> {
+public class PublicKeyDeserializer extends StdDeserializer<PublicKey> {
 
   /**
    * No-args constructor.
@@ -21,8 +21,8 @@ public class PublicKeyDeserializer extends StdDeserializer<ImmutablePublicKey> {
   }
 
   @Override
-  public ImmutablePublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    return (ImmutablePublicKey) PublicKey.fromBase16EncodedPublicKey(jsonParser.getText());
+  public PublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+    return PublicKey.fromBase16EncodedPublicKey(jsonParser.getText());
   }
 
 }

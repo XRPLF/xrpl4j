@@ -114,7 +114,5 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(UnsignedByteArray.class, new UnsignedByteArraySerializer());
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
 
-    addSerializer(ImmutablePublicKey.class, new PublicKeySerializer());
-    addDeserializer(ImmutablePublicKey.class, new PublicKeyDeserializer());
   }
 }

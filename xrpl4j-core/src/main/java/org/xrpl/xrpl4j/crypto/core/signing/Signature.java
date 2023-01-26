@@ -7,13 +7,15 @@ import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.model.jackson.modules.SignatureDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.SignatureSerializer;
 
 /**
  * Represents a digital signature for a transaction that can be submitted to the XRP Ledger.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableSignature.class)
-@JsonDeserialize(as = ImmutableSignature.class)
+@JsonSerialize(as = ImmutableSignature.class, using = SignatureSerializer.class)
+@JsonDeserialize(as = ImmutableSignature.class, using = SignatureDeserializer.class)
 public interface Signature {
 
   /**

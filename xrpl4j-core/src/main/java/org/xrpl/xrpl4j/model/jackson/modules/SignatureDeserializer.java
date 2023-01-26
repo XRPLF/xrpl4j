@@ -13,10 +13,10 @@ import java.io.IOException;
 /**
  * Deserializes signature string value to an object of type {@link Signature}.
  */
-class SignatureDeserializer extends JsonDeserializer<ImmutableSignature> {
+public class SignatureDeserializer extends JsonDeserializer<Signature> {
 
   @Override
-  public ImmutableSignature deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+  public Signature deserialize(JsonParser jsonParser, DeserializationContext ctxt)
     throws IOException {
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
     return Signature.builder().value(UnsignedByteArray.fromHex(node.asText())).build();

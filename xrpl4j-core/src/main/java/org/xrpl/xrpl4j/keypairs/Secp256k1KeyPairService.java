@@ -29,8 +29,8 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.math.ec.ECPoint;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 import java.math.BigInteger;
 import java.util.Optional;

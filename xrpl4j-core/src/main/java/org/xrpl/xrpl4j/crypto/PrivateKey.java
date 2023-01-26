@@ -24,9 +24,9 @@ import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 
 import java.util.Objects;
 

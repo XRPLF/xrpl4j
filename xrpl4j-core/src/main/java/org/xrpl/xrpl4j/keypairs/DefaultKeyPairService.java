@@ -21,8 +21,8 @@ package org.xrpl.xrpl4j.keypairs;
  */
 
 import com.google.common.collect.ImmutableMap;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
 import java.util.Map;
 import java.util.function.Supplier;

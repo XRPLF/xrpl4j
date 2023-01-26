@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed.DefaultSeed;
 

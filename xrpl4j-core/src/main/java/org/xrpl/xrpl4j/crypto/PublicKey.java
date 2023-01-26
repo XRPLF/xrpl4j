@@ -28,9 +28,9 @@ import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 
 import java.util.Objects;
 

@@ -1,8 +1,8 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.KeyType;
 
 import java.util.Objects;
 

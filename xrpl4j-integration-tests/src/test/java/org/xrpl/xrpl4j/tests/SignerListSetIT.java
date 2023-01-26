@@ -77,7 +77,7 @@ public class SignerListSetIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
@@ -120,7 +120,6 @@ public class SignerListSetIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(destinationKeyPair.publicKey().deriveAddress())
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////
@@ -193,7 +192,7 @@ public class SignerListSetIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(

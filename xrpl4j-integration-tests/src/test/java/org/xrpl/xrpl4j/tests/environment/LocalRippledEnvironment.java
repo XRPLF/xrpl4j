@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.slf4j.Logger;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -87,7 +88,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationAddress)
       .amount(paymentAmount)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey()))
       .build();
 
     SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -48,6 +49,9 @@ public class TrustSetJsonTests extends AbstractJsonTest {
         .issuer(Address.of("rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc"))
         .value("100")
         .build())
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -55,6 +59,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       "    \"Account\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"Flags\": 262144,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"LimitAmount\": {\n" +
       "      \"currency\": \"USD\",\n" +
       "      \"issuer\": \"rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc\",\n" +
@@ -83,6 +88,9 @@ public class TrustSetJsonTests extends AbstractJsonTest {
         .build())
       .qualityIn(UnsignedInteger.valueOf(100))
       .qualityOut(UnsignedInteger.valueOf(100))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -97,6 +105,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       "    },\n" +
       "    \"Sequence\": 12,\n" +
       "    \"QualityIn\": 100,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"QualityOut\": 100\n" +
       "}";
 

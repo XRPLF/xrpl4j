@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -67,7 +68,9 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
           .destination(Address.of("ra5nK24KXen9AHvsdFTKHSANinZseWnPcX"))
           .fee(XrpCurrencyAmount.ofDrops(10000))
           .sequence(UnsignedInteger.valueOf(361))
-          .signingPublicKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+          .signingPublicKey(
+            PublicKey.fromBase16EncodedPublicKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+          )
           .transactionSignature("3045022100A7CCD11455E47547FF617D5BFC15D120D9053DFD0536B044F10CA3631CD609E5" +
             "02203B61DEE4AC027C5743A1B56AF568D1E2B8E79BB9E9E14744AC87F38375C3C2F1")
           .hash(Hash256.of("5B31A7518DC304D5327B4887CD1F7DC2C38D5F684170097020C7C9758B973847"))

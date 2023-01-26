@@ -8,6 +8,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -35,7 +36,9 @@ class SignedTransactionTest {
       .sequence(UnsignedInteger.valueOf(76829518))
       .destination(Address.of("rDNvjMc6LjtpR7BdfiSNvavUBjznhhmpNq"))
       .amount(XrpCurrencyAmount.ofDrops(1))
-      .signingPublicKey("0281E58C76A7EB8397C008CB6B6D325FF6765F008CF845AF5EB02DAB6D222C612C")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0281E58C76A7EB8397C008CB6B6D325FF6765F008CF845AF5EB02DAB6D222C612C")
+      )
       .destinationTag(UnsignedInteger.valueOf(371969))
       .build();
 

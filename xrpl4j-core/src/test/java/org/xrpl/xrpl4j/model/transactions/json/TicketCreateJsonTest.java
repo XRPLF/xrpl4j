@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
@@ -38,6 +39,9 @@ class TicketCreateJsonTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
       .ticketCount(UnsignedInteger.valueOf(200))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -46,6 +50,7 @@ class TicketCreateJsonTest extends AbstractJsonTest {
       "    \"Fee\": \"12\",\n" +
       "    \"Sequence\": 1,\n" +
       "    \"Flags\": 2147483648,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TicketCount\": 200\n" +
       "}";
 

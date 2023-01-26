@@ -44,7 +44,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newKeyPair.publicKey().deriveAddress())
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
@@ -67,7 +67,7 @@ public class SetRegularKeyIT extends AbstractIT {
           .account(wallet.publicKey().deriveAddress())
           .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-          .signingPublicKey(newKeyPair.publicKey().base16Value())
+          .signingPublicKey(newKeyPair.publicKey())
           .build();
         SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
           newKeyPair.privateKey(), accountSet
@@ -105,7 +105,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .regularKey(newKeyPair.publicKey().deriveAddress())
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<SetRegularKey> signedSetRegularKey = signatureService.sign(
@@ -128,7 +128,7 @@ public class SetRegularKeyIT extends AbstractIT {
           .account(wallet.publicKey().deriveAddress())
           .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
           .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
-          .signingPublicKey(newKeyPair.publicKey().base16Value())
+          .signingPublicKey(newKeyPair.publicKey())
           .build();
 
         SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
@@ -146,7 +146,7 @@ public class SetRegularKeyIT extends AbstractIT {
       .account(wallet.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
     SingleSignedTransaction<SetRegularKey> signedRemoveRegularKey = signatureService.sign(
       wallet.privateKey(), removeRegularKey

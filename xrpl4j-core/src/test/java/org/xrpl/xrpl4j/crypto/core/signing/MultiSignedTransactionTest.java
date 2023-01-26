@@ -49,7 +49,6 @@ class MultiSignedTransactionTest {
         .account(ED_ADDRESS)
         .fee(XrpCurrencyAmount.of(UnsignedLong.ONE))
         .sequence(UnsignedInteger.ONE)
-        .signingPublicKey("")
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
         .build())
@@ -82,12 +81,12 @@ class MultiSignedTransactionTest {
       .extracting("signer.account", "signer.signingPublicKey", "signer.transactionSignature")
       .containsExactly(Tuple.tuple(
           signature2.signingPublicKey().deriveAddress(),
-          signature2.signingPublicKey().base16Value(),
+          signature2.signingPublicKey(),
           signature2.transactionSignature().base16Value()
         ),
         Tuple.tuple(
           signature1.signingPublicKey().deriveAddress(),
-          signature1.signingPublicKey().base16Value(),
+          signature1.signingPublicKey(),
           signature1.transactionSignature().base16Value()
         ));
   }

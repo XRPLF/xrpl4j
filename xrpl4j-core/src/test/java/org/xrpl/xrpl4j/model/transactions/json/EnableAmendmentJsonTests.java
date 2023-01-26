@@ -21,7 +21,6 @@ public class EnableAmendmentJsonTests extends AbstractJsonTest {
       .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .signingPublicKey("")
       .amendment(Hash256.of("42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE"))
       .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(67850752))))
       .build();

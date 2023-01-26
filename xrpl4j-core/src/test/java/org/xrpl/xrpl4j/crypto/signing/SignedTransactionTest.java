@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -44,7 +45,9 @@ class SignedTransactionTest {
           .sequence(UnsignedInteger.valueOf(4))
           .destination(Address.of("rEqrVunkmDhWNGHELTzQmn4mX7LKvdomfq"))
           .amount(XrpCurrencyAmount.ofDrops(12345))
-          .signingPublicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+          .signingPublicKey(
+            PublicKey.fromBase16EncodedPublicKey("030D58EB48B4420B1F7B9DF55087E0E29FEF0E8468F9A6825B01CA2C361042D435")
+          )
           .transactionSignature("304402207B82800C3289427D6F60421CDF88545BEFC6A7C9CED15A2C53E39994E52BCED402204" +
             "43865800626F7FD02B369A875FA449E6204A46C5910E406018776CC08C948CA")
           .build()

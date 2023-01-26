@@ -139,10 +139,6 @@ public class SignatureUtils {
       !unsignedTransaction.transactionSignature().isPresent(),
       "Transactions to be signed must not already include a signature."
     );
-    Preconditions.checkArgument(
-      unsignedTransaction.signingPublicKey().isPresent(),
-      "Transactions to be signed must include a public key that corresponds to the signing key."
-    );
 
     final Transaction signedTransaction;
     if (Payment.class.isAssignableFrom(unsignedTransaction.getClass())) {

@@ -16,7 +16,6 @@ public class UnlModifyJsonTests  extends AbstractJsonTest {
     UnlModify unlModify = UnlModify.builder()
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
-      .signingPublicKey("")
       .ledgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(67850752)))
       .unlModifyValidator("EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539")
       .unlModifyDisabling(UnsignedInteger.valueOf(1))

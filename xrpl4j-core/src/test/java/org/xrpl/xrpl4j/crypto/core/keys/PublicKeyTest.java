@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Unit tests for {@link PublicKey}.
@@ -95,6 +96,7 @@ public class PublicKeyTest {
   void base58Value() {
     assertThat(ED_PUBLIC_KEY.base58Value()).isEqualTo(ED_PUBLIC_KEY_B58);
     assertThat(EC_PUBLIC_KEY.base58Value()).isEqualTo(EC_PUBLIC_KEY_B58);
+    assertThat(PublicKey.MULTI_SIGN_PUBLIC_KEY.base58Value()).isEqualTo("");
   }
 
   @Test
@@ -134,6 +136,30 @@ public class PublicKeyTest {
   }
 
   @Test
+  void testMultiSignPublicKeyAddressDerivation() {
+    Address address = PublicKey.MULTI_SIGN_PUBLIC_KEY.deriveAddress();
+    assertThat(address).isEqualTo(Address.of("rHTfx7p4ge8CfDhyoczpSwc84LWfiK3dhN"));
+  }
+
+  @Test
+  void testMultiSignPublicKeyBaseValue() {
+    String base16Value = PublicKey.MULTI_SIGN_PUBLIC_KEY.base16Value();
+    assertThat(base16Value).isEqualTo("");
+
+    String base58Value = PublicKey.MULTI_SIGN_PUBLIC_KEY.base58Value();
+    assertThat(base58Value).isEqualTo("");
+  }
+
+  @Test
+  void testStaticBuildersWithEmptyString() {
+    PublicKey fromBase16 = PublicKey.fromBase16EncodedPublicKey("");
+    assertThat(fromBase16).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+
+    PublicKey fromBase58 = PublicKey.fromBase58EncodedPublicKey("");
+    assertThat(fromBase58).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+  }
+
+  @Test
   void jsonSerializeAndDeserializeEd() throws JsonProcessingException {
     String json = ObjectMapperFactory.create().writeValueAsString(ED_PUBLIC_KEY);
     assertThat(json).isEqualTo("\"ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE\"");
@@ -142,6 +168,15 @@ public class PublicKeyTest {
     assertThat(actual.base16Value()).isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
   }
 
+  @Test
+  void jsonSerializeAndDeserializeMultiSignKey() throws JsonProcessingException {
+    String json = ObjectMapperFactory.create().writeValueAsString(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+    assertThat(json).isEqualTo("\"\"");
+
+    PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
+    assertThat(actual.base16Value()).isEqualTo("");
+  }
+  
   @Test
   void jsonSerializeAndDeserializeEc() throws JsonProcessingException {
     String json = ObjectMapperFactory.create().writeValueAsString(EC_PUBLIC_KEY);

@@ -192,16 +192,9 @@ public class SignatureUtilsTest {
   @Test
   public void addSignatureToTransactionWithMissingSignature() {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
-    when(transactionMock.signingPublicKey()).thenReturn(Optional.of(""));
-    assertThrows(IllegalArgumentException.class,
-      () -> signatureUtils.addSignatureToTransaction(transactionMock, signatureMock));
-  }
-
-  @Test
-  public void addSignatureToTransactionWithMissingPublicKey() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.of(""));
-    when(transactionMock.signingPublicKey()).thenReturn(Optional.empty());
-
+    when(transactionMock.signingPublicKey()).thenReturn(
+      org.xrpl.xrpl4j.crypto.core.keys.PublicKey.MULTI_SIGN_PUBLIC_KEY)
+    ;
     assertThrows(IllegalArgumentException.class,
       () -> signatureUtils.addSignatureToTransaction(transactionMock, signatureMock));
   }
@@ -214,7 +207,9 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.ONE)
       .destination(sourceWallet.classicAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .build();
     addSignatureToTransactionHelper(payment);
   }
@@ -225,7 +220,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .build();
     addSignatureToTransactionHelper(accountSet);
   }
@@ -237,7 +234,9 @@ public class SignatureUtilsTest {
       .destination(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .build();
     addSignatureToTransactionHelper(accountDelete);
   }
@@ -248,7 +247,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .checkId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .build();
     addSignatureToTransactionHelper(checkCancel);
@@ -260,7 +261,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .checkId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .amount(XrpCurrencyAmount.ofDrops(100))
       .build();
@@ -273,7 +276,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .destination(sourceWallet.classicAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(100))
       .build();
@@ -286,7 +291,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .authorize(sourceWallet.classicAddress())
       .build();
     addSignatureToTransactionHelper(depositPreAuth);
@@ -298,7 +305,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .offerSequence(UnsignedInteger.ONE)
       .owner(sourceWallet.classicAddress())
       .build();
@@ -311,7 +320,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .offerSequence(UnsignedInteger.ONE)
       .owner(sourceWallet.classicAddress())
       .build();
@@ -324,7 +335,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .amount(XrpCurrencyAmount.ofDrops(100))
       .destination(sourceWallet.classicAddress())
       .build();
@@ -337,7 +350,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .limitAmount(IssuedCurrencyAmount.builder()
         .issuer(sourceWallet.classicAddress())
         .currency("USD")
@@ -354,7 +369,9 @@ public class SignatureUtilsTest {
     NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .buyOffer(offer)
       .build();
     addSignatureToTransactionHelper(nfTokenAcceptOffer);
@@ -366,7 +383,9 @@ public class SignatureUtilsTest {
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(sourceWallet.classicAddress())
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .nfTokenId(id)
       .build();
     addSignatureToTransactionHelper(nfTokenBurn);
@@ -379,7 +398,9 @@ public class SignatureUtilsTest {
     offers.add(offer);
     NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
       .account(sourceWallet.classicAddress())
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .fee(XrpCurrencyAmount.ofDrops(1))
       .tokenOffers(offers)
       .build();
@@ -391,7 +412,9 @@ public class SignatureUtilsTest {
     NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
       .account(sourceWallet.classicAddress())
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .fee(XrpCurrencyAmount.ofDrops(1))
       .nfTokenId(id)
       .amount(XrpCurrencyAmount.ofDrops(2000L))
@@ -405,7 +428,9 @@ public class SignatureUtilsTest {
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(sourceWallet.classicAddress())
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .tokenTaxon(taxon)
       .build();
     addSignatureToTransactionHelper(nfTokenMint);
@@ -417,7 +442,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .takerPays(XrpCurrencyAmount.ofDrops(100))
       .takerGets(XrpCurrencyAmount.ofDrops(100))
       .build();
@@ -430,7 +457,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .build();
     addSignatureToTransactionHelper(offerCancel);
   }
@@ -441,7 +470,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .amount(XrpCurrencyAmount.ofDrops(100))
       .destination(sourceWallet.classicAddress())
       .settleDelay(UnsignedInteger.ONE)
@@ -456,7 +487,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .build();
     addSignatureToTransactionHelper(paymentChannelClaim);
@@ -468,7 +501,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .amount(XrpCurrencyAmount.ofDrops(100L))
       .build();
@@ -481,7 +516,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .build();
     addSignatureToTransactionHelper(setRegularKey);
   }
@@ -492,7 +529,9 @@ public class SignatureUtilsTest {
       .account(sourceWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .signerQuorum(UnsignedInteger.ONE)
       .build();
     addSignatureToTransactionHelper(signerListSet);
@@ -505,7 +544,9 @@ public class SignatureUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
       .sequence(UnsignedInteger.ONE)
       .ticketCount(UnsignedInteger.ONE)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(sourceWallet.publicKey())
+      )
       .build();
 
     addSignatureToTransactionHelper(ticketCreate);

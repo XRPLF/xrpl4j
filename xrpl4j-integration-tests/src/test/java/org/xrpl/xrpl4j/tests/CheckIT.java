@@ -52,7 +52,7 @@ public class CheckIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
@@ -89,7 +89,7 @@ public class CheckIT extends AbstractIT {
       .sequence(destinationAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(destinationKeyPair.publicKey().base16Value())
+      .signingPublicKey(destinationKeyPair.publicKey())
       .build();
     SingleSignedTransaction<CheckCash> signedCheckCash = signatureService.sign(
       destinationKeyPair.privateKey(), checkCash
@@ -144,7 +144,7 @@ public class CheckIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
@@ -176,7 +176,7 @@ public class CheckIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
@@ -220,7 +220,7 @@ public class CheckIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     //////////////////////
@@ -256,7 +256,7 @@ public class CheckIT extends AbstractIT {
       .sequence(destinationAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(destinationKeyPair.publicKey().base16Value())
+      .signingPublicKey(destinationKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(

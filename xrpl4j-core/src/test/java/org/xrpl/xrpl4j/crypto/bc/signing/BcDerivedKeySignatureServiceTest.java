@@ -99,7 +99,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Value())
+      .signingPublicKey(publicKey)
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -142,7 +142,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Value())
+      .signingPublicKey(publicKey)
       .build();
 
     SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(
@@ -180,7 +180,6 @@ class BcDerivedKeySignatureServiceTest {
       .flags(Flags.PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
-      .signingPublicKey("")
       .build();
 
     final PrivateKeyReference privateKeyReferenceFoo = privateKeyReference("foo", KeyType.ED25519);
@@ -285,7 +284,6 @@ class BcDerivedKeySignatureServiceTest {
       .flags(Flags.PaymentFlags.of(2147483648L))
       .lastLedgerSequence(UnsignedInteger.valueOf(4419079))
       .sequence(UnsignedInteger.valueOf(4101911))
-      .signingPublicKey("")
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -343,7 +341,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Value())
+      .signingPublicKey(publicKey)
       .build();
 
     final ExecutorService pool = Executors.newFixedThreadPool(5);
@@ -390,7 +388,7 @@ class BcDerivedKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKeyFoo.base16Value())
+      .signingPublicKey(publicKeyFoo)
       .build();
     SingleSignedTransaction<Payment> signedTx
       = this.derivedKeySignatureService.sign(privateKeyReferenceFoo, paymentTransaction);

@@ -58,7 +58,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourcePublicKey.base16Value())
+      .signingPublicKey(sourcePublicKey)
       .build();
 
     SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey, payment);
@@ -90,7 +90,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourceWalletPublicKey)
       .build();
 
     SingleSignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourcePrivateKey, payment);
@@ -187,7 +187,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(toPublicKey(sourcePrivateKey).base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKey))
       .build();
 
     SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
@@ -230,7 +230,6 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(toAddress(destinationPrivateKey))
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////

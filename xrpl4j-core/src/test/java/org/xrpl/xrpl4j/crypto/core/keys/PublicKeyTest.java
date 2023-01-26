@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
  * Unit tests for {@link PublicKey}.
@@ -133,6 +134,30 @@ public class PublicKeyTest {
         "base16Value=027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9, " +
         "versionType=SECP256K1" +
         "}");
+  }
+
+  @Test
+  void testMultiSignPublicKeyAddressDerivation() {
+    Address address = PublicKey.MULTI_SIGN_PUBLIC_KEY.deriveAddress();
+    assertThat(address).isEqualTo(Address.of("rHTfx7p4ge8CfDhyoczpSwc84LWfiK3dhN"));
+  }
+
+  @Test
+  void testMultiSignPublicKeyBaseValue() {
+    String base16Value = PublicKey.MULTI_SIGN_PUBLIC_KEY.base16Value();
+    assertThat(base16Value).isEqualTo("");
+
+    String base58Value = PublicKey.MULTI_SIGN_PUBLIC_KEY.base58Value();
+    assertThat(base58Value).isEqualTo("");
+  }
+
+  @Test
+  void testStaticBuildersWithEmptyString() {
+    PublicKey fromBase16 = PublicKey.fromBase16EncodedPublicKey("");
+    assertThat(fromBase16).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
+
+    PublicKey fromBase58 = PublicKey.fromBase58EncodedPublicKey("");
+    assertThat(fromBase58).isEqualTo(PublicKey.MULTI_SIGN_PUBLIC_KEY);
   }
 
   @Test

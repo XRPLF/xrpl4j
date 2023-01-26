@@ -20,11 +20,11 @@ import java.io.IOException;
  */
 class PublicKeyDeserializerTest {
 
-  private PublicKeyDeserializerForTesting deserializer;
+  private PublicKeyDeserializer deserializer;
 
   @BeforeEach
   void setUp() {
-    deserializer = new PublicKeyDeserializerForTesting();
+    deserializer = new PublicKeyDeserializer();
   }
 
   @Test
@@ -45,12 +45,4 @@ class PublicKeyDeserializerTest {
     assertThat(publicKey).isEqualTo(expected);
   }
 
-  static class PublicKeyDeserializerForTesting extends PublicKeyDeserializer {
-
-    @Override
-    public ImmutablePublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-      return super.deserialize(jsonParser, ctxt);
-    }
-
-  }
 }

@@ -54,6 +54,11 @@ public interface PublicKey {
    */
   static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey) {
     Objects.requireNonNull(base58EncodedPublicKey);
+    
+    if (base58EncodedPublicKey.isEmpty()) {
+      return MULTI_SIGN_PUBLIC_KEY;
+    }
+    
     return PublicKey.builder()
       .value(AddressCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
       .build();
@@ -68,6 +73,11 @@ public interface PublicKey {
    */
   static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey) {
     Objects.requireNonNull(base16EncodedPublicKey);
+
+    if (base16EncodedPublicKey.isEmpty()) {
+      return MULTI_SIGN_PUBLIC_KEY;
+    }
+    
     return PublicKey.builder()
       .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey.toUpperCase())))
       .build();

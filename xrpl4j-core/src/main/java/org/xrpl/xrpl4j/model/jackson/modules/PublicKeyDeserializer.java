@@ -1,7 +1,8 @@
 package org.xrpl.xrpl4j.model.jackson.modules;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.crypto.core.keys.ImmutablePublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 
@@ -10,7 +11,7 @@ import java.io.IOException;
 /**
  * A custom Jackson deserializer to deserialize {@link PublicKey}s from a hex string in JSON.
  */
-public class PublicKeyDeserializer extends FromStringDeserializer<ImmutablePublicKey> {
+public class PublicKeyDeserializer extends StdDeserializer<ImmutablePublicKey> {
 
   /**
    * No-args constructor.
@@ -20,8 +21,8 @@ public class PublicKeyDeserializer extends FromStringDeserializer<ImmutablePubli
   }
 
   @Override
-  protected ImmutablePublicKey _deserialize(String publicKey, DeserializationContext ctxt) {
-    return (ImmutablePublicKey) PublicKey.fromBase16EncodedPublicKey(publicKey);
+  public ImmutablePublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+    return (ImmutablePublicKey) PublicKey.fromBase16EncodedPublicKey(jsonParser.getText());
   }
 
 }

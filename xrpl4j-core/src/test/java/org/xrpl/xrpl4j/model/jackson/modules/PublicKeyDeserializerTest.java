@@ -28,18 +28,29 @@ class PublicKeyDeserializerTest {
   }
 
   @Test
-  void testDeserialize() {
+  void testDeserialize() throws IOException {
     PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
-    PublicKey publicKey = deserializer._deserialize(ED_PUBLIC_KEY_HEX, mock(DeserializationContext.class));
+    JsonParser mockJsonParser = mock(JsonParser.class);
+    when(mockJsonParser.getText()).thenReturn(ED_PUBLIC_KEY_HEX);
+    PublicKey publicKey = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
+    assertThat(publicKey).isEqualTo(expected);
+  }
+
+  @Test
+  void testDeserializeEmptyString() throws IOException {
+    PublicKey expected = PublicKey.MULTI_SIGN_PUBLIC_KEY;
+    JsonParser mockJsonParser = mock(JsonParser.class);
+    when(mockJsonParser.getText()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY.base16Value());
+    PublicKey publicKey = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
     assertThat(publicKey).isEqualTo(expected);
   }
 
   static class PublicKeyDeserializerForTesting extends PublicKeyDeserializer {
 
     @Override
-    @VisibleForTesting
-    public ImmutablePublicKey _deserialize(String publicKey, DeserializationContext deserializationContext) {
-      return super._deserialize(publicKey, deserializationContext);
+    public ImmutablePublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+      return super.deserialize(jsonParser, ctxt);
     }
+
   }
 }

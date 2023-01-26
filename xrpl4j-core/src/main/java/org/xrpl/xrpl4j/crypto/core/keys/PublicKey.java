@@ -1,6 +1,5 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
@@ -17,8 +16,6 @@ import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.model.jackson.modules.PublicKeyDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.PublicKeySerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -28,8 +25,8 @@ import java.util.Objects;
  * A typed instance of an XRPL Seed, which can be decoded into an instance of {@link Decoded}.
  */
 @Immutable
-@JsonSerialize(as = ImmutablePublicKey.class, using = PublicKeySerializer.class)
-@JsonDeserialize(as = ImmutablePublicKey.class, using = PublicKeyDeserializer.class)
+@JsonSerialize(as = ImmutablePublicKey.class)
+@JsonDeserialize(as = ImmutablePublicKey.class)
 public interface PublicKey {
 
   /**

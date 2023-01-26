@@ -7,8 +7,10 @@ import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY_HEX;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.google.common.annotations.VisibleForTesting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.ImmutablePublicKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 
 import java.io.IOException;
@@ -26,31 +28,18 @@ class PublicKeyDeserializerTest {
   }
 
   @Test
-  void testDeserialize() throws IOException {
+  void testDeserialize() {
     PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
-    JsonParser mockJsonParser = mock(JsonParser.class);
-    when(mockJsonParser.getText()).thenReturn(ED_PUBLIC_KEY_HEX);
-    PublicKey publicKey = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
-    assertThat(publicKey).isEqualTo(expected);
-  }
-
-  @Test
-  void testDeserializeWithEmptyString() throws IOException {
-    PublicKey expected = PublicKey.MULTI_SIGN_PUBLIC_KEY;
-    JsonParser mockJsonParser = mock(JsonParser.class);
-    when(mockJsonParser.getText()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY.base16Value());
-    PublicKey publicKey = deserializer.deserialize(
-      mockJsonParser,
-      mock(DeserializationContext.class)
-    );
+    PublicKey publicKey = deserializer._deserialize(ED_PUBLIC_KEY_HEX, mock(DeserializationContext.class));
     assertThat(publicKey).isEqualTo(expected);
   }
 
   static class PublicKeyDeserializerForTesting extends PublicKeyDeserializer {
 
     @Override
-    public PublicKey deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-      return super.deserialize(jsonParser, ctxt);
+    @VisibleForTesting
+    public ImmutablePublicKey _deserialize(String publicKey, DeserializationContext deserializationContext) {
+      return super._deserialize(publicKey, deserializationContext);
     }
   }
 }

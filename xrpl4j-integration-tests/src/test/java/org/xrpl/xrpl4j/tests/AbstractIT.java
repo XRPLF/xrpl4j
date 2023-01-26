@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcDerivedKeySignatureService;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.core.JavaKeystoreLoader;
@@ -134,8 +134,8 @@ public abstract class AbstractIT {
   protected PrivateKeyReference createRandomPrivateKeyReferenceEd25519() {
     final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
       @Override
-      public VersionType versionType() {
-        return VersionType.ED25519;
+      public KeyType versionType() {
+        return KeyType.ED25519;
       }
 
       @Override
@@ -154,8 +154,8 @@ public abstract class AbstractIT {
   protected PrivateKeyReference createRandomPrivateKeyReferenceSecp256k1() {
     final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
       @Override
-      public VersionType versionType() {
-        return VersionType.SECP256K1;
+      public KeyType versionType() {
+        return KeyType.SECP256K1;
       }
 
       @Override
@@ -376,7 +376,7 @@ public abstract class AbstractIT {
         .issuer(issuerAddress)
         .value(value)
         .build())
-      .signingPublicKey(counterpartyKeyPair.publicKey().base16Value())
+      .signingPublicKey(counterpartyKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(
@@ -438,7 +438,7 @@ public abstract class AbstractIT {
         .currency(currency)
         .value(value)
         .build())
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
@@ -467,10 +467,10 @@ public abstract class AbstractIT {
   //////////////////
 
   protected PrivateKeyReference constructPrivateKeyReference(
-    final String keyIdentifier, final VersionType versionType
+    final String keyIdentifier, final KeyType keyType
   ) {
     Objects.requireNonNull(keyIdentifier);
-    Objects.requireNonNull(versionType);
+    Objects.requireNonNull(keyType);
 
     return new PrivateKeyReference() {
       @Override
@@ -479,19 +479,19 @@ public abstract class AbstractIT {
       }
 
       @Override
-      public VersionType versionType() {
-        return versionType;
+      public KeyType versionType() {
+        return keyType;
       }
     };
   }
 
   protected PrivateKey constructPrivateKey(
-    final String keyIdentifier, final VersionType versionType
+    final String keyIdentifier, final KeyType keyType
   ) {
     Objects.requireNonNull(keyIdentifier);
-    Objects.requireNonNull(versionType);
+    Objects.requireNonNull(keyType);
 
-    switch (versionType) {
+    switch (keyType) {
       case ED25519: {
         return Seed.ed25519Seed().deriveKeyPair().privateKey();
       }
@@ -499,7 +499,7 @@ public abstract class AbstractIT {
         return Seed.secp256k1Seed().deriveKeyPair().privateKey();
       }
       default: {
-        throw new RuntimeException("Unhandled VersionType: " + versionType);
+        throw new RuntimeException("Unhandled VersionType: " + keyType);
       }
     }
   }

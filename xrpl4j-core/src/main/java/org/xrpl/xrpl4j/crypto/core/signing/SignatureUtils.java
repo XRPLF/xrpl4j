@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
@@ -152,10 +153,6 @@ public class SignatureUtils {
       !transaction.transactionSignature().isPresent(),
       "Transactions to be signed must not already include a signature."
     );
-    Preconditions.checkArgument(
-      transaction.signingPublicKey().isPresent(),
-      "Transactions to be signed must include a public key that corresponds to the signing key."
-    );
 
     final Transaction transactionWithSignature;
     if (Payment.class.isAssignableFrom(transaction.getClass())) {
@@ -287,7 +284,7 @@ public class SignatureUtils {
       "Transactions to be signed must not already include a signature."
     );
     Preconditions.checkArgument(
-      transaction.signingPublicKey().isPresent() && transaction.signingPublicKey().get().equals(""),
+      transaction.signingPublicKey().equals(PublicKey.MULTI_SIGN_PUBLIC_KEY),
       "Transactions to be multisigned must set signingPublicKey to an empty String."
     );
 

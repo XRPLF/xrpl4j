@@ -7,7 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
@@ -40,12 +40,12 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final PrivateKey sourcePrivateKey = constructPrivateKey("sourceWallet", VersionType.ED25519);
+    final PrivateKey sourcePrivateKey = constructPrivateKey("sourceWallet", KeyType.ED25519);
     final PublicKey sourcePublicKey = signatureService.derivePublicKey(sourcePrivateKey);
     final Address sourceWalletAddress = sourcePublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
-    final PrivateKey destinationPrivateKey = constructPrivateKey("destinationWallet", VersionType.ED25519);
+    final PrivateKey destinationPrivateKey = constructPrivateKey("destinationWallet", KeyType.ED25519);
     final PublicKey destinationWalletPublicKey = signatureService.derivePublicKey(destinationPrivateKey);
     final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
@@ -58,7 +58,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourcePublicKey.base16Value())
+      .signingPublicKey(sourcePublicKey)
       .build();
 
     SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey, payment);
@@ -71,12 +71,12 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
-    final PrivateKey sourcePrivateKey = constructPrivateKey("sourceWallet", VersionType.SECP256K1);
+    final PrivateKey sourcePrivateKey = constructPrivateKey("sourceWallet", KeyType.SECP256K1);
     final PublicKey sourceWalletPublicKey = signatureService.derivePublicKey(sourcePrivateKey);
     final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
-    final PrivateKey destinationPrivateKey = constructPrivateKey("destinationWallet", VersionType.SECP256K1);
+    final PrivateKey destinationPrivateKey = constructPrivateKey("destinationWallet", KeyType.SECP256K1);
     final PublicKey destinationWalletPublicKey = signatureService.derivePublicKey(destinationPrivateKey);
     final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
@@ -90,7 +90,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourceWalletPublicKey)
       .build();
 
     SingleSignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourcePrivateKey, payment);
@@ -104,16 +104,16 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
   @Test
   void multiSigPaymentFromEd25519Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     // Create four accounts: one for the source account; two for the signers; one for the destination
-    PrivateKey sourcePrivateKey = constructPrivateKey("source", VersionType.ED25519);
+    PrivateKey sourcePrivateKey = constructPrivateKey("source", KeyType.ED25519);
     fundAccount(toAddress(sourcePrivateKey));
 
-    PrivateKey alicePrivateKey = constructPrivateKey("alice", VersionType.ED25519);
+    PrivateKey alicePrivateKey = constructPrivateKey("alice", KeyType.ED25519);
     fundAccount(toAddress(alicePrivateKey));
 
-    PrivateKey bobPrivateKey = constructPrivateKey("bob", VersionType.ED25519);
+    PrivateKey bobPrivateKey = constructPrivateKey("bob", KeyType.ED25519);
     fundAccount(toAddress(bobPrivateKey));
 
-    PrivateKey destinationPrivateKey = constructPrivateKey("destination", VersionType.ED25519);
+    PrivateKey destinationPrivateKey = constructPrivateKey("destination", KeyType.ED25519);
     fundAccount(toAddress(destinationPrivateKey));
 
     this.multiSigSendPaymentHelper(sourcePrivateKey, alicePrivateKey, bobPrivateKey, destinationPrivateKey);
@@ -122,16 +122,16 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
   @Test
   void multiSigPaymentFromSecp256k1Wallet() throws JsonRpcClientErrorException, JsonProcessingException {
     // Create four accounts: one for the source account; two for the signers; one for the destination
-    PrivateKey sourcePrivateKey = constructPrivateKey("source", VersionType.SECP256K1);
+    PrivateKey sourcePrivateKey = constructPrivateKey("source", KeyType.SECP256K1);
     fundAccount(toAddress(sourcePrivateKey));
 
-    PrivateKey alicePrivateKey = constructPrivateKey("alice", VersionType.SECP256K1);
+    PrivateKey alicePrivateKey = constructPrivateKey("alice", KeyType.SECP256K1);
     fundAccount(toAddress(alicePrivateKey));
 
-    PrivateKey bobPrivateKey = constructPrivateKey("bob", VersionType.SECP256K1);
+    PrivateKey bobPrivateKey = constructPrivateKey("bob", KeyType.SECP256K1);
     fundAccount(toAddress(bobPrivateKey));
 
-    PrivateKey destinationPrivateKey = constructPrivateKey("destination", VersionType.SECP256K1);
+    PrivateKey destinationPrivateKey = constructPrivateKey("destination", KeyType.SECP256K1);
     fundAccount(toAddress(destinationPrivateKey));
 
     this.multiSigSendPaymentHelper(sourcePrivateKey, alicePrivateKey, bobPrivateKey, destinationPrivateKey);
@@ -187,7 +187,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(toPublicKey(sourcePrivateKey).base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKey))
       .build();
 
     SingleSignedTransaction<SignerListSet> signedSignerListSet = signatureService.sign(
@@ -230,7 +230,6 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(toAddress(destinationPrivateKey))
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////

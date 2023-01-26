@@ -7,7 +7,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
@@ -40,13 +40,13 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromEd25519Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.ED25519);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", KeyType.ED25519);
     final PublicKey sourceWalletPublicKey = derivedKeySignatureService.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
     final PrivateKeyReference destinationKeyMetadata = constructPrivateKeyReference(
-      "destinationWallet", VersionType.ED25519
+      "destinationWallet", KeyType.ED25519
     );
     final PublicKey destinationWalletPublicKey = derivedKeySignatureService.derivePublicKey(
       destinationKeyMetadata);
@@ -61,7 +61,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourceWalletPublicKey)
       .build();
 
     SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourceKeyMetadata,
@@ -75,13 +75,13 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", VersionType.SECP256K1);
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", KeyType.SECP256K1);
     final PublicKey sourceWalletPublicKey = derivedKeySignatureService.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
 
     final PrivateKeyReference destinationKeyMetadata
-      = constructPrivateKeyReference("destinationWallet", VersionType.SECP256K1);
+      = constructPrivateKeyReference("destinationWallet", KeyType.SECP256K1);
     final PublicKey destinationWalletPublicKey = derivedKeySignatureService.derivePublicKey(destinationKeyMetadata);
     final Address destinationWalletAddress = destinationWalletPublicKey.deriveAddress();
     this.fundAccount(destinationWalletAddress);
@@ -95,7 +95,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationWalletAddress)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(sourceWalletPublicKey.base16Value())
+      .signingPublicKey(sourceWalletPublicKey)
       .build();
 
     SingleSignedTransaction<Payment> transactionWithSignature
@@ -199,7 +199,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
             .build()
         )
       )
-      .signingPublicKey(toPublicKey(sourcePrivateKeyReference).base16Value())
+      .signingPublicKey(toPublicKey(sourcePrivateKeyReference))
       .build();
 
     SingleSignedTransaction<SignerListSet> signedSignerListSet = derivedKeySignatureService.sign(
@@ -242,7 +242,6 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       .sequence(sourceAccountInfoAfterSignerListSet.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(toAddress(destinationPrivateKeyReference))
-      .signingPublicKey("")
       .build();
 
     /////////////////////////////

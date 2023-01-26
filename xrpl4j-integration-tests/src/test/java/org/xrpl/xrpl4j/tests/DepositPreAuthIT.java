@@ -47,7 +47,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .account(receiverKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(receiverAccountInfo.accountData().sequence())
-      .signingPublicKey(receiverKeyPair.publicKey().base16Value())
+      .signingPublicKey(receiverKeyPair.publicKey())
       .authorize(senderKeyPair.publicKey().deriveAddress())
       .build();
 
@@ -92,7 +92,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .account(senderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(receiverKeyPair.publicKey().deriveAddress())
       .build();
@@ -158,7 +158,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .account(senderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .destination(receiverKeyPair.publicKey().deriveAddress())
       .build();
@@ -228,7 +228,7 @@ public class DepositPreAuthIT extends AbstractIT {
       .account(wallet.publicKey().deriveAddress())
       .fee(fee)
       .sequence(accountInfoResult.accountData().sequence())
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
       .build();
 

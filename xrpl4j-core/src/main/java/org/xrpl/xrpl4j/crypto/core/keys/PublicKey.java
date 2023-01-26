@@ -1,12 +1,7 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
@@ -18,24 +13,31 @@ import org.immutables.value.Value.Lazy;
 import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeyDeserializer;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeySerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.PublicKeyDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.PublicKeySerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 
-import java.io.IOException;
 import java.util.Objects;
 
 /**
  * A typed instance of an XRPL Seed, which can be decoded into an instance of {@link Decoded}.
  */
-@JsonSerialize(using = PublicKeySerializer.class)
-@JsonDeserialize(using = PublicKeyDeserializer.class)
 @Immutable
+@JsonSerialize(as = ImmutablePublicKey.class, using = PublicKeySerializer.class)
+@JsonDeserialize(as = ImmutablePublicKey.class, using = PublicKeyDeserializer.class)
 public interface PublicKey {
 
+  /**
+   * Multi-signed transactions must contain an empty String in the SigningPublicKey field. This constant
+   * is an {@link PublicKey} that can be used as the {@link Transaction#signingPublicKey()} value for multi-signed
+   * transactions.
+   */
+  PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).build();
+  
   /**
    * Instantiates a new builder.
    *
@@ -54,6 +56,11 @@ public interface PublicKey {
    */
   static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey) {
     Objects.requireNonNull(base58EncodedPublicKey);
+    
+    if (base58EncodedPublicKey.isEmpty()) {
+      return MULTI_SIGN_PUBLIC_KEY;
+    }
+    
     return PublicKey.builder()
       .value(AddressCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
       .build();
@@ -68,6 +75,11 @@ public interface PublicKey {
    */
   static PublicKey fromBase16EncodedPublicKey(final String base16EncodedPublicKey) {
     Objects.requireNonNull(base16EncodedPublicKey);
+
+    if (base16EncodedPublicKey.isEmpty()) {
+      return MULTI_SIGN_PUBLIC_KEY;
+    }
+    
     return PublicKey.builder()
       .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey.toUpperCase())))
       .build();
@@ -87,6 +99,10 @@ public interface PublicKey {
    */
   @Derived
   default String base58Value() {
+    if (value().length() == 0) {
+      return "";
+    }
+    
     return AddressBase58.encode(value(), Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
   }
 
@@ -104,11 +120,11 @@ public interface PublicKey {
   /**
    * The type of this key.
    *
-   * @return A {@link VersionType}.
+   * @return A {@link KeyType}.
    */
   @Derived
-  default VersionType versionType() {
-    return this.base16Value().startsWith("ED") ? VersionType.ED25519 : VersionType.SECP256K1;
+  default KeyType versionType() {
+    return this.base16Value().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
   }
 
   /**
@@ -138,46 +154,5 @@ public interface PublicKey {
     digest.doFinal(ripemdSha256, 0);
     return UnsignedByteArray.of(ripemdSha256);
   }
-
-  /**
-   * A custom Jackson serializer that serializes a {@link PublicKey} to a hex-string.
-   */
-  class PublicKeySerializer extends StdSerializer<PublicKey> {
-
-    /**
-     * No-args Constructor.
-     */
-    public PublicKeySerializer() {
-      super(PublicKey.class, false);
-    }
-
-    @Override
-    public void serialize(PublicKey value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-      gen.writeString(this.valueToString(value));
-    }
-
-    private String valueToString(final PublicKey publicKey) {
-      Objects.requireNonNull(publicKey);
-      return publicKey.base16Value();
-    }
-  }
-
-  /**
-   * A custom Jackson deserializer to deserialize {@link PublicKey}s from a hex string in JSON.
-   */
-  class PublicKeyDeserializer extends FromStringDeserializer<PublicKey> {
-
-    /**
-     * No-args constructor.
-     */
-    public PublicKeyDeserializer() {
-      super(PublicKey.class);
-    }
-
-    @Override
-    protected PublicKey _deserialize(String publicKey, DeserializationContext deserializationContext) {
-      return PublicKey.fromBase16EncodedPublicKey(publicKey);
-    }
-
-  }
+  
 }

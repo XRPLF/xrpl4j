@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.jackson.modules;
+package org.xrpl.xrpl4j.model.jackson.modules;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeySerializer;
 
 import java.io.IOException;
 
@@ -27,11 +26,20 @@ class PublicKeySerializerTest {
   }
 
   @Test
-  void testDeserialize() throws IOException {
+  void testSerialize() throws IOException {
     JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
     PublicKey expected = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
 
     serializer.serialize(expected, jsonGeneratorMock, mock(SerializerProvider.class));
     verify(jsonGeneratorMock).writeString(ED_PUBLIC_KEY_HEX);
+  }
+
+  @Test
+  void testSerializeOfMultiSignPubKey() throws IOException {
+    JsonGenerator jsonGeneratorMock = mock(JsonGenerator.class);
+    PublicKey expected = PublicKey.MULTI_SIGN_PUBLIC_KEY;
+
+    serializer.serialize(expected, jsonGeneratorMock, mock(SerializerProvider.class));
+    verify(jsonGeneratorMock).writeString(PublicKey.MULTI_SIGN_PUBLIC_KEY.base16Value());
   }
 }

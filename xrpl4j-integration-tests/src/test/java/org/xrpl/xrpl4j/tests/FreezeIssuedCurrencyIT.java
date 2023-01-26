@@ -346,7 +346,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
         .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
         .value(valueToSend)
         .build())
-      .signingPublicKey(sender.publicKey().base16Value())
+      .signingPublicKey(sender.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
@@ -395,7 +395,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .flags(TrustSetFlags.builder()
         .tfSetNoRipple()
         .build())
-      .signingPublicKey(counterpartKeyPair.publicKey().base16Value())
+      .signingPublicKey(counterpartKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartKeyPair.privateKey(), trustSet);
@@ -435,7 +435,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .account(wallet.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .setFlag(AccountSetFlag.DEFAULT_RIPPLE)
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(wallet.privateKey(), accountSet);
@@ -495,7 +495,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
         .value("0")
         .build())
       .flags(flagsBuilder.build())
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), trustSet);
@@ -543,7 +543,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
-      .signingPublicKey(issuerKeyPair.publicKey().base16Value());
+      .signingPublicKey(issuerKeyPair.publicKey());
     if (freeze) {
       builder.setFlag(AccountSetFlag.GLOBAL_FREEZE);
     } else {

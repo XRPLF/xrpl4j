@@ -31,10 +31,9 @@ import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
@@ -105,7 +104,7 @@ class SingleKeySignatureServiceTest {
     assertThat(actualEcPublicKey.base16Encoded())
       .isEqualTo("0378272C2A8F6146FE94BA3D116F548179A9875CBBD52E9D9B91A0FA44AEC4684D");
     assertThat(actualEcPublicKey.base58Encoded()).isEqualTo("aBQFwK1G6ErqTM52SMAT5f6qaj4ARazaEw5fKHRbR1tYy5djdWAu");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test
@@ -114,7 +113,7 @@ class SingleKeySignatureServiceTest {
     assertThat(actualEcPublicKey.base16Encoded())
       .isEqualTo("ED94F8F262A639D6C88B9EFC29F4AA8B1B8E0B7D9143A17733179A388FD26CC3AE");
     assertThat(actualEcPublicKey.base58Encoded()).isEqualTo("aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
@@ -130,7 +129,9 @@ class SingleKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     SignedTransaction<Payment> transactionWithSignature = this.edSignatureService.sign(keyMetadata, paymentTransaction);
@@ -147,7 +148,9 @@ class SingleKeySignatureServiceTest {
       .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
       .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     SignedTransaction<NfTokenMint> mintTxWithSignature = this.edSignatureService.sign(keyMetadata, nfTokenMint);
@@ -168,7 +171,9 @@ class SingleKeySignatureServiceTest {
       .sequence(UnsignedInteger.ONE)
       .destination(Address.of(destinationClassicAddress))
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(publicKey.base16Encoded())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(publicKey.base16Encoded())
+      )
       .build();
 
     SignedTransaction<Payment> transactionWithSignature = this.ecSignatureService.sign(keyMetadata, paymentTransaction);
@@ -191,7 +196,9 @@ class SingleKeySignatureServiceTest {
       .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
       .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .signingPublicKey(testWallet.publicKey())
+      .signingPublicKey(
+        org.xrpl.xrpl4j.crypto.core.keys.PublicKey.fromBase16EncodedPublicKey(testWallet.publicKey())
+      )
       .build();
 
     // Sign transaction -----------------------------------------------------------

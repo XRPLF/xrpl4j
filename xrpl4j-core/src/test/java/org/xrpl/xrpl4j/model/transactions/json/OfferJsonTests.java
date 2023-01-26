@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -39,6 +40,9 @@ public class OfferJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(12))
       .offerSequence(UnsignedInteger.valueOf(13))
       .fee(XrpCurrencyAmount.ofDrops(14))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -47,6 +51,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"Sequence\": 12,\n" +
       "    \"OfferSequence\": 13,\n" +
       "    \"Flags\": 2147483648,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"14\"\n" +
       "}";
 
@@ -63,6 +68,9 @@ public class OfferJsonTests extends AbstractJsonTest {
       .takerPays(XrpCurrencyAmount.ofDrops(14))
       .takerGets(XrpCurrencyAmount.ofDrops(15))
       .expiration(UnsignedInteger.valueOf(16))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     String json = "{\n" +
@@ -74,6 +82,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"TakerGets\": \"15\",\n" +
       "    \"Flags\": 2147483648,\n" +
       "    \"Fee\": \"12\",\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Expiration\": 16\n" +
       "}";
 

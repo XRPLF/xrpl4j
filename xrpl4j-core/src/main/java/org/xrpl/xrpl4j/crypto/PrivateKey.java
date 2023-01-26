@@ -24,9 +24,9 @@ import com.google.common.io.BaseEncoding;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 
 import java.util.Objects;
 
@@ -104,11 +104,11 @@ public interface PrivateKey {
   String base16Encoded();
 
   /**
-   * The type of this key (either {@link VersionType#ED25519} or {@link VersionType#SECP256K1}).
+   * The type of this key (either {@link KeyType#ED25519} or {@link KeyType#SECP256K1}).
    *
-   * @return A {@link VersionType}.
+   * @return A {@link KeyType}.
    */
-  VersionType versionType();
+  KeyType versionType();
 
   /**
    * Abstract implementation for immutables.
@@ -130,8 +130,8 @@ public interface PrivateKey {
 
     @Derived
     @Override
-    public VersionType versionType() {
-      return this.base16Encoded().startsWith("ED") ? VersionType.ED25519 : VersionType.SECP256K1;
+    public KeyType versionType() {
+      return this.base16Encoded().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
     }
 
     @Override

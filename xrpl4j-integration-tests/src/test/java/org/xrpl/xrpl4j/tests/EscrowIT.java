@@ -51,7 +51,7 @@ public class EscrowIT extends AbstractIT {
       .destination(receiverKeyPair.publicKey().deriveAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))
       .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .build();
 
     //////////////////////
@@ -96,7 +96,7 @@ public class EscrowIT extends AbstractIT {
       .sequence(receiverAccountInfo.accountData().sequence())
       .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(receiverKeyPair.publicKey().base16Value())
+      .signingPublicKey(receiverKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
@@ -151,7 +151,7 @@ public class EscrowIT extends AbstractIT {
       .destination(receiverKeyPair.publicKey().deriveAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
       .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .build();
 
     //////////////////////
@@ -202,7 +202,7 @@ public class EscrowIT extends AbstractIT {
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(
@@ -254,7 +254,7 @@ public class EscrowIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .amount(XrpCurrencyAmount.ofDrops(123456))
       .destination(receiverKeyPair.publicKey().deriveAddress())
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       // With the fix1571 amendment enabled, you must supply FinishAfter, Condition, or both.
       .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
       .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
@@ -306,7 +306,7 @@ public class EscrowIT extends AbstractIT {
       .sequence(receiverAccountInfo.accountData().sequence())
       .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(receiverKeyPair.publicKey().base16Value())
+      .signingPublicKey(receiverKeyPair.publicKey())
       .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- condition and fulfillment are required.
       .fulfillment(executeEscrowFulfillment) // <-- condition and fulfillment are required to finish an escrow
       .build();
@@ -364,7 +364,7 @@ public class EscrowIT extends AbstractIT {
       .destination(receiverKeyPair.publicKey().deriveAddress())
       .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
       .condition(escrowFulfillment.getDerivedCondition()) // <-- Only the fulfillment holder can execute this.
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .build();
 
     //////////////////////
@@ -406,7 +406,7 @@ public class EscrowIT extends AbstractIT {
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .owner(senderKeyPair.publicKey().deriveAddress())
       .offerSequence(result.transaction().sequence())
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<EscrowCancel> signedEscrowCancel = signatureService.sign(

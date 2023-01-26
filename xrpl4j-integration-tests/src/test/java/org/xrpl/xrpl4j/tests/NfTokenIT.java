@@ -49,7 +49,7 @@ public class NfTokenIT extends AbstractIT {
       .tokenTaxon(UnsignedLong.ONE)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .uri(uri)
       .build();
@@ -89,7 +89,7 @@ public class NfTokenIT extends AbstractIT {
       .tokenTaxon(UnsignedLong.ONE)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .uri(uri)
       .build();
@@ -122,7 +122,7 @@ public class NfTokenIT extends AbstractIT {
       .nfTokenId(tokenId)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .build();
 
@@ -168,7 +168,7 @@ public class NfTokenIT extends AbstractIT {
       .tokenTaxon(UnsignedLong.ONE)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .uri(uri)
       .build();
@@ -205,7 +205,7 @@ public class NfTokenIT extends AbstractIT {
       .flags(Flags.NfTokenCreateOfferFlags.builder()
         .tfSellToken(true)
         .build())
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenCreateOffer> signedOffer = signatureService.sign(
@@ -252,7 +252,7 @@ public class NfTokenIT extends AbstractIT {
       .tokenTaxon(UnsignedLong.ONE)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .flags(Flags.NfTokenMintFlags.builder()
         .tfTransferable(true)
@@ -297,7 +297,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult2.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .signingPublicKey(wallet2.publicKey().base16Value())
+      .signingPublicKey(wallet2.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenCreateOffer> signedOffer = signatureService.sign(
@@ -339,7 +339,7 @@ public class NfTokenIT extends AbstractIT {
       .buyOffer(nftBuyOffersResult.offers().get(0).nftOfferIndex())
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenAcceptOffer> signedAccept = signatureService.sign(
@@ -380,7 +380,7 @@ public class NfTokenIT extends AbstractIT {
       .tokenTaxon(UnsignedLong.ONE)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .uri(uri)
       .build();
@@ -415,7 +415,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .flags(Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN)
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenCreateOffer> signedOffer = signatureService.sign(
@@ -456,7 +456,7 @@ public class NfTokenIT extends AbstractIT {
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenCancelOffer> signedCancel = signatureService.sign(
@@ -502,7 +502,7 @@ public class NfTokenIT extends AbstractIT {
       .tokenTaxon(UnsignedLong.ONE)
       .account(wallet.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .flags(Flags.NfTokenMintFlags.builder()
         .tfTransferable(true)
@@ -540,7 +540,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .signingPublicKey(wallet.publicKey().base16Value())
+      .signingPublicKey(wallet.publicKey())
       .flags(Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN)
       .build();
 
@@ -591,7 +591,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult2.accountData().sequence())
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .signingPublicKey(wallet2.publicKey().base16Value())
+      .signingPublicKey(wallet2.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenCreateOffer> signedOffer2 = signatureService.sign(
@@ -639,7 +639,7 @@ public class NfTokenIT extends AbstractIT {
       .sellOffer(nftSellOffersResult.offers().get(0).nftOfferIndex())
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult3.accountData().sequence())
-      .signingPublicKey(wallet3.publicKey().base16Value())
+      .signingPublicKey(wallet3.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenAcceptOffer> signedAccept = signatureService.sign(

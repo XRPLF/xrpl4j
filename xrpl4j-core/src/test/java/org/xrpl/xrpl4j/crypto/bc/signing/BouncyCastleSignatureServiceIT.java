@@ -62,7 +62,7 @@ class BouncyCastleSignatureServiceIT {
     this.payment = Payment.builder().account(ed25519KeyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(10L))).sequence(UnsignedInteger.ONE)
       .destination(secp256k1KeyPair.publicKey().deriveAddress()).amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(ed25519KeyPair.publicKey().base16Value()).build();
+      .signingPublicKey(ed25519KeyPair.publicKey()).build();
 
     this.signatureService = new BcSignatureService();
   }

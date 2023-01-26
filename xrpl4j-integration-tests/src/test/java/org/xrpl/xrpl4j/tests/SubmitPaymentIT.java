@@ -45,7 +45,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(amount)
-      .signingPublicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
@@ -85,7 +85,7 @@ public class SubmitPaymentIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .signingPublicKey(senderKeyPair.publicKey().base16Value())
+      .signingPublicKey(senderKeyPair.publicKey())
       .build();
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderKeyPair.privateKey(), payment);

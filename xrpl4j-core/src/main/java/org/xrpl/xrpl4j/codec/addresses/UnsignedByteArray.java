@@ -32,8 +32,6 @@ import javax.security.auth.Destroyable;
  * arrays on unsigned bytes.</p>
  *
  * <p>Note: several of the methods in this class mutate the underlying value.</p>
- *
- * @deprecated Prefer the version in the xrpl4j-core module instead.
  */
 public class UnsignedByteArray implements Destroyable {
 

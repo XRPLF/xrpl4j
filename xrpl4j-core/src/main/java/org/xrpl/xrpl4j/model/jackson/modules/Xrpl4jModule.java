@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesAssets;
@@ -107,5 +108,8 @@ public class Xrpl4jModule extends SimpleModule {
     addDeserializer(ImmutableGatewayBalancesObligations.class, new GatewayBalancesObligationsDeserializer());
 
     addDeserializer(ServerInfo.class, new ServerInfoDeserializer());
+    
+    addSerializer(UnsignedByteArray.class, new UnsignedByteArraySerializer());
+    addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
   }
 }

@@ -23,8 +23,6 @@ import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeyDeserializer;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey.PublicKeySerializer;
-import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArrayDeserializer;
-import org.xrpl.xrpl4j.crypto.core.signing.UnsignedByteArraySerializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.io.IOException;
@@ -80,8 +78,6 @@ public interface PublicKey {
    *
    * @return An instance of {@link UnsignedByteArray}.
    */
-  @JsonSerialize(using = UnsignedByteArraySerializer.class)
-  @JsonDeserialize(using = UnsignedByteArrayDeserializer.class)
   UnsignedByteArray value();
 
   /**

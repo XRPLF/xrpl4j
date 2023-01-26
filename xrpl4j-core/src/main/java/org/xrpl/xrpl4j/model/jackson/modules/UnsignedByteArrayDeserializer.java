@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.core.signing;
+package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -9,8 +9,6 @@ import java.io.IOException;
 
 /**
  * A FasterXML deserializer for {@link UnsignedByteArray}.
- *
- * @deprecated This class will go away once {@link UnsignedByteArray} is moved into the core module.
  */
 public class UnsignedByteArrayDeserializer extends StdDeserializer<UnsignedByteArray> {
 

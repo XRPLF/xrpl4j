@@ -33,8 +33,8 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.KeyStoreType;
 import org.xrpl.xrpl4j.crypto.PublicKey;
@@ -90,20 +90,20 @@ class DerivedKeysSignatureServiceTest {
   @BeforeEach
   public void setUp() {
     final ServerSecretSupplier serverSecretSupplier = "happy"::getBytes;
-    this.edSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.ED25519);
-    this.ecSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, VersionType.SECP256K1);
+    this.edSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, KeyType.ED25519);
+    this.ecSignatureService = new DerivedKeysSignatureService(serverSecretSupplier, KeyType.SECP256K1);
   }
 
   @Test
   void constructorWithNulls() {
     // 2-arg Constructor
-    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(null, VersionType.ED25519));
+    assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(null, KeyType.ED25519));
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(() -> new byte[32], null));
 
     // 3-arg Constructor
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
       null,
-      VersionType.ED25519,
+      KeyType.ED25519,
       mock(KeyPairService.class)
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
@@ -113,14 +113,14 @@ class DerivedKeysSignatureServiceTest {
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
       () -> new byte[32],
-      VersionType.ED25519,
+      KeyType.ED25519,
       null
     ));
 
     // 4-arg Constructor
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
       null,
-      VersionType.ED25519,
+      KeyType.ED25519,
       mock(KeyPairService.class),
       CaffeineSpec.parse("")
     ));
@@ -132,13 +132,13 @@ class DerivedKeysSignatureServiceTest {
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
       () -> new byte[32],
-      VersionType.ED25519,
+      KeyType.ED25519,
       null,
       CaffeineSpec.parse("")
     ));
     assertThrows(NullPointerException.class, () -> new DerivedKeysSignatureService(
       () -> new byte[32],
-      VersionType.ED25519,
+      KeyType.ED25519,
       mock(KeyPairService.class),
       null
     ));
@@ -150,7 +150,7 @@ class DerivedKeysSignatureServiceTest {
     // This test merely assert that construction succeeds.
     new DerivedKeysSignatureService(
       () -> new byte[32],
-      VersionType.ED25519,
+      KeyType.ED25519,
       mock(KeyPairService.class),
       CaffeineSpec.parse("maximumSize=200,expireAfterWrite=300s")
     );
@@ -336,7 +336,7 @@ class DerivedKeysSignatureServiceTest {
     assertThat(actualEcPublicKey.base16Encoded())
       .isEqualTo("EDFB5C6D87DACC6DCD852D7F1CE6914EDD2A82C1D7ECB9AF866E48A01D45E9E6DD");
     assertThat(actualEcPublicKey.base58Encoded()).isEqualTo("aKGg99sHNs3Vs5nUXKyjiv2ED73izdrDR2Pjy1mRY54WmxAkusZZ");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
@@ -345,7 +345,7 @@ class DerivedKeysSignatureServiceTest {
     assertThat(actualEcPublicKey.base16Encoded())
       .isEqualTo("0308C7F864BB4CA1B6598BF9BB0B538AB58AAB9B4E42E5C1A2A95136125711ACB2");
     assertThat(actualEcPublicKey.base58Encoded()).isEqualTo("aBPyf7q6qWdDbSWEvm47oQTotG7qtKPVFebfbR1u4aY73Z6roFCH");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test

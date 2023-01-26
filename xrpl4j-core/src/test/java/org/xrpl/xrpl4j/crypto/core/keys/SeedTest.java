@@ -4,11 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.io.BaseEncoding;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.core.keys.Seed.DefaultSeed;
 
@@ -100,7 +99,7 @@ public class SeedTest {
 
   @Test
   public void testEd25519SeedFromPassphrase() throws DestroyFailedException {
-    assertThat(edSeed.decodedSeed().type().get()).isEqualTo(VersionType.ED25519);
+    assertThat(edSeed.decodedSeed().type().get()).isEqualTo(KeyType.ED25519);
     assertThat(BaseEncoding.base64().encode(edSeed.decodedSeed().bytes().toByteArray()))
       .isEqualTo("m3HSJL1i83hdltRq0+o9cw==");
     assertThat(edSeed.isDestroyed()).isFalse();
@@ -110,7 +109,7 @@ public class SeedTest {
 
   @Test
   public void testSecp256k1SeedFromPassphrase() throws DestroyFailedException {
-    assertThat(ecSeed.decodedSeed().type().get()).isEqualTo(VersionType.SECP256K1);
+    assertThat(ecSeed.decodedSeed().type().get()).isEqualTo(KeyType.SECP256K1);
     assertThat(BaseEncoding.base64().encode(ecSeed.decodedSeed().bytes().toByteArray()))
       .isEqualTo("m3HSJL1i83hdltRq0+o9cw==");
     assertThat(ecSeed.isDestroyed()).isFalse();

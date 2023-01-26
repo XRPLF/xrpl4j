@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.crypto.core.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_PUBLIC_KEY_B58;
 import static org.xrpl.xrpl4j.crypto.core.TestConstants.EC_PUBLIC_KEY_HEX;
@@ -11,8 +10,8 @@ import static org.xrpl.xrpl4j.crypto.core.TestConstants.ED_PUBLIC_KEY_HEX;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.codec.addresses.VersionType;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 /**
@@ -46,12 +45,12 @@ public class PublicKeyTest {
 
   @Test
   public void versionTypeSecp256k1() {
-    assertThat(EC_PUBLIC_KEY.versionType()).isEqualTo(VersionType.SECP256K1);
+    assertThat(EC_PUBLIC_KEY.versionType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test
   public void versionTypeEd25519() {
-    assertThat(ED_PUBLIC_KEY.versionType()).isEqualTo(VersionType.ED25519);
+    assertThat(ED_PUBLIC_KEY.versionType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
@@ -84,7 +83,7 @@ public class PublicKeyTest {
       }
 
       @Override
-      public VersionType versionType() {
+      public KeyType versionType() {
         return null;
       }
     };

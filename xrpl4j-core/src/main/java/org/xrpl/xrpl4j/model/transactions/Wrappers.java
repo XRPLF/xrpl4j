@@ -31,6 +31,19 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
+import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -50,8 +63,8 @@ public class Wrappers {
    */
   @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
-  @JsonSerialize(as = Address.class)
-  @JsonDeserialize(as = Address.class)
+  @JsonSerialize(as = Address.class, using = AddressSerializer.class)
+  @JsonDeserialize(as = Address.class, using = AddressDeserializer.class)
   abstract static class _Address extends Wrapper<String> implements Serializable {
 
     @Override
@@ -92,8 +105,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = Hash256.class)
-  @JsonDeserialize(as = Hash256.class)
+  @JsonSerialize(as = Hash256.class, using = Hash256Serializer.class)
+  @JsonDeserialize(as = Hash256.class, using = Hash256Deserializer.class)
   abstract static class _Hash256 extends Wrapper<String> implements Serializable {
 
     @Override
@@ -132,8 +145,8 @@ public class Wrappers {
    */
   @Value.Immutable(builder = true) // This is the default, but it's omitted without this.
   @Wrapped
-  @JsonSerialize(as = XrpCurrencyAmount.class)
-  @JsonDeserialize(as = XrpCurrencyAmount.class)
+  @JsonSerialize(as = XrpCurrencyAmount.class, using = XrpCurrencyAmountSerializer.class)
+  @JsonDeserialize(as = XrpCurrencyAmount.class, using = XrpCurrencyAmountDeserializer.class)
   abstract static class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
 
     /**
@@ -265,8 +278,8 @@ public class Wrappers {
 
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = Marker.class)
-  @JsonDeserialize(as = Marker.class)
+  @JsonSerialize(as = Marker.class, using = MarkerSerializer.class)
+  @JsonDeserialize(as = Marker.class, using = MarkerDeserializer.class)
   abstract static class _Marker extends Wrapper<String> implements Serializable {
 
     @Override
@@ -282,8 +295,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = NfTokenId.class)
-  @JsonDeserialize(as = NfTokenId.class)
+  @JsonSerialize(as = NfTokenId.class, using = NfTokenIdSerializer.class)
+  @JsonDeserialize(as = NfTokenId.class, using = NfTokenIdDeserializer.class)
   abstract static class _NfTokenId extends Wrapper<String> implements Serializable {
 
     @Override
@@ -316,7 +329,7 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = NfTokenUri.class)
+  @JsonSerialize(as = NfTokenUri.class, using = NfTokenUriSerializer.class)
   @JsonDeserialize(as = NfTokenUri.class)
   abstract static class _NfTokenUri extends Wrapper<String> implements Serializable {
 
@@ -348,8 +361,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = TransferFee.class)
-  @JsonDeserialize(as = TransferFee.class)
+  @JsonSerialize(as = TransferFee.class, using = TransferFeeSerializer.class)
+  @JsonDeserialize(as = TransferFee.class, using = TransferFeeDeserializer.class)
   abstract static class _TransferFee extends Wrapper<UnsignedInteger> implements Serializable {
 
     @Override

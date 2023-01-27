@@ -32,9 +32,9 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplAdminClient;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 

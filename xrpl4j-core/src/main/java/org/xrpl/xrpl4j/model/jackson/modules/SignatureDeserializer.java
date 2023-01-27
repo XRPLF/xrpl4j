@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.core.signing.ImmutableSignature;
-import org.xrpl.xrpl4j.crypto.core.signing.Signature;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.io.IOException;
 

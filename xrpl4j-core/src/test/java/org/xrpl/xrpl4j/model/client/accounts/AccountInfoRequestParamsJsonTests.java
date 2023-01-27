@@ -80,6 +80,7 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
     AccountInfoRequestParams params = AccountInfoRequestParams.builder()
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
         .queue(true)
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build();
 
     String json = "{\n" +
@@ -100,6 +101,7 @@ public class AccountInfoRequestParamsJsonTests extends AbstractJsonTest {
         .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
         .queue(true)
         .signerLists(true)
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build();
 
     String json = "{\n" +

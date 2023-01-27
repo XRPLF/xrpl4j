@@ -99,6 +99,7 @@ public class AccountOffersRequestParamsJsonTests extends AbstractJsonTest {
   public void testMinimal() throws JsonProcessingException, JSONException {
     AccountOffersRequestParams params = AccountOffersRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
     String json = "{\n" +

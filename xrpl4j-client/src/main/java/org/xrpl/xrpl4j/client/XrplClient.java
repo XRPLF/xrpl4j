@@ -76,7 +76,6 @@ import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
-import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
@@ -152,29 +151,6 @@ public class XrplClient {
     this.jsonRpcClient = Objects.requireNonNull(jsonRpcClient);
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = XrplBinaryCodec.getInstance();
-  }
-  
-  /**
-   * Submit a {@link SignedTransaction} to the ledger.
-   *
-   * @param signedTransaction A {@link SignedTransaction} to submit.
-   * @param <T>               The type of {@link Transaction} contained in the {@link SignedTransaction} object.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @deprecated Prefer the submit method with the variant from the new crypto package.
-   */
-  @Deprecated
-  public <T extends Transaction> SubmitResult<T> submit(
-    SignedTransaction<T> signedTransaction
-  ) throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SUBMIT)
-      .addParams(SubmitRequestParams.of(signedTransaction.signedTransactionBlob()))
-      .build();
-    JavaType resultType = objectMapper.getTypeFactory()
-      .constructParametricType(SubmitResult.class, signedTransaction.signedTransaction().getClass());
-    return jsonRpcClient.send(request, resultType);
   }
 
   /**

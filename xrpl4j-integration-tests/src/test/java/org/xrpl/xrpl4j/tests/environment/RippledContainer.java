@@ -32,8 +32,11 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplAdminClient;
 import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
-import org.xrpl.xrpl4j.wallet.Wallet;
+import org.xrpl.xrpl4j.crypto.core.keys.Base58EncodedSecret;
+import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.core.keys.Seed;
+import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -79,12 +82,12 @@ public class RippledContainer {
   }
 
   /**
-   * Get the {@link Wallet} of the master account.
+   * Get the {@link KeyPair} of the master account.
    *
-   * @return The {@link Wallet} of the master account.
+   * @return The {@link KeyPair} of the master account.
    */
-  public static Wallet getMasterWallet() {
-    return DefaultWalletFactory.getInstance().fromSeed(MASTER_WALLET_SEED, false);
+  public static KeyPair getMasterKeyPair() {
+    return Seed.fromBase58EncodedSecret(Base58EncodedSecret.of(MASTER_WALLET_SEED)).deriveKeyPair();
   }
 
   /**
@@ -132,7 +135,12 @@ public class RippledContainer {
 
   private ZonedDateTime getLedgerTime() {
     try {
-      return getXrplClient().serverInfo().time();
+      return getXrplClient().serverInformation().info()
+        .map(
+          RippledServerInfo::time,
+          clioServerInfo -> ZonedDateTime.now(),
+          ReportingModeServerInfo::time
+        );
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e);
     }

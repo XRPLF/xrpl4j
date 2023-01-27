@@ -57,7 +57,7 @@ public class AccountSetIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       keyPair.privateKey(), accountSet
     );
-    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
@@ -123,7 +123,7 @@ public class AccountSetIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       keyPair.privateKey(), accountSet
     );
-    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
@@ -304,7 +304,7 @@ public class AccountSetIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       keyPair.privateKey(), accountSet
     );
-    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
@@ -344,7 +344,7 @@ public class AccountSetIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       keyPair.privateKey(), accountSet
     );
-    SubmitResult<CheckCreate> response = xrplClient.submit(signedAccountSet);
+    SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
     assertThat(response.result()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());

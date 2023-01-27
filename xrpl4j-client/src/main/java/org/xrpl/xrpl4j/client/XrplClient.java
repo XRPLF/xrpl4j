@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -36,8 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
-import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.Finality;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
@@ -74,12 +71,11 @@ import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.server.ServerInfo;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
-import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
@@ -116,7 +112,6 @@ import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -136,7 +131,6 @@ public class XrplClient {
   private final ObjectMapper objectMapper;
   private final XrplBinaryCodec binaryCodec;
   private final JsonRpcClient jsonRpcClient;
-  private final KeyPairService keyPairService;
 
   /**
    * Public constructor.
@@ -157,88 +151,6 @@ public class XrplClient {
     this.jsonRpcClient = Objects.requireNonNull(jsonRpcClient);
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = XrplBinaryCodec.getInstance();
-    this.keyPairService = DefaultKeyPairService.getInstance();
-  }
-
-  /**
-   * Submit a {@link Transaction} to the XRP Ledger.
-   *
-   * @param <T>                 The type of {@link Transaction} that is being submitted.
-   * @param wallet              The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
-   * @param unsignedTransaction An unsigned {@link Transaction} to submit. {@link Transaction#transactionSignature()}
-   *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @see "https://xrpl.org/submit.html"
-   * @deprecated Prefer submitting a signed transaction without a wallet.
-   */
-  @Deprecated
-  public <T extends Transaction> SubmitResult<T> submit(
-    Wallet wallet,
-    T unsignedTransaction
-  ) throws JsonRpcClientErrorException {
-    SignedTransaction<T> signedTransaction = signTransaction(wallet, unsignedTransaction);
-    return submit(signedTransaction);
-  }
-
-  /**
-   * Submit a {@link SignedTransaction} to the ledger.
-   *
-   * @param signedTransaction A {@link SignedTransaction} to submit.
-   * @param <T>               The type of {@link Transaction} contained in the {@link SignedTransaction} object.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @deprecated Prefer the submit method with the variant from the new crypto package.
-   */
-  @Deprecated
-  public <T extends Transaction> SubmitResult<T> submit(
-    SignedTransaction<T> signedTransaction
-  ) throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SUBMIT)
-      .addParams(SubmitRequestParams.of(signedTransaction.signedTransactionBlob()))
-      .build();
-    JavaType resultType = objectMapper.getTypeFactory()
-      .constructParametricType(SubmitResult.class, signedTransaction.signedTransaction().getClass());
-    return jsonRpcClient.send(request, resultType);
-  }
-
-  /**
-   * Submit a {@link SignedTransaction} to the XRP Ledger.
-   *
-   * @param <T>               The type of signed {@link Transaction} that is being submitted.
-   * @param signedTransaction A {@link org.xrpl.xrpl4j.crypto.signing.SignedTransaction} to submit.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @throws JsonProcessingException     if any JSON is invalid.
-   * @see "https://xrpl.org/submit.html"
-   * @deprecated Prefer the submit method with the variant from the new crypto package.
-   */
-  @Deprecated
-  public <T extends Transaction> SubmitResult<T> submit(
-    final org.xrpl.xrpl4j.crypto.signing.SignedTransaction signedTransaction
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("About to submit signedTransaction: {}", signedTransaction);
-    }
-
-    String signedJson = objectMapper.writeValueAsString(signedTransaction.signedTransaction());
-    String signedBlob = binaryCodec.encode(signedJson); // <-- txBlob must be binary-encoded.
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SUBMIT)
-      .addParams(SubmitRequestParams.of(signedBlob))
-      .build();
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("About to submit JsonRpcRequest: {}", request);
-    }
-
-    JavaType resultType = objectMapper.getTypeFactory()
-      .constructParametricType(SubmitResult.class, signedTransaction.unsignedTransaction().getClass());
-    return jsonRpcClient.send(request, resultType);
   }
 
   /**
@@ -252,7 +164,7 @@ public class XrplClient {
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction signedTransaction)
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction<T> signedTransaction)
     throws JsonRpcClientErrorException, JsonProcessingException {
     Objects.requireNonNull(signedTransaction);
 
@@ -391,16 +303,16 @@ public class XrplClient {
     final UnsignedLong submittedLedgerSequence,
     final UnsignedLong lastLedgerSequence
   ) {
-    final ServerInfo serverInfo;
+    final ServerInfoResult serverInfo;
     try {
-      serverInfo = this.serverInfo();
+      serverInfo = this.serverInformation();
     } catch (JsonRpcClientErrorException e) {
       LOGGER.error(e.getMessage(), e);
       return true; // Assume ledger gaps exist so this can be retried.
     }
 
     Range<UnsignedLong> submittedToLast = Range.closed(submittedLedgerSequence, lastLedgerSequence);
-    return serverInfo.completeLedgerRanges().stream()
+    return serverInfo.info().completeLedgers().stream()
       .noneMatch(range -> range.encloses(submittedToLast));
   }
 
@@ -494,34 +406,15 @@ public class XrplClient {
   }
 
   /**
-   * Get the "server_info" for the rippled node.
-   *
-   * @return A {@link ServerInfo} containing information about the server.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @see "https://xrpl.org/server_info.html"
-   * @deprecated This method is deprecated to accommodate 3 different types of server_info responses from the
-   *   specialised Clio {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the
-   *   generic rippled server {@link RippledServerInfo}. Use {@link XrplClient#serverInformation()}.
-   */
-  @Deprecated
-  public ServerInfo serverInfo() throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SERVER_INFO)
-      .build();
-
-    return jsonRpcClient.send(request, ServerInfoResult.class).info();
-  }
-
-  /**
    * Get the "server_info" for the rippled node {@link RippledServerInfo}, clio server {@link ClioServerInfo} and
    * reporting mode server {@link ReportingModeServerInfo}. You should be able to handle all these response types as
-   * {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+   * {@link ServerInfo}.
    *
-   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} containing information about the server.
+   * @return A {@link ServerInfoResult} containing information about the server.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
    */
-  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInformation()
+  public ServerInfoResult serverInformation()
     throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)
@@ -853,38 +746,6 @@ public class XrplClient {
       .addParams(params)
       .build();
     return jsonRpcClient.send(request, GatewayBalancesResult.class);
-  }
-
-  /**
-   * Sign a {@link Transaction} with the private key from a {@link Wallet}.
-   *
-   * @param wallet              A {@link Wallet} with a private key to sign the transaction with.
-   * @param unsignedTransaction A {@link Transaction} without a signature.
-   * @param <T>                 The actual polymorphic type of {@link Transaction} to sign.
-   *
-   * @return A {@link SignedTransaction}.
-   */
-  public <T extends Transaction> SignedTransaction<T> signTransaction(
-    Wallet wallet, T unsignedTransaction
-  ) {
-    try {
-      String unsignedJson = objectMapper.writeValueAsString(unsignedTransaction);
-
-      String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
-      String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-        .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
-
-      T signedTransaction = (T) addSignature(unsignedTransaction, signature);
-
-      String signedJson = objectMapper.writeValueAsString(signedTransaction);
-      String signedBinary = binaryCodec.encode(signedJson);
-      return SignedTransaction.<T>builder()
-        .signedTransaction(signedTransaction)
-        .signedTransactionBlob(signedBinary)
-        .build();
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   /**

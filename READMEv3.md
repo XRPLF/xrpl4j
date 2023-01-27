@@ -13,7 +13,7 @@ and also provides a JSON-RPC client for interacting with XRPL nodes.
 
 - [Get Started Using Java](https://xrpl.org/get-started-using-java.html): a tutorial for building a very simple XRP
   Ledger-connected app.
-- Example usage can be found in the [`xrpl4j-integration-tests` module](xrpl4j-integration-tests/).
+- Example usage can be found in the `xrpl4j-integration-tests` module [see here](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-integration-tests/src/test/java/org/xrpl/xrpl4j/tests).
 
 ## Usage
 
@@ -41,29 +41,37 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
 </dependencyManagement>
 ```
 
-Then you can add any of the xrpl4j modules found in the BOM to your `pom.xml`. For example, if you want to use the
-xrpl4j address codecs, add the following:
+Then you can add one or both of the `xrpl4j-core` and `xrpl4j-client` modules
+found in the BOM to your `pom.xml`. For example:
 
 ```
-<dependency>
-  <groupId>org.xrpl</groupId>
-  <artifactId>xrpl4j-address-codec</artifactId>
-</dependency>
+<dependencies>  
+  ...
+  <dependency>
+    <groupId>org.xrpl</groupId>
+    <artifactId>xrpl4j-core</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>org.xrpl</groupId>
+    <artifactId>xrpl4j-client</artifactId>
+  </dependency>
+  ...
+</dependencies>
 ```
 
 ### Examples
 
-Generate a new XRPL address and public/private keypair:
+Generate a new in-memory public/private keypair and then derive an XRPL address:
 
 ```java
   import org.xrpl.xrpl4j.crypto.core.keys.Seed;
 
 ...
 
-  Seed seed=Seed.ed255519Seed(); // <-- Generates a random seed.
-  PrivateKey privateKey=seed.derivePrivateKey(); // <-- Derive a private key from the seed.
-  PublicKey publicKey=privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
-  Address address=publicKey.deriveAddress(); // <-- Derive an address from the public key.
+  Seed seed = Seed.ed255519Seed(); // <-- Generates a random seed.
+  PrivateKey privateKey = seed.derivePrivateKey(); // <-- Derive a private key from the seed.
+  PublicKey publicKey = privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
+  Address address = publicKey.deriveAddress(); // <-- Derive an address from the public key.
 ```
 
 Construct and Sign an XRP Payment:

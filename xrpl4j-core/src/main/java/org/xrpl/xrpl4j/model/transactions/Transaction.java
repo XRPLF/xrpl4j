@@ -20,41 +20,21 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Auxiliary;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.client.fees.FeeResult;
-import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
-import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
  * Provides an abstract interface for all concrete XRPL transactions.
  */
 public interface Transaction {
-
-  /**
-   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for the start of that
-   * epoch.
-   *
-   * @deprecated This will be unnecessary once {@link #closeDateHuman()} is removed.
-   */
-  @Deprecated
-  long RIPPLE_EPOCH = 946684800;
 
   /**
    * A bi-directional map of immutable transaction types to their corresponding {@link TransactionType}.
@@ -91,30 +71,6 @@ public interface Transaction {
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
       .build();
-
-  /**
-   * Computes the fee necessary for a multisigned transaction.
-   *
-   * <p>The transaction cost of a multisigned transaction must be at least {@code (N + 1) * (the normal
-   * transaction cost)}, where {@code N} is the number of signatures provided.
-   *
-   * @param currentLedgerFeeDrops The current ledger fee, represented as an {@link XrpCurrencyAmount}.
-   * @param signerList            The {@link SignerListObject} containing the signers of the transaction.
-   *
-   * @return An {@link XrpCurrencyAmount} representing the multisig fee.
-   * @deprecated Use {@link FeeUtils#computeMultisigNetworkFees(FeeResult, SignerListObject)} instead.
-   */
-  @Deprecated
-  static XrpCurrencyAmount computeMultiSigFee(
-    final XrpCurrencyAmount currentLedgerFeeDrops,
-    final SignerListObject signerList
-  ) {
-    Objects.requireNonNull(currentLedgerFeeDrops);
-    Objects.requireNonNull(signerList);
-
-    return currentLedgerFeeDrops
-      .times(XrpCurrencyAmount.of(UnsignedLong.valueOf(signerList.signerEntries().size() + 1)));
-  }
 
   /**
    * The unique {@link Address} of the account that initiated this transaction.
@@ -238,57 +194,5 @@ public interface Transaction {
    */
   @JsonProperty("TxnSignature")
   Optional<String> transactionSignature();
-
-  /**
-   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction. This is an undocumented
-   * field.
-   *
-   * @return An optionally-present {@link UnsignedLong}.
-   * @deprecated This field will be removed in favor of
-   *   {@link org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDate()};
-   */
-  @JsonProperty("date")
-  @Deprecated
-  Optional<UnsignedLong> closeDate();
-
-  /**
-   * The approximate close time in UTC offset. This is derived from undocumented field.
-   *
-   * @return An optionally-present {@link ZonedDateTime}.
-   * @deprecated This field will be removed in favor of
-   *   {@link org.xrpl.xrpl4j.model.client.transactions.TransactionResult#closeDateHuman()};
-   */
-  @JsonIgnore
-  @Auxiliary
-  @Deprecated
-  default Optional<ZonedDateTime> closeDateHuman() {
-    return closeDate().map(secondsSinceRippleEpoch ->
-      Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
-    );
-  }
-
-  /**
-   * The transaction hash of this transaction.  Only present in responses to {@code account_tx} rippled calls.
-   *
-   * @return An optionally present {@link Hash256} containing the transaction hash.
-   * @deprecated This field will be removed in a future release. Instead, use
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#hash()} found in
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
-   */
-  @Deprecated
-  Optional<Hash256> hash();
-
-  /**
-   * The index of the ledger that this transaction was included in. Only present in responses to {@code account_tx}
-   * rippled calls.
-   *
-   * @return An optionally-present {@link LedgerIndex}.
-   * @deprecated This field will be removed in a future release. Instead, use
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction#ledgerIndex()} found in
-   *   {@link org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult#transactions()}.
-   */
-  @Deprecated
-  @JsonProperty("ledger_index")
-  Optional<LedgerIndex> ledgerIndex();
 
 }

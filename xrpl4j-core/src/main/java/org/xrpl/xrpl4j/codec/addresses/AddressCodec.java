@@ -47,51 +47,6 @@ public class AddressCodec {
   }
 
   /**
-   * Decodes a Base58Check encoded XRPL secret key seed value. Works for ed25519 and secp256k1 seeds.
-   *
-   * @param seed A Base58Check encoded XRPL keypair seed.
-   *
-   * @return The decoded seed, seed type, and algorithm used to encode the seed.
-   *
-   * @see "https://xrpl.org/cryptographic-keys.html#seed"
-   * @deprecated Prefer the variant in {@link SeedCodec} instead.
-   */
-  @Deprecated
-  public Decoded decodeSeed(final String seed) throws EncodingFormatException {
-    Objects.requireNonNull(seed);
-
-    return AddressBase58.decode(
-      seed,
-      Lists.newArrayList(KeyType.ED25519, KeyType.SECP256K1),
-      Lists.newArrayList(Version.ED25519_SEED, Version.FAMILY_SEED),
-      Optional.of(UnsignedInteger.valueOf(16))
-    );
-  }
-
-  /**
-   * Encodes a byte array to a Base58Check {@link String} using the given {@link KeyType}.
-   *
-   * @param entropy An {@link UnsignedByteArray} containing the seed entropy to encode.
-   * @param type    The cryptographic algorithm type to be encoded in the resulting seed.
-   *
-   * @return A Base58Check encoded XRPL keypair seed.
-   *
-   * @deprecated Prefer the variant in {@link SeedCodec} instead.
-   */
-  @Deprecated
-  public String encodeSeed(final UnsignedByteArray entropy, final KeyType type) {
-    Objects.requireNonNull(entropy);
-    Objects.requireNonNull(type);
-
-    if (entropy.getUnsignedBytes().size() != 16) {
-      throw new EncodeException("entropy must have length 16.");
-    }
-
-    Version version = type.equals(KeyType.ED25519) ? Version.ED25519_SEED : Version.FAMILY_SEED;
-    return AddressBase58.encode(entropy, Lists.newArrayList(version), UnsignedInteger.valueOf(16));
-  }
-
-  /**
    * Encode an XRPL AccountID to a Base58Check encoded {@link String}.
    *
    * @param accountId An {@link UnsignedByteArray} containing the AccountID to be encoded.
@@ -131,10 +86,7 @@ public class AddressCodec {
    * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
    *
    * @return The Base58 representation of publicKey.
-   *
-   * @deprecated This will be replaced by a PublicKeyCodec or KeyCodec.
    */
-  @Deprecated
   public String encodeNodePublicKey(final UnsignedByteArray publicKey) {
     Objects.requireNonNull(publicKey);
 
@@ -149,52 +101,13 @@ public class AddressCodec {
    * @return An {@link UnsignedByteArray} containing the decoded public key.
    *
    * @see "https://xrpl.org/base58-encodings.html"
-   * @deprecated This will be replaced by a PublicKeyCodec or KeyCodec.
    */
-  @Deprecated
   public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
 
     return AddressBase58.decode(
       publicKey,
       Lists.newArrayList(Version.NODE_PUBLIC),
-      UnsignedInteger.valueOf(33)
-    ).bytes();
-  }
-
-  /**
-   * Encode an XRPL Account Public Key to a Base58Check encoded {@link String}.
-   *
-   * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
-   *
-   * @return The Base58 representation of publicKey.
-   *
-   * @deprecated This will be replaced by a PublicKeyCodec or KeyCodec.
-   */
-  @Deprecated
-  public String encodeAccountPublicKey(final UnsignedByteArray publicKey) {
-    Objects.requireNonNull(publicKey);
-
-    return AddressBase58.encode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
-  }
-
-  /**
-   * Decode a Base58Check encoded XRPL Account Public Key.
-   *
-   * @param publicKey The Base58 encoded public key to be decoded.
-   *
-   * @return An {@link UnsignedByteArray} containing the decoded public key.
-   *
-   * @see "https://xrpl.org/base58-encodings.html"
-   * @deprecated This will be replaced by a PublicKeyCodec or KeyCodec.
-   */
-  @Deprecated
-  public UnsignedByteArray decodeAccountPublicKey(final String publicKey) {
-    Objects.requireNonNull(publicKey);
-
-    return AddressBase58.decode(
-      publicKey,
-      Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY),
       UnsignedInteger.valueOf(33)
     ).bytes();
   }
@@ -208,10 +121,7 @@ public class AddressCodec {
    *                       encoded for Mainnet.
    *
    * @return The X-Address representation of the classic address and destination tag.
-   *
-   * @deprecated X-Address support will be removed in a future version.
    */
-  @Deprecated
   public XAddress classicAddressToXAddress(
     final Address classicAddress,
     final UnsignedInteger tag,
@@ -231,10 +141,7 @@ public class AddressCodec {
    *                       encoded for Mainnet.
    *
    * @return The X-Address representation of the classic address, as an {@link XAddress}.
-   *
-   * @deprecated X-Address support will be removed in a future version.
    */
-  @Deprecated
   public XAddress classicAddressToXAddress(final Address classicAddress, final boolean test) {
     Objects.requireNonNull(classicAddress);
 
@@ -250,10 +157,7 @@ public class AddressCodec {
    *                       encoded for Mainnet.
    *
    * @return The X-Address representation of the classic address and destination tag, as an {@link XAddress}.
-   *
-   * @deprecated X-Address support will be removed in a future version.
    */
-  @Deprecated
   public XAddress classicAddressToXAddress(
     final Address classicAddress,
     final Optional<UnsignedInteger> tag,
@@ -318,10 +222,7 @@ public class AddressCodec {
    * @param xAddress The {@link XAddress} to be decoded.
    *
    * @return The {@link ClassicAddress} decoded from xAddress.
-   *
-   * @deprecated Prefer the variant in AddressService instead.
    */
-  @Deprecated
   public ClassicAddress xAddressToClassicAddress(final XAddress xAddress) {
     Objects.requireNonNull(xAddress);
 
@@ -403,10 +304,7 @@ public class AddressCodec {
    * @param xAddress A potentially valid {@link XAddress}.
    *
    * @return {@code true} if the given address is a valid X-Address, {@code false} if not.
-   *
-   * @deprecated Prefer the variant in AddressService instead.
    */
-  @Deprecated
   public boolean isValidXAddress(final XAddress xAddress) {
     try {
       decodeXAddress(xAddress);
@@ -423,10 +321,7 @@ public class AddressCodec {
    * @param address A potentially valid classic {@link Address}.
    *
    * @return {@code true} if the given address is a valid Classic Address, {@code false} if not.
-   *
-   * @deprecated Prefer the variant in AddressService instead.
    */
-  @Deprecated
   public boolean isValidClassicAddress(final Address address) {
     try {
       decodeAccountId(address);

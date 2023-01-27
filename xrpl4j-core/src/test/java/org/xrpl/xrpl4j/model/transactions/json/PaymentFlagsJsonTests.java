@@ -27,7 +27,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
@@ -45,7 +45,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
       .amount(XrpCurrencyAmount.ofDrops(25000000))
       .fee(XrpCurrencyAmount.ofDrops(10))
-      .flags(PaymentFlags.builder().tfFullyCanonicalSig(false).build())
+      .flags(PaymentFlags.UNSET)
       .sequence(UnsignedInteger.valueOf(2))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -113,7 +113,6 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
         .issuer(Address.of("rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn"))
         .build()
       )
-      .flags(PaymentFlags.builder().tfFullyCanonicalSig(false).build())
       .sequence(UnsignedInteger.valueOf(6))
       .addPaths(Lists.newArrayList(
         PathStep.builder()
@@ -141,7 +140,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       "                    \"value\": \"5050\",\n" +
       "                    \"issuer\": \"rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn\"\n" +
       "                },\n" +
-      "                \"Flags\": 0,\n" +
+      "                \"Flags\": 2147483648,\n" +
       "                \"Sequence\": 6,\n" +
       "                \"Paths\": [[{\n" +
       "                    \"account\": \"razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA\"\n" +

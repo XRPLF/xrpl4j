@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 
 import java.util.Optional;
 
@@ -78,14 +78,14 @@ public interface NfTokenMint extends Transaction {
   Optional<NfTokenUri> uri();
 
   /**
-   * Set of {@link Flags.NfTokenMintFlags}s for this {@link NfTokenMint}.
+   * Set of {@link NfTokenMintFlags}s for this {@link NfTokenMint}.
    *
-   * @return The {@link Flags.NfTokenMintFlags} for this transaction.
+   * @return The {@link NfTokenMintFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags.NfTokenMintFlags flags() {
-    return Flags.NfTokenMintFlags.builder().tfFullyCanonicalSig(true).build();
+  default NfTokenMintFlags flags() {
+    return NfTokenMintFlags.builder().build();
   }
 
   /**

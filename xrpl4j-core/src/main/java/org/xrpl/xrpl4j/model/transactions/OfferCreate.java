@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 
 import java.util.Optional;
 
@@ -51,14 +51,14 @@ public interface OfferCreate extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.OfferCreateFlags}s for this {@link OfferCreate}.
+   * Set of {@link OfferCreateFlags}s for this {@link OfferCreate}.
    *
-   * @return The {@link Flags.OfferCreateFlags} for this transaction.
+   * @return The {@link OfferCreateFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default
-  default Flags.OfferCreateFlags flags() {
-    return Flags.OfferCreateFlags.builder().tfFullyCanonicalSig(true).build();
+  default OfferCreateFlags flags() {
+    return OfferCreateFlags.builder().build();
   }
 
   /**

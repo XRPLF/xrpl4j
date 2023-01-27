@@ -13,8 +13,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.flags.Flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -181,7 +181,7 @@ public class AccountSetIT extends AbstractIT {
       .sequence(sequence)
       .signingPublicKey(keyPair.publicKey())
       .flags(
-        Flags.AccountSetTransactionFlags.builder()
+        AccountSetTransactionFlags.builder()
           .tfRequireDestTag()
           .tfRequireAuth()
           .tfDisallowXrp()
@@ -217,7 +217,7 @@ public class AccountSetIT extends AbstractIT {
       .sequence(sequence.plus(UnsignedInteger.ONE))
       .signingPublicKey(keyPair.publicKey())
       .flags(
-        Flags.AccountSetTransactionFlags.builder()
+        AccountSetTransactionFlags.builder()
           .tfOptionalDestTag()
           .tfOptionalAuth()
           .tfAllowXrp()

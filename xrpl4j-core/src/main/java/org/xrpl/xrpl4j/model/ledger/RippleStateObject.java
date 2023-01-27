@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 
@@ -65,13 +65,13 @@ public interface RippleStateObject extends LedgerObject {
   }
 
   /**
-   * A set of boolean {@link Flags.RippleStateFlags} containing options
+   * A set of boolean {@link RippleStateFlags} containing options
    * enabled for this object.
    *
-   * @return The {@link Flags.RippleStateFlags} for this object.
+   * @return The {@link RippleStateFlags} for this object.
    */
   @JsonProperty("Flags")
-  Flags.RippleStateFlags flags();
+  RippleStateFlags flags();
 
   /**
    * The balance of the trust line, from the perspective of the low account. A negative balance indicates that the

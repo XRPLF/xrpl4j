@@ -14,20 +14,18 @@ import java.util.stream.Stream;
 public class NfTokenMintFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(5);
+    return getBooleanCombinations(4);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
     boolean tfTransferable
   ) {
-    Flags.NfTokenMintFlags flags = Flags.NfTokenMintFlags.builder()
-      .tfFullyCanonicalSig(tfFullyCanonicalSig)
+    NfTokenMintFlags flags = NfTokenMintFlags.builder()
       .tfBurnable(tfBurnable)
       .tfOnlyXRP(tfOnlyXRP)
       .tfTrustLine(tfTrustLine)
@@ -35,23 +33,22 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfFullyCanonicalSig,tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable));
+      .isEqualTo(getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
     boolean tfTransferable
   ) {
-    long expectedFlags = getExpectedFlags(tfFullyCanonicalSig,tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
-    Flags.NfTokenMintFlags flags = Flags.NfTokenMintFlags.of(expectedFlags);
+    long expectedFlags = getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+    NfTokenMintFlags flags = NfTokenMintFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
-    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfBurnable()).isEqualTo(tfBurnable);
     assertThat(flags.tfOnlyXRP()).isEqualTo(tfOnlyXRP);
     assertThat(flags.tfTrustLine()).isEqualTo(tfTrustLine);
@@ -59,17 +56,16 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
   }
 
   private long getExpectedFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
     boolean tfTransferable
   ) {
-    return (tfFullyCanonicalSig ? Flags.NfTokenMintFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfBurnable ? Flags.NfTokenMintFlags.BURNABLE.getValue() : 0L) |
-      (tfOnlyXRP ? Flags.NfTokenMintFlags.ONLY_XRP.getValue() : 0L) |
-      (tfTrustLine ? Flags.NfTokenMintFlags.TRUSTLINE.getValue() : 0L) |
-      (tfTransferable ? Flags.NfTokenMintFlags.TRANSFERABLE.getValue() : 0L);
+    return (NfTokenMintFlags.FULLY_CANONICAL_SIG.getValue()) |
+      (tfBurnable ? NfTokenMintFlags.BURNABLE.getValue() : 0L) |
+      (tfOnlyXRP ? NfTokenMintFlags.ONLY_XRP.getValue() : 0L) |
+      (tfTrustLine ? NfTokenMintFlags.TRUSTLINE.getValue() : 0L) |
+      (tfTransferable ? NfTokenMintFlags.TRANSFERABLE.getValue() : 0L);
   }
 }
 

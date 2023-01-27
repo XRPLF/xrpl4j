@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
@@ -119,11 +119,11 @@ public interface NfTokenOfferObject extends LedgerObject {
   Optional<String> offerNode();
 
   /**
-   * A set of boolean {@link Flags.NfTokenOfferFlags} containing options
+   * A set of boolean {@link NfTokenOfferFlags} containing options
    * enabled for this object.
    *
-   * @return The {@link Flags.NfTokenOfferFlags} for this object.
+   * @return The {@link NfTokenOfferFlags} for this object.
    */
   @JsonProperty("Flags")
-  Flags.NfTokenOfferFlags flags();
+  NfTokenOfferFlags flags();
 }

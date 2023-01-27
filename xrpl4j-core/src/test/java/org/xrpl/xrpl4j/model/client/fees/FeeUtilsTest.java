@@ -12,7 +12,7 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.SignerListFlags;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.ledger.SignerListObject;
@@ -45,7 +45,7 @@ public class FeeUtilsTest {
   public void simpleComputeMultiSigFee() {
     FeeResult feeResult = feeResultBuilder().build();
     SignerListObject object = SignerListObject.builder()
-      .flags(Flags.SignerListFlags.UNSET)
+      .flags(SignerListFlags.UNSET)
       .ownerNode("0000000000000000")
       .previousTransactionId(Hash256.of("5904C0DC72C58A83AEFED2FFC5386356AA83FCA6A88C89D00646E51E687CDBE4"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(16061435))

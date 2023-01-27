@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 
 public class AccountSetTests {
 
@@ -52,12 +52,12 @@ public class AccountSetTests {
     assertThat(accountSet.messageKey()).isNotEmpty().get()
       .isEqualTo("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB");
     assertThat(accountSet.transferRate()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(1000000001));
-    assertThat(accountSet.flags()).isEqualTo(Flags.AccountSetTransactionFlags.builder().build());
+    assertThat(accountSet.flags()).isEqualTo(AccountSetTransactionFlags.builder().build());
   }
 
   @Test
   void accountSetWithSetFlagAndTransactionFlags() {
-    Flags.AccountSetTransactionFlags flags = Flags.AccountSetTransactionFlags.builder()
+    AccountSetTransactionFlags flags = AccountSetTransactionFlags.builder()
       .tfRequireAuth()
       .tfRequireDestTag()
       .tfDisallowXrp()

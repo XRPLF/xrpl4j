@@ -29,7 +29,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -53,7 +53,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
         .closeDate(UnsignedLong.valueOf(666212460))
         .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
-        .flags(Flags.PaymentFlags.of(2147483648L))
+        .flags(PaymentFlags.of(2147483648L))
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
         .sequence(UnsignedInteger.valueOf(2062126))
         .signingPublicKey(
@@ -114,7 +114,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .amount(amount)
         .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
         .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
-        .flags(Flags.PaymentFlags.of(2147483648L))
+        .flags(PaymentFlags.of(2147483648L))
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
         .sequence(UnsignedInteger.valueOf(2062126))
         .signingPublicKey(
@@ -169,7 +169,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .amount(amount)
         .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
         .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
-        .flags(Flags.PaymentFlags.of(2147483648L))
+        .flags(PaymentFlags.of(2147483648L))
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
         .sequence(UnsignedInteger.valueOf(2062126))
         .signingPublicKey(

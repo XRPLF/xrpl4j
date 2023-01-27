@@ -38,7 +38,7 @@ import org.xrpl.xrpl4j.crypto.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.PrivateKey;
 import org.xrpl.xrpl4j.crypto.PublicKey;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
@@ -145,7 +145,7 @@ class SingleKeySignatureServiceTest {
       .account(Address.of(sourceClassicAddressED))
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(10L))
-      .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
+      .flags(NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
       .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
       .signingPublicKey(
@@ -193,7 +193,7 @@ class SingleKeySignatureServiceTest {
     NfTokenMint nfTokenMint2 = NfTokenMint.builder()
       .account(testWallet.classicAddress())
       .fee(XrpCurrencyAmount.ofDrops(1))
-      .flags(Flags.NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
+      .flags(NfTokenMintFlags.builder().tfBurnable(true).tfTransferable(true).tfOnlyXRP(true).build())
       .uri(NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
       .signingPublicKey(

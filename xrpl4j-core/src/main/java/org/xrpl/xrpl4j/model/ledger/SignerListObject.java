@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.SignerListFlags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -62,12 +62,12 @@ public interface SignerListObject extends LedgerObject {
   }
 
   /**
-   * A bit-map of Boolean {@link Flags.SignerListFlags} enabled for this signer list.
+   * A bit-map of Boolean {@link SignerListFlags} enabled for this signer list.
    *
-   * @return The {@link Flags.SignerListFlags} for this object.
+   * @return The {@link SignerListFlags} for this object.
    */
   @JsonProperty("Flags")
-  Flags.SignerListFlags flags();
+  SignerListFlags flags();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.

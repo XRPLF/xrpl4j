@@ -31,44 +31,41 @@ import java.util.stream.Stream;
 public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(3);
+    return getBooleanCombinations(2);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfRenew,
     boolean tfClose
   ) {
-    Flags.PaymentChannelClaimFlags flags = Flags.PaymentChannelClaimFlags.builder()
-      .tfFullyCanonicalSig(tfFullyCanonicalSig)
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.builder()
       .tfRenew(tfRenew)
       .tfClose(tfClose)
       .build();
 
-    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfFullyCanonicalSig, tfRenew, tfClose));
+    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfRenew, tfClose));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean tfFullyCanonicalSig,
     boolean tfRenew,
     boolean tfClose
   ) {
-    long expectedFlags = getExpectedFlags(tfFullyCanonicalSig, tfRenew, tfClose);
-    Flags.PaymentChannelClaimFlags flags = Flags.PaymentChannelClaimFlags.of(expectedFlags);
+    long expectedFlags = getExpectedFlags(tfRenew, tfClose);
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
-    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(tfFullyCanonicalSig);
+    assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfRenew()).isEqualTo(tfRenew);
     assertThat(flags.tfClose()).isEqualTo(tfClose);
   }
 
-  private long getExpectedFlags(boolean tfFullyCanonicalSig, boolean tfRenew, boolean tfClose) {
-    return (tfFullyCanonicalSig ? Flags.PaymentChannelClaimFlags.FULLY_CANONICAL_SIG.getValue() : 0L) |
-      (tfRenew ? Flags.PaymentChannelClaimFlags.RENEW.getValue() : 0L) |
-      (tfClose ? Flags.PaymentChannelClaimFlags.CLOSE.getValue() : 0L);
+  private long getExpectedFlags(boolean tfRenew, boolean tfClose) {
+    return (PaymentChannelClaimFlags.FULLY_CANONICAL_SIG.getValue()) |
+      (tfRenew ? PaymentChannelClaimFlags.RENEW.getValue() : 0L) |
+      (tfClose ? PaymentChannelClaimFlags.CLOSE.getValue() : 0L);
   }
 }

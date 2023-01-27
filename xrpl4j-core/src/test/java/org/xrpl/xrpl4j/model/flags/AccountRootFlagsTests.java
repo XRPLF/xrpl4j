@@ -47,16 +47,16 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfRequireAuth,
     boolean lsfRequireDestTag
   ) {
-    long expectedFlags = (lsfDefaultRipple ? Flags.AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
-      (lsfDepositAuth ? Flags.AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
-      (lsfDisableMaster ? Flags.AccountRootFlags.DISABLE_MASTER.getValue() : 0L) |
-      (lsfDisallowXrp ? Flags.AccountRootFlags.DISALLOW_XRP.getValue() : 0L) |
-      (lsfGlobalFreeze ? Flags.AccountRootFlags.GLOBAL_FREEZE.getValue() : 0L) |
-      (lsfNoFreeze ? Flags.AccountRootFlags.NO_FREEZE.getValue() : 0L) |
-      (lsfPasswordSpent ? Flags.AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
-      (lsfRequireAuth ? Flags.AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
-      (lsfRequireDestTag ? Flags.AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L);
-    Flags.AccountRootFlags flags = Flags.AccountRootFlags.of(expectedFlags);
+    long expectedFlags = (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
+      (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
+      (lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER.getValue() : 0L) |
+      (lsfDisallowXrp ? AccountRootFlags.DISALLOW_XRP.getValue() : 0L) |
+      (lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE.getValue() : 0L) |
+      (lsfNoFreeze ? AccountRootFlags.NO_FREEZE.getValue() : 0L) |
+      (lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
+      (lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
+      (lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L);
+    AccountRootFlags flags = AccountRootFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
@@ -62,17 +62,17 @@ public interface NfTokenBurn extends Transaction {
   Optional<Address> owner();
 
   /**
-   * Set of {@link Flags.TransactionFlags}s for this {@link NfTokenBurn}, which only allows
+   * Set of {@link TransactionFlags}s for this {@link NfTokenBurn}, which only allows
    * {@code tfFullyCanonicalSig} flag.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    *
-   * @return Always {@link Flags.TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return Always {@link TransactionFlags} with {@code tfFullyCanonicalSig} set.
    */
   @JsonProperty("Flags")
   @Value.Derived
-  default Flags.TransactionFlags flags() {
-    return new Flags.TransactionFlags.Builder().tfFullyCanonicalSig(true).build();
+  default TransactionFlags flags() {
+    return new TransactionFlags.Builder().build();
   }
 }

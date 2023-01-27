@@ -29,7 +29,7 @@ import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
@@ -59,7 +59,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                 .destination(Address.of("raLPjTYeGezfdb6crXZzcC8RkLBEwbBHJ5"))
                 .destinationTag(UnsignedInteger.valueOf(18240312))
                 .fee(XrpCurrencyAmount.ofDrops(40))
-                .flags(Flags.PaymentFlags.of(2147483648L))
+                .flags(PaymentFlags.of(2147483648L))
                 .lastLedgerSequence(UnsignedInteger.valueOf(57112037))
                 .sequence(UnsignedInteger.valueOf(702819))
                 .signingPublicKey(
@@ -94,7 +94,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
               .destination(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
               .destinationTag(UnsignedInteger.valueOf(1))
               .fee(XrpCurrencyAmount.ofDrops(40))
-              .flags(Flags.PaymentFlags.of(2147483648L))
+              .flags(PaymentFlags.of(2147483648L))
               .lastLedgerSequence(UnsignedInteger.valueOf(57112032))
               .sequence(UnsignedInteger.valueOf(466334))
               .signingPublicKey(

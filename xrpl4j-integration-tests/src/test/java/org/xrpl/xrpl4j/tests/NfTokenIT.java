@@ -17,7 +17,8 @@ import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
+import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
@@ -202,7 +203,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .flags(Flags.NfTokenCreateOfferFlags.builder()
+      .flags(NfTokenCreateOfferFlags.builder()
         .tfSellToken(true)
         .build())
       .signingPublicKey(wallet.publicKey())
@@ -254,7 +255,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
-      .flags(Flags.NfTokenMintFlags.builder()
+      .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
       .uri(uri)
@@ -414,7 +415,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
-      .flags(Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN)
+      .flags(NfTokenCreateOfferFlags.SELL_NFTOKEN)
       .signingPublicKey(wallet.publicKey())
       .build();
 
@@ -504,7 +505,7 @@ public class NfTokenIT extends AbstractIT {
       .fee(XrpCurrencyAmount.ofDrops(50))
       .signingPublicKey(wallet.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
-      .flags(Flags.NfTokenMintFlags.builder()
+      .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
       .uri(uri)
@@ -541,7 +542,7 @@ public class NfTokenIT extends AbstractIT {
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .signingPublicKey(wallet.publicKey())
-      .flags(Flags.NfTokenCreateOfferFlags.SELL_NFTOKEN)
+      .flags(NfTokenCreateOfferFlags.SELL_NFTOKEN)
       .build();
 
     SingleSignedTransaction<NfTokenCreateOffer> signedOffer = signatureService.sign(

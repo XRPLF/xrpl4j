@@ -35,7 +35,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
@@ -278,7 +279,7 @@ class XrplBinaryCodecTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
       )
-      .flags(Flags.PaymentFlags.builder().tfPartialPayment(true).build())
+      .flags(PaymentFlags.builder().tfPartialPayment(true).build())
       .destinationTag(UnsignedInteger.valueOf(2))
       .sequence(UnsignedInteger.ONE)
       .sourceTag(UnsignedInteger.ONE)
@@ -324,7 +325,7 @@ class XrplBinaryCodecTest {
         .currency("USD")
         .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
         .build())
-      .flags(Flags.TrustSetFlags.of(262144))
+      .flags(TrustSetFlags.of(262144))
       .signers(signers)
       .build();
 

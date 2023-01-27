@@ -20,10 +20,10 @@ public class NfTokenOfferFlagsTests extends AbstractFlagsTest {
     boolean lsfBuyToken,
     boolean lsfAuthorized
   ) {
-    long expectedFlags = (lsfBuyToken ? Flags.NfTokenOfferFlags.BUY_TOKEN.getValue() : 0L) |
-      (lsfAuthorized ? Flags.NfTokenOfferFlags.AUTHORIZED.getValue() : 0L);
+    long expectedFlags = (lsfBuyToken ? NfTokenOfferFlags.BUY_TOKEN.getValue() : 0L) |
+      (lsfAuthorized ? NfTokenOfferFlags.AUTHORIZED.getValue() : 0L);
 
-    Flags.NfTokenOfferFlags flags = Flags.NfTokenOfferFlags.of(expectedFlags);
+    NfTokenOfferFlags flags = NfTokenOfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfBuyToken()).isEqualTo(lsfBuyToken);

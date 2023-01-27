@@ -7,7 +7,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +48,7 @@ public class NfTokenMintTest {
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .flags(Flags.NfTokenMintFlags.builder()
+      .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
       .transferFee(transferFee)
@@ -79,7 +79,7 @@ public class NfTokenMintTest {
         .fee(XrpCurrencyAmount.ofDrops(1))
         .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
         .tokenTaxon(UnsignedLong.valueOf(146999694L))
-        .flags(Flags.NfTokenMintFlags.builder()
+        .flags(NfTokenMintFlags.builder()
           .tfTransferable(true)
           .build())
         .transferFee(TransferFee.of(UnsignedInteger.valueOf(50001)))
@@ -94,7 +94,7 @@ public class NfTokenMintTest {
       .fee(XrpCurrencyAmount.ofDrops(1))
       .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
-      .flags(Flags.NfTokenMintFlags.builder()
+      .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
       .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(99.99)))

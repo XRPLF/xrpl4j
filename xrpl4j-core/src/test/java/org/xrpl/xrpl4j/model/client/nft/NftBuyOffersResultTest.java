@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
@@ -21,7 +21,7 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
     BuyOffer buyOffer = BuyOffer.builder()
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-      .flags(Flags.NfTokenOfferFlags.BUY_TOKEN)
+      .flags(NfTokenOfferFlags.BUY_TOKEN)
       .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .build();
 

@@ -5,7 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -24,7 +24,7 @@ public class NfTokenOfferObjectJsonTests  extends AbstractJsonTest {
       .previousTransactionId(Hash256.of("E3FE6EA3D48F0C2B639448020EA4F03D4F4F8FFDB243A852A0F59177921B4879"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(14090896))
       .nfTokenId(NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65"))
-      .flags(Flags.NfTokenOfferFlags.BUY_TOKEN)
+      .flags(NfTokenOfferFlags.BUY_TOKEN)
       .build();
 
     String json = "{\n" +

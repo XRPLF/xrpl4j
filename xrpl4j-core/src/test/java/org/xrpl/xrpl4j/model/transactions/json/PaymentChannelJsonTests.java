@@ -27,7 +27,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
@@ -80,7 +80,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
-      .flags(Flags.PaymentChannelClaimFlags.builder().tfClose(true).build())
+      .flags(PaymentChannelClaimFlags.builder().tfClose(true).build())
       .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
       .balance(XrpCurrencyAmount.ofDrops(1000000))
       .amount(XrpCurrencyAmount.ofDrops(1000000))

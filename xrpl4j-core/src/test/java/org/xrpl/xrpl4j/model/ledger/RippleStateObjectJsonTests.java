@@ -25,7 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -40,7 +40,7 @@ public class RippleStateObjectJsonTests extends AbstractJsonTest {
         .issuer(Address.of("rrrrrrrrrrrrrrrrrrrrBZbvji"))
         .value("-10")
         .build())
-      .flags(Flags.RippleStateFlags.of(393216))
+      .flags(RippleStateFlags.of(393216))
       .highLimit(IssuedCurrencyAmount.builder()
         .currency("USD")
         .issuer(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

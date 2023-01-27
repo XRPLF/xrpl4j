@@ -24,8 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.flags.Flags.PaymentChannelClaimFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
 
 import java.util.Optional;
 
@@ -72,9 +71,9 @@ public interface PaymentChannelClaim extends Transaction {
   }
 
   /**
-   * Bit-map of boolean {@link Flags.PaymentChannelClaimFlags} to set for this transaction.
+   * Bit-map of boolean {@link PaymentChannelClaimFlags} to set for this transaction.
    *
-   * @return The {@link Flags.PaymentChannelClaimFlags} for this transaction.
+   * @return The {@link PaymentChannelClaimFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default

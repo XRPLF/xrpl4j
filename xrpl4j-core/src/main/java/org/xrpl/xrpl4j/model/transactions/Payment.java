@@ -26,7 +26,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.flags.Flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,21 +53,21 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * Set of {@link Flags.PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
-   * Flags} object containing the {@link Long} representation of the set bits.
+   * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
+   * PaymentFlags} object containing the {@link Long} representation of the set bits.
    *
-   * <p>The value of the flags can either be set manually, or constructed using {@link Flags.PaymentFlags.Builder}.
+   * <p>The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
    *
-   * @return The {@link Flags.PaymentFlags} for this transaction.
+   * @return The {@link PaymentFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Default
   default PaymentFlags flags() {
-    return PaymentFlags.builder().tfFullyCanonicalSig(true).build();
+    return PaymentFlags.builder().build();
   }
 
   /**
-   * The amount of currency to deliver. If the {@link Flags.PaymentFlags#tfPartialPayment()} flag is set, deliver up to
+   * The amount of currency to deliver. If the {@link PaymentFlags#tfPartialPayment()} flag is set, deliver up to
    * this amount instead.
    *
    * @return A {@link CurrencyAmount} representing the amount of a specified currency to deliver.
@@ -127,7 +128,7 @@ public interface Payment extends Transaction {
 
   /**
    * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the {@link
-   * Flags.PaymentFlags#tfPartialPayment()}* flag is set.
+   * PaymentFlags#tfPartialPayment()}* flag is set.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
    */

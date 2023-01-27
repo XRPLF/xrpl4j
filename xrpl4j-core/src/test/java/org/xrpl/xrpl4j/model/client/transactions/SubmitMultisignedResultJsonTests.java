@@ -28,7 +28,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
@@ -60,7 +60,7 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
           TrustSet.builder()
             .account(Address.of("rEuLyBCvcw4CFmzv8RepSiAoNgF8tTGJQC"))
             .fee(XrpCurrencyAmount.ofDrops(30000))
-            .flags(Flags.TrustSetFlags.of(262144))
+            .flags(TrustSetFlags.of(262144))
             .limitAmount(IssuedCurrencyAmount.builder()
               .currency("USD")
               .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))

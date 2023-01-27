@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
@@ -24,7 +24,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       .tokenTaxon(UnsignedLong.valueOf(146999694L))
       .sequence(UnsignedInteger.valueOf(12))
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(1000)))
-      .flags(Flags.NfTokenMintFlags.builder()
+      .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
       .signingPublicKey(
@@ -57,7 +57,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(12))
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(1000)))
       .uri(NfTokenUri.ofPlainText(uri))
-      .flags(Flags.NfTokenMintFlags.builder()
+      .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
       .signingPublicKey(

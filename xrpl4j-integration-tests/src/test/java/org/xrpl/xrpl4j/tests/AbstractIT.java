@@ -384,8 +384,6 @@ public abstract class AbstractIT {
     );
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(trustSetSubmitResult.transactionResult().hash());
 
     logInfo(
       trustSetSubmitResult.transactionResult().transaction().transactionType(),

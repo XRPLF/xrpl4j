@@ -69,9 +69,6 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                 )
                 .transactionSignature("30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB79C2C8431722C0ADB9110" +
                   "22024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576")
-                .closeDate(UnsignedLong.valueOf(649200322))
-                .hash(Hash256.of("08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C"))
-                .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112015)))
                 .build()
             )
             .hash(Hash256.of("08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C"))
@@ -104,9 +101,6 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
               )
               .transactionSignature("3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB48AB99AEA960BFA360AE163" +
                 "ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7")
-              .closeDate(UnsignedLong.valueOf(649200302))
-              .hash(Hash256.of("7C031FD5B710E3C048EEF31254089BEEC505900BCC9A842257A0319453333998"))
-              .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112010)))
               .build())
             .hash(Hash256.of("7C031FD5B710E3C048EEF31254089BEEC505900BCC9A842257A0319453333998"))
             .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112010)))
@@ -155,7 +149,6 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                    \"TransactionType\": \"Payment\",\n" +
       "                    \"TxnSignature\": \"30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB" +
       "79C2C8431722C0ADB911022024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576\",\n" +
-      "                    \"date\": 649200322,\n" +
       "                    \"hash\": \"08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C\",\n" +
       "                    \"ledger_index\": 57112015\n" +
       "                },\n" +
@@ -181,7 +174,6 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                    \"TransactionType\": \"Payment\",\n" +
       "                    \"TxnSignature\": \"3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB4" +
       "8AB99AEA960BFA360AE163ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7\",\n" +
-      "                    \"date\": 649200302,\n" +
       "                    \"hash\": \"7C031FD5B710E3C048EEF31254089BEEC505900BCC9A842257A0319453333998\",\n" +
       "                    \"ledger_index\": 57112010\n" +
       "                },\n" +

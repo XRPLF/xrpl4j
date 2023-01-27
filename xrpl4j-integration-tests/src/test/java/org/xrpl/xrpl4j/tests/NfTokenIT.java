@@ -58,8 +58,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(mintSubmitResult.transactionResult().hash());
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -98,8 +97,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(mintSubmitResult.transactionResult().hash());
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -130,8 +128,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenBurn> signedBurn = signatureService.sign(wallet.privateKey(), nfTokenBurn);
     SubmitResult<NfTokenBurn> burnSubmitResult = xrplClient.submit(signedBurn);
     assertThat(burnSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(burnSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(burnSubmitResult.transactionResult().hash());
+    assertThat(signedBurn.hash()).isEqualTo(burnSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -177,8 +174,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(mintSubmitResult.transactionResult().hash());
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -215,8 +211,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenCreateOffer> nfTokenCreateOfferSubmitResult = xrplClient.submit(signedOffer);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
+    assertThat(signedOffer.hash()).isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
     this.scanForResult(
@@ -264,8 +259,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(mintSubmitResult.transactionResult().hash());
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -307,8 +301,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenCreateOffer> nfTokenCreateOfferSubmitResult = xrplClient.submit(signedOffer);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
+    assertThat(signedOffer.hash()).isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
     this.scanForResult(
@@ -349,8 +342,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenAcceptOffer> nfTokenAcceptOfferSubmitResult = xrplClient.submit(signedAccept);
     assertThat(nfTokenAcceptOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenAcceptOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenAcceptOfferSubmitResult.transactionResult().hash());
+    assertThat(signedAccept.hash()).isEqualTo(nfTokenAcceptOfferSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> this.getValidatedTransaction(
@@ -389,8 +381,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(mintSubmitResult.transactionResult().hash());
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -425,8 +416,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenCreateOffer> nfTokenCreateOfferSubmitResult = xrplClient.submit(signedOffer);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
+    assertThat(signedOffer.hash()).isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
     this.scanForResult(
@@ -466,8 +456,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenCancelOffer> nfTokenCancelOfferSubmitResult = xrplClient.submit(signedCancel);
     assertThat(nfTokenCancelOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenCancelOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenCancelOfferSubmitResult.transactionResult().hash());
+    assertThat(signedCancel.hash()).isEqualTo(nfTokenCancelOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
     this.scanForResult(
@@ -514,8 +503,7 @@ public class NfTokenIT extends AbstractIT {
     SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(mintSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(mintSubmitResult.transactionResult().hash());
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     this.scanForResult(
       () -> {
@@ -551,8 +539,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenCreateOffer> nfTokenCreateSellOfferSubmitResult = xrplClient.submit(signedOffer);
     assertThat(nfTokenCreateSellOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenCreateSellOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenCreateSellOfferSubmitResult.transactionResult().hash());
+    assertThat(signedOffer.hash()).isEqualTo(nfTokenCreateSellOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
     this.scanForResult(
@@ -601,8 +588,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenCreateOffer> nfTokenCreateOfferSubmitResult = xrplClient.submit(signedOffer2);
     assertThat(nfTokenCreateOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenCreateOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
+    assertThat(signedOffer2.hash()).isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
     this.scanForResult(
@@ -649,8 +635,7 @@ public class NfTokenIT extends AbstractIT {
     );
     SubmitResult<NfTokenAcceptOffer> nfTokenAcceptOfferSubmitResult = xrplClient.submit(signedAccept);
     assertThat(nfTokenAcceptOfferSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(nfTokenAcceptOfferSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(nfTokenAcceptOfferSubmitResult.transactionResult().hash());
+    assertThat(signedAccept.hash()).isEqualTo(nfTokenAcceptOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was accepted
     this.scanForResult(

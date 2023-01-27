@@ -1,8 +1,7 @@
-package org.xrpl.xrpl4j.crypto;
+package org.xrpl.xrpl4j.model;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.AddressConstants;
 
 /**
  * Unit tests for {@link AddressConstants}.

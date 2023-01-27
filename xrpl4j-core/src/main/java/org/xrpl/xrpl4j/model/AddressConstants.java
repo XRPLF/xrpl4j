@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto;
+package org.xrpl.xrpl4j.model;
 
 import org.xrpl.xrpl4j.model.transactions.Address;
 

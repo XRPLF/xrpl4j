@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc.signing;
+package org.xrpl.xrpl4j.crypto.signing.bc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -7,8 +7,7 @@ import static org.mockito.Mockito.mock;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.signing.bc.EcDsaSignature;
 
 import java.math.BigInteger;
 

@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc.signing;
+package org.xrpl.xrpl4j.crypto.signing.bc;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -11,10 +11,10 @@ import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
-import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.signing.AbstractSignatureService;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;

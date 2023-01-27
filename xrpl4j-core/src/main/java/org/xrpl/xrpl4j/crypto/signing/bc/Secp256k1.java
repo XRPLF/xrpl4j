@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc.signing;
+package org.xrpl.xrpl4j.crypto.signing.bc;
 
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;

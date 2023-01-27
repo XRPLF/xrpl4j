@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc.signing;
+package org.xrpl.xrpl4j.crypto.signing.bc;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
@@ -14,13 +14,13 @@ import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.ServerSecret;
 import org.xrpl.xrpl4j.crypto.ServerSecretSupplier;
-import org.xrpl.xrpl4j.crypto.bc.keys.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;

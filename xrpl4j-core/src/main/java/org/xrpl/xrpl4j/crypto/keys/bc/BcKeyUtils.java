@@ -1,7 +1,7 @@
-package org.xrpl.xrpl4j.crypto.bc.keys;
+package org.xrpl.xrpl4j.crypto.keys.bc;
 
 import static org.xrpl.xrpl4j.codec.addresses.KeyType.ED25519;
-import static org.xrpl.xrpl4j.crypto.bc.signing.Secp256k1.EC_DOMAIN_PARAMETERS;
+import static org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1.EC_DOMAIN_PARAMETERS;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;

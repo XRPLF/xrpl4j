@@ -75,7 +75,7 @@ Construct and Sign an XRP Payment:
   import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
   import org.xrpl.xrpl4j.model.transactions.Address;
   import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
-  import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
+  import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
   
   //...
   

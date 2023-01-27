@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc.keys;
+package org.xrpl.xrpl4j.crypto.keys.bc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,9 +10,9 @@ import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
-import org.xrpl.xrpl4j.crypto.bc.signing.Secp256k1;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 

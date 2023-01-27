@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.crypto.bc.signing;
+package org.xrpl.xrpl4j.crypto.signing.bc;
 
 import com.google.common.base.Preconditions;
 import org.bouncycastle.asn1.ASN1InputStream;

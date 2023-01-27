@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.codec.addresses.AddressBase58;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.codec.addresses.PublicKeyCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.model.jackson.modules.PublicKeyDeserializer;
@@ -62,7 +63,7 @@ public interface PublicKey {
     }
     
     return PublicKey.builder()
-      .value(AddressCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
+      .value(PublicKeyCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
       .build();
   }
 
@@ -103,7 +104,7 @@ public interface PublicKey {
       return "";
     }
     
-    return AddressBase58.encode(value(), Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
+    return PublicKeyCodec.getInstance().encodeAccountPublicKey(this.value());
   }
 
   /**

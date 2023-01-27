@@ -97,8 +97,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     );
     signerListSetResult = xrplClient.submit(signedSignerListSet);
     assertThat(signerListSetResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(signerListSetResult.transactionResult().hash());
+    assertThat(signedSignerListSet.hash()).isEqualTo(signerListSetResult.transactionResult().hash());
     logInfo(
       signerListSetResult.transactionResult().transaction().transactionType(),
       signerListSetResult.transactionResult().hash()
@@ -163,12 +162,8 @@ public class SubmitMultisignedIT extends AbstractIT {
     String libraryCalculatedHash = signedTransaction.hash().value();
 
     SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(signedTransaction);
-
     assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
-
     assertThat(submitMultiSignedResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(signerListSetResult.transactionResult().hash());
     logInfo(
       submitMultiSignedResult.transaction().transaction().transactionType(),
       submitMultiSignedResult.transaction().hash()
@@ -219,9 +214,6 @@ public class SubmitMultisignedIT extends AbstractIT {
     SubmitMultiSignedResult<Payment> submitMultiSignedResult = xrplClient.submitMultisigned(signedTransaction);
     assertThat(submitMultiSignedResult.transaction().hash().value()).isEqualTo(libraryCalculatedHash);
     assertThat(submitMultiSignedResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(signerListSetResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(signerListSetResult.transactionResult().hash());
-
     logInfo(
       submitMultiSignedResult.transaction().transaction().transactionType(),
       submitMultiSignedResult.transaction().hash()

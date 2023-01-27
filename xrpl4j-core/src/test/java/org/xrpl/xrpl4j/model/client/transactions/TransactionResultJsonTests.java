@@ -51,7 +51,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .account(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
         .amount(amount)
         .destination(Address.of("r3ubyDp4gPGKH5bJx9KMmzpTSTW7EtRixS"))
-        .closeDate(UnsignedLong.valueOf(666212460))
         .fee(XrpCurrencyAmount.of(UnsignedLong.valueOf(12)))
         .flags(PaymentFlags.of(2147483648L))
         .lastLedgerSequence(UnsignedInteger.valueOf(13010048))
@@ -61,7 +60,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         )
         .transactionSignature("3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +
           "39F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
-        .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
         .build())
       .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
       .closeDate(UnsignedLong.valueOf(666212460))
@@ -72,9 +70,7 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .build()
       )
       .build();
-
-    assertThat(paymentResult.transaction().closeDateHuman()).isNotEmpty()
-        .isEqualTo(paymentResult.closeDateHuman());
+    
     assertThat(paymentResult.closeDateHuman()).hasValue(
       ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneId.of("UTC"))
     );
@@ -122,7 +118,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         )
         .transactionSignature("3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +
           "39F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
-        .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
         .build())
       .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
       .metadata(TransactionMetadata.builder()
@@ -132,8 +127,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .build()
       )
       .build();
-
-    assertThat(paymentResult.closeDateHuman()).isEmpty().isEqualTo(paymentResult.transaction().closeDateHuman());
 
     String json = "{\n" +
       "                    \"Account\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
@@ -177,7 +170,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         )
         .transactionSignature("3045022100AA15E1F82455712B7D3CE138F6B913238CFBFF56DCB3E2DE39624EE4C6" +
           "39F190022003A04CE739D93DF23BB7F646E274191F550AC73975737FA5436BCF8FEF29E4DD")
-        .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
         .build())
       .hash(Hash256.of("E939C30F233E3E6B0A9F829BDDA258CB9DA38D11C0F66C7D60E38B9D9FA987B8"))
       .metadata(TransactionMetadata.builder()
@@ -187,8 +179,6 @@ public class TransactionResultJsonTests extends AbstractJsonTest {
         .build()
       )
       .build();
-
-    assertThat(paymentResult.closeDateHuman()).isEmpty().isEqualTo(paymentResult.transaction().closeDateHuman());
 
     String json = "{\n" +
       "                    \"Account\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +

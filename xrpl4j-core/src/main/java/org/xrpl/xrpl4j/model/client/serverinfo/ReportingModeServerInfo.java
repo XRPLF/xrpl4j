@@ -71,7 +71,7 @@ public interface ReportingModeServerInfo extends ServerInfo {
    * Information about the last time the server closed a ledger, including the amount of time it took to reach a
    * consensus and the number of trusted validators participating.
    *
-   * @return A {@link org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose}.
+   * @return A {@link LastClose}.
    */
   @JsonProperty("last_close")
   LastClose lastClose();

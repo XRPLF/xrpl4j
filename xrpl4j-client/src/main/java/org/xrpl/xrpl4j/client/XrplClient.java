@@ -71,11 +71,11 @@ import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.server.ServerInfo;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
@@ -327,16 +327,16 @@ public class XrplClient {
     final UnsignedLong submittedLedgerSequence,
     final UnsignedLong lastLedgerSequence
   ) {
-    final ServerInfo serverInfo;
+    final ServerInfoResult serverInfo;
     try {
-      serverInfo = this.serverInfo();
+      serverInfo = this.serverInformation();
     } catch (JsonRpcClientErrorException e) {
       LOGGER.error(e.getMessage(), e);
       return true; // Assume ledger gaps exist so this can be retried.
     }
 
     Range<UnsignedLong> submittedToLast = Range.closed(submittedLedgerSequence, lastLedgerSequence);
-    return serverInfo.completeLedgerRanges().stream()
+    return serverInfo.info().completeLedgers().stream()
       .noneMatch(range -> range.encloses(submittedToLast));
   }
 
@@ -430,34 +430,15 @@ public class XrplClient {
   }
 
   /**
-   * Get the "server_info" for the rippled node.
-   *
-   * @return A {@link ServerInfo} containing information about the server.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @see "https://xrpl.org/server_info.html"
-   * @deprecated This method is deprecated to accommodate 3 different types of server_info responses from the
-   *   specialised Clio {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the
-   *   generic rippled server {@link RippledServerInfo}. Use {@link XrplClient#serverInformation()}.
-   */
-  @Deprecated
-  public ServerInfo serverInfo() throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SERVER_INFO)
-      .build();
-
-    return jsonRpcClient.send(request, ServerInfoResult.class).info();
-  }
-
-  /**
    * Get the "server_info" for the rippled node {@link RippledServerInfo}, clio server {@link ClioServerInfo} and
    * reporting mode server {@link ReportingModeServerInfo}. You should be able to handle all these response types as
-   * {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+   * {@link ServerInfo}.
    *
-   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} containing information about the server.
+   * @return A {@link ServerInfoResult} containing information about the server.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
    */
-  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInformation()
+  public ServerInfoResult serverInformation()
     throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)

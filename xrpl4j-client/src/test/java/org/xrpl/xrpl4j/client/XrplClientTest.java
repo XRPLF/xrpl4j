@@ -32,12 +32,12 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
-import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -87,14 +87,12 @@ import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.server.ServerInfo;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
@@ -390,37 +388,13 @@ public class XrplClientTest {
       }
 
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("0-0")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.ZERO, UnsignedLong.ZERO)));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
     };
 
@@ -456,37 +430,13 @@ public class XrplClientTest {
       }
 
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("1-1")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.ONE, UnsignedLong.ONE)));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
 
       @Override
@@ -542,37 +492,13 @@ public class XrplClientTest {
       }
 
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("1-1")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.ONE, UnsignedLong.ONE)));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
 
       @Override
@@ -615,37 +541,13 @@ public class XrplClientTest {
   void ledgerGapsExistBetweenTest() {
     xrplClient = new XrplClient(jsonRpcClientMock) {
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("2-4")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.valueOf(2), UnsignedLong.valueOf(4))));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
     };
     assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.valueOf(2), UnsignedLong.valueOf(4))).isFalse();
@@ -677,7 +579,7 @@ public class XrplClientTest {
   void ledgerGapExistsBetweenThrows_ReturnsTrue() {
     xrplClient = new XrplClient(jsonRpcClientMock) {
       @Override
-      public ServerInfo serverInfo() throws JsonRpcClientErrorException {
+      public ServerInfoResult serverInformation() throws JsonRpcClientErrorException {
         throw new JsonRpcClientErrorException("Could not connect to client.");
       }
     };
@@ -1082,61 +984,6 @@ public class XrplClientTest {
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(FeeResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.FEE);
-  }
-
-  @Test
-  public void serverInfo() {
-    ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-      .hash(Hash256.of(Strings.repeat("0", 64)))
-      .age(UnsignedInteger.ONE)
-      .reserveBaseXrp(UnsignedInteger.ONE)
-      .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-      .reserveIncXrp(UnsignedInteger.ONE)
-      .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-      .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-      .baseFeeXrp(BigDecimal.ONE)
-      .build();
-    ServerInfo serverInfo = ServerInfo.builder()
-      .completeLedgers("1-2")
-      .amendmentBlocked(true)
-      .buildVersion("1")
-      .closedLedger(serverInfoLedger)
-      .hostId("id")
-      .ioLatencyMs(UnsignedLong.valueOf(2))
-      .jqTransOverflow("flow")
-      .lastClose(ServerInfoLastClose.builder()
-        .convergeTimeSeconds(1.11)
-        .proposers(UnsignedInteger.ONE)
-        .build())
-      .publicKeyNode("node")
-      .serverState("full")
-      .serverStateDurationUs("10")
-      .time(ZonedDateTime.now())
-      .upTime(UnsignedLong.ONE)
-      .validationQuorum(UnsignedInteger.ONE)
-      .build();
-
-    ServerInfoResult serverInfoResult = ServerInfoResult.builder()
-      .info(serverInfo)
-      .build();
-
-    jsonRpcClientMock = new JsonRpcClient() {
-      @Override
-      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
-        return mock(JsonNode.class);
-      }
-
-      @Override
-      public <T extends XrplResult> T send(
-        JsonRpcRequest request,
-        JavaType resultType
-      ) {
-        return (T) serverInfoResult;
-      }
-    };
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    ServerInfo serverInfoResponse = assertDoesNotThrow(() -> xrplClient.serverInfo());
-    assertThat(serverInfoResponse).isEqualTo(serverInfo);
   }
 
   @Test

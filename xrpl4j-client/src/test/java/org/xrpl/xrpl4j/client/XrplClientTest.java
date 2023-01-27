@@ -1109,7 +1109,8 @@ public class XrplClientTest {
 
   @Test
   public void accountTransactionsUsingBuilder() throws JsonRpcClientErrorException {
-    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams.builder()
+    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams
+      .unboundedBuilder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
       .build();
     xrplClient.accountTransactions(accountTransactionsRequestParams);
@@ -1129,7 +1130,7 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
-      .isEqualTo(AccountTransactionsRequestParams.builder()
+      .isEqualTo(AccountTransactionsRequestParams.unboundedBuilder()
         .account(account)
         .build());
   }

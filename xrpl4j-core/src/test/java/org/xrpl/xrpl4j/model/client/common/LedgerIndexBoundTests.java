@@ -187,7 +187,7 @@ public class LedgerIndexBoundTests {
 
   @Test
   void testUnbounded() {
-    assertThat(LedgerIndexBound.UNBOUNDED.value()).isEqualTo(-1);
+    assertThat(LedgerIndexBound.unbounded().value()).isEqualTo(-1);
   }
 
   @Test

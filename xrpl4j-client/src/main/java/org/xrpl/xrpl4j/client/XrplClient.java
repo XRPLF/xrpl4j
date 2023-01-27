@@ -178,42 +178,6 @@ public class XrplClient {
   }
 
   /**
-   * Submit a {@link SignedTransaction} to the XRP Ledger.
-   *
-   * @param <T>               The type of signed {@link Transaction} that is being submitted.
-   * @param signedTransaction A {@link org.xrpl.xrpl4j.crypto.signing.SignedTransaction} to submit.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @throws JsonProcessingException     if any JSON is invalid.
-   * @see "https://xrpl.org/submit.html"
-   * @deprecated Prefer the submit method with the variant from the new crypto package.
-   */
-  @Deprecated
-  public <T extends Transaction> SubmitResult<T> submit(
-    final org.xrpl.xrpl4j.crypto.signing.SignedTransaction signedTransaction
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("About to submit signedTransaction: {}", signedTransaction);
-    }
-
-    String signedJson = objectMapper.writeValueAsString(signedTransaction.signedTransaction());
-    String signedBlob = binaryCodec.encode(signedJson); // <-- txBlob must be binary-encoded.
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SUBMIT)
-      .addParams(SubmitRequestParams.of(signedBlob))
-      .build();
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("About to submit JsonRpcRequest: {}", request);
-    }
-
-    JavaType resultType = objectMapper.getTypeFactory()
-      .constructParametricType(SubmitResult.class, signedTransaction.unsignedTransaction().getClass());
-    return jsonRpcClient.send(request, resultType);
-  }
-
-  /**
    * Submit a {@link SingleSignedTransaction} to the XRP Ledger.
    *
    * @param <T>               The type of signed {@link Transaction} that is being submitted.
@@ -224,7 +188,7 @@ public class XrplClient {
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction signedTransaction)
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction<T> signedTransaction)
     throws JsonRpcClientErrorException, JsonProcessingException {
     Objects.requireNonNull(signedTransaction);
 

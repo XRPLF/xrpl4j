@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
-import org.xrpl.xrpl4j.crypto.ImmutableKeyMetadata;
 import org.xrpl.xrpl4j.crypto.core.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.AbstractSignatureService;
@@ -160,7 +159,7 @@ class FauxGcpKmsSignatureServiceTest {
     /**
      * A Builder for immutables.
      *
-     * @return A {@link ImmutableKeyMetadata.Builder}.
+     * @return A {@link ImmutableGcpKmsPrivateKeyReference.Builder}.
      */
     static ImmutableGcpKmsPrivateKeyReference.Builder builder() {
       return ImmutableGcpKmsPrivateKeyReference.builder();

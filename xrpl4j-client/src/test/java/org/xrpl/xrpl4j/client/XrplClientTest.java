@@ -37,14 +37,11 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
-import org.assertj.core.util.Lists;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.xrpl.xrpl4j.crypto.BcKeyUtils;
-import org.xrpl.xrpl4j.crypto.KeyMetadata;
 import org.xrpl.xrpl4j.crypto.bc.signing.BcSignatureService;
 import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
@@ -53,7 +50,6 @@ import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.signing.Signature;
 import org.xrpl.xrpl4j.crypto.core.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.SingleKeySignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.XrplResult;
@@ -99,7 +95,6 @@ import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
-import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
@@ -129,7 +124,6 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
-import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
@@ -942,47 +936,6 @@ public class XrplClientTest {
       () -> xrplClient.addSignature(mock(Transaction.class), "")
     );
     assertThat(exception.getMessage()).isEqualTo("Signing fields could not be added to the unsignedTransaction.");
-  }
-
-  @Test
-  public void submitWithCryptoSigningSignedTx() {
-    jsonRpcClientMock = new JsonRpcClient() {
-
-      @Override
-      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
-        return mock(JsonNode.class);
-      }
-
-      @Override
-      public <T extends XrplResult> T send(
-        JsonRpcRequest request,
-        JavaType resultType
-      ) {
-        return (T) mock(SubmitResult.class);
-      }
-    };
-
-    String edPrivateKeyHex = "60F72F359647AD376D2CB783340CD843BD57CCD46093AA16B0C4D3A5143BADC5";
-    Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(edPrivateKeyHex), 0
-    );
-    SingleKeySignatureService ecSignatureService = new SingleKeySignatureService(
-      BcKeyUtils.toPrivateKey(knownEd25519PrivateKeyParameters)
-    );
-    Payment payment = Payment.builder()
-      .ticketSequence(UnsignedInteger.ONE)
-      .account(keyPair.publicKey().deriveAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(keyPair.publicKey())
-      .build();
-
-    org.xrpl.xrpl4j.crypto.signing.SignedTransaction<Payment> paymentSignedTransaction = ecSignatureService.sign(
-      mock(KeyMetadata.class), payment
-    );
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
   }
 
   @Test

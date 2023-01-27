@@ -142,10 +142,6 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
-import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
-import org.xrpl.xrpl4j.wallet.Wallet;
-import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -160,9 +156,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class XrplClientTest {
 
-  protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
-  SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-  final Wallet wallet = seedResult.wallet();
+  private final KeyPair keyPair = Seed.ed25519Seed().deriveKeyPair();
+  
   @Mock
   private JsonRpcClient jsonRpcClientMock;
   private XrplClient xrplClient;
@@ -804,31 +799,31 @@ public class XrplClientTest {
       .build();
     assertThat(xrplClient.addSignature(escrowFinish, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .buyOffer(Hash256.of(Strings.repeat("0", 64)))
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .build();
     assertThat(xrplClient.addSignature(nfTokenAcceptOffer, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
       .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .sequence(UnsignedInteger.ONE)
       .build();
     assertThat(xrplClient.addSignature(nfTokenBurn, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
       .addTokenOffers(Hash256.of(Strings.repeat("0", 64)))
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(UnsignedInteger.valueOf(2))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .build();
     assertThat(xrplClient.addSignature(nfTokenCancelOffer, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(UnsignedInteger.ONE)
@@ -836,14 +831,14 @@ public class XrplClientTest {
       .flags(NfTokenCreateOfferFlags.builder()
         .tfSellToken(true)
         .build())
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .build();
     assertThat(xrplClient.addSignature(nfTokenCreateOffer, "sign").transactionSignature().get()).isEqualTo("sign");
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .sequence(UnsignedInteger.ONE)
       .build();
     assertThat(xrplClient.addSignature(nfTokenMint, "sign").transactionSignature().get()).isEqualTo("sign");
@@ -976,11 +971,11 @@ public class XrplClientTest {
     );
     Payment payment = Payment.builder()
       .ticketSequence(UnsignedInteger.ONE)
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(1000L))
       .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
     org.xrpl.xrpl4j.crypto.signing.SignedTransaction<Payment> paymentSignedTransaction = ecSignatureService.sign(
@@ -1009,91 +1004,18 @@ public class XrplClientTest {
       }
     };
 
-    KeyPair keypair = Seed.ed25519Seed().deriveKeyPair();
     Payment payment = Payment.builder()
       .ticketSequence(UnsignedInteger.ONE)
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(1000L))
       .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
-    SingleSignedTransaction<Payment> paymentSignedTransaction = bcSignatureService.sign(keypair.privateKey(), payment);
+    SingleSignedTransaction<Payment> paymentSignedTransaction = bcSignatureService.sign(keyPair.privateKey(), payment);
     xrplClient = new XrplClient(jsonRpcClientMock);
     assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
-  }
-
-  @Test
-  public void submitWithSignedTx() {
-
-    jsonRpcClientMock = new JsonRpcClient() {
-
-      @Override
-      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
-        return mock(JsonNode.class);
-      }
-
-      @Override
-      public <T extends XrplResult> T send(
-        JsonRpcRequest request,
-        JavaType resultType
-      ) {
-        return (T) mock(SubmitResult.class);
-      }
-    };
-
-    Payment payment = Payment.builder()
-      .ticketSequence(UnsignedInteger.ONE)
-      .account(wallet.classicAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
-      .build();
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    SignedTransaction<Payment> paymentSignedTransaction = xrplClient.signTransaction(wallet, payment);
-    assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
-
-  }
-
-  @Test
-  public void signTxCatchesJsonProcessingException_ThrowsException() {
-    Payment mockPayment = mock(Payment.class);
-    assertThrows(RuntimeException.class, () -> xrplClient.signTransaction(wallet, mockPayment));
-  }
-
-  @Test
-  public void submitUnsignedTxWithSigningPubKey() {
-    SubmitResult mockSubmitResult = mock(SubmitResult.class);
-    SignedTransaction mockSignedTransaction = mock(SignedTransaction.class);
-    xrplClient = new XrplClient(jsonRpcClientMock) {
-      @Override
-      public <T extends Transaction> SignedTransaction<T> signTransaction(
-        Wallet wallet, T unsignedTransaction
-      ) {
-        return mockSignedTransaction;
-      }
-
-      @Override
-      public <T extends Transaction> SubmitResult<T> submit(
-        SignedTransaction<T> signedTransaction
-      ) {
-        return mockSubmitResult;
-      }
-    };
-    Payment payment = Payment.builder()
-      .ticketSequence(UnsignedInteger.ONE)
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      )
-      .build();
-
-    assertDoesNotThrow(() -> xrplClient.submit(wallet, payment));
   }
 
   @Test
@@ -1120,15 +1042,14 @@ public class XrplClientTest {
         return (T) submitMultiSignedResult;
       }
     };
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    final Wallet wallet2 = seedResult.wallet();
+    KeyPair keyPair2 = Seed.ed25519Seed().deriveKeyPair();
 
     Payment unsignedPayment = Payment.builder()
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(1))
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(wallet2.classicAddress())
+      .destination(keyPair2.publicKey().deriveAddress())
       .build();
 
     /////////////////////////////
@@ -1170,15 +1091,14 @@ public class XrplClientTest {
         return (T) submitMultiSignedResult;
       }
     };
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    final Wallet wallet2 = seedResult.wallet();
+    KeyPair keyPair = Seed.ed25519Seed().deriveKeyPair();
 
     Payment unsignedPayment = Payment.builder()
-      .account(wallet.classicAddress())
+      .account(this.keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(1))
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(wallet2.classicAddress())
+      .destination(keyPair.publicKey().deriveAddress())
       .build();
 
     SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
@@ -1571,58 +1491,5 @@ public class XrplClientTest {
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_SELL_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
   }
-
-  @Test
-  public void signTransaction() {
-    Payment payment = Payment.builder()
-      .account(wallet.classicAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      )
-      .build();
-    assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
-  }
-
-  @Test
-  public void signPaymentWithPaths_DoesNotThrow() {
-    List<PathStep> paths = Lists.newArrayList(
-      PathStep.builder().account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v")).currency("ABC").build(),
-      PathStep.builder().account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW")).currency("XYZ").build()
-    );
-    Payment payment = Payment.builder()
-      .account(wallet.classicAddress())
-      .amount(XrpCurrencyAmount.ofDrops(10))
-      .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(wallet.publicKey()))
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .addPaths(paths)
-      .build();
-
-    assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
-  }
-
-  @Test
-  public void signTransactionWithWalletMissingPrivateKey() {
-    Wallet wallet2 = Wallet.builder()
-      .publicKey(wallet.publicKey())
-      .classicAddress(wallet.classicAddress())
-      .xAddress(wallet.xAddress())
-      .isTest(true)
-      .build();
-    Payment payment = Payment.builder()
-      .account(wallet2.classicAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      )
-      .build();
-    RuntimeException exception = assertThrows(RuntimeException.class, () ->
-      xrplClient.signTransaction(wallet2, payment));
-    assertThat(exception.getMessage()).isEqualTo("Wallet must provide a private key to sign the transaction.");
-  }
+  
 }

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -36,8 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.core.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.core.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
-import org.xrpl.xrpl4j.keypairs.KeyPairService;
 import org.xrpl.xrpl4j.model.client.Finality;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
@@ -116,7 +113,6 @@ import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -136,7 +132,6 @@ public class XrplClient {
   private final ObjectMapper objectMapper;
   private final XrplBinaryCodec binaryCodec;
   private final JsonRpcClient jsonRpcClient;
-  private final KeyPairService keyPairService;
 
   /**
    * Public constructor.
@@ -157,31 +152,8 @@ public class XrplClient {
     this.jsonRpcClient = Objects.requireNonNull(jsonRpcClient);
     this.objectMapper = ObjectMapperFactory.create();
     this.binaryCodec = XrplBinaryCodec.getInstance();
-    this.keyPairService = DefaultKeyPairService.getInstance();
   }
-
-  /**
-   * Submit a {@link Transaction} to the XRP Ledger.
-   *
-   * @param <T>                 The type of {@link Transaction} that is being submitted.
-   * @param wallet              The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
-   * @param unsignedTransaction An unsigned {@link Transaction} to submit. {@link Transaction#transactionSignature()}
-   *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @see "https://xrpl.org/submit.html"
-   * @deprecated Prefer submitting a signed transaction without a wallet.
-   */
-  @Deprecated
-  public <T extends Transaction> SubmitResult<T> submit(
-    Wallet wallet,
-    T unsignedTransaction
-  ) throws JsonRpcClientErrorException {
-    SignedTransaction<T> signedTransaction = signTransaction(wallet, unsignedTransaction);
-    return submit(signedTransaction);
-  }
-
+  
   /**
    * Submit a {@link SignedTransaction} to the ledger.
    *
@@ -853,38 +825,6 @@ public class XrplClient {
       .addParams(params)
       .build();
     return jsonRpcClient.send(request, GatewayBalancesResult.class);
-  }
-
-  /**
-   * Sign a {@link Transaction} with the private key from a {@link Wallet}.
-   *
-   * @param wallet              A {@link Wallet} with a private key to sign the transaction with.
-   * @param unsignedTransaction A {@link Transaction} without a signature.
-   * @param <T>                 The actual polymorphic type of {@link Transaction} to sign.
-   *
-   * @return A {@link SignedTransaction}.
-   */
-  public <T extends Transaction> SignedTransaction<T> signTransaction(
-    Wallet wallet, T unsignedTransaction
-  ) {
-    try {
-      String unsignedJson = objectMapper.writeValueAsString(unsignedTransaction);
-
-      String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
-      String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-        .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
-
-      T signedTransaction = (T) addSignature(unsignedTransaction, signature);
-
-      String signedJson = objectMapper.writeValueAsString(signedTransaction);
-      String signedBinary = binaryCodec.encode(signedJson);
-      return SignedTransaction.<T>builder()
-        .signedTransaction(signedTransaction)
-        .signedTransactionBlob(signedBinary)
-        .build();
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   /**

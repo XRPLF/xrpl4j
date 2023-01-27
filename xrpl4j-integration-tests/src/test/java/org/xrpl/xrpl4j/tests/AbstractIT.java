@@ -53,7 +53,6 @@ import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.security.Key;
 import java.security.KeyStore;
@@ -406,8 +405,8 @@ public abstract class AbstractIT {
    *
    * @param currency           The currency code to send.
    * @param value              The amount of currency to send.
-   * @param issuerKeyPair       The {@link Wallet} of the issuer account.
-   * @param counterpartyKeyPair The {@link Wallet} of the counterparty account.
+   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
+   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.

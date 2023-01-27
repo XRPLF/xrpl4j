@@ -24,7 +24,6 @@ public class PublicKeyCodec {
    *
    * @return The Base58 representation of publicKey.
    */
-  // TODO: Use PublicKey when the modules are rearrangd.
   public String encodeNodePublicKey(final UnsignedByteArray publicKey) {
     Objects.requireNonNull(publicKey);
     return AddressBase58.encode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33));
@@ -39,7 +38,6 @@ public class PublicKeyCodec {
    *
    * @see "https://xrpl.org/base58-encodings.html"
    */
-  // TODO: Use PublicKey when the modules are rearrangd.
   public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
 

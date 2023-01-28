@@ -12,8 +12,7 @@ Contains a suite of integration tests which use the xrpl4j modules to perform XR
 
 ### [AccountTransactionsIT](./src/test/java/org/xrpl/xrpl4j/tests/AccountTransactionsIT.java)
 
--
-Uses [`AccountTransactionsResult`](../xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/client/accounts/AccountTransactionsResult.java)
+- Uses [`AccountTransactionsResult`](../xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/client/accounts/AccountTransactionsResult.java)
 to load data from rippled.
 
 ### [CheckIT](./src/test/java/org/xrpl/xrpl4j/tests/CheckIT.java)

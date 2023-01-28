@@ -76,15 +76,9 @@ public interface AccountCurrenciesResult extends XrplResult {
    * The Ledger Index of the ledger version used to generate this response.
    *
    * @return A {@link LedgerIndex}.
-   *
-   * @deprecated When requesting Account Channels from a non-validated ledger, the result will not contain this field.
-   *   To prevent this class from throwing an error when requesting Account Currencies from a non-validated ledger, this
-   *   field is currently marked as {@link Nullable}. However, this field will be {@link Optional} in a future release.
    */
-  @Deprecated
-  @Nullable
   @JsonProperty("ledger_index")
-  LedgerIndex ledgerIndex();
+  Optional<LedgerIndex> ledgerIndex();
 
   /**
    * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is null.
@@ -96,7 +90,7 @@ public interface AccountCurrenciesResult extends XrplResult {
   @JsonIgnore
   @Value.Auxiliary
   default LedgerIndex ledgerIndexSafe() {
-    return Optional.ofNullable(ledgerIndex())
+    return ledgerIndex()
       .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerIndex."));
   }
 

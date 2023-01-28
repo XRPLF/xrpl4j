@@ -64,34 +64,6 @@ public interface AccountTransactionsResult extends XrplResult {
    * The ledger index of the earliest ledger actually searched for transactions.
    *
    * @return The {@link LedgerIndexBound} of the earliest ledger searched.
-   * @deprecated This field will be removed in favor of {@link #ledgerIndexMinimum()}.
-   */
-  @Deprecated
-  @Value.Auxiliary
-  @JsonIgnore
-  @Value.Default
-  default LedgerIndex ledgerIndexMin() {
-    return LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndexMinimum().value()));
-  }
-
-  /**
-   * The ledger index of the most recent ledger actually searched for transactions.
-   *
-   * @return The {@link LedgerIndexBound} of the latest ledger searched.
-   * @deprecated This field will be removed in favor of {@link #ledgerIndexMaximum()}.
-   */
-  @Deprecated
-  @Value.Auxiliary
-  @JsonIgnore
-  @Value.Default
-  default LedgerIndex ledgerIndexMax() {
-    return LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndexMaximum().value()));
-  }
-
-  /**
-   * The ledger index of the earliest ledger actually searched for transactions.
-   *
-   * @return The {@link LedgerIndexBound} of the earliest ledger searched.
    */
   @JsonProperty("ledger_index_min")
   LedgerIndexBound ledgerIndexMinimum();

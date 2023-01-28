@@ -62,15 +62,7 @@ public class LegacyLedgerSpecifierUtils {
    * @return A {@link LedgerSpecifier} with the appropriate fields based on {@code ledgerIndex}.
    */
   public static LedgerSpecifier computeLedgerSpecifierFromLedgerIndex(LedgerIndex ledgerIndex) {
-    if (ledgerIndex.equals(LedgerIndex.VALIDATED)) {
-      return LedgerSpecifier.VALIDATED;
-    } else if (ledgerIndex.equals(LedgerIndex.CURRENT)) {
-      return LedgerSpecifier.CURRENT;
-    } else if (ledgerIndex.equals(LedgerIndex.CLOSED)) {
-      return LedgerSpecifier.CLOSED;
-    } else {
-      return LedgerSpecifier.of(ledgerIndex);
-    }
+    return LedgerSpecifier.CURRENT;
   }
 
 }

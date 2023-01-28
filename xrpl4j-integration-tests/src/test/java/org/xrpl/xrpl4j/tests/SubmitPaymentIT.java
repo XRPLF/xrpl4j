@@ -50,7 +50,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
-    assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
+    assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
     TransactionResult<Payment> validatedPayment = this.scanForResult(
@@ -90,7 +90,7 @@ public class SubmitPaymentIT extends AbstractIT {
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(senderKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
     this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));

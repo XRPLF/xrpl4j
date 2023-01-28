@@ -84,7 +84,7 @@ public class SignerListSetIT extends AbstractIT {
       sourceKeyPair.privateKey(), signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
-    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       signerListSetResult.transactionResult().hash()
@@ -143,7 +143,7 @@ public class SignerListSetIT extends AbstractIT {
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transaction().hash()
@@ -199,7 +199,7 @@ public class SignerListSetIT extends AbstractIT {
       sourceKeyPair.privateKey(), signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
-    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       signerListSetResult.transactionResult().hash()
@@ -236,7 +236,7 @@ public class SignerListSetIT extends AbstractIT {
       sourceKeyPair.privateKey(), deleteSignerList
     );
     SubmitResult<SignerListSet> signerListDeleteResult = xrplClient.submit(signedDeleteSignerList);
-    assertThat(signerListDeleteResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListDeleteResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       signerListDeleteResult.transactionResult().hash()

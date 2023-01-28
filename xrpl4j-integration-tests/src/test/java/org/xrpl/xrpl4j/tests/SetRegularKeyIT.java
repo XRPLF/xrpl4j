@@ -51,7 +51,7 @@ public class SetRegularKeyIT extends AbstractIT {
       wallet.privateKey(), setRegularKey
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
-    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
       setResult.transactionResult().hash()
@@ -112,7 +112,7 @@ public class SetRegularKeyIT extends AbstractIT {
       wallet.privateKey(), setRegularKey
     );
     SubmitResult<SetRegularKey> setResult = xrplClient.submit(signedSetRegularKey);
-    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
       setResult.transactionResult().hash()
@@ -152,7 +152,7 @@ public class SetRegularKeyIT extends AbstractIT {
       wallet.privateKey(), removeRegularKey
     );
     SubmitResult<SetRegularKey> removeResult = xrplClient.submit(signedRemoveRegularKey);
-    assertThat(removeResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(removeResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SetRegularKey transaction successful. https://testnet.xrpl.org/transactions/{}",
       removeResult.transactionResult().hash()

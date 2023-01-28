@@ -63,7 +63,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
 
     SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
 
     this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
@@ -95,7 +95,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
 
     SingleSignedTransaction<Payment> transactionWithSignature = signatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
 
     this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
@@ -194,7 +194,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       sourcePrivateKey, signerListSet
     );
     SubmitResult<SignerListSet> signerListSetResult = xrplClient.submit(signedSignerListSet);
-    assertThat(signerListSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(signerListSetResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "SignerListSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       signerListSetResult.transactionResult().hash()
@@ -253,7 +253,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transaction().hash()

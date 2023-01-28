@@ -888,9 +888,9 @@ public class XrplClientTest {
         JavaType resultType
       ) {
         SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
-          .result("tesSUCCESS")
-          .resultCode(200)
-          .resultMessage("Submitted")
+          .engineResult("tesSUCCESS")
+          .engineResultCode(200)
+          .engineResultMessage("Submitted")
           .transactionBlob("blob")
           .transaction(mock(TransactionResult.class))
           .build();
@@ -917,8 +917,8 @@ public class XrplClientTest {
 
     xrplClient = new XrplClient(jsonRpcClientMock);
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
-    assertThat(paymentResult.resultCode()).isEqualTo(200);
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResultCode()).isEqualTo(200);
     assertThat(paymentResult.transactionBlob()).isEqualTo("blob");
   }
 
@@ -937,9 +937,9 @@ public class XrplClientTest {
         JavaType resultType
       ) {
         SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
-          .result("tesSUCCESS")
-          .resultCode(200)
-          .resultMessage("Submitted")
+          .engineResult("tesSUCCESS")
+          .engineResultCode(200)
+          .engineResultMessage("Submitted")
           .transactionBlob("blob")
           .transaction(mock(TransactionResult.class))
           .build();
@@ -972,8 +972,8 @@ public class XrplClientTest {
 
     xrplClient = new XrplClient(jsonRpcClientMock);
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSignedPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
-    assertThat(paymentResult.resultCode()).isEqualTo(200);
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResultCode()).isEqualTo(200);
     assertThat(paymentResult.transactionBlob()).isEqualTo("blob");
   }
 

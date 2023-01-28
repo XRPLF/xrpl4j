@@ -46,8 +46,8 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       .accountSequenceNext(UnsignedInteger.valueOf(362))
       .applied(true)
       .broadcast(true)
-      .result(TransactionResultCodes.TES_SUCCESS)
-      .resultMessage("The transaction was applied. Only final in a validated ledger.")
+      .engineResult(TransactionResultCodes.TES_SUCCESS)
+      .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .kept(true)
       .openLedgerCost(XrpCurrencyAmount.ofDrops(10))
@@ -78,9 +78,6 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
         .build())
       .validatedLedgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(21184416)))
       .build();
-
-    assertThat(paymentResult.engineResult()).isNotEmpty().get().isEqualTo(paymentResult.result());
-    assertThat(paymentResult.engineResultMessage()).isNotEmpty().get().isEqualTo(paymentResult.resultMessage());
 
     String json = "{\n" +
       "        \"accepted\" : true,\n" +

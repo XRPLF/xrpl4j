@@ -41,21 +41,7 @@ public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
   @Override
   public void serialize(LedgerIndex ledgerIndex, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    if (isInteger(ledgerIndex)) {
-      gen.writeNumber(ledgerIndex.unsignedIntegerValue().intValue());
-    } else {
-      gen.writeString(ledgerIndex.value());
-    }
+    gen.writeNumber(ledgerIndex.unsignedIntegerValue().intValue());
   }
 
-  private boolean isInteger(final LedgerIndex value) {
-    try {
-      Integer.parseInt(value.value());
-      // is an integer!
-      return true;
-    } catch (NumberFormatException e) {
-      // not an integer!
-      return false;
-    }
-  }
 }

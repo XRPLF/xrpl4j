@@ -107,37 +107,12 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   List<PathCurrency> sourceCurrencies();
 
   /**
-   * A 20-byte hex string for the ledger version to use.
-   *
-   * @return An optionally-present {@link Hash256}.
-   * @deprecated Ledger hash should be specified in {@link #ledgerSpecifier()}.
-   */
-  @JsonIgnore
-  @Deprecated
-  @Value.Auxiliary
-  Optional<Hash256> ledgerHash();
-
-  /**
-   * The ledger index of the ledger to use, or a shortcut string to choose a ledger automatically.
-   *
-   * @return A {@link LedgerIndex}.  Defaults to {@link LedgerIndex#CURRENT}.
-   * @deprecated Ledger index and any shortcut values should be specified in {@link #ledgerSpecifier()}.
-   */
-  @JsonIgnore
-  @Deprecated
-  @Nullable
-  @Value.Auxiliary
-  LedgerIndex ledgerIndex();
-
-  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
    * numerical ledger index, or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
-  @Value.Default
   @JsonUnwrapped
-  default LedgerSpecifier ledgerSpecifier() {
-    return LegacyLedgerSpecifierUtils.computeLedgerSpecifier(ledgerHash(), ledgerIndex());
-  }
+  LedgerSpecifier ledgerSpecifier();
+  
 }

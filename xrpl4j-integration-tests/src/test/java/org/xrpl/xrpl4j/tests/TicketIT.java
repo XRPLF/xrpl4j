@@ -62,7 +62,7 @@ public class TicketIT extends AbstractIT {
       ticketCreate
     );
     SubmitResult<TicketCreate> submitResult = xrplClient.submit(signedCreate);
-    assertThat(submitResult.result()).isEqualTo(SUCCESS_STATUS);
+    assertThat(submitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     logInfo(
       submitResult.transactionResult().transaction().transactionType(),
@@ -93,7 +93,7 @@ public class TicketIT extends AbstractIT {
       accountSet
     );
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
-    assertThat(accountSetResult.result()).isEqualTo(SUCCESS_STATUS);
+    assertThat(accountSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     logInfo(
       accountSetResult.transactionResult().transaction().transactionType(),

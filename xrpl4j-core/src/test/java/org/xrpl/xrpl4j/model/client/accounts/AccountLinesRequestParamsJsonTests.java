@@ -37,54 +37,6 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
   public static final Hash256 HASH_256 = Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F");
 
   @Test
-  @Deprecated
-  public void oldLedgerIndexStillWorks() throws JsonProcessingException, JSONException {
-    AccountLinesRequestParams params = AccountLinesRequestParams.builder()
-      .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-      .ledgerIndex(LedgerIndex.VALIDATED)
-      .build();
-
-    String json = "{\n" +
-      "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
-      "            \"ledger_index\": \"validated\"\n" +
-      "        }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
-  @Deprecated
-  public void oldNumericalLedgerIndexStillWorks() throws JsonProcessingException, JSONException {
-    AccountLinesRequestParams params = AccountLinesRequestParams.builder()
-      .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-      .ledgerIndex(LedgerIndex.of(UnsignedLong.ONE))
-      .build();
-
-    String json = "{\n" +
-      "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
-      "            \"ledger_index\": 1\n" +
-      "        }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
-  @Deprecated
-  public void oldNLedgerHashStillWorks() throws JsonProcessingException, JSONException {
-    AccountLinesRequestParams params = AccountLinesRequestParams.builder()
-      .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
-      .ledgerHash(HASH_256)
-      .build();
-
-    String json = "{\n" +
-      "            \"account\": \"rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn\",\n" +
-      "            \"ledger_hash\": \"" + HASH_256 + "\"\n" +
-      "        }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
   public void testWithLedgerIndex() throws JsonProcessingException, JSONException {
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()
       .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))

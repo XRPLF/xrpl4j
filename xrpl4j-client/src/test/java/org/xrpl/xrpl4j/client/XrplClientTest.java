@@ -1046,6 +1046,7 @@ public class XrplClientTest {
   public void accountChannels() throws JsonRpcClientErrorException {
     AccountChannelsRequestParams accountChannelsRequestParams = AccountChannelsRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountChannels(accountChannelsRequestParams);
 
@@ -1059,6 +1060,7 @@ public class XrplClientTest {
   public void accountCurrencies() throws JsonRpcClientErrorException {
     AccountCurrenciesRequestParams accountCurrenciesRequestParams = AccountCurrenciesRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountCurrencies(accountCurrenciesRequestParams);
 
@@ -1072,6 +1074,7 @@ public class XrplClientTest {
   public void accountInfo() throws JsonRpcClientErrorException {
     AccountInfoRequestParams accountInfoRequestParams = AccountInfoRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountInfo(accountInfoRequestParams);
 
@@ -1085,6 +1088,7 @@ public class XrplClientTest {
   public void accountObjects() throws JsonRpcClientErrorException {
     AccountObjectsRequestParams accountObjectsRequestParams = AccountObjectsRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountObjects(accountObjectsRequestParams);
 
@@ -1098,6 +1102,7 @@ public class XrplClientTest {
   public void accountOffers() throws JsonRpcClientErrorException {
     AccountOffersRequestParams accountOffersRequestParams = AccountOffersRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountOffers(accountOffersRequestParams);
 
@@ -1109,7 +1114,8 @@ public class XrplClientTest {
 
   @Test
   public void accountTransactionsUsingBuilder() throws JsonRpcClientErrorException {
-    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams.builder()
+    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams
+      .unboundedBuilder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
       .build();
     xrplClient.accountTransactions(accountTransactionsRequestParams);
@@ -1129,7 +1135,7 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
-      .isEqualTo(AccountTransactionsRequestParams.builder()
+      .isEqualTo(AccountTransactionsRequestParams.unboundedBuilder()
         .account(account)
         .build());
   }
@@ -1227,6 +1233,7 @@ public class XrplClientTest {
   public void accountLines() throws JsonRpcClientErrorException {
     AccountLinesRequestParams accountLinesRequestParams = AccountLinesRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountLines(accountLinesRequestParams);
 

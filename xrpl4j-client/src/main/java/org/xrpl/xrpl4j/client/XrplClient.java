@@ -610,7 +610,7 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountTransactionsResult accountTransactions(Address address) throws JsonRpcClientErrorException {
-    return accountTransactions(AccountTransactionsRequestParams.builder()
+    return accountTransactions(AccountTransactionsRequestParams.unboundedBuilder()
       .account(address)
       .build());
   }

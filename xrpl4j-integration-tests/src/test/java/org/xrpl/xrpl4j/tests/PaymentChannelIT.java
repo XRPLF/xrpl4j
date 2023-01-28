@@ -425,9 +425,8 @@ public class PaymentChannelIT extends AbstractIT {
         .anyMatch(channel -> channel.destinationAccount().equals(destinationKeyPair.publicKey().deriveAddress()))
     );
 
-    // TODO
-    assertThat(accountChannelsResult.ledgerHash()).isNull();
-    assertThat(accountChannelsResult.ledgerIndex()).isNull();
+    assertThat(accountChannelsResult.ledgerHash()).isEmpty();
+    assertThat(accountChannelsResult.ledgerIndex()).isEmpty();
     assertThat(accountChannelsResult.ledgerCurrentIndex()).isNotEmpty();
   }
 }

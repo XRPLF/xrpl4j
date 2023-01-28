@@ -56,6 +56,7 @@ public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()
       .account(Address.of("rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
     String json = "{\n" +

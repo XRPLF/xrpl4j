@@ -86,6 +86,7 @@ public class AccountCurrenciesRequestParamsJsonTests extends AbstractJsonTest {
   public void testMinimal() throws JsonProcessingException, JSONException {
     AccountCurrenciesRequestParams params = AccountCurrenciesRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
     String json = "{\n" +

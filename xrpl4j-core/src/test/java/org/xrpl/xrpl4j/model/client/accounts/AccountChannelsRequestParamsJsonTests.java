@@ -35,7 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
 
   public static final Hash256 HASH_256 = Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E");
-
+  
   @Test
   public void testWithLedgerHash() throws JsonProcessingException, JSONException {
     AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
@@ -104,6 +104,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
     AccountChannelsRequestParams params = AccountChannelsRequestParams.builder()
         .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .destinationAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .limit(UnsignedInteger.valueOf(20))
         .marker(Marker.of("marker1"))
         .build();
@@ -126,6 +127,7 @@ public class AccountChannelsRequestParamsJsonTests extends AbstractJsonTest {
         .destinationAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
         .limit(UnsignedInteger.valueOf(20))
         .marker(Marker.of("{\"marker\":\"1\"}"))
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build();
 
     String json = "{\n" +

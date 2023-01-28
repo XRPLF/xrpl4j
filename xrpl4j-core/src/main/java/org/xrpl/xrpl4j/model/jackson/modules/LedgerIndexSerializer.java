@@ -41,7 +41,7 @@ public class LedgerIndexSerializer extends StdScalarSerializer<LedgerIndex> {
 
   @Override
   public void serialize(LedgerIndex ledgerIndex, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeNumber(ledgerIndex.unsignedIntegerValue().intValue());
+    gen.writeNumber(ledgerIndex.unsignedIntegerValue().longValue());
   }
 
 }

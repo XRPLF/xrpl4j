@@ -64,6 +64,7 @@ public interface AccountInfoRequestParams extends XrplRequestParams {
   static AccountInfoRequestParams of(Address account) {
     return builder()
       .account(account)
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
   }
 

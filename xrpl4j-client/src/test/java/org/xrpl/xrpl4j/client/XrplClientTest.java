@@ -655,7 +655,7 @@ public class XrplClientTest {
   }
 
   @Test
-  public void submitTypedMultiSignedTest() throws JsonRpcClientErrorException {
+  public void submitMultiSignedTest() throws JsonRpcClientErrorException {
     jsonRpcClientMock = new JsonRpcClient() {
 
       @Override

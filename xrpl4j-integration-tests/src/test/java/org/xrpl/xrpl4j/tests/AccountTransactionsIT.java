@@ -94,10 +94,8 @@ public class AccountTransactionsIT {
     // Sometimes we will get a "server busy" error back in this test, so if we do get that, we should just wait
     // a few seconds until asking again.
     AccountTransactionsResult results = getAccountTransactions(
-      AccountTransactionsRequestParams.builder()
+      AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
-        .ledgerIndexMinimum(minLedger)
-        .ledgerIndexMaximum(maxLedger)
         .build()
     );
 
@@ -112,9 +110,8 @@ public class AccountTransactionsIT {
   @Test
   void listTransactionsWithLedgerSpecifiers() throws JsonRpcClientErrorException {
     AccountTransactionsResult resultByShortcut = getAccountTransactions(
-      AccountTransactionsRequestParams.builder()
+      AccountTransactionsRequestParams.builder(LedgerSpecifier.VALIDATED)
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(Optional.of(LedgerSpecifier.VALIDATED))
         .build()
     );
 
@@ -135,18 +132,14 @@ public class AccountTransactionsIT {
       .orElseThrow(() -> new RuntimeException("ledgerIndex not present."));
 
     AccountTransactionsResult resultByLedgerIndex = getAccountTransactions(
-      AccountTransactionsRequestParams.builder()
+      AccountTransactionsRequestParams.builder(LedgerSpecifier.of(validatedLedgerIndex))
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(
-          Optional.of(LedgerSpecifier.of(validatedLedgerIndex))
-        )
         .build()
     );
 
     AccountTransactionsResult resultByLedgerHash = getAccountTransactions(
-      AccountTransactionsRequestParams.builder()
+      AccountTransactionsRequestParams.builder(LedgerSpecifier.of(validatedLedgerHash))
         .account(MAINNET_ADDRESS)
-        .ledgerSpecifier(Optional.of(LedgerSpecifier.of(validatedLedgerHash)))
         .build()
     );
 

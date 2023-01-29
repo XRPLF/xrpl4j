@@ -58,14 +58,11 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * Construct a builder for this class.
    *
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
-   * @deprecated Prefer one of the other defined builders so that you are overtly
-   *   specifying which ledger index or type you want.
    */
-  @Deprecated
-  static ImmutableAccountTransactionsRequestParams.Builder builder() {
+  static ImmutableAccountTransactionsRequestParams.Builder unboundedBuilder() {
     return ImmutableAccountTransactionsRequestParams.builder();
   }
-
+  
   /**
    * Construct a builder for this class with {@link LedgerSpecifier} field set.
    *
@@ -74,7 +71,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return An {@link ImmutableAccountTransactionsRequestParams.Builder}.
    */
   static ImmutableAccountTransactionsRequestParams.Builder builder(LedgerSpecifier ledgerSpecifier) {
-    return ImmutableAccountTransactionsRequestParams.builder().ledgerSpecifier(Optional.ofNullable(ledgerSpecifier));
+    return ImmutableAccountTransactionsRequestParams.builder().ledgerSpecifier(ledgerSpecifier);
   }
 
   /**
@@ -104,89 +101,33 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return The {@link Address} of the account.
    */
   Address account();
-
+  
   /**
    * The earliest ledger to include transactions from. A value of {@code -1} instructs the server to use the
    * earliest validated ledger version available.
    *
-   * @return A {@link LedgerIndex} with a default of empty.
-   * @deprecated ledger_index_min field should be specified by {@link #ledgerIndexMinimum()}
-   */
-  @JsonIgnore
-  @Deprecated
-  @Value.Auxiliary
-  Optional<LedgerIndex> ledgerIndexMin();
-
-  /**
-   * The most recent ledger to include transactions from. A value of {@code -1} instructs the server to use the most
-   * recent validated ledger version available.
-   *
-   * @return A {@link LedgerIndex} with a default of empty.
-   * @deprecated ledger_index_max field should be specified by {@link #ledgerIndexMaximum()}.
-   */
-  @JsonIgnore
-  @Deprecated
-  @Value.Auxiliary
-  Optional<LedgerIndex> ledgerIndexMax();
-
-  /**
-   * The earliest ledger to include transactions from. A value of {@code -1} instructs the server to use the
-   * earliest validated ledger version available.
-   *
-   * @return A {@link LedgerIndexBound} with a default of empty.
+   * @return A {@link LedgerIndexBound} with a default of -1.
    */
   @JsonProperty("ledger_index_min")
   @Value.Default
   @Nullable // Value.Default on Optional attributes takes away the non-optional builder method
   default LedgerIndexBound ledgerIndexMinimum() {
-    // Gives deprecated field precedence
-    return ledgerIndexMin()
-      .map(LedgerIndex::unsignedIntegerValue)
-      .map(UnsignedInteger::intValue)
-      .map(LedgerIndexBound::of)
-      .orElse(LedgerIndexBound.of(-1));
+    return LedgerIndexBound.unbounded();
   }
 
   /**
    * The most recent ledger to include transactions from. A value of {@code -1} instructs the server to use the most
    * recent validated ledger version available.
    *
-   * @return A {@link LedgerIndexBound} with a default of empty.
+   * @return A {@link LedgerIndexBound} with a default of -1.
    */
   @JsonProperty("ledger_index_max")
   @Value.Default
   @Nullable // Value.Default on Optional attributes takes away the non-optional builder method
   default LedgerIndexBound ledgerIndexMaximum() {
-    // Gives deprecated field precedence
-    return ledgerIndexMax()
-      .map(LedgerIndex::unsignedIntegerValue)
-      .map(UnsignedInteger::intValue)
-      .map(LedgerIndexBound::of)
-      .orElse(LedgerIndexBound.of(-1));
+    return LedgerIndexBound.unbounded();
   }
-
-  /**
-   * Return transactions from the ledger with this hash only.
-   *
-   * @return An optionally-present {@link Hash256} containing the ledger hash.
-   * @deprecated Ledger hash should be specified in {@link #ledgerSpecifier()}.
-   */
-  @JsonIgnore
-  @Deprecated
-  @Value.Auxiliary
-  Optional<Hash256> ledgerHash();
-
-  /**
-   * Return transactions from the ledger with this index only.
-   *
-   * @return A {@link LedgerIndex} containing the ledger index, defaults to "current".
-   * @deprecated Ledger index and any shortcut values should be specified in {@link #ledgerSpecifier()}.
-   */
-  @JsonIgnore
-  @Deprecated
-  @Value.Auxiliary
-  Optional<LedgerIndex> ledgerIndex();
-
+  
   /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
    * numerical ledger index, or a shortcut value.
@@ -200,15 +141,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
   @JsonUnwrapped
-  @Value.Default // TODO: Make non-default once ledgerIndex and ledgerHash are gone
-  default Optional<LedgerSpecifier> ledgerSpecifier() {
-    // If either ledgerHash or ledgerIndex are specified, return a LedgerSpecifier with the present field,
-    // otherwise return empty
-    return ledgerHash()
-      .map(LedgerSpecifier::of)
-      .map(Optional::of)
-      .orElseGet(() -> ledgerIndex().map(LegacyLedgerSpecifierUtils::computeLedgerSpecifierFromLedgerIndex));
-  }
+  Optional<LedgerSpecifier> ledgerSpecifier();
 
   /**
    * Whether or not to return transactions as JSON or binary-encoded hex strings. Always {@code false}.
@@ -278,7 +211,7 @@ public interface AccountTransactionsRequestParams extends XrplRequestParams {
     // If user included a ledgerSpecifier, this will blank out ledgerIndexMin and ledgerIndexMax
     // so that they do not override the ledgerSpecifier.
     if (ledgerSpecifier().isPresent() && (ledgerIndexMinimum() != null || ledgerIndexMaximum() != null)) {
-      return AccountTransactionsRequestParams.builder()
+      return ImmutableAccountTransactionsRequestParams.builder()
         .from(this)
         .ledgerIndexMinimum(null)
         .ledgerIndexMaximum(null)

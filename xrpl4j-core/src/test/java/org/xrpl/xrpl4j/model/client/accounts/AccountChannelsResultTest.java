@@ -43,8 +43,7 @@ class AccountChannelsResultTest {
       .addChannels(mock(PaymentChannelResultObject.class))
       .build();
 
-    assertThat(result.ledgerHash()).isNotNull();
-    assertThat(result.ledgerHashSafe()).isEqualTo(result.ledgerHash());
+    assertThat(result.ledgerHash()).isNotEmpty().get().isEqualTo(result.ledgerHashSafe());
   }
 
   @Test
@@ -57,7 +56,7 @@ class AccountChannelsResultTest {
       .addChannels(mock(PaymentChannelResultObject.class))
       .build();
 
-    assertThat(result.ledgerHash()).isNull();
+    assertThat(result.ledgerHash()).isEmpty();
     assertThrows(
       IllegalStateException.class,
       result::ledgerHashSafe
@@ -75,8 +74,7 @@ class AccountChannelsResultTest {
       .addChannels(mock(PaymentChannelResultObject.class))
       .build();
 
-    assertThat(result.ledgerIndex()).isNotNull();
-    assertThat(result.ledgerIndexSafe()).isEqualTo(result.ledgerIndex());
+    assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
     assertThat(result.ledgerCurrentIndex()).isEmpty();
     assertThrows(
       IllegalStateException.class,
@@ -95,7 +93,7 @@ class AccountChannelsResultTest {
       .addChannels(mock(PaymentChannelResultObject.class))
       .build();
 
-    assertThat(result.ledgerIndex()).isNull();
+    assertThat(result.ledgerIndex()).isEmpty();
     assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerCurrentIndexSafe());
     assertThrows(
       IllegalStateException.class,

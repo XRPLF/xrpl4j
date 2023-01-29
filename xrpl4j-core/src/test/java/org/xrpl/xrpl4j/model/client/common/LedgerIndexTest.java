@@ -39,70 +39,24 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 class LedgerIndexTest {
 
   @Test
-  void createValidLedgerIndex() {
-    Assertions.assertDoesNotThrow(() -> LedgerIndex.of("current"));
-    Assertions.assertDoesNotThrow(() -> LedgerIndex.of("validated"));
-    Assertions.assertDoesNotThrow(() -> LedgerIndex.of("closed"));
-    Assertions.assertDoesNotThrow(() -> LedgerIndex.of("1"));
-  }
-
-  @Test
   void createInvalidLedgerIndex() {
     assertThrows(
       NullPointerException.class,
-      () -> LedgerIndex.of((UnsignedInteger) null)
-    );
-    assertThrows(
-      NullPointerException.class,
-      () -> LedgerIndex.of((UnsignedInteger) null)
-    );
-    assertThrows(
-      NumberFormatException.class,
-      () -> LedgerIndex.of("foo")
-    );
-    assertThrows(
-      NumberFormatException.class,
-      () -> LedgerIndex.of("-1")
+      () -> LedgerIndex.of(null)
     );
   }
 
   @Test
   void testEquality() {
-    LedgerIndex fromString = LedgerIndex.of("42");
-    assertThat(fromString).isEqualTo(fromString);
-    assertThat(fromString).isNotEqualTo("42");
-
-    UnsignedInteger ui = UnsignedInteger.valueOf("42");
-    LedgerIndex fromUnsignedInteger = LedgerIndex.of(ui);
-    assertThat(fromString).isEqualTo(fromUnsignedInteger);
-    assertThat(fromString).isNotEqualTo(LedgerIndex.CURRENT);
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(42));
+    assertThat(ledgerIndex).isEqualTo(ledgerIndex);
+    assertThat(ledgerIndex).isNotEqualTo(UnsignedInteger.valueOf(42));
   }
 
   @Test
   void testToString() {
-    LedgerIndex fromString = LedgerIndex.of("42");
-    assertThat(fromString.toString()).isEqualTo("42");
-    assertThat(LedgerIndex.CURRENT.toString()).isEqualTo("current");
-
-    UnsignedInteger ui = UnsignedInteger.valueOf("42");
-    LedgerIndex fromUnsignedInteger = LedgerIndex.of(ui);
-    assertThat(fromString.toString()).isEqualTo(fromUnsignedInteger.toString());
-  }
-
-  @Test
-  void createValidNumericalLedgerIndex() {
-    LedgerIndex ledgerIndex = LedgerIndex.of("1");
-    assertThat(ledgerIndex.value()).isEqualTo("1");
-
-    final LedgerIndex fromUnsignedInteger = LedgerIndex.of(UnsignedInteger.ONE);
-    assertThat(ledgerIndex).isEqualTo(fromUnsignedInteger);
-
-    UnsignedInteger unsignedIntegerFromString = ledgerIndex.unsignedIntegerValue();
-    UnsignedInteger unsignedIntegerFromUnsignedInteger = fromUnsignedInteger.unsignedIntegerValue();
-    assertThat(unsignedIntegerFromString).isEqualTo(unsignedIntegerFromUnsignedInteger);
-
-    final LedgerIndex added = ledgerIndex.plus(fromUnsignedInteger);
-    assertThat(added).isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(2)));
+    LedgerIndex ledgerIndex = LedgerIndex.of(UnsignedInteger.valueOf(42));
+    assertThat(ledgerIndex.toString()).isEqualTo("42");
   }
 
   @Test

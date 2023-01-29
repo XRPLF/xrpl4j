@@ -59,7 +59,7 @@ public class CheckIT extends AbstractIT {
       sourceKeyPair.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -95,7 +95,7 @@ public class CheckIT extends AbstractIT {
       destinationKeyPair.privateKey(), checkCash
     );
     SubmitResult<CheckCash> cashResponse = xrplClient.submit(signedCheckCash);
-    assertThat(cashResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(cashResponse.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
       cashResponse.transactionResult().hash()
@@ -151,7 +151,7 @@ public class CheckIT extends AbstractIT {
       sourceKeyPair.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -183,7 +183,7 @@ public class CheckIT extends AbstractIT {
       sourceKeyPair.privateKey(), checkCancel
     );
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
       cancelResult.transactionResult().hash()
@@ -230,7 +230,7 @@ public class CheckIT extends AbstractIT {
       sourceKeyPair.privateKey(), checkCreate
     );
     SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -263,7 +263,7 @@ public class CheckIT extends AbstractIT {
       destinationKeyPair.privateKey(), checkCancel
     );
     SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
       cancelResult.transactionResult().hash()

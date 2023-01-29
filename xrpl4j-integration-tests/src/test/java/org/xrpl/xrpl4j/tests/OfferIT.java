@@ -84,7 +84,7 @@ public class OfferIT extends AbstractIT {
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -133,7 +133,7 @@ public class OfferIT extends AbstractIT {
     assertThat(response.transactionResult().transaction().flags().tfFullyCanonicalSig()).isTrue();
     assertThat(response.transactionResult().transaction().flags().tfSell()).isTrue();
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -179,7 +179,7 @@ public class OfferIT extends AbstractIT {
       purchaser.privateKey(), offerCancel
     );
     SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(signedOfferCancel);
-    assertThat(cancelResponse.result()).isEqualTo(expectedResult);
+    assertThat(cancelResponse.engineResult()).isEqualTo(expectedResult);
 
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
     assertEmptyResults(
@@ -224,7 +224,7 @@ public class OfferIT extends AbstractIT {
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
@@ -284,7 +284,7 @@ public class OfferIT extends AbstractIT {
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()

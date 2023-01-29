@@ -98,7 +98,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = getXrplClient().submit(signedPayment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(result.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString() +
       result.transactionResult().transaction());
   }

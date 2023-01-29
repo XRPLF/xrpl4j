@@ -51,10 +51,7 @@ public class IsFinalIT extends AbstractIT {
       .ledgerIndexSafe();
 
 
-    lastLedgerSequence = UnsignedInteger.valueOf(
-      validatedLedger.plus(UnsignedLong.valueOf(1)).unsignedLongValue().intValue()
-    );
-
+    lastLedgerSequence = validatedLedger.plus(UnsignedInteger.ONE).unsignedIntegerValue();
     KeyPair destinationKeyPair = createRandomAccountEd25519();
     payment = Payment.builder()
       .account(sourceAddress)
@@ -70,7 +67,7 @@ public class IsFinalIT extends AbstractIT {
     Payment builtPayment = payment.build();
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(keyPair.privateKey(), builtPayment);
     SubmitResult<Payment> response = xrplClient.submit(signedPayment);
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     Hash256 txHash = response.transactionResult().hash();
 
     assertThat(

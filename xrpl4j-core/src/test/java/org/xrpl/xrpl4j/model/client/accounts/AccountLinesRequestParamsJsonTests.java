@@ -35,7 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.Marker;
 public class AccountLinesRequestParamsJsonTests extends AbstractJsonTest {
 
   public static final Hash256 HASH_256 = Hash256.of("92FA6A9FC8EA6018D5D16532D7795C91BFB0831355BDFDA177E86C8BF997985F");
-  
+
   @Test
   public void testWithLedgerIndex() throws JsonProcessingException, JSONException {
     AccountLinesRequestParams params = AccountLinesRequestParams.builder()

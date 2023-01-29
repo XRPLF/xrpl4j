@@ -68,7 +68,7 @@ public class TransactionWithMemoIT extends AbstractIT {
 
     SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
-    assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
+    assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
     assertThat(signedTransaction.hash()).isEqualTo(result.transactionResult().hash());
 
     logInfo(
@@ -115,7 +115,7 @@ public class TransactionWithMemoIT extends AbstractIT {
     SingleSignedTransaction<Payment> signedTransaction = derivedKeySignatureService.sign(sourcePrivateKey, payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
 
-    assertThat(result.result()).isEqualTo(SUCCESS_STATUS);
+    assertThat(result.engineResult()).isEqualTo(SUCCESS_STATUS);
     assertThat(signedTransaction.hash()).isEqualTo(result.transactionResult().hash());
 
     logInfo(

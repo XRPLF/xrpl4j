@@ -58,7 +58,7 @@ public class AccountSetIT extends AbstractIT {
     );
     SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(signedAccountSet.hash()).isEqualTo(response.transactionResult().hash());
     logger.info(
       "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
@@ -124,8 +124,8 @@ public class AccountSetIT extends AbstractIT {
     );
     SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
-    assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(response.transactionResult().hash()).isEqualTo(signedAccountSet.hash());
     logger.info(
       "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
     );
@@ -191,7 +191,7 @@ public class AccountSetIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedTransaction
       = bcSignatureService.sign(keyPair.privateKey(), enableAccountSet);
     SubmitResult<AccountSet> enableResponse = xrplClient.submit(signedTransaction);
-    assertThat(enableResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(enableResponse.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(signedTransaction.hash()).isEqualTo(enableResponse.transactionResult().hash());
     logger.info(
       "AccountSet SetFlag transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -225,7 +225,7 @@ public class AccountSetIT extends AbstractIT {
 
     signedTransaction = bcSignatureService.sign(keyPair.privateKey(), disableAccountSet);
     SubmitResult<AccountSet> disableResponse = xrplClient.submit(signedTransaction);
-    assertThat(disableResponse.result()).isEqualTo("tesSUCCESS");
+    assertThat(disableResponse.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(signedTransaction.hash()).isEqualTo(disableResponse.transactionResult().hash());
     logger.info(
       "AccountSet SetFlag transaction successful: https://testnet.xrpl.org/transactions/{}",
@@ -270,7 +270,7 @@ public class AccountSetIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedTransaction
       = bcSignatureService.sign(keyPair.privateKey(), enableAccountSet);
     SubmitResult<AccountSet> enableResponse = xrplClient.submit(signedTransaction);
-    assertThat(enableResponse.result()).isEqualTo("tecNO_ALTERNATIVE_KEY");
+    assertThat(enableResponse.engineResult()).isEqualTo("tecNO_ALTERNATIVE_KEY");
     assertThat(signedTransaction.hash()).isEqualTo(enableResponse.transactionResult().hash());
     logger.info("AccountSet SetFlag transaction failed successfully:");
   }
@@ -302,7 +302,7 @@ public class AccountSetIT extends AbstractIT {
     );
     SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
     logger.info(
       "AccountSet SetFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",
@@ -342,7 +342,7 @@ public class AccountSetIT extends AbstractIT {
     );
     SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
 
-    assertThat(response.result()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(response.transactionResult().hash()).isEqualTo(response.transactionResult().hash());
     logger.info(
       "AccountSet ClearFlag transaction successful (asf={}; arf={}): https://testnet.xrpl.org/transactions/{}",

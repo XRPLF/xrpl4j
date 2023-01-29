@@ -57,7 +57,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     SubmitResult<DepositPreAuth> result = xrplClient.submit(singedDepositPreAuth);
 
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
       result.transactionResult().hash()
@@ -102,7 +102,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
       paymentResult.transactionResult().hash()
@@ -169,7 +169,7 @@ public class DepositPreAuthIT extends AbstractIT {
       senderKeyPair.privateKey(), payment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
-    assertThat(paymentResult.result()).isEqualTo("tecNO_PERMISSION");
+    assertThat(paymentResult.engineResult()).isEqualTo("tecNO_PERMISSION");
   }
 
   @Test
@@ -236,7 +236,7 @@ public class DepositPreAuthIT extends AbstractIT {
       wallet.privateKey(), accountSet
     );
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
-    assertThat(accountSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
       accountSetResult.transactionResult().hash()

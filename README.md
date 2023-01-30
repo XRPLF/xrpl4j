@@ -198,18 +198,18 @@ SignatureService signatureService = new BcSignatureService();
 
 // Sender (using ed25519 key)
 Seed senderSeed = Seed.ed255519Seed();
-PrivateKey senderPrivateKey=senderSeed.derivePrivateKey();
-PublicKey senderPublicKey=senderPrivateKey.derivePublicKey();
-Address senderAddress=senderPublicKey.deriveAddress();
+PrivateKey senderPrivateKey = senderSeed.derivePrivateKey();
+PublicKey senderPublicKey = senderPrivateKey.derivePublicKey();
+Address senderAddress = senderPublicKey.deriveAddress();
 
 // Receiver (using secp256k1 key)
-Address receiverAddress=Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
+Address receiverAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
 // Construct a Payment
-Payment payment=...; // See V3 ITs for examples.
+Payment payment = ...; // See V3 ITs for examples.
 
-SingleSignedTransaction<Payment> signedTransaction=signatureService.sign(sourcePrivateKey,payment);
-SubmitResult<Payment> result=xrplClient.submit(signedTransaction);
+SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey,payment);
+SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
 assertThat(result.result()).isEqualTo("tesSUCCESS");
 ```
 

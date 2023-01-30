@@ -87,7 +87,7 @@ EscrowCreate escrowCreate = EscrowCreate.builder()
   .finishAfter(UnsignedLong.valueOf(533171558))
   .condition(CryptoConditionReader.readCondition(
   BaseEncoding.base16()
-  .decode("A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100"))
+    .decode("A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100"))
   )
   .sourceTag(UnsignedInteger.valueOf(11747))
   .build();

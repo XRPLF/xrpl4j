@@ -164,8 +164,8 @@ without exposing key material to the outside world (e.g., an HSM or cloud servic
 `PrivateKeyReference` can be used.
 
 This library does not provide an implementation that interacts with any particular external signing service or HSM.
-However, developers wishing to support such interactions should look
-at the [SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java) 
+However, developers wishing to support such interactions should extend `PrivateKeyReference` for the particular external service, and implement
+[SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java) for their `PrivateKeyReference` type.
 interface. In
 addition, [FauxGcpKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxGcpKmsSignatureServiceTest.java)
 and [FauxAwsKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxAwsKmsSignatureServiceTest.java)

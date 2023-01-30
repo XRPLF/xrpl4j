@@ -59,9 +59,7 @@ found in the BOM to your `pom.xml`. For example:
 </dependencies>
 ```
 
-### Examples
-
-#### Core Objects
+### Core Objects
 
 This library provides Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),
 [Transactions](https://xrpl.org/transaction-formats.html),
@@ -125,14 +123,14 @@ Which produces the following output:
 }
 ```
 
-#### Public/Private Key Material
+### Public/Private Key Material
 
 Most operations using this library require some sort of private key material. Broadly speaking, the library supports
 two mechanisms: (1) in-memory private keys, and (2) in-memory _references_ to private keys where the actual private key 
 material lives in an external system (e.g., keys in a Hardware Security Module, or HSM). In Java, this is modeled 
 using the `PrivateKeyable` interface, which has two subclasses: `PrivateKey` and `PrivateKeyReference`.
 
-##### In-Memory Private Keys (`PrivateKey`)
+#### In-Memory Private Keys (`PrivateKey`)
 
 `PrivateKey` represents a private key held in memory, existing in the same JVM that is executing xrpl4j code. This key 
 variant can be useful in the context of an android or native application, but is likely not suitable for server-side 
@@ -156,7 +154,7 @@ PublicKey publicKey = privateKey.derivePublicKey(); // <-- Derive a public key f
 Address address = publicKey.deriveAddress(); // <-- Derive an address from the public key.
 ```
 
-##### Private Key References (`PrivateKeyReference`)
+#### Private Key References (`PrivateKeyReference`)
 
 For applications with higher-security requirements, private-key material can be stored outside the JVM 
 using an external system that can simultaneously manage the key material and also perform critical signing operations 

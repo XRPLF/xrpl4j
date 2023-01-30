@@ -63,7 +63,7 @@ found in the BOM to your `pom.xml`. For example:
 
 #### Core Objects
 
-This library providing Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),
+This library provides Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),
 [Transactions](https://xrpl.org/transaction-formats.html),
 and [request parameters](https://xrpl.org/request-formatting.html)/[response results](https://xrpl.org/response-formatting.html)
 for the [rippled API](https://xrpl.org/public-rippled-methods.html).
@@ -164,8 +164,8 @@ without exposing key material to the outside world (e.g., an HSM or cloud servic
 `PrivateKeyReference` can be used.
 
 This library does not provide an implementation that interacts with any particular external signing service or HSM.
-However, developers wishing to support such interactions should look
-at the [SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java) 
+However, developers wishing to support such interactions should extend `PrivateKeyReference` for the particular external service, and implement
+[SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java) for their `PrivateKeyReference` type.
 interface. In
 addition, [FauxGcpKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxGcpKmsSignatureServiceTest.java)
 and [FauxAwsKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxAwsKmsSignatureServiceTest.java)
@@ -219,8 +219,7 @@ assertThat(result.result()).isEqualTo("tesSUCCESS");
 
 Xrpl4j is structured as a Maven multi-module project, with the following modules:
 
-- **xrpl4j-core
-  **: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
+- **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
     - Provides Java objects which model XRP Ledger objects, as well as request parameters and response results for the
       rippled websocket and JSON RPC APIs
     - Also provides a Jackson `ObjectMapper` and JSON bindings which can be used to serialize and deserialize to and
@@ -232,8 +231,7 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
       and ed25519 key types and signing algorithms), signature interfaces, etc.
     - **xrpl4j-crypto-bouncycastle**: An implementation using [BouncyCastle](https://www.bouncycastle.org/) as the
       underlying library/provider.
-- **xrpl4j-client
-  **: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
+- **xrpl4j-client**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
     - Provides an example rippled JSON RPC client which can be used to communicate with a rippled node
 - **xrpl4j-integration-tests**:
     - Contains the project's integration tests, which also serve as valuable xrpl4j usage examples for common XRPL

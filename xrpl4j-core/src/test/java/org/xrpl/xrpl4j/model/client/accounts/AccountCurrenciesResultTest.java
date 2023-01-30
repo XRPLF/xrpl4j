@@ -76,8 +76,7 @@ class AccountCurrenciesResultTest {
       .addReceiveCurrencies("USD")
       .build();
 
-    assertThat(result.ledgerIndex()).isNotNull();
-    assertThat(result.ledgerIndexSafe()).isEqualTo(result.ledgerIndex());
+    assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
     assertThat(result.ledgerCurrentIndex()).isEmpty();
     assertThrows(
       IllegalStateException.class,
@@ -95,7 +94,7 @@ class AccountCurrenciesResultTest {
       .sendCurrencies(Lists.newArrayList("ASP", "BTC", "USD"))
       .build();
 
-    assertThat(result.ledgerIndex()).isNull();
+    assertThat(result.ledgerIndex()).isEmpty();
     assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerCurrentIndexSafe());
     assertThrows(
       IllegalStateException.class,

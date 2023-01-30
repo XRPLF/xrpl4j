@@ -36,69 +36,6 @@ public class AccountOffersRequestParamsJsonTests extends AbstractJsonTest {
   public static final Hash256 HASH_256 = Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E");
 
   @Test
-  @Deprecated
-  public void oldLedgerIndexStillWorks() throws JsonProcessingException, JSONException {
-    AccountOffersRequestParams params = AccountOffersRequestParams.builder()
-      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .ledgerIndex(LedgerIndex.VALIDATED)
-      .limit(UnsignedInteger.valueOf(100L))
-      .marker(Marker.of("marker"))
-      .build();
-
-    String json = "{\n" +
-      "        \"account\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
-      "        \"ledger_index\": \"validated\",\n" +
-      "        \"limit\": 100,\n" +
-      "        \"marker\": \"marker\",\n" +
-      "        \"strict\": true\n" +
-      "    }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
-  @Deprecated
-  public void oldNumericalLedgerIndexStillWorks() throws JsonProcessingException, JSONException {
-    AccountOffersRequestParams params = AccountOffersRequestParams.builder()
-      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
-      .limit(UnsignedInteger.valueOf(100L))
-      .marker(Marker.of("marker"))
-      .build();
-
-    String json = "{\n" +
-      "        \"account\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
-      "        \"ledger_index\": 1,\n" +
-      "        \"limit\": 100,\n" +
-      "        \"marker\": \"marker\",\n" +
-      "        \"strict\": true\n" +
-      "    }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
-  @Deprecated
-  public void oldNLedgerHashStillWorks() throws JsonProcessingException, JSONException {
-    AccountOffersRequestParams params = AccountOffersRequestParams.builder()
-      .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .ledgerHash(HASH_256)
-      .limit(UnsignedInteger.valueOf(100L))
-      .marker(Marker.of("marker"))
-      .build();
-
-    String json = "{\n" +
-      "        \"account\": \"rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH\",\n" +
-      "        \"ledger_hash\": \"" + HASH_256 + "\",\n" +
-      "        \"limit\": 100,\n" +
-      "        \"marker\": \"marker\",\n" +
-      "        \"strict\": true\n" +
-      "    }";
-
-    assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
   public void testWithLedgerIndexShortcut() throws JsonProcessingException, JSONException {
     AccountOffersRequestParams params = AccountOffersRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
@@ -162,6 +99,7 @@ public class AccountOffersRequestParamsJsonTests extends AbstractJsonTest {
   public void testMinimal() throws JsonProcessingException, JSONException {
     AccountOffersRequestParams params = AccountOffersRequestParams.builder()
       .account(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
     String json = "{\n" +

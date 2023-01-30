@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.primitives.UnsignedInteger;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.ImmutableAccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
@@ -57,11 +58,11 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
   public AccountTransactionsRequestParams deserialize(
     JsonParser jsonParser,
     DeserializationContext ctxt
-  ) throws IOException, JsonProcessingException {
+  ) throws IOException {
     ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
     JsonNode node = objectMapper.readTree(jsonParser);
 
-    AccountTransactionsRequestParams params = AccountTransactionsRequestParams.builder()
+    AccountTransactionsRequestParams params = ImmutableAccountTransactionsRequestParams.builder()
       .account(Address.of(node.get("account").asText()))
       .ledgerIndexMinimum(
         node.has("ledger_index_min") ?
@@ -121,7 +122,7 @@ public class AccountTransactionsRequestParamsDeserializer extends StdDeserialize
       }
     }
 
-    return AccountTransactionsRequestParams.builder().from(params)
+    return ImmutableAccountTransactionsRequestParams.builder().from(params)
       .ledgerSpecifier(Optional.ofNullable(ledgerSpecifier))
       .build();
   }

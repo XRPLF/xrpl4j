@@ -1,6 +1,6 @@
 # xrpl4j-client
 
-An example library containing a rippled JSON RPC client. The client is meant to be used as a reference implementatio. 
+An example library containing a rippled JSON RPC client. The client is meant to be used as a reference implementation. 
 While suitable for production usage, it is currently marked `@Beta` and its API should be considered unstable.
 
 # Usage

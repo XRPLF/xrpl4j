@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests;
+package org.xrpl.xrpl4j.codec.binary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

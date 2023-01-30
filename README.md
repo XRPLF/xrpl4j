@@ -211,6 +211,13 @@ SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
 assertThat(result.result()).isEqualTo("tesSUCCESS");
 ```
 
+### Codecs
+This library relies upon two important sub-modules called Codecs (One for the XRPL binary encoding, and one for XRPL 
+canonical JSON encoding). Read more about each here:
+
+- [Binary Codec](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/binary/README.md)
+- [Address Coded](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/addresses/README.md)
+
 ## Development
 
 ### Project Structure

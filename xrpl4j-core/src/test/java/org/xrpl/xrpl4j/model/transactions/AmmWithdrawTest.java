@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.flags.Flags;
@@ -17,6 +18,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
     AmmWithdraw withdraw = baseBuilder()
       .flags(AmmWithdrawFlags.LP_TOKEN)
       .lpTokensIn(lpTokensIn())
+      
       .build();
 
     String json = "{\n" +
@@ -27,6 +29,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -46,6 +49,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.WITHDRAW_ALL + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -73,6 +77,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.TWO_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -98,6 +103,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.SINGLE_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -123,6 +129,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -150,6 +157,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.ONE_ASSET_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -177,6 +185,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmWithdrawFlags.LIMIT_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
 
@@ -473,6 +482,9 @@ class AmmWithdrawTest extends AbstractJsonTest {
   private ImmutableAmmWithdraw.Builder baseBuilder() {
     return AmmWithdraw.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
         Asset.builder()

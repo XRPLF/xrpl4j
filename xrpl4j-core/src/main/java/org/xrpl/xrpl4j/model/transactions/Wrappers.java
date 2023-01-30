@@ -40,8 +40,12 @@ import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
 
@@ -380,8 +384,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = TradingFee.class)
-  @JsonDeserialize(as = TradingFee.class)
+  @JsonSerialize(as = TradingFee.class, using = TradingFeeSerializer.class)
+  @JsonDeserialize(as = TradingFee.class, using = TradingFeeDeserializer.class)
   abstract static class _TradingFee extends Wrapper<UnsignedInteger> implements Serializable {
 
     @Override
@@ -431,8 +435,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = VoteWeight.class)
-  @JsonDeserialize(as = VoteWeight.class)
+  @JsonSerialize(as = VoteWeight.class, using = VoteWeightSerializer.class)
+  @JsonDeserialize(as = VoteWeight.class, using = VoteWeightDeserializer.class)
   abstract static class _VoteWeight extends Wrapper<UnsignedInteger> implements Serializable {
 
     @Override

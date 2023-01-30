@@ -50,9 +50,18 @@ import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.AuthAccount;
+import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
+import org.xrpl.xrpl4j.model.transactions.AmmVote;
+import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -78,6 +87,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -577,6 +587,115 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToAmmBid() {
+    AmmBid bid = AmmBid.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .addAuthAccounts(
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(bid);
+  }
+
+  @Test
+  void addSignatureToAmmCreate() {
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(ammCreate);
+  }
+
+  @Test
+  void addSignatureToAmmDeposit() {
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .lpTokenOut(
+        IssuedCurrencyAmount.builder()
+          .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
+          .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+          .value("100")
+          .build()
+      )
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(deposit);
+  }
+
+  @Test
+  void addSignatureToAmmVote() {
+    AmmVote vote = AmmVote.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(8))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(vote);
+  }
+
+  @Test
+  void addSignatureToAmmWithdraw() {
+    AmmWithdraw withdraw = AmmWithdraw.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .asset2(Asset.XRP)
+      .flags(AmmWithdrawFlags.WITHDRAW_ALL)
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(withdraw);
+  }
+
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -893,6 +1012,109 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(ticketCreate);
+  }
+
+  @Test
+  void addMultiSignatureToAmmBid() {
+    AmmBid bid = AmmBid.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .addAuthAccounts(
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
+        AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .build();
+
+    addMultiSignatureToTransactionHelper(bid);
+  }
+
+  @Test
+  void addMultiSignatureToAmmCreate() {
+    AmmCreate ammCreate = AmmCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(250000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
+      .build();
+
+    addMultiSignatureToTransactionHelper(ammCreate);
+  }
+
+  @Test
+  void addMultiSignatureToAmmDeposit() {
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .lpTokenOut(
+        IssuedCurrencyAmount.builder()
+          .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
+          .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+          .value("100")
+          .build()
+      )
+      .build();
+
+    addMultiSignatureToTransactionHelper(deposit);
+  }
+
+  @Test
+  void addMultiSignatureToAmmVote() {
+    AmmVote vote = AmmVote.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .asset(Asset.XRP)
+      .asset2(
+        Asset.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(8))
+      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
+      .build();
+
+    addMultiSignatureToTransactionHelper(vote);
+  }
+
+  @Test
+  void addMultiSignatureToAmmWithdraw() {
+    AmmWithdraw withdraw = AmmWithdraw.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .asset(
+        Asset.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .asset2(Asset.XRP)
+      .flags(AmmWithdrawFlags.WITHDRAW_ALL)
+      .build();
+
+    addMultiSignatureToTransactionHelper(withdraw);
   }
 
   @Test

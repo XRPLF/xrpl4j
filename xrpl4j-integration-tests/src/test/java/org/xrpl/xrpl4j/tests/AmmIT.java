@@ -7,6 +7,8 @@ import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import okhttp3.HttpUrl;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
@@ -20,6 +22,7 @@ import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.amm.AmmInfoAuctionSlot;
 import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -51,7 +54,7 @@ public class AmmIT extends AbstractIT {
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
-  //  @BeforeAll
+  @BeforeAll
   protected static void initXrplEnvironment() {
     xrplEnvironment = new CustomEnvironment(
       HttpUrl.parse("http://amm.devnet.rippletest.net:51234"),
@@ -59,7 +62,7 @@ public class AmmIT extends AbstractIT {
     );
   }
 
-  //  @Test
+  @Test
   void depositAndVoteOnTradingFee() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -113,7 +116,7 @@ public class AmmIT extends AbstractIT {
     assertThat(ammAfterVote.amm().tradingFee()).isEqualTo(newTradingFee);
   }
 
-  //  @Test
+  @Test
   void depositAndBid() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -124,7 +127,7 @@ public class AmmIT extends AbstractIT {
     AccountInfoResult traderAccount = scanForResult(
       () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
-    
+
     AccountInfoResult traderAccountAfterDeposit = depositXrp(
       issuerKeyPair,
       traderKeyPair,
@@ -180,7 +183,7 @@ public class AmmIT extends AbstractIT {
       .containsExactly(authAccount1.publicKey().deriveAddress());
   }
 
-  //  @Test
+  @Test
   void depositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -297,6 +300,7 @@ public class AmmIT extends AbstractIT {
       AccountLinesRequestParams.builder()
         .account(traderAccount.accountData().account())
         .peer(amm.amm().ammAccount())
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
 

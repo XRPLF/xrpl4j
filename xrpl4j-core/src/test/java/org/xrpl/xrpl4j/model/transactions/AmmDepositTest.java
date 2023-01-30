@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.Flags;
@@ -25,6 +26,9 @@ class AmmDepositTest extends AbstractJsonTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .asset(Asset.XRP)
       .asset2(
         Asset.builder()
@@ -59,6 +63,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmDepositFlags.LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
 
@@ -70,6 +75,9 @@ class AmmDepositTest extends AbstractJsonTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .asset(Asset.XRP)
       .asset2(
         Asset.builder()
@@ -107,6 +115,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmDepositFlags.TWO_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
 
@@ -132,6 +141,9 @@ class AmmDepositTest extends AbstractJsonTest {
           .value("100")
           .build()
       )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .build();
 
     assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.SINGLE_ASSET);
@@ -153,6 +165,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmDepositFlags.SINGLE_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
 
@@ -164,6 +177,9 @@ class AmmDepositTest extends AbstractJsonTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .asset(Asset.XRP)
       .asset2(
         Asset.builder()
@@ -211,6 +227,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmDepositFlags.ONE_ASSET_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
 
@@ -222,6 +239,9 @@ class AmmDepositTest extends AbstractJsonTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .asset(Asset.XRP)
       .asset2(
         Asset.builder()
@@ -259,6 +279,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : " + AmmDepositFlags.LIMIT_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
 

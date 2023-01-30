@@ -31,6 +31,11 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
+import org.xrpl.xrpl4j.model.transactions.AmmVote;
+import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -271,6 +276,26 @@ public class SignatureUtils {
       transactionWithSignature = TicketCreate.builder().from((TicketCreate) transaction)
         .transactionSignature(signature.base16Value())
         .build();
+    } else if (AmmBid.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmBid.builder().from((AmmBid) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmCreate.builder().from((AmmCreate) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmDeposit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmDeposit.builder().from((AmmDeposit) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmVote.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmVote.builder().from((AmmVote) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
+    } else if (AmmWithdraw.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmWithdraw.builder().from((AmmWithdraw) transaction)
+        .transactionSignature(signature.base16Value())
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -403,6 +428,26 @@ public class SignatureUtils {
         .build();
     } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = TicketCreate.builder().from((TicketCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmBid.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmBid.builder().from((AmmBid) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmCreate.builder().from((AmmCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmDeposit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmDeposit.builder().from((AmmDeposit) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmVote.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmVote.builder().from((AmmVote) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmWithdraw.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmWithdraw.builder().from((AmmWithdraw) transaction)
         .signers(signers)
         .build();
     } else {

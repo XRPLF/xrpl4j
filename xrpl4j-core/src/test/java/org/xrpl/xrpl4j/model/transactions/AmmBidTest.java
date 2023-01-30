@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
@@ -15,6 +16,9 @@ class AmmBidTest extends AbstractJsonTest {
   void testJsonWithoutMinAndMax() throws JSONException, JsonProcessingException {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .asset(Asset.XRP)
       .asset2(
         Asset.builder()
@@ -54,6 +58,7 @@ class AmmBidTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : 2147483648,\n" +
       "    \"Sequence\" : 9,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMBid\"\n" +
       "}";
 
@@ -64,6 +69,9 @@ class AmmBidTest extends AbstractJsonTest {
   void testJsonWithMinAndMax() throws JSONException, JsonProcessingException {
     AmmBid bid = AmmBid.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
       .asset(Asset.XRP)
       .asset2(
         Asset.builder()
@@ -127,6 +135,7 @@ class AmmBidTest extends AbstractJsonTest {
       "    \"Fee\" : \"10\",\n" +
       "    \"Flags\" : 2147483648,\n" +
       "    \"Sequence\" : 9,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TransactionType\" : \"AMMBid\"\n" +
       "}";
 

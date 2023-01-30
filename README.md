@@ -63,7 +63,7 @@ found in the BOM to your `pom.xml`. For example:
 
 #### Core Objects
 
-This library providing Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),
+This library provides Java objects modeling [XRP Ledger Objects](https://xrpl.org/ledger-data-formats.html),
 [Transactions](https://xrpl.org/transaction-formats.html),
 and [request parameters](https://xrpl.org/request-formatting.html)/[response results](https://xrpl.org/response-formatting.html)
 for the [rippled API](https://xrpl.org/public-rippled-methods.html).

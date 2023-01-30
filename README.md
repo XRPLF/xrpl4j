@@ -231,8 +231,7 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
       and ed25519 key types and signing algorithms), signature interfaces, etc.
     - **xrpl4j-crypto-bouncycastle**: An implementation using [BouncyCastle](https://www.bouncycastle.org/) as the
       underlying library/provider.
-- **xrpl4j-client
-  **: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
+- **xrpl4j-client**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
     - Provides an example rippled JSON RPC client which can be used to communicate with a rippled node
 - **xrpl4j-integration-tests**:
     - Contains the project's integration tests, which also serve as valuable xrpl4j usage examples for common XRPL

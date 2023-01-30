@@ -78,6 +78,11 @@ public class AccountRootFlags extends Flags {
   public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
   /**
+   * Constant {@link AccountRootFlags} for the {@code lsfAMM} account flag.
+   */
+  public static final AccountRootFlags AMM = new AccountRootFlags(0x02000000);
+  
+  /**
    * Required-args Constructor.
    *
    * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
@@ -178,5 +183,14 @@ public class AccountRootFlags extends Flags {
    */
   public boolean lsfRequireDestTag() {
     return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
+  }
+
+  /**
+   * This account is an Automated Market Maker instance.
+   *
+   * @return {@code true} if {@code lsfAMM} is set, otherwise {@code false}.
+   */
+  public boolean lsfAmm() {
+    return this.isSet(AccountRootFlags.AMM);
   }
 }

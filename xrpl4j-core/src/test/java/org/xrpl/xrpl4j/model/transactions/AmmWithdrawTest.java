@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 
@@ -14,7 +15,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructLpTokenWithdrawAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.LP_TOKEN)
+      .flags(AmmWithdrawFlags.LP_TOKEN)
       .lpTokensIn(lpTokensIn())
       .build();
 
@@ -24,7 +25,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.LP_TOKEN + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -35,7 +36,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructWithdrawAllAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+      .flags(AmmWithdrawFlags.WITHDRAW_ALL)
       .build();
 
     String json = "{\n" +
@@ -43,7 +44,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.WITHDRAW_ALL + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.WITHDRAW_ALL + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -54,7 +55,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructTwoAssetAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.TWO_ASSET)
+      .flags(AmmWithdrawFlags.TWO_ASSET)
       .amount(amount())
       .amount2(XrpCurrencyAmount.ofDrops(50000000))
       .build();
@@ -70,7 +71,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.TWO_ASSET + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.TWO_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -81,7 +82,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructSingleAssetAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.SINGLE_ASSET)
+      .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .amount(amount())
       .build();
 
@@ -95,7 +96,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.SINGLE_ASSET + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.SINGLE_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -106,7 +107,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructOneAssetWithdrawAllAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
+      .flags(AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
       .amount(amount())
       .build();
 
@@ -120,7 +121,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -131,7 +132,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructOneAssetLpTokenAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
+      .flags(AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
       .amount(amount())
       .lpTokensIn(lpTokensIn())
       .build();
@@ -147,7 +148,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.ONE_ASSET_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -158,7 +159,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   @Test
   void constructLimitLpTokenAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
-      .flags(Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN)
+      .flags(AmmWithdrawFlags.LIMIT_LP_TOKEN)
       .amount(amount())
       .effectivePrice(amount())
       .build();
@@ -174,7 +175,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN + ",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.LIMIT_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMWithdraw\"\n" +
       "}";
@@ -186,14 +187,14 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructLpTokenWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LP_TOKEN)
+        .flags(AmmWithdrawFlags.LP_TOKEN)
         .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessage("If the tfLPToken flag is set, amount, amount2, and effectivePrice cannot be present.");
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LP_TOKEN)
+        .flags(AmmWithdrawFlags.LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .amount(amount())
         .build()
@@ -202,7 +203,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LP_TOKEN)
+        .flags(AmmWithdrawFlags.LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .amount2(amount())
         .build()
@@ -211,7 +212,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LP_TOKEN)
+        .flags(AmmWithdrawFlags.LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .effectivePrice(amount())
         .build()
@@ -223,7 +224,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructWithdrawAllWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.WITHDRAW_ALL)
         .lpTokensIn(lpTokensIn())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -231,7 +232,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.WITHDRAW_ALL)
         .amount(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -239,7 +240,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.WITHDRAW_ALL)
         .amount2(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -247,7 +248,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.WITHDRAW_ALL)
         .effectivePrice(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -258,7 +259,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructTwoAssetWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.TWO_ASSET)
+        .flags(AmmWithdrawFlags.TWO_ASSET)
         .lpTokensIn(lpTokensIn())
         .amount(amount())
         .amount2(amount())
@@ -268,7 +269,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.TWO_ASSET)
+        .flags(AmmWithdrawFlags.TWO_ASSET)
         .amount(amount())
         .amount2(amount())
         .effectivePrice(amount())
@@ -278,7 +279,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.TWO_ASSET)
+        .flags(AmmWithdrawFlags.TWO_ASSET)
         .amount2(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -286,7 +287,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.TWO_ASSET)
+        .flags(AmmWithdrawFlags.TWO_ASSET)
         .amount(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -297,7 +298,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructSingleAssetWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.SINGLE_ASSET)
+        .flags(AmmWithdrawFlags.SINGLE_ASSET)
         .amount(amount())
         .lpTokensIn(lpTokensIn())
         .build()
@@ -307,7 +308,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.SINGLE_ASSET)
+        .flags(AmmWithdrawFlags.SINGLE_ASSET)
         .amount(amount())
         .amount2(amount())
         .build()
@@ -317,7 +318,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.SINGLE_ASSET)
+        .flags(AmmWithdrawFlags.SINGLE_ASSET)
         .amount(amount())
         .effectivePrice(amount())
         .build()
@@ -327,7 +328,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.SINGLE_ASSET)
+        .flags(AmmWithdrawFlags.SINGLE_ASSET)
         .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessage("If the tfSingleAsset or tfOneAssetWithdrawAll flag is set, lpTokensIn, amount2, and effectivePrice" +
@@ -338,7 +339,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructOneAssetWithdrawAllWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
         .amount(amount())
         .lpTokensIn(lpTokensIn())
         .build()
@@ -348,7 +349,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
         .amount(amount())
         .amount2(amount())
         .build()
@@ -358,7 +359,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
         .amount(amount())
         .effectivePrice(amount())
         .build()
@@ -368,7 +369,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
+        .flags(AmmWithdrawFlags.ONE_ASSET_WITHDRAW_ALL)
         .build()
     ).isInstanceOf(IllegalStateException.class)
       .hasMessage("If the tfSingleAsset or tfOneAssetWithdrawAll flag is set, lpTokensIn, amount2, and effectivePrice" +
@@ -379,7 +380,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructOneAssetLpTokenWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
+        .flags(AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .amount(amount())
         .amount2(amount())
@@ -389,7 +390,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
+        .flags(AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .amount(amount())
         .effectivePrice(amount())
@@ -399,7 +400,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
+        .flags(AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
         .amount(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -407,7 +408,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
+        .flags(AmmWithdrawFlags.ONE_ASSET_LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -418,7 +419,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
   void constructLimitLpTokenWithWrongFieldsPresent() {
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN)
+        .flags(AmmWithdrawFlags.LIMIT_LP_TOKEN)
         .lpTokensIn(lpTokensIn())
         .amount(amount())
         .effectivePrice(amount())
@@ -428,7 +429,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN)
+        .flags(AmmWithdrawFlags.LIMIT_LP_TOKEN)
         .amount(amount())
         .amount2(amount())
         .effectivePrice(amount())
@@ -438,7 +439,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN)
+        .flags(AmmWithdrawFlags.LIMIT_LP_TOKEN)
         .amount(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)
@@ -446,7 +447,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     assertThatThrownBy(
       () -> baseBuilder()
-        .flags(Flags.AmmWithdrawFlags.LIMIT_LP_TOKEN)
+        .flags(AmmWithdrawFlags.LIMIT_LP_TOKEN)
         .effectivePrice(amount())
         .build()
     ).isInstanceOf(IllegalStateException.class)

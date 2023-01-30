@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 
@@ -27,29 +28,29 @@ public interface AmmDeposit extends Transaction {
   }
 
   /**
-   * A {@link Flags.AmmDepositFlags} for this transaction. This flag will always be derived from the presence
+   * A {@link AmmDepositFlags} for this transaction. This flag will always be derived from the presence
    * of {@link #lpTokenOut()}, {@link #amount()}, {@link #amount2()} and {@link #effectivePrice()}.
    *
-   * @return A {@link Flags.AmmDepositFlags} for this transaction.
+   * @return A {@link AmmDepositFlags} for this transaction.
    */
   @JsonProperty("Flags")
   @Value.Derived
-  default Flags.AmmDepositFlags flags() {
+  default AmmDepositFlags flags() {
     boolean lpTokenPresent = lpTokenOut().isPresent();
     boolean amountPresent = amount().isPresent();
     boolean amount2Present = amount2().isPresent();
     boolean effectivePricePresent = effectivePrice().isPresent();
 
     if (lpTokenPresent && !amountPresent && !amount2Present && !effectivePricePresent) {
-      return Flags.AmmDepositFlags.LP_TOKEN;
+      return AmmDepositFlags.LP_TOKEN;
     } else if (!lpTokenPresent && amountPresent && amount2Present &&  !effectivePricePresent) {
-      return Flags.AmmDepositFlags.TWO_ASSET;
+      return AmmDepositFlags.TWO_ASSET;
     } else if (!lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent) {
-      return Flags.AmmDepositFlags.SINGLE_ASSET;
+      return AmmDepositFlags.SINGLE_ASSET;
     } else if (lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent) {
-      return Flags.AmmDepositFlags.ONE_ASSET_LP_TOKEN;
+      return AmmDepositFlags.ONE_ASSET_LP_TOKEN;
     } else if (!lpTokenPresent && amountPresent && !amount2Present) {
-      return Flags.AmmDepositFlags.LIMIT_LP_TOKEN;
+      return AmmDepositFlags.LIMIT_LP_TOKEN;
     } else {
       throw new IllegalStateException("Correct AmmDepositFlag could not be determined based on set fields.");
     }

@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 
@@ -39,7 +40,7 @@ class AmmDepositTest extends AbstractJsonTest {
           .build()
       ).build();
 
-    assertThat(deposit.flags()).isEqualTo(Flags.AmmDepositFlags.LP_TOKEN);
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.LP_TOKEN);
 
     String json = "{\n" +
       "    \"Account\" : \"" + deposit.account() + "\",\n" +
@@ -56,7 +57,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "        \"currency\" : \"XRP\"\n" +
       "    },\n" +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmDepositFlags.LP_TOKEN + ",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
@@ -86,7 +87,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .amount2(XrpCurrencyAmount.ofDrops(10))
       .build();
 
-    assertThat(deposit.flags()).isEqualTo(Flags.AmmDepositFlags.TWO_ASSET);
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.TWO_ASSET);
 
     String json = "{\n" +
       "    \"Account\" : \"" + deposit.account() + "\",\n" +
@@ -104,7 +105,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "        \"currency\" : \"XRP\"\n" +
       "    },\n" +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmDepositFlags.TWO_ASSET + ",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.TWO_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
@@ -133,7 +134,7 @@ class AmmDepositTest extends AbstractJsonTest {
       )
       .build();
 
-    assertThat(deposit.flags()).isEqualTo(Flags.AmmDepositFlags.SINGLE_ASSET);
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.SINGLE_ASSET);
 
     String json = "{\n" +
       "    \"Account\" : \"" + deposit.account() + "\",\n" +
@@ -150,7 +151,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "        \"currency\" : \"XRP\"\n" +
       "    },\n" +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmDepositFlags.SINGLE_ASSET + ",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.SINGLE_ASSET + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
@@ -186,7 +187,7 @@ class AmmDepositTest extends AbstractJsonTest {
       )
       .build();
 
-    assertThat(deposit.flags()).isEqualTo(Flags.AmmDepositFlags.ONE_ASSET_LP_TOKEN);
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.ONE_ASSET_LP_TOKEN);
 
     String json = "{\n" +
       "    \"Account\" : \"" + deposit.account() + "\",\n" +
@@ -208,7 +209,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "        \"currency\" : \"XRP\"\n" +
       "    },\n" +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmDepositFlags.ONE_ASSET_LP_TOKEN + ",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.ONE_ASSET_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";
@@ -238,7 +239,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .effectivePrice(XrpCurrencyAmount.ofDrops(10))
       .build();
 
-    assertThat(deposit.flags()).isEqualTo(Flags.AmmDepositFlags.LIMIT_LP_TOKEN);
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.LIMIT_LP_TOKEN);
 
     String json = "{\n" +
       "    \"Account\" : \"" + deposit.account() + "\",\n" +
@@ -256,7 +257,7 @@ class AmmDepositTest extends AbstractJsonTest {
       "        \"currency\" : \"XRP\"\n" +
       "    },\n" +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : " + Flags.AmmDepositFlags.LIMIT_LP_TOKEN + ",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.LIMIT_LP_TOKEN + ",\n" +
       "    \"Sequence\" : 0,\n" +
       "    \"TransactionType\" : \"AMMDeposit\"\n" +
       "}";

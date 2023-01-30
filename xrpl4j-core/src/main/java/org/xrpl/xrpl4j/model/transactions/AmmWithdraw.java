@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 
@@ -25,12 +26,12 @@ public interface AmmWithdraw extends Transaction {
   }
 
   /**
-   * A {@link Flags.AmmWithdrawFlags} for this transaction.
+   * A {@link AmmWithdrawFlags} for this transaction.
    *
-   * @return A {@link Flags.AmmWithdrawFlags} for this transaction.
+   * @return A {@link AmmWithdrawFlags} for this transaction.
    */
   @JsonProperty("Flags")
-  Flags.AmmWithdrawFlags flags();
+  AmmWithdrawFlags flags();
 
   /**
    * The definition for one of the assets in the AMM's pool.

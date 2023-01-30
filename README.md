@@ -6,7 +6,7 @@
 
 This project is a pure Java implementation of an SDK that works with the XRP Ledger. This library supports XRPL key 
 and address generation, transaction serialization and signing, provides useful Java bindings for XRP Ledger objects and 
-rippled request/response objects, and also provides a JSON-RPC client for interacting with XRPL nodes.
+`rippled` request/response objects, and also provides a JSON-RPC client for interacting with XRPL nodes.
 
 ## Documentation
 
@@ -93,7 +93,7 @@ EscrowCreate escrowCreate = EscrowCreate.builder()
   .build();
 ```
 
-These objects can be serialized to, and deserialized from, rippled JSON representations using the provided
+These objects can be serialized to, and deserialized from, `rippled` JSON representations using the provided
 Jackson `ObjectMapper`, which can be instantiated
 using [`ObjectMapperFactory`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/jackson/ObjectMapperFactory.java).
 
@@ -220,19 +220,14 @@ assertThat(result.result()).isEqualTo("tesSUCCESS");
 Xrpl4j is structured as a Maven multi-module project, with the following modules:
 
 - **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
-    - Provides Java objects which model XRP Ledger objects, as well as request parameters and response results for the
-      rippled websocket and JSON RPC APIs
-    - Also provides a Jackson `ObjectMapper` and JSON bindings which can be used to serialize and deserialize to and
-      from JSON
-    - Serializes the JSON representation of XRPL Transactions to the canonical binary format of the XRP Ledger
-- **xrpl4j-crypto
-  **: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-address-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-address-codec)
-    - **xrpl4j-crypto-core**: Provides core primitives like seeds, public/private keys definitions (supports secp256k1
-      and ed25519 key types and signing algorithms), signature interfaces, etc.
-    - **xrpl4j-crypto-bouncycastle**: An implementation using [BouncyCastle](https://www.bouncycastle.org/) as the
-      underlying library/provider.
+    - Provides core primitives like seeds, public/private keys definitions (supports secp256k1 and ed25519 key types 
+      and signing algorithms), signature interfaces, etc. Also provides Java objects which model XRP Ledger objects, 
+      as well as request parameters and response results for the `rippled` websocket and JSON RPC APIs.
+    - Provides a Jackson `ObjectMapper` with JSON bindings that serialize and deserialize to and from the JSON
+      representation of XRPL Transactions; this is used to move to and from the canonical binary format of the XRP
+      Ledger.
 - **xrpl4j-client**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-client/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-client)
-    - Provides an example rippled JSON RPC client which can be used to communicate with a rippled node
+    - Provides an example `rippled` JSON RPC client which can be used to communicate with a `rippled` node
 - **xrpl4j-integration-tests**:
     - Contains the project's integration tests, which also serve as valuable xrpl4j usage examples for common XRPL
       flows.

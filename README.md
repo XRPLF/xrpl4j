@@ -150,10 +150,10 @@ import org.xrpl.xrpl4j.model.transactions.Address;
   
 ...
 
-Seed seed=Seed.ed255519Seed(); // <-- Generates a random seed.
-PrivateKey privateKey=seed.derivePrivateKey(); // <-- Derive a private key from the seed.
-PublicKey publicKey=privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
-Address address=publicKey.deriveAddress(); // <-- Derive an address from the public key.
+Seed seed = Seed.ed255519Seed(); // <-- Generates a random seed.
+PrivateKey privateKey = seed.derivePrivateKey(); // <-- Derive a private key from the seed.
+PublicKey publicKey = privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
+Address address = publicKey.deriveAddress(); // <-- Derive an address from the public key.
 ```
 
 ##### Private Key References (`PrivateKeyReference`)

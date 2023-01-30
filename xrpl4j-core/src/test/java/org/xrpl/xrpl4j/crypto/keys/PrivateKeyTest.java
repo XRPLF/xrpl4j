@@ -26,12 +26,12 @@ public class PrivateKeyTest {
 
   @Test
   public void versionTypeEd25519() {
-    assertThat(ED_PRIVATE_KEY.versionType()).isEqualTo(KeyType.ED25519);
+    assertThat(ED_PRIVATE_KEY.keyType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
   public void versionTypeSecp256k1() {
-    assertThat(EC_PRIVATE_KEY.versionType()).isEqualTo(KeyType.SECP256K1);
+    assertThat(EC_PRIVATE_KEY.keyType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test

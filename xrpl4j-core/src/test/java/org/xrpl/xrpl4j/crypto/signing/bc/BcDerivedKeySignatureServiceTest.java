@@ -584,7 +584,7 @@ class BcDerivedKeySignatureServiceTest {
       }
 
       @Override
-      public KeyType versionType() {
+      public KeyType keyType() {
         return keyType;
       }
     };

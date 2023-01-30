@@ -54,7 +54,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    *
    * @return A {@link KeyType}.
    */
-  public final KeyType versionType() {
+  public final KeyType keyType() {
     final UnsignedByte prefixByte = this.value().get(0);
     return prefixByte.equals(PREFIX) ? KeyType.ED25519 : KeyType.SECP256K1;
   }

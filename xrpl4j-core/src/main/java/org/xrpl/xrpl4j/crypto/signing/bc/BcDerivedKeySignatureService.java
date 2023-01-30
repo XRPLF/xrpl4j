@@ -164,14 +164,14 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     Objects.requireNonNull(privateKeyReference);
 
     final KeyPair keyPair;
-    if (KeyType.ED25519 == privateKeyReference.versionType()) {
+    if (KeyType.ED25519 == privateKeyReference.keyType()) {
       final Seed seed = this.generateEd25519XrplSeed(privateKeyReference.keyIdentifier());
       keyPair = seed.deriveKeyPair();
-    } else if (KeyType.SECP256K1 == privateKeyReference.versionType()) {
+    } else if (KeyType.SECP256K1 == privateKeyReference.keyType()) {
       final Seed seed = this.generateSecp256k1Seed(privateKeyReference.keyIdentifier());
       keyPair =  seed.deriveKeyPair();
     } else {
-      throw new IllegalArgumentException("Invalid VersionType: " + privateKeyReference.versionType());
+      throw new IllegalArgumentException("Invalid VersionType: " + privateKeyReference.keyType());
     }
 
     return new BcSingleKeyTransactionSigner(keyPair.privateKey(), commonBcSignatureService);

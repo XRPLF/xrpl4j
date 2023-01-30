@@ -108,7 +108,7 @@ public class AbstractSignatureServiceTest {
 
       @Override
       public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
-        return privateKeyable.versionType() == KeyType.ED25519 ? TestConstants.ED_PUBLIC_KEY
+        return privateKeyable.keyType() == KeyType.ED25519 ? TestConstants.ED_PUBLIC_KEY
           : TestConstants.EC_PUBLIC_KEY;
       }
     };

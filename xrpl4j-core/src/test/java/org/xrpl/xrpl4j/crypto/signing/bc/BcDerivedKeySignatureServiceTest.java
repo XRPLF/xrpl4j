@@ -43,7 +43,6 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.bc.BcDerivedKeySignatureService;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -432,7 +431,7 @@ class BcDerivedKeySignatureServiceTest {
     assertThat(actualEcPublicKey.base16Value())
       .isEqualTo("ED9909CDE4F59EA84686FCEE2149BE37CC05317F6C4F1434D96EE0E476F78C4C70");
     assertThat(actualEcPublicKey.base58Value()).isEqualTo("aKEvqcjfwFvcRSUd6fF5QL6N14xxNzNMDVZ2xmspAknpzf2LJfTy");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.ED25519);
+    assertThat(actualEcPublicKey.keyType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
@@ -442,7 +441,7 @@ class BcDerivedKeySignatureServiceTest {
     assertThat(actualEcPublicKey.base16Value())
       .isEqualTo("021ABFB4DDB4F25162D858BD02289D5B7D0F4D143082C1781DEFBC5EF9662E6263");
     assertThat(actualEcPublicKey.base58Value()).isEqualTo("aB4wHG4rW8bF9HSXg6Q7BNxddwNQ1EtvgF2AyPqQyeAgZ27tQxSP");
-    assertThat(actualEcPublicKey.versionType()).isEqualTo(KeyType.SECP256K1);
+    assertThat(actualEcPublicKey.keyType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test
@@ -604,7 +603,7 @@ class BcDerivedKeySignatureServiceTest {
       }
 
       @Override
-      public KeyType versionType() {
+      public KeyType keyType() {
         return keyType;
       }
     };

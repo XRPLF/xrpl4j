@@ -193,7 +193,7 @@ public interface Seed extends javax.security.auth.Destroyable {
      * Required-args Constructor. Purposefully package-private for testing purposes only (use a static method instead
      * for construction).
      *
-     * @param value This seed's full binary value (including the entropy bytes and versionType).
+     * @param value This seed's full binary value (including the entropy bytes and keyType).
      */
     @VisibleForTesting
     DefaultSeed(final UnsignedByteArray value) {
@@ -203,7 +203,7 @@ public interface Seed extends javax.security.auth.Destroyable {
     /**
      * Copy constructor.
      *
-     * @param seed This seed's full binary value (including the entropy bytes and versionType).
+     * @param seed This seed's full binary value (including the entropy bytes and keyType).
      */
     @VisibleForTesting
     DefaultSeed(final DefaultSeed seed) {

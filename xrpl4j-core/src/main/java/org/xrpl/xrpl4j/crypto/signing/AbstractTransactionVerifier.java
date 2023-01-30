@@ -54,7 +54,7 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
     final UnsignedByteArray transactionBytesUba = this.getSignatureUtils().toSignableBytes(unsignedTransaction);
 
     final PublicKey publicKey = signatureWithPublicKey.signingPublicKey();
-    switch (publicKey.versionType()) {
+    switch (publicKey.keyType()) {
       case ED25519: {
         return edDsaVerify(publicKey, transactionBytesUba, signatureWithPublicKey.transactionSignature());
       }
@@ -62,7 +62,7 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
         return ecDsaVerify(publicKey, transactionBytesUba, signatureWithPublicKey.transactionSignature());
       }
       default: {
-        throw new IllegalArgumentException("Unhandled PublicKey VersionType: {}" + publicKey.versionType());
+        throw new IllegalArgumentException("Unhandled PublicKey KeyType: {}" + publicKey.keyType());
       }
     }
   }
@@ -114,7 +114,7 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
     Objects.requireNonNull(signature);
     Objects.requireNonNull(unsignedTransactionBytes);
 
-    switch (publicKey.versionType()) {
+    switch (publicKey.keyType()) {
       case ED25519: {
         return edDsaVerify(publicKey, unsignedTransactionBytes, signature);
       }
@@ -122,7 +122,7 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
         return ecDsaVerify(publicKey, unsignedTransactionBytes, signature);
       }
       default: {
-        throw new IllegalArgumentException("Unhandled PublicKey VersionType: {}" + publicKey.versionType());
+        throw new IllegalArgumentException("Unhandled PublicKey KeyType: {}" + publicKey.keyType());
       }
     }
   }

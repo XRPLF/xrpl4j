@@ -32,6 +32,6 @@ public interface PrivateKeyable {
    *
    * @return A {@link KeyType}.
    */
-  KeyType versionType();
+  KeyType keyType();
 
 }

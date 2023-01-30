@@ -1,6 +1,9 @@
-# XRPL-4J Crypto
+# xrpl-4j Crypto
 
-This implementation supports a variety of KeyStore implementatios to faciliate signing transactions..
+This implementation supports a variety of mechanisms for storing private key material that can be used to sign 
+transactions. 
+
+
 
 ## Keystores
 

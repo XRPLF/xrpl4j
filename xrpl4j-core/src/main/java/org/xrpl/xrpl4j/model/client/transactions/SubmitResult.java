@@ -57,50 +57,18 @@ public interface SubmitResult<TxnType extends Transaction> extends XrplResult {
   /**
    * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
    *
-   * @return {@link String} containing the result of the submission.
-   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
-   *   {@link #result()}.
+   * @return A {@link String} containing the result of the submission.
    */
-  @Deprecated
-  @Value.Auxiliary
-  default Optional<String> engineResult() {
-    return Optional.of(result());
-  }
-
-  /**
-   * Text result code indicating the preliminary result of the transaction, for example "tesSUCCESS".
-   *
-   * @return {@link String} containing the result of the submission.
-   * @deprecated This will be removed in a future version and replaced by a field of the same type called
-   *   {@link #engineResult()}.
-   */
-  @Deprecated
   @JsonProperty("engine_result")
-  String result();
-
-  /**
-   * Human-readable explanation of the transaction's preliminary result.
-   *
-   * @return An optionally-present {@link String} containing the result message of the submission.
-   * @deprecated This field will be typed as a {@link String} in a future release. Until then, use
-   *   {@link #resultMessage()}.
-   */
-  @Deprecated
-  @Value.Auxiliary
-  default Optional<String> engineResultMessage() {
-    return Optional.of(resultMessage());
-  }
+  String engineResult();
 
   /**
    * Human-readable explanation of the transaction's preliminary result.
    *
    * @return A {@link String} containing the result message of the submission.
-   * @deprecated This will be removed in a future version and replaced by a field of the same type called
-   *   {@link #engineResultMessage()}.
    */
-  @Deprecated
   @JsonProperty("engine_result_message")
-  String resultMessage();
+  String engineResultMessage();
 
   /**
    * The complete transaction in hex {@link String} format.

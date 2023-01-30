@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.tests;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: integration-tests
+ * %%
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -351,7 +371,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
-    assertThat(paymentResult.result()).isEqualTo(expectedResultCode);
+    assertThat(paymentResult.engineResult()).isEqualTo(expectedResultCode);
 
     if (expectedResultCode.equals("tesSUCCESS")) {
       logger.info(
@@ -400,7 +420,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartKeyPair.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       trustSetSubmitResult.transactionResult().hash()
@@ -440,7 +460,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(wallet.privateKey(), accountSet);
     SubmitResult<AccountSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       trustSetSubmitResult.transactionResult().hash()
@@ -500,7 +520,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       trustSetSubmitResult.transactionResult().hash()
@@ -553,7 +573,7 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     SingleSignedTransaction<AccountSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), accountSet);
     SubmitResult<AccountSet> transactionResult = xrplClient.submit(signedTrustSet);
-    assertThat(transactionResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(transactionResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       transactionResult.transactionResult().hash()

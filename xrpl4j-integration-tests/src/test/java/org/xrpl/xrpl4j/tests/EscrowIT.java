@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.tests;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: integration-tests
+ * %%
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,7 +80,7 @@ public class EscrowIT extends AbstractIT {
       senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().hash()
@@ -103,7 +123,7 @@ public class EscrowIT extends AbstractIT {
       receiverKeyPair.privateKey(), escrowFinish
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
-    assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/{}",
       finishResult.transactionResult().hash()
@@ -160,7 +180,7 @@ public class EscrowIT extends AbstractIT {
       senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().hash()
@@ -209,7 +229,7 @@ public class EscrowIT extends AbstractIT {
       senderKeyPair.privateKey(), escrowCancel
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
       cancelResult.transactionResult().hash()
@@ -266,7 +286,7 @@ public class EscrowIT extends AbstractIT {
       senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().hash()
@@ -315,7 +335,7 @@ public class EscrowIT extends AbstractIT {
       receiverKeyPair.privateKey(), escrowFinish
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
-    assertThat(finishResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/{}",
       finishResult.transactionResult().hash()
@@ -373,7 +393,7 @@ public class EscrowIT extends AbstractIT {
       senderKeyPair.privateKey(), escrowCreate
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
-    assertThat(createResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       createResult.transactionResult().hash()
@@ -413,7 +433,7 @@ public class EscrowIT extends AbstractIT {
       senderKeyPair.privateKey(), escrowCancel
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
-    assertThat(cancelResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
       cancelResult.transactionResult().hash()

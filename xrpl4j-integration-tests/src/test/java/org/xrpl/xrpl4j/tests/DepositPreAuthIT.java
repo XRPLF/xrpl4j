@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.tests;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: integration-tests
+ * %%
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -57,7 +77,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     SubmitResult<DepositPreAuth> result = xrplClient.submit(singedDepositPreAuth);
 
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "DepositPreauth transaction successful. https://testnet.xrpl.org/transactions/{}",
       result.transactionResult().hash()
@@ -102,7 +122,7 @@ public class DepositPreAuthIT extends AbstractIT {
     );
 
     SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
-    assertThat(result.result()).isEqualTo("tesSUCCESS");
+    assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful. https://testnet.xrpl.org/transactions/{}",
       paymentResult.transactionResult().hash()
@@ -169,7 +189,7 @@ public class DepositPreAuthIT extends AbstractIT {
       senderKeyPair.privateKey(), payment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
-    assertThat(paymentResult.result()).isEqualTo("tecNO_PERMISSION");
+    assertThat(paymentResult.engineResult()).isEqualTo("tecNO_PERMISSION");
   }
 
   @Test
@@ -236,7 +256,7 @@ public class DepositPreAuthIT extends AbstractIT {
       wallet.privateKey(), accountSet
     );
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
-    assertThat(accountSetResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
       accountSetResult.transactionResult().hash()

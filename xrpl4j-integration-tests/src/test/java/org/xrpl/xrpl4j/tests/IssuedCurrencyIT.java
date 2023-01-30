@@ -1,5 +1,25 @@
 package org.xrpl.xrpl4j.tests;
 
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: integration-tests
+ * %%
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -266,7 +286,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       aliceKeyPair.privateKey(), aliceToBobPayment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedAliceToBobPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transactionResult().hash()
@@ -426,7 +446,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       charlieKeyPair.privateKey(), charlieToDanielPayment
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedCharlieToDanielPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transactionResult().hash()
@@ -490,7 +510,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       issuerKeyPair.privateKey(), setDefaultRipple
     );
     SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
-    assertThat(setResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       setResult.transactionResult().hash()
@@ -543,7 +563,7 @@ public class IssuedCurrencyIT extends AbstractIT {
       issuerKeyPair.privateKey(), fundCounterparty
     );
     SubmitResult<Payment> paymentResult = xrplClient.submit(signedFundCounterparty);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
       paymentResult.transactionResult().hash()
@@ -592,7 +612,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartyKeyPair.privateKey(),
       trustSet);
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo("tesSUCCESS");
+    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
       "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
       trustSetSubmitResult.transactionResult().hash()

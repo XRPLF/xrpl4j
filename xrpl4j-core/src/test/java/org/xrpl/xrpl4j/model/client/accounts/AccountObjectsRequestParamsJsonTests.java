@@ -31,7 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
-
+  
   @Test
   public void testWithLedgerHash() throws JsonProcessingException, JSONException {
     AccountObjectsRequestParams params = AccountObjectsRequestParams.builder()

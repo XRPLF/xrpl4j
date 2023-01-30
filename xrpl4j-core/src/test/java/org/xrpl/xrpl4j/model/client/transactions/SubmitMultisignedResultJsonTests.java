@@ -43,9 +43,9 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     SubmitMultiSignedResult<TrustSet> result = SubmitMultiSignedResult.<TrustSet>builder()
-      .result(TransactionResultCodes.TES_SUCCESS)
-      .resultCode(0)
-      .resultMessage("The transaction was applied. Only final in a validated ledger.")
+      .engineResult(TransactionResultCodes.TES_SUCCESS)
+      .engineResultCode(0)
+      .engineResultMessage("The transaction was applied. Only final in a validated ledger.")
       .status("success")
       .transactionBlob("120014220004000024000000046380000000000000000000000000000000000000005553440000000000B" +
         "5F762798A53D543A014CAF8B297CFF8F2F937E868400000000000753073008114A3780F5CB5A44D366520FC44055E8ED44" +
@@ -99,10 +99,6 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
         .hash(Hash256.of("81A477E2A362D171BB16BE17B4120D9F809A327FA00242ABCA867283BEA2F4F8"))
         .build())
       .build();
-
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(result.result());
-    assertThat(result.engineResultCode()).isNotEmpty().get().isEqualTo(result.resultCode().toString());
-    assertThat(result.engineResultMessage()).isNotEmpty().get().isEqualTo(result.resultMessage());
 
     String json = "{\n" +
       "        \"engine_result\": \"tesSUCCESS\",\n" +

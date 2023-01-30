@@ -47,6 +47,9 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 
+// From new, random entropy
+Seed seedFromRandomEntropy = Seed.ed25519SeedFromEntropy(Entropy.newInstance));
+
 // From existing entropy bytes
 Seed seedFromEntropy = Seed.ed25519SeedFromEntropy(BaseEncoding.base16().decode("0102030405060708090A0B0C0D0E0F10"))
 

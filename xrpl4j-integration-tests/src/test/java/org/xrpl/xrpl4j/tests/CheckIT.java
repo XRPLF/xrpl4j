@@ -4,14 +4,14 @@ package org.xrpl.xrpl4j.tests;
  * ========================LICENSE_START=================================
  * xrpl4j :: integration-tests
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,13 @@ package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -36,88 +39,92 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.function.Predicate;
 
+/**
+ * Integration tests to validate submission of Check transactions.
+ */
+@SuppressWarnings( {"OptionalGetWithoutIsPresent"})
 public class CheckIT extends AbstractIT {
 
   @Test
-  public void createXrpCheckAndCash() throws JsonRpcClientErrorException {
+  public void createXrpCheckAndCash() throws JsonRpcClientErrorException, JsonProcessingException {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
-    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
+    SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
+      sourceKeyPair.privateKey(), checkCreate
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
     );
 
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    CheckObject checkObject = (CheckObject) this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
-      result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
-    )
+    CheckObject checkObject = (CheckObject) this
+      .scanForResult(
+        () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+        result -> result.accountObjects().stream().anyMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
+      )
       .accountObjects().stream()
-      .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
     //////////////////////
     // Destination wallet cashes the Check
     feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
     );
     CheckCash checkCash = CheckCash.builder()
-      .account(destinationWallet.classicAddress())
+      .account(destinationKeyPair.publicKey().deriveAddress())
       .amount(checkObject.sendMax())
       .sequence(destinationAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(destinationWallet.publicKey())
+      .signingPublicKey(destinationKeyPair.publicKey())
       .build();
-    SubmitResult<CheckCash> cashResponse = xrplClient.submit(destinationWallet, checkCash);
-    assertThat(cashResponse.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-    logInfo(
-      cashResponse.transactionResult().transaction().transactionType(),
+    SingleSignedTransaction<CheckCash> signedCheckCash = signatureService.sign(
+      destinationKeyPair.privateKey(), checkCash
+    );
+    SubmitResult<CheckCash> cashResponse = xrplClient.submit(signedCheckCash);
+    assertThat(cashResponse.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "CheckCash transaction successful: https://testnet.xrpl.org/transactions/{}",
       cashResponse.transactionResult().hash()
     );
 
     //////////////////////
     // Validate that the destination account balance increases by the check amount minus fees
     this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.classicAddress()),
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()),
       result -> {
         logger.info("AccountInfoResult after CheckCash balance: {}", result.accountData().balance().value());
         return result.accountData().balance().equals(
@@ -129,171 +136,172 @@ public class CheckIT extends AbstractIT {
     //////////////////////
     // Validate that the Check object was deleted
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
-      result -> result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+      () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountObjects().stream().noneMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
     );
   }
 
   @Test
-  public void createCheckAndSourceCancels() throws JsonRpcClientErrorException {
+  public void createCheckAndSourceCancels() throws JsonRpcClientErrorException, JsonProcessingException {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
-    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
+    SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
+      sourceKeyPair.privateKey(), checkCreate
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
     );
 
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    CheckObject checkObject = (CheckObject) this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
-      result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
-    )
+    CheckObject checkObject = (CheckObject) this
+      .scanForResult(() -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+        result -> result.accountObjects().stream().anyMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
+      )
       .accountObjects().stream()
-      .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
     //////////////////////
     // Source account cancels the Check
     feeResult = xrplClient.fee();
     CheckCancel checkCancel = CheckCancel.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
-    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(sourceWallet, checkCancel);
-    assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-
-    logInfo(
-      cancelResult.transactionResult().transaction().transactionType(),
+    SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
+      sourceKeyPair.privateKey(), checkCancel
+    );
+    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
       cancelResult.transactionResult().hash()
     );
 
     //////////////////////
     // Validate that the Check does not exist after cancelling
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
-      result -> result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
+      () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountObjects().stream().noneMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
     );
   }
 
   @Test
-  public void createCheckAndDestinationCancels() throws JsonRpcClientErrorException {
+  public void createCheckAndDestinationCancels() throws JsonRpcClientErrorException, JsonProcessingException {
 
     //////////////////////
     // Generate and fund source and destination accounts
-    Wallet sourceWallet = createRandomAccount();
-    Wallet destinationWallet = createRandomAccount();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     //////////////////////
     // Create a Check with an InvoiceID for easy identification
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(sourceWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
     Hash256 invoiceId = Hash256.of(Hashing.sha256().hashBytes("Check this out.".getBytes()).toString());
     CheckCreate checkCreate = CheckCreate.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfoResult.accountData().sequence())
-      .destination(destinationWallet.classicAddress())
+      .destination(destinationKeyPair.publicKey().deriveAddress())
       .sendMax(XrpCurrencyAmount.ofDrops(12345))
       .invoiceId(invoiceId)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
     //////////////////////
     // Poll the ledger for the source wallet's account objects, and validate that the created Check makes
     // it into the ledger
-    SubmitResult<CheckCreate> response = xrplClient.submit(sourceWallet, checkCreate);
-    assertThat(response.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-
-    logInfo(
-      response.transactionResult().transaction().transactionType(),
+    SingleSignedTransaction<CheckCreate> signedCheckCreate = signatureService.sign(
+      sourceKeyPair.privateKey(), checkCreate
+    );
+    SubmitResult<CheckCreate> response = xrplClient.submit(signedCheckCreate);
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "CheckCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
     );
 
-    CheckObject checkObject = (CheckObject) this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
-      result -> result.accountObjects().stream().anyMatch(findCheck(sourceWallet, destinationWallet, invoiceId))
-    )
+    CheckObject checkObject = (CheckObject) this
+      .scanForResult(
+        () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+        result -> result.accountObjects().stream().anyMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
+      )
       .accountObjects().stream()
-      .filter(findCheck(sourceWallet, destinationWallet, invoiceId))
+      .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
     //////////////////////
     // Destination account cancels the Check
     feeResult = xrplClient.fee();
     AccountInfoResult destinationAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(destinationWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
     );
     CheckCancel checkCancel = CheckCancel.builder()
-      .account(destinationWallet.classicAddress())
+      .account(destinationKeyPair.publicKey().deriveAddress())
       .sequence(destinationAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .checkId(checkObject.index())
-      .signingPublicKey(destinationWallet.publicKey())
+      .signingPublicKey(destinationKeyPair.publicKey())
       .build();
 
-    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(destinationWallet, checkCancel);
-    assertThat(cancelResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(response.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(response.transactionResult().hash());
-
-    logInfo(
-      cancelResult.transactionResult().transaction().transactionType(),
+    SingleSignedTransaction<CheckCancel> signedCheckCancel = signatureService.sign(
+      destinationKeyPair.privateKey(), checkCancel
+    );
+    SubmitResult<CheckCancel> cancelResult = xrplClient.submit(signedCheckCancel);
+    assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "CheckCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
       cancelResult.transactionResult().hash()
     );
 
     //////////////////////
     // Validate that the Check does not exist after cancelling
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(sourceWallet.classicAddress()),
-      result -> result.accountObjects().stream().noneMatch(findCheck(sourceWallet, destinationWallet, invoiceId)));
+      () -> this.getValidatedAccountObjects(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountObjects().stream().noneMatch(findCheck(sourceKeyPair, destinationKeyPair, invoiceId)));
   }
 
-  private Predicate<LedgerObject> findCheck(Wallet sourceWallet, Wallet destinationWallet, Hash256 invoiceId) {
+  private Predicate<LedgerObject> findCheck(KeyPair sourceKeyPair, KeyPair destinationKeyPair, Hash256 invoiceId) {
     return object ->
       CheckObject.class.isAssignableFrom(object.getClass()) &&
         ((CheckObject) object).invoiceId().map(id -> id.equals(invoiceId)).orElse(false) &&
-        ((CheckObject) object).account().equals(sourceWallet.classicAddress()) &&
-        ((CheckObject) object).destination().equals(destinationWallet.classicAddress());
+        ((CheckObject) object).account().equals(sourceKeyPair.publicKey().deriveAddress()) &&
+        ((CheckObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress());
   }
 
 }

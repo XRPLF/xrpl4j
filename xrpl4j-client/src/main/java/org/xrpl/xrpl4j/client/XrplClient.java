@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -34,8 +33,8 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
-import org.xrpl.xrpl4j.keypairs.DefaultKeyPairService;
-import org.xrpl.xrpl4j.keypairs.KeyPairService;
+import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.Finality;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
@@ -74,12 +73,11 @@ import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.server.ServerInfo;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.ClioServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
-import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitRequestParams;
@@ -121,7 +119,6 @@ import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -141,7 +138,6 @@ public class XrplClient {
   private final ObjectMapper objectMapper;
   private final XrplBinaryCodec binaryCodec;
   private final JsonRpcClient jsonRpcClient;
-  private final KeyPairService keyPairService;
 
   /**
    * Public constructor.
@@ -161,70 +157,23 @@ public class XrplClient {
   XrplClient(final JsonRpcClient jsonRpcClient) {
     this.jsonRpcClient = Objects.requireNonNull(jsonRpcClient);
     this.objectMapper = ObjectMapperFactory.create();
-    this.binaryCodec = new XrplBinaryCodec();
-    this.keyPairService = DefaultKeyPairService.getInstance();
+    this.binaryCodec = XrplBinaryCodec.getInstance();
   }
 
   /**
-   * Submit a {@link Transaction} to the XRP Ledger.
-   *
-   * @param <T>                 The type of {@link Transaction} that is being submitted.
-   * @param wallet              The {@link Wallet} of the XRPL account submitting {@code unsignedTransaction}.
-   * @param unsignedTransaction An unsigned {@link Transaction} to submit. {@link Transaction#transactionSignature()}
-   *                            must not be provided, and {@link Transaction#signingPublicKey()} must be provided.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @see "https://xrpl.org/submit.html"
-   */
-  public <T extends Transaction> SubmitResult<T> submit(
-    Wallet wallet,
-    T unsignedTransaction
-  ) throws JsonRpcClientErrorException {
-    Preconditions.checkArgument(
-      unsignedTransaction.signingPublicKey().isPresent(),
-      "Transaction.signingPublicKey() must be set."
-    );
-
-    SignedTransaction<T> signedTransaction = signTransaction(wallet, unsignedTransaction);
-    return submit(signedTransaction);
-  }
-
-  /**
-   * Submit a {@link SignedTransaction} to the ledger.
-   *
-   * @param signedTransaction A {@link SignedTransaction} to submit.
-   * @param <T>               The type of {@link Transaction} contained in the {@link SignedTransaction} object.
-   *
-   * @return The {@link SubmitResult} resulting from the submission request.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   */
-  public <T extends Transaction> SubmitResult<T> submit(
-    SignedTransaction<T> signedTransaction
-  ) throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SUBMIT)
-      .addParams(SubmitRequestParams.of(signedTransaction.signedTransactionBlob()))
-      .build();
-    JavaType resultType = objectMapper.getTypeFactory()
-      .constructParametricType(SubmitResult.class, signedTransaction.signedTransaction().getClass());
-    return jsonRpcClient.send(request, resultType);
-  }
-
-  /**
-   * Submit a {@link SignedTransaction} to the XRP Ledger.
+   * Submit a {@link SingleSignedTransaction} to the XRP Ledger.
    *
    * @param <T>               The type of signed {@link Transaction} that is being submitted.
-   * @param signedTransaction A {@link org.xrpl.xrpl4j.crypto.signing.SignedTransaction} to submit.
+   * @param signedTransaction A {@link SingleSignedTransaction} to submit.
    *
    * @return The {@link SubmitResult} resulting from the submission request.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @throws JsonProcessingException     if any JSON is invalid.
    * @see "https://xrpl.org/submit.html"
    */
-  public <T extends Transaction> SubmitResult<T> submit(
-    final org.xrpl.xrpl4j.crypto.signing.SignedTransaction signedTransaction
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
+  public <T extends Transaction> SubmitResult<T> submit(final SingleSignedTransaction<T> signedTransaction)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(signedTransaction);
 
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("About to submit signedTransaction: {}", signedTransaction);
@@ -248,18 +197,19 @@ public class XrplClient {
   /**
    * Submit a multisigned {@link Transaction} to the ledger.
    *
-   * @param transaction A multisigned {@link Transaction}.
+   * @param transaction A {@link MultiSignedTransaction}.
    * @param <T>         A type parameter for the type of {@link Transaction} being submitted.
    *
    * @return A {@link SubmitMultiSignedResult} of type {@link T}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
-  public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(
-    T transaction
-  ) throws JsonRpcClientErrorException {
+  public <T extends Transaction> SubmitMultiSignedResult<T> submitMultisigned(MultiSignedTransaction<T> transaction)
+    throws JsonRpcClientErrorException {
+    Objects.requireNonNull(transaction);
+
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SUBMIT_MULTISIGNED)
-      .addParams(SubmitMultiSignedRequestParams.of(transaction))
+      .addParams(SubmitMultiSignedRequestParams.of(transaction.signedTransaction()))
       .build();
     JavaType resultType = objectMapper.getTypeFactory().constructParametricType(
       SubmitMultiSignedResult.class, transaction.getClass()
@@ -334,16 +284,16 @@ public class XrplClient {
     final UnsignedLong submittedLedgerSequence,
     final UnsignedLong lastLedgerSequence
   ) {
-    final ServerInfo serverInfo;
+    final ServerInfoResult serverInfo;
     try {
-      serverInfo = this.serverInfo();
+      serverInfo = this.serverInformation();
     } catch (JsonRpcClientErrorException e) {
       LOGGER.error(e.getMessage(), e);
       return true; // Assume ledger gaps exist so this can be retried.
     }
 
     Range<UnsignedLong> submittedToLast = Range.closed(submittedLedgerSequence, lastLedgerSequence);
-    return serverInfo.completeLedgerRanges().stream()
+    return serverInfo.info().completeLedgers().stream()
       .noneMatch(range -> range.encloses(submittedToLast));
   }
 
@@ -437,34 +387,15 @@ public class XrplClient {
   }
 
   /**
-   * Get the "server_info" for the rippled node.
-   *
-   * @return A {@link ServerInfo} containing information about the server.
-   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
-   * @see "https://xrpl.org/server_info.html"
-   * @deprecated This method is deprecated to accommodate 3 different types of server_info responses from the
-   *   specialised Clio {@link ClioServerInfo} and Reporting Mode {@link ReportingModeServerInfo} servers and the
-   *   generic rippled server {@link RippledServerInfo}. Use {@link XrplClient#serverInformation()}.
-   */
-  @Deprecated
-  public ServerInfo serverInfo() throws JsonRpcClientErrorException {
-    JsonRpcRequest request = JsonRpcRequest.builder()
-      .method(XrplMethods.SERVER_INFO)
-      .build();
-
-    return jsonRpcClient.send(request, ServerInfoResult.class).info();
-  }
-
-  /**
    * Get the "server_info" for the rippled node {@link RippledServerInfo}, clio server {@link ClioServerInfo} and
    * reporting mode server {@link ReportingModeServerInfo}. You should be able to handle all these response types as
-   * {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo}.
+   * {@link ServerInfo}.
    *
-   * @return A {@link org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult} containing information about the server.
+   * @return A {@link ServerInfoResult} containing information about the server.
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    * @see "https://xrpl.org/server_info.html"
    */
-  public org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInformation()
+  public ServerInfoResult serverInformation()
     throws JsonRpcClientErrorException {
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.SERVER_INFO)
@@ -660,7 +591,7 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public AccountTransactionsResult accountTransactions(Address address) throws JsonRpcClientErrorException {
-    return accountTransactions(AccountTransactionsRequestParams.builder()
+    return accountTransactions(AccountTransactionsRequestParams.unboundedBuilder()
       .account(address)
       .build());
   }
@@ -695,9 +626,12 @@ public class XrplClient {
    * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error.
    */
   public <T extends Transaction> TransactionResult<T> transaction(
-    TransactionRequestParams params,
-    Class<T> transactionType
+    final TransactionRequestParams params,
+    final Class<T> transactionType
   ) throws JsonRpcClientErrorException {
+    Objects.requireNonNull(params);
+    Objects.requireNonNull(transactionType);
+
     JsonRpcRequest request = JsonRpcRequest.builder()
       .method(XrplMethods.TX)
       .addParams(params)
@@ -813,183 +747,7 @@ public class XrplClient {
 
     return jsonRpcClient.send(request, AmmInfoResult.class);
   }
-
-  /**
-   * Sign a {@link Transaction} with the private key from a {@link Wallet}.
-   *
-   * @param wallet              A {@link Wallet} with a private key to sign the transaction with.
-   * @param unsignedTransaction A {@link Transaction} without a signature.
-   * @param <T>                 The actual polymorphic type of {@link Transaction} to sign.
-   *
-   * @return A {@link SignedTransaction}.
-   */
-  public <T extends Transaction> SignedTransaction<T> signTransaction(
-    Wallet wallet, T unsignedTransaction
-  ) {
-    try {
-      String unsignedJson = objectMapper.writeValueAsString(unsignedTransaction);
-
-      String unsignedBinaryHex = binaryCodec.encodeForSigning(unsignedJson);
-      String signature = keyPairService.sign(unsignedBinaryHex, wallet.privateKey()
-        .orElseThrow(() -> new RuntimeException("Wallet must provide a private key to sign the transaction.")));
-
-      T signedTransaction = (T) addSignature(unsignedTransaction, signature);
-
-      String signedJson = objectMapper.writeValueAsString(signedTransaction);
-      String signedBinary = binaryCodec.encode(signedJson);
-      return SignedTransaction.<T>builder()
-        .signedTransaction(signedTransaction)
-        .signedTransactionBlob(signedBinary)
-        .build();
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Add {@link Transaction#transactionSignature()} to the given unsignedTransaction. Because {@link Transaction} is not
-   * a {@link Value.Immutable}, it does not have a generated builder like the subclasses.  Thus, this method needs to
-   * rebuild transactions based on their runtime type.
-   *
-   * @param unsignedTransaction An unsigned {@link Transaction} to add a signature to.
-   *                            {@link Transaction#transactionSignature()} must not be provided, and
-   *                            {@link Transaction#signingPublicKey()} must be provided. a {@link Value.Immutable}, it
-   *                            does not have a generated builder like the subclasses.  Thus, this method needs to
-   *                            rebuild transactions based on their runtime type.
-   * @param signature           The hex encoded {@link String} containing the transaction signature.
-   *
-   * @return A copy of {@code unsignedTransaction} with the {@link Transaction#transactionSignature()} field added.
-   * @deprecated This method will go away in a future version and be replaced with the implementation in SignatureUtils
-   *   in the xrpl4j-crypto module.
-   */
-  @Deprecated
-  protected Transaction addSignature(
-    Transaction unsignedTransaction,
-    String signature
-  ) {
-    if (Payment.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return Payment.builder().from((Payment) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AccountSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AccountSet.builder().from((AccountSet) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AccountDelete.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AccountDelete.builder().from((AccountDelete) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (CheckCancel.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return CheckCancel.builder().from((CheckCancel) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (CheckCash.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return CheckCash.builder().from((CheckCash) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (CheckCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return CheckCreate.builder().from((CheckCreate) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (DepositPreAuth.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return DepositPreAuth.builder().from((DepositPreAuth) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (EscrowCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return EscrowCreate.builder().from((EscrowCreate) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (EscrowCancel.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return EscrowCancel.builder().from((EscrowCancel) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (EscrowFinish.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return EscrowFinish.builder().from((EscrowFinish) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (NfTokenAcceptOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (NfTokenBurn.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return NfTokenBurn.builder().from((NfTokenBurn) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (NfTokenCancelOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return NfTokenCancelOffer.builder().from((NfTokenCancelOffer) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (NfTokenCreateOffer.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return NfTokenCreateOffer.builder().from((NfTokenCreateOffer) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (NfTokenMint.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return NfTokenMint.builder().from((NfTokenMint) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (TrustSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return TrustSet.builder().from((TrustSet) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (OfferCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return OfferCreate.builder().from((OfferCreate) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (OfferCancel.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return OfferCancel.builder().from((OfferCancel) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (PaymentChannelCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return PaymentChannelCreate.builder().from((PaymentChannelCreate) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (PaymentChannelClaim.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return PaymentChannelClaim.builder().from((PaymentChannelClaim) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (PaymentChannelFund.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return PaymentChannelFund.builder().from((PaymentChannelFund) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (SetRegularKey.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return SetRegularKey.builder().from((SetRegularKey) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (SignerListSet.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return SignerListSet.builder().from((SignerListSet) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (TicketCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return TicketCreate.builder().from((TicketCreate) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AmmBid.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AmmBid.builder().from((AmmBid) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AmmCreate.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AmmCreate.builder().from((AmmCreate) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AmmDeposit.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AmmDeposit.builder().from((AmmDeposit) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AmmVote.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AmmVote.builder().from((AmmVote) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    } else if (AmmWithdraw.class.isAssignableFrom(unsignedTransaction.getClass())) {
-      return AmmWithdraw.builder().from((AmmWithdraw) unsignedTransaction)
-        .transactionSignature(signature)
-        .build();
-    }
-
-    // Never happens
-    throw new IllegalArgumentException("Signing fields could not be added to the unsignedTransaction.");
-
-  }
-
+  
   public JsonRpcClient getJsonRpcClient() {
     return jsonRpcClient;
   }

@@ -25,27 +25,31 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.google.common.io.BaseEncoding;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import okhttp3.HttpUrl;
-import org.assertj.core.util.Lists;
-import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.xrpl.xrpl4j.crypto.BcKeyUtils;
-import org.xrpl.xrpl4j.crypto.KeyMetadata;
-import org.xrpl.xrpl4j.crypto.signing.SingleKeySignatureService;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
 import org.xrpl.xrpl4j.model.client.XrplResult;
@@ -85,20 +89,18 @@ import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
-import org.xrpl.xrpl4j.model.client.server.ServerInfo;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoLastClose;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoLedger;
-import org.xrpl.xrpl4j.model.client.server.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.LedgerRangeUtils;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.LastClose;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
-import org.xrpl.xrpl4j.model.client.transactions.SignedTransaction;
+import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.Asset;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
@@ -131,7 +133,6 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
-import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
@@ -145,16 +146,13 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
-import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
-import org.xrpl.xrpl4j.wallet.Wallet;
-import org.xrpl.xrpl4j.wallet.WalletFactory;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -162,16 +160,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class XrplClientTest {
 
-  protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
-  SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-  final Wallet wallet = seedResult.wallet();
+  private final KeyPair keyPair = Seed.ed25519Seed().deriveKeyPair();
+  
   @Mock
   private JsonRpcClient jsonRpcClientMock;
   private XrplClient xrplClient;
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    openMocks(this);
     xrplClient = new XrplClient(jsonRpcClientMock);
   }
 
@@ -185,7 +182,7 @@ public class XrplClientTest {
     xrplClient.depositAuthorized(depositAuthorized);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(DepositAuthorizedResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(DepositAuthorizedResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.DEPOSIT_AUTHORIZED);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().size()).isEqualTo(1);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(depositAuthorized);
@@ -403,37 +400,13 @@ public class XrplClientTest {
       }
 
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("0-0")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.ZERO, UnsignedLong.ZERO)));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
     };
 
@@ -469,37 +442,13 @@ public class XrplClientTest {
       }
 
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("1-1")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.ONE, UnsignedLong.ONE)));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
 
       @Override
@@ -512,7 +461,7 @@ public class XrplClientTest {
           .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
           .previousTransactionLedgerSequence(UnsignedInteger.ONE)
           .sequence(UnsignedInteger.ONE)
-          .flags(Flags.AccountRootFlags.DISABLE_MASTER)
+          .flags(AccountRootFlags.DISABLE_MASTER)
           .index(Hash256.of(Strings.repeat("0", 64)))
           .build();
         AccountInfoResult accountInfoResult = AccountInfoResult.builder()
@@ -555,37 +504,13 @@ public class XrplClientTest {
       }
 
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("1-1")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.ONE, UnsignedLong.ONE)));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
 
       @Override
@@ -598,7 +523,7 @@ public class XrplClientTest {
           .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
           .previousTransactionLedgerSequence(UnsignedInteger.ONE)
           .sequence(UnsignedInteger.ONE)
-          .flags(Flags.AccountRootFlags.DISABLE_MASTER)
+          .flags(AccountRootFlags.DISABLE_MASTER)
           .index(Hash256.of(Strings.repeat("0", 64)))
           .build();
         AccountInfoResult accountInfoResult = AccountInfoResult.builder()
@@ -628,37 +553,13 @@ public class XrplClientTest {
   void ledgerGapsExistBetweenTest() {
     xrplClient = new XrplClient(jsonRpcClientMock) {
       @Override
-      public ServerInfo serverInfo() {
-        ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-          .hash(Hash256.of(Strings.repeat("0", 64)))
-          .age(UnsignedInteger.ONE)
-          .reserveBaseXrp(UnsignedInteger.ONE)
-          .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .reserveIncXrp(UnsignedInteger.ONE)
-          .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-          .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-          .baseFeeXrp(BigDecimal.ONE)
-          .build();
-        ServerInfo serverInfo = ServerInfo.builder()
-          .completeLedgers("2-4")
-          .amendmentBlocked(true)
-          .buildVersion("1")
-          .closedLedger(serverInfoLedger)
-          .hostId("id")
-          .ioLatencyMs(UnsignedLong.valueOf(2))
-          .jqTransOverflow("flow")
-          .lastClose(ServerInfoLastClose.builder()
-            .convergeTimeSeconds(1.11)
-            .proposers(UnsignedInteger.ONE)
-            .build())
-          .publicKeyNode("node")
-          .serverState("full")
-          .serverStateDurationUs("10")
-          .time(ZonedDateTime.now())
-          .upTime(UnsignedLong.ONE)
-          .validationQuorum(UnsignedInteger.ONE)
-          .build();
-        return serverInfo;
+      public ServerInfoResult serverInformation() {
+        ServerInfoResult mockServerInfoResult = mock(ServerInfoResult.class);
+        ServerInfo mockServerInfo = mock(ServerInfo.class);
+        when(mockServerInfo.completeLedgers())
+          .thenReturn(Lists.newArrayList(Range.closed(UnsignedLong.valueOf(2), UnsignedLong.valueOf(4))));
+        when(mockServerInfoResult.info()).thenReturn(mockServerInfo);
+        return mockServerInfoResult;
       }
     };
     assertThat(xrplClient.ledgerGapsExistBetween(UnsignedLong.valueOf(2), UnsignedLong.valueOf(4))).isFalse();
@@ -690,7 +591,7 @@ public class XrplClientTest {
   void ledgerGapExistsBetweenThrows_ReturnsTrue() {
     xrplClient = new XrplClient(jsonRpcClientMock) {
       @Override
-      public ServerInfo serverInfo() throws JsonRpcClientErrorException {
+      public ServerInfoResult serverInformation() throws JsonRpcClientErrorException {
         throw new JsonRpcClientErrorException("Could not connect to client.");
       }
     };
@@ -720,295 +621,6 @@ public class XrplClientTest {
   }
 
   @Test
-  public void addSignatureTx() {
-    Payment payment = Payment.builder()
-      .ticketSequence(UnsignedInteger.ONE)
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .build();
-    assertThat(xrplClient.addSignature(payment, "sign").transactionSignature().get()).isEqualTo("sign");
-    AccountSet accountSet = AccountSet.builder()
-      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.ONE)
-      .build();
-    assertThat(xrplClient.addSignature(accountSet, "sign").transactionSignature().get()).isEqualTo("sign");
-    AccountDelete accountDelete = AccountDelete.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .build();
-    assertThat(xrplClient.addSignature(accountDelete, "sign").transactionSignature().get()).isEqualTo("sign");
-    CheckCancel checkCancel = CheckCancel.builder()
-      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
-      .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
-      .sequence(UnsignedInteger.valueOf(12))
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .build();
-    assertThat(xrplClient.addSignature(checkCancel, "sign").transactionSignature().get()).isEqualTo("sign");
-    CheckCash checkCash = CheckCash.builder()
-      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
-      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
-      .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .deliverMin(XrpCurrencyAmount.ofDrops(100))
-      .build();
-    assertThat(xrplClient.addSignature(checkCash, "sign").transactionSignature().get()).isEqualTo("sign");
-    CheckCreate checkCreate = CheckCreate.builder()
-      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
-      .sequence(UnsignedInteger.ONE)
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
-      .destinationTag(UnsignedInteger.ONE)
-      .sendMax(XrpCurrencyAmount.ofDrops(100000000))
-      .expiration(UnsignedInteger.valueOf(570113521))
-      .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
-      .build();
-    assertThat(xrplClient.addSignature(checkCreate, "sign").transactionSignature().get()).isEqualTo("sign");
-    DepositPreAuth depositPreAuth = DepositPreAuth.builder()
-      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .authorize(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
-      .build();
-    assertThat(xrplClient.addSignature(depositPreAuth, "sign").transactionSignature().get()).isEqualTo("sign");
-    EscrowCreate escrowCreate = EscrowCreate.builder()
-      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .amount(XrpCurrencyAmount.ofDrops(100))
-      .destination(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
-      .build();
-    assertThat(xrplClient.addSignature(escrowCreate, "sign").transactionSignature().get()).isEqualTo("sign");
-    EscrowCancel escrowCancel = EscrowCancel.builder()
-      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .sequence(UnsignedInteger.ONE)
-      .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .offerSequence(UnsignedInteger.valueOf(7))
-      .build();
-    assertThat(xrplClient.addSignature(escrowCancel, "sign").transactionSignature().get()).isEqualTo("sign");
-    EscrowFinish escrowFinish = EscrowFinish.builder()
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .sequence(UnsignedInteger.ONE)
-      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .offerSequence(UnsignedInteger.ZERO)
-      .build();
-    assertThat(xrplClient.addSignature(escrowFinish, "sign").transactionSignature().get()).isEqualTo("sign");
-    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
-      .account(wallet.classicAddress())
-      .buyOffer(Hash256.of(Strings.repeat("0", 64)))
-      .fee(XrpCurrencyAmount.ofDrops(50))
-      .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(wallet.publicKey())
-      .build();
-    assertThat(xrplClient.addSignature(nfTokenAcceptOffer, "sign").transactionSignature().get()).isEqualTo("sign");
-    NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
-      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey())
-      .sequence(UnsignedInteger.ONE)
-      .build();
-    assertThat(xrplClient.addSignature(nfTokenBurn, "sign").transactionSignature().get()).isEqualTo("sign");
-    NfTokenCancelOffer nfTokenCancelOffer = NfTokenCancelOffer.builder()
-      .addTokenOffers(Hash256.of(Strings.repeat("0", 64)))
-      .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofDrops(50))
-      .sequence(UnsignedInteger.valueOf(2))
-      .signingPublicKey(wallet.publicKey())
-      .build();
-    assertThat(xrplClient.addSignature(nfTokenCancelOffer, "sign").transactionSignature().get()).isEqualTo("sign");
-    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
-      .account(wallet.classicAddress())
-      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .fee(XrpCurrencyAmount.ofDrops(50))
-      .sequence(UnsignedInteger.ONE)
-      .amount(XrpCurrencyAmount.ofDrops(1000))
-      .flags(Flags.NfTokenCreateOfferFlags.builder()
-        .tfSellToken(true)
-        .build())
-      .signingPublicKey(wallet.publicKey())
-      .build();
-    assertThat(xrplClient.addSignature(nfTokenCreateOffer, "sign").transactionSignature().get()).isEqualTo("sign");
-    NfTokenMint nfTokenMint = NfTokenMint.builder()
-      .tokenTaxon(UnsignedLong.ONE)
-      .account(wallet.classicAddress())
-      .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey())
-      .sequence(UnsignedInteger.ONE)
-      .build();
-    assertThat(xrplClient.addSignature(nfTokenMint, "sign").transactionSignature().get()).isEqualTo("sign");
-    TrustSet trustSet = TrustSet.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .sequence(UnsignedInteger.ONE)
-      .limitAmount(IssuedCurrencyAmount.builder()
-        .currency("currency")
-        .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-        .value("1000")
-        .build())
-      .build();
-    assertThat(xrplClient.addSignature(trustSet, "sign").transactionSignature().get()).isEqualTo("sign");
-    OfferCreate offerCreate = OfferCreate.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .takerPays(XrpCurrencyAmount.ofDrops(100))
-      .takerGets(XrpCurrencyAmount.ofDrops(100))
-      .build();
-    assertThat(xrplClient.addSignature(offerCreate, "sign").transactionSignature().get()).isEqualTo("sign");
-    OfferCancel offerCancel = OfferCancel.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .build();
-    assertThat(xrplClient.addSignature(offerCancel, "sign").transactionSignature().get()).isEqualTo("sign");
-    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .amount(XrpCurrencyAmount.ofDrops(100))
-      .destination(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .settleDelay(UnsignedInteger.ONE)
-      .publicKey("123")
-      .build();
-    assertThat(xrplClient.addSignature(paymentChannelCreate, "sign").transactionSignature().get()).isEqualTo("sign");
-    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
-      .build();
-    assertThat(xrplClient.addSignature(paymentChannelClaim, "sign").transactionSignature().get()).isEqualTo("sign");
-    PaymentChannelFund paymentChannelFund = PaymentChannelFund.builder()
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .channel(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
-      .amount(XrpCurrencyAmount.ofDrops(100L))
-      .build();
-    assertThat(xrplClient.addSignature(paymentChannelFund, "sign").transactionSignature().get()).isEqualTo("sign");
-    SetRegularKey setRegularKey = SetRegularKey.builder()
-      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .sequence(UnsignedInteger.ONE)
-      .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
-      .build();
-    assertThat(xrplClient.addSignature(setRegularKey, "sign").transactionSignature().get()).isEqualTo("sign");
-    SignerListSet signerListSet = SignerListSet.builder()
-      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .sequence(UnsignedInteger.ONE)
-      .signerQuorum(UnsignedInteger.valueOf(3))
-      .addSignerEntries(
-        SignerEntryWrapper.of(
-          SignerEntry.builder()
-            .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-            .signerWeight(UnsignedInteger.valueOf(2))
-            .build()
-        )
-      )
-      .build();
-    assertThat(xrplClient.addSignature(signerListSet, "sign").transactionSignature().get()).isEqualTo("sign");
-    TicketCreate ticketCreate = TicketCreate.builder()
-      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .fee(XrpCurrencyAmount.ofDrops(UnsignedLong.ONE))
-      .sequence(UnsignedInteger.ONE)
-      .ticketCount(UnsignedInteger.ONE)
-      .build();
-    assertThat(xrplClient.addSignature(ticketCreate, "sign").transactionSignature().get()).isEqualTo("sign");
-
-    AmmBid ammBid = AmmBid.builder()
-      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .asset(Asset.XRP)
-      .asset2(
-        Asset.builder()
-          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
-          .currency("TST")
-          .build()
-      )
-      .addAuthAccounts(
-        AuthAccountWrapper.of(AuthAccount.of(Address.of("rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"))),
-        AuthAccountWrapper.of(AuthAccount.of(Address.of("rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv")))
-      )
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(9))
-      .build();
-    assertThat(xrplClient.addSignature(ammBid, "sign").transactionSignature().get()).isEqualTo("sign");
-
-    AmmCreate ammCreate = AmmCreate.builder()
-      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .amount(
-        IssuedCurrencyAmount.builder()
-          .currency("TST")
-          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
-          .value("25")
-          .build()
-      )
-      .amount2(XrpCurrencyAmount.ofDrops(250000000))
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(500)))
-      .build();
-    assertThat(xrplClient.addSignature(ammCreate, "sign").transactionSignature().get()).isEqualTo("sign");
-
-    AmmDeposit ammDeposit = AmmDeposit.builder()
-      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .asset(Asset.XRP)
-      .asset2(
-        Asset.builder()
-          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
-          .currency("TST")
-          .build()
-      )
-      .lpTokenOut(
-        IssuedCurrencyAmount.builder()
-          .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
-          .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-          .value("100")
-          .build()
-      ).build();
-    assertThat(xrplClient.addSignature(ammDeposit, "sign").transactionSignature().get()).isEqualTo("sign");
-
-    AmmVote ammVote = AmmVote.builder()
-      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .asset(Asset.XRP)
-      .asset2(
-        Asset.builder()
-          .currency("TST")
-          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
-          .build()
-      )
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(8))
-      .tradingFee(TradingFee.of(UnsignedInteger.valueOf(600)))
-      .build();
-    assertThat(xrplClient.addSignature(ammVote, "sign").transactionSignature().get()).isEqualTo("sign");
-
-    AmmWithdraw ammWithdraw = AmmWithdraw.builder()
-      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .asset(
-        Asset.builder()
-          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
-          .currency("TST")
-          .build()
-      )
-      .asset2(Asset.XRP)
-      .flags(Flags.AmmWithdrawFlags.WITHDRAW_ALL)
-      .build();
-    assertThat(xrplClient.addSignature(ammWithdraw, "sign").transactionSignature().get()).isEqualTo("sign");
-  }
-
-  @Test
   public void getJsonRpcClientTest() {
     assertThat(xrplClient.getJsonRpcClient() instanceof JsonRpcClient).isTrue();
     assertThat(xrplClient.getJsonRpcClient() instanceof XrplClient).isFalse();
@@ -1022,57 +634,8 @@ public class XrplClientTest {
   }
 
   @Test
-  public void addSignatureToIncorrectTxType_ThrowsCannotAddSign() {
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> xrplClient.addSignature(mock(Transaction.class), "")
-    );
-    assertThat(exception.getMessage()).isEqualTo("Signing fields could not be added to the unsignedTransaction.");
-  }
-
-  @Test
-  public void submitWithCryptoSigningSignedTx() {
-    jsonRpcClientMock = new JsonRpcClient() {
-
-      @Override
-      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
-        return mock(JsonNode.class);
-      }
-
-      @Override
-      public <T extends XrplResult> T send(
-        JsonRpcRequest request,
-        JavaType resultType
-      ) {
-        return (T) mock(SubmitResult.class);
-      }
-    };
-
-    String edPrivateKeyHex = "60F72F359647AD376D2CB783340CD843BD57CCD46093AA16B0C4D3A5143BADC5";
-    Ed25519PrivateKeyParameters knownEd25519PrivateKeyParameters = new Ed25519PrivateKeyParameters(
-      BaseEncoding.base16().decode(edPrivateKeyHex), 0
-    );
-    SingleKeySignatureService ecSignatureService = new SingleKeySignatureService(
-      BcKeyUtils.toPrivateKey(knownEd25519PrivateKeyParameters)
-    );
-    Payment payment = Payment.builder()
-      .ticketSequence(UnsignedInteger.ONE)
-      .account(wallet.classicAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(wallet.publicKey())
-      .build();
-
-    org.xrpl.xrpl4j.crypto.signing.SignedTransaction<Payment> paymentSignedTransaction = ecSignatureService.sign(
-      mock(KeyMetadata.class), payment
-    );
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
-  }
-
-  @Test
-  public void submitWithSignedTx() {
-
+  public void submitSingleSignedTransaction() {
+    BcSignatureService bcSignatureService = new BcSignatureService();
     jsonRpcClientMock = new JsonRpcClient() {
 
       @Override
@@ -1091,64 +654,16 @@ public class XrplClientTest {
 
     Payment payment = Payment.builder()
       .ticketSequence(UnsignedInteger.ONE)
-      .account(wallet.classicAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
       .fee(XrpCurrencyAmount.ofDrops(1000L))
       .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey())
       .build();
+
+    SingleSignedTransaction<Payment> paymentSignedTransaction = bcSignatureService.sign(keyPair.privateKey(), payment);
     xrplClient = new XrplClient(jsonRpcClientMock);
-    SignedTransaction<Payment> paymentSignedTransaction = xrplClient.signTransaction(wallet, payment);
     assertDoesNotThrow(() -> xrplClient.submit(paymentSignedTransaction));
-
-  }
-
-  @Test
-  public void signTxCatchesJsonProcessingException_ThrowsException() {
-    Payment mockPayment = mock(Payment.class);
-    assertThrows(RuntimeException.class, () -> xrplClient.signTransaction(wallet, mockPayment));
-  }
-
-  @Test
-  public void submitUnsignedTxWithoutSigningPubKey_Throws() {
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    Payment mockPayment = mock(Payment.class);
-
-    IllegalArgumentException thrownException = Assertions.assertThrows(
-      IllegalArgumentException.class, () -> xrplClient.submit(wallet, mockPayment));
-    assertThat(thrownException.getMessage())
-      .isEqualTo("Transaction.signingPublicKey() must be set.");
-  }
-
-  @Test
-  public void submitUnsignedTxWithSigningPubKey() {
-    SubmitResult mockSubmitResult = mock(SubmitResult.class);
-    SignedTransaction mockSignedTransaction = mock(SignedTransaction.class);
-    xrplClient = new XrplClient(jsonRpcClientMock) {
-      @Override
-      public <T extends Transaction> SignedTransaction<T> signTransaction(
-        Wallet wallet, T unsignedTransaction
-      ) {
-        return mockSignedTransaction;
-      }
-
-      @Override
-      public <T extends Transaction> SubmitResult<T> submit(
-        SignedTransaction<T> signedTransaction
-      ) {
-        return mockSubmitResult;
-      }
-    };
-    Payment payment = Payment.builder()
-      .ticketSequence(UnsignedInteger.ONE)
-      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .build();
-
-    assertDoesNotThrow(() -> xrplClient.submit(wallet, payment));
   }
 
   @Test
@@ -1166,39 +681,43 @@ public class XrplClientTest {
         JavaType resultType
       ) {
         SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
-          .result("tesSUCCESS")
-          .resultCode(200)
-          .resultMessage("Submitted")
+          .engineResult("tesSUCCESS")
+          .engineResultCode(200)
+          .engineResultMessage("Submitted")
           .transactionBlob("blob")
           .transaction(mock(TransactionResult.class))
           .build();
         return (T) submitMultiSignedResult;
       }
     };
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    final Wallet wallet2 = seedResult.wallet();
+    KeyPair keyPair = Seed.ed25519Seed().deriveKeyPair();
 
     Payment unsignedPayment = Payment.builder()
-      .account(wallet.classicAddress())
+      .account(this.keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(1))
       .sequence(UnsignedInteger.ONE)
       .amount(XrpCurrencyAmount.ofDrops(12345))
-      .destination(wallet2.classicAddress())
-      .signingPublicKey("")
+      .destination(keyPair.publicKey().deriveAddress())
       .build();
 
+    SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
+      .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
+      .transactionSignature(Signature.fromBase16("ABCD"))
+      .build();
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
-    List<SignerWrapper> signers = new ArrayList<>();
-    Payment multiSigPayment = Payment.builder()
-      .from(unsignedPayment)
-      .signers(signers)
+    Set<SignatureWithPublicKey> signers = Sets.newHashSet(
+      signatureWithPublicKey
+    );
+    MultiSignedTransaction<Payment> multiSignedPayment = MultiSignedTransaction.<Payment>builder()
+      .unsignedTransaction(unsignedPayment)
+      .signatureWithPublicKeySet(signers)
       .build();
 
     xrplClient = new XrplClient(jsonRpcClientMock);
-    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);
-    assertThat(paymentResult.result()).isEqualTo("tesSUCCESS");
-    assertThat(paymentResult.resultCode()).isEqualTo(200);
+    SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSignedPayment);
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(paymentResult.engineResultCode()).isEqualTo(200);
     assertThat(paymentResult.transactionBlob()).isEqualTo("blob");
   }
 
@@ -1207,63 +726,8 @@ public class XrplClientTest {
     xrplClient.fee();
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(FeeResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(FeeResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.FEE);
-  }
-
-  @Test
-  public void serverInfo() {
-    ServerInfoLedger serverInfoLedger = ServerInfoLedger.builder()
-      .hash(Hash256.of(Strings.repeat("0", 64)))
-      .age(UnsignedInteger.ONE)
-      .reserveBaseXrp(UnsignedInteger.ONE)
-      .reserveBaseAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-      .reserveIncXrp(UnsignedInteger.ONE)
-      .reserveIncAsXrp(XrpCurrencyAmount.ofDrops(1000000))
-      .sequence(LedgerIndex.of(UnsignedInteger.ONE))
-      .baseFeeXrp(BigDecimal.ONE)
-      .build();
-    ServerInfo serverInfo = ServerInfo.builder()
-      .completeLedgers("1-2")
-      .amendmentBlocked(true)
-      .buildVersion("1")
-      .closedLedger(serverInfoLedger)
-      .hostId("id")
-      .ioLatencyMs(UnsignedLong.valueOf(2))
-      .jqTransOverflow("flow")
-      .lastClose(ServerInfoLastClose.builder()
-        .convergeTimeSeconds(1.11)
-        .proposers(UnsignedInteger.ONE)
-        .build())
-      .publicKeyNode("node")
-      .serverState("full")
-      .serverStateDurationUs("10")
-      .time(ZonedDateTime.now())
-      .upTime(UnsignedLong.ONE)
-      .validationQuorum(UnsignedInteger.ONE)
-      .build();
-
-    ServerInfoResult serverInfoResult = ServerInfoResult.builder()
-      .info(serverInfo)
-      .build();
-
-    jsonRpcClientMock = new JsonRpcClient() {
-      @Override
-      public JsonNode postRpcRequest(JsonRpcRequest rpcRequest) {
-        return mock(JsonNode.class);
-      }
-
-      @Override
-      public <T extends XrplResult> T send(
-        JsonRpcRequest request,
-        JavaType resultType
-      ) {
-        return (T) serverInfoResult;
-      }
-    };
-    xrplClient = new XrplClient(jsonRpcClientMock);
-    ServerInfo serverInfoResponse = assertDoesNotThrow(() -> xrplClient.serverInfo());
-    assertThat(serverInfoResponse).isEqualTo(serverInfo);
   }
 
   @Test
@@ -1326,11 +790,12 @@ public class XrplClientTest {
   public void accountChannels() throws JsonRpcClientErrorException {
     AccountChannelsRequestParams accountChannelsRequestParams = AccountChannelsRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountChannels(accountChannelsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountChannelsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountChannelsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_CHANNELS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountChannelsRequestParams);
   }
@@ -1339,11 +804,12 @@ public class XrplClientTest {
   public void accountCurrencies() throws JsonRpcClientErrorException {
     AccountCurrenciesRequestParams accountCurrenciesRequestParams = AccountCurrenciesRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountCurrencies(accountCurrenciesRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountCurrenciesResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountCurrenciesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_CURRENCIES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountCurrenciesRequestParams);
   }
@@ -1352,11 +818,12 @@ public class XrplClientTest {
   public void accountInfo() throws JsonRpcClientErrorException {
     AccountInfoRequestParams accountInfoRequestParams = AccountInfoRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountInfo(accountInfoRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountInfoResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountInfoResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_INFO);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountInfoRequestParams);
   }
@@ -1365,11 +832,12 @@ public class XrplClientTest {
   public void accountObjects() throws JsonRpcClientErrorException {
     AccountObjectsRequestParams accountObjectsRequestParams = AccountObjectsRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountObjects(accountObjectsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountObjectsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountObjectsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_OBJECTS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountObjectsRequestParams);
   }
@@ -1378,24 +846,26 @@ public class XrplClientTest {
   public void accountOffers() throws JsonRpcClientErrorException {
     AccountOffersRequestParams accountOffersRequestParams = AccountOffersRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountOffers(accountOffersRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountOffersResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountOffersRequestParams);
   }
 
   @Test
   public void accountTransactionsUsingBuilder() throws JsonRpcClientErrorException {
-    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams.builder()
+    AccountTransactionsRequestParams accountTransactionsRequestParams = AccountTransactionsRequestParams
+      .unboundedBuilder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
       .build();
     xrplClient.accountTransactions(accountTransactionsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountTransactionsRequestParams);
   }
@@ -1406,10 +876,10 @@ public class XrplClientTest {
     xrplClient.accountTransactions(account);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountTransactionsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_TX);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
-      .isEqualTo(AccountTransactionsRequestParams.builder()
+      .isEqualTo(AccountTransactionsRequestParams.unboundedBuilder()
         .account(account)
         .build());
   }
@@ -1422,7 +892,7 @@ public class XrplClientTest {
     xrplClient.accountNfts(accountNftsRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_NFTS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountNftsRequestParams);
   }
@@ -1433,7 +903,7 @@ public class XrplClientTest {
     xrplClient.accountNfts(account);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountNftsResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_NFTS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0))
       .isEqualTo(AccountNftsRequestParams.builder()
@@ -1481,7 +951,7 @@ public class XrplClientTest {
     xrplClient.ledger(ledgerRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(LedgerResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(LedgerResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.LEDGER);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ledgerRequestParams);
   }
@@ -1498,7 +968,7 @@ public class XrplClientTest {
     xrplClient.ripplePathFind(ripplePathFindRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(RipplePathFindResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(RipplePathFindResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.RIPPLE_PATH_FIND);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ripplePathFindRequestParams);
   }
@@ -1507,11 +977,12 @@ public class XrplClientTest {
   public void accountLines() throws JsonRpcClientErrorException {
     AccountLinesRequestParams accountLinesRequestParams = AccountLinesRequestParams.builder()
       .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     xrplClient.accountLines(accountLinesRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(AccountLinesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.ACCOUNT_LINES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(accountLinesRequestParams);
   }
@@ -1527,7 +998,7 @@ public class XrplClientTest {
     xrplClient.channelVerify(channelVerifyRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(ChannelVerifyResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.CHANNEL_VERIFY);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(channelVerifyRequestParams);
   }
@@ -1541,7 +1012,7 @@ public class XrplClientTest {
     xrplClient.gatewayBalances(gatewayBalancesRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(GatewayBalancesResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(GatewayBalancesResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.GATEWAY_BALANCES);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(gatewayBalancesRequestParams);
   }
@@ -1554,7 +1025,7 @@ public class XrplClientTest {
     xrplClient.nftBuyOffers(nftBuyOffersRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftBuyOffersResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftBuyOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_BUY_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftBuyOffersRequestParams);
   }
@@ -1567,7 +1038,7 @@ public class XrplClientTest {
     xrplClient.nftSellOffers(nftSellOffersRequestParams);
 
     ArgumentCaptor<JsonRpcRequest> jsonRpcRequestArgumentCaptor = ArgumentCaptor.forClass(JsonRpcRequest.class);
-    Mockito.verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
+    verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_SELL_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
   }
@@ -1584,55 +1055,5 @@ public class XrplClientTest {
     AmmInfoResult result = xrplClient.ammInfo(params);
 
     assertThat(result).isEqualTo(mockResult);
-  }
-
-  @Test
-  public void signTransaction() {
-    Payment payment = Payment.builder()
-      .account(wallet.classicAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .build();
-    assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
-  }
-
-  @Test
-  public void signPaymentWithPaths_DoesNotThrow() {
-    List<PathStep> paths = Lists.newArrayList(
-      PathStep.builder().account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v")).currency("ABC").build(),
-      PathStep.builder().account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW")).currency("XYZ").build()
-    );
-    Payment payment = Payment.builder()
-      .account(wallet.classicAddress())
-      .amount(XrpCurrencyAmount.ofDrops(10))
-      .destination(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
-      .signingPublicKey(wallet.publicKey())
-      .fee(XrpCurrencyAmount.ofDrops(12))
-      .addPaths(paths)
-      .build();
-
-    assertDoesNotThrow(() -> xrplClient.signTransaction(wallet, payment));
-  }
-
-  @Test
-  public void signTransactionWithWalletMissingPrivateKey() {
-    Wallet wallet2 = Wallet.builder()
-      .publicKey(wallet.publicKey())
-      .classicAddress(wallet.classicAddress())
-      .xAddress(wallet.xAddress())
-      .isTest(true)
-      .build();
-    Payment payment = Payment.builder()
-      .account(wallet2.classicAddress())
-      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-      .fee(XrpCurrencyAmount.ofDrops(1000L))
-      .amount(XrpCurrencyAmount.ofDrops(2000L))
-      .signingPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-      .build();
-    RuntimeException exception = assertThrows(RuntimeException.class, () ->
-      xrplClient.signTransaction(wallet2, payment));
-    assertThat(exception.getMessage()).isEqualTo("Wallet must provide a private key to sign the transaction.");
   }
 }

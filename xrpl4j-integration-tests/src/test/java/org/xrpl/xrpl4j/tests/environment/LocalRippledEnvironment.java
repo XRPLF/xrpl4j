@@ -23,9 +23,15 @@ package org.xrpl.xrpl4j.tests.environment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -35,7 +41,6 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.wallet.Wallet;
 
 import java.math.BigDecimal;
 
@@ -48,6 +53,8 @@ public class LocalRippledEnvironment implements XrplEnvironment {
 
   private static final RippledContainer rippledContainer = new RippledContainer().start();
 
+  private final SignatureService<PrivateKey> signatureService = new BcSignatureService();
+  
   @Override
   public XrplClient getXrplClient() {
     return rippledContainer.getXrplClient();
@@ -58,14 +65,13 @@ public class LocalRippledEnvironment implements XrplEnvironment {
     // accounts are funded from the genesis account that holds all XRP when the ledger container starts.
     try {
       sendPayment(
-        RippledContainer.getMasterWallet(),
+        RippledContainer.getMasterKeyPair(),
         classicAddress,
         XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1000))
       );
-    } catch (JsonRpcClientErrorException e) {
+    } catch (JsonRpcClientErrorException | JsonProcessingException e) {
       throw new RuntimeException("could not fund account", e);
-    }
-
+    } 
   }
 
   protected AccountInfoResult getCurrentAccountInfo(Address classicAddress) {
@@ -77,21 +83,22 @@ public class LocalRippledEnvironment implements XrplEnvironment {
     }
   }
 
-  protected void sendPayment(Wallet sourceWallet, Address destinationAddress, XrpCurrencyAmount paymentAmount)
-    throws JsonRpcClientErrorException {
+  protected void sendPayment(KeyPair sourceKeyPair, Address destinationAddress, XrpCurrencyAmount paymentAmount)
+    throws JsonRpcClientErrorException, JsonProcessingException {
     FeeResult feeResult = getXrplClient().fee();
-    AccountInfoResult accountInfo = this.getCurrentAccountInfo(sourceWallet.classicAddress());
+    AccountInfoResult accountInfo = this.getCurrentAccountInfo(sourceKeyPair.publicKey().deriveAddress());
     Payment payment = Payment.builder()
-      .account(sourceWallet.classicAddress())
+      .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .destination(destinationAddress)
       .amount(paymentAmount)
-      .signingPublicKey(sourceWallet.publicKey())
+      .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
-    SubmitResult<Payment> result = getXrplClient().submit(sourceWallet, payment);
-    assertThat(result.engineResult()).isNotEmpty().get().isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
+    SubmitResult<Payment> result = getXrplClient().submit(signedPayment);
+    assertThat(result.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString() +
       result.transactionResult().transaction());
   }

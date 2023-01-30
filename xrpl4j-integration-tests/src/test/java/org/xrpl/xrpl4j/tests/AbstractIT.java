@@ -4,14 +4,14 @@ package org.xrpl.xrpl4j.tests;
  * ========================LICENSE_START=================================
  * xrpl4j :: integration-tests
  * %%
- * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,13 +27,27 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.google.common.primitives.UnsignedInteger;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedLong;
+import org.awaitility.Durations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.model.client.Finality;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.crypto.JavaKeystoreLoader;
+import org.xrpl.xrpl4j.crypto.ServerSecret;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.bc.BcDerivedKeySignatureService;
+import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -64,20 +78,24 @@ import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
-import org.xrpl.xrpl4j.wallet.DefaultWalletFactory;
-import org.xrpl.xrpl4j.wallet.SeedWalletGenerationResult;
-import org.xrpl.xrpl4j.wallet.Wallet;
-import org.xrpl.xrpl4j.wallet.WalletFactory;
 
+import java.security.Key;
+import java.security.KeyStore;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/**
+ * An abstract class that contains helper functionality to support all ITs.
+ */
 public abstract class AbstractIT {
+
+  public static final Duration POLL_INTERVAL = Durations.ONE_HUNDRED_MILLISECONDS;
 
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
@@ -85,33 +103,106 @@ public abstract class AbstractIT {
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  protected final XrplClient xrplClient = xrplEnvironment.getXrplClient();
-  protected final WalletFactory walletFactory = DefaultWalletFactory.getInstance();
+  protected final XrplClient xrplClient;
 
-  protected Wallet createRandomAccount() {
-    ///////////////////////
+  protected final SignatureService<PrivateKey> signatureService;
+  protected final SignatureService<PrivateKeyReference> derivedKeySignatureService;
+
+  /**
+   * No-args Constructor.
+   */
+  protected AbstractIT() {
+    this.xrplClient = xrplEnvironment.getXrplClient();
+    this.signatureService = this.constructSignatureService();
+    this.derivedKeySignatureService = this.constructDerivedKeySignatureService();
+  }
+
+  /**
+   * Helper function to print log statements for Integration Tests which is network specific.
+   *
+   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
+   * @param hash            {@link Hash256} to be logged for the executed transaction.
+   */
+  protected void logInfo(TransactionType transactionType, Hash256 hash) {
+    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
+      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
+    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
+  }
+
+  protected KeyPair createRandomAccountEd25519() {
     // Create the account
-    SeedWalletGenerationResult seedResult = walletFactory.randomWallet(true);
-    final Wallet wallet = seedResult.wallet();
-    String network = System.getProperty("useTestnet") != null ? "testnet" :
-      (System.getProperty("useDevnet") != null ? "devnet" : "local rippled");
+    final KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
     logger.info(
-      "Generated {} wallet with XAddress={} (Classic={})",
-      network, wallet.xAddress(), wallet.classicAddress()
+      "Generated testnet wallet with ClassicAddress={})",
+      randomKeyPair.publicKey().deriveAddress()
     );
 
-    fundAccount(wallet);
+    fundAccount(randomKeyPair.publicKey().deriveAddress());
 
-    return wallet;
+    return randomKeyPair;
+  }
+
+  protected KeyPair createRandomAccountSecp256k1() {
+    // Create the account
+    final KeyPair randomKeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    logger.info(
+      "Generated testnet wallet with ClassicAddress={})",
+      randomKeyPair.publicKey().deriveAddress()
+    );
+
+    fundAccount(randomKeyPair.publicKey().deriveAddress());
+
+    return randomKeyPair;
+  }
+
+  protected PrivateKeyReference createRandomPrivateKeyReferenceEd25519() {
+    final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
+      @Override
+      public KeyType keyType() {
+        return KeyType.ED25519;
+      }
+
+      @Override
+      public String keyIdentifier() {
+        return UUID.randomUUID().toString();
+      }
+    };
+
+    PublicKey publicKey = derivedKeySignatureService.derivePublicKey(privateKeyReference);
+    logger.info("Generated testnet wallet with ClassicAddress={})", publicKey.deriveAddress());
+    fundAccount(publicKey.deriveAddress());
+
+    return privateKeyReference;
+  }
+
+  protected PrivateKeyReference createRandomPrivateKeyReferenceSecp256k1() {
+    final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
+      @Override
+      public KeyType keyType() {
+        return KeyType.SECP256K1;
+      }
+
+      @Override
+      public String keyIdentifier() {
+        return UUID.randomUUID().toString();
+      }
+    };
+
+    PublicKey publicKey = derivedKeySignatureService.derivePublicKey(privateKeyReference);
+    logger.info("Generated testnet wallet with ClassicAddress={})", publicKey.deriveAddress());
+    fundAccount(publicKey.deriveAddress());
+
+    return privateKeyReference;
   }
 
   /**
    * Funds a wallet with 1000 XRP.
    *
-   * @param wallet The {@link Wallet} to fund.
+   * @param address The {@link Address} to fund.
    */
-  protected void fundAccount(Wallet wallet) {
-    xrplEnvironment.fundAccount(wallet.classicAddress());
+  protected void fundAccount(final Address address) {
+    Objects.requireNonNull(address);
+    xrplEnvironment.fundAccount(address);
   }
 
   //////////////////////
@@ -126,8 +217,8 @@ public abstract class AbstractIT {
     Address account
   ) {
     return given()
-      .pollInterval(100, TimeUnit.MILLISECONDS)
-      .atMost(30, TimeUnit.SECONDS)
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
       .ignoreException(RuntimeException.class)
       .await()
       .until(
@@ -150,8 +241,8 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(30, TimeUnit.SECONDS)
-      .pollInterval(100, TimeUnit.MILLISECONDS)
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {
         T result = resultSupplier.get();
@@ -165,8 +256,8 @@ public abstract class AbstractIT {
   protected <T extends XrplResult> T scanForResult(Supplier<T> resultSupplier) {
     Objects.requireNonNull(resultSupplier);
     return given()
-      .pollInterval(100, TimeUnit.MILLISECONDS)
-      .atMost(30, TimeUnit.SECONDS)
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
       .ignoreException(RuntimeException.class)
       .await()
       .until(resultSupplier::get, is(notNullValue()));
@@ -175,8 +266,8 @@ public abstract class AbstractIT {
   protected <T extends LedgerObject> T scanForLedgerObject(Supplier<T> ledgerObjectSupplier) {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
-      .pollInterval(100, TimeUnit.MILLISECONDS)
-      .atMost(30, TimeUnit.SECONDS)
+      .pollInterval(POLL_INTERVAL)
+      .atMost(Durations.ONE_MINUTE.dividedBy(2))
       .ignoreException(RuntimeException.class)
       .await()
       .until(ledgerObjectSupplier::get, is(notNullValue()));
@@ -262,14 +353,14 @@ public abstract class AbstractIT {
   }
 
   protected RipplePathFindResult getValidatedRipplePath(
-    Wallet sourceWallet,
-    Wallet destinationWallet,
+    KeyPair sourceKeyPair,
+    KeyPair destinationKeyPair,
     IssuedCurrencyAmount destinationAmount
   ) {
     try {
       RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
-        .sourceAccount(sourceWallet.classicAddress())
-        .destinationAccount(destinationWallet.classicAddress())
+        .sourceAccount(sourceKeyPair.publicKey().deriveAddress())
+        .destinationAccount(destinationKeyPair.publicKey().deriveAddress())
         .destinationAmount(destinationAmount)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
@@ -308,8 +399,8 @@ public abstract class AbstractIT {
    *
    * @param currency           The currency code of the trustline to create.
    * @param value              The trustline limit of the trustline to create.
-   * @param issuerWallet       The {@link Wallet} of the issuer account.
-   * @param counterpartyWallet The {@link Wallet} of the counterparty account.
+   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
+   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @return The {@link TrustLine} that gets created.
@@ -319,30 +410,35 @@ public abstract class AbstractIT {
   public TrustLine createTrustLine(
     String currency,
     String value,
-    Wallet issuerWallet,
-    Wallet counterpartyWallet,
+    KeyPair issuerKeyPair,
+    KeyPair counterpartyKeyPair,
     XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException {
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
+    Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
+
     AccountInfoResult counterpartyAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(counterpartyWallet.classicAddress())
+      () -> this.getValidatedAccountInfo(counterpartyAddress)
     );
 
     TrustSet trustSet = TrustSet.builder()
-      .account(counterpartyWallet.classicAddress())
+      .account(counterpartyAddress)
       .fee(fee)
       .sequence(counterpartyAccountInfo.accountData().sequence())
       .limitAmount(IssuedCurrencyAmount.builder()
         .currency(currency)
-        .issuer(issuerWallet.classicAddress())
+        .issuer(issuerAddress)
         .value(value)
         .build())
-      .signingPublicKey(counterpartyWallet.publicKey())
+      .signingPublicKey(counterpartyKeyPair.publicKey())
       .build();
 
-    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(counterpartyWallet, trustSet);
-    assertThat(trustSetSubmitResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(trustSetSubmitResult.transactionResult().transaction().hash()).isNotEmpty().get()
-      .isEqualTo(trustSetSubmitResult.transactionResult().hash());
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(
+      counterpartyKeyPair.privateKey(),
+      trustSet
+    );
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
+    assertThat(trustSetSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     logInfo(
       trustSetSubmitResult.transactionResult().transaction().transactionType(),
@@ -351,7 +447,7 @@ public abstract class AbstractIT {
 
     return scanForResult(
       () ->
-        getValidatedAccountLines(issuerWallet.classicAddress(), counterpartyWallet.classicAddress()),
+        getValidatedAccountLines(issuerAddress, counterpartyAddress),
       linesResult -> !linesResult.lines().isEmpty()
     )
       .lines().get(0);
@@ -362,8 +458,8 @@ public abstract class AbstractIT {
    *
    * @param currency           The currency code to send.
    * @param value              The amount of currency to send.
-   * @param issuerWallet       The {@link Wallet} of the issuer account.
-   * @param counterpartyWallet The {@link Wallet} of the counterparty account.
+   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
+   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
    * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
@@ -371,32 +467,39 @@ public abstract class AbstractIT {
   public void sendIssuedCurrency(
     String currency,
     String value,
-    Wallet issuerWallet,
-    Wallet counterpartyWallet,
+    KeyPair issuerKeyPair,
+    KeyPair counterpartyKeyPair,
     XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException {
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
+    Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
+
     ///////////////////////////
     // Issuer sends a payment with the issued currency to the counterparty
     AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> getValidatedAccountInfo(issuerWallet.classicAddress())
+      () -> getValidatedAccountInfo(issuerAddress)
     );
 
     Payment fundCounterparty = Payment.builder()
-      .account(issuerWallet.classicAddress())
+      .account(issuerAddress)
       .fee(fee)
       .sequence(issuerAccountInfo.accountData().sequence())
-      .destination(counterpartyWallet.classicAddress())
+      .destination(counterpartyAddress)
       .amount(IssuedCurrencyAmount.builder()
-        .issuer(issuerWallet.classicAddress())
+        .issuer(issuerAddress)
         .currency(currency)
         .value(value)
         .build())
-      .signingPublicKey(issuerWallet.publicKey())
+      .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
-    SubmitResult<Payment> paymentResult = xrplClient.submit(issuerWallet, fundCounterparty);
-    assertThat(paymentResult.result()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(paymentResult.transactionResult().hash()).isEqualTo(paymentResult.transactionResult().hash());
+    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      fundCounterparty
+    );
+    SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
+    assertThat(paymentResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(paymentResult.transactionResult().hash()).isEqualTo(signedPayment.hash());
 
     logInfo(
       paymentResult.transactionResult().transaction().transactionType(),
@@ -411,15 +514,86 @@ public abstract class AbstractIT {
 
   }
 
-  /**
-   * Helper function to print log statements for Integration Tests which is network specific.
-   *
-   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
-   * @param hash            {@link Hash256} to be logged for the executed transaction.
-   */
-  public void logInfo(TransactionType transactionType, Hash256 hash) {
-    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
-      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
+  //////////////////
+  // Private Helpers
+  //////////////////
+
+  protected PrivateKeyReference constructPrivateKeyReference(
+    final String keyIdentifier, final KeyType keyType
+  ) {
+    Objects.requireNonNull(keyIdentifier);
+    Objects.requireNonNull(keyType);
+
+    return new PrivateKeyReference() {
+      @Override
+      public String keyIdentifier() {
+        return keyIdentifier;
+      }
+
+      @Override
+      public KeyType keyType() {
+        return keyType;
+      }
+    };
+  }
+
+  protected PrivateKey constructPrivateKey(
+    final String keyIdentifier, final KeyType keyType
+  ) {
+    Objects.requireNonNull(keyIdentifier);
+    Objects.requireNonNull(keyType);
+
+    switch (keyType) {
+      case ED25519: {
+        return Seed.ed25519Seed().deriveKeyPair().privateKey();
+      }
+      case SECP256K1: {
+        return Seed.secp256k1Seed().deriveKeyPair().privateKey();
+      }
+      default: {
+        throw new RuntimeException("Unhandled KeyType: " + keyType);
+      }
+    }
+  }
+
+  protected SignatureService<PrivateKeyReference> constructDerivedKeySignatureService() {
+    try {
+      final Key secretKey = loadKeyStore().getKey("secret0", "password".toCharArray());
+      return new BcDerivedKeySignatureService(() -> ServerSecret.of(secretKey.getEncoded()));
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected SignatureService<PrivateKey> constructSignatureService() {
+    return new BcSignatureService();
+  }
+
+  protected KeyPair constructRandomAccount() {
+    // Create the account
+    final KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
+    logger.info(
+      "Generated testnet wallet with ClassicAddress={})",
+      randomKeyPair.publicKey().deriveAddress()
+    );
+
+    fundAccount(randomKeyPair.publicKey().deriveAddress());
+
+    return randomKeyPair;
+  }
+
+
+  protected PublicKey toPublicKey(final PrivateKeyReference privateKeyReference) {
+    return derivedKeySignatureService.derivePublicKey(privateKeyReference);
+  }
+
+  protected Address toAddress(final PrivateKeyReference privateKeyReference) {
+    return toPublicKey(privateKeyReference).deriveAddress();
+  }
+
+  private KeyStore loadKeyStore() {
+    final String jksFileName = "crypto/crypto.p12";
+    final char[] jksPassword = "password".toCharArray();
+    return JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
   }
 }

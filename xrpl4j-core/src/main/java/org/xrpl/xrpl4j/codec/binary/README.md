@@ -13,24 +13,25 @@ The following code encodes a Payment transaction in JSON form to the canonical X
 hexadecimal `String`:
 
 ```java
-String paymentJson="{\n"+
-  "  \"Account\" : \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\",\n"+
-  "  \"Fee\" : \"789\",\n"+
-  "  \"Sequence\" : 56565656,\n"+
-  "  \"SourceTag\" : 1,\n"+
-  "  \"Flags\" : 2147483648,\n"+
-  "  \"Amount\" : \"12345\",\n"+
-  "  \"Destination\" : \"rrrrrrrrrrrrrrrrrrrrBZbvji\",\n"+
-  "  \"DestinationTag\" : 2,\n"+
-  "  \"TransactionType\" : \"Payment\"\n"+
-  "}";
-  System.out.println("JSON: \n"+paymentJson);
+String paymentJson="{"+
+  "\"Account\" : \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\","+
+  "\"Fee\" : \"789\","+
+  "\"Sequence\" : 56565656,"+
+  "\"SourceTag\" : 1,"+
+  "\"Flags\" : 2147483648,"+
+  "\"Amount\" : \"12345\","+
+  "\"Destination\" : \"rrrrrrrrrrrrrrrrrrrrBZbvji\","+
+  "\"DestinationTag\" : 2,"+
+  "\"TransactionType\" : \"Payment\""+
+"}";
 
-  String binary=binaryCodec.encode(paymentJson);
-  System.out.println("Binary hex: "+binary);
+System.out.println("JSON="+paymentJson);
 
-  String decodedJson=binaryCodec.decode(binary);
-  System.out.println("Decoded JSON: \n"+decodedJson);
+String binary=binaryCodec.encode(paymentJson);
+System.out.println("Binary hex="+binary);
+
+String decodedJson=binaryCodec.decode(binary);
+System.out.println("Decoded JSON="+decodedJson);
 ```
 
 Producing the following output:

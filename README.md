@@ -226,7 +226,7 @@ Xrpl4j is structured as a Maven multi-module project, with the following modules
 
 - **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
     - Provides core primitives like seeds, public/private keys definitions (supports secp256k1 and ed25519 key types 
-      and signing algorithms), signature interfaces, etc. Also provides Java objects which model XRP Ledger objects, 
+      and signing algorithms), signature interfaces, address and binary codecs etc. Also provides Java objects which model XRP Ledger objects, 
       as well as request parameters and response results for the `rippled` websocket and JSON RPC APIs.
     - Provides a Jackson `ObjectMapper` with JSON bindings that serialize and deserialize to and from the JSON
       representation of XRPL Transactions; this is used to move to and from the canonical binary format of the XRP

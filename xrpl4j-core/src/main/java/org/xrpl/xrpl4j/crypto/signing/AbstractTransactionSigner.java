@@ -71,7 +71,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(signableTransactionBytes);
 
     final PublicKey publicKey = derivePublicKey(privateKey);
-    switch (publicKey.versionType()) {
+    switch (publicKey.keyType()) {
       case ED25519: {
         return this.edDsaSign(privateKey, signableTransactionBytes);
       }
@@ -79,7 +79,7 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
         return this.ecDsaSign(privateKey, signableTransactionBytes);
       }
       default: {
-        throw new IllegalArgumentException("Unhandled PrivateKey VersionType: {}" + privateKey);
+        throw new IllegalArgumentException("Unhandled PrivateKey KeyType: {}" + privateKey);
       }
     }
   }

@@ -496,7 +496,7 @@ public abstract class AbstractIT {
         return Seed.secp256k1Seed().deriveKeyPair().privateKey();
       }
       default: {
-        throw new RuntimeException("Unhandled VersionType: " + keyType);
+        throw new RuntimeException("Unhandled KeyType: " + keyType);
       }
     }
   }

@@ -171,7 +171,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       final Seed seed = this.generateSecp256k1Seed(privateKeyReference.keyIdentifier());
       keyPair =  seed.deriveKeyPair();
     } else {
-      throw new IllegalArgumentException("Invalid VersionType: " + privateKeyReference.keyType());
+      throw new IllegalArgumentException("Invalid KeyType: " + privateKeyReference.keyType());
     }
 
     return new BcSingleKeyTransactionSigner(keyPair.privateKey(), commonBcSignatureService);

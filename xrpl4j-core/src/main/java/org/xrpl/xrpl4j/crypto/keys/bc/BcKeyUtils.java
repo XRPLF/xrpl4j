@@ -94,7 +94,7 @@ public final class BcKeyUtils {
    */
   public static Ed25519PublicKeyParameters toEd25519PublicKeyParameters(final PublicKey publicKey) {
     Objects.requireNonNull(publicKey);
-    Preconditions.checkArgument(publicKey.versionType() == ED25519);
+    Preconditions.checkArgument(publicKey.keyType() == ED25519);
 
     final byte[] bytes = publicKey.value().toByteArray();
     Preconditions.checkArgument(bytes.length == 33);
@@ -170,7 +170,7 @@ public final class BcKeyUtils {
       final ECPublicKeyParameters ecPublicKeyParameters = toPublicKey(ecPrivateKeyParameters);
       return toPublicKey(ecPublicKeyParameters);
     } else {
-      throw new IllegalArgumentException("Invalid VersionType: " + privateKey.keyType());
+      throw new IllegalArgumentException("Invalid KeyType: " + privateKey.keyType());
     }
   }
 
@@ -196,7 +196,7 @@ public final class BcKeyUtils {
    */
   public static ECPublicKeyParameters toEcPublicKeyParameters(final PublicKey publicKey) {
     Objects.requireNonNull(publicKey);
-    Preconditions.checkArgument(publicKey.versionType() == KeyType.SECP256K1);
+    Preconditions.checkArgument(publicKey.keyType() == KeyType.SECP256K1);
 
     ECPoint ecPoint = PARAMS.getCurve()
       .decodePoint(publicKey.value().toByteArray());
@@ -212,7 +212,7 @@ public final class BcKeyUtils {
    */
   public static ECPrivateKeyParameters toEcPrivateKeyParams(final PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
-    Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "VersionType must be SECP256K1");
+    Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "KeyType must be SECP256K1");
 
     final BigInteger privateKeyInt = new BigInteger(
       BaseEncoding.base16().encode(privateKey.value().toByteArray()), 16

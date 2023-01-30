@@ -56,8 +56,8 @@ public class AbstractTransactionVerifierTest {
     ed25519VerifyCalled = new AtomicBoolean(false);
     secp256k1VerifyCalled = new AtomicBoolean(false);
 
-    when(edPublicKeyMock.versionType()).thenReturn(KeyType.ED25519);
-    when(ecPublicKeyMock.versionType()).thenReturn(KeyType.SECP256K1);
+    when(edPublicKeyMock.keyType()).thenReturn(KeyType.ED25519);
+    when(ecPublicKeyMock.keyType()).thenReturn(KeyType.SECP256K1);
 
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());

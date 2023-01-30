@@ -4,9 +4,9 @@
 [![issues][github-issues-image]][github-issues-url]
 [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-parent/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-parent)
 
-This project is a pure Java implementation of an SDK that works with the XRP Ledger. This library supports XRPL
-transaction serialization and signing, provides useful Java bindings for XRP Ledger objects and rippled request/response
-objects, and also provides a JSON-RPC client for interacting with XRPL nodes.
+This project is a pure Java implementation of an SDK that works with the XRP Ledger. This library supports XRPL key 
+and address generation, transaction serialization and signing, provides useful Java bindings for XRP Ledger objects and 
+rippled request/response objects, and also provides a JSON-RPC client for interacting with XRPL nodes.
 
 ## Documentation
 

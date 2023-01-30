@@ -14,10 +14,10 @@ In v3.0.0, the following modules were condensed into the `xrpl-core` module:
 
 As a result, there are only three primary dependencies created by this project: `xrpl4j-bom`, `xrpl4j-core` and 
 `xrpl4j-client`. Any projects that previously depended on any of the above artifacts should now simply depend on
-`xrpl4j-core`.
+`xrpl4j-core` and/or `xrpl4j-client`.
 
 ## Migrating from xrpl4j-keypairs
-All classes in the former xrpl4j-keypairs module have been removed from the library
+All classes in the former `xrpl4j-keypairs` module have been removed from the library
 and should be replaced by the classes found in the `org.xrpl.xrpl4j.crypto` package in 
 the `xrpl-core` module. The following section outlines how to migrate from using classes found in `xrpl4j-keypairs`
 to classes in v3.0.0.
@@ -47,8 +47,13 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.Entropy;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 
+// From existing entropy bytes
 Seed seedFromEntropy = Seed.ed25519SeedFromEntropy(BaseEncoding.base16().decode("0102030405060708090A0B0C0D0E0F10"))
+
+// From existing passphrase        
 Seed seedFromPassphrase = Seed.ed25519SeedFromPassphrase(Passphrase.of("Hello World"));
+
+// From existing secret
 Seed seedFromSecret = Seed.fromBase58EncodedSecret(Base58EncodedSecret.of("snoPBrXtMeMyMHUVTgbuqAfg1SUTb"));
 ```
 
@@ -105,7 +110,8 @@ holding private keys in-memory poses a large security threat to applications.
 system. For example, keys held in an HSM or other custody service can be referenced by a `PrivateKeyReference`. 
 Different custody systems require different identifying information of private keys. Therefore, developers will likely
 need to extend or implement `PrivateKeyReference` for each custody provider they use. In turn, developers must 
-implement `SignatureService<MyPrivateKeyReference>` to interact with any given custody service.
+implement `SignatureService<MyPrivateKeyReference>` to interact with any given custody service, although
+`AbstracSignatureService` can be extended to reduce a large portion of this effort.
 
 ### Signing and Verifying Transactions
 The main interface used to sign and verify transactions in version 2 was 
@@ -212,10 +218,10 @@ To create a `MultiSignedTransaction`, use `BcSignatureService` like this:
 
 ```java
 Set<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-  .map(wallet -> {
-      Signature signedPayment = signatureService.multiSign(wallet.privateKey(), unsignedPayment);
+  .map(keyPair -> {
+      Signature signedPayment = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
       return SignatureWithPublicKey.builder()
-        .signingPublicKey(wallet.publicKey())
+        .signingPublicKey(keyPair.publicKey())
         .transactionSignature(signedPayment)
         .build();
     }

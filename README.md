@@ -101,8 +101,8 @@ Using the `EscrowCreate` object created above, it is then possible to use the su
 JSON like this:
 
 ```java
-ObjectMapper objectMapper=ObjectMapperFactory.create();
-  String json=objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(escrowCreate);
+  ObjectMapper objectMapper = ObjectMapperFactory.create();
+  String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(escrowCreate);
   System.out.println(json);
 ```
 

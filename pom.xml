@@ -197,7 +197,7 @@
       <dependency>
         <groupId>com.github.docker-java</groupId>
         <artifactId>docker-java-api</artifactId>
-        <version>3.2.7</version>
+        <version>3.2.14</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>

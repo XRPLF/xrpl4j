@@ -144,7 +144,7 @@ public interface PublicKey {
    * @return A {@link KeyType}.
    */
   @Derived
-  default KeyType versionType() {
+  default KeyType keyType() {
     return this.base16Value().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
   }
 

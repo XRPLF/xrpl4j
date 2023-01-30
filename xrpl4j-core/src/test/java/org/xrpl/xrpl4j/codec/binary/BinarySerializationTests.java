@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.tests;
+package org.xrpl.xrpl4j.codec.binary;
 
 /*-
  * ========================LICENSE_START=================================

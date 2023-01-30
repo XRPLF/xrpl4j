@@ -153,7 +153,7 @@ public abstract class AbstractIT {
   protected PrivateKeyReference createRandomPrivateKeyReferenceEd25519() {
     final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
       @Override
-      public KeyType versionType() {
+      public KeyType keyType() {
         return KeyType.ED25519;
       }
 
@@ -173,7 +173,7 @@ public abstract class AbstractIT {
   protected PrivateKeyReference createRandomPrivateKeyReferenceSecp256k1() {
     final PrivateKeyReference privateKeyReference = new PrivateKeyReference() {
       @Override
-      public KeyType versionType() {
+      public KeyType keyType() {
         return KeyType.SECP256K1;
       }
 
@@ -496,7 +496,7 @@ public abstract class AbstractIT {
       }
 
       @Override
-      public KeyType versionType() {
+      public KeyType keyType() {
         return keyType;
       }
     };
@@ -516,7 +516,7 @@ public abstract class AbstractIT {
         return Seed.secp256k1Seed().deriveKeyPair().privateKey();
       }
       default: {
-        throw new RuntimeException("Unhandled VersionType: " + keyType);
+        throw new RuntimeException("Unhandled KeyType: " + keyType);
       }
     }
   }

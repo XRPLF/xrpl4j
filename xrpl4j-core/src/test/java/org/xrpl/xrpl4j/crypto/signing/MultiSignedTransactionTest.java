@@ -73,7 +73,7 @@ class MultiSignedTransactionTest {
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
         .build())
-      .addSignatureWithPublicKeySet(
+      .addSignerSet(
         signer1,
         signer2
       )
@@ -118,7 +118,7 @@ class MultiSignedTransactionTest {
     JsonAssert.with(json).assertNotNull("$.unsignedTransaction");
     JsonAssert.with(json).assertNotNull("$.signedTransaction");
     JsonAssert.with(json).assertNotNull("$.signedTransactionBytes");
-    JsonAssert.with(json).assertNotNull("$.signatureWithPublicKeySet");
+    JsonAssert.with(json).assertNotNull("$.signerSet");
 
     MultiSignedTransaction<?> actual = ObjectMapperFactory.create().readValue(json, MultiSignedTransaction.class);
     assertThat(actual).isEqualTo(multiSignedTransaction);

@@ -34,7 +34,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 /**
  * Unit tests for {@link Signer}.
  */
-class SignatureWithPublicKeyTest {
+class SignerTest {
 
   private static final String HEX_32_BYTES = "0000000000000000000000000000000000000000000000000000000000000000";
   private Signer signer;

@@ -60,10 +60,10 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
    *
    * @return A {@link Set} of {@link Signer}s.
    */
-  Set<Signer> signatureWithPublicKeySet();
+  Set<Signer> signerSet();
 
   /**
-   * The transaction with all signers in {@link #signatureWithPublicKeySet()} added to the {@link Transaction#signers()}
+   * The transaction with all signers in {@link #signerSet()} added to the {@link Transaction#signers()}
    * field in the correct order.
    *
    * @return A {@link T}.
@@ -71,7 +71,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
   @Override
   @Value.Derived
   default T signedTransaction() {
-    List<SignerWrapper> signers = signatureWithPublicKeySet().stream()
+    List<SignerWrapper> signers = signerSet().stream()
       .map(SignerWrapper::of)
       .sorted(
         Comparator.comparing(

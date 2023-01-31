@@ -662,7 +662,7 @@ public class XrplClientTest {
     );
     MultiSignedTransaction<Payment> multiSignedPayment = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     xrplClient = new XrplClient(jsonRpcClientMock);

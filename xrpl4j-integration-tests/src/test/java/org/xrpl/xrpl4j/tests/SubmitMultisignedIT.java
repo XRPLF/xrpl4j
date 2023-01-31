@@ -170,7 +170,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     String libraryCalculatedHash = signedTransaction.hash().value();
@@ -219,7 +219,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     String libraryCalculatedHash = signedTransaction.hash().value();

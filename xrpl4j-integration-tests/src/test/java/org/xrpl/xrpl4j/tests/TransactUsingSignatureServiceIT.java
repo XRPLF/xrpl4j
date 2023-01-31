@@ -269,7 +269,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> multiSigPayment = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);

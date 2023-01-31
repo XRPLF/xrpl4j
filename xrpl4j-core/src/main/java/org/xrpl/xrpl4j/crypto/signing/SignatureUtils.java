@@ -177,99 +177,99 @@ public class SignatureUtils {
     final Transaction transactionWithSignature;
     if (Payment.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = Payment.builder().from((Payment) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (AccountSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AccountSet.builder().from((AccountSet) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (AccountDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AccountDelete.builder().from((AccountDelete) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (CheckCancel.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = CheckCancel.builder().from((CheckCancel) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (CheckCash.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = CheckCash.builder().from((CheckCash) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (CheckCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = CheckCreate.builder().from((CheckCreate) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = DepositPreAuth.builder().from((DepositPreAuth) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (EscrowCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = EscrowCreate.builder().from((EscrowCreate) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (EscrowCancel.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = EscrowCancel.builder().from((EscrowCancel) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (EscrowFinish.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = EscrowFinish.builder().from((EscrowFinish) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (TrustSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = TrustSet.builder().from((TrustSet) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (OfferCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = OfferCreate.builder().from((OfferCreate) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (OfferCancel.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = OfferCancel.builder().from((OfferCancel) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (PaymentChannelCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = PaymentChannelCreate.builder().from((PaymentChannelCreate) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (PaymentChannelClaim.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = PaymentChannelClaim.builder().from((PaymentChannelClaim) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (PaymentChannelFund.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = PaymentChannelFund.builder().from((PaymentChannelFund) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (SetRegularKey.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = SetRegularKey.builder().from((SetRegularKey) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (SignerListSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = SignerListSet.builder().from((SignerListSet) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (NfTokenAcceptOffer.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = NfTokenAcceptOffer.builder().from((NfTokenAcceptOffer) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (NfTokenBurn.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = NfTokenBurn.builder().from((NfTokenBurn) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (NfTokenCancelOffer.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = NfTokenCancelOffer.builder().from((NfTokenCancelOffer) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (NfTokenCreateOffer.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = NfTokenCreateOffer.builder().from((NfTokenCreateOffer) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (NfTokenMint.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = NfTokenMint.builder().from((NfTokenMint) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = TicketCreate.builder().from((TicketCreate) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.

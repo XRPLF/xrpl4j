@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.crypto.signing;
 import com.google.common.base.Preconditions;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -45,21 +46,19 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
   }
 
   @Override
-  public <T extends Transaction> boolean verify(
-    final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
-  ) {
-    Objects.requireNonNull(signatureWithPublicKey);
+  public <T extends Transaction> boolean verify(final Signer signer, final T unsignedTransaction) {
+    Objects.requireNonNull(signer);
     Objects.requireNonNull(unsignedTransaction);
 
     final UnsignedByteArray transactionBytesUba = this.getSignatureUtils().toSignableBytes(unsignedTransaction);
 
-    final PublicKey publicKey = signatureWithPublicKey.signingPublicKey();
+    final PublicKey publicKey = signer.signingPublicKey();
     switch (publicKey.keyType()) {
       case ED25519: {
-        return edDsaVerify(publicKey, transactionBytesUba, signatureWithPublicKey.transactionSignature());
+        return edDsaVerify(publicKey, transactionBytesUba, signer.transactionSignature());
       }
       case SECP256K1: {
-        return ecDsaVerify(publicKey, transactionBytesUba, signatureWithPublicKey.transactionSignature());
+        return ecDsaVerify(publicKey, transactionBytesUba, signer.transactionSignature());
       }
       default: {
         throw new IllegalArgumentException("Unhandled PublicKey KeyType: {}" + publicKey.keyType());
@@ -69,26 +68,22 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
 
   @Override
   public <T extends Transaction> boolean verifyMultiSigned(
-    final Set<SignatureWithPublicKey> signatureWithPublicKeys,
+    final Set<Signer> signerSet,
     final T unsignedTransaction,
     final int minSigners
   ) {
-    Objects.requireNonNull(signatureWithPublicKeys);
+    Objects.requireNonNull(signerSet);
     Objects.requireNonNull(unsignedTransaction);
     Preconditions.checkArgument(minSigners > 0);
 
-    final long numValidSignatures = signatureWithPublicKeys.stream()
-      .map(signatureWithPublicKey -> {
+    final long numValidSignatures = signerSet.stream()
+      .map(signer -> {
         // Check signature against all public keys, hoping for a valid verification against one.
         final UnsignedByteArray unsignedTransactionBytes =
           this.getSignatureUtils().toMultiSignableBytes(
-            unsignedTransaction, signatureWithPublicKey.signingPublicKey().deriveAddress()
+            unsignedTransaction, signer.signingPublicKey().deriveAddress()
           );
-        final boolean oneValidSignature = verifyHelper(
-          signatureWithPublicKey.signingPublicKey(),
-          unsignedTransactionBytes,
-          signatureWithPublicKey.transactionSignature()
-        );
+        final boolean oneValidSignature = verifyHelper(signer, unsignedTransactionBytes);
         return oneValidSignature;
       })
       .filter($ -> $) // Only count it if it's 'true'
@@ -100,29 +95,28 @@ public abstract class AbstractTransactionVerifier implements TransactionVerifier
   /**
    * Helper to verify a signed transaction.
    *
-   * @param publicKey                A {@link PublicKey} used to verify a signature.
+   * @param signer                   A {@link Signer} used to verify a signature.
    * @param unsignedTransactionBytes The actual binary bytes of the transaction that was signed.
-   * @param signature                The {@link Signature} to verify.
    *
    * @return {@code true} if the signature was created by the private key corresponding to {@code publicKey}; otherwise
    *   {@code false}.
    */
-  private boolean verifyHelper(
-    final PublicKey publicKey, final UnsignedByteArray unsignedTransactionBytes, final Signature signature
-  ) {
-    Objects.requireNonNull(publicKey);
-    Objects.requireNonNull(signature);
+  private boolean verifyHelper(final Signer signer, final UnsignedByteArray unsignedTransactionBytes) {
+    Objects.requireNonNull(signer);
     Objects.requireNonNull(unsignedTransactionBytes);
 
-    switch (publicKey.keyType()) {
+    final PublicKey signerPublicKey = signer.signingPublicKey();
+    final Signature signerSignature = signer.transactionSignature();
+
+    switch (signerPublicKey.keyType()) {
       case ED25519: {
-        return edDsaVerify(publicKey, unsignedTransactionBytes, signature);
+        return edDsaVerify(signerPublicKey, unsignedTransactionBytes, signerSignature);
       }
       case SECP256K1: {
-        return ecDsaVerify(publicKey, unsignedTransactionBytes, signature);
+        return ecDsaVerify(signerPublicKey, unsignedTransactionBytes, signerSignature);
       }
       default: {
-        throw new IllegalArgumentException("Unhandled PublicKey KeyType: {}" + publicKey.keyType());
+        throw new IllegalArgumentException("Unhandled PublicKey KeyType: {}" + signerPublicKey.keyType());
       }
     }
   }

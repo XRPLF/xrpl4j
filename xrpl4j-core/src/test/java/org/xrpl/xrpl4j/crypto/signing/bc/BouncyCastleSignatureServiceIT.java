@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,10 +31,9 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -100,12 +99,12 @@ class BouncyCastleSignatureServiceIT {
     assertThat(signedTransaction.unsignedTransaction()).isEqualTo(payment);
 
     boolean actual = signatureService.verify(
-      SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
+      Signer.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519KeyPair.publicKey()).build(), payment);
     assertThat(actual).isTrue();
 
     actual = signatureService.verify(
-      SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
+      Signer.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519KeyPairOther.publicKey()).build(), payment);
     assertThat(actual).isFalse();
 
@@ -118,12 +117,12 @@ class BouncyCastleSignatureServiceIT {
     assertThat(signedTransaction).isNotNull();
 
     boolean actual = signatureService.verify(
-      SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
+      Signer.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(secp256k1KeyPair.publicKey()).build(), payment);
     assertThat(actual).isTrue();
 
     actual = signatureService.verify(
-      SignatureWithPublicKey.builder().transactionSignature(signedTransaction.signature())
+      Signer.builder().transactionSignature(signedTransaction.signature())
         .signingPublicKey(ed25519KeyPair.publicKey()).build(), payment);
     assertThat(actual).isFalse();
   }
@@ -134,12 +133,12 @@ class BouncyCastleSignatureServiceIT {
     assertThat(signature).isNotNull();
 
     boolean actual = signatureService.verifyMultiSigned(Sets.newLinkedHashSet(
-      SignatureWithPublicKey.builder().transactionSignature(signature).signingPublicKey(ed25519KeyPair.publicKey())
+      Signer.builder().transactionSignature(signature).signingPublicKey(ed25519KeyPair.publicKey())
         .build()), payment, 1);
     assertThat(actual).isTrue();
 
     actual = signatureService.verifyMultiSigned(Sets.newLinkedHashSet(
-      SignatureWithPublicKey.builder().transactionSignature(signature).signingPublicKey(ed25519KeyPairOther.publicKey())
+      Signer.builder().transactionSignature(signature).signingPublicKey(ed25519KeyPairOther.publicKey())
         .build()), payment, 1);
     assertThat(actual).isFalse();
   }
@@ -150,12 +149,12 @@ class BouncyCastleSignatureServiceIT {
     assertThat(signature).isNotNull();
 
     boolean actual = signatureService.verifyMultiSigned(Sets.newLinkedHashSet(
-      SignatureWithPublicKey.builder().transactionSignature(signature).signingPublicKey(secp256k1KeyPair.publicKey())
+      Signer.builder().transactionSignature(signature).signingPublicKey(secp256k1KeyPair.publicKey())
         .build()), payment, 1);
     assertThat(actual).isTrue();
 
     actual = signatureService.verifyMultiSigned(Sets.newLinkedHashSet(
-      SignatureWithPublicKey.builder().transactionSignature(signature)
+      Signer.builder().transactionSignature(signature)
         .signingPublicKey(secp256k1KeyPairOther.publicKey()).build()), payment, 1);
     assertThat(actual).isFalse();
   }
@@ -165,7 +164,7 @@ class BouncyCastleSignatureServiceIT {
     final Callable<Boolean> signedTxCallable = () -> {
       SingleSignedTransaction<Payment> signedTx = signatureService.sign(ed25519KeyPair.privateKey(), payment);
       return signatureService.verify(
-        SignatureWithPublicKey.builder().transactionSignature(signedTx.signature())
+        Signer.builder().transactionSignature(signedTx.signature())
           .signingPublicKey(ed25519KeyPair.publicKey()).build(), payment);
     };
     this.multiThreadedHelper(signedTxCallable);
@@ -184,13 +183,11 @@ class BouncyCastleSignatureServiceIT {
       Signature signature2 = signatureService.multiSign(keyPair2.privateKey(), payment);
       Signature signature3 = signatureService.multiSign(keyPair3.privateKey(), payment);
 
-      Set<SignatureWithPublicKey> sigsWithKeys = Sets.newLinkedHashSet(
-        SignatureWithPublicKey.builder().signingPublicKey(keyPair1.publicKey()).transactionSignature(signature1)
-          .build(),
-        SignatureWithPublicKey.builder().signingPublicKey(keyPair2.publicKey()).transactionSignature(signature2)
-          .build(),
-        SignatureWithPublicKey.builder().signingPublicKey(keyPair3.publicKey()).transactionSignature(signature3)
-          .build());
+      Set<Signer> sigsWithKeys = Sets.newLinkedHashSet(
+        Signer.builder().signingPublicKey(keyPair1.publicKey()).transactionSignature(signature1).build(),
+        Signer.builder().signingPublicKey(keyPair2.publicKey()).transactionSignature(signature2).build(),
+        Signer.builder().signingPublicKey(keyPair3.publicKey()).transactionSignature(signature3).build()
+      );
 
       boolean noSigners = signatureService.verifyMultiSigned(Sets.newHashSet(), payment, 3);
 
@@ -218,12 +215,12 @@ class BouncyCastleSignatureServiceIT {
       Signature signature2 = signatureService.multiSign(keyPair2.privateKey(), payment);
       Signature signature3 = signatureService.multiSign(keyPair3.privateKey(), payment);
 
-      Set<SignatureWithPublicKey> sigsWithKeys = Sets.newLinkedHashSet(
-        SignatureWithPublicKey.builder().signingPublicKey(keyPair1.publicKey()).transactionSignature(signesignature1)
+      Set<Signer> sigsWithKeys = Sets.newLinkedHashSet(
+        Signer.builder().signingPublicKey(keyPair1.publicKey()).transactionSignature(signesignature1)
           .build(),
-        SignatureWithPublicKey.builder().signingPublicKey(keyPair2.publicKey()).transactionSignature(signature2)
+        Signer.builder().signingPublicKey(keyPair2.publicKey()).transactionSignature(signature2)
           .build(),
-        SignatureWithPublicKey.builder().signingPublicKey(keyPair3.publicKey()).transactionSignature(signature3)
+        Signer.builder().signingPublicKey(keyPair3.publicKey()).transactionSignature(signature3)
           .build());
 
       boolean noSigners = signatureService.verifyMultiSigned(Sets.newHashSet(), payment, 3);
@@ -245,7 +242,7 @@ class BouncyCastleSignatureServiceIT {
 
       SingleSignedTransaction<Payment> signedTx = signatureService.sign(secp256k1KeyPair.privateKey(), payment);
       return signatureService.verify(
-        SignatureWithPublicKey.builder().transactionSignature(signedTx.signature())
+        Signer.builder().transactionSignature(signedTx.signature())
           .signingPublicKey(secp256k1KeyPair.publicKey()).build(), payment);
     };
     this.multiThreadedHelper(signedTxCallable);

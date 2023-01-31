@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,9 +58,9 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
   /**
    * The set of signatures and public keys used to sign.
    *
-   * @return A {@link Set} of {@link SignatureWithPublicKey}s.
+   * @return A {@link Set} of {@link Signer}s.
    */
-  Set<SignatureWithPublicKey> signatureWithPublicKeySet();
+  Set<Signer> signatureWithPublicKeySet();
 
   /**
    * The transaction with all signers in {@link #signatureWithPublicKeySet()} added to the {@link Transaction#signers()}
@@ -72,13 +72,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
   @Value.Derived
   default T signedTransaction() {
     List<SignerWrapper> signers = signatureWithPublicKeySet().stream()
-      .map(signatureWithPublicKey ->
-        Signer.builder()
-          .account(signatureWithPublicKey.signingPublicKey().deriveAddress())
-          .signingPublicKey(signatureWithPublicKey.signingPublicKey())
-          .transactionSignature(signatureWithPublicKey.transactionSignature())
-          .build()
-      ).map(SignerWrapper::of)
+      .map(SignerWrapper::of)
       .sorted(
         Comparator.comparing(
           signature -> new BigInteger(

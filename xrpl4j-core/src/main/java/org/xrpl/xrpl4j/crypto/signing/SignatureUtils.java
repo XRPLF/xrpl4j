@@ -278,23 +278,23 @@ public class SignatureUtils {
         .build();
     } else if (AmmBid.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AmmBid.builder().from((AmmBid) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (AmmCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AmmCreate.builder().from((AmmCreate) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (AmmDeposit.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AmmDeposit.builder().from((AmmDeposit) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (AmmVote.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AmmVote.builder().from((AmmVote) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else if (AmmWithdraw.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AmmWithdraw.builder().from((AmmWithdraw) transaction)
-        .transactionSignature(signature.base16Value())
+        .transactionSignature(signature)
         .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.

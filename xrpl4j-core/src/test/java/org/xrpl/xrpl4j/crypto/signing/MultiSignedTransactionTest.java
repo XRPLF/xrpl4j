@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,6 +36,7 @@ import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -45,20 +46,20 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 class MultiSignedTransactionTest {
 
   private static final String HEX_32_BYTES = "0000000000000000000000000000000000000000000000000000000000000000";
-  private SignatureWithPublicKey signature1;
-  private SignatureWithPublicKey signature2;
+  private Signer signer1;
+  private Signer signer2;
   private MultiSignedTransaction<Payment> multiSignedTransaction;
 
 
   @BeforeEach
   void setUp() {
-    signature1 = SignatureWithPublicKey.builder()
+    signer1 = Signer.builder()
       .transactionSignature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(HEX_32_BYTES + "01"))
       .build();
-    signature2 = SignatureWithPublicKey.builder()
+    signer2 = Signer.builder()
       .transactionSignature(Signature.builder()
         .value(UnsignedByteArray.fromHex(HEX_32_BYTES))
         .build())
@@ -72,9 +73,9 @@ class MultiSignedTransactionTest {
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
         .build())
-      .addSignatureWithPublicKeySet(
-        signature1,
-        signature2
+      .addSignerSet(
+        signer1,
+        signer2
       )
       .build();
   }
@@ -100,14 +101,14 @@ class MultiSignedTransactionTest {
     assertThat(signedTransaction.signers()).asList().hasSize(2)
       .extracting("signer.account", "signer.signingPublicKey", "signer.transactionSignature")
       .containsExactly(Tuple.tuple(
-          signature2.signingPublicKey().deriveAddress(),
-          signature2.signingPublicKey(),
-          signature2.transactionSignature()
+          signer2.signingPublicKey().deriveAddress(),
+          signer2.signingPublicKey(),
+          signer2.transactionSignature()
         ),
         Tuple.tuple(
-          signature1.signingPublicKey().deriveAddress(),
-          signature1.signingPublicKey(),
-          signature1.transactionSignature()
+          signer1.signingPublicKey().deriveAddress(),
+          signer1.signingPublicKey(),
+          signer1.transactionSignature()
         ));
   }
 
@@ -117,9 +118,9 @@ class MultiSignedTransactionTest {
     JsonAssert.with(json).assertNotNull("$.unsignedTransaction");
     JsonAssert.with(json).assertNotNull("$.signedTransaction");
     JsonAssert.with(json).assertNotNull("$.signedTransactionBytes");
-    JsonAssert.with(json).assertNotNull("$.signatureWithPublicKeySet");
+    JsonAssert.with(json).assertNotNull("$.signerSet");
 
-    MultiSignedTransaction actual = ObjectMapperFactory.create().readValue(json, MultiSignedTransaction.class);
+    MultiSignedTransaction<?> actual = ObjectMapperFactory.create().readValue(json, MultiSignedTransaction.class);
     assertThat(actual).isEqualTo(multiSignedTransaction);
   }
 }

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,6 +41,7 @@ import org.xrpl.xrpl4j.crypto.TestConstants;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Set;
@@ -62,7 +63,7 @@ public class AbstractSignatureServiceTest {
   @Mock
   SingleSignedTransaction<Transaction> signedTransactionMock;
   @Mock
-  SignatureWithPublicKey signatureWithPublicKeyMock;
+  Signer signerMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
@@ -280,14 +281,14 @@ public class AbstractSignatureServiceTest {
   @Test
   public void verifyWithNullTransaction() {
     assertThrows(NullPointerException.class,
-      () -> signatureService.verify(mock(SignatureWithPublicKey.class), null));
+      () -> signatureService.verify(mock(Signer.class), null));
   }
 
   @Test
   public void verifyEd25519() {
-    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.ED_PUBLIC_KEY);
+    when(signerMock.signingPublicKey()).thenReturn(TestConstants.ED_PUBLIC_KEY);
 
-    boolean actual = signatureService.verify(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = signatureService.verify(signerMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(ed25519VerifyCalled.get()).isTrue();
@@ -298,9 +299,9 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void verifySecp256k1() {
-    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.EC_PUBLIC_KEY);
+    when(signerMock.signingPublicKey()).thenReturn(TestConstants.EC_PUBLIC_KEY);
 
-    boolean actual = signatureService.verify(signatureWithPublicKeyMock, transactionMock);
+    boolean actual = signatureService.verify(signerMock, transactionMock);
 
     assertThat(actual).isTrue();
     assertThat(secp256k1VerifyCalled.get()).isTrue();
@@ -311,11 +312,11 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void verifyMultiEd25519() {
-    SignatureWithPublicKey signatureWithPublicKeyMock = mock(SignatureWithPublicKey.class);
-    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.ED_PUBLIC_KEY);
-    when(signatureWithPublicKeyMock.transactionSignature()).thenReturn(ed25519SignatureMock);
+    Signer signerMock = mock(Signer.class);
+    when(signerMock.signingPublicKey()).thenReturn(TestConstants.ED_PUBLIC_KEY);
+    when(signerMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
-    final Set<SignatureWithPublicKey> signatureWithPublicKeys = Sets.newLinkedHashSet(signatureWithPublicKeyMock);
+    final Set<Signer> signatureWithPublicKeys = Sets.newLinkedHashSet(signerMock);
 
     boolean actual = signatureService.verifyMultiSigned(signatureWithPublicKeys, transactionMock, 1);
 
@@ -328,11 +329,11 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void verifyMultiSecp256k1() {
-    SignatureWithPublicKey signatureWithPublicKeyMock = mock(SignatureWithPublicKey.class);
-    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(TestConstants.EC_PUBLIC_KEY);
-    when(signatureWithPublicKeyMock.transactionSignature()).thenReturn(secp256k1SignatureMock);
+    Signer signerMock = mock(Signer.class);
+    when(signerMock.signingPublicKey()).thenReturn(TestConstants.EC_PUBLIC_KEY);
+    when(signerMock.transactionSignature()).thenReturn(secp256k1SignatureMock);
 
-    final Set<SignatureWithPublicKey> signatureWithPublicKeys = Sets.newLinkedHashSet(signatureWithPublicKeyMock);
+    final Set<Signer> signatureWithPublicKeys = Sets.newLinkedHashSet(signerMock);
 
     boolean actual = signatureService.verifyMultiSigned(signatureWithPublicKeys, transactionMock, 1);
 

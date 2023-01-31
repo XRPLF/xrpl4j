@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,9 +44,9 @@ import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Arrays;
@@ -138,28 +138,28 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
   @Override
   public <T extends Transaction> boolean verify(
-    final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
+    final Signer signer, final T unsignedTransaction
   ) {
-    Objects.requireNonNull(signatureWithPublicKey);
+    Objects.requireNonNull(signer);
     Objects.requireNonNull(unsignedTransaction);
 
-    return this.commonBcSignatureService.verify(signatureWithPublicKey, unsignedTransaction);
+    return this.commonBcSignatureService.verify(signer, unsignedTransaction);
   }
 
   @Override
   public <T extends Transaction> boolean verifyMultiSigned(
-    final Set<SignatureWithPublicKey> signatureWithPrivateKeyReferences,
+    final Set<Signer> signerSet,
     final T unsignedTransaction,
     final int minSigners
   ) {
-    Objects.requireNonNull(signatureWithPrivateKeyReferences);
+    Objects.requireNonNull(signerSet);
     Objects.requireNonNull(unsignedTransaction);
     Preconditions.checkArgument(minSigners > 0, "Valid multisigned transactions must have at least 1 signer");
 
-    final long numValidSignatures = signatureWithPrivateKeyReferences.stream()
+    final long numValidSignatures = signerSet.stream()
       // Check signature against all public keys, hoping for a valid verification against one.
-      .map(signatureWithPublicKey -> this.commonBcSignatureService.verifyMultiSigned(
-          Sets.newHashSet(signatureWithPublicKey), unsignedTransaction, 1
+      .map(signer -> this.commonBcSignatureService.verifyMultiSigned(
+          Sets.newHashSet(signer), unsignedTransaction, 1
         )
       )
       .filter($ -> $) // Only count it if it's 'true'
@@ -189,7 +189,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       keyPair = seed.deriveKeyPair();
     } else if (KeyType.SECP256K1 == privateKeyReference.keyType()) {
       final Seed seed = this.generateSecp256k1Seed(privateKeyReference.keyIdentifier());
-      keyPair =  seed.deriveKeyPair();
+      keyPair = seed.deriveKeyPair();
     } else {
       throw new IllegalArgumentException("Invalid KeyType: " + privateKeyReference.keyType());
     }

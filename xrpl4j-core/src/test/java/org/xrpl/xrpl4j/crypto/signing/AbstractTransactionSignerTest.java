@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.crypto.TestConstants;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +63,7 @@ public class AbstractTransactionSignerTest {
   @Mock
   Transaction transactionMock;
   @Mock
-  SignatureWithPublicKey signatureWithPublicKeyMock;
+  Signer signerMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
@@ -81,8 +82,8 @@ public class AbstractTransactionSignerTest {
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
-    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(publicKeyMock);
-    when(signatureWithPublicKeyMock.transactionSignature()).thenReturn(ed25519SignatureMock);
+    when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
+    when(signerMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
     this.transactionSigner = new AbstractTransactionSigner(signatureUtilsMock) {
       @Override

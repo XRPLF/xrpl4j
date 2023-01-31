@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,9 +25,8 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
-import org.xrpl.xrpl4j.crypto.signing.TransactionVerifier;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Set;
@@ -51,7 +50,7 @@ class TransactionVerifierTest {
     transactionVerifier = new TransactionVerifier() {
       @Override
       public <T extends Transaction> boolean verify(
-        SignatureWithPublicKey signatureWithPublicKey, T unsignedTransaction
+        Signer signer, T unsignedTransaction
       ) {
         verify1Called.set(true);
         return true;
@@ -59,7 +58,7 @@ class TransactionVerifierTest {
 
       @Override
       public <T extends Transaction> boolean verifyMultiSigned(
-        Set<SignatureWithPublicKey> signatureWithPublicKeys, T unsignedTransaction, int minSigners
+        Set<Signer> signerSet, T unsignedTransaction, int minSigners
       ) {
         verify2Called.set(true);
         return true;

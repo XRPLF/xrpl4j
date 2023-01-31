@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.faux;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,13 +41,13 @@ import org.xrpl.xrpl4j.crypto.signing.AbstractTransactionSigner;
 import org.xrpl.xrpl4j.crypto.signing.AbstractTransactionVerifier;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Tests the contract that a GCP KMS SignatureService might use.
@@ -67,7 +67,7 @@ class FauxGcpKmsSignatureServiceTest {
   PublicKey publicKeyMock;
 
   @Mock
-  private SignatureWithPublicKey signatureWithPublicKeyMock;
+  private Signer signerMock;
 
   @Mock
   private Signature signatureMock;
@@ -151,23 +151,23 @@ class FauxGcpKmsSignatureServiceTest {
 
   @Test
   void verifySingleSigned() {
-    gcpKmsSignatureService.verify(signatureWithPublicKeyMock, transactionMock);
-    verify(gcpKmsTransactionVerifierMock).verify(signatureWithPublicKeyMock, transactionMock);
+    gcpKmsSignatureService.verify(signerMock, transactionMock);
+    verify(gcpKmsTransactionVerifierMock).verify(signerMock, transactionMock);
   }
 
   @Test
   void verifyMultiSignedWithoutMinSigners() {
-    HashSet<SignatureWithPublicKey> signatureSet = Sets.newHashSet(signatureWithPublicKeyMock);
-    gcpKmsSignatureService.verifyMultiSigned(signatureSet, transactionMock);
-    verify(gcpKmsTransactionVerifierMock).verifyMultiSigned(signatureSet, transactionMock, 1);
+    Set<Signer> signerSet = Sets.newHashSet(signerMock);
+    gcpKmsSignatureService.verifyMultiSigned(signerSet, transactionMock);
+    verify(gcpKmsTransactionVerifierMock).verifyMultiSigned(signerSet, transactionMock, 1);
   }
 
   @Test
   void verifyMultiSignedWithMinSigners() {
-    HashSet<SignatureWithPublicKey> signatureSet = Sets.newHashSet(signatureWithPublicKeyMock);
+    Set<Signer> signerSet = Sets.newHashSet(signerMock);
     int minSigners = 1;
-    gcpKmsSignatureService.verifyMultiSigned(signatureSet, transactionMock, minSigners);
-    verify(gcpKmsTransactionVerifierMock).verifyMultiSigned(signatureSet, transactionMock, minSigners);
+    gcpKmsSignatureService.verifyMultiSigned(signerSet, transactionMock, minSigners);
+    verify(gcpKmsTransactionVerifierMock).verifyMultiSigned(signerSet, transactionMock, minSigners);
   }
 
   /**

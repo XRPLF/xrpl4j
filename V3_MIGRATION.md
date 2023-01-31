@@ -221,14 +221,7 @@ To create a `MultiSignedTransaction`, use `BcSignatureService` like this:
 
 ```java
 Set<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-  .map(keyPair -> {
-      Signature signedPayment = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
-      return Signer.builder()
-        .signingPublicKey(keyPair.publicKey())
-        .transactionSignature(signedPayment)
-        .build();
-    }
-  )
+  .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
   .collect(Collectors.toSet());
 
 /////////////////////////////

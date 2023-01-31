@@ -211,17 +211,15 @@ class BouncyCastleSignatureServiceIT {
     final KeyPair keyPair3 = Seed.secp256k1SeedFromPassphrase(Passphrase.of("user3")).deriveKeyPair();
 
     final Callable<Boolean> signedTxCallable = () -> {
-      Signature signesignature1 = signatureService.multiSign(keyPair1.privateKey(), payment);
+      Signature signature1 = signatureService.multiSign(keyPair1.privateKey(), payment);
       Signature signature2 = signatureService.multiSign(keyPair2.privateKey(), payment);
       Signature signature3 = signatureService.multiSign(keyPair3.privateKey(), payment);
 
       Set<Signer> sigsWithKeys = Sets.newLinkedHashSet(
-        Signer.builder().signingPublicKey(keyPair1.publicKey()).transactionSignature(signesignature1)
-          .build(),
-        Signer.builder().signingPublicKey(keyPair2.publicKey()).transactionSignature(signature2)
-          .build(),
-        Signer.builder().signingPublicKey(keyPair3.publicKey()).transactionSignature(signature3)
-          .build());
+        Signer.builder().signingPublicKey(keyPair1.publicKey()).transactionSignature(signature1).build(),
+        Signer.builder().signingPublicKey(keyPair2.publicKey()).transactionSignature(signature2).build(),
+        Signer.builder().signingPublicKey(keyPair3.publicKey()).transactionSignature(signature3).build()
+      );
 
       boolean noSigners = signatureService.verifyMultiSigned(Sets.newHashSet(), payment, 3);
 

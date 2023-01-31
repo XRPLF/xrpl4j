@@ -31,7 +31,6 @@ import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -268,13 +267,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
     Set<Signer> signers = Lists.newArrayList(alicePrivateKeyReference, bobKeyPrivateKeyReference)
       .stream()
-      .map(privateKeyReference -> {
-        Signature signatureWithKeyMetadata = derivedKeySignatureService.multiSign(privateKeyReference, unsignedPayment);
-        return Signer.builder()
-          .signingPublicKey(toPublicKey(privateKeyReference))
-          .transactionSignature(signatureWithKeyMetadata)
-          .build();
-      })
+      .map(privateKeyReference -> derivedKeySignatureService.multiSignToSigner(privateKeyReference, unsignedPayment))
       .collect(Collectors.toSet());
 
     /////////////////////////////

@@ -196,7 +196,7 @@ class BcSignatureServiceTest {
 
   @Test
   void multiSignSecp256k1() {
-    //when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
+    when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
 
     final Signature signature = signatureService.multiSign(secp256k1KeyPair.privateKey(), transactionMock);
     assertThat(signature.base16Value()).isEqualTo("300602010A02010A");

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,10 @@ package org.xrpl.xrpl4j.crypto.signing;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+
+import java.util.Objects;
 
 /**
  * Defines how to sign an XRPL transaction using private key material supplied by the caller.
@@ -78,4 +81,42 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @return A {@link Signature} for the transaction.
    */
   <T extends Transaction> Signature multiSign(P privateKeyable, T transaction);
+
+  /**
+   * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.
+   * <p>
+   * As is the case with {@link #multiSign(PrivateKeyable, Transaction)}, the primary reason this method's signature
+   * diverges from {@link #sign(PrivateKeyable, Transaction)} is that for multi-sign scenarios, the interstitially
+   * signed transaction is always discarded. Instead, a quorum of signatures is need and then that quorum is submitted
+   * to the ledger with the unsigned transaction. Thus, obtaining a multi-signed transaction here is not useful and is
+   * not returned from this interface. Note that {@link SignatureUtils} can be used to assemble and obtain the bytes for
+   * a multi-signed transaction (these diverge slightly from the bytes of a single-signed transaction).
+   * </p>
+   * <p>
+   * This method is nearly identical to {@link #multiSign(PrivateKeyable, Transaction)} except that its return-type is a
+   * {@link Signer}, which is more convenient for submitting transactions to the XRP Ledger. Note however that this
+   * method internally calls {@link #derivePublicKey(PrivateKeyable)}, which in certain remote-key configurations (e.g.,
+   * storing keys in a remote HSM) involves a potentially expensive remote call to the HSM. In most scenarios, the
+   * public key will already be available, so callers of this method should consider using
+   * {@link #multiSign(PrivateKeyable, Transaction)} instead if public-key derivation is a performance concern.
+   * </p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code transaction}.
+   * @param transaction    The {@link Transaction} to sign.
+   * @param <T>            The type of the transaction to be signed.
+   *
+   * @return A {@link Signature} for the transaction.
+   */
+  default <T extends Transaction> Signer multiSignToSigner(P privateKeyable, T transaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(transaction);
+
+    // Compute this only once, just in case public-key derivation is expensive (e.g., a remote HSM).
+    final PublicKey signingPublicKey = this.derivePublicKey(privateKeyable);
+    return Signer.builder()
+      .account(signingPublicKey.deriveAddress())
+      .signingPublicKey(signingPublicKey)
+      .transactionSignature(multiSign(privateKeyable, transaction))
+      .build();
+  }
 }

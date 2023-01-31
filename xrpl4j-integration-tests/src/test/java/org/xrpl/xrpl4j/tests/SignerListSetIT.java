@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -146,14 +145,7 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
     Set<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(wallet -> {
-          Signature signedPayment = signatureService.multiSign(wallet.privateKey(), unsignedPayment);
-          return Signer.builder()
-            .signingPublicKey(wallet.publicKey())
-            .transactionSignature(signedPayment)
-            .build();
-        }
-      )
+      .map(wallet -> signatureService.multiSignToSigner(wallet.privateKey(), unsignedPayment))
       .collect(Collectors.toSet());
 
     /////////////////////////////

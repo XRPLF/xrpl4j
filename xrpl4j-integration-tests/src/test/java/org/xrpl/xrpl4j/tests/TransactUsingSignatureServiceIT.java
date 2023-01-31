@@ -31,7 +31,6 @@ import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -255,14 +254,7 @@ public class TransactUsingSignatureServiceIT extends AbstractIT {
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
     Set<Signer> signers = Lists.newArrayList(alicePrivateKey, bobPrivateKey).stream()
-      .map(privateKey -> {
-          Signature signedPayment = signatureService.multiSign(privateKey, unsignedPayment);
-          return Signer.builder()
-            .signingPublicKey(toPublicKey(privateKey))
-            .transactionSignature(signedPayment)
-            .build();
-        }
-      )
+      .map(privateKey -> signatureService.multiSignToSigner(privateKey, unsignedPayment))
       .collect(Collectors.toSet());
 
     /////////////////////////////

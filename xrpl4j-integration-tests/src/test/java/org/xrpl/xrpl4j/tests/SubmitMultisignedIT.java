@@ -156,14 +156,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
     List<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(keyPair -> {
-          Signature multiSignature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
-          return Signer.builder()
-            .transactionSignature(multiSignature)
-            .signingPublicKey(keyPair.publicKey())
-            .build();
-        }
-      )
+      .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
       .collect(Collectors.toList());
 
     /////////////////////////////
@@ -205,14 +198,7 @@ public class SubmitMultisignedIT extends AbstractIT {
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
     List<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(keyPair -> {
-          Signature multiSignature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
-          return Signer.builder()
-            .transactionSignature(multiSignature)
-            .signingPublicKey(keyPair.publicKey())
-            .build();
-        }
-      )
+      .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
       .collect(Collectors.toList());
 
     /////////////////////////////

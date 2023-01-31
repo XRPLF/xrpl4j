@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
-import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -44,11 +42,11 @@ class SignedTransactionTest {
   /**
    * This test constructs the transaction found here:
    * https://livenet.xrpl.org/transactions/A7AE53FE15B02E6E2F3C610FB4BA30B12392EB110F1D5E8C20880555E8639B05 to check
-   * that the hash that's on livenet matches what this library computes. The hash you see in this test is
-   * different than the hash found on livenet because the real transaction did not set any flags on the transaction
-   * and {@link Payment} requires a flags field (Even if you set flags to 0, it affects the hash). However,
-   * we made {@link Payment#flags()} nullable during development and verified that the hashes match, so we are confident
-   * that our hash calculation is accurate.
+   * that the hash that's on livenet matches what this library computes. The hash you see in this test is different than
+   * the hash found on livenet because the real transaction did not set any flags on the transaction and {@link Payment}
+   * requires a flags field (Even if you set flags to 0, it affects the hash). However, we made {@link Payment#flags()}
+   * nullable during development and verified that the hashes match, so we are confident that our hash calculation is
+   * accurate.
    */
   @Test
   public void computesCorrectTransactionHash() throws JsonProcessingException {
@@ -65,8 +63,10 @@ class SignedTransactionTest {
       .build();
 
     final Payment signedPayment = Payment.builder().from(unsignedTransaction)
-      .transactionSignature("304502210093257D8E88D2A92CE55977641F72CCD235AB76B1AE189BE3377F30A6" +
-        "9B131C4902200B79836114069F0D331418D05818908D85DE755AE5C2DDF42E9637FE1C11754F")
+      .transactionSignature(Signature.fromBase16(
+        "304502210093257D8E88D2A92CE55977641F72CCD235AB76B1AE189BE3377F30A6" +
+          "9B131C4902200B79836114069F0D331418D05818908D85DE755AE5C2DDF42E9637FE1C11754F"
+      ))
       .build();
 
     final Signature signature = Signature.builder().value(

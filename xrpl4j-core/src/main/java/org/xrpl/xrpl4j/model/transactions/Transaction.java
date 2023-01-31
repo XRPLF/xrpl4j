@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +38,7 @@ import java.util.Optional;
 public interface Transaction {
 
   /**
-   * A bi-directional map of immutable transaction types to their corresponding {@link TransactionType}.
+   * A bidirectional map of immutable transaction types to their corresponding {@link TransactionType}.
    *
    * <p>This is useful for polymorphic Jackson deserialization.
    */
@@ -97,6 +98,7 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link XrpCurrencyAmount} representing the transaction cost.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
@@ -109,6 +111,7 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link UnsignedInteger} representing the sequence of the transaction.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @Value.Default
@@ -171,8 +174,8 @@ public interface Transaction {
   Optional<UnsignedInteger> sourceTag();
 
   /**
-   * The {@link PublicKey} that corresponds to the private key used to sign this transaction. If an empty
-   * string, ie {@link PublicKey#MULTI_SIGN_PUBLIC_KEY}, indicates a multi-signature is present in the
+   * The {@link PublicKey} that corresponds to the private key used to sign this transaction. If an empty string, ie
+   * {@link PublicKey#MULTI_SIGN_PUBLIC_KEY}, indicates a multi-signature is present in the
    * {@link Transaction#signers()} field instead.
    *
    * @return A {@link PublicKey} containing the public key of the account submitting the transaction, or
@@ -193,6 +196,6 @@ public interface Transaction {
    * @return An {@link Optional} {@link String} containing the transaction signature.
    */
   @JsonProperty("TxnSignature")
-  Optional<String> transactionSignature();
+  Optional<Signature> transactionSignature();
 
 }

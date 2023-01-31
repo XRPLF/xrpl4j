@@ -22,10 +22,10 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
-import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndexBound;
@@ -67,8 +67,10 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                     "020A46D8D02AC780C59853ACA309EAA92E7D8E02DD72A0B6AC315A7D18A6C3276A"
                   )
                 )
-                .transactionSignature("30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB79C2C8431722C0ADB9110" +
-                  "22024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576")
+                .transactionSignature(Signature.fromBase16(
+                  "30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB79C2C8431722C0ADB9110" +
+                    "22024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576"
+                ))
                 .build()
             )
             .hash(Hash256.of("08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C"))
@@ -99,8 +101,10 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
                   "0381575032E254BF4D699C3D8D6EFDB63B3A71F97475C6F6885BC7DAEEE55D9A01"
                 )
               )
-              .transactionSignature("3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB48AB99AEA960BFA360AE163" +
-                "ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7")
+              .transactionSignature(Signature.fromBase16(
+                "3045022100C7EA1701FE48C75508EEBADBC9864CD3FFEDCEB48AB99AEA960BFA360AE163" +
+                  "ED0220453C9577502924C9E1A9A450D4B950A44016813BC70E1F16A65A402528D730B7"
+              ))
               .build())
             .hash(Hash256.of("7C031FD5B710E3C048EEF31254089BEEC505900BCC9A842257A0319453333998"))
             .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112010)))

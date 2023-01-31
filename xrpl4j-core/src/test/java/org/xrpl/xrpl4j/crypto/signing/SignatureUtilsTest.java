@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,9 +46,6 @@ import org.mockito.Mock;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.signing.Signature;
-import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
-import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.ledger.Asset;
@@ -713,13 +710,13 @@ public class SignatureUtilsTest {
 
   @Test
   void addMultiSignaturesWithTransactionSignaturePresent() {
-    when(transactionMock.transactionSignature()).thenReturn(Optional.of("sig"));
+    when(transactionMock.transactionSignature()).thenReturn(Optional.of(Signature.fromBase16("00")));
     assertThatThrownBy(
       () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Transactions to be signed must not already include a signature.");
   }
-  
+
   @Test
   void addMultiSignaturesWithSigningPublicKeyNonBlank() {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
@@ -1137,7 +1134,7 @@ public class SignatureUtilsTest {
     assertThat(result.unsignedTransaction()).isEqualTo(transaction);
     assertThat(result.signature().base16Value()).isEqualTo("ED");
     assertThat(result.signedTransaction().transactionSignature()).isPresent();
-    assertThat(result.signedTransaction().transactionSignature().get()).isEqualTo("ED");
+    assertThat(result.signedTransaction().transactionSignature().get().base16Value()).isEqualTo("ED");
   }
 
   private void addMultiSignatureToTransactionHelper(final Transaction transaction) {

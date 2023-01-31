@@ -43,11 +43,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
@@ -100,57 +98,18 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
-import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
-import org.xrpl.xrpl4j.model.ledger.Asset;
-import org.xrpl.xrpl4j.model.ledger.AuthAccount;
-import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
-import org.xrpl.xrpl4j.model.ledger.SignerEntry;
-import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
-import org.xrpl.xrpl4j.model.transactions.AccountDelete;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AmmBid;
-import org.xrpl.xrpl4j.model.transactions.AmmCreate;
-import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
-import org.xrpl.xrpl4j.model.transactions.AmmVote;
-import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
-import org.xrpl.xrpl4j.model.transactions.CheckCancel;
-import org.xrpl.xrpl4j.model.transactions.CheckCash;
-import org.xrpl.xrpl4j.model.transactions.CheckCreate;
-import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
-import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
-import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmDeposit;
-import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
-import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
-import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
-import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
-import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
-import org.xrpl.xrpl4j.model.transactions.OfferCancel;
-import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
-import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
-import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
-import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
-import org.xrpl.xrpl4j.model.transactions.SignerListSet;
-import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
-import org.xrpl.xrpl4j.model.transactions.TicketCreate;
-import org.xrpl.xrpl4j.model.transactions.TradingFee;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
-import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -161,7 +120,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class XrplClientTest {
 
   private final KeyPair keyPair = Seed.ed25519Seed().deriveKeyPair();
-  
+
   @Mock
   private JsonRpcClient jsonRpcClientMock;
   private XrplClient xrplClient;
@@ -453,22 +412,19 @@ public class XrplClientTest {
 
       @Override
       public AccountInfoResult accountInfo(AccountInfoRequestParams params) {
-        AccountRootObject root = AccountRootObject.builder()
-          .accountTransactionId(Hash256.of(Strings.repeat("0", 64)))
-          .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
-          .balance(XrpCurrencyAmount.ofDrops(1000))
-          .ownerCount(UnsignedInteger.ONE)
-          .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
-          .previousTransactionLedgerSequence(UnsignedInteger.ONE)
-          .sequence(UnsignedInteger.ONE)
-          .flags(AccountRootFlags.DISABLE_MASTER)
-          .index(Hash256.of(Strings.repeat("0", 64)))
+        return AccountInfoResult.builder()
+          .accountData(AccountRootObject.builder()
+            .accountTransactionId(Hash256.of(Strings.repeat("0", 64)))
+            .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+            .balance(XrpCurrencyAmount.ofDrops(1000))
+            .ownerCount(UnsignedInteger.ONE)
+            .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
+            .previousTransactionLedgerSequence(UnsignedInteger.ONE)
+            .sequence(UnsignedInteger.ONE)
+            .flags(AccountRootFlags.DISABLE_MASTER)
+            .index(Hash256.of(Strings.repeat("0", 64)))
+            .build())
           .build();
-        AccountInfoResult accountInfoResult = AccountInfoResult.builder()
-          .accountData(root)
-          .build();
-
-        return accountInfoResult;
       }
     };
 
@@ -515,22 +471,19 @@ public class XrplClientTest {
 
       @Override
       public AccountInfoResult accountInfo(AccountInfoRequestParams params) {
-        AccountRootObject root = AccountRootObject.builder()
-          .accountTransactionId(Hash256.of(Strings.repeat("0", 64)))
-          .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
-          .balance(XrpCurrencyAmount.ofDrops(1000))
-          .ownerCount(UnsignedInteger.ONE)
-          .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
-          .previousTransactionLedgerSequence(UnsignedInteger.ONE)
-          .sequence(UnsignedInteger.ONE)
-          .flags(AccountRootFlags.DISABLE_MASTER)
-          .index(Hash256.of(Strings.repeat("0", 64)))
+        return AccountInfoResult.builder()
+          .accountData(AccountRootObject.builder()
+            .accountTransactionId(Hash256.of(Strings.repeat("0", 64)))
+            .account(Address.of("rDgZZ3wyprx4ZqrGQUkquE9Fs2Xs8XBcdw"))
+            .balance(XrpCurrencyAmount.ofDrops(1000))
+            .ownerCount(UnsignedInteger.ONE)
+            .previousTransactionId(Hash256.of(Strings.repeat("0", 64)))
+            .previousTransactionLedgerSequence(UnsignedInteger.ONE)
+            .sequence(UnsignedInteger.ONE)
+            .flags(AccountRootFlags.DISABLE_MASTER)
+            .index(Hash256.of(Strings.repeat("0", 64)))
+            .build())
           .build();
-        AccountInfoResult accountInfoResult = AccountInfoResult.builder()
-          .accountData(root)
-          .build();
-
-        return accountInfoResult;
       }
     };
 
@@ -700,18 +653,18 @@ public class XrplClientTest {
       .destination(keyPair.publicKey().deriveAddress())
       .build();
 
-    SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
+    Signer signatureWithPublicKey = Signer.builder()
       .signingPublicKey(Seed.ed25519Seed().deriveKeyPair().publicKey())
       .transactionSignature(Signature.fromBase16("ABCD"))
       .build();
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
-    Set<SignatureWithPublicKey> signers = Sets.newHashSet(
+    Set<Signer> signers = Sets.newHashSet(
       signatureWithPublicKey
     );
     MultiSignedTransaction<Payment> multiSignedPayment = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     xrplClient = new XrplClient(jsonRpcClientMock);
@@ -732,8 +685,7 @@ public class XrplClientTest {
 
   @Test
   public void serverInformation() {
-    ValidatedLedger serverInfoLedger =
-      ValidatedLedger.builder()
+    ValidatedLedger serverInfoLedger = ValidatedLedger.builder()
       .hash(Hash256.of(Strings.repeat("0", 64)))
       .age(UnsignedInteger.ONE)
       .reserveBaseXrp(XrpCurrencyAmount.ofXrp(BigDecimal.ONE))
@@ -741,7 +693,7 @@ public class XrplClientTest {
       .sequence(LedgerIndex.of(UnsignedInteger.ONE))
       .baseFeeXrp(BigDecimal.ONE)
       .build();
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo serverInfo = RippledServerInfo.builder()
+    ServerInfo serverInfo = RippledServerInfo.builder()
       .completeLedgers(LedgerRangeUtils.completeLedgersToListOfRange("1-2"))
       .amendmentBlocked(true)
       .buildVersion("1")
@@ -761,8 +713,7 @@ public class XrplClientTest {
       .validationQuorum(UnsignedInteger.ONE)
       .build();
 
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResult =
-      org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult.builder()
+    ServerInfoResult serverInfoResult = ServerInfoResult.builder()
       .info(serverInfo)
       .build();
 
@@ -781,8 +732,7 @@ public class XrplClientTest {
       }
     };
     xrplClient = new XrplClient(jsonRpcClientMock);
-    org.xrpl.xrpl4j.model.client.serverinfo.ServerInfoResult serverInfoResponse =
-      assertDoesNotThrow(() -> xrplClient.serverInformation());
+    ServerInfoResult serverInfoResponse = assertDoesNotThrow(() -> xrplClient.serverInformation());
     assertThat(serverInfoResponse.info()).isEqualTo(serverInfo);
   }
 

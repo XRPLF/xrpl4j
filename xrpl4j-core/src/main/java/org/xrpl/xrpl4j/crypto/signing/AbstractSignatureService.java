@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -106,19 +107,17 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
-  public <T extends Transaction> boolean verify(
-    final SignatureWithPublicKey signatureWithPublicKey, final T unsignedTransaction
-  ) {
-    return abstractTransactionVerifier.verify(signatureWithPublicKey, unsignedTransaction);
+  public <T extends Transaction> boolean verify(final Signer signer, final T unsignedTransaction) {
+    return abstractTransactionVerifier.verify(signer, unsignedTransaction);
   }
 
   @Override
   public <T extends Transaction> boolean verifyMultiSigned(
-    final Set<SignatureWithPublicKey> signatureWithPublicKeys,
+    final Set<Signer> signerSet,
     final T unsignedTransaction,
     final int minSigners
   ) {
-    return abstractTransactionVerifier.verifyMultiSigned(signatureWithPublicKeys, unsignedTransaction, minSigners);
+    return abstractTransactionVerifier.verifyMultiSigned(signerSet, unsignedTransaction, minSigners);
   }
 
   /**

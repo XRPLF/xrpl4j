@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,11 +46,10 @@ import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.math.BigInteger;
@@ -197,7 +196,7 @@ class BcSignatureServiceTest {
 
   @Test
   void multiSignSecp256k1() {
-    //when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
+    when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
 
     final Signature signature = signatureService.multiSign(secp256k1KeyPair.privateKey(), transactionMock);
     assertThat(signature.base16Value()).isEqualTo("300602010A02010A");
@@ -220,7 +219,7 @@ class BcSignatureServiceTest {
   @Test
   public void verifyWithNullTransaction() {
     assertThrows(NullPointerException.class,
-      () -> signatureService.verify(mock(SignatureWithPublicKey.class), null));
+      () -> signatureService.verify(mock(Signer.class), null));
   }
 
   @Test
@@ -228,10 +227,12 @@ class BcSignatureServiceTest {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
     when(ed25519SignerMock.verifySignature(any())).thenReturn(true);
 
-    SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
-      .transactionSignature(ed25519SignatureMock).signingPublicKey(ed25519KeyPair.publicKey()).build();
+    Signer signer = Signer.builder()
+      .transactionSignature(ed25519SignatureMock)
+      .signingPublicKey(ed25519KeyPair.publicKey())
+      .build();
 
-    boolean actual = signatureService.verify(signatureWithPublicKey, transactionMock);
+    boolean actual = signatureService.verify(signer, transactionMock);
 
     assertThat(actual).isTrue();
     verify(ed25519SignerMock).reset();
@@ -249,10 +250,12 @@ class BcSignatureServiceTest {
   public void verifySecp256k1() {
     when(ecdsaSignerMock.verifySignature(any(), any(), any())).thenReturn(true);
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
-    SignatureWithPublicKey signatureWithPublicKey = SignatureWithPublicKey.builder()
-      .transactionSignature(secp256k1SignatureMock).signingPublicKey(secp256k1KeyPair.publicKey()).build();
+    Signer signer = Signer.builder()
+      .transactionSignature(secp256k1SignatureMock)
+      .signingPublicKey(secp256k1KeyPair.publicKey())
+      .build();
 
-    boolean actual = signatureService.verify(signatureWithPublicKey, transactionMock);
+    boolean actual = signatureService.verify(signer, transactionMock);
 
     assertThat(actual).isTrue();
     verify(ecdsaSignerMock).init(anyBoolean(), any());
@@ -298,9 +301,15 @@ class BcSignatureServiceTest {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
     when(ed25519SignerMock.verifySignature(any())).thenReturn(true);
 
-    boolean actual = signatureService.verifyMultiSigned(Sets.newLinkedHashSet(
-      SignatureWithPublicKey.builder().transactionSignature(ed25519SignatureMock)
-        .signingPublicKey(ed25519KeyPair.publicKey()).build()), transactionMock, 1);
+    boolean actual = signatureService.verifyMultiSigned(
+      Sets.newLinkedHashSet(
+        Signer.builder()
+          .transactionSignature(ed25519SignatureMock)
+          .signingPublicKey(ed25519KeyPair.publicKey())
+          .build()),
+      transactionMock,
+      1
+    );
 
     assertThat(actual).isTrue();
     verify(ed25519SignerMock).reset();
@@ -319,9 +328,14 @@ class BcSignatureServiceTest {
     when(ecdsaSignerMock.verifySignature(any(), any(), any())).thenReturn(true);
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
 
-    boolean actual = signatureService.verifyMultiSigned(Sets.newLinkedHashSet(
-      SignatureWithPublicKey.builder().transactionSignature(secp256k1SignatureMock)
-        .signingPublicKey(secp256k1KeyPair.publicKey()).build()), transactionMock, 1);
+    boolean actual = signatureService.verifyMultiSigned(
+      Sets.newLinkedHashSet(Signer.builder()
+        .transactionSignature(secp256k1SignatureMock)
+        .signingPublicKey(secp256k1KeyPair.publicKey())
+        .build()),
+      transactionMock,
+      1
+    );
 
     assertThat(actual).isTrue();
     verify(ecdsaSignerMock).init(anyBoolean(), any());

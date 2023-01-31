@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,7 +41,6 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
@@ -49,6 +48,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.nio.charset.StandardCharsets;
@@ -127,7 +127,7 @@ class BcDerivedKeySignatureServiceTest {
       SingleSignedTransaction<Payment> signedTx = this.derivedKeySignatureService.sign(privateKeyReference,
         paymentTransaction);
       return this.derivedKeySignatureService.verify(
-        SignatureWithPublicKey.builder()
+        Signer.builder()
           .transactionSignature(signedTx.signature())
           .signingPublicKey(publicKey)
           .build(),
@@ -169,7 +169,7 @@ class BcDerivedKeySignatureServiceTest {
       privateKeyReference, paymentTransaction
     );
     final boolean verified = this.derivedKeySignatureService.verify(
-      SignatureWithPublicKey.builder()
+      Signer.builder()
         .transactionSignature(Signature.builder().from(signedTx.signature())
           .value(UnsignedByteArray.fromHex("00000000000000000000000000000000"))
           .build()
@@ -216,7 +216,7 @@ class BcDerivedKeySignatureServiceTest {
       );
 
       boolean result = this.derivedKeySignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithPublicKey.builder()
+        Sets.newHashSet(Signer.builder()
           .transactionSignature(signature)
           .signingPublicKey(publicKeyFoo)
           .build()),
@@ -226,7 +226,7 @@ class BcDerivedKeySignatureServiceTest {
       assertThat(result).isTrue();
 
       result = this.derivedKeySignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithPublicKey.builder()
+        Sets.newHashSet(Signer.builder()
           .transactionSignature(signature)
           .signingPublicKey(publicKeyFoo)
           .build()),
@@ -246,7 +246,7 @@ class BcDerivedKeySignatureServiceTest {
       );
 
       boolean result = this.derivedKeySignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithPublicKey.builder()
+        Sets.newHashSet(Signer.builder()
           .transactionSignature(signature)
           .signingPublicKey(publicKeyBar)
           .build()),
@@ -255,7 +255,7 @@ class BcDerivedKeySignatureServiceTest {
       assertThat(result).isTrue();
 
       result = this.derivedKeySignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithPublicKey.builder()
+        Sets.newHashSet(Signer.builder()
           .transactionSignature(signature)
           .signingPublicKey(publicKeyBar)
           .build()),
@@ -316,14 +316,14 @@ class BcDerivedKeySignatureServiceTest {
       );
 
       boolean result = this.derivedKeySignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithPublicKey.builder()
+        Sets.newHashSet(Signer.builder()
           .transactionSignature(signature)
           .signingPublicKey(publicKey)
           .build()), payment, 1);
       assertThat(result).isTrue();
 
       result = this.derivedKeySignatureService.verifyMultiSigned(
-        Sets.newHashSet(SignatureWithPublicKey.builder()
+        Sets.newHashSet(Signer.builder()
           .transactionSignature(signature)
           .signingPublicKey(publicKey)
           .build()),
@@ -370,7 +370,7 @@ class BcDerivedKeySignatureServiceTest {
       SingleSignedTransaction<Payment> signedTx
         = this.derivedKeySignatureService.sign(privateKeyReference, paymentTransaction);
       return this.derivedKeySignatureService.verify(
-        SignatureWithPublicKey.builder()
+        Signer.builder()
           .transactionSignature(signedTx.signature())
           .signingPublicKey(publicKey)
           .build(),
@@ -414,7 +414,7 @@ class BcDerivedKeySignatureServiceTest {
       = this.derivedKeySignatureService.sign(privateKeyReferenceFoo, paymentTransaction);
 
     final boolean verified = this.derivedKeySignatureService.verify(
-      SignatureWithPublicKey.builder()
+      Signer.builder()
         .transactionSignature(signedTx.signature())
         .signingPublicKey(publicKeyBar)
         .build(),

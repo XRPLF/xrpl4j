@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,7 @@ import org.xrpl.xrpl4j.crypto.TestConstants;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +65,7 @@ public class AbstractTransactionSignerTest {
   @Mock
   Transaction transactionMock;
   @Mock
-  SignatureWithPublicKey signatureWithPublicKeyMock;
+  Signer signerMock;
 
   private AtomicBoolean ed25519VerifyCalled;
   private AtomicBoolean secp256k1VerifyCalled;
@@ -81,8 +84,8 @@ public class AbstractTransactionSignerTest {
     when(signatureUtilsMock.toSignableBytes(Mockito.<Transaction>any())).thenReturn(UnsignedByteArray.empty());
     when(signatureUtilsMock.toMultiSignableBytes(any(), any())).thenReturn(UnsignedByteArray.empty());
 
-    when(signatureWithPublicKeyMock.signingPublicKey()).thenReturn(publicKeyMock);
-    when(signatureWithPublicKeyMock.transactionSignature()).thenReturn(ed25519SignatureMock);
+    when(signerMock.signingPublicKey()).thenReturn(publicKeyMock);
+    when(signerMock.transactionSignature()).thenReturn(ed25519SignatureMock);
 
     this.transactionSigner = new AbstractTransactionSigner(signatureUtilsMock) {
       @Override
@@ -97,7 +100,7 @@ public class AbstractTransactionSignerTest {
 
       @Override
       public PublicKey derivePublicKey(PrivateKeyable privateKeyable) {
-        return keyType == KeyType.ED25519 ? TestConstants.ED_PUBLIC_KEY : TestConstants.EC_PUBLIC_KEY;
+        return keyType == KeyType.ED25519 ? ED_PUBLIC_KEY : EC_PUBLIC_KEY;
       }
     };
   }
@@ -181,7 +184,7 @@ public class AbstractTransactionSignerTest {
   }
 
   ///////////////////
-  // MultiSign
+  // MultiSign to Signature
   ///////////////////
 
   @Test
@@ -213,6 +216,49 @@ public class AbstractTransactionSignerTest {
     Signature signature = transactionSigner.multiSign(privateKeyableMock, transactionMock);
 
     assertThat(signature).isEqualTo(secp256k1SignatureMock);
+
+    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  ///////////////////
+  // MultiSign to Signer
+  ///////////////////
+
+  @Test
+  void multiSignToSignerWithNullMetadata() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignToSigner(null, transactionMock));
+  }
+
+  @Test
+  void multiSignToSignerWithNullTransaction() {
+    assertThrows(NullPointerException.class, () -> transactionSigner.multiSignToSigner(privateKeyableMock, null));
+  }
+
+  @Test
+  void multiSignToSignerEd25519() {
+    keyType = KeyType.ED25519;
+
+    Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, transactionMock);
+    assertThat(signer.signingPublicKey()).isEqualTo(ED_PUBLIC_KEY);
+    assertThat(signer.account()).isEqualTo(ED_PUBLIC_KEY.deriveAddress());
+    assertThat(signer.transactionSignature()).isEqualTo(ed25519SignatureMock);
+
+    verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
+    verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  @Test
+  void multiSignToSignerSecp256k1() {
+
+    keyType = KeyType.SECP256K1;
+
+    Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, transactionMock);
+    assertThat(signer.signingPublicKey()).isEqualTo(EC_PUBLIC_KEY);
+    assertThat(signer.account()).isEqualTo(EC_PUBLIC_KEY.deriveAddress());
+    assertThat(signer.transactionSignature()).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);

@@ -20,13 +20,12 @@ package org.xrpl.xrpl4j.model.client.transactions;
  * =========================LICENSE_END==================================
  */
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -76,8 +75,10 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
                       "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF"
                     )
                   )
-                  .transactionSignature("3045022100CC9C56DF51251CB04BB047E5F3B5EF01A0F4A8A549D7A20A7402" +
-                    "BF54BA744064022061EF8EF1BCCBF144F480B32508B1D10FD4271831D5303F920DE41C64671CB5B7")
+                  .transactionSignature(Signature.fromBase16(
+                    "3045022100CC9C56DF51251CB04BB047E5F3B5EF01A0F4A8A549D7A20A7402" +
+                      "BF54BA744064022061EF8EF1BCCBF144F480B32508B1D10FD4271831D5303F920DE41C64671CB5B7"
+                  ))
                   .build()
               ),
               SignerWrapper.of(
@@ -88,9 +89,11 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
                       "03398A4EDAE8EE009A5879113EAA5BA15C7BB0F612A87F4103E793AC919BD1E3C1"
                     )
                   )
-                  .transactionSignature("3045022100FEE8D8FA2D06CE49E9124567DCA265A21A9F5465F4A927" +
-                    "9F075E4CE27E4430DE022042D5305777DA1A7801446780308897699412E4EDF0E1AEFDF3C8" +
-                    "A0532BDE4D08")
+                  .transactionSignature(Signature.fromBase16(
+                    "3045022100FEE8D8FA2D06CE49E9124567DCA265A21A9F5465F4A927" +
+                      "9F075E4CE27E4430DE022042D5305777DA1A7801446780308897699412E4EDF0E1AEFDF3C8" +
+                      "A0532BDE4D08"
+                  ))
                   .build()
               )
             )

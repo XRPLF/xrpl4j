@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,27 +23,24 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
-import org.xrpl.xrpl4j.crypto.signing.SignatureWithPublicKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -53,9 +50,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SubmitMultisignedIT extends AbstractIT {
-
-  protected final ObjectMapper objectMapper = ObjectMapperFactory.create();
-  protected final XrplBinaryCodec binaryCodec = XrplBinaryCodec.getInstance();
 
   /////////////////////////////
   // Create four accounts, one for the multisign account owner, one for their two friends,
@@ -161,22 +155,15 @@ public class SubmitMultisignedIT extends AbstractIT {
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
-    List<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(keyPair -> {
-          Signature multiSignature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
-          return SignatureWithPublicKey.builder()
-            .transactionSignature(multiSignature)
-            .signingPublicKey(keyPair.publicKey())
-            .build();
-        }
-      )
+    List<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
+      .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
       .collect(Collectors.toList());
 
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     String libraryCalculatedHash = signedTransaction.hash().value();
@@ -191,8 +178,7 @@ public class SubmitMultisignedIT extends AbstractIT {
   }
 
   @Test
-  public void submitMultisignedWithSignersInDescOrderAndVerifyHash() throws
-    JsonRpcClientErrorException, JsonProcessingException {
+  public void submitMultisignedWithSignersInDescOrderAndVerifyHash() throws JsonRpcClientErrorException {
 
     /////////////////////////////
     // Construct an unsigned Payment transaction to be multisigned
@@ -211,22 +197,15 @@ public class SubmitMultisignedIT extends AbstractIT {
 
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys
-    List<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(keyPair -> {
-          Signature multiSignature = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
-          return SignatureWithPublicKey.builder()
-            .transactionSignature(multiSignature)
-            .signingPublicKey(keyPair.publicKey())
-            .build();
-        }
-      )
+    List<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
+      .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
       .collect(Collectors.toList());
 
     /////////////////////////////
     // Then we add the signatures to the Payment object and submit it
     MultiSignedTransaction<Payment> signedTransaction = MultiSignedTransaction.<Payment>builder()
       .unsignedTransaction(unsignedPayment)
-      .signatureWithPublicKeySet(signers)
+      .signerSet(signers)
       .build();
 
     String libraryCalculatedHash = signedTransaction.hash().value();

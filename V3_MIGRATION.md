@@ -76,7 +76,7 @@ from each method in `KeyPairService`:
   use `BcSignatureService.sign(PrivateKey privateKey, T transaction)`
 * Instead of `KeyPairService.verify(UnsignedByteArray message, String signature, String publicKey)` or 
   `KeyPairService.verify(String message, String signature, String publicKey)`, use 
-  `BcSignatureService.verify(SignatureWithPublicKey signatureWithPublicKey, T transaction)` 
+  `BcSignatureService.verify(Signer signatureWithPublicKey, T transaction)` 
 * Instead of `KeyPairService.deriveAddress(String publicKey)` or 
   `KeyPairService.deriveAddress(UnsignedByteAray publicKey)`, use `PublicKey.deriveAddress()`
 
@@ -220,22 +220,15 @@ xrplClient.submit(signedTransaction);
 To create a `MultiSignedTransaction`, use `BcSignatureService` like this:
 
 ```java
-Set<SignatureWithPublicKey> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-  .map(keyPair -> {
-      Signature signedPayment = signatureService.multiSign(keyPair.privateKey(), unsignedPayment);
-      return SignatureWithPublicKey.builder()
-        .signingPublicKey(keyPair.publicKey())
-        .transactionSignature(signedPayment)
-        .build();
-    }
-  )
+Set<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
+  .map(keyPair -> signatureService.multiSignToSigner(keyPair.privateKey(), unsignedPayment))
   .collect(Collectors.toSet());
 
 /////////////////////////////
 // Then we add the signatures to the Payment object and submit it
 MultiSignedTransaction<Payment> multiSigPayment = MultiSignedTransaction.<Payment>builder()
   .unsignedTransaction(unsignedPayment)
-  .signatureWithPublicKeySet(signers)
+  .signerSet(signers)
   .build();
 
 SubmitMultiSignedResult<Payment> paymentResult = xrplClient.submitMultisigned(multiSigPayment);

@@ -256,9 +256,9 @@ public class AbstractTransactionSignerTest {
     keyType = KeyType.SECP256K1;
 
     Signer signer = transactionSigner.multiSignToSigner(privateKeyableMock, transactionMock);
-    assertThat(signer.transactionSignature()).isEqualTo(secp256k1SignatureMock);
     assertThat(signer.signingPublicKey()).isEqualTo(EC_PUBLIC_KEY);
     assertThat(signer.account()).isEqualTo(EC_PUBLIC_KEY.deriveAddress());
+    assertThat(signer.transactionSignature()).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
     verify(signatureUtilsMock, times(0)).toSignableBytes(transactionMock);

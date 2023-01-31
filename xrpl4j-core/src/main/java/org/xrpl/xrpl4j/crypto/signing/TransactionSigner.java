@@ -84,20 +84,22 @@ public interface TransactionSigner<P extends PrivateKeyable> {
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.
-   *
+   * <p>
    * As is the case with {@link #multiSign(PrivateKeyable, Transaction)}, the primary reason this method's signature
    * diverges from {@link #sign(PrivateKeyable, Transaction)} is that for multi-sign scenarios, the interstitially
    * signed transaction is always discarded. Instead, a quorum of signatures is need and then that quorum is submitted
    * to the ledger with the unsigned transaction. Thus, obtaining a multi-signed transaction here is not useful and is
    * not returned from this interface. Note that {@link SignatureUtils} can be used to assemble and obtain the bytes for
    * a multi-signed transaction (these diverge slightly from the bytes of a single-signed transaction).
-   *
+   * </p>
+   * <p>
    * This method is nearly identical to {@link #multiSign(PrivateKeyable, Transaction)} except that it's return-type is
    * a {@link Signer}, which is more convenient for submitting transactions to the XRP Ledger. Note however that this
    * method internally calls {@link #derivePublicKey(PrivateKeyable)}, which in certain remote-key configurations (e.g.,
    * storing keys in a remote HSM) involves a potentially expensive remote call to the HSM. In most scenarios, the
    * public key will already be available, so callers of this method should consider using
    * {@link #multiSign(PrivateKeyable, Transaction)} instead if public-key derivation is a performance concern.
+   * </p>
    *
    * @param privateKeyable The {@link P} used to sign {@code transaction}.
    * @param transaction    The {@link Transaction} to sign.

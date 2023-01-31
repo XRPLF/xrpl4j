@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 /**
  * Represents a signer for a multi-signature XRPL Transaction for purposes of deserializing response from an xrpld
@@ -58,7 +59,7 @@ public interface Signer {
    * @return A {@link String} containing the transaction signature.
    */
   @JsonProperty("TxnSignature")
-  String transactionSignature();
+  Signature transactionSignature();
 
   /**
    * The public key used to create this signature.

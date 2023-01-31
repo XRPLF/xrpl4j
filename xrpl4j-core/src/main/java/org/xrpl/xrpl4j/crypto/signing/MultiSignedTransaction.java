@@ -76,7 +76,7 @@ public interface MultiSignedTransaction<T extends Transaction> extends SignedTra
         Signer.builder()
           .account(signatureWithPublicKey.signingPublicKey().deriveAddress())
           .signingPublicKey(signatureWithPublicKey.signingPublicKey())
-          .transactionSignature(signatureWithPublicKey.transactionSignature().base16Value())
+          .transactionSignature(signatureWithPublicKey.transactionSignature())
           .build()
       ).map(SignerWrapper::of)
       .sorted(

@@ -102,12 +102,12 @@ class MultiSignedTransactionTest {
       .containsExactly(Tuple.tuple(
           signature2.signingPublicKey().deriveAddress(),
           signature2.signingPublicKey(),
-          signature2.transactionSignature().base16Value()
+          signature2.transactionSignature()
         ),
         Tuple.tuple(
           signature1.signingPublicKey().deriveAddress(),
           signature1.signingPublicKey(),
-          signature1.transactionSignature().base16Value()
+          signature1.transactionSignature()
         ));
   }
 

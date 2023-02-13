@@ -71,7 +71,7 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
   }
 
   @Test
-  public void testJsonWithTicketCount() throws JsonProcessingException, JSONException {
+  public void testJsonWithOptionalFields() throws JsonProcessingException, JSONException {
     AccountRootObject object = AccountRootObject.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .accountTransactionId(Hash256.of("0D5FB50FA65C9FE1538FD7E398FFFE9D1908DFA4576D8D7A020040686F93C77D"))
@@ -87,6 +87,9 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
       .transferRate(UnsignedInteger.valueOf(1004999999))
       .index(Hash256.of("13F1A95D7AAB7108D5CE7EEAF504B2894B8C674E6D68499076441C4837282BF8"))
       .ticketCount(UnsignedInteger.valueOf(250))
+      .mintedNfTokens(UnsignedInteger.ONE)
+      .burnedNfTokens(UnsignedInteger.ONE)
+      .nfTokenMinter(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .build();
 
     String json = "{\n" +
@@ -104,6 +107,9 @@ public class AccountRootObjectJsonTests extends AbstractJsonTest {
       "    \"Sequence\": 336,\n" +
       "    \"TransferRate\": 1004999999,\n" +
       "    \"TicketCount\": 250,\n" +
+      "    \"MintedNFTokens\": 1,\n" +
+      "    \"BurnedNFTokens\": 1,\n" +
+      "    \"NFTokenMinter\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"index\": \"13F1A95D7AAB7108D5CE7EEAF504B2894B8C674E6D68499076441C4837282BF8\"\n" +
       "}";
 

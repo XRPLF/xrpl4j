@@ -29,17 +29,21 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountNftsResult;
 import org.xrpl.xrpl4j.model.client.accounts.NfTokenObject;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
@@ -57,10 +61,10 @@ public class NfTokenIT extends AbstractIT {
 
   @Test
   void mint() throws JsonRpcClientErrorException, JsonProcessingException {
-    KeyPair wallet = createRandomAccountEd25519();
+    KeyPair keyPair = createRandomAccountEd25519();
 
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
 
     NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
@@ -68,14 +72,14 @@ public class NfTokenIT extends AbstractIT {
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
-      .account(wallet.publicKey().deriveAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .uri(uri)
       .build();
 
-    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
+    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(keyPair.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -83,7 +87,7 @@ public class NfTokenIT extends AbstractIT {
     this.scanForResult(
       () -> {
         try {
-          return xrplClient.accountNfts(wallet.publicKey().deriveAddress());
+          return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e);
         }
@@ -91,30 +95,63 @@ public class NfTokenIT extends AbstractIT {
       result -> result.accountNfts().stream()
         .anyMatch(nft -> nft.uri().get().equals(uri))
     );
+
+    AccountInfoResult minterAccountInfo = xrplClient.accountInfo(
+      AccountInfoRequestParams.of(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(minterAccountInfo.accountData().mintedNfTokens()).isNotEmpty().get().isEqualTo(UnsignedInteger.ONE);
+    assertThat(minterAccountInfo.accountData().burnedNfTokens()).isEmpty();
+    assertThat(minterAccountInfo.accountData().nfTokenMinter()).isEmpty();
     logger.info("NFT was minted successfully.");
   }
 
   @Test
-  void mintAndBurn() throws JsonRpcClientErrorException, JsonProcessingException {
-    KeyPair wallet = createRandomAccountEd25519();
+  void mintFromOtherMinterAccount() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair keyPair = createRandomAccountEd25519();
+    KeyPair minterKeyPair = createRandomAccountEd25519();
 
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
 
-    // nft mint
+    AccountInfoResult minterAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(minterKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet accountSet = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .sequence(accountInfoResult.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(xrplClient.fee()).recommendedFee())
+      .mintAccount(minterKeyPair.publicKey().deriveAddress())
+      .setFlag(AccountSet.AccountSetFlag.AUTHORIZED_MINTER)
+      .signingPublicKey(keyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(keyPair.privateKey(), accountSet);
+    SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
+    assertThat(accountSetSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
+
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
+      result -> result.accountData().nfTokenMinter().isPresent() && 
+        result.accountData().nfTokenMinter().get().equals(minterKeyPair.publicKey().deriveAddress())
+    );
+    
     NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
+    //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
-      .account(wallet.publicKey().deriveAddress())
+      .account(minterKeyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey())
-      .sequence(accountInfoResult.accountData().sequence())
+      .signingPublicKey(minterKeyPair.publicKey())
+      .sequence(minterAccountInfo.accountData().sequence())
+      .issuer(keyPair.publicKey().deriveAddress())
       .uri(uri)
       .build();
 
-    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
+    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(minterKeyPair.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -122,7 +159,55 @@ public class NfTokenIT extends AbstractIT {
     this.scanForResult(
       () -> {
         try {
-          return xrplClient.accountNfts(wallet.publicKey().deriveAddress());
+          return xrplClient.accountNfts(minterKeyPair.publicKey().deriveAddress());
+        } catch (JsonRpcClientErrorException e) {
+          logger.error("Exception occurred while getting account nfts: {}", e.getMessage(), e);
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
+    );
+
+    AccountInfoResult sourceAccountInfoAfterMint = xrplClient.accountInfo(
+      AccountInfoRequestParams.of(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(sourceAccountInfoAfterMint.accountData().mintedNfTokens()).isNotEmpty().get().isEqualTo(UnsignedInteger.ONE);
+    assertThat(sourceAccountInfoAfterMint.accountData().burnedNfTokens()).isEmpty();
+    assertThat(sourceAccountInfoAfterMint.accountData().nfTokenMinter()).isNotEmpty().get()
+      .isEqualTo(minterKeyPair.publicKey().deriveAddress());
+    logger.info("NFT was minted successfully.");
+  }
+
+  @Test
+  void mintAndBurn() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair keyPair = createRandomAccountEd25519();
+
+    AccountInfoResult accountInfoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+
+    // nft mint
+    NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
+
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .tokenTaxon(UnsignedLong.ONE)
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(50))
+      .signingPublicKey(keyPair.publicKey())
+      .sequence(accountInfoResult.accountData().sequence())
+      .uri(uri)
+      .build();
+
+    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(keyPair.privateKey(), nfTokenMint);
+    SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
+    assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
+
+    this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e);
         }
@@ -133,19 +218,19 @@ public class NfTokenIT extends AbstractIT {
     logger.info("NFT was minted successfully.");
 
     // nft burn
-    AccountNftsResult accountNftsResult = xrplClient.accountNfts(wallet.publicKey().deriveAddress());
+    AccountNftsResult accountNftsResult = xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
 
     NfTokenId tokenId = accountNftsResult.accountNfts().get(0).nfTokenId();
 
     NfTokenBurn nfTokenBurn = NfTokenBurn.builder()
       .nfTokenId(tokenId)
-      .account(wallet.publicKey().deriveAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey())
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
       .build();
 
-    SingleSignedTransaction<NfTokenBurn> signedBurn = signatureService.sign(wallet.privateKey(), nfTokenBurn);
+    SingleSignedTransaction<NfTokenBurn> signedBurn = signatureService.sign(keyPair.privateKey(), nfTokenBurn);
     SubmitResult<NfTokenBurn> burnSubmitResult = xrplClient.submit(signedBurn);
     assertThat(burnSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedBurn.hash()).isEqualTo(burnSubmitResult.transactionResult().hash());
@@ -153,7 +238,7 @@ public class NfTokenIT extends AbstractIT {
     this.scanForResult(
       () -> {
         try {
-          return xrplClient.accountNfts(wallet.publicKey().deriveAddress());
+          return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e);
         }
@@ -162,36 +247,43 @@ public class NfTokenIT extends AbstractIT {
         .noneMatch(nft -> nft.uri().get().equals(uri))
     );
 
-    AccountNftsResult accountNftsResult1 = xrplClient.accountNfts(wallet.publicKey().deriveAddress());
+    AccountNftsResult accountNftsResult1 = xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
     assertThat(
       accountNftsResult1.accountNfts().stream().noneMatch(
         object -> object.equals(NfTokenObject.builder().nfTokenId(tokenId).build())
       )
     ).isTrue();
+
+    AccountInfoResult minterAccountInfo = xrplClient.accountInfo(
+      AccountInfoRequestParams.of(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(minterAccountInfo.accountData().mintedNfTokens()).isNotEmpty().get().isEqualTo(UnsignedInteger.ONE);
+    assertThat(minterAccountInfo.accountData().burnedNfTokens()).isNotEmpty().get().isEqualTo(UnsignedInteger.ONE);
+    assertThat(minterAccountInfo.accountData().nfTokenMinter()).isEmpty();
     logger.info("NFT burned successfully.");
   }
 
   @Test
   void mintAndCreateOffer() throws JsonRpcClientErrorException, JsonProcessingException {
-    KeyPair wallet = createRandomAccountEd25519();
+    KeyPair keyPair = createRandomAccountEd25519();
 
     //mint NFT from one account
     AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
     NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
-      .account(wallet.publicKey().deriveAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(50))
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey())
       .sequence(accountInfoResult.accountData().sequence())
       .uri(uri)
       .build();
 
-    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(wallet.privateKey(), nfTokenMint);
+    SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(keyPair.privateKey(), nfTokenMint);
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
@@ -199,7 +291,7 @@ public class NfTokenIT extends AbstractIT {
     this.scanForResult(
       () -> {
         try {
-          return xrplClient.accountNfts(wallet.publicKey().deriveAddress());
+          return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
         } catch (JsonRpcClientErrorException e) {
           throw new RuntimeException(e);
         }
@@ -211,10 +303,10 @@ public class NfTokenIT extends AbstractIT {
 
     //create a sell offer for the NFT that was created above
 
-    NfTokenId tokenId = xrplClient.accountNfts(wallet.publicKey().deriveAddress()).accountNfts().get(0).nfTokenId();
+    NfTokenId tokenId = xrplClient.accountNfts(keyPair.publicKey().deriveAddress()).accountNfts().get(0).nfTokenId();
 
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
-      .account(wallet.publicKey().deriveAddress())
+      .account(keyPair.publicKey().deriveAddress())
       .nfTokenId(tokenId)
       .fee(XrpCurrencyAmount.ofDrops(50))
       .sequence(accountInfoResult.accountData().sequence().plus(UnsignedInteger.ONE))
@@ -222,11 +314,11 @@ public class NfTokenIT extends AbstractIT {
       .flags(NfTokenCreateOfferFlags.builder()
         .tfSellToken(true)
         .build())
-      .signingPublicKey(wallet.publicKey())
+      .signingPublicKey(keyPair.publicKey())
       .build();
 
     SingleSignedTransaction<NfTokenCreateOffer> signedOffer = signatureService.sign(
-      wallet.privateKey(),
+      keyPair.privateKey(),
       nfTokenCreateOffer
     );
     SubmitResult<NfTokenCreateOffer> nfTokenCreateOfferSubmitResult = xrplClient.submit(signedOffer);
@@ -243,11 +335,11 @@ public class NfTokenIT extends AbstractIT {
     logger.info("NFT Create Offer (Sell) transaction was validated successfully.");
 
     this.scanForResult(
-      () -> this.getValidatedAccountObjects(wallet.publicKey().deriveAddress()),
+      () -> this.getValidatedAccountObjects(keyPair.publicKey().deriveAddress()),
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           NfTokenOfferObject.class.isAssignableFrom(object.getClass()) &&
-            ((NfTokenOfferObject) object).owner().equals(wallet.publicKey().deriveAddress())
+            ((NfTokenOfferObject) object).owner().equals(keyPair.publicKey().deriveAddress())
         )
     );
     logger.info("NFTokenOffer object was found in account's objects.");

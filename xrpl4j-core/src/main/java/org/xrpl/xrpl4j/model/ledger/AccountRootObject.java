@@ -192,6 +192,15 @@ public interface AccountRootObject extends LedgerObject {
   List<SignerListObject> signerLists();
 
   /**
+   * How many Tickets this account owns in the ledger. This is updated automatically to ensure that the account stays 
+   * within the hard limit of 250 Tickets at a time. This field is omitted if the account has zero Tickets.
+   * 
+   * @return An optionally-present {@link UnsignedInteger} representing the number of tickets this account owns.
+   */
+  @JsonProperty("TicketCount")
+  Optional<UnsignedInteger> ticketCount();
+
+  /**
    * The unique ID of this {@link AccountRootObject} ledger object.
    *
    * @return A {@link Hash256}.

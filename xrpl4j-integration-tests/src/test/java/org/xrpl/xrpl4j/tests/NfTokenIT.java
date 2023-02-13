@@ -114,9 +114,6 @@ public class NfTokenIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
 
-    AccountInfoResult minterAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(minterKeyPair.publicKey().deriveAddress())
-    );
 
     AccountSet accountSet = AccountSet.builder()
       .account(keyPair.publicKey().deriveAddress())
@@ -137,9 +134,13 @@ public class NfTokenIT extends AbstractIT {
       result -> result.accountData().nfTokenMinter().isPresent() && 
         result.accountData().nfTokenMinter().get().equals(minterKeyPair.publicKey().deriveAddress())
     );
-    
+
     NfTokenUri uri = NfTokenUri.ofPlainText("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi");
 
+    AccountInfoResult minterAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(minterKeyPair.publicKey().deriveAddress())
+    );
+    
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
@@ -172,7 +173,8 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult sourceAccountInfoAfterMint = xrplClient.accountInfo(
       AccountInfoRequestParams.of(keyPair.publicKey().deriveAddress())
     );
-    assertThat(sourceAccountInfoAfterMint.accountData().mintedNfTokens()).isNotEmpty().get().isEqualTo(UnsignedInteger.ONE);
+    assertThat(sourceAccountInfoAfterMint.accountData().mintedNfTokens()).isNotEmpty().get()
+      .isEqualTo(UnsignedInteger.ONE);
     assertThat(sourceAccountInfoAfterMint.accountData().burnedNfTokens()).isEmpty();
     assertThat(sourceAccountInfoAfterMint.accountData().nfTokenMinter()).isNotEmpty().get()
       .isEqualTo(minterKeyPair.publicKey().deriveAddress());

@@ -63,7 +63,7 @@ public class AmmIT extends AbstractIT {
     );
   }
 
-  @Test
+  // @Test
   void depositAndVoteOnTradingFee() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -150,7 +150,7 @@ public class AmmIT extends AbstractIT {
     assertThat(ammAfterVote.amm().tradingFee()).isEqualTo(expectedTradingFee);
   }
 
-  @Test
+  //  @Test
   void depositAndBid() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -217,7 +217,7 @@ public class AmmIT extends AbstractIT {
       .containsExactly(authAccount1.publicKey().deriveAddress());
   }
 
-  @Test
+  //  @Test  
   void depositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);

@@ -138,9 +138,9 @@ public interface AccountSet extends Transaction {
    * Sets an alternate account that is allowed to mint NFTokens on this
    * account's behalf using NFTokenMint's `Issuer` field.
    *
-   * @return An {@link Optional} field MintAccount of type {@link Address}.
+   * @return An {@link Optional} field of type {@link Address}.
    */
-  @JsonProperty("MintAccount")
+  @JsonProperty("NFTokenMinter")
   Optional<Address> mintAccount();
 
   /**

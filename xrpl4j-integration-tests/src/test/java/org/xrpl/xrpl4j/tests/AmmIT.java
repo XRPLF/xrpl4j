@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.CustomEnvironment;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * All tests in this class will be disabled until AMM functionality has been merged into the rippled codebase and
@@ -62,7 +63,7 @@ public class AmmIT extends AbstractIT {
     );
   }
 
-  //  @Test
+  // @Test
   void depositAndVoteOnTradingFee() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -112,8 +113,41 @@ public class AmmIT extends AbstractIT {
       traderKeyPair.publicKey().deriveAddress()
     );
 
+    BigDecimal issuerLpTokenBalance = new BigDecimal(xrplClient.accountLines(
+        AccountLinesRequestParams.builder()
+          .account(issuerKeyPair.publicKey().deriveAddress())
+          .peer(amm.amm().ammAccount())
+          .ledgerSpecifier(LedgerSpecifier.CURRENT)
+          .build()
+      ).lines().stream()
+      .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
+      .findFirst()
+      .orElseThrow(RuntimeException::new)
+      .balance());
+
+    BigDecimal traderLpTokenBalance = new BigDecimal(xrplClient.accountLines(
+        AccountLinesRequestParams.builder()
+          .account(traderKeyPair.publicKey().deriveAddress())
+          .peer(amm.amm().ammAccount())
+          .ledgerSpecifier(LedgerSpecifier.CURRENT)
+          .build()
+      ).lines().stream()
+      .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
+      .findFirst()
+      .orElseThrow(RuntimeException::new)
+      .balance());
+
+    // Expected trading fee is the weighted average of each vote, where the weight is number of LP tokens held
+    // by each voter
+    TradingFee expectedTradingFee = TradingFee.ofPercent(
+      issuerLpTokenBalance.multiply(amm.amm().tradingFee().bigDecimalValue()).add(
+          traderLpTokenBalance.multiply(newTradingFee.bigDecimalValue())
+        ).divide(issuerLpTokenBalance.add(traderLpTokenBalance), RoundingMode.FLOOR)
+        .setScale(3, RoundingMode.FLOOR)
+    );
+
     AmmInfoResult ammAfterVote = getAmmInfo(issuerKeyPair);
-    assertThat(ammAfterVote.amm().tradingFee()).isEqualTo(newTradingFee);
+    assertThat(ammAfterVote.amm().tradingFee()).isEqualTo(expectedTradingFee);
   }
 
   //  @Test
@@ -183,7 +217,7 @@ public class AmmIT extends AbstractIT {
       .containsExactly(authAccount1.publicKey().deriveAddress());
   }
 
-  //  @Test
+  //  @Test  
   void depositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     AmmInfoResult amm = createAmm(issuerKeyPair);
@@ -355,7 +389,7 @@ public class AmmIT extends AbstractIT {
   }
 
   private AmmInfoResult getAmmInfo(KeyPair issuerKeyPair) throws JsonRpcClientErrorException {
-    return xrplClient.ammInfo(
+    AmmInfoResult ammInfoResult = xrplClient.ammInfo(
       AmmInfoRequestParams.builder()
         .asset(
           Asset.builder()
@@ -366,5 +400,12 @@ public class AmmIT extends AbstractIT {
         .asset2(Asset.XRP)
         .build()
     );
+
+    AccountInfoResult ammAccountInfo = xrplClient.accountInfo(
+      AccountInfoRequestParams.of(ammInfoResult.amm().ammAccount())
+    );
+    assertThat(ammAccountInfo.accountData().flags().lsfAmm()).isTrue();
+    
+    return ammInfoResult;
   }
 }

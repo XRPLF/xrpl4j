@@ -80,7 +80,7 @@ public class AccountRootFlags extends Flags {
   /**
    * Constant {@link AccountRootFlags} for the {@code lsfAMM} account flag.
    */
-  public static final AccountRootFlags AMM = new AccountRootFlags(0x02000000);
+  public static final AccountRootFlags AMM = new AccountRootFlags(0x40000000);
   
   /**
    * Required-args Constructor.

@@ -49,6 +49,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .build();
 
     String json = "{\n" +
@@ -64,6 +65,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       "    \"TickSize\":15,\n" +
       "    \"ClearFlag\":8,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NFTokenMinter\" : \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
       "}";
 

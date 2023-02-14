@@ -49,6 +49,8 @@ public class TicketIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
 
+    assertThat(accountInfo.accountData().ticketCount()).isEmpty();
+    
     TicketCreate ticketCreate = TicketCreate.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .sequence(accountInfo.accountData().sequence())
@@ -74,6 +76,10 @@ public class TicketIT extends AbstractIT {
         submitResult.transactionResult().hash(),
         TicketCreate.class)
     );
+
+    AccountInfoResult accountInfoAfterTicketCreate = getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress());
+    assertThat(accountInfoAfterTicketCreate.accountData().ticketCount()).isNotEmpty().get()
+      .isEqualTo(ticketCreate.ticketCount());
 
     List<TicketObject> tickets = getValidatedAccountObjects(
       sourceKeyPair.publicKey().deriveAddress(),

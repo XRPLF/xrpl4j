@@ -80,7 +80,7 @@
       <dependency>
         <groupId>org.skyscreamer</groupId>
         <artifactId>jsonassert</artifactId>
-        <version>1.5.0</version>
+        <version>1.5.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -208,7 +208,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
-        <version>1.15.1</version>
+        <version>1.17.6</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -291,7 +291,7 @@
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
     <jackson.version>2.14.2</jackson.version>
     <feign.version>11.10</feign.version>
-    <slf4j.version>1.7.30</slf4j.version>
+    <slf4j.version>1.7.36</slf4j.version>
     <junit-jupiter.version>5.9.2</junit-jupiter.version>
     <guava.version>31.1-jre</guava.version>
   </properties>
@@ -500,7 +500,7 @@
         <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.12</version>
+          <version>1.6.13</version>
           <extensions>true</extensions>
           <configuration>
             <serverId>ossrh-snapshots</serverId>

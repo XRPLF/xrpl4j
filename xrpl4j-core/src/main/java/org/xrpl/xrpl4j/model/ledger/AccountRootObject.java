@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.ledger;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -190,6 +190,40 @@ public interface AccountRootObject extends LedgerObject {
    */
   @JsonProperty("signer_lists")
   List<SignerListObject> signerLists();
+
+  /**
+   * How many Tickets this account owns in the ledger. This is updated automatically to ensure that the account stays
+   * within the hard limit of 250 Tickets at a time. This field is omitted if the account has zero Tickets.
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of tickets this account owns.
+   */
+  @JsonProperty("TicketCount")
+  Optional<UnsignedInteger> ticketCount();
+
+  /**
+   * How many total of this account's issued non-fungible tokens have been burned. This number is always equal or
+   * less than {@link #mintedNfTokens}.
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of NFTs this account has burned.
+   */
+  @JsonProperty("BurnedNFTokens")
+  Optional<UnsignedInteger> burnedNfTokens();
+
+  /**
+   * How many total non-fungible tokens have been minted by and on behalf of this account.
+   *
+   * @return An optionally-present {@link UnsignedInteger} representing the number of NFTs this account has minted.
+   */
+  @JsonProperty("MintedNFTokens")
+  Optional<UnsignedInteger> mintedNfTokens();
+
+  /**
+   * Another account that can mint non-fungible tokens on behalf of this account.
+   * 
+   * @return The optionally-present {@link Address} of the account that can mint NFTs on behalf of this account.
+   */
+  @JsonProperty("NFTokenMinter")
+  Optional<Address> nfTokenMinter();
 
   /**
    * The unique ID of this {@link AccountRootObject} ledger object.

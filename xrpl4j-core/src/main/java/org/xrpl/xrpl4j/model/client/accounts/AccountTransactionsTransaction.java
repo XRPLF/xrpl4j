@@ -20,15 +20,22 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.AccountTransactionsTransactionDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * Represents a transaction that is returned as part of the result of an {@code account_tx} rippled method call.
@@ -43,6 +50,12 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 )
 public interface AccountTransactionsTransaction<T extends Transaction> {
 
+  /**
+   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
+   * the start of that epoch.
+   */
+  long RIPPLE_EPOCH = 946684800;
+  
   /**
    * Construct a builder for this class.
    *
@@ -77,4 +90,27 @@ public interface AccountTransactionsTransaction<T extends Transaction> {
   @JsonProperty("ledger_index")
   LedgerIndex ledgerIndex();
 
+  /**
+   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
+   * This is an undocumented field.
+   *
+   * @return An optionally-present {@link UnsignedLong}.
+   */
+  @JsonProperty("date")
+  Optional<UnsignedLong> closeDate();
+
+  /**
+   * The approximate close time in UTC offset.
+   * This is derived from undocumented field.
+   *
+   * @return An optionally-present {@link ZonedDateTime}.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Optional<ZonedDateTime> closeDateHuman() {
+    return closeDate().map(secondsSinceRippleEpoch ->
+      Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
+    );
+  }
+  
 }

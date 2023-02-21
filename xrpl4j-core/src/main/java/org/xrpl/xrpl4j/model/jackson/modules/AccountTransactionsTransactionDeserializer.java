@@ -26,12 +26,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsTransaction;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Custom Jackson Deserializer for {@link AccountTransactionsTransaction}s. This is necessary because Jackson
@@ -57,10 +59,12 @@ public class AccountTransactionsTransactionDeserializer extends StdDeserializer<
     Transaction transaction = objectMapper.readValue(node.toString(), Transaction.class);
     long ledgerIndex = node.get("ledger_index").asLong(-1L);
     String hash = node.get("hash").asText();
+    UnsignedLong date = node.has("date") ? UnsignedLong.valueOf(node.get("date").asLong()) : null;
     return AccountTransactionsTransaction.builder()
       .transaction(transaction)
       .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex)))
       .hash(Hash256.of(hash))
+      .closeDate(Optional.ofNullable(date))
       .build();
   }
 }

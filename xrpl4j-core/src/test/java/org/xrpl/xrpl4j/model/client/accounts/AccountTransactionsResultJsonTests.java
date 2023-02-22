@@ -192,4 +192,25 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(result, json);
   }
+
+  @Test
+  public void testMinimalJson() throws JsonProcessingException, JSONException {
+    AccountTransactionsResult result = AccountTransactionsResult.builder()
+      .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
+      .ledgerIndexMaximum(LedgerIndexBound.of(57112019))
+      .ledgerIndexMinimum(LedgerIndexBound.of(56248229))
+      .status("success")
+      .validated(true)
+      .build();
+
+    String json = "{\n" +
+      "        \"account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
+      "        \"ledger_index_max\": 57112019,\n" +
+      "        \"ledger_index_min\": 56248229,\n" +
+      "        \"status\": \"success\",\n" +
+      "        \"validated\": true\n" +
+      "    }";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
 }

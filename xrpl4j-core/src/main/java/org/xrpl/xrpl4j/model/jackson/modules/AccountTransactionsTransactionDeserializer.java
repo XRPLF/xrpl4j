@@ -59,12 +59,14 @@ public class AccountTransactionsTransactionDeserializer extends StdDeserializer<
     Transaction transaction = objectMapper.readValue(node.toString(), Transaction.class);
     long ledgerIndex = node.get("ledger_index").asLong(-1L);
     String hash = node.get("hash").asText();
-    UnsignedLong date = node.has("date") ? UnsignedLong.valueOf(node.get("date").asLong()) : null;
+    Optional<UnsignedLong> closeDate = Optional.ofNullable(node.get("date"))
+      .map(JsonNode::asLong)
+      .map(UnsignedLong::valueOf);
     return AccountTransactionsTransaction.builder()
       .transaction(transaction)
       .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(ledgerIndex)))
       .hash(Hash256.of(hash))
-      .closeDate(Optional.ofNullable(date))
+      .closeDate(closeDate)
       .build();
   }
 }

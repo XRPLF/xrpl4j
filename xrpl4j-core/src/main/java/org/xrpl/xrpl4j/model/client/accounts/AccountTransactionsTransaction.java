@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.common.TimeUtils;
 import org.xrpl.xrpl4j.model.jackson.modules.AccountTransactionsTransactionDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -49,12 +50,6 @@ import java.util.Optional;
   using = AccountTransactionsTransactionDeserializer.class
 )
 public interface AccountTransactionsTransaction<T extends Transaction> {
-
-  /**
-   * XRP Ledger represents dates using a custom epoch called Ripple Epoch. This is a constant for
-   * the start of that epoch.
-   */
-  long RIPPLE_EPOCH = 946684800;
   
   /**
    * Construct a builder for this class.
@@ -108,9 +103,7 @@ public interface AccountTransactionsTransaction<T extends Transaction> {
   @JsonIgnore
   @Value.Auxiliary
   default Optional<ZonedDateTime> closeDateHuman() {
-    return closeDate().map(secondsSinceRippleEpoch ->
-      Instant.ofEpochSecond(RIPPLE_EPOCH + secondsSinceRippleEpoch.longValue()).atZone(ZoneId.of("UTC"))
-    );
+    return closeDate().map(TimeUtils::xrplTimeToZonedDateTime);
   }
   
 }

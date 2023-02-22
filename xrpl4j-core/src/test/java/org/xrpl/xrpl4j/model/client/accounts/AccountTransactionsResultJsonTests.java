@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.model.client.accounts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -75,6 +76,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
             )
             .hash(Hash256.of("08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C"))
             .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(57112015)))
+            .closeDate(UnsignedLong.valueOf(666212460))
             .build())
           .metadata(
             TransactionMetadata.builder()
@@ -154,6 +156,7 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                    \"TxnSignature\": \"30450221008602B2E390C0C7B65182C6DBC86292052C1961B2BEFB" +
       "79C2C8431722C0ADB911022024B74DCF910A4C8C95572CF662EB7F5FF67E1AC4D7B9B7BFE2A8EE851EC16576\",\n" +
       "                    \"hash\": \"08EF5BDA2825D7A28099219621CDBECCDECB828FEA202DEB6C7ACD5222D36C2C\",\n" +
+      "                    \"date\": 666212460,\n" +
       "                    \"ledger_index\": 57112015\n" +
       "                },\n" +
       "                \"validated\": true\n" +
@@ -184,6 +187,27 @@ public class AccountTransactionsResultJsonTests extends AbstractJsonTest {
       "                \"validated\": true\n" +
       "            }\n" +
       "        ],\n" +
+      "        \"validated\": true\n" +
+      "    }";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  public void testMinimalJson() throws JsonProcessingException, JSONException {
+    AccountTransactionsResult result = AccountTransactionsResult.builder()
+      .account(Address.of("rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w"))
+      .ledgerIndexMaximum(LedgerIndexBound.of(57112019))
+      .ledgerIndexMinimum(LedgerIndexBound.of(56248229))
+      .status("success")
+      .validated(true)
+      .build();
+
+    String json = "{\n" +
+      "        \"account\": \"rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w\",\n" +
+      "        \"ledger_index_max\": 57112019,\n" +
+      "        \"ledger_index_min\": 56248229,\n" +
+      "        \"status\": \"success\",\n" +
       "        \"validated\": true\n" +
       "    }";
 

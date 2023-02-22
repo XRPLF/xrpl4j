@@ -123,6 +123,7 @@ public class AccountTransactionsIT {
     // results are returned in descending sorted order by ledger index
     assertThat(results.transactions().get(0).resultTransaction().ledgerIndex())
       .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486994)));
+    assertThat(results.transactions().get(0).resultTransaction().closeDate()).isNotEmpty();
     assertThat(results.transactions().get(15).resultTransaction().ledgerIndex())
       .isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(61486026)));
   }

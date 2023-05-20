@@ -52,7 +52,7 @@ to load data from rippled.
 ### [IsFinalIT](./src/test/java/org/xrpl/xrpl4j/tests/IsFinalIT.java)
 
 - Check if a transaction is "final" on the ledger or not,
-  using [`XrplClient#isFinal`](../xrpl4j-client/src/main/java/org/xrpl/xrpl4j/client/XrplClient.java).
+  using [`XrplClient#isFinal`](../xrpl4j-client/xrpl4j-client-core/src/client/XrplClient.java).
 
 ### [IssuedCurrencyIT](./src/test/java/org/xrpl/xrpl4j/tests/IssuedCurrencyIT.java)
 

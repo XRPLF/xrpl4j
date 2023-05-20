@@ -92,7 +92,7 @@ public class ClioServerInfoTest extends AbstractJsonTest {
       "    \"info\": {\n" +
       "      \"complete_ledgers\": \"32570-73271589\",\n" +
       "      \"counters\": {\n" +
-      "        \"rpc\": {\n" +
+      "        \"jsonrpc\": {\n" +
       "          \"gateway_balances\": {\n" +
       "            \"started\": \"5\",\n" +
       "            \"finished\": \"5\",\n" +

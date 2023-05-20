@@ -15,7 +15,7 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>xrpl4j-client</artifactId>
+      <artifactId>xrpl4j-client-jsonrpc</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

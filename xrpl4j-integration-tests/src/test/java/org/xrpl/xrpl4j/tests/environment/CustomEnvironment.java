@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests.environment;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,25 +21,26 @@ package org.xrpl.xrpl4j.tests.environment;
  */
 
 import okhttp3.HttpUrl;
-import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
+import org.xrpl.xrpl4j.client.jsonrpc.FaucetClient;
+import org.xrpl.xrpl4j.client.jsonrpc.XrplClient;
+import org.xrpl.xrpl4j.client.jsonrpc.model.FundAccountRequest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Objects;
 
 /**
- * Create a custom environment to talk to custom rippled by providing the serverUrl.
- * Also, has faucet support to fund accounts.
+ * Create a custom environment to talk to custom rippled by providing the serverUrl. Also, has faucet support to fund
+ * accounts.
  */
 public class CustomEnvironment implements XrplEnvironment {
-
+  
   private final XrplClient xrplClient;
   private FaucetClient faucetClient;
-
+  
   private HttpUrl faucetUrl;
-
-  /** Constructor to create custom environment.
+  
+  /**
+   * Constructor to create custom environment.
    *
    * @param serverUrl to connect to a running XRPL server.
    * @param faucetUrl to fund the accounts on the server.
@@ -49,12 +50,12 @@ public class CustomEnvironment implements XrplEnvironment {
     this.xrplClient = new XrplClient(serverUrl);
     this.faucetUrl = faucetUrl;
   }
-
+  
   @Override
   public XrplClient getXrplClient() {
     return xrplClient;
   }
-
+  
   @Override
   public void fundAccount(Address classicAddress) {
     if (faucetUrl == null) {
@@ -64,5 +65,5 @@ public class CustomEnvironment implements XrplEnvironment {
       faucetClient.fundAccount(FundAccountRequest.of(classicAddress));
     }
   }
-
+  
 }

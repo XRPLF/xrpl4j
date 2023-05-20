@@ -5,7 +5,7 @@ While suitable for production usage, it is currently marked `@Beta` and its API 
 
 # Usage
 
-The main client can be found in the [`XrplClient`](./src/main/java/org/xrpl/xrpl4j/client/XrplClient.java) class.
+The main client can be found in the [`XrplClient`](xrpl4j-client-core/src/client/XrplClient.java) class.
 
 In addition, the integration tests found in [xrpl4j-integration-tests](../xrpl4j-integration-tests) make use of this client to
 communicate with a rippled node over HTTP.

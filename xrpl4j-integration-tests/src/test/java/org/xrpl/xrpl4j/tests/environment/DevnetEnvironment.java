@@ -21,9 +21,9 @@ package org.xrpl.xrpl4j.tests.environment;
  */
 
 import okhttp3.HttpUrl;
-import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
+import org.xrpl.xrpl4j.client.jsonrpc.FaucetClient;
+import org.xrpl.xrpl4j.client.jsonrpc.XrplClient;
+import org.xrpl.xrpl4j.client.jsonrpc.model.FundAccountRequest;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**

@@ -25,8 +25,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
-import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.client.jsonrpc.model.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.jsonrpc.XrplClient;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;

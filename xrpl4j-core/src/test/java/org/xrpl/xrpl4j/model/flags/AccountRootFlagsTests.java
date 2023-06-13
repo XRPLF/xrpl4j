@@ -36,6 +36,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
 
   @ParameterizedTest
   @MethodSource("data")
+  @SuppressWarnings("AbbreviationAsWordInName")
   public void testDeriveIndividualFlagsFromFlags(
     boolean lsfDefaultRipple,
     boolean lsfDepositAuth,

@@ -204,6 +204,7 @@ public class AccountRootFlags extends Flags {
    *
    * @return {@code true} if {@code lsfDisallowIncomingNFTokenOffer} is set, otherwise {@code false}.
    */
+  @SuppressWarnings("AbbreviationAsWordInName")
   public boolean lsfDisallowIncomingNFTokenOffer() {
     return this.isSet(AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER);
   }

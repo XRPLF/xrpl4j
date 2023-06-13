@@ -29,8 +29,12 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  */
 public class MainnetEnvironment implements XrplEnvironment {
 
-  // s1 and s2 are both powered by Clio (a full-history node operated by Ripple).
-  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s1.ripple.com:51234"));
+  // FIXME: At the time of writing this, Clio is powering some traffic to s1 and s2. Clio behaves differently
+  //  than reporting mode servers/rippled p2p servers in responses to account_tx RPC calls with
+  //  "ledger_index" = "validated", which breaks AccountTransactionsIT. xrplcluster.com is not powered by Clio, so
+  //  this client is pointed at xrplcluster.com. However, once this bug in Clio is resolved, we should revert back to
+  //  using s1/s2 here.
+  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://xrplcluster.com"));
 
   @Override
   public XrplClient getXrplClient() {

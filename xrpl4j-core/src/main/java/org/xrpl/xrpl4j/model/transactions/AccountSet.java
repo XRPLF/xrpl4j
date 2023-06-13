@@ -259,7 +259,23 @@ public interface AccountSet extends Transaction {
     /**
      * Allow another account to mint and burn tokens on behalf of this account.
      */
-    AUTHORIZED_MINTER(10);
+    AUTHORIZED_MINTER(10),
+    /**
+     * Block incoming NFTokenOffers.
+     */
+    DISALLOW_INCOMING_NFT_OFFER(12),
+    /**
+     * Block incoming Checks.
+     */
+    DISALLOW_INCOMING_CHECK(13),
+    /**
+     * Block incoming Payment Channels.
+     */
+    DISALLOW_INCOMING_PAY_CHAN(14),
+    /**
+     * Block incoming Trustlines.
+     */
+    DISALLOW_INCOMING_TRUSTLINE(15);
 
     int value;
 

@@ -99,6 +99,14 @@ public class AccountSetIT extends AbstractIT {
     sequence = sequence.plus(UnsignedInteger.ONE);
     assertSetFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
     sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_NFT_OFFER, AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_CHECK, AccountRootFlags.DISALLOW_INCOMING_CHECK);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_PAY_CHAN, AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_TRUSTLINE, AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE);
+    sequence = sequence.plus(UnsignedInteger.ONE);
 
     AccountRootFlags flags1 = this.scanForResult(
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
@@ -165,6 +173,14 @@ public class AccountSetIT extends AbstractIT {
     sequence = sequence.plus(UnsignedInteger.ONE);
     assertSetFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
     sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_NFT_OFFER, AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_CHECK, AccountRootFlags.DISALLOW_INCOMING_CHECK);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_PAY_CHAN, AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertSetFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_TRUSTLINE, AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE);
+    sequence = sequence.plus(UnsignedInteger.ONE);
 
     assertClearFlag(keyPair, sequence, AccountSetFlag.GLOBAL_FREEZE, AccountRootFlags.GLOBAL_FREEZE);
     sequence = sequence.plus(UnsignedInteger.ONE);
@@ -177,6 +193,14 @@ public class AccountSetIT extends AbstractIT {
     assertClearFlag(keyPair, sequence, AccountSetFlag.DEPOSIT_AUTH, AccountRootFlags.DEPOSIT_AUTH);
     sequence = sequence.plus(UnsignedInteger.ONE);
     assertClearFlag(keyPair, sequence, AccountSetFlag.DEFAULT_RIPPLE, AccountRootFlags.DEFAULT_RIPPLE);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_NFT_OFFER, AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_CHECK, AccountRootFlags.DISALLOW_INCOMING_CHECK);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_PAY_CHAN, AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN);
+    sequence = sequence.plus(UnsignedInteger.ONE);
+    assertClearFlag(keyPair, sequence, AccountSetFlag.DISALLOW_INCOMING_TRUSTLINE, AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE);
   }
 
   @Test

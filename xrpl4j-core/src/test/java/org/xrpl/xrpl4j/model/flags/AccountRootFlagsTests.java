@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 public class AccountRootFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(9);
+    return getBooleanCombinations(13);
   }
 
   @ParameterizedTest
@@ -45,7 +45,11 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfNoFreeze,
     boolean lsfPasswordSpent,
     boolean lsfRequireAuth,
-    boolean lsfRequireDestTag
+    boolean lsfRequireDestTag,
+    boolean lsfDisallowIncomingNFTokenOffer,
+    boolean lsfDisallowIncomingCheck,
+    boolean lsfDisallowIncomingPayChan,
+    boolean lsfDisallowIncomingTrustline
   ) {
     long expectedFlags = (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
       (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
@@ -55,7 +59,11 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfNoFreeze ? AccountRootFlags.NO_FREEZE.getValue() : 0L) |
       (lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT.getValue() : 0L) |
       (lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH.getValue() : 0L) |
-      (lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L);
+      (lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
+      (lsfDisallowIncomingNFTokenOffer ? AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER.getValue() : 0L) |
+      (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK.getValue() : 0L) |
+      (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN.getValue() : 0L) |
+      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE.getValue() : 0L);
     AccountRootFlags flags = AccountRootFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -69,5 +77,9 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     assertThat(flags.lsfPasswordSpent()).isEqualTo(lsfPasswordSpent);
     assertThat(flags.lsfRequireAuth()).isEqualTo(lsfRequireAuth);
     assertThat(flags.lsfRequireDestTag()).isEqualTo(lsfRequireDestTag);
+    assertThat(flags.lsfDisallowIncomingNFTokenOffer()).isEqualTo(lsfDisallowIncomingNFTokenOffer);
+    assertThat(flags.lsfDisallowIncomingCheck()).isEqualTo(lsfDisallowIncomingCheck);
+    assertThat(flags.lsfDisallowIncomingPayChan()).isEqualTo(lsfDisallowIncomingPayChan);
+    assertThat(flags.lsfDisallowIncomingTrustline()).isEqualTo(lsfDisallowIncomingTrustline);
   }
 }

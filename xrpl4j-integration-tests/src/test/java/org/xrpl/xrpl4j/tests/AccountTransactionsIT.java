@@ -44,7 +44,9 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * An Integration Test to validate submission of Account transactions.
@@ -74,6 +76,8 @@ public class AccountTransactionsIT {
     // known ledger index range for this account that is known to have exactly 748 transactions
     LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
     LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
+    Set<Hash256> transactionHashes = new HashSet<>();
+
     AccountTransactionsResult results = mainnetClient.accountTransactions(
       AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
@@ -81,8 +85,8 @@ public class AccountTransactionsIT {
     );
     assertThat(results.transactions()).isNotEmpty();
     assertThat(results.marker()).isNotEmpty();
+    results.transactions().forEach(transaction -> transactionHashes.add(transaction.resultTransaction().hash()));
 
-    int transactionsFound = results.transactions().size();
     int pages = 0;
     while (results.marker().isPresent() &&
       // Needed because clio is broken. See https://github.com/XRPLF/clio/issues/195#issuecomment-1247412892
@@ -90,19 +94,19 @@ public class AccountTransactionsIT {
     ) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
-        .limit(UnsignedInteger.valueOf(200L))
+        .limit(UnsignedInteger.valueOf(100L))
         .marker(results.marker().get())
         .build());
-      transactionsFound += results.transactions().size();
+      results.transactions().forEach(transaction -> transactionHashes.add(transaction.resultTransaction().hash()));
       pages++;
-      logger.info("Retrieved {} ledgers (marker={} page={})",
-        transactionsFound,
+      logger.info("Retrieved {} transaction (marker={} page={})",
+        transactionHashes.size(),
         results.marker().map($ -> $.value()).orElseGet(() -> "n/a"),
         pages
       );
     }
 
-    assertThat(transactionsFound).isEqualTo(expectedTransactions);
+    assertThat(transactionHashes.size()).isEqualTo(expectedTransactions);
   }
 
   @Test

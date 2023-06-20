@@ -34,6 +34,7 @@ public class MainnetEnvironment implements XrplEnvironment {
   //  "ledger_index" = "validated", which breaks AccountTransactionsIT. xrplcluster.com is not powered by Clio, so
   //  this client is pointed at xrplcluster.com. However, once this bug in Clio is resolved, we should revert back to
   //  using s1/s2 here.
+  //  See this github issue: https://github.com/XRPLF/clio/pull/694
   private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://xrplcluster.com"));
 
   @Override

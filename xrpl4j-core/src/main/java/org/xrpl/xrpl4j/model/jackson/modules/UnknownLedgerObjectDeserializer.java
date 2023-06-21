@@ -11,6 +11,11 @@ import org.xrpl.xrpl4j.model.ledger.UnknownLedgerObject;
 
 import java.io.IOException;
 
+/**
+ * Custom Jackson deserializer for {@link UnknownLedgerObject}s. {@link UnknownLedgerObject} holds a {@link JsonNode}
+ * of all the fields contained in the JSON being deserialized. However, we need this custom deserializer because the
+ * {@link JsonNode} field is one level deeper than it is in the JSON.
+ */
 public class UnknownLedgerObjectDeserializer extends StdDeserializer<UnknownLedgerObject> {
 
   static Logger logger = LoggerFactory.getLogger(UnknownLedgerObjectDeserializer.class);

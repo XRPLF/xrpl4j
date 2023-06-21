@@ -1,34 +1,29 @@
 package org.xrpl.xrpl4j.model.ledger;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.jackson.modules.UnknownLedgerObjectDeserializer;
 
 /**
  * Represents an XRPL ledger object whose type is unknown to xrpl4j. This can occur when
- * using a version of xrpl4j that does not have support for new ledger objects on the XRPL. This class
- * simply holds a {@link Map} of field names to field values.
- *
- * <p>Unfortunately, Jackson's polymorphic deserializer consumes the type ID field found in JSON, therefore
- * the {@code "LedgerEntryType"} field will not be present in the {@code properties} map.</p>
+ * using a version of xrpl4j that does not have support for new ledger objects on the XRPL.
  */
-public class UnknownLedgerObject implements LedgerObject {
-  private final Map<String, Object> properties = new HashMap<>();
+@Value.Immutable
+@JsonSerialize(as = ImmutableUnknownLedgerObject.class)
+@JsonDeserialize(as = ImmutableUnknownLedgerObject.class, using = UnknownLedgerObjectDeserializer.class)
+public interface UnknownLedgerObject extends LedgerObject {
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    properties.put(name, value);
+  static ImmutableUnknownLedgerObject.Builder builder() {
+    return ImmutableUnknownLedgerObject.builder();
   }
 
-  public Map<String, Object> properties() {
-    return properties;
+  @Value.Derived
+  default String ledgerEntryType() {
+    return properties().get("LedgerEntryType").asText();
   }
 
-  @Override
-  public String toString() {
-    return "UnknownLedgerObject{" +
-        "additionalProperties=" + properties +
-        '}';
-  }
+  JsonNode properties();
+
 }

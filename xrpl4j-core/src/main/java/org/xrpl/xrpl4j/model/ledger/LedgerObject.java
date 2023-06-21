@@ -33,7 +33,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.EXISTING_PROPERTY,
   property = "LedgerEntryType",
-  defaultImpl = UnknownLedgerObject.class
+  defaultImpl = ImmutableUnknownLedgerObject.class,
+  visible = true
 )
 @JsonSubTypes( {
   @JsonSubTypes.Type(value = ImmutableAccountRootObject.class, name = "AccountRoot"),

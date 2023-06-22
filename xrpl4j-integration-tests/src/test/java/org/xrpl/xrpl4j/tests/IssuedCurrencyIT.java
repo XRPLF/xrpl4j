@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,7 @@ import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.tests.environment.DevnetEnvironment;
 import org.xrpl.xrpl4j.tests.environment.TestnetEnvironment;
 
 import java.math.BigDecimal;
@@ -320,7 +321,8 @@ public class IssuedCurrencyIT extends AbstractIT {
   @Test
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
     // NOTE: Only run this on non-testnet and non-devnet evironmens.
-    if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
+    if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass()) ||
+      DevnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
       return;
     }
 
@@ -489,7 +491,6 @@ public class IssuedCurrencyIT extends AbstractIT {
    *
    * @param issuerKeyPair The {@link KeyPair} containing the address of the issuer account.
    * @param feeResult     The current {@link FeeResult}.
-   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public void setDefaultRipple(KeyPair issuerKeyPair, FeeResult feeResult)
@@ -530,7 +531,6 @@ public class IssuedCurrencyIT extends AbstractIT {
    * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
    * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
    * @param fee                 The current network fee, as an {@link XrpCurrencyAmount}.
-   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public void issueBalance(
@@ -581,9 +581,7 @@ public class IssuedCurrencyIT extends AbstractIT {
    * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
    * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
    * @param fee                 The current network fee, as an {@link XrpCurrencyAmount}.
-   *
    * @return The {@link TrustLine} that gets created.
-   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(

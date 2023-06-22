@@ -29,17 +29,13 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 /**
  * XRPL testnet environment.
  */
-public abstract class TestnetEnvironment implements XrplEnvironment {
+public class ClioTestnetEnvironment extends TestnetEnvironment {
 
-  private final FaucetClient faucetClient =
-    FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
-
-  @Override
-  public abstract XrplClient getXrplClient();
+  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://clio.altnet.rippletest.net:51234"));
 
   @Override
-  public void fundAccount(Address classicAddress) {
-    faucetClient.fundAccount(FundAccountRequest.of(classicAddress));
+  public XrplClient getXrplClient() {
+    return xrplClient;
   }
 
 }

@@ -65,22 +65,39 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK.getValue() : 0L) |
       (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN.getValue() : 0L) |
       (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE.getValue() : 0L);
-    AccountRootFlags flags = AccountRootFlags.of(expectedFlags);
+    Flags flagsFromFlags = AccountRootFlags.of(
+      (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : AccountRootFlags.UNSET),
+      (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : AccountRootFlags.UNSET),
+      (lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : AccountRootFlags.UNSET),
+      (lsfDisallowXrp ? AccountRootFlags.DISALLOW_XRP : AccountRootFlags.UNSET),
+      (lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE : AccountRootFlags.UNSET),
+      (lsfNoFreeze ? AccountRootFlags.NO_FREEZE : AccountRootFlags.UNSET),
+      (lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT : AccountRootFlags.UNSET),
+      (lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH : AccountRootFlags.UNSET),
+      (lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingNFTokenOffer ? AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE : AccountRootFlags.UNSET)
+    );
+    assertThat(flagsFromFlags.getValue()).isEqualTo(expectedFlags);
 
-    assertThat(flags.getValue()).isEqualTo(expectedFlags);
+    AccountRootFlags flagsFromLong = AccountRootFlags.of(expectedFlags);
 
-    assertThat(flags.lsfDefaultRipple()).isEqualTo(lsfDefaultRipple);
-    assertThat(flags.lsfDepositAuth()).isEqualTo(lsfDepositAuth);
-    assertThat(flags.lsfDisableMaster()).isEqualTo(lsfDisableMaster);
-    assertThat(flags.lsfDisallowXrp()).isEqualTo(lsfDisallowXrp);
-    assertThat(flags.lsfGlobalFreeze()).isEqualTo(lsfGlobalFreeze);
-    assertThat(flags.lsfNoFreeze()).isEqualTo(lsfNoFreeze);
-    assertThat(flags.lsfPasswordSpent()).isEqualTo(lsfPasswordSpent);
-    assertThat(flags.lsfRequireAuth()).isEqualTo(lsfRequireAuth);
-    assertThat(flags.lsfRequireDestTag()).isEqualTo(lsfRequireDestTag);
-    assertThat(flags.lsfDisallowIncomingNFTokenOffer()).isEqualTo(lsfDisallowIncomingNFTokenOffer);
-    assertThat(flags.lsfDisallowIncomingCheck()).isEqualTo(lsfDisallowIncomingCheck);
-    assertThat(flags.lsfDisallowIncomingPayChan()).isEqualTo(lsfDisallowIncomingPayChan);
-    assertThat(flags.lsfDisallowIncomingTrustline()).isEqualTo(lsfDisallowIncomingTrustline);
+    assertThat(flagsFromLong.getValue()).isEqualTo(expectedFlags);
+
+    assertThat(flagsFromLong.lsfDefaultRipple()).isEqualTo(lsfDefaultRipple);
+    assertThat(flagsFromLong.lsfDepositAuth()).isEqualTo(lsfDepositAuth);
+    assertThat(flagsFromLong.lsfDisableMaster()).isEqualTo(lsfDisableMaster);
+    assertThat(flagsFromLong.lsfDisallowXrp()).isEqualTo(lsfDisallowXrp);
+    assertThat(flagsFromLong.lsfGlobalFreeze()).isEqualTo(lsfGlobalFreeze);
+    assertThat(flagsFromLong.lsfNoFreeze()).isEqualTo(lsfNoFreeze);
+    assertThat(flagsFromLong.lsfPasswordSpent()).isEqualTo(lsfPasswordSpent);
+    assertThat(flagsFromLong.lsfRequireAuth()).isEqualTo(lsfRequireAuth);
+    assertThat(flagsFromLong.lsfRequireDestTag()).isEqualTo(lsfRequireDestTag);
+    assertThat(flagsFromLong.lsfDisallowIncomingNFTokenOffer()).isEqualTo(lsfDisallowIncomingNFTokenOffer);
+    assertThat(flagsFromLong.lsfDisallowIncomingCheck()).isEqualTo(lsfDisallowIncomingCheck);
+    assertThat(flagsFromLong.lsfDisallowIncomingPayChan()).isEqualTo(lsfDisallowIncomingPayChan);
+    assertThat(flagsFromLong.lsfDisallowIncomingTrustline()).isEqualTo(lsfDisallowIncomingTrustline);
   }
 }

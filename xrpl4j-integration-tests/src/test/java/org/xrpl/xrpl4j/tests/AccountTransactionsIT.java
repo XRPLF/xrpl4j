@@ -42,11 +42,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.tests.environment.MainnetEnvironment;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import org.xrpl.xrpl4j.tests.environment.ReportingMainnetEnvironment;
+import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
 /**
  * An Integration Test to validate submission of Account transactions.
@@ -58,7 +55,7 @@ public class AccountTransactionsIT {
   // an arbitrary address on xrpl mainnet that has a decent amount of transaction history
   public static final Address MAINNET_ADDRESS = Address.of("r9m6MwViR4GnUNqoGXGa8eroBrZ9FAPHFS");
 
-  private final XrplClient mainnetClient = new MainnetEnvironment().getXrplClient();
+  private final XrplClient mainnetClient = XrplEnvironment.getConfiguredMainnetEnvironment().getXrplClient();
 
   @Test
   public void listTransactionsDefaultWithPagination() throws JsonRpcClientErrorException {
@@ -69,6 +66,13 @@ public class AccountTransactionsIT {
     assertThat(results.marker()).isNotEmpty();
   }
 
+  /**
+   * This test will fail if we hit a Clio node until <a href="https://github.com/XRPLF/clio/pull/687">CLIO-687</a> is deployed
+   * to mainnet. We expect 748 transactions across all pages of account_tx, however Clio duplicates the last
+   * transaction from each page in the next page, which results in more than 748 transactions returned.
+   *
+   * @throws JsonRpcClientErrorException If rippled/Clio returns an error or a request fails.
+   */
   @Test
   @Timeout(30)
   public void listTransactionsPagination() throws JsonRpcClientErrorException {
@@ -76,8 +80,6 @@ public class AccountTransactionsIT {
     // known ledger index range for this account that is known to have exactly 748 transactions
     LedgerIndexBound minLedger = LedgerIndexBound.of(61400000);
     LedgerIndexBound maxLedger = LedgerIndexBound.of(61487000);
-    Set<Hash256> transactionHashes = new HashSet<>();
-
     AccountTransactionsResult results = mainnetClient.accountTransactions(
       AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
@@ -85,8 +87,8 @@ public class AccountTransactionsIT {
     );
     assertThat(results.transactions()).isNotEmpty();
     assertThat(results.marker()).isNotEmpty();
-    results.transactions().forEach(transaction -> transactionHashes.add(transaction.resultTransaction().hash()));
 
+    int transactionsFound = results.transactions().size();
     int pages = 0;
     while (results.marker().isPresent() &&
       // Needed because clio is broken. See https://github.com/XRPLF/clio/issues/195#issuecomment-1247412892
@@ -94,19 +96,19 @@ public class AccountTransactionsIT {
     ) {
       results = mainnetClient.accountTransactions(AccountTransactionsRequestParams.builder(minLedger, maxLedger)
         .account(MAINNET_ADDRESS)
-        .limit(UnsignedInteger.valueOf(100L))
+        .limit(UnsignedInteger.valueOf(200L))
         .marker(results.marker().get())
         .build());
-      results.transactions().forEach(transaction -> transactionHashes.add(transaction.resultTransaction().hash()));
+      transactionsFound += results.transactions().size();
       pages++;
-      logger.info("Retrieved {} transaction (marker={} page={})",
-        transactionHashes.size(),
+      logger.info("Retrieved {} ledgers (marker={} page={})",
+        transactionsFound,
         results.marker().map($ -> $.value()).orElseGet(() -> "n/a"),
         pages
       );
     }
 
-    assertThat(transactionHashes.size()).isEqualTo(expectedTransactions);
+    assertThat(transactionsFound).isEqualTo(expectedTransactions);
   }
 
   @Test

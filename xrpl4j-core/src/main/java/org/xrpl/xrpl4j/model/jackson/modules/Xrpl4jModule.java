@@ -27,6 +27,8 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 
 /**
  * Jackson module for the xrpl4j-model project.
@@ -62,6 +64,9 @@ public class Xrpl4jModule extends SimpleModule {
     
     addSerializer(UnsignedByteArray.class, new UnsignedByteArraySerializer());
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
+
+    addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+    addDeserializer(MetaLedgerEntryType.class, new MetaLedgerEntryTypeDeserializer());
 
   }
 }

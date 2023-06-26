@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +40,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaPayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaRippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaSignerListObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaTicketObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaUnknownObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
 
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     String affectedNodeType = nodeFieldAndValue.getKey();
 
     String ledgerEntryType = nodeFieldAndValue.getValue().get("LedgerEntryType").asText();
-    Class<? extends MetaLedgerObject> ledgerObjectClass = determineLedgerObjectType(jsonParser, ledgerEntryType);
+    Class<? extends MetaLedgerObject> ledgerObjectClass = determineLedgerObjectType(ledgerEntryType);
 
     switch (affectedNodeType) {
       case "CreatedNode":
@@ -92,43 +92,30 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     }
   }
 
-  private Class<? extends MetaLedgerObject> determineLedgerObjectType(JsonParser jsonParser, String ledgerEntryType) throws JsonMappingException {
-    Class<? extends MetaLedgerObject> ledgerObjectClass;
+  private Class<? extends MetaLedgerObject> determineLedgerObjectType(String ledgerEntryType) {
     switch (ledgerEntryType) {
       case "AccountRoot":
-        ledgerObjectClass = MetaAccountRootObject.class;
-        break;
+        return MetaAccountRootObject.class;
       case "Check":
-        ledgerObjectClass = MetaCheckObject.class;
-        break;
+        return MetaCheckObject.class;
       case "DepositPreauth":
-        ledgerObjectClass = MetaDepositPreAuthObject.class;
-        break;
+        return MetaDepositPreAuthObject.class;
       case "Escrow":
-        ledgerObjectClass = MetaEscrowObject.class;
-        break;
+        return MetaEscrowObject.class;
       case "NFTokenOffer":
-        ledgerObjectClass = MetaNfTokenOfferObject.class;
-        break;
+        return MetaNfTokenOfferObject.class;
       case "Offer":
-        ledgerObjectClass = MetaOfferObject.class;
-        break;
+        return MetaOfferObject.class;
       case "PayChannel":
-        ledgerObjectClass = MetaPayChannelObject.class;
-        break;
+        return MetaPayChannelObject.class;
       case "RippleState":
-        ledgerObjectClass = MetaRippleStateObject.class;
-        break;
+        return MetaRippleStateObject.class;
       case "SignerList":
-        ledgerObjectClass = MetaSignerListObject.class;
-        break;
+        return MetaSignerListObject.class;
       case "Ticket":
-        ledgerObjectClass = MetaTicketObject.class;
-        break;
+        return MetaTicketObject.class;
       default:
-        // TODO: Add MetaUnknownLedgerObject instead of throwing
-        throw JsonMappingException.from(jsonParser, "Unrecognized ledger entry type.");
+        return MetaUnknownObject.class;
     }
-    return ledgerObjectClass;
   }
 }

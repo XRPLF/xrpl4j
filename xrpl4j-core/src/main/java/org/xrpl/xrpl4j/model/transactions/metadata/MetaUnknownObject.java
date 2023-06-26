@@ -20,12 +20,26 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value.Immutable;
+
 /**
- * Market interface for XRP Ledger Objects as represented in transaction metadata. Unlike descendants of
- * {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}, all descendants of this interface will have all fields typed as
- * {@link java.util.Optional} because ledger objects represented in transaction metadata often do not contain
- * all fields of the ledger object.
+ * A {@link MetaLedgerObject} representing ledger objects that xrpl4j does not understand. This can happen
+ * when a new type of ledger object is added to the ledger and an old version of xrpl4j is used.
  */
-public interface MetaLedgerObject {
+@Immutable
+@JsonSerialize(as = ImmutableMetaUnknownObject.class)
+@JsonDeserialize(as = ImmutableMetaUnknownObject.class)
+public interface MetaUnknownObject extends MetaLedgerObject {
+
+  /**
+   * Construct a {@code MetaUnknownObject} builder.
+   *
+   * @return An {@link ImmutableMetaUnknownObject.Builder}.
+   */
+  static ImmutableMetaUnknownObject.Builder builder() {
+    return ImmutableMetaUnknownObject.builder();
+  }
 
 }

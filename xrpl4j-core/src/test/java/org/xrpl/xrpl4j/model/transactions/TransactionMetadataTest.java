@@ -1,16 +1,35 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableCreatedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableDeletedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 class TransactionMetadataTest {
+
+  Logger logger = LoggerFactory.getLogger(TransactionMetadataTest.class);
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
-  void deserializeMetadata() throws JsonProcessingException {
+  void deserializeMetadataFromXrplOrg() throws JsonProcessingException {
     String json = "{\n" +
       "  \"AffectedNodes\": [\n" +
       "    {\n" +
@@ -464,5 +483,46 @@ class TransactionMetadataTest {
 
     TransactionMetadata transactionMetadata = objectMapper.readValue(json, TransactionMetadata.class);
     System.out.println(transactionMetadata);
+  }
+
+  @Test
+  void deserializeFixtures() throws IOException {
+    List<JsonNode> metadatas = objectMapper.readValue(
+      new File("src/test/resources/tx_metadata_fixtures.json"),
+      objectMapper.getTypeFactory().constructParametricType(List.class, JsonNode.class)
+    );
+
+    metadatas.forEach(meta -> {
+      try {
+        TransactionMetadata transactionMetadata = objectMapper.treeToValue(meta, TransactionMetadata.class);
+        assertThat(transactionMetadata.transactionResult()).isEqualTo(meta.get("TransactionResult").asText());
+        assertThat(transactionMetadata.transactionIndex().longValue()).isEqualTo(meta.get("TransactionIndex").asLong());
+        assertThat(transactionMetadata.deliveredAmount()).isEqualTo(
+          Optional.ofNullable(meta.get("delivered_amount"))
+            .map(deliveredAmount -> {
+              try {
+                return objectMapper.treeToValue(deliveredAmount, CurrencyAmount.class);
+              } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+              }
+            })
+          );
+
+        assertThat(meta.get("AffectedNodes").size()).isEqualTo(transactionMetadata.affectedNodes().size());
+        for (int i = 0; i < transactionMetadata.affectedNodes().size(); i++) {
+          Map.Entry<String, JsonNode> node = meta.get("AffectedNodes").get(i).fields().next();
+          if (node.getKey().equals("CreatedNode")) {
+            assertThat(CreatedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
+          } else if (node.getKey().equals("ModifiedNode")) {
+            assertThat(ModifiedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
+          } else if (node.getKey().equals("DeletedNode")) {
+            assertThat(DeletedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
+          }
+        }
+      } catch (JsonProcessingException e) {
+        logger.error("Failed to deserialize tx metadata {}", meta.toString());
+        throw new RuntimeException(e);
+      }
+    });
   }
 }

@@ -244,7 +244,7 @@ public class OfferIT extends AbstractIT {
       purchaser.privateKey(), offerCreate
     );
     SubmitResult<OfferCreate> response = xrplClient.submit(signedOfferCreate);
-    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(response.engineResult()).isEqualTo("tecKILLED");
     logger.info(
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()

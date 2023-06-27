@@ -29,9 +29,8 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link MetaLedgerEntryType}es.
+ * Custom Jackson deserializer for {@link MetaLedgerEntryType}s.
  */
-// TODO: Write custom serializer as well
 public class MetaLedgerEntryTypeDeserializer extends StdDeserializer<MetaLedgerEntryType> {
 
   /**

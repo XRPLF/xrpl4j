@@ -38,7 +38,6 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableMetaSignerEntry.class)
 public interface MetaSignerEntry {
 
-  // TODO: Do these need to be optional, or is the only optional the SignerListObject?
   /**
    * An XRP Ledger classic {@link Address} whose signature contributes to the multi-signature. It does not need to be a
    * funded address in the ledger.
@@ -46,7 +45,7 @@ public interface MetaSignerEntry {
    * @return The {@link Address} of the signer.
    */
   @JsonProperty("Account")
-  Optional<Address> account();
+  Address account();
 
   /**
    * The weight of a signature from this signer. A multi-signature is only valid if the sum weight of the
@@ -55,6 +54,6 @@ public interface MetaSignerEntry {
    * @return An {@link UnsignedInteger} representing the signer weight.
    */
   @JsonProperty("SignerWeight")
-  Optional<UnsignedInteger> signerWeight();
+  UnsignedInteger signerWeight();
 
 }

@@ -47,9 +47,8 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Custom Jackson deserializer for {@link AffectedNode}es.
+ * Custom Jackson deserializer for {@link AffectedNode}s.
  */
-// TODO: Write custom serializer as well
 public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
 
   /**

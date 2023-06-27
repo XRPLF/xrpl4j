@@ -45,15 +45,6 @@ import java.util.Optional;
 public interface MetaTicketObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaTicketObject} builder.
-   *
-   * @return An {@link ImmutableMetaTicketObject.Builder}.
-   */
-  static ImmutableMetaTicketObject.Builder builder() {
-    return ImmutableMetaTicketObject.builder();
-  }
-
-  /**
    * A bit-map of Boolean flags enabled for this Ticket. Currently, there are no flags defined for Tickets.
    *
    * @return Always returns {@link Flags#UNSET}.

@@ -50,16 +50,6 @@ import java.util.Optional;
 public interface MetaDepositPreAuthObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaDepositPreAuthObject} builder.
-   *
-   * @return An {@link ImmutableMetaDepositPreAuthObject.Builder}.
-   */
-  static ImmutableMetaDepositPreAuthObject.Builder builder() {
-    return ImmutableMetaDepositPreAuthObject.builder();
-  }
-
-
-  /**
    * The account that granted the preauthorization. (The destination of the preauthorized payments.)
    *
    * @return The {@link Address} of the account.

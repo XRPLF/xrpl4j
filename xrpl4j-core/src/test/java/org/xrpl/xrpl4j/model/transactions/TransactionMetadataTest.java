@@ -518,7 +518,7 @@ class TransactionMetadataTest {
                 throw new RuntimeException(e);
               }
             })
-          );
+        );
 
         assertThat(meta.get("AffectedNodes").size()).isEqualTo(transactionMetadata.affectedNodes().size());
         for (int i = 0; i < transactionMetadata.affectedNodes().size(); i++) {
@@ -533,7 +533,8 @@ class TransactionMetadataTest {
           } else if (node.getKey().equals("ModifiedNode")) {
             assertThat(ModifiedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
             if (node.getValue().get("PreviousFields") != null) {
-              Optional<?> previousFields = ((ModifiedNode<?>) transactionMetadata.affectedNodes().get(i)).previousFields();
+              Optional<?> previousFields = ((ModifiedNode<?>) transactionMetadata.affectedNodes().get(i))
+                .previousFields();
               assertThat(previousFields).isPresent();
               assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
                 .isAssignableFrom(previousFields.get().getClass());
@@ -548,7 +549,8 @@ class TransactionMetadataTest {
           } else if (node.getKey().equals("DeletedNode")) {
             assertThat(DeletedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
             if (node.getValue().get("FinalFields") != null) {
-              MetaLedgerObject finalFields = ((DeletedNode<?>) transactionMetadata.affectedNodes().get(i)).finalFields();
+              MetaLedgerObject finalFields = ((DeletedNode<?>) transactionMetadata.affectedNodes().get(i))
+                .finalFields();
               assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
                 .isAssignableFrom(finalFields.getClass());
             }

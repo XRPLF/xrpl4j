@@ -45,15 +45,6 @@ import java.util.Optional;
 public interface MetaAccountRootObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaAccountRootObject} builder.
-   *
-   * @return An {@link ImmutableMetaAccountRootObject.Builder}.
-   */
-  static ImmutableMetaAccountRootObject.Builder builder() {
-    return ImmutableMetaAccountRootObject.builder();
-  }
-
-  /**
    * The unique classic {@link Address} of this account.
    *
    * @return The {@link Address} of this account.

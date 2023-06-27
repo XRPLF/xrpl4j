@@ -16,15 +16,6 @@ import org.immutables.value.Value;
 public interface CreatedNode<T extends MetaLedgerObject> extends AffectedNode {
 
   /**
-   * Construct a {@code CreatedNode} builder.
-   *
-   * @return An {@link ImmutableCreatedNode.Builder}.
-   */
-  static <T extends MetaLedgerObject> ImmutableCreatedNode.Builder<T> builder() {
-    return ImmutableCreatedNode.builder();
-  }
-
-  /**
    * The {@link T} containing the fields of the ledger object that was created.
    *
    * @return A {@link T}.

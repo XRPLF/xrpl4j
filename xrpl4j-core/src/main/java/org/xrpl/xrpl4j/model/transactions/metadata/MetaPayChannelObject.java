@@ -56,15 +56,6 @@ import java.util.Optional;
 public interface MetaPayChannelObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaPayChannelObject} builder.
-   *
-   * @return An {@link ImmutableMetaPayChannelObject.Builder}.
-   */
-  static ImmutableMetaPayChannelObject.Builder builder() {
-    return ImmutableMetaPayChannelObject.builder();
-  }
-
-  /**
    * A bit-map of boolean flags enabled for this payment channel. Currently, the protocol defines no flags for
    * PayChannel objects.
    *

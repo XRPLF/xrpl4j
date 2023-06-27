@@ -33,13 +33,4 @@ import org.immutables.value.Value.Immutable;
 @JsonDeserialize(as = ImmutableMetaUnknownObject.class)
 public interface MetaUnknownObject extends MetaLedgerObject {
 
-  /**
-   * Construct a {@code MetaUnknownObject} builder.
-   *
-   * @return An {@link ImmutableMetaUnknownObject.Builder}.
-   */
-  static ImmutableMetaUnknownObject.Builder builder() {
-    return ImmutableMetaUnknownObject.builder();
-  }
-
 }

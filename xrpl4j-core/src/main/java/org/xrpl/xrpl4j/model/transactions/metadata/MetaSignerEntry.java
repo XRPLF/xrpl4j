@@ -38,15 +38,6 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableMetaSignerEntry.class)
 public interface MetaSignerEntry {
 
-  /**
-   * Construct a {@code MetaSignerEntry} builder.
-   *
-   * @return An {@link ImmutableMetaSignerEntry.Builder}.
-   */
-  static ImmutableMetaSignerEntry.Builder builder() {
-    return ImmutableMetaSignerEntry.builder();
-  }
-
   // TODO: Do these need to be optional, or is the only optional the SignerListObject?
   /**
    * An XRP Ledger classic {@link Address} whose signature contributes to the multi-signature. It does not need to be a

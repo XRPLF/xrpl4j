@@ -46,15 +46,6 @@ import java.util.Optional;
 public interface MetaSignerListObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaSignerListObject} builder.
-   *
-   * @return An {@link ImmutableMetaSignerListObject.Builder}.
-   */
-  static ImmutableMetaSignerListObject.Builder builder() {
-    return ImmutableMetaSignerListObject.builder();
-  }
-
-  /**
    * A bit-map of Boolean {@link SignerListFlags} enabled for this signer list.
    *
    * @return The {@link SignerListFlags} for this object.

@@ -35,15 +35,6 @@ import org.xrpl.xrpl4j.model.ledger.ImmutableSignerEntryWrapper;
 public interface MetaSignerEntryWrapper {
 
   /**
-   * Construct a {@code MetaSignerEntryWrapper} builder.
-   *
-   * @return An {@link ImmutableMetaSignerEntryWrapper.Builder}.
-   */
-  static ImmutableMetaSignerEntryWrapper.Builder builder() {
-    return ImmutableMetaSignerEntryWrapper.builder();
-  }
-
-  /**
    * The {@link MetaSignerEntry} that this wrapper wraps.
    *
    * @return A {@link MetaSignerEntry}.

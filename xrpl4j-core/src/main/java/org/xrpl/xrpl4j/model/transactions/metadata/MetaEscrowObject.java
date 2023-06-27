@@ -52,15 +52,6 @@ import java.util.Optional;
 public interface MetaEscrowObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaEscrowObject} builder.
-   *
-   * @return An {@link ImmutableMetaEscrowObject.Builder}.
-   */
-  static ImmutableMetaEscrowObject.Builder builder() {
-    return ImmutableMetaEscrowObject.builder();
-  }
-
-  /**
    * The {@link Address} of the owner (sender) of this held payment. This is the account that provided the XRP, and gets
    * it back if the held payment is canceled.
    *

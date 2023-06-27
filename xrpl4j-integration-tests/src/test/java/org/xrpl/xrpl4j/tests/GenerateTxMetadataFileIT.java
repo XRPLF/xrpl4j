@@ -36,8 +36,8 @@ public class GenerateTxMetadataFileIT {
    * and the latest ledger and writes each transaction's metadata to the resources/tx_metadata_fixtures.json file. This
    * file can then be copied into the {@code xrpl-core}'s src/test/resources directory and used in
    * {@code TransactionMetadataTest}.
-   * <p>
-   * The test is commented out so that it does not run during CI, but can be uncommented and run to generate
+   *
+   * <p>The test is commented out so that it does not run during CI, but can be uncommented and run to generate
    * new fixtures.
    *
    * @throws JsonRpcClientErrorException If something goes wrong while talking to rippled.

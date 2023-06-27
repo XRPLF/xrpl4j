@@ -16,15 +16,6 @@ import org.immutables.value.Value;
 public interface DeletedNode<T extends MetaLedgerObject> extends AffectedNode {
 
   /**
-   * Construct a {@code DeletedNode} builder.
-   *
-   * @return An {@link ImmutableDeletedNode.Builder}.
-   */
-  static <T extends MetaLedgerObject> ImmutableDeletedNode.Builder<T> builder() {
-    return ImmutableDeletedNode.builder();
-  }
-
-  /**
    * The {@link T} containing the fields of the ledger object before it was removed.
    *
    * @return A {@link T}.

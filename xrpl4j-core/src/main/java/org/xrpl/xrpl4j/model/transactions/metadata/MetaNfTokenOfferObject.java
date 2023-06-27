@@ -46,15 +46,6 @@ import java.util.Optional;
 public interface MetaNfTokenOfferObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaNfTokenOfferObject} builder.
-   *
-   * @return An {@link ImmutableMetaNfTokenOfferObject.Builder}.
-   */
-  static ImmutableMetaNfTokenOfferObject.Builder builder() {
-    return ImmutableMetaNfTokenOfferObject.builder();
-  }
-
-  /**
    * The amount of XRP, in drops, expected or offered for the token.
    *
    * @return The {@link XrpCurrencyAmount}.

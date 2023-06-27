@@ -47,15 +47,6 @@ import java.util.Optional;
 public interface MetaCheckObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaCheckObject} builder.
-   *
-   * @return An {@link ImmutableMetaCheckObject.Builder}.
-   */
-  static ImmutableMetaCheckObject.Builder builder() {
-    return ImmutableMetaCheckObject.builder();
-  }
-
-  /**
    * The sender of the {@link MetaCheckObject}. Cashing the {@link MetaCheckObject} debits this address's balance.
    *
    * @return The {@link Address} of the sender.

@@ -47,15 +47,6 @@ import java.util.Optional;
 public interface MetaOfferObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaOfferObject} builder.
-   *
-   * @return An {@link ImmutableMetaOfferObject.Builder}.
-   */
-  static ImmutableMetaOfferObject.Builder builder() {
-    return ImmutableMetaOfferObject.builder();
-  }
-
-  /**
    * The sender of the {@link MetaOfferObject}. Cashing the {@link MetaOfferObject} debits this address's balance.
    *
    * @return The {@link Address} of the offer sender.

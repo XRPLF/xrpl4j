@@ -48,15 +48,6 @@ import java.util.Optional;
 public interface MetaRippleStateObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code MetaRippleStateObject} builder.
-   *
-   * @return An {@link ImmutableMetaRippleStateObject.Builder}.
-   */
-  static ImmutableMetaRippleStateObject.Builder builder() {
-    return ImmutableMetaRippleStateObject.builder();
-  }
-
-  /**
    * A set of boolean {@link RippleStateFlags} containing options
    * enabled for this object.
    *

@@ -11,7 +11,8 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import java.util.Optional;
 
 /**
- * A {@link ModifiedNode} in transaction metadata indicates that the transaction modified an existing object in the ledger.
+ * A {@link ModifiedNode} in transaction metadata indicates that the transaction modified an existing object in the
+ * ledger.
  *
  * @param <T> The type of ledger object that was modified, as a {@link MetaLedgerObject}.
  */
@@ -19,15 +20,6 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableModifiedNode.class)
 @JsonDeserialize(as = ImmutableModifiedNode.class)
 public interface ModifiedNode<T extends MetaLedgerObject> extends AffectedNode {
-
-  /**
-   * Construct a {@code ModifiedNode} builder.
-   *
-   * @return An {@link ImmutableModifiedNode.Builder}.
-   */
-  static <T extends MetaLedgerObject> ImmutableModifiedNode.Builder<T> builder() {
-    return ImmutableModifiedNode.builder();
-  }
 
   /**
    * The {@link T} containing the fields of the ledger object after applying any changes from this transaction. The

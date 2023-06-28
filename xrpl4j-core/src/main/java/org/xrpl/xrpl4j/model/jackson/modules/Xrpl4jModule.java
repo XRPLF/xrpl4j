@@ -66,7 +66,6 @@ public class Xrpl4jModule extends SimpleModule {
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
 
     addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
-    addDeserializer(MetaLedgerEntryType.class, new MetaLedgerEntryTypeDeserializer());
 
   }
 }

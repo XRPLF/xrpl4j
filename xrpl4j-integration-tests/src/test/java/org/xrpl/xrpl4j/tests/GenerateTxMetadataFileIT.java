@@ -48,7 +48,7 @@ public class GenerateTxMetadataFileIT {
    * @throws JsonRpcClientErrorException If something goes wrong while talking to rippled.
    * @throws IOException                 If writing to the file fails.
    */
-  @Test
+  //  @Test
   void generateTxMetadataFixtures() throws JsonRpcClientErrorException, IOException {
     XrplClient xrplClient = new XrplClient(HttpUrl.get("https://s2-reporting.ripple.com:51234"));
 
@@ -102,7 +102,7 @@ public class GenerateTxMetadataFileIT {
 
     byte[] bytes = new byte[1024];
     int length;
-    while((length = fis.read(bytes)) >= 0) {
+    while ((length = fis.read(bytes)) >= 0) {
       zipOut.write(bytes, 0, length);
     }
 

@@ -29,10 +29,17 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaUnknownObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 class TransactionMetadataTest {
 
@@ -507,6 +514,8 @@ class TransactionMetadataTest {
    */
   @Test
   void deserializeGeneratedMainnetFixtures() throws IOException {
+    // Note that the actual file is a .zip to save space in Git. deserializeFixtures will unzip that file into
+    // tx_metadata_fixtures.json
     deserializeFixtures("tx_metadata_fixtures.json");
   }
 
@@ -520,12 +529,16 @@ class TransactionMetadataTest {
    */
   @Test
   void deserializeManualFixtures() throws IOException {
+    // Note that the actual file is a .zip to save space in Git. deserializeFixtures will unzip that file into
+    // tx_meta_manual_fixtures.json
     deserializeFixtures("tx_meta_manual_fixtures.json");
   }
 
   private void deserializeFixtures(String fileName) throws IOException {
+    unzipFile(fileName + ".zip");
+    File jsonFile = new File("src/test/resources/" + fileName);
     List<JsonNode> metadatas = objectMapper.readValue(
-      new File("src/test/resources/" + fileName),
+      jsonFile,
       objectMapper.getTypeFactory().constructParametricType(List.class, JsonNode.class)
     );
 
@@ -586,6 +599,46 @@ class TransactionMetadataTest {
         throw new RuntimeException(e);
       }
     });
+
+    jsonFile.delete();
+  }
+
+  private void unzipFile(String fileName) throws IOException {
+    File destDir = new File("src/test/resources");
+    byte[] buffer = new byte[1024];
+    ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get("src/test/resources/" + fileName)));
+    ZipEntry zipEntry = zis.getNextEntry();
+    File newFile = newFile(destDir, zipEntry);
+
+    // fix for Windows-created archives
+    File parent = newFile.getParentFile();
+    if (!parent.isDirectory() && !parent.mkdirs()) {
+      throw new IOException("Failed to create directory " + parent);
+    }
+
+    // write file content
+    FileOutputStream fos = new FileOutputStream(newFile);
+    int len;
+    while ((len = zis.read(buffer)) > 0) {
+      fos.write(buffer, 0, len);
+    }
+    fos.close();
+
+    zis.closeEntry();
+    zis.close();
+  }
+
+  private File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+    File destFile = new File(destinationDir, zipEntry.getName());
+
+    String destDirPath = destinationDir.getCanonicalPath();
+    String destFilePath = destFile.getCanonicalPath();
+
+    if (!destFilePath.startsWith(destDirPath + File.separator)) {
+      throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+    }
+
+    return destFile;
   }
 
   private Class<? extends MetaLedgerObject> determineLedgerObjectType(String ledgerEntryType) {

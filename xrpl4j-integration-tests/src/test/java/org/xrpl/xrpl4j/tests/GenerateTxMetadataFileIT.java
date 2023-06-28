@@ -21,9 +21,14 @@ import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class GenerateTxMetadataFileIT {
 
@@ -43,7 +48,7 @@ public class GenerateTxMetadataFileIT {
    * @throws JsonRpcClientErrorException If something goes wrong while talking to rippled.
    * @throws IOException                 If writing to the file fails.
    */
-  //  @Test
+  @Test
   void generateTxMetadataFixtures() throws JsonRpcClientErrorException, IOException {
     XrplClient xrplClient = new XrplClient(HttpUrl.get("https://s2-reporting.ripple.com:51234"));
 
@@ -87,6 +92,23 @@ public class GenerateTxMetadataFileIT {
       ledgerCount++;
       currentIndex = currentIndex.plus(UnsignedInteger.valueOf(interval.intValue()));
     }
+
+    FileOutputStream fos = new FileOutputStream("src/test/resources/tx_metadata_fixtures.json.zip");
+    ZipOutputStream zipOut = new ZipOutputStream(fos);
+
+    FileInputStream fis = new FileInputStream(resultFile);
+    ZipEntry zipEntry = new ZipEntry(resultFile.getName());
+    zipOut.putNextEntry(zipEntry);
+
+    byte[] bytes = new byte[1024];
+    int length;
+    while((length = fis.read(bytes)) >= 0) {
+      zipOut.write(bytes, 0, length);
+    }
+
+    zipOut.close();
+    fis.close();
+    fos.close();
 
     logger.info("Read metadata for {} ledgers", ledgerCount);
   }

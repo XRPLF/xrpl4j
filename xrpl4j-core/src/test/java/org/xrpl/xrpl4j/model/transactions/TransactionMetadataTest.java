@@ -1,8 +1,10 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -532,6 +534,37 @@ class TransactionMetadataTest {
     // Note that the actual file is a .zip to save space in Git. deserializeFixtures will unzip that file into
     // tx_meta_manual_fixtures.json
     deserializeFixtures("tx_meta_manual_fixtures.json");
+  }
+
+  @Test
+  void deserializeUnrecognizedNodeType() {
+    String nodeType = "WeirdNode";
+    String json = String.format("{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"%s\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Account\": \"r9ZoLsJHzMMJLpvsViWQ4Jgx17N8cz1997\",\n" +
+      "          \"Balance\": \"77349986\",\n" +
+      "          \"Flags\": 0,\n" +
+      "          \"OwnerCount\": 2,\n" +
+      "          \"Sequence\": 9\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"AccountRoot\",\n" +
+      "        \"LedgerIndex\": \"1E7E658C2D3DF91EFAE5A12573284AD6F526B8F64DD12F013C6F889EF45BEA97\",\n" +
+      "        \"PreviousFields\": {\n" +
+      "          \"OwnerCount\": 3\n" +
+      "        },\n" +
+      "        \"PreviousTxnID\": \"55C11248ACEFC2EFD59755BF88867783AC18EA078517108F942069C2FBE4CF5C\",\n" +
+      "        \"PreviousTxnLgrSeq\": 35707468\n" +
+      "      }\n" +
+      "    }\n" +
+      "]}", nodeType);
+
+    assertThatThrownBy(
+      () -> objectMapper.readValue(json, TransactionMetadata.class)
+    ).isInstanceOf(JsonMappingException.class)
+      .hasMessageContaining("Unrecognized AffectedNode type " + nodeType);
   }
 
   private void deserializeFixtures(String fileName) throws IOException {

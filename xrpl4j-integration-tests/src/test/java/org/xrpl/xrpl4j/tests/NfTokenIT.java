@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,8 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountNftsResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.NfTokenObject;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
@@ -42,8 +44,13 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.NfToken;
 import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
+import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
+import org.xrpl.xrpl4j.model.ledger.NfTokenWrapper;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
@@ -53,6 +60,8 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.Optional;
 
 /**
  * IT for NfToken operations.
@@ -84,16 +93,36 @@ public class NfTokenIT extends AbstractIT {
     assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
-    this.scanForResult(
-      () -> {
-        try {
-          return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
-        } catch (JsonRpcClientErrorException e) {
-          throw new RuntimeException(e);
-        }
-      },
-      result -> result.accountNfts().stream()
-        .anyMatch(nft -> nft.uri().get().equals(uri))
+    NfTokenObject nfToken = this.scanForResult(
+        () -> {
+          try {
+            return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
+          } catch (JsonRpcClientErrorException e) {
+            throw new RuntimeException(e);
+          }
+        },
+        result -> result.accountNfts().stream()
+          .anyMatch(nft -> nft.uri().get().equals(uri))
+      ).accountNfts()
+      .stream().filter(nft -> nft.uri().get().equals(uri))
+      .findFirst()
+      .get();
+
+    Optional<NfTokenPageObject> maybeNfTokenPage = xrplClient.accountObjects(
+        AccountObjectsRequestParams.of(nfTokenMint.account())
+      ).accountObjects().stream()
+      .filter(object -> NfTokenPageObject.class.isAssignableFrom(object.getClass()))
+      .map(object -> (NfTokenPageObject) object)
+      .findFirst();
+
+    assertThat(maybeNfTokenPage).isNotEmpty();
+    assertThat(maybeNfTokenPage.get().nfTokens()).contains(
+      NfTokenWrapper.of(
+        NfToken.builder()
+          .nfTokenId(nfToken.nfTokenId())
+          .uri(nfToken.uri())
+          .build()
+      )
     );
 
     AccountInfoResult minterAccountInfo = xrplClient.accountInfo(
@@ -131,7 +160,7 @@ public class NfTokenIT extends AbstractIT {
 
     this.scanForResult(
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
-      result -> result.accountData().nfTokenMinter().isPresent() && 
+      result -> result.accountData().nfTokenMinter().isPresent() &&
         result.accountData().nfTokenMinter().get().equals(minterKeyPair.publicKey().deriveAddress())
     );
 
@@ -140,7 +169,7 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult minterAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(minterKeyPair.publicKey().deriveAddress())
     );
-    
+
     //Nft mint transaction
     NfTokenMint nfTokenMint = NfTokenMint.builder()
       .tokenTaxon(UnsignedLong.ONE)
@@ -289,6 +318,10 @@ public class NfTokenIT extends AbstractIT {
     SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
     assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
+    logger.info(
+      "NFTokenMint transaction successful: https://testnet.xrpl.org/transactions/{}",
+      mintSubmitResult.transactionResult().hash()
+    );
 
     this.scanForResult(
       () -> {
@@ -304,7 +337,6 @@ public class NfTokenIT extends AbstractIT {
     logger.info("NFT was minted successfully.");
 
     //create a sell offer for the NFT that was created above
-
     NfTokenId tokenId = xrplClient.accountNfts(keyPair.publicKey().deriveAddress()).accountNfts().get(0).nfTokenId();
 
     NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()

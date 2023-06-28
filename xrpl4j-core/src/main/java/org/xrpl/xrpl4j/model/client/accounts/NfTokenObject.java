@@ -47,9 +47,9 @@ public interface NfTokenObject {
   }
 
   /**
-   * The unique TokenID of the token.
+   * The unique NFTokenID of the token.
    *
-   * @return The unique TokenID of the token.
+   * @return The unique NFTokenID of the token.
    */
   @JsonProperty("NFTokenID")
   NfTokenId nfTokenId();

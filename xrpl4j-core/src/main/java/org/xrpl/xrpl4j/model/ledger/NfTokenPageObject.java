@@ -78,7 +78,7 @@ public interface NfTokenPageObject extends LedgerObject {
    * The locator of the next page, if any.
    *
    * @return A {@link Hash256} containing the ID of the next page, or {@link Optional#empty()} if there is no next
-   * page.
+   *   page.
    */
   @JsonProperty("NextPageMin")
   Optional<Hash256> nextPageMin();
@@ -87,7 +87,7 @@ public interface NfTokenPageObject extends LedgerObject {
    * The locator of the previous page, if any.
    *
    * @return A {@link Hash256} containing the ID of the previous page, or {@link Optional#empty()} if there is no
-   * previous page.
+   *   previous page.
    */
   @JsonProperty("PreviousPageMin")
   Optional<Hash256> previousPageMin();

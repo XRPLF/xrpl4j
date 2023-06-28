@@ -25,9 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.ledger.ImmutableNfTokenPageObject;
-import org.xrpl.xrpl4j.model.ledger.LedgerObject;
-import org.xrpl.xrpl4j.model.ledger.NfToken;
 import org.xrpl.xrpl4j.model.ledger.NfTokenWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
@@ -48,7 +45,7 @@ public interface MetaNfTokenPageObject extends MetaLedgerObject {
    * of 32 NFToken objects per page. Objects are sorted from low to high with the NFTokenID used as the sorting
    * parameter.
    *
-   * @return A {@link List} of {@link NfToken}s.
+   * @return A {@link List} of {@link org.xrpl.xrpl4j.model.ledger.NfToken}s.
    */
   @JsonProperty("NFTokens")
   List<NfTokenWrapper> nfTokens();
@@ -57,7 +54,7 @@ public interface MetaNfTokenPageObject extends MetaLedgerObject {
    * The locator of the next page, if any.
    *
    * @return A {@link Hash256} containing the ID of the next page, or {@link Optional#empty()} if there is no next
-   * page.
+   *   page.
    */
   @JsonProperty("NextPageMin")
   Optional<Hash256> nextPageMin();
@@ -66,7 +63,7 @@ public interface MetaNfTokenPageObject extends MetaLedgerObject {
    * The locator of the previous page, if any.
    *
    * @return A {@link Hash256} containing the ID of the previous page, or {@link Optional#empty()} if there is no
-   * previous page.
+   *   previous page.
    */
   @JsonProperty("PreviousPageMin")
   Optional<Hash256> previousPageMin();

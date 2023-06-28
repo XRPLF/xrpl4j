@@ -94,16 +94,16 @@ public class NfTokenIT extends AbstractIT {
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
     NfTokenObject nfToken = this.scanForResult(
-        () -> {
-          try {
-            return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
-          } catch (JsonRpcClientErrorException e) {
-            throw new RuntimeException(e);
-          }
-        },
-        result -> result.accountNfts().stream()
-          .anyMatch(nft -> nft.uri().get().equals(uri))
-      ).accountNfts()
+      () -> {
+        try {
+          return xrplClient.accountNfts(keyPair.publicKey().deriveAddress());
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.accountNfts().stream()
+        .anyMatch(nft -> nft.uri().get().equals(uri))
+    ).accountNfts()
       .stream().filter(nft -> nft.uri().get().equals(uri))
       .findFirst()
       .get();

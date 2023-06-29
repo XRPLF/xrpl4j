@@ -59,7 +59,6 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"10\",\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
       "    \"Amount\": \"10000\",\n" +
       "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
@@ -127,7 +126,6 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"10\",\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"TransactionType\": \"PaymentChannelFund\",\n" +
       "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
       "    \"Amount\": \"200000\",\n" +

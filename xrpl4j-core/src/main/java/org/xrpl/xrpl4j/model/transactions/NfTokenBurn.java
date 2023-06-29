@@ -82,17 +82,17 @@ public interface NfTokenBurn extends Transaction {
   Optional<Address> owner();
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link NfTokenBurn}, which only allows
-   * {@code tfFullyCanonicalSig} flag.
+   * Set of {@link TransactionFlags}s for this {@link NfTokenBurn}, which only allows the
+   * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    *
-   * @return Always {@link TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
   @Value.Derived
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().build();
+    return TransactionFlags.EMPTY;
   }
 }

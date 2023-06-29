@@ -75,6 +75,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
       .amount(XrpCurrencyAmount.ofDrops(25000000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
+      .flags(PaymentFlags.of(2147483648L))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
@@ -119,6 +120,7 @@ public class PaymentFlagsJsonTests extends AbstractJsonTest {
           .account(Address.of("razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA"))
           .build()
       ))
+      .flags(PaymentFlags.of(2147483648L))
       .destinationTag(UnsignedInteger.valueOf(736049272))
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")

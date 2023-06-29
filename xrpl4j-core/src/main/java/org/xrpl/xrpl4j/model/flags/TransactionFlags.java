@@ -32,8 +32,17 @@ public class TransactionFlags extends Flags {
    */
   protected static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
 
+  /**
+   * Constant empty {@link TransactionFlags}.
+   */
+  public static final TransactionFlags EMPTY = new TransactionFlags();
+
   TransactionFlags(long value) {
     super(value);
+  }
+
+  public TransactionFlags() {
+    super();
   }
 
   /**
@@ -57,9 +66,7 @@ public class TransactionFlags extends Flags {
      * @return {@link TransactionFlags}.
      */
     public TransactionFlags build() {
-      return new TransactionFlags(
-        TransactionFlags.FULLY_CANONICAL_SIG.getValue()
-      );
+      return TransactionFlags.EMPTY;
     }
   }
 }

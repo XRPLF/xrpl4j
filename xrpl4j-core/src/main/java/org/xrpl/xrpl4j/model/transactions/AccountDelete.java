@@ -50,17 +50,17 @@ public interface AccountDelete extends Transaction {
 
   /**
    * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the
-   * {@code tfFullyCanonicalSig} flag.
+   * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    *
-   * @return Always {@link TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
   @Derived
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().build();
+    return TransactionFlags.EMPTY;
   }
 
   /**

@@ -50,7 +50,6 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"TransactionType\": \"OfferCancel\",\n" +
       "    \"Sequence\": 12,\n" +
       "    \"OfferSequence\": 13,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"14\"\n" +
       "}";
@@ -80,7 +79,6 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"OfferSequence\": 13,\n" +
       "    \"TakerPays\": \"14\",\n" +
       "    \"TakerGets\": \"15\",\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Expiration\": 16\n" +

@@ -67,7 +67,6 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"Sequence\": 1,\n" +
       "    \"TransactionType\": \"SignerListSet\",\n" +
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
@@ -112,7 +111,6 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"Sequence\": 1,\n" +
       "    \"TransactionType\": \"SignerListSet\",\n" +
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +

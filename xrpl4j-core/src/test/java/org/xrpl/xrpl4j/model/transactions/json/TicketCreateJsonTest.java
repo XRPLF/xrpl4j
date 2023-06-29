@@ -49,7 +49,6 @@ class TicketCreateJsonTest extends AbstractJsonTest {
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TicketCount\": 200\n" +
       "}";

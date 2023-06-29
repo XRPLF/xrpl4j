@@ -29,6 +29,7 @@ class TransactionFlagsTest {
   @Test
   void testFlags() {
     TransactionFlags flags = new TransactionFlags.Builder().build();
-    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.isEmpty()).isTrue();
   }
 }

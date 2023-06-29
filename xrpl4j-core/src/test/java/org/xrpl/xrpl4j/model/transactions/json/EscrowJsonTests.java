@@ -73,7 +73,6 @@ public class EscrowJsonTests extends AbstractJsonTest {
       "    \"DestinationTag\": 23480,\n" +
       "    \"SourceTag\": 11747,\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
@@ -100,7 +99,6 @@ public class EscrowJsonTests extends AbstractJsonTest {
       "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"OfferSequence\": 7,\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
@@ -132,7 +130,6 @@ public class EscrowJsonTests extends AbstractJsonTest {
       "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
       "    \"Fulfillment\": \"A0028000\",\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"330\"\n" +
       "}";

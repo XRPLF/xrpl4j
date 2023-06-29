@@ -45,7 +45,6 @@ public class SetRegularKeyJsonTest extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"Sequence\": 1,\n" +
       "    \"TransactionType\": \"SetRegularKey\",\n" +
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +

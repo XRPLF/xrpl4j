@@ -28,6 +28,8 @@ import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 
 /**
  * Jackson module for the xrpl4j-model project.
@@ -65,5 +67,8 @@ public class Xrpl4jModule extends SimpleModule {
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
 
     addSerializer(Flags.class, new FlagsSerializer());
+
+    addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+
   }
 }

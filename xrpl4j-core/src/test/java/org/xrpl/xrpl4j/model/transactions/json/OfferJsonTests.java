@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -83,6 +84,38 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Expiration\": 16\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(offerCreate, json);
+  }
+
+  @Test
+  public void testOfferCreateJsonWithFlags() throws JsonProcessingException, JSONException {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .offerSequence(UnsignedInteger.valueOf(13))
+      .takerPays(XrpCurrencyAmount.ofDrops(14))
+      .takerGets(XrpCurrencyAmount.ofDrops(15))
+      .expiration(UnsignedInteger.valueOf(16))
+      .flags(OfferCreateFlags.builder().tfSell(true).build())
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "    \"TransactionType\": \"OfferCreate\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"OfferSequence\": 13,\n" +
+      "    \"TakerPays\": \"14\",\n" +
+      "    \"TakerGets\": \"15\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Expiration\": 16\n" +
+      "}", offerCreate.flags());
 
     assertCanSerializeAndDeserialize(offerCreate, json);
   }

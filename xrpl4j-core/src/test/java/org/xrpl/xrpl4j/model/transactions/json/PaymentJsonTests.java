@@ -36,7 +36,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 // FIXME: These tests should probably be replaced with a parameterized test that loads in payment json examples from
 //  a file.  Will do this after merging with Neil's initial codec pass.
-public class PaymentFlagsJsonTests extends AbstractJsonTest {
+public class PaymentJsonTests extends AbstractJsonTest {
 
   @Test
   public void testJson() throws JsonProcessingException, JSONException {

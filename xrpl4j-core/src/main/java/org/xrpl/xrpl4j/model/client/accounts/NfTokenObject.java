@@ -27,6 +27,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.NfTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
@@ -99,6 +100,12 @@ public interface NfTokenObject {
   @JsonProperty("nft_serial")
   UnsignedInteger nftSerial();
 
+  /**
+   * Specifies the fee charged by the issuer for secondary sales of the Token,
+   * if such sales are allowed. This field will only be present if the `lsfTransferable` flag is set.
+   *
+   * @return An {@link Optional} {@link TransferFee}.
+   */
   @JsonProperty("TransferFee")
   Optional<TransferFee> transferFee();
 }

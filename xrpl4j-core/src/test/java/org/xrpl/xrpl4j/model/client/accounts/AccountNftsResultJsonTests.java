@@ -78,7 +78,8 @@ public class AccountNftsResultJsonTests extends AbstractJsonTest {
       "        \"account_nfts\": [\n" +
       "            {\n" +
       "                \"NFTokenID\": \"00082710A25A9B38CE017A6FAD435ABA4B9894088C25EC69D29F8A3A00000079\",\n" +
-      "                \"URI\": \"697066733A2F2F6261666B72656962706F6B6F77747075677569776662646567357270736471677A6471346F36626761377669766D32736C75716166747678366965\",\n" +
+      "                \"URI\": \"697066733A2F2F6261666B72656962706F6B6F777470756775697766626465673572707364716" +
+      "77A6471346F36626761377669766D32736C75716166747678366965\",\n" +
       "                \"Flags\": 8,\n" +
       "                \"Issuer\": \"rEoTrW1kYccRxZSTRrYfGSzALXGhf6YcF3\",\n" +
       "                \"NFTokenTaxon\": 22830,\n" +
@@ -86,7 +87,8 @@ public class AccountNftsResultJsonTests extends AbstractJsonTest {
       "            },\n" +
       "            {\n" +
       "                \"NFTokenID\": \"00082710A25A9B38CE017A6FAD435ABA4B9894088C25EC69EDA5F0240000006F\",\n" +
-      "                \"URI\": \"697066733A2F2F6261666B7265696876766437726F67686F6E6E626A796272776B326279636E3637617A69686D367937656C3737336C6762657A3578776174796361\",\n" +
+      "                \"URI\": \"697066733A2F2F6261666B7265696876766437726F67686F6E6E626A796272776B326279636E363" +
+      "7617A69686D367937656C3737336C6762657A3578776174796361\",\n" +
       "                \"Flags\": 8,\n" +
       "                \"Issuer\": \"rEoTrW1kYccRxZSTRrYfGSzALXGhf6YcF3\",\n" +
       "                \"NFTokenTaxon\": 22830,\n" +

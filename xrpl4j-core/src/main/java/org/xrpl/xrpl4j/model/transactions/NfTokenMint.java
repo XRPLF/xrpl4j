@@ -80,7 +80,7 @@ public interface NfTokenMint extends Transaction {
    * increments of 0.001%. This field must NOT be present if the
    * `tfTransferable` flag is not set.
    *
-   * @return An {@link Optional} field TransferFee of type {@link CurrencyAmount}.
+   * @return An {@link Optional} {@link TransferFee}.
    */
   @JsonProperty("TransferFee")
   Optional<TransferFee> transferFee();

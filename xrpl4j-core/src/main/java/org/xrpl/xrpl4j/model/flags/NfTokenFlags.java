@@ -23,7 +23,7 @@ package org.xrpl.xrpl4j.model.flags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 
 /**
- * A set of static {@link Flags} which can be set on {@link AccountSet} transactions.
+ * A set of static {@link Flags} which can be set on {@link org.xrpl.xrpl4j.model.client.accounts.NfTokenObject}s.
  */
 public class NfTokenFlags extends Flags {
 

@@ -34,10 +34,12 @@ import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
@@ -84,7 +86,7 @@ public class BinarySerializationTests {
   }
 
   @Test
-  public void serializeAccountSetTransaction() throws JsonProcessingException {
+  public void serializeAccountSetTransactionWithEmptyFlags() throws JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
       .fee(XrpCurrencyAmount.ofDrops(10))
@@ -93,6 +95,34 @@ public class BinarySerializationTests {
 
     String expectedBinary = "120003240000296668400000000000000A730081140F3D0C7D2CFAB2EC8295451F0B3CA03" +
       "8E8E9CDCD";
+    assertSerializesAndDeserializes(accountSet, expectedBinary);
+  }
+
+  @Test
+  public void serializeAccountSetTransactionWithZeroFlags() throws JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(10598))
+      .flags(AccountSetTransactionFlags.of(0L))
+      .build();
+
+    String expectedBinary = "1200032200000000240000296668400000000000000A730081140F3D0C7D2CFAB2EC8295451F0B" +
+      "3CA038E8E9CDCD";
+    assertSerializesAndDeserializes(accountSet, expectedBinary);
+  }
+
+  @Test
+  public void serializeAccountSetTransactionWithNonZeroFlags() throws JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(10598))
+      .flags(AccountSetTransactionFlags.builder().tfDisallowXrp().build())
+      .build();
+
+    String expectedBinary = "1200032280100000240000296668400000000000000A730081140F3D0C7D2CFAB2EC8295451F0B3CA" +
+      "038E8E9CDCD";
     assertSerializesAndDeserializes(accountSet, expectedBinary);
   }
 
@@ -266,7 +296,7 @@ public class BinarySerializationTests {
   }
 
   @Test
-  void serializeXrpPayment() throws JsonProcessingException {
+  void serializeXrpPaymentWithEmptyFlags() throws JsonProcessingException {
     Address source = Address.builder()
       .value("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK")
       .build();
@@ -286,6 +316,58 @@ public class BinarySerializationTests {
       .build();
 
     String expectedBinary = "120000230000000124035F1F982E0000000261400000000000303968" +
+      "400000000000031573008114EE39E6D05CFD6A90DAB700A1D70149ECEE29DFEC83140000000000000000000000000000000000000001";
+    assertSerializesAndDeserializes(payment, expectedBinary);
+  }
+
+  @Test
+  void serializeXrpPaymentWithZeroFlags() throws JsonProcessingException {
+    Address source = Address.builder()
+      .value("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK")
+      .build();
+
+    Address destination = Address.builder()
+      .value("rrrrrrrrrrrrrrrrrrrrBZbvji")
+      .build();
+
+    Payment payment = Payment.builder()
+      .account(source)
+      .destination(destination)
+      .sourceTag(UnsignedInteger.valueOf(1))
+      .destinationTag(UnsignedInteger.valueOf(2))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .fee(XrpCurrencyAmount.ofDrops(789))
+      .sequence(UnsignedInteger.valueOf(56565656))
+      .flags(PaymentFlags.UNSET)
+      .build();
+
+    String expectedBinary = "1200002200000000230000000124035F1F982E0000000261400000000000303968" +
+      "400000000000031573008114EE39E6D05CFD6A90DAB700A1D70149ECEE29DFEC83140000000000000000000000000000000000000001";
+    assertSerializesAndDeserializes(payment, expectedBinary);
+  }
+
+  @Test
+  void serializeXrpPaymentWithNonZeroFlags() throws JsonProcessingException {
+    Address source = Address.builder()
+      .value("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK")
+      .build();
+
+    Address destination = Address.builder()
+      .value("rrrrrrrrrrrrrrrrrrrrBZbvji")
+      .build();
+
+    Payment payment = Payment.builder()
+      .account(source)
+      .destination(destination)
+      .sourceTag(UnsignedInteger.valueOf(1))
+      .destinationTag(UnsignedInteger.valueOf(2))
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .fee(XrpCurrencyAmount.ofDrops(789))
+      .sequence(UnsignedInteger.valueOf(56565656))
+      .flags(PaymentFlags.builder().tfPartialPayment(true).build())
+      .build();
+
+    String expectedBinary = "1200002280020000230000000124035F1F982E0000000261400000000000303968" +
       "400000000000031573008114EE39E6D05CFD6A90DAB700A1D70149ECEE29DFEC83140000000000000000000000000000000000000001";
     assertSerializesAndDeserializes(payment, expectedBinary);
   }
@@ -330,7 +412,7 @@ public class BinarySerializationTests {
   }
 
   @Test
-  void serializePaymentChannelCreate() throws JsonProcessingException {
+  void serializePaymentChannelCreateWithEmptyFlags() throws JsonProcessingException {
     PaymentChannelCreate create = PaymentChannelCreate.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .sourceTag(UnsignedInteger.ONE)
@@ -351,7 +433,54 @@ public class BinarySerializationTests {
   }
 
   @Test
-  void serializePaymentChannelClaim() throws JsonProcessingException {
+  void serializePaymentChannelClaimWithEmptyFlags() throws JsonProcessingException {
+    PaymentChannelClaim claim = PaymentChannelClaim.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .balance(XrpCurrencyAmount.ofDrops(1000000))
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
+        "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .build();
+
+    String expectedBinary = "12000F24000000015016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749D" +
+      "CDD3B9E5992CA61986140000000000F42406240000000000F424068400000000000000A712132D2471DB72B27E3310F355B" +
+      "B33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A7300764630440220718D264EF05CAED7C781FF6DE298DCAC68D002562" +
+      "C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B81142042" +
+      "88D2E47F8EF6C99BCC457966320D12409711";
+
+    assertSerializesAndDeserializes(claim, expectedBinary);
+  }
+
+  @Test
+  void serializePaymentChannelClaimWithZeroFlags() throws JsonProcessingException {
+    PaymentChannelClaim claim = PaymentChannelClaim.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
+      .balance(XrpCurrencyAmount.ofDrops(1000000))
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
+        "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .flags(PaymentChannelClaimFlags.of(0))
+      .build();
+
+    String expectedBinary = "12000F220000000024000000015016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749D" +
+      "CDD3B9E5992CA61986140000000000F42406240000000000F424068400000000000000A712132D2471DB72B27E3310F355B" +
+      "B33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A7300764630440220718D264EF05CAED7C781FF6DE298DCAC68D002562" +
+      "C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B81142042" +
+      "88D2E47F8EF6C99BCC457966320D12409711";
+
+    assertSerializesAndDeserializes(claim, expectedBinary);
+  }
+
+  @Test
+  void serializePaymentChannelClaimWithNonZeroFlags() throws JsonProcessingException {
     PaymentChannelClaim claim = PaymentChannelClaim.builder()
       .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
       .fee(XrpCurrencyAmount.ofDrops(10))
@@ -392,7 +521,48 @@ public class BinarySerializationTests {
   }
 
   @Test
-  void serializeTrustLine() throws JsonProcessingException {
+  void serializeTrustSetwithEmptyFlags() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(44))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("WCG")
+        .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+        .value("10000000")
+        .build())
+      .build();
+
+
+    String expectedBinary = "120014240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
+      "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
+      "300183E3";
+    assertSerializesAndDeserializes(trustSet, expectedBinary);
+  }
+
+  @Test
+  void serializeTrustSetWithZeroFlags() throws JsonProcessingException {
+    TrustSet trustSet = TrustSet.builder()
+      .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .flags(TrustSetFlags.of(0))
+      .sequence(UnsignedInteger.valueOf(44))
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency("WCG")
+        .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+        .value("10000000")
+        .build())
+      .build();
+
+
+    String expectedBinary = "1200142200000000240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
+      "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
+      "300183E3";
+    assertSerializesAndDeserializes(trustSet, expectedBinary);
+  }
+
+  @Test
+  void serializeTrustSetWithNonZeroFlags() throws JsonProcessingException {
     TrustSet trustSet = TrustSet.builder()
       .account(Address.of("rJMiz2rCMjZzEMijXNH1exNBryTQEjFd9S"))
       .fee(XrpCurrencyAmount.ofDrops(12))
@@ -868,7 +1038,46 @@ public class BinarySerializationTests {
   }
 
   @Test
-  public void serializeOfferCreate() throws JsonProcessingException {
+  public void serializeOfferCreateWithEmptyFlags() throws JsonProcessingException {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .takerGets(currencyAmount(100))
+      .takerPays(currencyAmount(200))
+      .fee(XrpCurrencyAmount.ofDrops(300))
+      .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .sequence(UnsignedInteger.valueOf(11223344))
+      .offerSequence(UnsignedInteger.valueOf(123))
+      .expiration(UnsignedInteger.valueOf(456))
+      .build();
+
+    String expectedBinary = "1200072400AB41302A000001C820190000007B64D5071AFD498D0000000000000000000" +
+      "0000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE465D5038D7EA4C6800000000000000000000000" +
+      "00005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000012C73008114832297BEF589D59F9" +
+      "C03A84F920F8D9128CC1CE4";
+    assertSerializesAndDeserializes(offerCreate, expectedBinary);
+  }
+
+  @Test
+  public void serializeOfferCreateWithZeroFlags() throws JsonProcessingException {
+    OfferCreate offerCreate = OfferCreate.builder()
+      .takerGets(currencyAmount(100))
+      .takerPays(currencyAmount(200))
+      .fee(XrpCurrencyAmount.ofDrops(300))
+      .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
+      .sequence(UnsignedInteger.valueOf(11223344))
+      .offerSequence(UnsignedInteger.valueOf(123))
+      .flags(OfferCreateFlags.of(0))
+      .expiration(UnsignedInteger.valueOf(456))
+      .build();
+
+    String expectedBinary = "12000722000000002400AB41302A000001C820190000007B64D5071AFD498D0000000000000000000" +
+      "0000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE465D5038D7EA4C6800000000000000000000000" +
+      "00005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000012C73008114832297BEF589D59F9" +
+      "C03A84F920F8D9128CC1CE4";
+    assertSerializesAndDeserializes(offerCreate, expectedBinary);
+  }
+
+  @Test
+  public void serializeOfferCreateWithNonZeroFlags() throws JsonProcessingException {
     OfferCreate offerCreate = OfferCreate.builder()
       .takerGets(currencyAmount(100))
       .takerPays(currencyAmount(200))

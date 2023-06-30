@@ -41,7 +41,7 @@ public class TransactionFlags extends Flags {
     super(value);
   }
 
-  public TransactionFlags() {
+  TransactionFlags() {
     super();
   }
 

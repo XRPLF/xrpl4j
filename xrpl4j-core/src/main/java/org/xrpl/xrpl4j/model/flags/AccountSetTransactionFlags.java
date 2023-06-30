@@ -67,7 +67,7 @@ public class AccountSetTransactionFlags extends TransactionFlags {
     super(value);
   }
 
-  public AccountSetTransactionFlags() {
+  private AccountSetTransactionFlags() {
     super();
   }
 

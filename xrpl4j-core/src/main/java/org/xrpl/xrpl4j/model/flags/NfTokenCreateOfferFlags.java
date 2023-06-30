@@ -36,7 +36,7 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
     super(value);
   }
 
-  public NfTokenCreateOfferFlags() {
+  private NfTokenCreateOfferFlags() {
     super();
   }
 

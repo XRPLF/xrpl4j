@@ -93,8 +93,7 @@ public class AccountNftsResultJsonTests extends AbstractJsonTest {
       "                \"Issuer\": \"rEoTrW1kYccRxZSTRrYfGSzALXGhf6YcF3\",\n" +
       "                \"NFTokenTaxon\": 22830,\n" +
       "                \"nft_serial\": 111,\n" +
-      // FIXME: TransferFee serializes to String, but rippled returns an int
-      "                \"TransferFee\": \"10000\"\n" +
+      "                \"TransferFee\": 10000\n" +
       "            }\n" +
       "        ],\n" +
       "        \"limit\": 100,\n" +

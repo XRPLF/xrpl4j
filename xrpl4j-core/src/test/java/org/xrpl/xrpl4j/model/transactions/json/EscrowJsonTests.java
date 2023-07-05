@@ -123,7 +123,8 @@ public class EscrowJsonTests extends AbstractJsonTest {
   }
 
   @Test
-  public void testEscrowCreateJsonWithNonZeroFlags() throws JsonProcessingException, JSONException, DerEncodingException {
+  public void testEscrowCreateJsonWithNonZeroFlags()
+    throws JsonProcessingException, JSONException, DerEncodingException {
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
@@ -309,7 +310,8 @@ public class EscrowJsonTests extends AbstractJsonTest {
   }
 
   @Test
-  public void testEscrowFinishJsonWithNonZeroFlags() throws JsonProcessingException, JSONException, DerEncodingException {
+  public void testEscrowFinishJsonWithNonZeroFlags()
+    throws JsonProcessingException, JSONException, DerEncodingException {
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(330))

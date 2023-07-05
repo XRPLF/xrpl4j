@@ -53,7 +53,8 @@ public class NfTokenMintFlags extends TransactionFlags {
     super(value);
   }
 
-  private NfTokenMintFlags() {}
+  private NfTokenMintFlags() {
+  }
 
   /**
    * Create a new {@link Builder}.

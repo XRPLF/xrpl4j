@@ -43,7 +43,8 @@ public class PaymentChannelClaimFlags extends TransactionFlags {
     super(value);
   }
 
-  private PaymentChannelClaimFlags() {}
+  private PaymentChannelClaimFlags() {
+  }
 
   /**
    * Create a new {@link Builder}.

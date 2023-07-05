@@ -67,7 +67,8 @@ public class AccountSetTransactionFlags extends TransactionFlags {
     super(value);
   }
 
-  private AccountSetTransactionFlags() {}
+  private AccountSetTransactionFlags() {
+  }
 
   private static AccountSetTransactionFlags of(
     boolean tfFullyCanonicalSig,

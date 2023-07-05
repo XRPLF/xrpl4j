@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
-import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 
 /**
  * Request parameters for the {@code amm_info} rippled API method.
@@ -26,15 +26,15 @@ public interface AmmInfoRequestParams extends XrplRequestParams {
   /**
    * One of the assets of the AMM to look up.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
-  Asset asset();
+  Issue asset();
 
   /**
    * The other of the assets of the AMM.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
-  Asset asset2();
+  Issue asset2();
 
 }

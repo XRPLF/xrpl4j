@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 
 /**
  * Object mapping for the AMMVote transaction.
@@ -42,18 +41,18 @@ public interface AmmVote extends Transaction {
   /**
    * The definition for one of the assets in the AMM's pool.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
   @JsonProperty("Asset")
-  Asset asset();
+  Issue asset();
 
   /**
    * The definition for the other asset in the AMM's pool.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
   @JsonProperty("Asset2")
-  Asset asset2();
+  Issue asset2();
 
   /**
    * The proposed fee to vote for.

@@ -12,8 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +28,9 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -78,9 +77,9 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -127,9 +126,9 @@ class AmmDepositTest extends AbstractJsonTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -180,9 +179,9 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -242,9 +241,9 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -298,9 +297,9 @@ class AmmDepositTest extends AbstractJsonTest {
     ImmutableAmmDeposit.Builder builder = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()

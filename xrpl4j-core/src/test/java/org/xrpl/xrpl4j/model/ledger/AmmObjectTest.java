@@ -28,8 +28,8 @@ class AmmObjectTest extends AbstractJsonTest {
       .tradingFee(TradingFee.of(UnsignedInteger.valueOf(2)))
       .build();
     AmmObject ammObject = AmmObject.builder()
-      .asset(mock(Asset.class))
-      .asset2(mock(Asset.class))
+      .asset(mock(Issue.class))
+      .asset2(mock(Issue.class))
       .ammAccount(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
       .lpTokenBalance(mock(IssuedCurrencyAmount.class))
       .tradingFee(TradingFee.of(UnsignedInteger.ONE))
@@ -46,9 +46,9 @@ class AmmObjectTest extends AbstractJsonTest {
   @Test
   void testJson() throws JSONException, JsonProcessingException {
     AmmObject ammObject = AmmObject.builder()
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()

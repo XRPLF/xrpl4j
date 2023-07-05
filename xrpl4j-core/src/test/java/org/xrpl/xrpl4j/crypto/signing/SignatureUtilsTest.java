@@ -48,7 +48,7 @@ import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
-import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
@@ -587,9 +587,9 @@ public class SignatureUtilsTest {
   void addSignatureToAmmBid() {
     AmmBid bid = AmmBid.builder()
       .account(sourcePublicKey.deriveAddress())
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -632,9 +632,9 @@ public class SignatureUtilsTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -656,9 +656,9 @@ public class SignatureUtilsTest {
   void addSignatureToAmmVote() {
     AmmVote vote = AmmVote.builder()
       .account(sourcePublicKey.deriveAddress())
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -678,12 +678,12 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
       )
-      .asset2(Asset.XRP)
+      .asset2(Issue.XRP)
       .flags(AmmWithdrawFlags.WITHDRAW_ALL)
       .signingPublicKey(sourcePublicKey)
       .build();
@@ -1015,9 +1015,9 @@ public class SignatureUtilsTest {
   void addMultiSignatureToAmmBid() {
     AmmBid bid = AmmBid.builder()
       .account(sourcePublicKey.deriveAddress())
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1058,9 +1058,9 @@ public class SignatureUtilsTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
@@ -1081,9 +1081,9 @@ public class SignatureUtilsTest {
   void addMultiSignatureToAmmVote() {
     AmmVote vote = AmmVote.builder()
       .account(sourcePublicKey.deriveAddress())
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency("TST")
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
@@ -1102,12 +1102,12 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .asset(
-        Asset.builder()
+        Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
       )
-      .asset2(Asset.XRP)
+      .asset2(Issue.XRP)
       .flags(AmmWithdrawFlags.WITHDRAW_ALL)
       .build();
 

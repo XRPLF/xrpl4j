@@ -56,18 +56,18 @@ public interface AmmObject extends LedgerObject {
   /**
    * The definition for one of the two assets this AMM holds.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
   @JsonProperty("Asset")
-  Asset asset();
+  Issue asset();
 
   /**
    * The definition for the other asset this AMM holds.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
   @JsonProperty("Asset2")
-  Asset asset2();
+  Issue asset2();
 
   /**
    * The address of the special account that holds this AMM's assets.

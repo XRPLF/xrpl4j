@@ -33,12 +33,12 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAsset.class)
 @JsonDeserialize(as = ImmutableAsset.class)
-public interface Asset {
+public interface Issue {
 
   /**
-   * Constant {@link Asset} representing XRP.
+   * Constant {@link Issue} representing XRP.
    */
-  Asset XRP = Asset.builder().currency("XRP").build();
+  Issue XRP = Issue.builder().currency("XRP").build();
 
   /**
    * Construct a {@code Asset} builder.

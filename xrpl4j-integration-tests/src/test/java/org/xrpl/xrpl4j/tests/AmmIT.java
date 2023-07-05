@@ -8,7 +8,6 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
@@ -27,7 +26,7 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
-import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
@@ -91,12 +90,12 @@ public class AmmIT extends AbstractIT {
       .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .tradingFee(newTradingFee)
       .build();
 
@@ -178,12 +177,12 @@ public class AmmIT extends AbstractIT {
       .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .addAuthAccounts(
         AuthAccountWrapper.of(AuthAccount.of(authAccount1.publicKey().deriveAddress()))
       )
@@ -247,12 +246,12 @@ public class AmmIT extends AbstractIT {
       )
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(90)))
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .build();
@@ -298,12 +297,12 @@ public class AmmIT extends AbstractIT {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(traderAccount.accountData().account())
       .asset2(
-        Asset.builder()
+        Issue.builder()
           .currency(xrpl4jCoin)
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .build()
       )
-      .asset(Asset.XRP)
+      .asset(Issue.XRP)
       .amount(depositAmount)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(traderAccount.accountData().sequence())
@@ -392,12 +391,12 @@ public class AmmIT extends AbstractIT {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
       AmmInfoRequestParams.builder()
         .asset(
-          Asset.builder()
+          Issue.builder()
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .currency(xrpl4jCoin)
             .build()
         )
-        .asset2(Asset.XRP)
+        .asset2(Issue.XRP)
         .build()
     );
 

@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
-import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.ledger.Asset;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 
 import java.util.Optional;
 
@@ -59,18 +58,18 @@ public interface AmmDeposit extends Transaction {
   /**
    * The definition for one of the assets in the AMM's pool.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
   @JsonProperty("Asset")
-  Asset asset();
+  Issue asset();
 
   /**
    * The definition for the other asset in the AMM's pool.
    *
-   * @return An {@link Asset}.
+   * @return An {@link Issue}.
    */
   @JsonProperty("Asset2")
-  Asset asset2();
+  Issue asset2();
 
   /**
    * The amount of one asset to deposit to the AMM. If present, this must match the type of one of the assets

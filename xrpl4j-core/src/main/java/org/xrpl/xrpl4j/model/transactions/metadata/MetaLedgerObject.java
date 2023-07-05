@@ -1,8 +1,8 @@
-package org.xrpl.xrpl4j.tests.environment;
+package org.xrpl.xrpl4j.model.transactions.metadata;
 
 /*-
  * ========================LICENSE_START=================================
- * xrpl4j :: integration-tests
+ * xrpl4j :: model
  * %%
  * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
  * %%
@@ -20,20 +20,12 @@ package org.xrpl.xrpl4j.tests.environment;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.model.transactions.Address;
-
 /**
- * Abstract class representing integration test environment that uses Mainnet as its XRPL network.
+ * Market interface for XRP Ledger Objects as represented in transaction metadata. Unlike descendants of
+ * {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}, all descendants of this interface will have all fields typed as
+ * {@link java.util.Optional} because ledger objects represented in transaction metadata often do not contain
+ * all fields of the ledger object.
  */
-public abstract class MainnetEnvironment implements XrplEnvironment {
-
-  @Override
-  public abstract XrplClient getXrplClient();
-
-  @Override
-  public void fundAccount(Address classicAddress) {
-    throw new UnsupportedOperationException("funding not supported on mainnet");
-  }
+public interface MetaLedgerObject {
 
 }

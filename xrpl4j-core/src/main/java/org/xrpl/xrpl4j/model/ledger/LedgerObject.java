@@ -32,7 +32,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.EXISTING_PROPERTY,
-  property = "LedgerEntryType"
+  property = "LedgerEntryType",
+  defaultImpl = ImmutableUnknownLedgerObject.class,
+  visible = true
 )
 @JsonSubTypes( {
   @JsonSubTypes.Type(value = ImmutableAccountRootObject.class, name = "AccountRoot"),
@@ -152,7 +154,6 @@ public interface LedgerObject {
      * <p>Mostly used by Jackson for deserialization.
      *
      * @param value The {@link String} value of a {@link LedgerEntryType}.
-     *
      * @return A {@link LedgerEntryType}.
      */
     @JsonCreator

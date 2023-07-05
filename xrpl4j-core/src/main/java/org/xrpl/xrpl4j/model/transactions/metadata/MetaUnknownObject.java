@@ -1,8 +1,8 @@
-package org.xrpl.xrpl4j.tests.environment;
+package org.xrpl.xrpl4j.model.transactions.metadata;
 
 /*-
  * ========================LICENSE_START=================================
- * xrpl4j :: integration-tests
+ * xrpl4j :: model
  * %%
  * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
  * %%
@@ -20,20 +20,17 @@ package org.xrpl.xrpl4j.tests.environment;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.model.transactions.Address;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value.Immutable;
 
 /**
- * Abstract class representing integration test environment that uses Mainnet as its XRPL network.
+ * A {@link MetaLedgerObject} representing ledger objects that xrpl4j does not understand. This can happen
+ * when a new type of ledger object is added to the ledger and an old version of xrpl4j is used.
  */
-public abstract class MainnetEnvironment implements XrplEnvironment {
-
-  @Override
-  public abstract XrplClient getXrplClient();
-
-  @Override
-  public void fundAccount(Address classicAddress) {
-    throw new UnsupportedOperationException("funding not supported on mainnet");
-  }
+@Immutable
+@JsonSerialize(as = ImmutableMetaUnknownObject.class)
+@JsonDeserialize(as = ImmutableMetaUnknownObject.class)
+public interface MetaUnknownObject extends MetaLedgerObject {
 
 }

@@ -1,8 +1,8 @@
-package org.xrpl.xrpl4j.tests.environment;
+package org.xrpl.xrpl4j.model.transactions.metadata;
 
 /*-
  * ========================LICENSE_START=================================
- * xrpl4j :: integration-tests
+ * xrpl4j :: model
  * %%
  * Copyright (C) 2020 - 2022 XRPL Foundation and its contributors
  * %%
@@ -20,20 +20,26 @@ package org.xrpl.xrpl4j.tests.environment;
  * =========================LICENSE_END==================================
  */
 
-import org.xrpl.xrpl4j.client.XrplClient;
-import org.xrpl.xrpl4j.model.transactions.Address;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.ledger.ImmutableSignerEntryWrapper;
 
 /**
- * Abstract class representing integration test environment that uses Mainnet as its XRPL network.
+ * A wrapper for {@link MetaSignerEntry} to conform to the rippled API JSON structure.
  */
-public abstract class MainnetEnvironment implements XrplEnvironment {
+@Value.Immutable
+@JsonSerialize(as = ImmutableMetaSignerEntryWrapper.class)
+@JsonDeserialize(as = ImmutableMetaSignerEntryWrapper.class)
+public interface MetaSignerEntryWrapper {
 
-  @Override
-  public abstract XrplClient getXrplClient();
-
-  @Override
-  public void fundAccount(Address classicAddress) {
-    throw new UnsupportedOperationException("funding not supported on mainnet");
-  }
+  /**
+   * The {@link MetaSignerEntry} that this wrapper wraps.
+   *
+   * @return A {@link MetaSignerEntry}.
+   */
+  @JsonProperty("SignerEntry")
+  MetaSignerEntry signerEntry();
 
 }

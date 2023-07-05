@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -78,10 +78,30 @@ public class AccountRootFlags extends Flags {
   public static final AccountRootFlags REQUIRE_DEST_TAG = new AccountRootFlags(0x00020000);
 
   /**
+   * Constant {@link AccountRootFlags} for the {@code lsfDisallowIncomingNFTokenOffer} account flag.
+   */
+  public static final AccountRootFlags DISALLOW_INCOMING_NFT_OFFER = new AccountRootFlags(0x04000000);
+
+  /**
+   * Constant {@link AccountRootFlags} for the {@code lsfDisallowIncomingCheck} account flag.
+   */
+  public static final AccountRootFlags DISALLOW_INCOMING_CHECK = new AccountRootFlags(0x08000000);
+
+  /**
+   * Constant {@link AccountRootFlags} for the {@code lsfDisallowIncomingPayChan} account flag.
+   */
+  public static final AccountRootFlags DISALLOW_INCOMING_PAY_CHAN = new AccountRootFlags(0x10000000);
+
+  /**
+   * Constant {@link AccountRootFlags} for the {@code lsfDisallowIncomingTrustline} account flag.
+   */
+  public static final AccountRootFlags DISALLOW_INCOMING_TRUSTLINE = new AccountRootFlags(0x20000000);
+
+  /**
    * Constant {@link AccountRootFlags} for the {@code lsfAMM} account flag.
    */
   public static final AccountRootFlags AMM = new AccountRootFlags(0x40000000);
-  
+
   /**
    * Required-args Constructor.
    *
@@ -95,7 +115,6 @@ public class AccountRootFlags extends Flags {
    * Construct {@link AccountRootFlags} with a given value.
    *
    * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
-   *
    * @return New {@link AccountRootFlags}.
    */
   public static AccountRootFlags of(long value) {
@@ -183,6 +202,43 @@ public class AccountRootFlags extends Flags {
    */
   public boolean lsfRequireDestTag() {
     return this.isSet(AccountRootFlags.REQUIRE_DEST_TAG);
+  }
+
+  /**
+   * Blocks incoming NFToken Offers.
+   *
+   * @return {@code true} if {@code lsfDisallowIncomingNFTokenOffer} is set, otherwise {@code false}.
+   */
+  @SuppressWarnings("AbbreviationAsWordInName")
+  public boolean lsfDisallowIncomingNFTokenOffer() {
+    return this.isSet(AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER);
+  }
+
+  /**
+   * Blocks incoming Checks.
+   *
+   * @return {@code true} if {@code lsfDisallowIncomingCheck} is set, otherwise {@code false}.
+   */
+  public boolean lsfDisallowIncomingCheck() {
+    return this.isSet(AccountRootFlags.DISALLOW_INCOMING_CHECK);
+  }
+
+  /**
+   * Blocks incoming Payment Channels.
+   *
+   * @return {@code true} if {@code lsfDisallowIncomingPayChan} is set, otherwise {@code false}.
+   */
+  public boolean lsfDisallowIncomingPayChan() {
+    return this.isSet(AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN);
+  }
+
+  /**
+   * Blocks incoming Trustlines.
+   *
+   * @return {@code true} if {@code lsfDisallowIncomingTrustline} is set, otherwise {@code false}.
+   */
+  public boolean lsfDisallowIncomingTrustline() {
+    return this.isSet(AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE);
   }
 
   /**

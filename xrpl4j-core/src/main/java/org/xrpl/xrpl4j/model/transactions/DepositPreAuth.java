@@ -62,7 +62,7 @@ public interface DepositPreAuth extends Transaction {
    * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
-  @Derived
+  @Value.Default
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }

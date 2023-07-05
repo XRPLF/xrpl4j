@@ -30,7 +30,12 @@ public class TransactionFlags extends Flags {
   /**
    * Corresponds to the {@code tfFullyCanonicalSig} flag.
    */
-  protected static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
+  public static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
+
+  /**
+   * Constant for an unset flag.
+   */
+  public static final TransactionFlags UNSET = new TransactionFlags(0L);
 
   /**
    * Constant empty {@link TransactionFlags}.

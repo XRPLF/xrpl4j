@@ -91,7 +91,7 @@ public interface NfTokenBurn extends Transaction {
    * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
-  @Value.Derived
+  @Value.Default
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }

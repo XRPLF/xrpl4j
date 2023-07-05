@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -54,6 +55,58 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"14\"\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(offerCancel, json);
+  }
+
+  @Test
+  public void testOfferCancelJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .offerSequence(UnsignedInteger.valueOf(13))
+      .fee(XrpCurrencyAmount.ofDrops(14))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "    \"TransactionType\": \"OfferCancel\",\n" +
+      "    \"Sequence\": 12,\n" +
+      "    \"OfferSequence\": 13,\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"14\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(offerCancel, json);
+  }
+
+  @Test
+  public void testOfferCancelJsonWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .offerSequence(UnsignedInteger.valueOf(13))
+      .fee(XrpCurrencyAmount.ofDrops(14))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "    \"TransactionType\": \"OfferCancel\",\n" +
+      "    \"Sequence\": 12,\n" +
+      "    \"OfferSequence\": 13,\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"14\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(offerCancel, json);
   }

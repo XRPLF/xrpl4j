@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
@@ -55,6 +56,58 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(checkCancel, json);
+  }
+
+  @Test
+  public void testCheckCancelJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
+    CheckCancel checkCancel = CheckCancel.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "    \"TransactionType\": \"CheckCancel\",\n" +
+      "    \"CheckID\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\",\n" +
+      "    \"Sequence\": 12,\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCancel, json);
+  }
+
+  @Test
+  public void testCheckCancelJsonWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    CheckCancel checkCancel = CheckCancel.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
+      .sequence(UnsignedInteger.valueOf(12))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "    \"TransactionType\": \"CheckCancel\",\n" +
+      "    \"CheckID\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\",\n" +
+      "    \"Sequence\": 12,\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(checkCancel, json);
   }
@@ -107,6 +160,62 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(checkCash, json);
+  }
+
+  @Test
+  public void testCheckCashJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "    \"TransactionType\": \"CheckCash\",\n" +
+      "    \"Amount\": \"100\",\n" +
+      "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCash, json);
+  }
+
+  @Test
+  public void testCheckCashJsonWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    CheckCash checkCash = CheckCash.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .checkId(Hash256.of("838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .amount(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "    \"TransactionType\": \"CheckCash\",\n" +
+      "    \"Amount\": \"100\",\n" +
+      "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(checkCash, json);
   }
@@ -165,6 +274,62 @@ public class CheckJsonTests extends AbstractJsonTest {
       "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "  \"Fee\": \"12\"\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(checkCreate, json);
+  }
+
+  @Test
+  public void testCheckCreateJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sendMax(XrpCurrencyAmount.ofDrops(100000000))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String json = "{\n" +
+      "  \"TransactionType\": \"CheckCreate\",\n" +
+      "  \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "  \"Destination\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "  \"SendMax\": \"100000000\",\n" +
+      "  \"Sequence\": 1,\n" +
+      "  \"Flags\": 0,\n" +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "  \"Fee\": \"12\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(checkCreate, json);
+  }
+
+  @Test
+  public void testCheckCreateJsonWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    CheckCreate checkCreate = CheckCreate.builder()
+      .account(Address.of("rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .destination(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sendMax(XrpCurrencyAmount.ofDrops(100000000))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String json = String.format("{\n" +
+      "  \"TransactionType\": \"CheckCreate\",\n" +
+      "  \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
+      "  \"Destination\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
+      "  \"SendMax\": \"100000000\",\n" +
+      "  \"Sequence\": 1,\n" +
+      "  \"Flags\": %s,\n" +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "  \"Fee\": \"12\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG);
 
     assertCanSerializeAndDeserialize(checkCreate, json);
   }

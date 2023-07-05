@@ -28,11 +28,11 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import java.util.Optional;
 
 /**
- * Represents an Asset held by an {@link AmmObject}.
+ * Represents an asset on the ledger without an amount.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableAsset.class)
-@JsonDeserialize(as = ImmutableAsset.class)
+@JsonSerialize(as = ImmutableIssue.class)
+@JsonDeserialize(as = ImmutableIssue.class)
 public interface Issue {
 
   /**
@@ -43,10 +43,10 @@ public interface Issue {
   /**
    * Construct a {@code Asset} builder.
    *
-   * @return An {@link ImmutableAsset.Builder}.
+   * @return An {@link ImmutableIssue.Builder}.
    */
-  static ImmutableAsset.Builder builder() {
-    return ImmutableAsset.builder();
+  static ImmutableIssue.Builder builder() {
+    return ImmutableIssue.builder();
   }
 
   /**

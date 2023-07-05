@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -73,7 +74,7 @@ class MultiSignedTransactionTest {
         .sequence(UnsignedInteger.ONE)
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
-        .flags(PaymentFlags.of(2147483648L))
+        .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
         .build())
       .addSignerSet(
         signer1,

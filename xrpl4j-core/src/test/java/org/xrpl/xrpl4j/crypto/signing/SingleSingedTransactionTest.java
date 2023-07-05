@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -53,7 +54,7 @@ class SingleSingedTransactionTest {
         .sequence(UnsignedInteger.ONE)
         .amount(XrpCurrencyAmount.ofDrops(12345))
         .destination(EC_ADDRESS)
-        .flags(PaymentFlags.of(2147483648L))
+        .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
         .build())
       .unsignedTransaction(Payment.builder()
         .account(ED_ADDRESS)

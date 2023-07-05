@@ -51,9 +51,7 @@ public class PaymentFlags extends TransactionFlags {
     super(value);
   }
 
-  private PaymentFlags() {
-    super();
-  }
+  private PaymentFlags() {}
 
   /**
    * Create a new {@link Builder}.

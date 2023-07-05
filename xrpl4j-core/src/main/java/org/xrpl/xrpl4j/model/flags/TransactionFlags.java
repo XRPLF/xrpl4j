@@ -46,9 +46,7 @@ public class TransactionFlags extends Flags {
     super(value);
   }
 
-  TransactionFlags() {
-    super();
-  }
+  TransactionFlags() {}
 
   /**
    * Flags indicating that a fully-canonical signature is required. This flag is highly recommended.

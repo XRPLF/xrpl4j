@@ -51,9 +51,7 @@ public class OfferCreateFlags extends TransactionFlags {
     super(value);
   }
 
-  private OfferCreateFlags() {
-    super();
-  }
+  private OfferCreateFlags() {}
 
   /**
    * Create a new {@link Builder}.

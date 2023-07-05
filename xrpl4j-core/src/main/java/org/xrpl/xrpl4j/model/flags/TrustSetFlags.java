@@ -63,9 +63,7 @@ public class TrustSetFlags extends TransactionFlags {
     super(value);
   }
 
-  private TrustSetFlags() {
-    super();
-  }
+  private TrustSetFlags() {}
 
   /**
    * Create a new {@link Builder}.

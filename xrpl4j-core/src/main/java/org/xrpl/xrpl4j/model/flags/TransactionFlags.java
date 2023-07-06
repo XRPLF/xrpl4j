@@ -30,10 +30,23 @@ public class TransactionFlags extends Flags {
   /**
    * Corresponds to the {@code tfFullyCanonicalSig} flag.
    */
-  protected static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
+  public static final TransactionFlags FULLY_CANONICAL_SIG = new TransactionFlags(0x80000000L);
+
+  /**
+   * Constant for an unset flag.
+   */
+  public static final TransactionFlags UNSET = new TransactionFlags(0L);
+
+  /**
+   * Constant empty {@link TransactionFlags}.
+   */
+  public static final TransactionFlags EMPTY = new TransactionFlags();
 
   TransactionFlags(long value) {
     super(value);
+  }
+
+  TransactionFlags() {
   }
 
   /**
@@ -57,9 +70,7 @@ public class TransactionFlags extends Flags {
      * @return {@link TransactionFlags}.
      */
     public TransactionFlags build() {
-      return new TransactionFlags(
-        TransactionFlags.FULLY_CANONICAL_SIG.getValue()
-      );
+      return TransactionFlags.EMPTY;
     }
   }
 }

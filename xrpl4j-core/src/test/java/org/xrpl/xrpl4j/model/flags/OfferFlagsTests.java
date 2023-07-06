@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,8 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -48,5 +50,25 @@ public class OfferFlagsTests extends AbstractFlagsTest {
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfPassive()).isEqualTo(lsfPassive);
     assertThat(flags.lsfSell()).isEqualTo(lsfSell);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean lsfPassive,
+    boolean lsfSell
+  ) throws JSONException, JsonProcessingException {
+    long expectedFlags = (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
+      (lsfSell ? OfferFlags.SELL.getValue() : 0L);
+
+    OfferFlags flags = OfferFlags.of(expectedFlags);
+
+    FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
+
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+    assertCanSerializeAndDeserialize(flagsWrapper, json);
   }
 }

@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -70,6 +73,53 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfImmediateOrCancel()).isEqualTo(tfImmediateOrCancel);
     assertThat(flags.tfFillOrKill()).isEqualTo(tfFillOrKill);
     assertThat(flags.tfSell()).isEqualTo(tfSell);
+  }
+
+  @Test
+  void testEmptyFlags() {
+    OfferCreateFlags flags = OfferCreateFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfPassive()).isFalse();
+    assertThat(flags.tfImmediateOrCancel()).isFalse();
+    assertThat(flags.tfFillOrKill()).isFalse();
+    assertThat(flags.tfSell()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean tfPassive,
+    boolean tfImmediateOrCancel,
+    boolean tfFillOrKill,
+    boolean tfSell
+  ) throws JSONException, JsonProcessingException {
+    OfferCreateFlags flags = OfferCreateFlags.builder()
+      .tfPassive(tfPassive)
+      .tfImmediateOrCancel(tfImmediateOrCancel)
+      .tfFillOrKill(tfFillOrKill)
+      .tfSell(tfSell)
+      .build();
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    OfferCreateFlags flags = OfferCreateFlags.empty();
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(

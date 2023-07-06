@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -52,9 +53,64 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       "    \"DestinationTag\": 13,\n" +
       "    \"Fee\": \"5000000\",\n" +
       "    \"Sequence\": 2470665,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Flags\": 2147483648\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(accountDelete, json);
+  }
+
+  @Test
+  public void testJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
+    AccountDelete accountDelete = AccountDelete.builder()
+      .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .fee(XrpCurrencyAmount.ofDrops(5000000))
+      .sequence(UnsignedInteger.valueOf(2470665))
+      .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
+      .destinationTag(UnsignedInteger.valueOf(13))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String json = "{\n" +
+      "    \"TransactionType\": \"AccountDelete\",\n" +
+      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+      "    \"DestinationTag\": 13,\n" +
+      "    \"Fee\": \"5000000\",\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"Sequence\": 2470665,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(accountDelete, json);
+  }
+
+  @Test
+  public void testJsonWithNonZeroFlags() throws JsonProcessingException, JSONException {
+    AccountDelete accountDelete = AccountDelete.builder()
+      .account(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .fee(XrpCurrencyAmount.ofDrops(5000000))
+      .sequence(UnsignedInteger.valueOf(2470665))
+      .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
+      .destinationTag(UnsignedInteger.valueOf(13))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"TransactionType\": \"AccountDelete\",\n" +
+      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+      "    \"DestinationTag\": 13,\n" +
+      "    \"Fee\": \"5000000\",\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"Sequence\": 2470665,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }

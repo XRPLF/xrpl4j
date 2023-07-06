@@ -51,18 +51,15 @@ public interface AccountSet extends Transaction {
   }
 
   /**
-   * Set of {@link AccountSetTransactionFlags}s for this {@link AccountDelete}, which only allows the
-   * {@code tfFullyCanonicalSig} flag.
+   * Set of {@link AccountSetTransactionFlags}s for this {@link AccountSet}. Defaults to
+   * {@link AccountSetTransactionFlags#empty()}.
    *
-   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
-   * proper signature computation in rippled.
-   *
-   * @return Always {@link AccountSetTransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return An {@link AccountSetTransactionFlags}.
    */
   @JsonProperty("Flags")
   @Value.Default
   default AccountSetTransactionFlags flags() {
-    return new AccountSetTransactionFlags.Builder().build();
+    return AccountSetTransactionFlags.empty();
   }
 
   /**
@@ -259,7 +256,23 @@ public interface AccountSet extends Transaction {
     /**
      * Allow another account to mint and burn tokens on behalf of this account.
      */
-    AUTHORIZED_MINTER(10);
+    AUTHORIZED_MINTER(10),
+    /**
+     * Block incoming NFTokenOffers.
+     */
+    DISALLOW_INCOMING_NFT_OFFER(12),
+    /**
+     * Block incoming Checks.
+     */
+    DISALLOW_INCOMING_CHECK(13),
+    /**
+     * Block incoming Payment Channels.
+     */
+    DISALLOW_INCOMING_PAY_CHAN(14),
+    /**
+     * Block incoming Trustlines.
+     */
+    DISALLOW_INCOMING_TRUSTLINE(15);
 
     int value;
 

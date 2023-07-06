@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -49,10 +50,61 @@ class TicketCreateJsonTest extends AbstractJsonTest {
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 2147483648,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"TicketCount\": 200\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(ticketCreate, json);
+  }
+
+  @Test
+  void testJsonWithUnsetFlags() throws JSONException, JsonProcessingException {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.valueOf(200))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String json = "{\n" +
+      "    \"TransactionType\": \"TicketCreate\",\n" +
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TicketCount\": 200\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(ticketCreate, json);
+  }
+
+  @Test
+  void testJsonWithNonZeroFlags() throws JSONException, JsonProcessingException {
+    TicketCreate ticketCreate = TicketCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .ticketCount(UnsignedInteger.valueOf(200))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"TransactionType\": \"TicketCreate\",\n" +
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TicketCount\": 200\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(ticketCreate, json);
   }

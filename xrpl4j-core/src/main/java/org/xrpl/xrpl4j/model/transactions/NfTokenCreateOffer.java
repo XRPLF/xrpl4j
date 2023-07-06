@@ -127,6 +127,6 @@ public interface NfTokenCreateOffer extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default NfTokenCreateOfferFlags flags() {
-    return new NfTokenCreateOfferFlags.Builder().build();
+    return NfTokenCreateOfferFlags.empty();
   }
 }

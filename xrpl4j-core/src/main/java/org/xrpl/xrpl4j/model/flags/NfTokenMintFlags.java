@@ -53,6 +53,9 @@ public class NfTokenMintFlags extends TransactionFlags {
     super(value);
   }
 
+  private NfTokenMintFlags() {
+  }
+
   /**
    * Create a new {@link Builder}.
    *
@@ -84,6 +87,16 @@ public class NfTokenMintFlags extends TransactionFlags {
    */
   public static NfTokenMintFlags of(long value) {
     return new NfTokenMintFlags(value);
+  }
+
+  /**
+   * Construct an empty instance of {@link NfTokenMintFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link NfTokenMintFlags}.
+   */
+  public static NfTokenMintFlags empty() {
+    return new NfTokenMintFlags();
   }
 
   /**

@@ -20,12 +20,9 @@ package org.xrpl.xrpl4j.model.flags;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import org.xrpl.xrpl4j.model.ledger.NfTokenOfferObject;
-import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
-
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A wrapper around a long value containing various XRPL Transaction Flags.
@@ -39,10 +36,15 @@ public class Flags {
    */
   public static final Flags UNSET = new Flags(0);
 
-  private final long value;
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private final Optional<Long> value;
 
   Flags(long value) {
-    this.value = value;
+    this.value = Optional.of(value);
+  }
+
+  Flags() {
+    this.value = Optional.empty();
   }
 
   /**
@@ -75,9 +77,17 @@ public class Flags {
    *
    * @return The underlying {@code long} value of this {@link Flags}.
    */
-  @JsonValue
   public long getValue() {
-    return value;
+    return value.orElse(0L);
+  }
+
+  /**
+   * Returns whether these {@link TransactionFlags} are empty.
+   *
+   * @return {@code true} if these flags are empty, otherwise {@code false}.
+   */
+  public boolean isEmpty() {
+    return !this.value.isPresent();
   }
 
   /**
@@ -88,7 +98,7 @@ public class Flags {
    * @return The {@link Flags} resulting from the OR operation.
    */
   Flags bitwiseOr(Flags other) {
-    return Flags.of(this.value | other.value);
+    return Flags.of(this.getValue() | other.getValue());
   }
 
   /**
@@ -99,7 +109,7 @@ public class Flags {
    * @return The {@link Flags} resulting from the AND operation.
    */
   Flags bitwiseAnd(Flags other) {
-    return Flags.of(this.value & other.value);
+    return Flags.of(this.getValue() & other.getValue());
   }
 
   /**
@@ -131,7 +141,7 @@ public class Flags {
 
   @Override
   public String toString() {
-    return String.valueOf(value);
+    return String.valueOf(value.orElse(0L));
   }
 
 }

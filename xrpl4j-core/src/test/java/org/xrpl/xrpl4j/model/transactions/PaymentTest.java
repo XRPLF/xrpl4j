@@ -52,12 +52,12 @@ public class PaymentTest {
 
   @Test
   public void flagsForXrpPayment() {
-    assertThat(xrpPayment().flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(xrpPayment().flags().isEmpty()).isTrue();
   }
 
   @Test
   public void flagsForIssuedCurrency() {
-    assertThat(issuedCurrencyPayment().flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(issuedCurrencyPayment().flags().isEmpty()).isTrue();
   }
 
   //////////////////

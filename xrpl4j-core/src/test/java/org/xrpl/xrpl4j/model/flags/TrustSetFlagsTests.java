@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -99,6 +102,57 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfClearNoRipple()).isEqualTo(tfClearNoRipple);
     assertThat(flags.tfSetFreeze()).isEqualTo(tfSetFreeze);
     assertThat(flags.tfClearFreeze()).isEqualTo(tfClearFreeze);
+  }
+
+  @Test
+  void testEmptyFlags() {
+    TrustSetFlags flags = TrustSetFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfSetfAuth()).isFalse();
+    assertThat(flags.tfSetNoRipple()).isFalse();
+    assertThat(flags.tfClearNoRipple()).isFalse();
+    assertThat(flags.tfSetFreeze()).isFalse();
+    assertThat(flags.tfClearFreeze()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean tfSetfAuth,
+    boolean tfSetNoRipple,
+    boolean tfClearNoRipple,
+    boolean tfSetFreeze,
+    boolean tfClearFreeze
+  ) throws JSONException, JsonProcessingException {
+    long expectedFlags = getExpectedFlags(
+      tfSetfAuth,
+      tfSetNoRipple,
+      tfClearNoRipple,
+      tfSetFreeze,
+      tfClearFreeze
+    );
+    TrustSetFlags flags = TrustSetFlags.of(expectedFlags);
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    TrustSetFlags flags = TrustSetFlags.empty();
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(

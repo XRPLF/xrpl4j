@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -59,6 +61,7 @@ class SignedTransactionTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("0281E58C76A7EB8397C008CB6B6D325FF6765F008CF845AF5EB02DAB6D222C612C")
       )
+      .flags(PaymentFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .destinationTag(UnsignedInteger.valueOf(371969))
       .build();
 

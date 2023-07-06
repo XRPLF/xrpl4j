@@ -43,6 +43,9 @@ public class PaymentChannelClaimFlags extends TransactionFlags {
     super(value);
   }
 
+  private PaymentChannelClaimFlags() {
+  }
+
   /**
    * Create a new {@link Builder}.
    *
@@ -71,6 +74,16 @@ public class PaymentChannelClaimFlags extends TransactionFlags {
    */
   public static PaymentChannelClaimFlags of(long value) {
     return new PaymentChannelClaimFlags(value);
+  }
+
+  /**
+   * Construct an empty instance of {@link PaymentChannelClaimFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link PaymentChannelClaimFlags}.
+   */
+  public static PaymentChannelClaimFlags empty() {
+    return new PaymentChannelClaimFlags();
   }
 
   /**

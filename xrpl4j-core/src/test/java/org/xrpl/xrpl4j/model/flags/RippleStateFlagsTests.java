@@ -22,6 +22,8 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -67,6 +69,40 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.lsfHighNoRipple()).isEqualTo(lsfHighNoRipple);
     assertThat(flags.lsfLowFreeze()).isEqualTo(lsfLowFreeze);
     assertThat(flags.lsfHighFreeze()).isEqualTo(lsfHighFreeze);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean lsfLowReserve,
+    boolean lsfHighReserve,
+    boolean lsfLowAuth,
+    boolean lsfHighAuth,
+    boolean lsfLowNoRipple,
+    boolean lsfHighNoRipple,
+    boolean lsfLowFreeze,
+    boolean lsfHighFreeze
+  ) throws JSONException, JsonProcessingException {
+    long expectedFlags = getExpectedFlags(
+      lsfLowReserve,
+      lsfHighReserve,
+      lsfLowAuth,
+      lsfHighAuth,
+      lsfLowNoRipple,
+      lsfHighNoRipple,
+      lsfLowFreeze,
+      lsfHighFreeze
+    );
+
+    RippleStateFlags flags = RippleStateFlags.of(expectedFlags);
+
+    FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
+
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+    assertCanSerializeAndDeserialize(flagsWrapper, json);
   }
 
   protected long getExpectedFlags(

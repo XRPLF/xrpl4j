@@ -105,7 +105,7 @@ public interface NfTokenMint extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default NfTokenMintFlags flags() {
-    return NfTokenMintFlags.builder().build();
+    return NfTokenMintFlags.empty();
   }
 
   /**

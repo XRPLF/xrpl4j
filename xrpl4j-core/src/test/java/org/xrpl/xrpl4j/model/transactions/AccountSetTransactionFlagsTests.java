@@ -35,6 +35,6 @@ public class AccountSetTransactionFlagsTests {
       .sequence(UnsignedInteger.ONE)
       .build();
 
-    assertThat(accountSet.flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(accountSet.flags().isEmpty()).isTrue();
   }
 }

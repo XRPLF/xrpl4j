@@ -78,7 +78,7 @@ public interface PaymentChannelClaim extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default PaymentChannelClaimFlags flags() {
-    return PaymentChannelClaimFlags.builder().build();
+    return PaymentChannelClaimFlags.empty();
   }
 
   /**

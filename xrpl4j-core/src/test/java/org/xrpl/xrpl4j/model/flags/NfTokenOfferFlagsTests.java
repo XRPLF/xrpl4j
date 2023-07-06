@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -48,5 +51,25 @@ public class NfTokenOfferFlagsTests extends AbstractFlagsTest {
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfBuyToken()).isEqualTo(lsfBuyToken);
     assertThat(flags.lsfAuthorized()).isEqualTo(lsfAuthorized);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean lsfBuyToken,
+    boolean lsfAuthorized
+  ) throws JSONException, JsonProcessingException {
+    long expectedFlags = (lsfBuyToken ? NfTokenOfferFlags.BUY_TOKEN.getValue() : 0L) |
+      (lsfAuthorized ? NfTokenOfferFlags.AUTHORIZED.getValue() : 0L);
+
+    NfTokenOfferFlags flags = NfTokenOfferFlags.of(expectedFlags);
+
+    FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
+
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+    assertCanSerializeAndDeserialize(flagsWrapper, json);
   }
 }

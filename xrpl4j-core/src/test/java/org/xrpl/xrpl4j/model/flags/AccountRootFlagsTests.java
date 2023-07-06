@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -99,5 +102,48 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     assertThat(flagsFromLong.lsfDisallowIncomingCheck()).isEqualTo(lsfDisallowIncomingCheck);
     assertThat(flagsFromLong.lsfDisallowIncomingPayChan()).isEqualTo(lsfDisallowIncomingPayChan);
     assertThat(flagsFromLong.lsfDisallowIncomingTrustline()).isEqualTo(lsfDisallowIncomingTrustline);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  @SuppressWarnings("AbbreviationAsWordInName")
+  void testJson(
+    boolean lsfDefaultRipple,
+    boolean lsfDepositAuth,
+    boolean lsfDisableMaster,
+    boolean lsfDisallowXrp,
+    boolean lsfGlobalFreeze,
+    boolean lsfNoFreeze,
+    boolean lsfPasswordSpent,
+    boolean lsfRequireAuth,
+    boolean lsfRequireDestTag,
+    boolean lsfDisallowIncomingNFTokenOffer,
+    boolean lsfDisallowIncomingCheck,
+    boolean lsfDisallowIncomingPayChan,
+    boolean lsfDisallowIncomingTrustline
+  ) throws JSONException, JsonProcessingException {
+    Flags flags = AccountRootFlags.of(
+      (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : AccountRootFlags.UNSET),
+      (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : AccountRootFlags.UNSET),
+      (lsfDisableMaster ? AccountRootFlags.DISABLE_MASTER : AccountRootFlags.UNSET),
+      (lsfDisallowXrp ? AccountRootFlags.DISALLOW_XRP : AccountRootFlags.UNSET),
+      (lsfGlobalFreeze ? AccountRootFlags.GLOBAL_FREEZE : AccountRootFlags.UNSET),
+      (lsfNoFreeze ? AccountRootFlags.NO_FREEZE : AccountRootFlags.UNSET),
+      (lsfPasswordSpent ? AccountRootFlags.PASSWORD_SPENT : AccountRootFlags.UNSET),
+      (lsfRequireAuth ? AccountRootFlags.REQUIRE_AUTH : AccountRootFlags.UNSET),
+      (lsfRequireDestTag ? AccountRootFlags.REQUIRE_DEST_TAG : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingNFTokenOffer ? AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN : AccountRootFlags.UNSET),
+      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE : AccountRootFlags.UNSET)
+    );
+
+    FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
+
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+    assertCanSerializeAndDeserialize(flagsWrapper, json);
   }
 }

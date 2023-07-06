@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -58,6 +61,44 @@ public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfSellNfToken()).isEqualTo(tfSellToken);
+  }
+
+  @Test
+  void testEmptyFlags() {
+    NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfSellNfToken()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean tfSellToken
+  ) throws JSONException, JsonProcessingException {
+    NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.builder()
+      .tfSellToken(tfSellToken)
+      .build();
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.empty();
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(

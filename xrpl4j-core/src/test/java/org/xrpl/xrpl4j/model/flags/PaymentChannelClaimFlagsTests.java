@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -61,6 +64,47 @@ public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfRenew()).isEqualTo(tfRenew);
     assertThat(flags.tfClose()).isEqualTo(tfClose);
+  }
+
+  @Test
+  void testEmptyFlags() {
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfRenew()).isFalse();
+    assertThat(flags.tfClose()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean tfRenew,
+    boolean tfClose
+  ) throws JSONException, JsonProcessingException {
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.builder()
+      .tfRenew(tfRenew)
+      .tfClose(tfClose)
+      .build();
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.empty();
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(boolean tfRenew, boolean tfClose) {

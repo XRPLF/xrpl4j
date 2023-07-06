@@ -63,6 +63,9 @@ public class TrustSetFlags extends TransactionFlags {
     super(value);
   }
 
+  private TrustSetFlags() {
+  }
+
   /**
    * Create a new {@link Builder}.
    *
@@ -100,6 +103,16 @@ public class TrustSetFlags extends TransactionFlags {
    */
   public static TrustSetFlags of(long value) {
     return new TrustSetFlags(value);
+  }
+
+  /**
+   * Construct an empty instance of {@link TrustSetFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link TrustSetFlags}.
+   */
+  public static TrustSetFlags empty() {
+    return new TrustSetFlags();
   }
 
   /**

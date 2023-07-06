@@ -34,25 +34,66 @@ public interface XrplEnvironment {
   Logger logger = LoggerFactory.getLogger(XrplEnvironment.class);
 
   /**
-   * Gets the XRPL environment to use (based on existence of -DuseTestnet property).
+   * Gets the XRPL environment to use.
+   *
+   * <p>
+   *   Uses local rippled container by default.
+   *   Set -DuseTestnet to run against reporting mode testnet node
+   *   Set -DuseClioTestnet to run against Clio testnet node
+   *   Set -DuseDevnet to run against devnet
+   * </p>
    *
    * @return XRPL environment of the correct type.
    */
   static XrplEnvironment getConfiguredEnvironment() {
-    // Use the testnet and devnet environment by default to run integration testing.
-    // Use -DuseLocal test to run integration tests on local rippled.
+    // Use local rippled container by default.
+    // Set -DuseTestnet to run against reporting mode testnet node
+    // Set -DuseClioTestnet to run against Clio testnet node
+    // Set -DuseDevnet to run against devnet
     boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
     boolean isDevnetEnabled = System.getProperty("useDevnet") != null;
+    boolean isClioTestnetEnabled = System.getProperty("useClioTestnet") != null;
     if (isTestnetEnabled) {
-      logger.info("System property 'useTestnet' detected; Using Testnet for integration testing.");
-      return new TestnetEnvironment();
+      logger.info(
+        "System property 'useTestnet' detected; Using Reporting mode only Testnet node for integration testing."
+      );
+      return new ReportingTestnetEnvironment();
+    } else if (isClioTestnetEnabled) {
+      logger.info("System property 'useClioTestnet' detected; Using Clio Testnet node for integration testing.");
+      return new ClioTestnetEnvironment();
     } else if (isDevnetEnabled) {
       logger.info("System property 'useDevnet' detected; Using Devnet for integration testing.");
       return new DevnetEnvironment();
     } else {
-      logger.info("Neither 'useTestNet' nor 'useDevnet' System properties detected." +
+      logger.info("Neither 'useTestNet', 'useClioTestNet', nor 'useDevnet' System properties detected." +
         " Using local rippled for integration testing.");
       return new LocalRippledEnvironment();
+    }
+  }
+
+  /**
+   * Gets the configured {@link MainnetEnvironment} for integration tests that run against mainnet, such as
+   * {@link org.xrpl.xrpl4j.tests.AccountTransactionsIT}.
+   *
+   * <p>The default environment is a Reporting Mode only environment. Tests can be run against a Clio node
+   * by setting the {@code -DuseClioMainnet} system property.</p>
+   *
+   * @return A {@link MainnetEnvironment}.
+   */
+  static MainnetEnvironment getConfiguredMainnetEnvironment() {
+    boolean isClioEnabled = System.getProperty("useClioMainnet") != null;
+    if (isClioEnabled) {
+      logger.info(
+        "System property 'useClioMainnet' detected; Using Clio mainnet node for integration tests that are run " +
+          "against mainnet."
+      );
+      return new ClioMainnetEnvironment();
+    } else {
+      logger.info(
+        "System property 'useClioMainnet' was not detected; Using Reporting Mode mainnet node for integration tests " +
+          "that are run against mainnet."
+      );
+      return new ReportingMainnetEnvironment();
     }
   }
 

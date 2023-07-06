@@ -23,6 +23,9 @@ package org.xrpl.xrpl4j.model.flags;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -44,7 +47,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfOptionalAuth,
     boolean tfDisallowXrp,
     boolean tfAllowXrp
-  ) {
+  ) throws JSONException, JsonProcessingException {
     AccountSetTransactionFlags.Builder builder = AccountSetTransactionFlags.builder();
 
     if (tfRequireDestTag) {
@@ -105,6 +108,14 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       tfAllowXrp
     );
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
+
+    FlagsWrapper wrapper = FlagsWrapper.of(flags);
+
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   @ParameterizedTest
@@ -159,6 +170,27 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfOptionalAuth()).isEqualTo(tfOptionalAuth);
     assertThat(flags.tfDisallowXrp()).isEqualTo(tfDisallowXrp);
     assertThat(flags.tfAllowXrp()).isEqualTo(tfAllowXrp);
+  }
+
+  @Test
+  void testEmptyFlags() throws JSONException, JsonProcessingException {
+    AccountSetTransactionFlags flags = AccountSetTransactionFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfAllowXrp()).isFalse();
+    assertThat(flags.tfDisallowXrp()).isFalse();
+    assertThat(flags.tfRequireAuth()).isFalse();
+    assertThat(flags.tfOptionalAuth()).isFalse();
+    assertThat(flags.tfRequireDestTag()).isFalse();
+    assertThat(flags.tfOptionalDestTag()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(

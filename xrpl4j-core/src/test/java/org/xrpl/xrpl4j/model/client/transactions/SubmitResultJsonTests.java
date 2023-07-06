@@ -108,7 +108,6 @@ public class SubmitResultJsonTests extends AbstractJsonTest {
       "            },\n" +
       "            \"Destination\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\",\n" +
       "            \"Fee\": \"10000\",\n" +
-      "            \"Flags\": 2147483648,\n" +
       "            \"Sequence\": 361,\n" +
       "            \"SigningPubKey\": \"03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB\",\n" +
       "            \"TransactionType\": \"Payment\",\n" +

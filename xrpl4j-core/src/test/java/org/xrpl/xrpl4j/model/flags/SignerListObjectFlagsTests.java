@@ -22,6 +22,8 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -42,5 +44,22 @@ public class SignerListObjectFlagsTests extends AbstractFlagsTest {
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfOneOwnerCount()).isEqualTo(lsfOneOwnerCount);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean lsfOneOwnerCount
+  ) throws JSONException, JsonProcessingException {
+    long expectedFlags = lsfOneOwnerCount ? SignerListFlags.ONE_OWNER_COUNT.getValue() : 0L;
+    SignerListFlags flags = SignerListFlags.of(expectedFlags);
+
+    FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
+
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+    assertCanSerializeAndDeserialize(flagsWrapper, json);
   }
 }

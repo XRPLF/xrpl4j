@@ -67,6 +67,9 @@ public class AccountSetTransactionFlags extends TransactionFlags {
     super(value);
   }
 
+  private AccountSetTransactionFlags() {
+  }
+
   private static AccountSetTransactionFlags of(
     boolean tfFullyCanonicalSig,
     boolean tfRequireDestTag,
@@ -129,6 +132,16 @@ public class AccountSetTransactionFlags extends TransactionFlags {
     );
 
     return flags;
+  }
+
+  /**
+   * Construct an empty instance of {@link AccountSetTransactionFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link AccountSetTransactionFlags}.
+   */
+  public static AccountSetTransactionFlags empty() {
+    return new AccountSetTransactionFlags();
   }
 
   /**

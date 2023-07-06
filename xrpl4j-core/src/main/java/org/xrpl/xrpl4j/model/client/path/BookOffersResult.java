@@ -12,6 +12,11 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Response object for a "book_offers" rippled API method call.
+ *
+ * @see "https://xrpl.org/book_offers.html"
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableBookOffersResult.class)
 @JsonDeserialize(as = ImmutableBookOffersResult.class)
@@ -26,6 +31,11 @@ public interface BookOffersResult extends XrplResult {
     return ImmutableBookOffersResult.builder();
   }
 
+  /**
+   * A {@link List} of {@link BookOffersOffer}s containing information about the offers in the requested order book.
+   *
+   * @return A {@link List} of {@link BookOffersOffer}s.
+   */
   List<BookOffersOffer> offers();
 
   /**

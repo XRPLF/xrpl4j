@@ -18,9 +18,9 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
- * Response object for a "book_offers" rippled API method call.
+ * Representation of an {@link OfferObject} returned in responses to {@code book_offers} RPC requests.
  *
- * <p>Note that this object duplicates all of the fields of {@link OfferObject} instead of simply containing an
+ * <p>Note that this object duplicates all the fields of {@link OfferObject} instead of simply containing an
  * {@link OfferObject} field. The offer fields exist at the same JSON level as {@link BookOffersOffer}, but we
  * cannot use {@link JsonUnwrapped} on a field of type {@link OfferObject} because it extends {@link LedgerObject} which
  * has Jackson polymorphic annotations on it and {@link JsonUnwrapped} does not play nicely with polymorphic
@@ -156,26 +156,66 @@ public interface BookOffersOffer {
    */
   Hash256 index();
 
+  /**
+   * Amount of the TakerGets currency the side placing the offer has available to be traded. (XRP is represented as
+   * drops; any other currency is represented as a decimal value.) If a trader has multiple offers in the same book,
+   * only the highest-ranked offer includes this field.
+   *
+   * <p>Use {@link #ownerFunds()} to get this value as a {@link BigDecimal}.
+   *
+   * @return An {@link Optional} {@link String}.
+   */
   @JsonProperty("owner_funds")
-  Optional<String> ownerFunds();
+  Optional<String> ownerFundsString();
 
+  /**
+   * Gets the value of {@link #ownerFundsString()} as a {@link BigDecimal}.
+   *
+   * @return An {@link Optional} {@link BigDecimal}.
+   */
   @Value.Derived
   @JsonIgnore
-  default Optional<BigDecimal> ownerFundsBigDecimal() {
-    return ownerFunds().map(BigDecimal::new);
+  default Optional<BigDecimal> ownerFunds() {
+    return ownerFundsString().map(BigDecimal::new);
   }
 
+  /**
+   * The maximum amount of currency that the taker can get, given the
+   * funding status of the offer.
+   *
+   * @return An {@link Optional} {@link CurrencyAmount}. Only present in partially funded offers.
+   */
   @JsonProperty("taker_gets_funded")
   Optional<CurrencyAmount> takerGetsFunded();
 
+  /**
+   * The maximum amount of currency that the taker would pay, given the funding status of the offer.
+   *
+   * @return An {@link Optional} {@link CurrencyAmount}. Only present in partially funded offers.
+   */
   @JsonProperty("taker_pays_funded")
   Optional<CurrencyAmount> takerPaysFunded();
 
-  String quality();
+  /**
+   * The exchange rate, as the ratio {@link #takerPays()} divided by {@link #takerGets()}. For fairness, offers that
+   * have the same quality are automatically taken first-in, first-out. (In other words, if multiple people offer to
+   * exchange currency at the same rate, the oldest offer is taken first.)
+   *
+   * <p>Use {@link #quality()} to get this value as a {@link BigDecimal}.
+   *
+   * @return A {@link String} containing the quality.
+   */
+  @JsonProperty("quality")
+  String qualityString();
 
+  /**
+   * Get the value of {@link #qualityString()} as a {@link BigDecimal}.
+   *
+   * @return A {@link BigDecimal}.
+   */
   @Value.Derived
   @JsonIgnore
-  default BigDecimal qualityBigDecimal() {
-    return new BigDecimal(quality());
+  default BigDecimal quality() {
+    return new BigDecimal(qualityString());
   }
 }

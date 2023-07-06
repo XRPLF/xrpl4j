@@ -1,5 +1,8 @@
 package org.xrpl.xrpl4j.model.client.path;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -39,8 +42,8 @@ class BookOffersResultTest extends AbstractJsonTest {
               .build()
           )
           .index(Hash256.of("E72DCD2A088C8E1843100A345D636D6A017796037E83B47F2C7E0350B53A8374"))
-          .ownerFunds("28767697713")
-          .quality("0.0000004664524")
+          .ownerFundsString("28767697713")
+          .qualityString("0.0000004664524")
           .build(),
         BookOffersOffer.builder()
           .account(Address.of("rPbMHxs7vy5t6e19tYfqG7XJ6Fog8EPZLk"))
@@ -60,8 +63,8 @@ class BookOffersResultTest extends AbstractJsonTest {
               .build()
           )
           .index(Hash256.of("D17EA19846F265BD1244F2864B85ECDB7C86D462C00C8B658A035358BDDD6DE2"))
-          .ownerFunds("3389276844")
-          .quality("0.00000046645691")
+          .ownerFundsString("3389276844")
+          .qualityString("0.00000046645691")
           .build()
       )
       .build();
@@ -142,8 +145,8 @@ class BookOffersResultTest extends AbstractJsonTest {
               .build()
           )
           .index(Hash256.of("B3BD47F0A8C545E7AB213938E0801078C004B5C7364E7A789DE3D83BA3B6E6B1"))
-          .ownerFunds("41272254")
-          .quality("0.0000005")
+          .ownerFundsString("41272254")
+          .qualityString("0.0000005")
           .takerGetsFunded(XrpCurrencyAmount.ofDrops(41272254))
           .takerPaysFunded(
             IssuedCurrencyAmount.builder()
@@ -191,5 +194,59 @@ class BookOffersResultTest extends AbstractJsonTest {
       "    }";
 
     assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  void testLedgerHashSafe() {
+    BookOffersResult result = BookOffersResult.builder()
+      .ledgerHash(Hash256.of("6442396558D5EF9E64441A29A39759B52813B5E18B6AD86A602A36815037B98B"))
+      .status("success")
+      .build();
+
+    assertThat(result.ledgerHash()).isNotEmpty().get().isEqualTo(result.ledgerHashSafe());
+
+    BookOffersResult resultWithoutHash = BookOffersResult.builder()
+      .status("success")
+      .build();
+
+    assertThatThrownBy(resultWithoutHash::ledgerHashSafe)
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage("Result did not contain a ledgerHash.");
+  }
+
+  @Test
+  void testLedgerIndexSafe() {
+    BookOffersResult result = BookOffersResult.builder()
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(80960755)))
+      .status("success")
+      .build();
+
+    assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(result.ledgerIndexSafe());
+
+    BookOffersResult resultWithoutLedgerIndex = BookOffersResult.builder()
+      .status("success")
+      .build();
+
+    assertThatThrownBy(resultWithoutLedgerIndex::ledgerIndexSafe)
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage("Result did not contain a ledgerIndex.");
+  }
+
+  @Test
+  void testLedgerCurrentIndexSafe() {
+    BookOffersResult result = BookOffersResult.builder()
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(80960755)))
+      .status("success")
+      .build();
+
+    assertThat(result.ledgerCurrentIndex()).isNotEmpty().get().isEqualTo(result.ledgerCurrentIndexSafe());
+
+    BookOffersResult resultWithoutLedgerCurrentIndex = BookOffersResult.builder()
+      .status("success")
+      .build();
+
+    assertThatThrownBy(resultWithoutLedgerCurrentIndex::ledgerCurrentIndexSafe)
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage("Result did not contain a ledgerCurrentIndex.");
   }
 }

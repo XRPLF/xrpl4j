@@ -22,9 +22,11 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 
-class FlagsTest {
+class FlagsTest extends AbstractFlagsTest {
 
   @Test
   void testEqualsForSameFlagsObject() {
@@ -42,5 +44,35 @@ class FlagsTest {
   void testToString() {
     Flags flags = Flags.of(TransactionFlags.FULLY_CANONICAL_SIG);
     assertThat(flags.toString()).isEqualTo(String.valueOf(flags.getValue()));
+  }
+
+  @Test
+  void getValueOfEmptyTransactionFlags() {
+    Flags flags = Flags.of(TransactionFlags.EMPTY);
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @Test
+  void toStringOfEmptyTransactionFlags() {
+    Flags flags = Flags.of(TransactionFlags.EMPTY);
+    assertThat(flags.toString()).isEqualTo("0");
+  }
+
+  @Test
+  void isSetWithEmptyTransactionFlags() {
+    Flags flags = Flags.of(TransactionFlags.FULLY_CANONICAL_SIG);
+    assertThat(flags.isSet(Flags.of(TransactionFlags.EMPTY))).isFalse();
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    Flags flags = Flags.of(TransactionFlags.EMPTY);
+    AbstractFlagsTest.FlagsWrapper wrapper = AbstractFlagsTest.FlagsWrapper.of(flags);
+    // LedgerObject flags are required, so empty flags still get serialized to 0.
+    String json = "{\n" +
+      "               \"flags\": 0\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 }

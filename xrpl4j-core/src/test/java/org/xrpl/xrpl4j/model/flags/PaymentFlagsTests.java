@@ -22,6 +22,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -66,6 +69,50 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
     assertThat(flags.tfPartialPayment()).isEqualTo(tfPartialPayment);
     assertThat(flags.tfLimitQuality()).isEqualTo(tfLimitQuality);
+  }
+
+  @Test
+  void testEmptyFlags() {
+    PaymentFlags flags = PaymentFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfNoDirectRipple()).isFalse();
+    assertThat(flags.tfPartialPayment()).isFalse();
+    assertThat(flags.tfLimitQuality()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean tfNoDirectRipple,
+    boolean tfPartialPayment,
+    boolean tfLimitQuality
+  ) throws JSONException, JsonProcessingException {
+    PaymentFlags flags = PaymentFlags.builder()
+      .tfNoDirectRipple(tfNoDirectRipple)
+      .tfPartialPayment(tfPartialPayment)
+      .tfLimitQuality(tfLimitQuality)
+      .build();
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    PaymentFlags flags = PaymentFlags.empty();
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(

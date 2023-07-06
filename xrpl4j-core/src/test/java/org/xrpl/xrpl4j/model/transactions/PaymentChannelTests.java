@@ -46,7 +46,7 @@ public class PaymentChannelTests {
     assertThat(create.destination()).isEqualTo(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"));
     assertThat(create.settleDelay()).isEqualTo(UnsignedInteger.ONE);
     assertThat(create.publicKey()).isEqualTo("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A");
-    assertThat(create.flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(create.flags().isEmpty()).isTrue();
   }
 
   @Test
@@ -71,7 +71,7 @@ public class PaymentChannelTests {
     assertThat(create.destinationTag()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(2));
     assertThat(create.settleDelay()).isEqualTo(UnsignedInteger.ONE);
     assertThat(create.publicKey()).isEqualTo("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A");
-    assertThat(create.flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(create.flags().isEmpty()).isTrue();
   }
 
   @Test
@@ -93,7 +93,7 @@ public class PaymentChannelTests {
     assertThat(create.destination()).isEqualTo(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"));
     assertThat(create.settleDelay()).isEqualTo(UnsignedInteger.ONE);
     assertThat(create.publicKey()).isEqualTo("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A");
-    assertThat(create.flags().tfFullyCanonicalSig()).isTrue();
+    assertThat(create.flags().isEmpty()).isTrue();
     assertThat(create.cancelAfter()).isPresent().get().isEqualTo(UnsignedLong.valueOf(533171558));
   }
 

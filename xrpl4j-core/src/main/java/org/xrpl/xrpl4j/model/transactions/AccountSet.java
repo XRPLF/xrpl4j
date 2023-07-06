@@ -51,18 +51,15 @@ public interface AccountSet extends Transaction {
   }
 
   /**
-   * Set of {@link AccountSetTransactionFlags}s for this {@link AccountDelete}, which only allows the
-   * {@code tfFullyCanonicalSig} flag.
+   * Set of {@link AccountSetTransactionFlags}s for this {@link AccountSet}. Defaults to
+   * {@link AccountSetTransactionFlags#empty()}.
    *
-   * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
-   * proper signature computation in rippled.
-   *
-   * @return Always {@link AccountSetTransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return An {@link AccountSetTransactionFlags}.
    */
   @JsonProperty("Flags")
   @Value.Default
   default AccountSetTransactionFlags flags() {
-    return new AccountSetTransactionFlags.Builder().build();
+    return AccountSetTransactionFlags.empty();
   }
 
   /**

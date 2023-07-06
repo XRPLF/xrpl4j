@@ -63,7 +63,7 @@ public interface Payment extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default PaymentFlags flags() {
-    return PaymentFlags.builder().build();
+    return PaymentFlags.empty();
   }
 
   /**

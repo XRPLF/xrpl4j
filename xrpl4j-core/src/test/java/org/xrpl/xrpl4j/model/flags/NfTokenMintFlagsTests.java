@@ -24,6 +24,9 @@ package org.xrpl.xrpl4j.model.flags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -73,6 +76,49 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfOnlyXRP()).isEqualTo(tfOnlyXRP);
     assertThat(flags.tfTrustLine()).isEqualTo(tfTrustLine);
     assertThat(flags.tfTransferable()).isEqualTo(tfTransferable);
+  }
+
+  @Test
+  void testEmptyFlags() {
+    NfTokenMintFlags flags = NfTokenMintFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+
+    assertThat(flags.tfBurnable()).isFalse();
+    assertThat(flags.tfOnlyXRP()).isFalse();
+    assertThat(flags.tfTrustLine()).isFalse();
+    assertThat(flags.tfTransferable()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  void testJson(
+    boolean tfBurnable,
+    boolean tfOnlyXRP,
+    boolean tfTrustLine,
+    boolean tfTransferable
+  ) throws JSONException, JsonProcessingException {
+    long expectedFlags = getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+    NfTokenMintFlags flags = NfTokenMintFlags.of(expectedFlags);
+
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = String.format("{\n" +
+      "               \"flags\": %s\n" +
+      "}", flags.getValue());
+
+
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyJson() throws JSONException, JsonProcessingException {
+    NfTokenMintFlags flags = NfTokenMintFlags.empty();
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
+    String json = "{\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(wrapper, json);
   }
 
   private long getExpectedFlags(

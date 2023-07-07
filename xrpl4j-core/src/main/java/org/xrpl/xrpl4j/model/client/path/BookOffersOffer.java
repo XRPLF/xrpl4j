@@ -9,7 +9,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.OfferFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
-import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -18,13 +17,14 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
- * Representation of an {@link OfferObject} returned in responses to {@code book_offers} RPC requests.
+ * Representation of an {@link org.xrpl.xrpl4j.model.ledger.OfferObject} returned in responses to {@code book_offers}
+ * RPC requests.
  *
- * <p>Note that this object duplicates all the fields of {@link OfferObject} instead of simply containing an
- * {@link OfferObject} field. The offer fields exist at the same JSON level as {@link BookOffersOffer}, but we
- * cannot use {@link JsonUnwrapped} on a field of type {@link OfferObject} because it extends {@link LedgerObject} which
- * has Jackson polymorphic annotations on it and {@link JsonUnwrapped} does not play nicely with polymorphic
- * deserialization.
+ * <p>Note that this object duplicates all the fields of {@link org.xrpl.xrpl4j.model.ledger.OfferObject} instead of
+ * simply containing an {@link org.xrpl.xrpl4j.model.ledger.OfferObject} field. The offer fields exist at the same JSON
+ * level as {@link BookOffersOffer}, but we cannot use {@link JsonUnwrapped} on a field of type
+ * {@link org.xrpl.xrpl4j.model.ledger.OfferObject} because it extends {@link LedgerObject} which has Jackson
+ * polymorphic annotations on it and {@link JsonUnwrapped} does not play nicely with polymorphic deserialization.
  *
  * @see "https://xrpl.org/book_offers.html"
  */
@@ -43,7 +43,8 @@ public interface BookOffersOffer {
   }
 
   /**
-   * The value 0x006F, mapped to the string "Offer", indicates that this object is a {@link OfferObject} object.
+   * The value 0x006F, mapped to the string "Offer", indicates that this object is a
+   * {@link org.xrpl.xrpl4j.model.ledger.OfferObject} object.
    *
    * @return Always {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#OFFER}.
    */
@@ -54,7 +55,8 @@ public interface BookOffersOffer {
   }
 
   /**
-   * The sender of the {@link OfferObject}. Cashing the {@link OfferObject} debits this address's balance.
+   * The sender of the {@link org.xrpl.xrpl4j.model.ledger.OfferObject}. Cashing the
+   * {@link org.xrpl.xrpl4j.model.ledger.OfferObject} debits this address's balance.
    *
    * @return The {@link Address} of the offer sender.
    */
@@ -150,7 +152,7 @@ public interface BookOffersOffer {
   Optional<UnsignedInteger> expiration();
 
   /**
-   * The unique ID of the {@link OfferObject}.
+   * The unique ID of the {@link org.xrpl.xrpl4j.model.ledger.OfferObject}.
    *
    * @return A {@link Hash256} containing the ID.
    */

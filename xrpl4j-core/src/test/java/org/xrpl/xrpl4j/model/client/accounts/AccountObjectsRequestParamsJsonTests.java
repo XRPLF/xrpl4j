@@ -98,4 +98,19 @@ public class AccountObjectsRequestParamsJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(params, json);
   }
+
+  @Test
+  void testFromOnlyAddress() throws JSONException, JsonProcessingException {
+    AccountObjectsRequestParams params = AccountObjectsRequestParams.of(
+      Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59")
+    );
+
+    String json = "{\n" +
+      "             \"account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "             \"deletion_blockers_only\": false,\n" +
+      "             \"ledger_index\": \"current\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
 }

@@ -9,9 +9,10 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +36,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenOfferObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenPageObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaPayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaRippleStateObject;
@@ -113,6 +115,8 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
         return MetaSignerListObject.class;
       case "Ticket":
         return MetaTicketObject.class;
+      case "NFTokenPage":
+        return MetaNfTokenPageObject.class;
       default:
         return MetaUnknownObject.class;
     }

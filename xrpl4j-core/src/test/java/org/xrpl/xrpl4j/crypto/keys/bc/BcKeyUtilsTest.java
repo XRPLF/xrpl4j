@@ -63,7 +63,7 @@ class BcKeyUtilsTest {
 
     // Convert back
     Ed25519PrivateKeyParameters converted = BcKeyUtils.toEd25519PrivateKeyParams(privateKey);
-    assertThat(converted).isEqualToComparingFieldByField(ed25519PrivateKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ed25519PrivateKeyParameters);
   }
 
   @Test
@@ -78,11 +78,12 @@ class BcKeyUtilsTest {
       .isEqualTo("EnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
     assertThat(BaseEncoding.base16().encode(privateKey.value().toByteArray()))
       .isEqualTo("D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6");
-    assertThat(BcKeyUtils.toEcPrivateKeyParams(privateKey)).isEqualToComparingFieldByField(ecPrivateKeyParameters);
+    assertThat(BcKeyUtils.toEcPrivateKeyParams(privateKey)).usingRecursiveComparison()
+      .isEqualTo(ecPrivateKeyParameters);
 
     // Convert back
     ECPrivateKeyParameters converted = BcKeyUtils.toEcPrivateKeyParams(privateKey);
-    assertThat(converted).isEqualToComparingFieldByField(ecPrivateKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ecPrivateKeyParameters);
   }
 
   @Test
@@ -110,7 +111,7 @@ class BcKeyUtilsTest {
     assertThat(publicKey.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
 
     ECPublicKeyParameters converted = BcKeyUtils.toEcPublicKeyParameters(publicKey);
-    assertThat(converted).isEqualToComparingFieldByField(ecPublicKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ecPublicKeyParameters);
   }
 
   @Test

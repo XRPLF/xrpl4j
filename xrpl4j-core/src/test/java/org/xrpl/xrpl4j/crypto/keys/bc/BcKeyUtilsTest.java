@@ -95,7 +95,7 @@ class BcKeyUtilsTest {
     assertThat(publicKey.base16Value()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
 
     Ed25519PublicKeyParameters converted = BcKeyUtils.toEd25519PublicKeyParameters(publicKey);
-    assertThat(converted).isEqualToComparingFieldByField(ed25519PublicKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ed25519PublicKeyParameters);
   }
 
   @Test

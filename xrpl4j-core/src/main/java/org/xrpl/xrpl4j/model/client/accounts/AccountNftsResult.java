@@ -29,6 +29,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 
 import java.util.List;
@@ -107,6 +108,27 @@ public interface AccountNftsResult extends XrplResult {
   default LedgerIndex ledgerCurrentIndexSafe() {
     return ledgerCurrentIndex()
       .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerCurrentIndex."));
+  }
+
+  /**
+   * The identifying Hash of the ledger version used to generate this response.
+   *
+   * @return A {@link Hash256} containing the ledger hash.
+   */
+  @JsonProperty("ledger_hash")
+  Optional<Hash256> ledgerHash();
+
+  /**
+   * Get {@link #ledgerHash()}, or throw an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
+   *
+   * @return The value of {@link #ledgerHash()}.
+   * @throws IllegalStateException If {@link #ledgerHash()} is empty.
+   */
+  @JsonIgnore
+  @Value.Auxiliary
+  default Hash256 ledgerHashSafe() {
+    return ledgerHash()
+      .orElseThrow(() -> new IllegalStateException("Result did not contain a ledgerHash."));
   }
 
   /**

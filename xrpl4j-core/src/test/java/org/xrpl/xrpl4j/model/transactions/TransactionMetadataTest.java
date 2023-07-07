@@ -22,6 +22,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenOfferObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenPageObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaPayChannelObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaRippleStateObject;
@@ -696,6 +697,8 @@ class TransactionMetadataTest {
         return MetaSignerListObject.class;
       case "Ticket":
         return MetaTicketObject.class;
+      case "NFTokenPage":
+        return MetaNfTokenPageObject.class;
       default:
         return MetaUnknownObject.class;
     }

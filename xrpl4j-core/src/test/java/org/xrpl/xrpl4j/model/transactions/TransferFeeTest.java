@@ -85,7 +85,7 @@ public class TransferFeeTest {
     TransferFee transferFee = TransferFee.of(UnsignedInteger.valueOf(1000));
     TransferFeeWrapper wrapper = TransferFeeWrapper.of(transferFee);
 
-    String json = "{\"transferFee\": \"1000\"}";
+    String json = "{\"transferFee\": 1000}";
     assertSerializesAndDeserializes(wrapper, json);
   }
 

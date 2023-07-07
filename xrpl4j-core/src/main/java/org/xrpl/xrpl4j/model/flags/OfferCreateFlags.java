@@ -51,6 +51,9 @@ public class OfferCreateFlags extends TransactionFlags {
     super(value);
   }
 
+  private OfferCreateFlags() {
+  }
+
   /**
    * Create a new {@link Builder}.
    *
@@ -86,6 +89,16 @@ public class OfferCreateFlags extends TransactionFlags {
       tfSell ? SELL : UNSET
     ).getValue();
     return new OfferCreateFlags(value);
+  }
+
+  /**
+   * Construct an empty instance of {@link OfferCreateFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link OfferCreateFlags}.
+   */
+  public static OfferCreateFlags empty() {
+    return new OfferCreateFlags();
   }
 
   /**

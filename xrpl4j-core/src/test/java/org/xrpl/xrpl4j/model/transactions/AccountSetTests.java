@@ -52,7 +52,7 @@ public class AccountSetTests {
     assertThat(accountSet.messageKey()).isNotEmpty().get()
       .isEqualTo("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB");
     assertThat(accountSet.transferRate()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(1000000001));
-    assertThat(accountSet.flags()).isEqualTo(AccountSetTransactionFlags.builder().build());
+    assertThat(accountSet.flags().isEmpty()).isTrue();
   }
 
   @Test

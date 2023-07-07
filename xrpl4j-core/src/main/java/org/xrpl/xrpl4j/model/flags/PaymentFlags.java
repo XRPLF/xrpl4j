@@ -51,6 +51,9 @@ public class PaymentFlags extends TransactionFlags {
     super(value);
   }
 
+  private PaymentFlags() {
+  }
+
   /**
    * Create a new {@link Builder}.
    *
@@ -72,13 +75,23 @@ public class PaymentFlags extends TransactionFlags {
   }
 
   private static PaymentFlags of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment,
-                                                             boolean tfLimitQuality) {
+                                 boolean tfLimitQuality) {
     return new PaymentFlags(of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
       tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
       tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
       tfLimitQuality ? LIMIT_QUALITY : UNSET
     ).getValue());
+  }
+
+  /**
+   * Construct an empty instance of {@link PaymentFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link PaymentFlags}.
+   */
+  public static PaymentFlags empty() {
+    return new PaymentFlags();
   }
 
   /**

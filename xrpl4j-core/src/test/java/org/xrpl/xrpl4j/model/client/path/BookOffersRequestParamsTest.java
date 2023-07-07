@@ -21,11 +21,13 @@ class BookOffersRequestParamsTest extends AbstractJsonTest {
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .build()
       )
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
     String json = "{\n" +
       "            \"taker_gets\": {\n" +
       "                \"currency\": \"XRP\"\n" +
       "            },\n" +
+      "            \"ledger_index\": \"current\",\n" +
       "            \"taker_pays\": {\n" +
       "                \"currency\": \"USD\",\n" +
       "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
@@ -50,13 +52,16 @@ class BookOffersRequestParamsTest extends AbstractJsonTest {
       .limit(UnsignedInteger.ONE)
       .build();
     String json = "{\n" +
+      "            \"taker\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
+      "            \"ledger_index\": \"current\",\n" +
       "            \"taker_gets\": {\n" +
       "                \"currency\": \"XRP\"\n" +
       "            },\n" +
       "            \"taker_pays\": {\n" +
       "                \"currency\": \"USD\",\n" +
       "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
-      "            }\n" +
+      "            },\n" +
+      "            \"limit\": 1\n" +
       "        }";
 
     assertCanSerializeAndDeserialize(expected, json);

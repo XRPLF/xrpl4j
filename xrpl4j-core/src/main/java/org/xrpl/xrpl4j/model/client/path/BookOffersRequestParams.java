@@ -59,12 +59,12 @@ public interface BookOffersRequestParams extends XrplRequestParams {
 
   /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
-   * or a shortcut value. If this field is not specified, rippled will default to "validated".
+   * or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */
   @JsonUnwrapped
-  Optional<LedgerSpecifier> ledgerSpecifier();
+  LedgerSpecifier ledgerSpecifier();
 
   /**
    * Limit the number of offers to retrieve. Note that until

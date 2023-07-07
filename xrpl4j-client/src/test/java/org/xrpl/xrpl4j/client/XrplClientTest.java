@@ -938,6 +938,7 @@ public class XrplClientTest {
           .build()
       )
       .limit(UnsignedInteger.valueOf(10))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
     BookOffersResult resultMock = mock(BookOffersResult.class);

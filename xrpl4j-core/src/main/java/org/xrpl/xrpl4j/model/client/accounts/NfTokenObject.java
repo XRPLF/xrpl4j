@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,9 +23,14 @@ package org.xrpl.xrpl4j.model.client.accounts;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.model.flags.NfTokenFlags;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
+import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.util.Optional;
 
@@ -47,9 +52,9 @@ public interface NfTokenObject {
   }
 
   /**
-   * The unique TokenID of the token.
+   * The unique NFTokenID of the token.
    *
-   * @return The unique TokenID of the token.
+   * @return The unique NFTokenID of the token.
    */
   @JsonProperty("NFTokenID")
   NfTokenId nfTokenId();
@@ -61,4 +66,46 @@ public interface NfTokenObject {
    */
   @JsonProperty("URI")
   Optional<NfTokenUri> uri();
+
+  /**
+   * A bit-map of boolean flags enabled for this NFToken.
+   *
+   * @return An {@link NfTokenFlags} for this NFToken.
+   */
+  @JsonProperty("Flags")
+  NfTokenFlags flags();
+
+  /**
+   * The account that issued this NFToken.
+   *
+   * @return The {@link Address} of the issuer.
+   */
+  @JsonProperty("Issuer")
+  Address issuer();
+
+  /**
+   * The unscrambled version of this token's taxon. Several tokens with the same taxon might represent instances of a
+   * limited series.
+   *
+   * @return An {@link UnsignedInteger} representing the taxon.
+   */
+  @JsonProperty("NFTokenTaxon")
+  UnsignedInteger taxon();
+
+  /**
+   * The token sequence number of this NFToken, which is unique for its issuer.
+   *
+   * @return An {@link UnsignedInteger} representing the sequence.
+   */
+  @JsonProperty("nft_serial")
+  UnsignedInteger nftSerial();
+
+  /**
+   * Specifies the fee charged by the issuer for secondary sales of the Token,
+   * if such sales are allowed. This field will only be present if the `lsfTransferable` flag is set.
+   *
+   * @return An {@link Optional} {@link TransferFee}.
+   */
+  @JsonProperty("TransferFee")
+  Optional<TransferFee> transferFee();
 }

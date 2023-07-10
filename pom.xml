@@ -290,7 +290,7 @@
 
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
     <jackson.version>2.14.2</jackson.version>
-    <feign.version>11.10</feign.version>
+    <feign.version>12.3</feign.version>
     <slf4j.version>1.7.36</slf4j.version>
     <junit-jupiter.version>5.9.2</junit-jupiter.version>
     <guava.version>32.1.1-jre</guava.version>

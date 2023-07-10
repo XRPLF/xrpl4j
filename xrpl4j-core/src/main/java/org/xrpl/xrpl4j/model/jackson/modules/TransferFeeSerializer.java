@@ -41,6 +41,6 @@ public class TransferFeeSerializer  extends StdScalarSerializer<TransferFee> {
 
   @Override
   public void serialize(TransferFee transferFee, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(transferFee.toString());
+    gen.writeNumber(transferFee.toString());
   }
 }

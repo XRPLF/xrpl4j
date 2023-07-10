@@ -58,7 +58,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       "    \"Fee\": \"12\",\n" +
       "    \"Flags\": 2147483656,\n" +
       "    \"Sequence\": 12,\n" +
-      "    \"TransferFee\": \"1000\",\n" +
+      "    \"TransferFee\": 1000,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"NFTokenTaxon\": 146999694\n" +
       "}";
@@ -115,7 +115,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       "    \"Fee\": \"12\",\n" +
       "    \"Flags\": 2147483656,\n" +
       "    \"Sequence\": 12,\n" +
-      "    \"TransferFee\": \"1000\",\n" +
+      "    \"TransferFee\": 1000,\n" +
       "    \"URI\": \"697066733A2F2F62616679626569676479727A74357366703775646D3768753736756837" +
       "7932366E6634646675796C71616266336F636C67747179353566627A6469\",\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +

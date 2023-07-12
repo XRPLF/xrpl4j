@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 
@@ -104,7 +103,7 @@ class BcKeyUtilsTest {
     ECPrivateKeyParameters ecPrivateKeyParameters = new ECPrivateKeyParameters(
       EC_PRIVATE_KEY_BIGINTEGER, BcKeyUtils.PARAMS
     );
-    ECPoint ecPoint = Secp256k1.EC_DOMAIN_PARAMETERS.getG().multiply(ecPrivateKeyParameters.getD());
+    ECPoint ecPoint = BcKeyUtils.PARAMS.getG().multiply(ecPrivateKeyParameters.getD());
     ECPublicKeyParameters ecPublicKeyParameters = new ECPublicKeyParameters(ecPoint, BcKeyUtils.PARAMS);
 
     PublicKey publicKey = BcKeyUtils.toPublicKey(ecPublicKeyParameters);

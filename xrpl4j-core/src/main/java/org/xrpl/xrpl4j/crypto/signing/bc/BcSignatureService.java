@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -129,13 +129,13 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
     final UnsignedByteArray messageHash = HashingUtils.sha512Half(transactionBytes);
 
     final BigInteger privateKeyInt = new BigInteger(privateKey.value().toByteArray());
-    final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKeyInt, Secp256k1.EC_DOMAIN_PARAMETERS);
+    final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
 
     ecdsaSigner.init(true, parameters);
     final BigInteger[] signatures = ecdsaSigner.generateSignature(messageHash.toByteArray());
     final BigInteger r = signatures[0];
     BigInteger s = signatures[1];
-    final BigInteger otherS = Secp256k1.EC_DOMAIN_PARAMETERS.getN().subtract(s);
+    final BigInteger otherS = BcKeyUtils.PARAMS.getN().subtract(s);
     if (s.compareTo(otherS) > 0) {
       s = otherS;
     }

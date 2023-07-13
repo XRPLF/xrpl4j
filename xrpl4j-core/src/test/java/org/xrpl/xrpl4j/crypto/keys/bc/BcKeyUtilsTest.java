@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 
@@ -63,7 +62,7 @@ class BcKeyUtilsTest {
 
     // Convert back
     Ed25519PrivateKeyParameters converted = BcKeyUtils.toEd25519PrivateKeyParams(privateKey);
-    assertThat(converted).isEqualToComparingFieldByField(ed25519PrivateKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ed25519PrivateKeyParameters);
   }
 
   @Test
@@ -78,11 +77,12 @@ class BcKeyUtilsTest {
       .isEqualTo("EnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
     assertThat(BaseEncoding.base16().encode(privateKey.value().toByteArray()))
       .isEqualTo("D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6");
-    assertThat(BcKeyUtils.toEcPrivateKeyParams(privateKey)).isEqualToComparingFieldByField(ecPrivateKeyParameters);
+    assertThat(BcKeyUtils.toEcPrivateKeyParams(privateKey)).usingRecursiveComparison()
+      .isEqualTo(ecPrivateKeyParameters);
 
     // Convert back
     ECPrivateKeyParameters converted = BcKeyUtils.toEcPrivateKeyParams(privateKey);
-    assertThat(converted).isEqualToComparingFieldByField(ecPrivateKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ecPrivateKeyParameters);
   }
 
   @Test
@@ -95,7 +95,7 @@ class BcKeyUtilsTest {
     assertThat(publicKey.base16Value()).isEqualTo("ED" + ED_PUBLIC_KEY_HEX);
 
     Ed25519PublicKeyParameters converted = BcKeyUtils.toEd25519PublicKeyParameters(publicKey);
-    assertThat(converted).isEqualToComparingFieldByField(ed25519PublicKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ed25519PublicKeyParameters);
   }
 
   @Test
@@ -103,14 +103,14 @@ class BcKeyUtilsTest {
     ECPrivateKeyParameters ecPrivateKeyParameters = new ECPrivateKeyParameters(
       EC_PRIVATE_KEY_BIGINTEGER, BcKeyUtils.PARAMS
     );
-    ECPoint ecPoint = Secp256k1.EC_DOMAIN_PARAMETERS.getG().multiply(ecPrivateKeyParameters.getD());
+    ECPoint ecPoint = BcKeyUtils.PARAMS.getG().multiply(ecPrivateKeyParameters.getD());
     ECPublicKeyParameters ecPublicKeyParameters = new ECPublicKeyParameters(ecPoint, BcKeyUtils.PARAMS);
 
     PublicKey publicKey = BcKeyUtils.toPublicKey(ecPublicKeyParameters);
     assertThat(publicKey.base16Value()).isEqualTo(EC_PUBLIC_KEY_HEX);
 
     ECPublicKeyParameters converted = BcKeyUtils.toEcPublicKeyParameters(publicKey);
-    assertThat(converted).isEqualToComparingFieldByField(ecPublicKeyParameters);
+    assertThat(converted).usingRecursiveComparison().isEqualTo(ecPublicKeyParameters);
   }
 
   @Test

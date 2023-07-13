@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,6 @@ package org.xrpl.xrpl4j.crypto.keys.bc;
  */
 
 import static org.xrpl.xrpl4j.codec.addresses.KeyType.ED25519;
-import static org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1.EC_DOMAIN_PARAMETERS;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -51,7 +50,7 @@ public final class BcKeyUtils {
 
   private static final String SECP256K1 = "secp256k1";
   private static final ECNamedCurveParameterSpec EC_PARAMS = ECNamedCurveTable.getParameterSpec(SECP256K1);
-  static final ECDomainParameters PARAMS =
+  public static final ECDomainParameters PARAMS =
     new ECDomainParameters(
       EC_PARAMS.getCurve(),
       EC_PARAMS.getG(),
@@ -168,7 +167,7 @@ public final class BcKeyUtils {
    */
   public static ECPublicKeyParameters toPublicKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
     Objects.requireNonNull(ecPrivateKeyParameters);
-    ECPoint ecPoint = EC_DOMAIN_PARAMETERS.getG().multiply(ecPrivateKeyParameters.getD());
+    ECPoint ecPoint = BcKeyUtils.PARAMS.getG().multiply(ecPrivateKeyParameters.getD());
     return new ECPublicKeyParameters(ecPoint, PARAMS);
   }
 
@@ -237,6 +236,6 @@ public final class BcKeyUtils {
     final BigInteger privateKeyInt = new BigInteger(
       BaseEncoding.base16().encode(privateKey.value().toByteArray()), 16
     );
-    return new ECPrivateKeyParameters(privateKeyInt, EC_DOMAIN_PARAMETERS);
+    return new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
   }
 }

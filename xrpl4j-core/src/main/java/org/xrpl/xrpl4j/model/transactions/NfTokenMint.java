@@ -107,15 +107,4 @@ public interface NfTokenMint extends Transaction {
   default NfTokenMintFlags flags() {
     return NfTokenMintFlags.empty();
   }
-
-  /**
-   * For secondary sale/brokered mode, tfTransferable flag must be set.
-   */
-  @Value.Check
-  default void checkIfFlagIsSet() {
-    if (transferFee().isPresent()) {
-      Preconditions.checkArgument(flags().tfTransferable(),
-        "tfTransferable flag must be set for secondary sale.");
-    }
-  }
 }

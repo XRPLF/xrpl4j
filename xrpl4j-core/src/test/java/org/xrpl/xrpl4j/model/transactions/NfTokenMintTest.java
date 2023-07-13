@@ -88,7 +88,7 @@ public class NfTokenMintTest {
           .transferFee(TransferFee.of(UnsignedInteger.valueOf(1000)))
           .flags(NfTokenMintFlags.empty())
           .build()
-      );
+    );
   }
 
   @Test

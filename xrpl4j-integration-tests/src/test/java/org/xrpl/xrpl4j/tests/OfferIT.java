@@ -33,13 +33,19 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
+import org.xrpl.xrpl4j.model.flags.OfferFlags;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.ImmutableIssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -80,18 +86,19 @@ public class OfferIT extends AbstractIT {
     //////////////////////
     // Create an Offer
     UnsignedInteger sequence = accountInfoResult.accountData().sequence();
+    XrpCurrencyAmount takerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0));
+    IssuedCurrencyAmount takerGets = IssuedCurrencyAmount.builder()
+      .currency("USD")
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
+      .value("100")
+      .build();
     OfferCreate offerCreate = OfferCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sequence)
       .signingPublicKey(issuerKeyPair.publicKey())
-      .takerGets(IssuedCurrencyAmount.builder()
-        .currency("USD")
-        .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .value("100")
-        .build()
-      )
-      .takerPays(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0)))
+      .takerGets(takerGets)
+      .takerPays(takerPays)
       .flags(OfferCreateFlags.builder()
         .tfSell(true)
         .build())
@@ -109,6 +116,31 @@ public class OfferIT extends AbstractIT {
       "OfferCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
       response.transactionResult().hash()
     );
+
+    BookOffersResult result = xrplClient.bookOffers(
+      BookOffersRequestParams.builder()
+        .taker(offerCreate.account())
+        .takerGets(
+          Issue.builder()
+            .currency("USD")
+            .issuer(offerCreate.account())
+            .build()
+        )
+        .takerPays(Issue.XRP)
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
+        .build()
+    );
+
+    assertThat(result.offers()).asList().hasSize(1);
+    assertThat(result.offers().get(0).quality())
+      .isEqualTo(BigDecimal.valueOf(takerPays.value().longValue()).divide(new BigDecimal(takerGets.value())));
+    assertThat(result.offers().get(0).account()).isEqualTo(offerCreate.account());
+    assertThat(result.offers().get(0).flags().lsfSell()).isTrue();
+    assertThat(result.offers().get(0).flags().lsfPassive()).isFalse();
+    assertThat(result.offers().get(0).sequence()).isEqualTo(offerCreate.sequence());
+    assertThat(result.offers().get(0).takerPays()).isEqualTo(takerPays);
+    assertThat(result.offers().get(0).takerGets()).isEqualTo(takerGets);
+    assertThat(result.offers().get(0).ownerFunds()).isNotEmpty().get().isEqualTo(new BigDecimal(takerGets.value()));
     usdIssued = true;
   }
 

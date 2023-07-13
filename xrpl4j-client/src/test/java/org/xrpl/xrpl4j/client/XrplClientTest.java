@@ -50,6 +50,7 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
+import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -80,8 +81,11 @@ import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
+import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
+import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
+import org.xrpl.xrpl4j.model.client.path.ImmutableBookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
@@ -97,6 +101,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
@@ -919,6 +924,33 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(RipplePathFindResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.RIPPLE_PATH_FIND);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(ripplePathFindRequestParams);
+  }
+
+  @Test
+  void bookOffers() throws JsonRpcClientErrorException {
+    BookOffersRequestParams params = BookOffersRequestParams.builder()
+      .taker(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
+      .takerGets(Issue.XRP)
+      .takerPays(
+        Issue.builder()
+          .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
+          .currency("USD")
+          .build()
+      )
+      .limit(UnsignedInteger.valueOf(10))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
+      .build();
+
+    BookOffersResult resultMock = mock(BookOffersResult.class);
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.BOOK_OFFERS)
+        .addParams(params)
+        .build(),
+      BookOffersResult.class
+    )).thenReturn(resultMock);
+    BookOffersResult result = xrplClient.bookOffers(params);
+    assertThat(result).isEqualTo(resultMock);
   }
 
   @Test

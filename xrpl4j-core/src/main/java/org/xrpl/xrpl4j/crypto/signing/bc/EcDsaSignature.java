@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing.bc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,6 +27,7 @@ import org.bouncycastle.asn1.DERSequenceGenerator;
 import org.bouncycastle.asn1.DLSequence;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -164,7 +165,7 @@ public interface EcDsaSignature {
     BigInteger r = new BigInteger(1, rBytes);
     BigInteger s = new BigInteger(1, sBytes);
 
-    BigInteger order = Secp256k1.EC_DOMAIN_PARAMETERS.getN();
+    BigInteger order = BcKeyUtils.PARAMS.getN();
 
     Preconditions.checkArgument(r.compareTo(order) <= -1 && s.compareTo(order) <= -1, "r or s greater than modulus");
     Preconditions.checkArgument(order.subtract(s).compareTo(s) > -1);

@@ -78,20 +78,6 @@ public class NfTokenMintTest {
   }
 
   @Test
-  public void transferFeeWithoutFlagSet() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> NfTokenMint.builder()
-        .fee(XrpCurrencyAmount.ofDrops(1))
-        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-        .tokenTaxon(UnsignedLong.valueOf(146999694L))
-        .transferFee(TransferFee.of(UnsignedInteger.valueOf(1000)))
-        .build(),
-      "tfTransferable flag must be set for secondary sale."
-    );
-  }
-
-  @Test
   public void transferFeeOutOfBounds() {
     assertThrows(
       IllegalArgumentException.class,

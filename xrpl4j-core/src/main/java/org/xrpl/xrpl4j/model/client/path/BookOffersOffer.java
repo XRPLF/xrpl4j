@@ -72,8 +72,8 @@ public interface BookOffersOffer {
   OfferFlags flags();
 
   /**
-   * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that
-   * created this offer.
+   * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that created this
+   * offer.
    *
    * @return An {@link UnsignedInteger} representing the sequence number.
    */
@@ -116,10 +116,9 @@ public interface BookOffersOffer {
   String bookNode();
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object, in case the directory
-   * consists of multiple pages.
-   * Note: The object does not contain a direct link to the owner directory containing it,
-   * since that value can be derived from the Account.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages. Note: The object does not contain a direct link to the owner directory containing it, since that
+   * value can be derived from the Account.
    *
    * @return A {@link String} containing the hint.
    */
@@ -182,8 +181,7 @@ public interface BookOffersOffer {
   }
 
   /**
-   * The maximum amount of currency that the taker can get, given the
-   * funding status of the offer.
+   * The maximum amount of currency that the taker can get, given the funding status of the offer.
    *
    * @return An {@link Optional} {@link CurrencyAmount}. Only present in partially funded offers.
    */

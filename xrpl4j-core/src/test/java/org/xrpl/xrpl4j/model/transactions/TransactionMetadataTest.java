@@ -1,25 +1,32 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableCreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableDeletedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableMetaNfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaCheckObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenPageObject;
@@ -51,7 +58,7 @@ class TransactionMetadataTest {
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
-  void deserializeMetadataFromXrplOrg() throws JsonProcessingException {
+  void deserializeMetadataFromXrplOrg() {
     String json = "{\n" +
       "  \"AffectedNodes\": [\n" +
       "    {\n" +
@@ -503,8 +510,110 @@ class TransactionMetadataTest {
       "  }\n" +
       "}";
 
+    assertThatNoException().isThrownBy(() -> objectMapper.readValue(json, TransactionMetadata.class));
+  }
+
+  @Test
+  void testMetadataWithNfTokenOfferDeletedNode() throws JsonProcessingException {
+    String json = "{\n" +
+      "  \"AffectedNodes\": [\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Flags\": 0,\n" +
+      "          \"IndexPrevious\": \"1\",\n" +
+      "          \"Owner\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"RootIndex\": \"DB2B7599894EAE13B565B539990BEADBE6F2BED04A0ADCD89DC4BB68C09CF06C\"\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"DirectoryNode\",\n" +
+      "        \"LedgerIndex\": \"0BF5AFC91640BE6B1F595949A57FA9D113D013FEB0C19DFFCFFC521A2D0590CD\"\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"DeletedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Amount\": {\n" +
+      "            \"currency\": \"534F4C4F00000000000000000000000000000000\",\n" +
+      "            \"issuer\": \"rHZwvHEs56GCmHupwjA4RY7oPA3EoAJWuN\",\n" +
+      "            \"value\": \"0.4\"\n" +
+      "          },\n" +
+      "          \"Flags\": 1,\n" +
+      "          \"NFTokenID\": \"00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD\",\n" +
+      "          \"NFTokenOfferNode\": \"0\",\n" +
+      "          \"Owner\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"OwnerNode\": \"2\",\n" +
+      "          \"PreviousTxnID\": \"78D3B7A4B07BFC1F5D7EBD9844B25209F3D5885F347EBA0868FEF2672A91F9DF\",\n" +
+      "          \"PreviousTxnLgrSeq\": 39480038\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"NFTokenOffer\",\n" +
+      "        \"LedgerIndex\": \"0F512CD1108EF19E3662FB0F830C803853DCBAE8B5FEF2A46E2A99ACCE1E8177\"\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Flags\": 2,\n" +
+      "          \"NFTokenID\": \"00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD\",\n" +
+      "          \"RootIndex\": \"CF89EB7D051F954EB3FCE9115D5532BA2BF39F1311BB69F2633C002A87972B71\"\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"DirectoryNode\",\n" +
+      "        \"LedgerIndex\": \"CF89EB7D051F954EB3FCE9115D5532BA2BF39F1311BB69F2633C002A87972B71\"\n" +
+      "      }\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"ModifiedNode\": {\n" +
+      "        \"FinalFields\": {\n" +
+      "          \"Account\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"Balance\": \"953788095\",\n" +
+      "          \"BurnedNFTokens\": 126,\n" +
+      "          \"EmailHash\": \"1D1382344586ECFF844DACFF698C2EFB\",\n" +
+      "          \"Flags\": 0,\n" +
+      "          \"MintedNFTokens\": 254,\n" +
+      "          \"OwnerCount\": 82,\n" +
+      "          \"Sequence\": 35260003\n" +
+      "        },\n" +
+      "        \"LedgerEntryType\": \"AccountRoot\",\n" +
+      "        \"LedgerIndex\": \"D6C4EE995A40D6A22172016806CE813DE1578B11158B4EAA5115C563B4DC4B29\",\n" +
+      "        \"PreviousFields\": {\n" +
+      "          \"Balance\": \"953788294\",\n" +
+      "          \"OwnerCount\": 83,\n" +
+      "          \"Sequence\": 35260002\n" +
+      "        },\n" +
+      "        \"PreviousTxnID\": \"A39E1C58CC442D99123D6EA0BA3E25995BC6221D98F9A191FAC04FDDC583BF63\",\n" +
+      "        \"PreviousTxnLgrSeq\": 39480040\n" +
+      "      }\n" +
+      "    }\n" +
+      "  ],\n" +
+      "  \"TransactionIndex\": 1,\n" +
+      "  \"TransactionResult\": \"tesSUCCESS\"\n" +
+      "}";
+
     TransactionMetadata transactionMetadata = objectMapper.readValue(json, TransactionMetadata.class);
-    System.out.println(transactionMetadata);
+    AffectedNode nftDeletedNode = transactionMetadata.affectedNodes().get(1);
+    AffectedNode expectedNode = ImmutableDeletedNode.builder()
+      .ledgerEntryType(MetaLedgerEntryType.NFTOKEN_OFFER)
+      .ledgerIndex(Hash256.of("0F512CD1108EF19E3662FB0F830C803853DCBAE8B5FEF2A46E2A99ACCE1E8177"))
+      .finalFields(
+        ImmutableMetaNfTokenOfferObject.builder()
+          .amount(
+            IssuedCurrencyAmount.builder()
+              .currency("534F4C4F00000000000000000000000000000000")
+              .issuer(Address.of("rHZwvHEs56GCmHupwjA4RY7oPA3EoAJWuN"))
+              .value("0.4")
+              .build()
+          )
+          .flags(NfTokenOfferFlags.BUY_TOKEN)
+          .nfTokenId(NfTokenId.of("00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD"))
+          .owner(Address.of("rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu"))
+          .ownerNode("2")
+          .previousTransactionId(Hash256.of("78D3B7A4B07BFC1F5D7EBD9844B25209F3D5885F347EBA0868FEF2672A91F9DF"))
+          .previousTransactionLedgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(39480038)))
+          .offerNode("0")
+          .build()
+      )
+      .build();
+
+    assertThat(nftDeletedNode).isEqualTo(expectedNode);
   }
 
   /**

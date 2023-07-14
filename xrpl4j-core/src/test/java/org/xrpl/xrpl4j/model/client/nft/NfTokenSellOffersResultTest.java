@@ -37,7 +37,6 @@ public class NfTokenSellOffersResultTest extends AbstractJsonTest {
 
   @Test
   public void test() throws JsonProcessingException, JSONException {
-
     SellOffer sellOffer = SellOffer.builder()
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))

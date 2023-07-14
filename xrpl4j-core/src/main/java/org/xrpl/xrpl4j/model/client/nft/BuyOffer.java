@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -48,12 +49,12 @@ public interface BuyOffer {
   }
 
   /**
-   * The amount offered to buy the NFT for {@link XrpCurrencyAmount}.
+   * The amount offered to buy the NFT.
    *
-   * @return The {@link XrpCurrencyAmount}.
+   * @return The {@link CurrencyAmount}.
    */
   @JsonProperty("Amount")
-  XrpCurrencyAmount amount();
+  CurrencyAmount amount();
 
   /**
    * A set of boolean {@link NfTokenOfferFlags} containing options

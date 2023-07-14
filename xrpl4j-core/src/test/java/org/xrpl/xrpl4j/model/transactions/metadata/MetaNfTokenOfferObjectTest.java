@@ -27,15 +27,16 @@ class MetaNfTokenOfferObjectTest extends AbstractJsonTest {
       .flags(NfTokenOfferFlags.BUY_TOKEN)
       .build();
 
-    String json = "{\n"
-      + "\"Amount\": \"10000\",\n"
-      + "\"Flags\":1,\n"
-      + "\"NFTokenID\":\"00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD\",\n"
-      + "\"Owner\":\"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n"
-      + "\"OwnerNode\":\"2\",\n"
-      + "\"PreviousTxnID\":\"78D3B7A4B07BFC1F5D7EBD9844B25209F3D5885F347EBA0868FEF2672A91F9DF\",\n"
-      + "\"PreviousTxnLgrSeq\":39480038\n"
-      + "}";
+    String json = "{\n" +
+      "          \"Amount\": \"10000\",\n" +
+      "          \"Flags\": 1,\n" +
+      "          \"NFTokenID\": \"00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD\",\n" +
+      "          \"NFTokenOfferNode\": \"0\",\n" +
+      "          \"Owner\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"OwnerNode\": \"2\",\n" +
+      "          \"PreviousTxnID\": \"78D3B7A4B07BFC1F5D7EBD9844B25209F3D5885F347EBA0868FEF2672A91F9DF\",\n" +
+      "          \"PreviousTxnLgrSeq\": 39480038\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(object, json, MetaNfTokenOfferObject.class);
   }
@@ -58,19 +59,20 @@ class MetaNfTokenOfferObjectTest extends AbstractJsonTest {
       .flags(NfTokenOfferFlags.BUY_TOKEN)
       .build();
 
-    String json = "{\n"
-      + "\"Amount\": {\n"
-      + "   \"currency\":\"534F4C4F00000000000000000000000000000000\",\n"
-      + "   \"issuer\":\"rHZwvHEs56GCmHupwjA4RY7oPA3EoAJWuN\",\n"
-      + "   \"value\":\"0.4\"\n"
-      + "},\n"
-      + "\"Flags\":1,\n"
-      + "\"NFTokenID\":\"00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD\",\n"
-      + "\"Owner\":\"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n"
-      + "\"OwnerNode\":\"2\",\n"
-      + "\"PreviousTxnID\":\"78D3B7A4B07BFC1F5D7EBD9844B25209F3D5885F347EBA0868FEF2672A91F9DF\",\n"
-      + "\"PreviousTxnLgrSeq\":39480038\n"
-      + "}";
+    String json = "{\n" +
+      "          \"Amount\": {\n" +
+      "            \"currency\": \"534F4C4F00000000000000000000000000000000\",\n" +
+      "            \"issuer\": \"rHZwvHEs56GCmHupwjA4RY7oPA3EoAJWuN\",\n" +
+      "            \"value\": \"0.4\"\n" +
+      "          },\n" +
+      "          \"Flags\": 1,\n" +
+      "          \"NFTokenID\": \"00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD\",\n" +
+      "          \"NFTokenOfferNode\": \"0\",\n" +
+      "          \"Owner\": \"rB3JmRd5m292YjCsCr65tc8dwZz2WN7HQu\",\n" +
+      "          \"OwnerNode\": \"2\",\n" +
+      "          \"PreviousTxnID\": \"78D3B7A4B07BFC1F5D7EBD9844B25209F3D5885F347EBA0868FEF2672A91F9DF\",\n" +
+      "          \"PreviousTxnLgrSeq\": 39480038\n" +
+      "        }";
 
     assertCanSerializeAndDeserialize(object, json, MetaNfTokenOfferObject.class);
   }

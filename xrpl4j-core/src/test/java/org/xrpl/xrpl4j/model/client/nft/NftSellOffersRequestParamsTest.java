@@ -53,7 +53,7 @@ public class NftSellOffersRequestParamsTest extends AbstractJsonTest {
 
     String json = "{\n" +
       "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
-      "        \"limit\": \"10\",\n" +
+      "        \"limit\": 10,\n" +
       "        \"marker\": \"123\"\n" +
       "    }";
 

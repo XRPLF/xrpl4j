@@ -24,6 +24,7 @@ class MetaNfTokenOfferObjectTest extends AbstractJsonTest {
       .previousTransactionLedgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(39480038)))
       .nfTokenId(NfTokenId.of("00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD"))
       .ownerNode("2")
+      .offerNode("0")
       .flags(NfTokenOfferFlags.BUY_TOKEN)
       .build();
 
@@ -56,6 +57,7 @@ class MetaNfTokenOfferObjectTest extends AbstractJsonTest {
       .previousTransactionLedgerSequence(LedgerIndex.of(UnsignedInteger.valueOf(39480038)))
       .nfTokenId(NfTokenId.of("00080BB86F12FFF50C3C44827709AA868A910613902F810FA11F9798000000FD"))
       .ownerNode("2")
+      .offerNode("0")
       .flags(NfTokenOfferFlags.BUY_TOKEN)
       .build();
 

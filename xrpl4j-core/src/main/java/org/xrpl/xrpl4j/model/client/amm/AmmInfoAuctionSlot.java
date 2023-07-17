@@ -64,8 +64,11 @@ public interface AmmInfoAuctionSlot {
    * @return An {@link ZonedDateTime}
    */
   @JsonProperty("expiration")
-  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
-  ZonedDateTime expiration();
+//  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
+//  ZonedDateTime expiration();
+  // FIXME: AMM-devnet has a different date/time format -- we should add a custom deserializer to try a bunch of
+  //  different formats maybe.
+  String expiration();
 
   /**
    * The amount the auction owner paid to win this slot, in LP Tokens.

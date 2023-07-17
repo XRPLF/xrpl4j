@@ -75,8 +75,8 @@ public interface AmmResult extends XrplResult {
    *
    * @return An {@link Address}.
    */
-  @JsonProperty("amm_account")
-  Address ammAccount();
+  @JsonProperty("account")
+  Address account();
 
   /**
    * Details of the current owner of the auction slot.

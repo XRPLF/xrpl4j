@@ -28,7 +28,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
         AmmResult.builder()
-          .ammAccount(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+          .account(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
           .amount(XrpCurrencyAmount.ofDrops(11080000720L))
           .amount2(
             IssuedCurrencyAmount.builder()
@@ -45,11 +45,12 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration(
+              .expiration("2023-Jan-07 23:47:21.000000000 UTC")
+              /*.expiration(
                 ZonedDateTime.parse("2023-Jan-07 23:47:21.000000000 UTC",
                   DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
                   .withZoneSameLocal(ZoneId.of("UTC"))
-              )
+              )*/
               .price(
                 IssuedCurrencyAmount.builder()
                   .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
@@ -86,7 +87,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
       .status("success")
       .build();
 
-    String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+    String json = "{\"amm\": {\"account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
       "      \"amount\": \"11080000720\",\n" +
       "      \"amount2\": {\"currency\": \"USD\",\n" +
       "      \"issuer\": \"rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP\",\n" +
@@ -128,7 +129,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
         AmmResult.builder()
-          .ammAccount(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+          .account(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
           .amount(XrpCurrencyAmount.ofDrops(11080000720L))
           .amount2(
             IssuedCurrencyAmount.builder()
@@ -146,11 +147,12 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration(
+              .expiration("2023-Jan-07 23:47:21.000000000 UTC")
+              /*.expiration(
                 ZonedDateTime.parse("2023-Jan-07 23:47:21.000000000 UTC",
                     DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
                   .withZoneSameLocal(ZoneId.of("UTC"))
-              )
+              )*/
               .price(
                 IssuedCurrencyAmount.builder()
                   .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
@@ -189,7 +191,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
       .validated(true)
       .build();
 
-    String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+    String json = "{\"amm\": {\"account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
       "      \"amount\": \"11080000720\",\n" +
       "      \"amount2\": {\"currency\": \"USD\",\n" +
       "      \"issuer\": \"rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP\",\n" +

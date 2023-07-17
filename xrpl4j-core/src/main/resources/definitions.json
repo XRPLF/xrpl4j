@@ -284,6 +284,16 @@
       }
     ],
     [
+      "DiscountedFee",
+      {
+        "nth": 6,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt16"
+      }
+    ],
+    [
       "Version",
       {
         "nth": 16,
@@ -331,6 +341,16 @@
         "isSerialized": true,
         "isSigningField": true,
         "type": "UInt16"
+      }
+    ],
+    [
+      "NetworkID",
+      {
+        "nth": 1,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt32"
       }
     ],
     [
@@ -776,7 +796,7 @@
     [
       "VoteWeight",
       {
-        "nth": 47,
+        "nth": 48,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -784,9 +804,9 @@
       }
     ],
     [
-      "DiscountedFee",
+      "FirstNFTokenSequence",
       {
-        "nth": 48,
+        "nth": 50,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -1494,27 +1514,7 @@
       }
     ],
     [
-      "LPTokenOut",
-      {
-        "nth": 20,
-        "isVLEncoded": false,
-        "isSerialized": true,
-        "isSigningField": true,
-        "type": "Amount"
-      }
-    ],
-    [
-      "LPTokenIn",
-      {
-        "nth": 21,
-        "isVLEncoded": false,
-        "isSerialized": true,
-        "isSigningField": true,
-        "type": "Amount"
-      }
-    ],
-    [
-      "EPrice",
+      "BaseFeeDrops",
       {
         "nth": 22,
         "isVLEncoded": false,
@@ -1524,7 +1524,7 @@
       }
     ],
     [
-      "Price",
+      "ReserveBaseDrops",
       {
         "nth": 23,
         "isVLEncoded": false,
@@ -1534,9 +1534,59 @@
       }
     ],
     [
-      "LPTokenBalance",
+      "ReserveIncrementDrops",
       {
         "nth": 24,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Amount"
+      }
+    ],
+    [
+      "LPTokenOut",
+      {
+        "nth": 25,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Amount"
+      }
+    ],
+    [
+      "LPTokenIn",
+      {
+        "nth": 26,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Amount"
+      }
+    ],
+    [
+      "EPrice",
+      {
+        "nth": 27,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Amount"
+      }
+    ],
+    [
+      "Price",
+      {
+        "nth": 28,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "Amount"
+      }
+    ],
+    [
+      "LPTokenBalance",
+      {
+        "nth": 31,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -1874,16 +1924,6 @@
       }
     ],
     [
-      "AMMAccount",
-      {
-        "nth": 11,
-        "isVLEncoded": true,
-        "isSerialized": true,
-        "isSigningField": true,
-        "type": "AccountID"
-      }
-    ],
-    [
       "HookAccount",
       {
         "nth": 16,
@@ -2186,7 +2226,7 @@
     [
       "AuctionSlot",
       {
-        "nth": 27,
+        "nth": 26,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -2196,7 +2236,7 @@
     [
       "AuthAccount",
       {
-        "nth": 28,
+        "nth": 27,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -2296,7 +2336,7 @@
     [
       "VoteSlots",
       {
-        "nth": 14,
+        "nth": 12,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -2356,7 +2396,7 @@
     [
       "AuthAccounts",
       {
-        "nth": 26,
+        "nth": 25,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -2378,6 +2418,9 @@
     "telCAN_NOT_QUEUE_BLOCKED": -389,
     "telCAN_NOT_QUEUE_FEE": -388,
     "telCAN_NOT_QUEUE_FULL": -387,
+    "telWRONG_NETWORK": -386,
+    "telREQUIRES_NETWORK_ID": -385,
+    "telNETWORK_ID_MAKES_TX_NON_CANONICAL": -384,
 
     "temMALFORMED": -299,
     "temBAD_AMOUNT": -298,
@@ -2417,8 +2460,7 @@
     "temUNKNOWN": -264,
     "temSEQ_AND_TICKET": -263,
     "temBAD_NFTOKEN_TRANSFER_FEE": -262,
-    "temBAD_AMM_OPTIONS": -261,
-    "temBAD_AMM_TOKENS": -260,
+    "temBAD_AMM_TOKENS": -261,
 
     "tefFAILURE": -199,
     "tefALREADY": -198,
@@ -2506,12 +2548,8 @@
     "tecINSUFFICIENT_PAYMENT": 161,
     "tecUNFUNDED_AMM": 162,
     "tecAMM_BALANCE": 163,
-    "tecAMM_FAILED_DEPOSIT": 164,
-    "tecAMM_FAILED_WITHDRAW": 165,
-    "tecAMM_INVALID_TOKENS": 166,
-    "tecAMM_EXISTS": 167,
-    "tecAMM_FAILED_BID": 168,
-    "tecAMM_FAILED_VOTE": 169
+    "tecAMM_FAILED": 164,
+    "tecAMM_INVALID_TOKENS": 165
   },
   "TRANSACTION_TYPES": {
     "Invalid": -1,

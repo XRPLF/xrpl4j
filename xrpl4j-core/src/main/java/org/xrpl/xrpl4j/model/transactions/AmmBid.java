@@ -29,17 +29,18 @@ public interface AmmBid extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link AmmBid}.
+   * Set of {@link TransactionFlags}s for this {@link AmmBid}, which only allows the
+   * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
    *
-   * @return Always {@link TransactionFlags} with {@code tfFullyCanonicalSig} set.
+   * @return Always {@link TransactionFlags#EMPTY}.
    */
   @JsonProperty("Flags")
-  @Value.Derived
+  @Value.Default
   default TransactionFlags flags() {
-    return new TransactionFlags.Builder().build();
+    return TransactionFlags.EMPTY;
   }
 
   /**

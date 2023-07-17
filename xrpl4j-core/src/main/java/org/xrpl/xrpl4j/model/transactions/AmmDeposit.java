@@ -27,28 +27,28 @@ public interface AmmDeposit extends Transaction {
   }
 
   /**
-   * A {@link AmmDepositFlags} for this transaction. This flag will always be derived from the presence
+   * A {@link AmmDepositFlags} for this transaction. This flag will automatically be derived from the presence
    * of {@link #lpTokenOut()}, {@link #amount()}, {@link #amount2()} and {@link #effectivePrice()}.
    *
    * @return A {@link AmmDepositFlags} for this transaction.
    */
   @JsonProperty("Flags")
-  @Value.Derived
+  @Value.Default
   default AmmDepositFlags flags() {
-    boolean lpTokenPresent = lpTokenOut().isPresent();
+    boolean lpTokenOutPresent = lpTokenOut().isPresent();
     boolean amountPresent = amount().isPresent();
     boolean amount2Present = amount2().isPresent();
     boolean effectivePricePresent = effectivePrice().isPresent();
 
-    if (lpTokenPresent && !amountPresent && !amount2Present && !effectivePricePresent) {
+    if (lpTokenOutPresent && !amountPresent && !amount2Present && !effectivePricePresent) {
       return AmmDepositFlags.LP_TOKEN;
-    } else if (!lpTokenPresent && amountPresent && amount2Present &&  !effectivePricePresent) {
+    } else if (!lpTokenOutPresent && amountPresent && amount2Present &&  !effectivePricePresent) {
       return AmmDepositFlags.TWO_ASSET;
-    } else if (!lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent) {
+    } else if (!lpTokenOutPresent && amountPresent && !amount2Present && !effectivePricePresent) {
       return AmmDepositFlags.SINGLE_ASSET;
-    } else if (lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent) {
+    } else if (lpTokenOutPresent && amountPresent && !amount2Present && !effectivePricePresent) {
       return AmmDepositFlags.ONE_ASSET_LP_TOKEN;
-    } else if (!lpTokenPresent && amountPresent && !amount2Present) {
+    } else if (!lpTokenOutPresent && amountPresent && !amount2Present) {
       return AmmDepositFlags.LIMIT_LP_TOKEN;
     } else {
       throw new IllegalStateException("Correct AmmDepositFlag could not be determined based on set fields.");

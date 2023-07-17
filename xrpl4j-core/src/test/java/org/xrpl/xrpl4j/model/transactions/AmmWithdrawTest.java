@@ -17,7 +17,6 @@ class AmmWithdrawTest extends AbstractJsonTest {
     AmmWithdraw withdraw = baseBuilder()
       .flags(AmmWithdrawFlags.LP_TOKEN)
       .lpTokensIn(lpTokensIn())
-      
       .build();
 
     String json = "{\n" +

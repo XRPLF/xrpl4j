@@ -80,7 +80,7 @@ public interface NfTokenMint extends Transaction {
    * increments of 0.001%. This field must NOT be present if the
    * `tfTransferable` flag is not set.
    *
-   * @return An {@link Optional} field TransferFee of type {@link CurrencyAmount}.
+   * @return An {@link Optional} {@link TransferFee}.
    */
   @JsonProperty("TransferFee")
   Optional<TransferFee> transferFee();
@@ -105,17 +105,6 @@ public interface NfTokenMint extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default NfTokenMintFlags flags() {
-    return NfTokenMintFlags.builder().build();
-  }
-
-  /**
-   * For secondary sale/brokered mode, tfTransferable flag must be set.
-   */
-  @Value.Check
-  default void checkIfFlagIsSet() {
-    if (transferFee().isPresent()) {
-      Preconditions.checkArgument(flags().tfTransferable(),
-        "tfTransferable flag must be set for secondary sale.");
-    }
+    return NfTokenMintFlags.empty();
   }
 }

@@ -24,7 +24,9 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.client.path.BookOffersOffer;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
+import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
@@ -65,7 +67,8 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(UnsignedByteArray.class, new UnsignedByteArraySerializer());
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
 
-    addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
+    addSerializer(Flags.class, new FlagsSerializer());
 
+    addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
   }
 }

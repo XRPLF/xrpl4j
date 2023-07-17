@@ -61,6 +61,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   static AccountObjectsRequestParams of(Address classicAddress) {
     return builder()
       .account(classicAddress)
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
   }
 

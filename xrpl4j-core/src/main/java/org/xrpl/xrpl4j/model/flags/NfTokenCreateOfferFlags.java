@@ -36,6 +36,9 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
     super(value);
   }
 
+  private NfTokenCreateOfferFlags() {
+  }
+
   /**
    * Create a new {@link Builder}.
    *
@@ -63,6 +66,16 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
    */
   public static NfTokenCreateOfferFlags of(long value) {
     return new NfTokenCreateOfferFlags(value);
+  }
+
+  /**
+   * Construct an empty instance of {@link NfTokenCreateOfferFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link NfTokenCreateOfferFlags}.
+   */
+  public static NfTokenCreateOfferFlags empty() {
+    return new NfTokenCreateOfferFlags();
   }
 
   /**

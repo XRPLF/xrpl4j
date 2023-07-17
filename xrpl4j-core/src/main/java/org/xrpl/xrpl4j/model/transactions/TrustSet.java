@@ -59,7 +59,7 @@ public interface TrustSet extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default TrustSetFlags flags() {
-    return TrustSetFlags.builder().build();
+    return TrustSetFlags.empty();
   }
 
   /**

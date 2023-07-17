@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.ledger.ImmutableNfTokenOfferObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -46,12 +47,12 @@ import java.util.Optional;
 public interface MetaNfTokenOfferObject extends MetaLedgerObject {
 
   /**
-   * The amount of XRP, in drops, expected or offered for the token.
+   * The amount expected or offered for the token.
    *
-   * @return The {@link XrpCurrencyAmount}.
+   * @return The {@link CurrencyAmount}.
    */
   @JsonProperty("Amount")
-  Optional<XrpCurrencyAmount> amount();
+  Optional<CurrencyAmount> amount();
 
   /**
    * {@link Address} of the source account that created and owns the offer.

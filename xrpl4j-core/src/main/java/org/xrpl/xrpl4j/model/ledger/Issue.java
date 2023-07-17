@@ -57,8 +57,7 @@ public interface Issue {
   String currency();
 
   /**
-   * The {@link Address} of the issuer of the currency, or empty if the currency
-   * is XRP.
+   * The {@link Address} of the issuer of the currency, or empty if the currency is XRP.
    *
    * @return The {@link Address} of the issuer account.
    */

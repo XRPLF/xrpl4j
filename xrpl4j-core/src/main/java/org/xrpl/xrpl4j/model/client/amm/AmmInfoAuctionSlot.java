@@ -1,12 +1,10 @@
 package org.xrpl.xrpl4j.model.client.amm;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
@@ -63,12 +61,11 @@ public interface AmmInfoAuctionSlot {
    *
    * @return An {@link ZonedDateTime}
    */
+  // rippled reports the expiration date/time in ISO 8601 format, which is natively supported by ZonedDateTime.
+  // Therefore, this field does not require a @JsonFormat annotation similar to how other ZonedDateTime fields
+  // are annotated in this library.
   @JsonProperty("expiration")
-//  @JsonFormat(pattern = "yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", locale = "en_US")
-//  ZonedDateTime expiration();
-  // FIXME: AMM-devnet has a different date/time format -- we should add a custom deserializer to try a bunch of
-  //  different formats maybe.
-  String expiration();
+  ZonedDateTime expiration();
 
   /**
    * The amount the auction owner paid to win this slot, in LP Tokens.

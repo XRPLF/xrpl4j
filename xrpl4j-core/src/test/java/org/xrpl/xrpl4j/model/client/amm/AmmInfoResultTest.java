@@ -16,18 +16,13 @@ import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
 class AmmInfoResultTest extends AbstractJsonTest {
 
   @Test
   void testJsonForCurrentLedger() throws JSONException, JsonProcessingException {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
-        AmmResult.builder()
+        AmmInfo.builder()
           .account(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
           .amount(XrpCurrencyAmount.ofDrops(11080000720L))
           .amount2(
@@ -128,7 +123,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
   void testJsonForValidatedLedger() throws JSONException, JsonProcessingException {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
-        AmmResult.builder()
+        AmmInfo.builder()
           .account(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
           .amount(XrpCurrencyAmount.ofDrops(11080000720L))
           .amount2(

@@ -37,6 +37,12 @@ public class TradingFeeTest {
 
     fee = TradingFee.ofPercent(BigDecimal.valueOf(1.0000));
     assertThat(fee.value()).isEqualTo(UnsignedInteger.valueOf(1000));
+
+    fee = TradingFee.ofPercent(BigDecimal.valueOf(0));
+    assertThat(fee.value()).isEqualTo(UnsignedInteger.valueOf(0));
+
+    fee = TradingFee.ofPercent(BigDecimal.valueOf(0.00000000000));
+    assertThat(fee.value()).isEqualTo(UnsignedInteger.valueOf(0));
   }
 
   @Test
@@ -57,16 +63,10 @@ public class TradingFeeTest {
     BigDecimal percent = BigDecimal.valueOf(0.001000);
     TradingFee fee = TradingFee.ofPercent(percent);
     assertThat(fee.bigDecimalValue()).isEqualTo(percent);
-  }
 
-  @Test
-  void validateBounds() {
-    assertThatThrownBy(
-      () -> TradingFee.of(UnsignedInteger.valueOf(1001))
-    ).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("TradingFee should be in the range 0 to 1000.");
-
-    assertDoesNotThrow(() -> TradingFee.of(UnsignedInteger.valueOf(1000)));
+    percent = BigDecimal.valueOf(1, 3);
+    fee = TradingFee.ofPercent(percent);
+    assertThat(fee.bigDecimalValue()).isEqualTo(percent);
   }
 
   @Test

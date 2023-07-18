@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -35,7 +34,7 @@ public interface AmmInfoResult extends XrplResult {
    * @return An {@link AmmInfoResult}.
    */
   @JsonProperty("amm")
-  AmmResult amm();
+  AmmInfo amm();
 
   /**
    * (Omitted if ledger_current_index is provided instead) The ledger index of the ledger version used when

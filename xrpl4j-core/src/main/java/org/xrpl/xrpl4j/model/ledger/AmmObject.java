@@ -74,8 +74,8 @@ public interface AmmObject extends LedgerObject {
    *
    * @return An {@link Address}.
    */
-  @JsonProperty("AMMAccount")
-  Address ammAccount();
+  @JsonProperty("Account")
+  Address account();
 
   /**
    * Details of the current owner of the auction slot.

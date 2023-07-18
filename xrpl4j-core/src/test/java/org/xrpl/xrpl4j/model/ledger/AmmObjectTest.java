@@ -30,7 +30,7 @@ class AmmObjectTest extends AbstractJsonTest {
     AmmObject ammObject = AmmObject.builder()
       .asset(mock(Issue.class))
       .asset2(mock(Issue.class))
-      .ammAccount(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+      .account(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
       .lpTokenBalance(mock(IssuedCurrencyAmount.class))
       .tradingFee(TradingFee.of(UnsignedInteger.ONE))
       .addVoteSlots(
@@ -53,7 +53,7 @@ class AmmObjectTest extends AbstractJsonTest {
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .build()
       )
-      .ammAccount(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
+      .account(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
       .lpTokenBalance(
         IssuedCurrencyAmount.builder()
           .value("71150.53584131501")
@@ -100,7 +100,7 @@ class AmmObjectTest extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"AMMAccount\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
+      "    \"Account\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
       "    \"LedgerEntryType\" : \"AMM\",\n" +
       "    \"Asset\" : " + objectMapper.writeValueAsString(ammObject.asset())  + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(ammObject.asset2())  + "," +

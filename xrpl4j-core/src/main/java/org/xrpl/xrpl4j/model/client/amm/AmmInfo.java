@@ -19,18 +19,26 @@ import java.util.Optional;
  * responses to {@code amm_info} RPC requests.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableAmmResult.class)
-@JsonDeserialize(as = ImmutableAmmResult.class)
-public interface AmmResult extends XrplResult {
+@JsonSerialize(as = ImmutableAmmInfo.class)
+@JsonDeserialize(as = ImmutableAmmInfo.class)
+public interface AmmInfo extends XrplResult {
 
   /**
-   * Construct a {@code AmmResult} builder.
+   * Construct a {@code AmmInfo} builder.
    *
-   * @return An {@link ImmutableAmmResult.Builder}.
+   * @return An {@link ImmutableAmmInfo.Builder}.
    */
-  static ImmutableAmmResult.Builder builder() {
-    return ImmutableAmmResult.builder();
+  static ImmutableAmmInfo.Builder builder() {
+    return ImmutableAmmInfo.builder();
   }
+
+  /**
+   * The address of the special account that holds this AMM's assets.
+   *
+   * @return An {@link Address}.
+   */
+  @JsonProperty("account")
+  Address account();
 
   /**
    * The definition for one of the two assets this AMM holds.
@@ -69,14 +77,6 @@ public interface AmmResult extends XrplResult {
   default boolean asset2Frozen() {
     return false;
   }
-
-  /**
-   * The address of the special account that holds this AMM's assets.
-   *
-   * @return An {@link Address}.
-   */
-  @JsonProperty("account")
-  Address account();
 
   /**
    * Details of the current owner of the auction slot.

@@ -417,17 +417,6 @@ public class Wrappers {
       return BigDecimal.valueOf(value().longValue(), 3);
     }
 
-    /**
-     * Validates that a TradingFee is not more than 1%, or 1000.
-     */
-    @Value.Check
-    public void validateBounds() {
-      Preconditions.checkArgument(
-        FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(1_000)),
-        "TradingFee should be in the range 0 to 1000."
-      );
-    }
-
   }
 
   /**

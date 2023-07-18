@@ -1,11 +1,15 @@
-package org.xrpl.xrpl4j.model.ledger;
+package org.xrpl.xrpl4j.model.transactions.metadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
+import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
@@ -17,33 +21,13 @@ import java.util.stream.Collectors;
 /**
  * Represents an AMM ledger object, which describes a single Automated Market Maker instance.
  */
-@Value.Immutable
-@JsonSerialize(as = ImmutableAmmObject.class)
-@JsonDeserialize(as = ImmutableAmmObject.class)
-public interface AmmObject extends LedgerObject {
+@Immutable
+@JsonSerialize(as = ImmutableMetaAmmObject.class)
+@JsonDeserialize(as = ImmutableMetaAmmObject.class)
+public interface MetaAmmObject extends MetaLedgerObject {
 
   /**
-   * Construct a {@code AmmObject} builder.
-   *
-   * @return An {@link ImmutableAmmObject.Builder}.
-   */
-  static ImmutableAmmObject.Builder builder() {
-    return ImmutableAmmObject.builder();
-  }
-
-  /**
-   * The type of ledger object, which will always be "AMM" in this case.
-   *
-   * @return Always returns {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#AMM}.
-   */
-  @JsonProperty("LedgerEntryType")
-  @Value.Derived
-  default LedgerEntryType ledgerEntryType() {
-    return LedgerEntryType.AMM;
-  }
-
-  /**
-   * A bit-map of boolean flags. No flags are defined for {@link AmmObject}, so this value is always 0.
+   * A bit-map of boolean flags. No flags are defined for {@link MetaAmmObject}, so this value is always 0.
    *
    * @return Always {@link Flags#UNSET}.
    */
@@ -59,7 +43,7 @@ public interface AmmObject extends LedgerObject {
    * @return An {@link Issue}.
    */
   @JsonProperty("Asset")
-  Issue asset();
+  Optional<Issue> asset();
 
   /**
    * The definition for the other asset this AMM holds.
@@ -67,7 +51,7 @@ public interface AmmObject extends LedgerObject {
    * @return An {@link Issue}.
    */
   @JsonProperty("Asset2")
-  Issue asset2();
+  Optional<Issue> asset2();
 
   /**
    * The address of the special account that holds this AMM's assets.
@@ -75,7 +59,7 @@ public interface AmmObject extends LedgerObject {
    * @return An {@link Address}.
    */
   @JsonProperty("Account")
-  Address account();
+  Optional<Address> account();
 
   /**
    * Details of the current owner of the auction slot.
@@ -83,7 +67,7 @@ public interface AmmObject extends LedgerObject {
    * @return An {@link AuctionSlot}.
    */
   @JsonProperty("AuctionSlot")
-  Optional<AuctionSlot> auctionSlot();
+  Optional<MetaAuctionSlot> auctionSlot();
 
   /**
    * The total outstanding balance of liquidity provider tokens from this AMM instance. The holders of these tokens
@@ -93,7 +77,7 @@ public interface AmmObject extends LedgerObject {
    * @return An {@link IssuedCurrencyAmount}.
    */
   @JsonProperty("LPTokenBalance")
-  IssuedCurrencyAmount lpTokenBalance();
+  Optional<IssuedCurrencyAmount> lpTokenBalance();
 
   /**
    * The percentage fee to be charged for trades against this AMM instance, in units of 1/10,000. The maximum value is
@@ -102,26 +86,26 @@ public interface AmmObject extends LedgerObject {
    * @return A {@link TradingFee}.
    */
   @JsonProperty("TradingFee")
-  TradingFee tradingFee();
+  Optional<TradingFee> tradingFee();
 
   /**
    * A list of vote objects, representing votes on the pool's trading fee.
    *
-   * @return A {@link List} of {@link VoteEntryWrapper}s.
+   * @return A {@link List} of {@link MetaVoteEntryWrapper}s.
    */
   @JsonProperty("VoteSlots")
-  List<VoteEntryWrapper> voteSlots();
+  List<MetaVoteEntryWrapper> voteSlots();
 
   /**
-   * Unwraps the {@link VoteEntryWrapper}s in {@link #voteSlots()} for easier access to {@link VoteEntry}s.
+   * Unwraps the {@link VoteEntryWrapper}s in {@link #voteSlots()} for easier access to {@link MetaVoteEntry}s.
    *
-   * @return A {@link List} of {@link VoteEntry}.
+   * @return A {@link List} of {@link MetaVoteEntry}.
    */
   @JsonIgnore
   @Value.Derived
-  default List<VoteEntry> voteSlotsUnwrapped() {
+  default List<MetaVoteEntry> voteSlotsUnwrapped() {
     return voteSlots().stream()
-      .map(VoteEntryWrapper::voteEntry)
+      .map(MetaVoteEntryWrapper::voteEntry)
       .collect(Collectors.toList());
   }
 }

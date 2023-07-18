@@ -23,6 +23,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableDeletedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableMetaNfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaAmmObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaCheckObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
@@ -808,6 +809,8 @@ class TransactionMetadataTest {
         return MetaTicketObject.class;
       case "NFTokenPage":
         return MetaNfTokenPageObject.class;
+      case "AMM":
+        return MetaAmmObject.class;
       default:
         return MetaUnknownObject.class;
     }

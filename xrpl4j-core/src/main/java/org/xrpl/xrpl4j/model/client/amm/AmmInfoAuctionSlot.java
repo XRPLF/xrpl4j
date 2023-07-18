@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.client.amm;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -62,9 +63,10 @@ public interface AmmInfoAuctionSlot {
    * @return An {@link ZonedDateTime}
    */
   // rippled reports the expiration date/time in ISO 8601 format, which is natively supported by ZonedDateTime.
-  // Therefore, this field does not require a @JsonFormat annotation similar to how other ZonedDateTime fields
-  // are annotated in this library.
+  // Therefore, this field does not require a @JsonFormat(pattern = ...) annotation similar to how other ZonedDateTime
+  // fields are annotated in this library.
   @JsonProperty("expiration")
+  @JsonFormat(locale = "en_US")
   ZonedDateTime expiration();
 
   /**

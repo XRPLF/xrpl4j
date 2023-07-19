@@ -153,4 +153,42 @@ public class AccountSetJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(accountSet, json);
   }
+
+  @Test
+  void testJsonWithZeroClearFlagAndSetFlag() throws JSONException, JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .domain("6578616D706C652E636F6D")
+      .setFlag(AccountSetFlag.NONE)
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .transferRate(UnsignedInteger.valueOf(1000000001))
+      .tickSize(UnsignedInteger.valueOf(15))
+      .clearFlag(AccountSetFlag.NONE)
+      .emailHash("f9879d71855b5ff21e4963273a886bfc")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .build();
+
+    String json = "{\n" +
+      "    \"TransactionType\":\"AccountSet\",\n" +
+      "    \"Account\":\"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\":\"12\",\n" +
+      "    \"Sequence\":5,\n" +
+      "    \"Domain\":\"6578616D706C652E636F6D\",\n" +
+      "    \"SetFlag\":0,\n" +
+      "    \"MessageKey\":\"03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB\",\n" +
+      "    \"TransferRate\":1000000001,\n" +
+      "    \"TickSize\":15,\n" +
+      "    \"ClearFlag\":0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NFTokenMinter\" : \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(accountSet, json);
+  }
 }

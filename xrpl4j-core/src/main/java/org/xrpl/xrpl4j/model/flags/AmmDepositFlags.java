@@ -6,6 +6,10 @@ import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
  * A set of {@link TransactionFlags} that can be set on {@link AmmDeposit} transactions. Exactly
  * one flag must be set on each {@link AmmDeposit} transaction, so this class does not allow for combination
  * of multiple flags.
+ *
+ * <p>While most other TransactionFlags support empty flags or 0, AmmDeposit transactions must have a Flags field
+ * to denote the deposit mode. Therefore, AmmDepositFlags does not support empty or unset flags.
+ * </p>
  */
 public class AmmDepositFlags extends TransactionFlags {
 

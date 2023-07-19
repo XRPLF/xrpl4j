@@ -4,6 +4,10 @@ package org.xrpl.xrpl4j.model.flags;
  * A set of {@link TransactionFlags} that can be set on {@link org.xrpl.xrpl4j.model.transactions.AmmWithdraw}
  * transactions. Exactly one flag must be set on each {@link org.xrpl.xrpl4j.model.transactions.AmmWithdraw}
  * transaction, so this class does not allow for combination of multiple flags.
+ *
+ * <p>While most other TransactionFlags support empty flags or 0, AmmWithdraw transactions must have a Flags field
+ * to denote the withdraw mode. Therefore, AmmWithdrawFlags does not support empty or unset flags.
+ * </p>
  */
 public class AmmWithdrawFlags extends TransactionFlags {
 

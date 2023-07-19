@@ -66,7 +66,7 @@ public interface AmmInfoAuctionSlot {
   // Therefore, this field does not require a @JsonFormat(pattern = ...) annotation similar to how other ZonedDateTime
   // fields are annotated in this library.
   @JsonProperty("expiration")
-  @JsonFormat(locale = "en_US")
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssZ", locale = "en_US")
   ZonedDateTime expiration();
 
   /**

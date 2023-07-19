@@ -64,7 +64,7 @@ public interface MetaAmmObject extends MetaLedgerObject {
   /**
    * Details of the current owner of the auction slot.
    *
-   * @return An {@link AuctionSlot}.
+   * @return A {@link MetaAuctionSlot}.
    */
   @JsonProperty("AuctionSlot")
   Optional<MetaAuctionSlot> auctionSlot();
@@ -97,7 +97,7 @@ public interface MetaAmmObject extends MetaLedgerObject {
   List<MetaVoteEntryWrapper> voteSlots();
 
   /**
-   * Unwraps the {@link VoteEntryWrapper}s in {@link #voteSlots()} for easier access to {@link MetaVoteEntry}s.
+   * Unwraps the {@link MetaVoteEntryWrapper}s in {@link #voteSlots()} for easier access to {@link MetaVoteEntry}s.
    *
    * @return A {@link List} of {@link MetaVoteEntry}.
    */

@@ -16,6 +16,11 @@ import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 class AmmInfoResultTest extends AbstractJsonTest {
 
   @Test
@@ -40,12 +45,12 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration("2023-Jan-07 23:47:21.000000000 UTC")
-              /*.expiration(
-                ZonedDateTime.parse("2023-Jan-07 23:47:21.000000000 UTC",
-                  DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
-                  .withZoneSameLocal(ZoneId.of("UTC"))
-              )*/
+              .expiration(
+                ZonedDateTime.parse(
+                  "2023-07-20T15:17:31+0000",
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
+                  ).withZoneSameLocal(ZoneId.of("UTC"))
+              )
               .price(
                 IssuedCurrencyAmount.builder()
                   .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
@@ -93,7 +98,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
       "        \"auth_accounts\": [{\"account\": \"rHq1eC9TEyEPVhRvdTPLKr3z8D5BUzcHqi\"},\n" +
       "        {\"account\": \"rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG\"}],\n" +
       "        \"discounted_fee\": 0,\n" +
-      "          \"expiration\": \"2023-Jan-07 23:47:21.000000000 UTC\",\n" +
+      "          \"expiration\": \"2023-07-20T15:17:31+0000\",\n" +
       "          \"price\": {\"currency\": \"03930D02208264E2E40EC1B0C09E4DB96EE197B1\",\n" +
       "          \"issuer\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
       "          \"value\": \"100\"},\n" +
@@ -142,12 +147,12 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration("2023-Jan-07 23:47:21.000000000 UTC")
-              /*.expiration(
-                ZonedDateTime.parse("2023-Jan-07 23:47:21.000000000 UTC",
-                    DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US))
-                  .withZoneSameLocal(ZoneId.of("UTC"))
-              )*/
+              .expiration(
+                ZonedDateTime.parse(
+                  "2023-07-20T15:17:31+0000",
+                  DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
+                ).withZoneSameLocal(ZoneId.of("UTC"))
+              )
               .price(
                 IssuedCurrencyAmount.builder()
                   .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
@@ -197,7 +202,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
       "        \"auth_accounts\": [{\"account\": \"rHq1eC9TEyEPVhRvdTPLKr3z8D5BUzcHqi\"},\n" +
       "        {\"account\": \"rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG\"}],\n" +
       "        \"discounted_fee\": 0,\n" +
-      "          \"expiration\": \"2023-Jan-07 23:47:21.000000000 UTC\",\n" +
+      "          \"expiration\": \"2023-07-20T15:17:31+0000\",\n" +
       "          \"price\": {\"currency\": \"03930D02208264E2E40EC1B0C09E4DB96EE197B1\",\n" +
       "          \"issuer\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
       "          \"value\": \"100\"},\n" +

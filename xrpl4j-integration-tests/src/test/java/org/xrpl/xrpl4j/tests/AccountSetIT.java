@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -341,6 +342,46 @@ public class AccountSetIT extends AbstractIT {
     assertThat(enableResponse.engineResult()).isEqualTo("tecNO_ALTERNATIVE_KEY");
     assertThat(signedTransaction.hash()).isEqualTo(enableResponse.transactionResult().hash());
     logger.info("AccountSet SetFlag transaction failed successfully:");
+  }
+
+  @Test
+  void submitAndRetrieveAccountSetWithZeroClearFlagAndSetFlag()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair keyPair = constructRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet accountSet = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .setFlag(AccountSetFlag.NONE)
+      .clearFlag(AccountSetFlag.NONE)
+      .signingPublicKey(keyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      keyPair.privateKey(), accountSet
+    );
+    SubmitResult<AccountSet> response = xrplClient.submit(signedAccountSet);
+
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedAccountSet.hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    );
+
+    TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
+      this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
+    );
+
+    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.NONE);
+    assertThat(accountSetTransactionResult.transaction().clearFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.NONE);
   }
 
   //////////////////////

@@ -43,7 +43,7 @@ class FieldHeaderCodecTest {
     ObjectMapper objectMapper = BinaryCodecObjectMapperFactory.getObjectMapper();
     fieldHeaderCodec = new FieldHeaderCodec(new DefaultDefinitionsProvider(objectMapper).get(), objectMapper);
     fieldTests = FixtureUtils.getDataDrivenFixtures().fieldTests();
-    assertThat(fieldTests).hasSize(125);
+    assertThat(fieldTests).hasSize(123);
   }
 
 

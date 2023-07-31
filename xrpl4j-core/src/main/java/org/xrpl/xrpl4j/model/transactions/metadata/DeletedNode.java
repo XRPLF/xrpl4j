@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 /**
  * A {@link DeletedNode} in transaction metadata indicates that the transaction removed an object from the ledger.
  *
@@ -22,5 +24,14 @@ public interface DeletedNode<T extends MetaLedgerObject> extends AffectedNode {
    */
   @JsonProperty("FinalFields")
   T finalFields();
+
+  /**
+   * The {@link T} containing the fields of the ledger object if it was modified before it was removed in the same
+   * transaction. This field will rarely be present, but may be present under certain conditions.
+   *
+   * @return An {@link Optional} {@link T}.
+   */
+  @JsonProperty("PreviousFields")
+  Optional<T> previousFields();
 
 }

@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class EscrowJsonTests extends AbstractJsonTest {
@@ -61,6 +62,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -75,6 +77,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
       "    \"SourceTag\": 11747,\n" +
       "    \"Sequence\": 1,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
 
@@ -175,6 +178,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -184,6 +188,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
       "    \"OfferSequence\": 7,\n" +
       "    \"Sequence\": 1,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
     assertCanSerializeAndDeserialize(escrowCancel, json);
@@ -258,6 +263,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -269,6 +275,7 @@ public class EscrowJsonTests extends AbstractJsonTest {
       "    \"Fulfillment\": \"A0028000\",\n" +
       "    \"Sequence\": 1,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Fee\": \"330\"\n" +
       "}";
 

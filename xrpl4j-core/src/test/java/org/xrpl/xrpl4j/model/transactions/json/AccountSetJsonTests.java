@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class AccountSetJsonTests extends AbstractJsonTest {
@@ -54,6 +55,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       )
       .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
       .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -70,6 +72,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       "    \"ClearFlag\":8,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"NFTokenMinter\" : \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
       "}";
 

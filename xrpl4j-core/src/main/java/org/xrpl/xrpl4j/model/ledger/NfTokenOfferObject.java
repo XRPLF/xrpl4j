@@ -147,4 +147,11 @@ public interface NfTokenOfferObject extends LedgerObject {
    */
   @JsonProperty("Flags")
   NfTokenOfferFlags flags();
+
+  /**
+   * The unique ID of this {@link NfTokenOfferObject}.
+   *
+   * @return A {@link Hash256} containing the ID.
+   */
+  Hash256 index();
 }

@@ -205,7 +205,11 @@ public interface AccountSet extends Transaction {
    * </ul>
    */
   enum AccountSetFlag {
-
+    /**
+     * This flag will do nothing but exists to accurately deserialize AccountSet transactions whose {@code SetFlag}
+     * or {@code ClearFlag} fields are zero.
+     */
+    NONE(0),
     /**
      * Require a destination tag to send transactions to this account.
      */
@@ -274,7 +278,7 @@ public interface AccountSet extends Transaction {
      */
     DISALLOW_INCOMING_TRUSTLINE(15);
 
-    int value;
+    final int value;
 
     AccountSetFlag(int value) {
       this.value = value;

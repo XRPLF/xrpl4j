@@ -352,12 +352,12 @@ public class Wrappers {
      * @param percent of type {@link BigDecimal}
      * @return {@link TransferFee}
      */
-    static TransferFee ofPercent(BigDecimal percent) {
+    public static TransferFee ofPercent(BigDecimal percent) {
       Preconditions.checkArgument(
-        Math.max(0, percent.stripTrailingZeros().scale()) <= 2,
-        "Percent value should have a maximum of 2 decimal places."
+        Math.max(0, percent.stripTrailingZeros().scale()) <= 3,
+        "Percent value should have a maximum of 3 decimal places."
       );
-      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
+      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
     }
 
 

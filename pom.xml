@@ -445,7 +445,7 @@
         <!-- org.jacoco:jacoc-maven-plugin -->
         <plugin>
           <groupId>org.jacoco</groupId>
-          <version>0.8.8</version>
+          <version>0.8.10</version>
           <artifactId>jacoco-maven-plugin</artifactId>
           <executions>
             <execution>

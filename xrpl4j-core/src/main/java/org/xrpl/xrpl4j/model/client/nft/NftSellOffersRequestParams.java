@@ -21,11 +21,13 @@ package org.xrpl.xrpl4j.model.client.nft;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 
@@ -55,6 +57,21 @@ public interface NftSellOffersRequestParams extends XrplRequestParams {
    */
   @JsonProperty("nft_id")
   NfTokenId nfTokenId();
+
+  /**
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
+   * numerical ledger index, or a shortcut value.
+   *
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
+   */
+  @JsonUnwrapped
+  @Value.Default
+  // This field was missing in xrpl4j <= 3.1.2. Normally, this would be a required field, but in order
+  // to not make a breaking change, this needs to be defaulted. rippled will default to "validated" for you,
+  // so defaulting to LedgerSpecifier.VALIDATED preserves the existing 3.x.x behavior.
+  default LedgerSpecifier ledgerSpecifier() {
+    return LedgerSpecifier.VALIDATED;
+  }
 
   /**
    * Limit the number of sell offers for the {@link NfTokenId}. The server is not required to honor

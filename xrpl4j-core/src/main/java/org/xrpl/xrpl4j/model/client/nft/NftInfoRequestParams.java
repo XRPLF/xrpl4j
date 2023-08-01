@@ -26,9 +26,24 @@ public interface NftInfoRequestParams extends XrplRequestParams {
     return ImmutableNftInfoRequestParams.builder();
   }
 
+  /**
+   * A unique identifier for the non-fungible token (NFT).
+   *
+   * @return An {@link NfTokenId}.
+   */
   @JsonProperty("nft_id")
   NfTokenId nfTokenId();
 
+  /**
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
+   *
+   * <p>Because {@code nft_info} is only supported on Clio nodes, and because Clio does not have access to non-validated
+   * ledgers, specifying a ledger that has not yet been validated, or specifying a ledger index shortcut other than
+   * {@link LedgerSpecifier#VALIDATED} will result in Clio returning an error.
+   *
+   * @return A {@link LedgerSpecifier} specifying the ledger version to request.
+   */
   @JsonUnwrapped
   LedgerSpecifier ledgerSpecifier();
 

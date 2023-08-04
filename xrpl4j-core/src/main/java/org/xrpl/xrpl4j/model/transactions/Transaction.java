@@ -198,4 +198,7 @@ public interface Transaction {
   @JsonProperty("TxnSignature")
   Optional<Signature> transactionSignature();
 
+  @JsonProperty("NetworkID")
+  Optional<NetworkId> networkId();
+
 }

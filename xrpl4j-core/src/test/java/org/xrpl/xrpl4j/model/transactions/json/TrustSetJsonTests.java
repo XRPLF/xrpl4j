@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -51,6 +52,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -64,6 +66,7 @@ public class TrustSetJsonTests extends AbstractJsonTest {
       "      \"issuer\": \"rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc\",\n" +
       "      \"value\": \"100\"\n" +
       "    },\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Sequence\": 12\n" +
       "}";
 

@@ -87,7 +87,7 @@ public class BinarySerializationTests {
   }
 
   @Test
-  public void serializeAccountSetTransactionWithEmptyFlags() throws JsonProcessingException {
+  public void serializeAccountSetTransactionWithNetworkId() throws JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
       .fee(XrpCurrencyAmount.ofDrops(10))
@@ -96,6 +96,19 @@ public class BinarySerializationTests {
       .build();
 
     String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A730081140F3D0C7D2CFAB2EC8295451F0B3CA03" +
+      "8E8E9CDCD";
+    assertSerializesAndDeserializes(accountSet, expectedBinary);
+  }
+
+  @Test
+  public void serializeAccountSetTransactionWithEmptyFlags() throws JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(10598))
+      .build();
+
+    String expectedBinary = "120003240000296668400000000000000A730081140F3D0C7D2CFAB2EC8295451F0B3CA03" +
       "8E8E9CDCD";
     assertSerializesAndDeserializes(accountSet, expectedBinary);
   }

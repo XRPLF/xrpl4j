@@ -36,7 +36,7 @@ public class NetworkIdSerializer extends StdScalarSerializer<NetworkId> {
    * No-args constructor.
    */
   public NetworkIdSerializer() {
-    super(NetworkId.class, false);
+    super(NetworkId.class);
   }
 
   @Override

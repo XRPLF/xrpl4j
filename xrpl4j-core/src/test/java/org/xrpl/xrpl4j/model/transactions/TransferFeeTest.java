@@ -56,6 +56,12 @@ public class TransferFeeTest {
   }
 
   @Test
+  void ofPercentWithNull() {
+    assertThatThrownBy(() -> TransferFee.ofPercent(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
   public void transferFeeEquality() {
     assertThat(TransferFee.of(UnsignedInteger.ONE)).isEqualTo(TransferFee.of(UnsignedInteger.ONE));
     assertThat(TransferFee.of(UnsignedInteger.valueOf(10)))

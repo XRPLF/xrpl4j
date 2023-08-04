@@ -18,7 +18,7 @@ class NftInfoResultTest extends AbstractJsonTest {
   @Test
   void testJsonWithUri() throws JSONException, JsonProcessingException {
     NftInfoResult result = NftInfoResult.builder()
-      .nfTokenId(NfTokenId.of("00080000B4F4AFC5FBCBD76873F18006173D2193467D3EE70000099B00000000"))
+      .nftId(NfTokenId.of("00080000B4F4AFC5FBCBD76873F18006173D2193467D3EE70000099B00000000"))
       .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(269)))
       .owner(Address.of("rG9gdNygQ6npA9JvDFWBoeXbiUcTYJnEnk"))
       .burned(false)
@@ -51,7 +51,7 @@ class NftInfoResultTest extends AbstractJsonTest {
   @Test
   void testJsonWithoutUri() throws JSONException, JsonProcessingException {
     NftInfoResult result = NftInfoResult.builder()
-      .nfTokenId(NfTokenId.of("00080000B4F4AFC5FBCBD76873F18006173D2193467D3EE70000099B00000000"))
+      .nftId(NfTokenId.of("00080000B4F4AFC5FBCBD76873F18006173D2193467D3EE70000099B00000000"))
       .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(269)))
       .owner(Address.of("rG9gdNygQ6npA9JvDFWBoeXbiUcTYJnEnk"))
       .burned(false)

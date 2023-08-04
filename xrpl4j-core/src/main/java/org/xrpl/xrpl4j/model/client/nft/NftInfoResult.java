@@ -39,7 +39,7 @@ public interface NftInfoResult extends XrplResult {
    * @return An {@link NfTokenId}.
    */
   @JsonProperty("nft_id")
-  NfTokenId nfTokenId();
+  NfTokenId nftId();
 
   /**
    * The ledger index of the most recent ledger version where the state of this NFT was modified, as in the NFT was

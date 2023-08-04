@@ -35,7 +35,7 @@ public class NftInfoIT {
       params
     );
 
-    assertThat(nftInfo.nfTokenId()).isEqualTo(params.nfTokenId());
+    assertThat(nftInfo.nftId()).isEqualTo(params.nfTokenId());
     assertThat(nftInfo.owner()).isEqualTo(Address.of("rLpunkscgfzS8so59bUCJBVqZ3eHZue64r"));
     assertThat(nftInfo.burned()).isFalse();
     assertThat(nftInfo.flags()).isEqualTo(NfTokenFlags.TRANSFERABLE);

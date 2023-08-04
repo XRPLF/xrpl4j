@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -45,6 +46,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -53,6 +55,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"Sequence\": 12,\n" +
       "    \"OfferSequence\": 13,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Fee\": \"14\"\n" +
       "}";
 
@@ -124,6 +127,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -135,6 +139,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"TakerGets\": \"15\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Expiration\": 16\n" +
       "}";
 

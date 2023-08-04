@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class CheckJsonTests extends AbstractJsonTest {
@@ -46,6 +47,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey( "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -54,6 +56,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"CheckID\": \"49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0\",\n" +
       "    \"Sequence\": 12,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
 
@@ -123,6 +126,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -132,6 +136,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "    \"CheckID\": \"838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334\",\n" +
       "    \"Sequence\": 1,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"Fee\": \"12\"\n" +
       "}";
 
@@ -234,6 +239,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -246,6 +252,7 @@ public class CheckJsonTests extends AbstractJsonTest {
       "  \"DestinationTag\": 1,\n" +
       "  \"Sequence\": 1,\n" +
       "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "  \"NetworkID\": 1024,\n" +
       "  \"Fee\": \"12\"\n" +
       "}";
 

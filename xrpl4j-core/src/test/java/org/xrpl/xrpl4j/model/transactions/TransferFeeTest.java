@@ -45,37 +45,57 @@ public class TransferFeeTest {
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
-  public void transferFeeEquality() {
+  void ofPercent() {
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(0)).value()).isEqualTo(UnsignedInteger.valueOf(0));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(0.000)).value()).isEqualTo(UnsignedInteger.valueOf(0));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(49.999)).value()).isEqualTo(UnsignedInteger.valueOf(49_999));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(49.99)).value()).isEqualTo(UnsignedInteger.valueOf(49_990));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(49.9)).value()).isEqualTo(UnsignedInteger.valueOf(49_900));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(50)).value()).isEqualTo(UnsignedInteger.valueOf(50_000));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(50.000)).value()).isEqualTo(UnsignedInteger.valueOf(50_000));
+  }
 
+  @Test
+  void ofPercentWithNull() {
+    assertThatThrownBy(() -> TransferFee.ofPercent(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void transferFeeEquality() {
     assertThat(TransferFee.of(UnsignedInteger.ONE)).isEqualTo(TransferFee.of(UnsignedInteger.ONE));
     assertThat(TransferFee.of(UnsignedInteger.valueOf(10)))
       .isEqualTo(TransferFee.of(UnsignedInteger.valueOf(10)));
 
-    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.99)))
-      .isEqualTo(TransferFee.ofPercent(BigDecimal.valueOf(99.99)));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(49.99)))
+      .isEqualTo(TransferFee.ofPercent(BigDecimal.valueOf(49.99)));
 
-    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.9)))
-      .isEqualTo(TransferFee.ofPercent(BigDecimal.valueOf(99.90)));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(49.9)))
+      .isEqualTo(TransferFee.ofPercent(BigDecimal.valueOf(49.90)));
 
-    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(99.9)).value())
-      .isEqualTo(UnsignedInteger.valueOf(9990));
+    assertThat(TransferFee.ofPercent(BigDecimal.valueOf(49.9)).value())
+      .isEqualTo(UnsignedInteger.valueOf(49900));
   }
 
   @Test
   public void percentValueIncorrectFormat() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> TransferFee.ofPercent(BigDecimal.valueOf(99.999)),
-      "Percent value should have a maximum of 2 decimal places."
-    );
+    assertThatThrownBy(
+      () -> TransferFee.ofPercent(BigDecimal.valueOf(25.2929))
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Percent value should have a maximum of 3 decimal places.");
   }
 
   @Test
   public void validateBounds() {
     assertDoesNotThrow(() -> TransferFee.of(UnsignedInteger.valueOf(49999)));
+    assertDoesNotThrow(() -> TransferFee.ofPercent(BigDecimal.valueOf(49.999)));
     assertDoesNotThrow(() -> TransferFee.of(UnsignedInteger.valueOf(50000)));
+    assertDoesNotThrow(() -> TransferFee.ofPercent(BigDecimal.valueOf(50.000)));
 
     assertThatThrownBy(() -> TransferFee.of(UnsignedInteger.valueOf(50001)))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("TransferFee should be in the range 0 to 50000.");
+    assertThatThrownBy(() -> TransferFee.ofPercent(BigDecimal.valueOf(50.001)))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("TransferFee should be in the range 0 to 50000.");
   }

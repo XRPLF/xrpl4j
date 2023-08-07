@@ -53,6 +53,7 @@ import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Wrapped immutable classes for providing type-safe objects.
@@ -336,6 +337,10 @@ public class Wrappers {
 
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   *
+   * <p>Valid values for this field are between 0 and 50000 inclusive, allowing transfer rates of between 0.00% and
+   * 50.00% in increments of 0.001. If this field is provided in a {@link NfTokenMint} transaction, the transaction
+   * MUST have the {@code tfTransferable} flag enabled.
    */
   @Value.Immutable
   @Wrapped
@@ -351,16 +356,20 @@ public class Wrappers {
     /**
      * Construct {@link TransferFee} as a percentage value.
      *
+     * <p>The given percentage value must have at most 3 decimal places of precision, and must be
+     * between {@code 0} and {@code 50.000}.</p>
+     *
      * @param percent of type {@link BigDecimal}
      *
      * @return {@link TransferFee}
      */
-    static TransferFee ofPercent(BigDecimal percent) {
+    public static TransferFee ofPercent(BigDecimal percent) {
+      Objects.requireNonNull(percent);
       Preconditions.checkArgument(
-        Math.max(0, percent.stripTrailingZeros().scale()) <= 2,
-        "Percent value should have a maximum of 2 decimal places."
+        Math.max(0, percent.stripTrailingZeros().scale()) <= 3,
+        "Percent value should have a maximum of 3 decimal places."
       );
-      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
+      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
     }
 
 

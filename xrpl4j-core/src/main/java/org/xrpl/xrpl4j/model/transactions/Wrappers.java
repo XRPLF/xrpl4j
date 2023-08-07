@@ -37,6 +37,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
@@ -358,6 +360,7 @@ public class Wrappers {
      * between {@code 0} and {@code 50.000}.</p>
      *
      * @param percent of type {@link BigDecimal}
+     *
      * @return {@link TransferFee}
      */
     public static TransferFee ofPercent(BigDecimal percent) {
@@ -383,4 +386,30 @@ public class Wrappers {
 
   }
 
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing a Network ID.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = NetworkId.class, using = NetworkIdSerializer.class)
+  @JsonDeserialize(as = NetworkId.class, using = NetworkIdDeserializer.class)
+  abstract static class _NetworkId extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Construct a {@link NetworkId} from a {@code long}. The supplied value must be less than or equal to
+     * 4,294,967,295, the largest unsigned 32-bit integer.
+     *
+     * @param networkId A {@code long}.
+     *
+     * @return A {@link NetworkId}.
+     */
+    public static NetworkId of(long networkId) {
+      return NetworkId.of(UnsignedInteger.valueOf(networkId));
+    }
+  }
 }

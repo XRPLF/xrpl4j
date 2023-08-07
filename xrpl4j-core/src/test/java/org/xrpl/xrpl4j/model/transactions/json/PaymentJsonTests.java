@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -51,6 +52,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -60,6 +62,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                \"Amount\": \"25000000\",\n" +
       "                \"Fee\": \"10\",\n" +
       "                \"Flags\": 0,\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"Sequence\": 2\n" +
       "            }";

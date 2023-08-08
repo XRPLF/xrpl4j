@@ -81,6 +81,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
@@ -1035,6 +1037,26 @@ public class XrplClientTest {
     AmmInfoResult mockResult = mock(AmmInfoResult.class);
     when(jsonRpcClientMock.send(expectedRequest, AmmInfoResult.class)).thenReturn(mockResult);
     AmmInfoResult result = xrplClient.ammInfo(params);
+
+    assertThat(result).isEqualTo(mockResult);
+  }
+  @Test
+  void nftInfo() throws JsonRpcClientErrorException {
+    NftInfoRequestParams params = NftInfoRequestParams.builder()
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .build();
+
+    NftInfoResult mockResult = mock(NftInfoResult.class);
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.NFT_INFO)
+        .addParams(params)
+        .build(),
+      NftInfoResult.class
+    )).thenReturn(mockResult);
+
+    NftInfoResult result = xrplClient.nftInfo(params);
 
     assertThat(result).isEqualTo(mockResult);
   }

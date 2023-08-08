@@ -23,11 +23,14 @@ package org.xrpl.xrpl4j.model.client.nft;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The result of an "nft_buy_offers" rippled API method call.
@@ -59,4 +62,19 @@ public interface NftBuyOffersResult extends XrplResult {
    * @return {@link List} of all {@link BuyOffer}s owned by an account.
    */
   List<BuyOffer> offers();
+
+  /**
+   * The limit, as specified in the {@link NftBuyOffersRequestParams}.
+   *
+   * @return An optionally-present {@link UnsignedInteger}.
+   */
+  Optional<UnsignedInteger> limit();
+
+  /**
+   * Server-defined value indicating the response is paginated. Pass this to the next call to resume where this
+   * call left off. Omitted when there are no additional pages after this one.
+   *
+   * @return An optionally-present {@link Marker} containing a marker.
+   */
+  Optional<Marker> marker();
 }

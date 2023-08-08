@@ -66,6 +66,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
@@ -511,6 +513,26 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, NftSellOffersResult.class);
+  }
+
+  /**
+   * Returns information about a given NFT. This method is only supported on Clio servers. Sending this request to a
+   * Reporting Mode or rippled node will result in an exception.
+   *
+   * @param params The {@link NftInfoRequestParams} to send in the request.
+   *
+   * @return The {@link NftInfoResult} returned by the {@code nft_info} method call.
+   *
+   * @throws JsonRpcClientErrorException If {@code jsonRpcClient} throws an error, or if the request was made to a
+   *                                     non-Clio node.
+   */
+  public NftInfoResult nftInfo(NftInfoRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.NFT_INFO)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, NftInfoResult.class);
   }
 
   /**

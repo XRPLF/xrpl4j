@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,7 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
+import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -93,6 +95,13 @@ public class NfTokenIT extends AbstractIT {
     assertThat(mintSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
     assertThat(signedMint.hash()).isEqualTo(mintSubmitResult.transactionResult().hash());
 
+    TransactionResult<NfTokenMint> validatedMint = this.scanForResult(
+      () -> this.getValidatedTransaction(
+        mintSubmitResult.transactionResult().hash(),
+        NfTokenMint.class
+      )
+    );
+
     NfTokenObject nfToken = this.scanForResult(
       () -> {
         try {
@@ -103,10 +112,14 @@ public class NfTokenIT extends AbstractIT {
       },
       result -> result.accountNfts().stream()
         .anyMatch(nft -> nft.uri().get().equals(uri))
-    ).accountNfts()
+      )
+      .accountNfts()
       .stream().filter(nft -> nft.uri().get().equals(uri))
       .findFirst()
       .get();
+
+    assertThat(validatedMint.metadata().flatMap(TransactionMetadata::nfTokenId))
+      .isNotEmpty().get().isEqualTo(nfToken.nfTokenId());
 
     Optional<NfTokenPageObject> maybeNfTokenPage = xrplClient.accountObjects(
         AccountObjectsRequestParams.of(nfTokenMint.account())
@@ -142,7 +155,6 @@ public class NfTokenIT extends AbstractIT {
     AccountInfoResult accountInfoResult = this.scanForResult(
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
-
 
     AccountSet accountSet = AccountSet.builder()
       .account(keyPair.publicKey().deriveAddress())
@@ -360,7 +372,7 @@ public class NfTokenIT extends AbstractIT {
     assertThat(signedOffer.hash()).isEqualTo(nfTokenCreateOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
-    this.scanForResult(
+    TransactionResult<NfTokenCreateOffer> validatedOfferCreate = this.scanForResult(
       () -> this.getValidatedTransaction(
         nfTokenCreateOfferSubmitResult.transactionResult().hash(),
         NfTokenCreateOffer.class
@@ -368,14 +380,22 @@ public class NfTokenIT extends AbstractIT {
     );
     logger.info("NFT Create Offer (Sell) transaction was validated successfully.");
 
-    this.scanForResult(
+    NfTokenOfferObject nfTokenOffer = (NfTokenOfferObject) this.scanForResult(
       () -> this.getValidatedAccountObjects(keyPair.publicKey().deriveAddress()),
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           NfTokenOfferObject.class.isAssignableFrom(object.getClass()) &&
             ((NfTokenOfferObject) object).owner().equals(keyPair.publicKey().deriveAddress())
         )
-    );
+      ).accountObjects()
+      .stream()
+      .filter(object -> NfTokenOfferObject.class.isAssignableFrom(object.getClass()) &&
+        ((NfTokenOfferObject) object).owner().equals(keyPair.publicKey().deriveAddress()))
+      .findFirst()
+      .get();
+
+    assertThat(validatedOfferCreate.metadata().flatMap(TransactionMetadata::offerId)).isNotEmpty().get()
+      .isEqualTo(nfTokenOffer.index());
     logger.info("NFTokenOffer object was found in account's objects.");
   }
 
@@ -605,13 +625,16 @@ public class NfTokenIT extends AbstractIT {
     assertThat(signedCancel.hash()).isEqualTo(nfTokenCancelOfferSubmitResult.transactionResult().hash());
 
     //verify the offer was created
-    this.scanForResult(
+    TransactionResult<NfTokenCancelOffer> validatedOfferCancel = this.scanForResult(
       () -> this.getValidatedTransaction(
         nfTokenCancelOfferSubmitResult.transactionResult().hash(),
-        NfTokenCreateOffer.class
+        NfTokenCancelOffer.class
       )
     );
     logger.info("NFT Cancel Offer transaction was validated successfully.");
+
+    assertThat(validatedOfferCancel.metadata().map(TransactionMetadata::nfTokenIds)).isNotEmpty().get()
+      .isEqualTo(Lists.newArrayList(tokenId));
 
     this.scanForResult(
       () -> this.getValidatedAccountObjects(wallet.publicKey().deriveAddress()),

@@ -1040,6 +1040,7 @@ public class XrplClientTest {
 
     assertThat(result).isEqualTo(mockResult);
   }
+
   @Test
   void nftInfo() throws JsonRpcClientErrorException {
     NftInfoRequestParams params = NftInfoRequestParams.builder()

@@ -416,6 +416,7 @@ public class Wrappers {
       return NetworkId.of(UnsignedInteger.valueOf(networkId));
     }
   }
+
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    */

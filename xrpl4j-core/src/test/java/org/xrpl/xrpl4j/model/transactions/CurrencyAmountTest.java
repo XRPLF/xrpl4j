@@ -134,6 +134,27 @@ public class CurrencyAmountTest {
     );
   }
 
+  /**
+   * Verify that xrpl4j is unaffected by the bug discovered in rippled.
+   *
+   * @see "https://github.com/XRPLF/rippled/issues/4112"
+   */
+  @Test
+  public void buildIssuanceWithMixedCaseThreeCharacterCode() {
+    final IssuedCurrencyAmount issuedCurrencyAmount = IssuedCurrencyAmount.builder()
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .currency("UsD")
+      .value("100")
+      .build();
+
+    // If we get here without an exception, it means the build step above passed without an exception.
+    String actual = issuedCurrencyAmount.map(
+      ($) -> "fail",
+      ($) -> "success"
+    );
+    assertThat(actual).isEqualTo("success");
+  }
+
   @Test
   void testConstants() {
     assertThat(CurrencyAmount.ONE_XRP_IN_DROPS).isEqualTo(1_000_000L);

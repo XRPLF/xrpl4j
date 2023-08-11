@@ -141,6 +141,8 @@ public interface AccountSet extends Transaction {
       // This can happen if:
       //   1. A developer sets clearFlagRawValue manually in the builder
       //   2. JSON has ClearFlag and jackson sets clearFlagRawValue.
+      // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
+      // so no lower bound check is required.
       if (clearFlagRawValue().get().longValue() <= 15) {
         // Set clearFlag to clearFlagRawValue if clearFlagRawValue matches a valid AccountSetFlag variant.
         return AccountSet.builder().from(this)
@@ -232,7 +234,8 @@ public interface AccountSet extends Transaction {
       // This can happen if:
       //   1. A developer sets setFlagRawValue manually in the builder
       //   2. JSON has ClearFlag and jackson sets setFlagRawValue.
-
+      // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
+      // so no lower bound check is required.
       if (setFlagRawValue().get().longValue() <= 15) {
         // Set setFlag to setFlagRawValue if setFlagRawValue matches a valid AccountSetFlag variant.
         return AccountSet.builder().from(this)

@@ -251,6 +251,17 @@ public class AccountSetTests {
     assertThat(accountSet.setFlag()).isEmpty();
     assertThat(accountSet.setFlagRawValue()).isNotEmpty().get()
       .isEqualTo(UnsignedInteger.valueOf(16));
+
+    accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlagRawValue(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.ONE))
+      .build();
+
+    assertThat(accountSet.setFlag()).isEmpty();
+    assertThat(accountSet.setFlagRawValue()).isNotEmpty().get()
+      .isEqualTo(UnsignedInteger.MAX_VALUE.minus(UnsignedInteger.ONE));
   }
 
   @Test

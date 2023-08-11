@@ -139,8 +139,8 @@ public interface AccountSet extends Transaction {
         .build();
     } else { // clearFlag not present and clearFlagRawValue is present
       // This can happen if:
-      //   1. A developer sets clearFlag2 manually in the builder
-      //   2. JSON has ClearFlag and jackson sets clearFlag2.
+      //   1. A developer sets clearFlagRawValue manually in the builder
+      //   2. JSON has ClearFlag and jackson sets clearFlagRawValue.
       if (clearFlagRawValue().get().longValue() <= 15) {
         // Set clearFlag to clearFlagRawValue if clearFlagRawValue matches a valid AccountSetFlag variant.
         return AccountSet.builder().from(this)
@@ -230,8 +230,9 @@ public interface AccountSet extends Transaction {
         .build();
     } else { // setFlag is empty and setFlagRawValue is present
       // This can happen if:
-      //   1. A developer sets setFlag2 manually in the builder
-      //   2. JSON has ClearFlag and jackson sets setFlag2.
+      //   1. A developer sets setFlagRawValue manually in the builder
+      //   2. JSON has ClearFlag and jackson sets setFlagRawValue.
+
       if (setFlagRawValue().get().longValue() <= 15) {
         // Set setFlag to setFlagRawValue if setFlagRawValue matches a valid AccountSetFlag variant.
         return AccountSet.builder().from(this)

@@ -147,12 +147,7 @@ public class CurrencyAmountTest {
       .value("100")
       .build();
 
-    // If we get here without an exception, it means the build step above passed without an exception.
-    String actual = issuedCurrencyAmount.map(
-      ($) -> "fail",
-      ($) -> "success"
-    );
-    assertThat(actual).isEqualTo("success");
+    assertThat(issuedCurrencyAmount.currency()).isEqualTo("UsD");
   }
 
   @Test

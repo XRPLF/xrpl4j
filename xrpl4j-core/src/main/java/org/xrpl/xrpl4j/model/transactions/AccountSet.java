@@ -116,9 +116,7 @@ public interface AccountSet extends Transaction {
     if (!clearFlag().isPresent() && !clearFlagRawValue().isPresent()) {
       // If both are empty, nothing to do.
       return this;
-    }
-
-    if (clearFlag().isPresent() && clearFlagRawValue().isPresent()) {
+    } else if (clearFlag().isPresent() && clearFlagRawValue().isPresent()) {
       // Both will be present if:
       //  1. A developer set them both manually (in the builder)
       //  2. This normalize method has already been called.
@@ -133,17 +131,13 @@ public interface AccountSet extends Transaction {
         )
       );
       return this;
-    }
-
-    if (clearFlag().isPresent() && !clearFlagRawValue().isPresent()) {
+    } else if (clearFlag().isPresent() && !clearFlagRawValue().isPresent()) {
       // This can only happen if the developer only set clearFlag(). In this case, we need to set clearFlagRawValue to
       // match clearFlag.
       return AccountSet.builder().from(this)
         .clearFlagRawValue(UnsignedInteger.valueOf(clearFlag().get().getValue()))
         .build();
-    }
-
-    if (!clearFlag().isPresent() && clearFlagRawValue().isPresent()) {
+    } else { // clearFlag not present and clearFlagRawValue is present
       // This can happen if:
       //   1. A developer sets clearFlag2 manually in the builder
       //   2. JSON has ClearFlag and jackson sets clearFlag2.
@@ -157,8 +151,6 @@ public interface AccountSet extends Transaction {
         return this;
       }
     }
-
-    return this;
   }
 
   /**
@@ -215,9 +207,7 @@ public interface AccountSet extends Transaction {
     if (!setFlag().isPresent() && !setFlagRawValue().isPresent()) {
       // If both are empty, nothing to do.
       return this;
-    }
-
-    if (setFlag().isPresent() && setFlagRawValue().isPresent()) {
+    } else if (setFlag().isPresent() && setFlagRawValue().isPresent()) {
       // Both will be present if:
       //  1. A developer set them both manually (in the builder)
       //  2. This normalize method has already been called.
@@ -232,17 +222,13 @@ public interface AccountSet extends Transaction {
         )
       );
       return this;
-    }
-
-    if (setFlag().isPresent() && !setFlagRawValue().isPresent()) {
+    } else if (setFlag().isPresent() && !setFlagRawValue().isPresent()) {
       // This can only happen if the developer only set setFlag(). In this case, we need to set setFlagRawValue to
       // match setFlag.
       return AccountSet.builder().from(this)
         .setFlagRawValue(UnsignedInteger.valueOf(setFlag().get().getValue()))
         .build();
-    }
-
-    if (!setFlag().isPresent() && setFlagRawValue().isPresent()) {
+    } else { // setFlag is empty and setFlagRawValue is present
       // This can happen if:
       //   1. A developer sets setFlag2 manually in the builder
       //   2. JSON has ClearFlag and jackson sets setFlag2.
@@ -256,8 +242,6 @@ public interface AccountSet extends Transaction {
         return this;
       }
     }
-
-    return this;
   }
 
   /**

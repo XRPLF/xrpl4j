@@ -114,6 +114,11 @@ public class XrplMethods {
    */
   public static final String NFT_SELL_OFFERS = "nft_sell_offers";
 
+  /**
+   * Constant for the nft_info Clio API method.
+   */
+  public static final String NFT_INFO = "nft_info";
+
   // Transaction methods
   /**
    * Constant for the <a href="https://xrpl.org/sign.html">sign</a> rippled API method.

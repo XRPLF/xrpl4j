@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 public class AccountDeleteJsonTests extends AbstractJsonTest {
@@ -44,6 +45,7 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -53,6 +55,7 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       "    \"DestinationTag\": 13,\n" +
       "    \"Fee\": \"5000000\",\n" +
       "    \"Sequence\": 2470665,\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
       "}";
 

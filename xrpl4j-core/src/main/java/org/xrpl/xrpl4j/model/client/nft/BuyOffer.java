@@ -53,7 +53,6 @@ public interface BuyOffer {
    *
    * @return The {@link CurrencyAmount}.
    */
-  @JsonProperty("Amount")
   CurrencyAmount amount();
 
   /**
@@ -62,7 +61,6 @@ public interface BuyOffer {
    *
    * @return The {@link NfTokenOfferFlags} for this object.
    */
-  @JsonProperty("Flags")
   NfTokenOfferFlags flags();
 
   /**

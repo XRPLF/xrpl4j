@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.client.nft;
  */
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
@@ -28,6 +29,7 @@ import org.xrpl.xrpl4j.model.flags.NfTokenOfferFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -38,25 +40,21 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
 
   @Test
   public void testWithXrpCurrencyAmount() throws JsonProcessingException, JSONException {
-
-    BuyOffer buyOffer = BuyOffer.builder()
-      .amount(XrpCurrencyAmount.ofDrops(1000))
-      .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-      .flags(NfTokenOfferFlags.BUY_TOKEN)
-      .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .build();
-
-    List<BuyOffer> list = new ArrayList<>();
-    list.add(buyOffer);
-
     NftBuyOffersResult params = NftBuyOffersResult.builder()
       .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .offers(list)
+      .addOffers(
+        BuyOffer.builder()
+          .amount(XrpCurrencyAmount.ofDrops(1000))
+          .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .flags(NfTokenOfferFlags.BUY_TOKEN)
+          .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+          .build()
+      )
       .build();
 
     String offer = "{\n" +
-      "    \"Flags\": 1,\n" +
-      "    \"Amount\": \"1000\",\n" +
+      "    \"flags\": 1,\n" +
+      "    \"amount\": \"1000\",\n" +
       "    \"owner\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
       "    \"nft_offer_index\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "}";
@@ -70,31 +68,44 @@ public class NftBuyOffersResultTest extends AbstractJsonTest {
   }
 
   @Test
-  public void testWithIssuedCurrencyAmount() throws JsonProcessingException, JSONException {
-
-    BuyOffer buyOffer = BuyOffer.builder()
-      .amount(IssuedCurrencyAmount.builder()
-        .issuer(Address.of("rsjYGpMWQeNBXbUTkVz4ZKzHefgZSr6rys"))
-        .currency("USD")
-        .value("100")
-        .build()
-      )
-      .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-      .flags(NfTokenOfferFlags.BUY_TOKEN)
-      .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .build();
-
-    List<BuyOffer> list = new ArrayList<>();
-    list.add(buyOffer);
-
+  public void testWithLimitAndMarker() throws JsonProcessingException, JSONException {
     NftBuyOffersResult params = NftBuyOffersResult.builder()
       .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
-      .offers(list)
+      .limit(UnsignedInteger.ONE)
+      .marker(Marker.of("123"))
+      .build();
+
+    String json = "{\n" +
+      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"limit\": 1,\n" +
+      "        \"marker\": \"123\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithIssuedCurrencyAmount() throws JsonProcessingException, JSONException {
+    NftBuyOffersResult params = NftBuyOffersResult.builder()
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .addOffers(
+        BuyOffer.builder()
+          .amount(IssuedCurrencyAmount.builder()
+            .issuer(Address.of("rsjYGpMWQeNBXbUTkVz4ZKzHefgZSr6rys"))
+            .currency("USD")
+            .value("100")
+            .build()
+          )
+          .owner(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .flags(NfTokenOfferFlags.BUY_TOKEN)
+          .nftOfferIndex(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+          .build()
+      )
       .build();
 
     String offer = "{\n" +
-      "    \"Flags\": 1,\n" +
-      "    \"Amount\": {\n" +
+      "    \"flags\": 1,\n" +
+      "    \"amount\": {\n" +
       "      \"issuer\": \"rsjYGpMWQeNBXbUTkVz4ZKzHefgZSr6rys\",\n" +
       "      \"currency\": \"USD\",\n" +
       "      \"value\": \"100\"\n" +

@@ -58,6 +58,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -83,6 +84,20 @@ public class BinarySerializationTests {
       .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .value(amount + "")
       .build();
+  }
+
+  @Test
+  public void serializeAccountSetTransactionWithNetworkId() throws JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(10598))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
+      .build();
+
+    String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A730081140F3D0C7D2CFAB2EC8295451F0B3CA03" +
+      "8E8E9CDCD";
+    assertSerializesAndDeserializes(accountSet, expectedBinary);
   }
 
   @Test
@@ -134,9 +149,10 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.valueOf(2470665))
       .destination(Address.of("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe"))
       .destinationTag(UnsignedInteger.valueOf(13))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120015240025B3092E0000000D6840000000004C4B40730081140596915CFDEEE" +
+    String expectedBinary = "12001521FFFFFFFF240025B3092E0000000D6840000000004C4B40730081140596915CFDEEE" +
       "3A695B3EFD6BDA9AC788A368B7B8314F667B0CA50CC7709A220B0561B85E53A48461FA8";
     assertSerializesAndDeserializes(accountDelete, expectedBinary);
   }
@@ -180,9 +196,10 @@ public class BinarySerializationTests {
       .checkId(Hash256.of("49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0"))
       .sequence(UnsignedInteger.valueOf(12))
       .fee(XrpCurrencyAmount.ofDrops(12))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120012240000000C501849647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97" +
+    String expectedBinary = "12001221FFFFFFFF240000000C501849647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97" +
       "F67E9977FB068400000000000000C730081147990EC5D1D8DF69E070A968D4B186986FDF06ED0";
     assertSerializesAndDeserializes(checkCancel, expectedBinary);
   }
@@ -257,9 +274,10 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.ONE)
       .fee(XrpCurrencyAmount.ofDrops(12))
       .amount(XrpCurrencyAmount.ofDrops(100))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "12001124000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4" +
+    String expectedBinary = "12001121FFFFFFFF24000000015018838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4" +
       "056FCBD657F5733461400000000000006468400000000000000C7300811449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
     assertSerializesAndDeserializes(checkCash, expectedBinary);
   }
@@ -310,9 +328,10 @@ public class BinarySerializationTests {
       .sendMax(XrpCurrencyAmount.ofDrops(100000000))
       .expiration(UnsignedInteger.valueOf(570113521))
       .invoiceId(Hash256.of("6F1DFD1D0FE8A32E40E1F2C05CF1C15545BAB56B617F9C6C2D63A6B704BEF59B"))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "12001024000000012A21FB3DF12E0000000150116F1DFD1D0FE8A32E40E1F2C05CF1C" +
+    String expectedBinary = "12001021FFFFFFFF24000000012A21FB3DF12E0000000150116F1DFD1D0FE8A32E40E1F2C05CF1C" +
       "15545BAB56B617F9C6C2D63A6B704BEF59B68400000000000000C694000000005F5E100730081147990EC5D1D8DF69E070A96" +
       "8D4B186986FDF06ED0831449FF0C73CA6AF9733DA805F76CA2C37776B7C46B";
     assertSerializesAndDeserializes(checkCreate, expectedBinary);
@@ -365,9 +384,10 @@ public class BinarySerializationTests {
       .authorize(Address.of("rDJFnv5sEfp42LMFiX3mVQKczpFTdxYDzM"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(65))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120013240000004168400000000000000A730081148A928D14A643F388AC0D26B" +
+    String expectedBinary = "12001321FFFFFFFF240000004168400000000000000A730081148A928D14A643F388AC0D26B" +
       "AF9755B07EB0A2B44851486FFE2A17E861BA0FE9A3ED8352F895D80E789E0";
     assertSerializesAndDeserializes(preAuth, expectedBinary);
   }
@@ -416,9 +436,10 @@ public class BinarySerializationTests {
       .condition(CryptoConditionReader.readCondition(BaseEncoding.base16().decode(
         "A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100"))
       )
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "12000124000000012E00005BB82024258D09812025258D0980614000000000000064684" +
+    String expectedBinary = "12000121FFFFFFFF24000000012E00005BB82024258D09812025258D0980614000000000000064684" +
       "00000000000000C7300701127A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100" +
       "8114EE5F7CF61504C7CF7E0C22562EB19CC7ACB0FCBA8314B5F762798A53D543A014CAF8B297CFF8F2F937E8";
     assertSerializesAndDeserializes(checkCreate, expectedBinary);
@@ -478,9 +499,10 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.ONE)
       .owner(Address.of("r4jQDHCUvgcBAa5EzcB1D8BHGcjYP9eBC2"))
       .offerSequence(UnsignedInteger.valueOf(25))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120004240000000120190000001968400000000000000C73008114EE5F7CF61504C7" +
+    String expectedBinary = "12000421FFFFFFFF240000000120190000001968400000000000000C73008114EE5F7CF61504C7" +
       "CF7E0C22562EB19CC7ACB0FCBA8214EE5F7CF61504C7CF7E0C22562EB19CC7ACB0FCBA";
     assertSerializesAndDeserializes(escrowCancel, expectedBinary);
   }
@@ -529,9 +551,10 @@ public class BinarySerializationTests {
         "A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100")
       ))
       .fulfillment(CryptoConditionReader.readFulfillment(BaseEncoding.base16().decode("A0028000")))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120002240000000320190000001968400000000000014A7300701004A0028000701127A02" +
+    String expectedBinary = "12000221FFFFFFFF240000000320190000001968400000000000014A7300701004A0028000701127A02" +
       "58020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B8558101008114E151CA3207BAB5B91D2F0E4D35" +
       "ECDFD4551C69A18214E151CA3207BAB5B91D2F0E4D35ECDFD4551C69A1";
     assertSerializesAndDeserializes(escrowFinish, expectedBinary);
@@ -597,9 +620,10 @@ public class BinarySerializationTests {
       .amount(XrpCurrencyAmount.ofDrops(12345))
       .fee(XrpCurrencyAmount.ofDrops(789))
       .sequence(UnsignedInteger.valueOf(56565656))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120000230000000124035F1F982E0000000261400000000000303968" +
+    String expectedBinary = "12000021FFFFFFFF230000000124035F1F982E0000000261400000000000303968" +
       "400000000000031573008114EE39E6D05CFD6A90DAB700A1D70149ECEE29DFEC83140000000000000000000000000000000000000001";
     assertSerializesAndDeserializes(payment, expectedBinary);
   }
@@ -708,9 +732,10 @@ public class BinarySerializationTests {
       .settleDelay(UnsignedInteger.ONE)
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .cancelAfter(UnsignedLong.valueOf(533171558))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "12000D230000000124000000012E0000000220241FC78D66202700000001614000" +
+    String expectedBinary = "12000D21FFFFFFFF230000000124000000012E0000000220241FC78D66202700000001614000" +
       "000000002710684000000000000064712132D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0" +
       "F0A730081144B4E9C06F24296074F7BC48F92A97916C6DC5EA983144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
     assertSerializesAndDeserializes(create, expectedBinary);
@@ -772,9 +797,10 @@ public class BinarySerializationTests {
       .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
         "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "12000F24000000015016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749D" +
+    String expectedBinary = "12000F21FFFFFFFF24000000015016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749D" +
       "CDD3B9E5992CA61986140000000000F42406240000000000F424068400000000000000A712132D2471DB72B27E3310F355B" +
       "B33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A7300764630440220718D264EF05CAED7C781FF6DE298DCAC68D002562" +
       "C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B81142042" +
@@ -840,9 +866,10 @@ public class BinarySerializationTests {
       .channel(Hash256.of("C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198"))
       .amount(XrpCurrencyAmount.ofDrops(200000))
       .expiration(UnsignedLong.valueOf(543171558))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedJson = "12000E24000000012A206023E65016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC7" +
+    String expectedJson = "12000E21FFFFFFFF24000000012A206023E65016C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC7" +
       "49DCDD3B9E5992CA6198614000000000030D4068400000000000000A730081144B4E9C06F24296074F7BC48F92A97916C6DC5EA9";
 
     assertSerializesAndDeserializes(fund, expectedJson);
@@ -895,10 +922,11 @@ public class BinarySerializationTests {
         .issuer(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
         .value("10000000")
         .build())
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
 
-    String expectedBinary = "120014240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
+    String expectedBinary = "12001421FFFFFFFF240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
       "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
       "300183E3";
     assertSerializesAndDeserializes(trustSet, expectedBinary);
@@ -1411,9 +1439,10 @@ public class BinarySerializationTests {
       .sequence(UnsignedInteger.valueOf(11223344))
       .offerSequence(UnsignedInteger.valueOf(123))
       .expiration(UnsignedInteger.valueOf(456))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "1200072400AB41302A000001C820190000007B64D5071AFD498D0000000000000000000" +
+    String expectedBinary = "12000721FFFFFFFF2400AB41302A000001C820190000007B64D5071AFD498D0000000000000000000" +
       "0000000005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE465D5038D7EA4C6800000000000000000000000" +
       "00005743470000000000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000012C73008114832297BEF589D59F9" +
       "C03A84F920F8D9128CC1CE4";
@@ -1467,9 +1496,10 @@ public class BinarySerializationTests {
       .account(Address.of("rUx4xgE7bNWCCgGcXv1CCoQyTcCeZ275YG"))
       .sequence(UnsignedInteger.valueOf(11223344))
       .offerSequence(UnsignedInteger.valueOf(123))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "1200082400AB413020190000007B68400000000000012C73008114832297BEF589" +
+    String expectedBinary = "12000821FFFFFFFF2400AB413020190000007B68400000000000012C73008114832297BEF589" +
       "D59F9C03A84F920F8D9128CC1CE4";
     assertSerializesAndDeserializes(offerCreate, expectedBinary);
   }
@@ -1511,9 +1541,10 @@ public class BinarySerializationTests {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.ONE)
       .regularKey(Address.of("rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "120005240000000168400000000000000C730081144B4E9C06F24296074F7BC48F92" +
+    String expectedBinary = "12000521FFFFFFFF240000000168400000000000000C730081144B4E9C06F24296074F7BC48F92" +
       "A97916C6DC5EA988140A4B24D606281E6E5A78D9F80E039F5E66FA5AC5";
 
     assertSerializesAndDeserializes(setRegularKey, expectedBinary);
@@ -1578,9 +1609,10 @@ public class BinarySerializationTests {
             .build()
         )
       )
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-    String expectedBinary = "12000C240000000120230000000368400000000000000C730081144B4E9C06F24296074" +
+    String expectedBinary = "12000C21FFFFFFFF240000000120230000000368400000000000000C730081144B4E9C06F24296074" +
       "F7BC48F92A97916C6DC5EA9F4EB1300028114204288D2E47F8EF6C99BCC457966320D12409711E1EB13000181147908A7F0EDD4" +
       "8EA896C3580A399F0EE78611C8E3E1EB13000181143A4C02EA95AD6AC3BED92FA036E0BBFB712C030CE1F1";
 

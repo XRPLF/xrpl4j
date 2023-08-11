@@ -25,19 +25,55 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 
 public class NftBuyOffersRequestParamsTest extends AbstractJsonTest {
 
   @Test
-  public void testWithRequiredValue() throws JsonProcessingException, JSONException {
+  public void testWithLedgerIndexShortcut() throws JsonProcessingException, JSONException {
     NftBuyOffersRequestParams params = NftBuyOffersRequestParams.builder()
       .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
     String json = "{\n" +
-      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
+      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"ledger_index\": \"current\"\n" +
+      "    }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithLedgerIndexNumber() throws JsonProcessingException, JSONException {
+    NftBuyOffersRequestParams params = NftBuyOffersRequestParams.builder()
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .ledgerSpecifier(LedgerSpecifier.of(100))
+      .build();
+
+    String json = "{\n" +
+      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"ledger_index\": 100\n" +
+      "    }";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testWithLedgerHash() throws JsonProcessingException, JSONException {
+    NftBuyOffersRequestParams params = NftBuyOffersRequestParams.builder()
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .ledgerSpecifier(
+        LedgerSpecifier.of(Hash256.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      )
+      .build();
+
+    String json = "{\n" +
+      "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
+      "        \"ledger_hash\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\"\n" +
       "    }";
 
     assertCanSerializeAndDeserialize(params, json);
@@ -54,6 +90,7 @@ public class NftBuyOffersRequestParamsTest extends AbstractJsonTest {
     String json = "{\n" +
       "        \"nft_id\": \"000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007\",\n" +
       "        \"limit\": 10,\n" +
+      "        \"ledger_index\": \"validated\",\n" +
       "        \"marker\": \"123\"\n" +
       "    }";
 

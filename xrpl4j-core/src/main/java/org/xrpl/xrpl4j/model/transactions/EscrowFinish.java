@@ -34,6 +34,8 @@ import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Arrays;
@@ -48,6 +50,8 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableEscrowFinish.class)
 @JsonDeserialize(as = ImmutableEscrowFinish.class)
 public interface EscrowFinish extends Transaction {
+
+  Logger logger = LoggerFactory.getLogger(EscrowFinish.class);
 
   /**
    * Construct a builder for this class.
@@ -221,6 +225,12 @@ public interface EscrowFinish extends Transaction {
             .condition(condition)
             .build();
         } catch (DerEncodingException | IllegalArgumentException e) {
+          logger.warn(
+            "EscrowFinish Condition was malformed. conditionRawValue() will contain the condition value, but " +
+              "condition() will be empty: {}",
+            e.getMessage(),
+            e
+          );
           return this;
         }
       }
@@ -287,6 +297,12 @@ public interface EscrowFinish extends Transaction {
             .fulfillment(fulfillment)
             .build();
         } catch (DerEncodingException | IllegalArgumentException e) {
+          logger.warn(
+            "EscrowFinish Fulfillment was malformed. fulfillmentRawValue() will contain the fulfillment value, " +
+              "but fulfillment() will be empty: {}",
+            e.getMessage(),
+            e
+          );
           return this;
         }
       }

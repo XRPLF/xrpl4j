@@ -167,30 +167,6 @@ public class EscrowJsonTests extends AbstractJsonTest {
   }
 
   @Test
-  void testEscrowCreateJsonWithMalformedCondition() throws JsonProcessingException {
-    String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"CancelAfter\": 533257958,\n" +
-      "    \"FinishAfter\": 533171558,\n" +
-      "    \"Condition\": \"A02580209423ED2EF4CACA8CA4AFC08D3F5EC60A545FD7A97E66E16EA0E2E2\",\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SourceTag\": 11747,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
-
-    EscrowCreate escrowCreate = objectMapper.readValue(json, EscrowCreate.class);
-    assertThat(escrowCreate.condition()).isEmpty();
-    assertThat(escrowCreate.conditionRawValue()).isNotEmpty().get()
-      .isEqualTo("A02580209423ED2EF4CACA8CA4AFC08D3F5EC60A545FD7A97E66E16EA0E2E2");
-  }
-
-  @Test
   public void testEscrowCancelJson() throws JsonProcessingException, JSONException {
     EscrowCancel escrowCancel = EscrowCancel.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

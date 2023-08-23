@@ -20,23 +20,16 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.Condition;
-import com.ripple.cryptoconditions.CryptoConditionReader;
-import com.ripple.cryptoconditions.CryptoConditionWriter;
-import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -124,86 +117,8 @@ public interface EscrowCreate extends Transaction {
    *
    * @return An {@link Optional} of type {@link Condition} containing the escrow condition.
    */
-  @JsonIgnore
-  Optional<Condition> condition();
-
-  /**
-   * The raw, hex-encoded PREIMAGE-SHA-256 crypto-condition of the escrow.
-   *
-   * <p>Developers should prefer setting {@link #condition()} and leaving this field empty when constructing a new
-   * {@link EscrowCreate}. This field is used to serialize and deserialize the {@code "Condition"} field in JSON, the
-   * XRPL will sometimes include an {@link EscrowCreate} in its ledger even if the crypto condition is malformed.
-   * Without this field, xrpl4j would fail to deserialize those transactions, as {@link #condition()} is typed as a
-   * {@link Condition}, which tries to decode the condition from DER.</p>
-   *
-   * @return An {@link Optional} {@link String} containing the hex-encoded PREIMAGE-SHA-256 condition.
-   */
   @JsonProperty("Condition")
-  Optional<String> conditionRawValue();
-
-  /**
-   * Normalization method to try to get {@link #condition()} and {@link #conditionRawValue()} to match.
-   *
-   * <p>If neither field is present, there is nothing to do.</p>
-   * <p>If both fields are present, there is nothing to do, but we will check that {@link #condition()}'s
-   * underlying value equals {@link #conditionRawValue()}.</p>
-   * <p>If {@link #condition()} is present but {@link #conditionRawValue()} is empty, we set
-   * {@link #conditionRawValue()} to the underlying value of {@link #condition()}.</p>
-   * <p>If {@link #condition()} is empty and {@link #conditionRawValue()} is present, we will set
-   * {@link #condition()} to the {@link Condition} representing the raw condition value, or leave
-   * {@link #condition()} empty if {@link #conditionRawValue()} is a malformed {@link Condition}.</p>
-   *
-   * @return A normalized {@link EscrowCreate}.
-   */
-  @Value.Check
-  default EscrowCreate normalizeCondition() {
-    try {
-      if (!condition().isPresent() && !conditionRawValue().isPresent()) {
-        // If both are empty, nothing to do.
-        return this;
-      } else if (condition().isPresent() && conditionRawValue().isPresent()) {
-        // Both will be present if:
-        //   1. A developer set them both manually (in the builder)
-        //   2. This method has already been called.
-
-        // We should check that the condition()'s value matches the raw value.
-        Preconditions.checkState(
-          Arrays.equals(CryptoConditionWriter.writeCondition(condition().get()),
-            BaseEncoding.base16().decode(conditionRawValue().get())),
-          "condition and conditionRawValue should be equivalent if both are present."
-        );
-        return this;
-      } else if (condition().isPresent() && !conditionRawValue().isPresent()) {
-        // This can only happen if the developer only set condition() because condition() will never be set
-        // after deserializing from JSON. In this case, we need to set conditionRawValue to match setFlag.
-        return EscrowCreate.builder().from(this)
-          .conditionRawValue(BaseEncoding.base16().encode(CryptoConditionWriter.writeCondition(condition().get())))
-          .build();
-      } else { // condition is empty and conditionRawValue is present
-        // This can happen if:
-        //  1. A developer sets conditionRawValue manually in the builder
-        //  2. JSON has Condition and Jackson sets conditionRawValue
-
-        // In this case, we should try to read conditionRawValue to a Condition. If that fails, condition()
-        // will remain empty, otherwise we will set condition().
-        try {
-          Condition condition = CryptoConditionReader.readCondition(
-            BaseEncoding.base16().decode(conditionRawValue().get().toUpperCase(Locale.US))
-          );
-          return EscrowCreate.builder().from(this)
-            .condition(condition)
-            .build();
-        } catch (DerEncodingException | IllegalArgumentException e) {
-          return this;
-        }
-      }
-
-    } catch (DerEncodingException e) {
-      // This should never happen. CryptoconditionWriter.writeCondition errantly declares that it can throw
-      // a DerEncodingException, but nowhere in its implementation does it throw.
-      throw new RuntimeException(e);
-    }
-  }
+  Optional<Condition> condition();
 
   /**
    * Validate cancelAfter, finishAfter, and condition fields.

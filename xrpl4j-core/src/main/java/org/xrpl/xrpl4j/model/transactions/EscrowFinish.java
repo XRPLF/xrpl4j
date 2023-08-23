@@ -142,6 +142,14 @@ public interface EscrowFinish extends Transaction {
    * Without this field, xrpl4j would fail to deserialize those transactions, as {@link #condition()} is typed as a
    * {@link Condition}, which tries to decode the condition from DER.</p>
    *
+   * <p>Note that a similar field does not exist on {@link EscrowCreate},
+   * {@link org.xrpl.xrpl4j.model.ledger.EscrowObject}, or
+   * {@link org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject} because {@link EscrowCreate}s with
+   * malformed conditions will never be included in a ledger by the XRPL. Because of this fact, an
+   * {@link org.xrpl.xrpl4j.model.ledger.EscrowObject} and
+   * {@link org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject} will also never contain a malformed
+   * crypto condition.</p>
+   *
    * @return An {@link Optional} {@link String} containing the hex-encoded PREIMAGE-SHA-256 condition.
    */
   @JsonProperty("Condition")

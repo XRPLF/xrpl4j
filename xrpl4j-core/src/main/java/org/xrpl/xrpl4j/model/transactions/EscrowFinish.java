@@ -35,8 +35,6 @@ import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
-import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
 import java.util.Arrays;
 import java.util.Locale;

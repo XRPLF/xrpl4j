@@ -49,6 +49,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.Issue;
@@ -57,6 +58,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
@@ -693,6 +695,25 @@ public class SignatureUtilsTest {
     addSignatureToTransactionHelper(withdraw);
   }
 
+  @Test
+  void addSignatureToAmmDelete() {
+    AmmDelete ammDelete = AmmDelete.builder()
+      .asset(Issue.XRP)
+      .asset2(
+        Issue.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .flags(TransactionFlags.UNSET)
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(ammDelete);
+  }
 
   @Test
   public void addSignatureToTransactionUnsupported() {
@@ -1115,6 +1136,25 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(withdraw);
+  }
+
+  @Test
+  void addMultiSignatureToAmmDelete() {
+    AmmDelete ammDelete = AmmDelete.builder()
+      .asset(Issue.XRP)
+      .asset2(
+        Issue.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(9))
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    addMultiSignatureToTransactionHelper(ammDelete);
   }
 
   @Test

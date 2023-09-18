@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
+import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
@@ -296,6 +297,10 @@ public class SignatureUtils {
       transactionWithSignature = AmmWithdraw.builder().from((AmmWithdraw) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (AmmDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmDelete.builder().from((AmmDelete) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -448,6 +453,10 @@ public class SignatureUtils {
         .build();
     } else if (AmmWithdraw.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = AmmWithdraw.builder().from((AmmWithdraw) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmDelete.builder().from((AmmDelete) transaction)
         .signers(signers)
         .build();
     } else {

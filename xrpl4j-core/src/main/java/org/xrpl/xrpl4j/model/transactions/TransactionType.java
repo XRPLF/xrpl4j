@@ -185,7 +185,12 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link AmmWithdraw} transaction.
    */
-  AMM_WITHDRAW("AMMWithdraw");
+  AMM_WITHDRAW("AMMWithdraw"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmDelete} transaction.
+   */
+  AMM_DELETE("AMMDelete");
 
   private final String value;
 

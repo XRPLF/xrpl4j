@@ -76,6 +76,7 @@ public interface Transaction {
       .put(ImmutableAmmDeposit.class, TransactionType.AMM_DEPOSIT)
       .put(ImmutableAmmVote.class, TransactionType.AMM_VOTE)
       .put(ImmutableAmmWithdraw.class, TransactionType.AMM_WITHDRAW)
+      .put(ImmutableAmmDelete.class, TransactionType.AMM_DELETE)
       .build();
 
   /**

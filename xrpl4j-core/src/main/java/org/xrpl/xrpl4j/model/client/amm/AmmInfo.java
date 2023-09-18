@@ -37,8 +37,8 @@ public interface AmmInfo extends XrplResult {
    *
    * @return An {@link Address}.
    */
-  @JsonProperty("amm_account")
-  Address ammAccount();
+  @JsonProperty("account")
+  Address account();
 
   /**
    * The definition for one of the two assets this AMM holds.

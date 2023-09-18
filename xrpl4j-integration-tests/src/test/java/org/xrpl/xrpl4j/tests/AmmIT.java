@@ -256,8 +256,8 @@ public class AmmIT extends AbstractIT {
     );
 
     AmmInfoResult ammAfterWithdraw = getAmmInfo(issuerKeyPair);
-    assertThat(ammAfterWithdraw.amm().amount2()).isInstanceOf(XrpCurrencyAmount.class)
-      .isEqualTo(((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount2())
+    assertThat(ammAfterWithdraw.amm().amount()).isInstanceOf(XrpCurrencyAmount.class)
+      .isEqualTo(((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount())
         .minus((XrpCurrencyAmount) withdraw.amount().get()));
 
     AccountInfoResult traderAccountAfterWithdraw = xrplClient.accountInfo(
@@ -382,22 +382,25 @@ public class AmmIT extends AbstractIT {
 
   private AmmInfoResult getAmmInfo(KeyPair issuerKeyPair) throws JsonRpcClientErrorException {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
-      AmmInfoRequestParams.builder()
-        .asset(
-          Issue.builder()
-            .issuer(issuerKeyPair.publicKey().deriveAddress())
-            .currency(xrpl4jCoin)
-            .build()
-        )
-        .asset2(Issue.XRP)
-        .build()
-    );
+      AmmInfoRequestParams.from(
+        Issue.XRP,
+        Issue.builder()
+          .issuer(issuerKeyPair.publicKey().deriveAddress())
+          .currency(xrpl4jCoin)
+          .build()
+      ));
 
     AccountInfoResult ammAccountInfo = xrplClient.accountInfo(
       AccountInfoRequestParams.of(ammInfoResult.amm().account())
     );
 
     assertThat(ammAccountInfo.accountData().ammId()).isNotEmpty();
+
+    AmmInfoResult ammInfoByAccount = xrplClient.ammInfo(
+      AmmInfoRequestParams.from(ammAccountInfo.accountData().account())
+    );
+
+    assertThat(ammInfoByAccount).isEqualTo(ammInfoResult);
 
     return ammInfoResult;
   }

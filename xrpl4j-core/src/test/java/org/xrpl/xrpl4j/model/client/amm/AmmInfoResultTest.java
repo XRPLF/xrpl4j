@@ -28,7 +28,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
         AmmInfo.builder()
-          .account(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+          .ammAccount(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
           .amount(XrpCurrencyAmount.ofDrops(11080000720L))
           .amount2(
             IssuedCurrencyAmount.builder()
@@ -87,7 +87,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
       .status("success")
       .build();
 
-    String json = "{\"amm\": {\"account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+    String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
       "      \"amount\": \"11080000720\",\n" +
       "      \"amount2\": {\"currency\": \"USD\",\n" +
       "      \"issuer\": \"rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP\",\n" +
@@ -129,7 +129,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
     AmmInfoResult result = AmmInfoResult.builder()
       .amm(
         AmmInfo.builder()
-          .account(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
+          .ammAccount(Address.of("rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze"))
           .amount(XrpCurrencyAmount.ofDrops(11080000720L))
           .amount2(
             IssuedCurrencyAmount.builder()
@@ -191,7 +191,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
       .validated(true)
       .build();
 
-    String json = "{\"amm\": {\"account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
+    String json = "{\"amm\": {\"amm_account\": \"rU3auoTuhaPwiiod3wEXNnYogxMnYsBhze\",\n" +
       "      \"amount\": \"11080000720\",\n" +
       "      \"amount2\": {\"currency\": \"USD\",\n" +
       "      \"issuer\": \"rELH2VCCkjDzvygtB4nKiqGav7h53RhDiP\",\n" +

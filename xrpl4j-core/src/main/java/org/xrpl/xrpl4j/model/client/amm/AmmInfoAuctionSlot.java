@@ -62,9 +62,6 @@ public interface AmmInfoAuctionSlot {
    *
    * @return An {@link ZonedDateTime}
    */
-  // rippled reports the expiration date/time in ISO 8601 format, which is natively supported by ZonedDateTime.
-  // Therefore, this field does not require a @JsonFormat(pattern = ...) annotation similar to how other ZonedDateTime
-  // fields are annotated in this library.
   @JsonProperty("expiration")
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssZ", locale = "en_US")
   ZonedDateTime expiration();

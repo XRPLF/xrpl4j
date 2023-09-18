@@ -101,7 +101,7 @@ public class AmmIT extends AbstractIT {
     BigDecimal issuerLpTokenBalance = new BigDecimal(xrplClient.accountLines(
         AccountLinesRequestParams.builder()
           .account(issuerKeyPair.publicKey().deriveAddress())
-          .peer(amm.amm().account())
+          .peer(amm.amm().ammAccount())
           .ledgerSpecifier(LedgerSpecifier.CURRENT)
           .build()
       ).lines().stream()
@@ -113,7 +113,7 @@ public class AmmIT extends AbstractIT {
     BigDecimal traderLpTokenBalance = new BigDecimal(xrplClient.accountLines(
         AccountLinesRequestParams.builder()
           .account(traderKeyPair.publicKey().deriveAddress())
-          .peer(amm.amm().account())
+          .peer(amm.amm().ammAccount())
           .ledgerSpecifier(LedgerSpecifier.CURRENT)
           .build()
       ).lines().stream()
@@ -319,7 +319,7 @@ public class AmmIT extends AbstractIT {
     AccountLinesResult traderLines = xrplClient.accountLines(
       AccountLinesRequestParams.builder()
         .account(traderAccount.accountData().account())
-        .peer(amm.amm().account())
+        .peer(amm.amm().ammAccount())
         .ledgerSpecifier(LedgerSpecifier.CURRENT)
         .build()
     );
@@ -394,7 +394,7 @@ public class AmmIT extends AbstractIT {
     );
 
     AccountInfoResult ammAccountInfo = xrplClient.accountInfo(
-      AccountInfoRequestParams.of(ammInfoResult.amm().account())
+      AccountInfoRequestParams.of(ammInfoResult.amm().ammAccount())
     );
 
     assertThat(ammAccountInfo.accountData().ammId()).isNotEmpty();

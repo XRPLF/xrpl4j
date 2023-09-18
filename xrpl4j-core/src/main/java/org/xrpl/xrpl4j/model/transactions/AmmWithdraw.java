@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
@@ -13,6 +14,9 @@ import java.util.Optional;
 /**
  * Object mapping for the AMMWithdraw transaction.
  */
+@Immutable
+@JsonSerialize(as = ImmutableAmmWithdraw.class)
+@JsonDeserialize(as = ImmutableAmmWithdraw.class)
 public interface AmmWithdraw extends Transaction {
 
   /**
@@ -82,51 +86,4 @@ public interface AmmWithdraw extends Transaction {
   @JsonProperty("LPTokensIn")
   Optional<IssuedCurrencyAmount> lpTokensIn();
 
-  @Value.Immutable
-  @JsonSerialize(as = ImmutableAmmWithdraw.class)
-  @JsonDeserialize(as = ImmutableAmmWithdraw.class)
-  abstract class AbstractAmmWithdraw implements AmmWithdraw {
-
-    @Value.Check
-    void checkFieldPresenceBasedOnFlags() {
-      boolean lpTokenPresent = lpTokensIn().isPresent();
-      boolean amountPresent = amount().isPresent();
-      boolean amount2Present = amount2().isPresent();
-      boolean effectivePricePresent = effectivePrice().isPresent();
-
-      if (flags().tfLpToken()) {
-        Preconditions.checkState(
-          lpTokenPresent && !amountPresent && !amount2Present && !effectivePricePresent,
-          "If the tfLPToken flag is set, amount, amount2, and effectivePrice cannot be present."
-        );
-      } else if (flags().tfWithdrawAll()) {
-        Preconditions.checkState(
-          !lpTokenPresent && !amountPresent && !amount2Present && !effectivePricePresent,
-          "If the tfLPToken flag is set, lpTokensIn, amount, amount2, and effectivePrice cannot be present."
-        );
-      } else if (flags().tfTwoAsset()) {
-        Preconditions.checkState(
-          !lpTokenPresent && amountPresent && amount2Present && !effectivePricePresent,
-          "If the tfTwoAsset flag is set, lpTokensIn and effectivePrice cannot be present."
-        );
-      } else if (flags().tfSingleAsset() || flags().tfOneAssetWithdrawAll()) {
-        Preconditions.checkState(
-          !lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent,
-          "If the tfSingleAsset or tfOneAssetWithdrawAll flag is set, lpTokensIn, amount2, and effectivePrice cannot " +
-            "be present."
-        );
-      } else if (flags().tfOneAssetLpToken()) {
-        Preconditions.checkState(
-          lpTokenPresent && amountPresent && !amount2Present && !effectivePricePresent,
-          "If the tfOneAssetLPToken flag is set, amount2 and effectivePrice cannot be present."
-        );
-      } else if (flags().tfLimitLpToken()) {
-        Preconditions.checkState(
-          !lpTokenPresent && amountPresent && !amount2Present && effectivePricePresent,
-          "If the tfLimitLPToken flag is set, lpTokensIn and amount2 cannot be present."
-        );
-      }
-    }
-
-  }
 }

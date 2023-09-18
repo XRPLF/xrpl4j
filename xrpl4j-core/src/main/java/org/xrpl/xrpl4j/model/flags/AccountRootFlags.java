@@ -98,11 +98,6 @@ public class AccountRootFlags extends Flags {
   public static final AccountRootFlags DISALLOW_INCOMING_TRUSTLINE = new AccountRootFlags(0x20000000);
 
   /**
-   * Constant {@link AccountRootFlags} for the {@code lsfAMM} account flag.
-   */
-  public static final AccountRootFlags AMM = new AccountRootFlags(0x40000000);
-
-  /**
    * Required-args Constructor.
    *
    * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
@@ -241,12 +236,4 @@ public class AccountRootFlags extends Flags {
     return this.isSet(AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE);
   }
 
-  /**
-   * This account is an Automated Market Maker instance.
-   *
-   * @return {@code true} if {@code lsfAMM} is set, otherwise {@code false}.
-   */
-  public boolean lsfAmm() {
-    return this.isSet(AccountRootFlags.AMM);
-  }
 }

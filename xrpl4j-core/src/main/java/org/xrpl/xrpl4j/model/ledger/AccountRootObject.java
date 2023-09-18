@@ -226,6 +226,15 @@ public interface AccountRootObject extends LedgerObject {
   Optional<Address> nfTokenMinter();
 
   /**
+   * The ledger entry ID of the corresponding AMM ledger entry. Set during account creation; cannot be modified.
+   * If present, indicates that this is a special AMM AccountRoot; always omitted on non-AMM accounts.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("AMMID")
+  Optional<Hash256> ammId();
+
+  /**
    * The unique ID of this {@link AccountRootObject} ledger object.
    *
    * @return A {@link Hash256}.

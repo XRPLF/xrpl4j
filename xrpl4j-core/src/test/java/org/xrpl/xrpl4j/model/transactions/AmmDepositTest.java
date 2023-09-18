@@ -28,6 +28,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .flags(AmmDepositFlags.LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
         Issue.builder()
@@ -77,6 +78,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .flags(AmmDepositFlags.TWO_ASSET)
       .asset(Issue.XRP)
       .asset2(
         Issue.builder()
@@ -126,6 +128,7 @@ class AmmDepositTest extends AbstractJsonTest {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(AmmDepositFlags.SINGLE_ASSET)
       .asset(Issue.XRP)
       .asset2(
         Issue.builder()
@@ -179,6 +182,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .flags(AmmDepositFlags.ONE_ASSET_LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
         Issue.builder()
@@ -241,6 +245,7 @@ class AmmDepositTest extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .flags(AmmDepositFlags.LIMIT_LP_TOKEN)
       .asset(Issue.XRP)
       .asset2(
         Issue.builder()
@@ -285,90 +290,58 @@ class AmmDepositTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(deposit, json);
   }
 
-  @ParameterizedTest
-  @MethodSource("getBooleanCombinations")
-  void testInvalidFieldPresence(
-    boolean lpTokenPresent,
-    boolean amountPresent,
-    boolean amount2Present,
-    boolean effectivePricePresent
-  ) {
-
-    ImmutableAmmDeposit.Builder builder = AmmDeposit.builder()
+  @Test
+  void constructTwoAssetIfEmptyDepositTestJson() throws JSONException, JsonProcessingException {
+    AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AmmDepositFlags.TWO_ASSET_IF_EMPTY)
       .asset(Issue.XRP)
       .asset2(
         Issue.builder()
           .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
           .currency("TST")
           .build()
-      );
-
-    if (lpTokenPresent) {
-      builder.lpTokenOut(
+      )
+      .amount(
         IssuedCurrencyAmount.builder()
           .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
           .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
           .value("100")
           .build()
-      );
-    }
-    if (amountPresent) {
-      builder.amount(XrpCurrencyAmount.ofDrops(10));
-    }
-    if (amount2Present) {
-      builder.amount2(
-        IssuedCurrencyAmount.builder()
-          .currency("039C99CD9AB0B70B32ECDA51EAAE471625608EA2")
-          .issuer(Address.of("rE54zDvgnghAoPopCgvtiqWNq3dU5y836S"))
-          .value("100")
-          .build()
-      );
-    }
-    if (effectivePricePresent) {
-      builder.effectivePrice(XrpCurrencyAmount.ofDrops(10));
-    }
+      )
+      .amount2(XrpCurrencyAmount.ofDrops(10))
+      .effectivePrice(XrpCurrencyAmount.ofDrops(10))
+      .build();
 
-    assertThatThrownBy(builder::build)
-      .isInstanceOf(IllegalStateException.class)
-      .hasMessage("Correct AmmDepositFlag could not be determined based on set fields.");
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.TWO_ASSET_IF_EMPTY);
+
+    String json = "{\n" +
+      "    \"Account\" : \"" + deposit.account() + "\",\n" +
+      "    \"Amount\" : {\n" +
+      "        \"currency\" : \"039C99CD9AB0B70B32ECDA51EAAE471625608EA2\",\n" +
+      "        \"issuer\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
+      "        \"value\" : \"100\"\n" +
+      "    },\n" +
+      "    \"Amount2\" : \"10\",\n" +
+      "    \"EPrice\" : \"10\",\n" +
+      "    \"Asset2\" : {\n" +
+      "        \"currency\" : \"TST\",\n" +
+      "        \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
+      "    },\n" +
+      "    \"Asset\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"Fee\" : \"10\",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.TWO_ASSET_IF_EMPTY + ",\n" +
+      "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TransactionType\" : \"AMMDeposit\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(deposit, json);
   }
-
-  private static Stream<Arguments> getBooleanCombinations() {
-    // Every combination of 4 booleans
-    List<Object[]> params = new ArrayList<>();
-    for (int i = 0; i < Math.pow(2, 4); i++) {
-      String bin = Integer.toBinaryString(i);
-      while (bin.length() < 4) {
-        bin = "0" + bin;
-      }
-
-      char[] chars = bin.toCharArray();
-      Boolean[] booleans = new Boolean[4];
-      for (int j = 0; j < chars.length; j++) {
-        booleans[j] = chars[j] == '0';
-      }
-
-      if (booleans[0] && !booleans[1] && !booleans[2] && !booleans[3]) {
-        continue;
-      }
-      if (!booleans[0] && booleans[1] && booleans[2] && !booleans[3]) {
-        continue;
-      }
-      if (!booleans[0] && booleans[1] && !booleans[2] && !booleans[3]) {
-        continue;
-      }
-      if (booleans[0] && booleans[1] && !booleans[2] && !booleans[3]) {
-        continue;
-      }
-      if (!booleans[0] && booleans[1] && !booleans[2]) {
-        continue;
-      }
-      params.add(booleans);
-    }
-
-    return params.stream().map(Arguments::of);
-  }
-
 }

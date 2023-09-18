@@ -38,6 +38,11 @@ public class AmmDepositFlags extends TransactionFlags {
    */
   public static final AmmDepositFlags LIMIT_LP_TOKEN = new AmmDepositFlags(0x00400000);
 
+  /**
+   * Constant {@link AmmDepositFlags} for the {@code tfTwoAssetIfEmpty} flag.
+   */
+  public static final AmmDepositFlags TWO_ASSET_IF_EMPTY = new AmmDepositFlags(0x00800000);
+
   private AmmDepositFlags(long value) {
     super(value);
   }
@@ -85,6 +90,15 @@ public class AmmDepositFlags extends TransactionFlags {
    */
   public boolean tfLimitLpToken() {
     return this.isSet(LIMIT_LP_TOKEN);
+  }
+
+  /**
+   * Whether the {@code tfTwoAssetIfEmpty} flag is set.
+   *
+   * @return {@code true} if {@code tfTwoAssetIfEmpty} is set, otherwise {@code false}.
+   */
+  public boolean tfTwoAssetIfEmpty() {
+    return this.isSet(TWO_ASSET_IF_EMPTY);
   }
 
 }

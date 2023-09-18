@@ -6,8 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
-import okhttp3.HttpUrl;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -26,11 +24,13 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
+import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
@@ -40,37 +40,21 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.tests.environment.CustomEnvironment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/**
- * All tests in this class will be disabled until AMM functionality has been merged into the rippled codebase and is
- * available in a local standalone docker container. Running these tests as part of a maven build will overwrite the
- * value of xrplEnvironment, so any ITs run after these ITs will point at the AMM devnet. This is obviously undesirable,
- * and in lieu of making a broader change to enable custom environments for specific test suites, we choose to simply
- * disable these tests until we can run them against the normal xrplEnvironment.
- */
 public class AmmIT extends AbstractIT {
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
-  @BeforeAll
-  protected static void initXrplEnvironment() {
-    xrplEnvironment = new CustomEnvironment(
-      HttpUrl.parse("http://amm.devnet.rippletest.net:51234"),
-      HttpUrl.parse("https://ammfaucet.devnet.rippletest.net")
-    );
-  }
-
-  //  @Test
+  @Test
   void depositAndVoteOnTradingFee() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    AmmInfoResult amm = createAmm(issuerKeyPair);
+    FeeResult feeResult = xrplClient.fee();
+    AmmInfoResult amm = createAmm(issuerKeyPair, feeResult);
     KeyPair traderKeyPair = createRandomAccountEd25519();
 
-    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult traderAccount = scanForResult(
       () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
@@ -151,14 +135,14 @@ public class AmmIT extends AbstractIT {
     assertThat(ammAfterVote.amm().tradingFee()).isEqualTo(expectedTradingFee);
   }
 
-  //  @Test
+  @Test
   void depositAndBid() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    AmmInfoResult amm = createAmm(issuerKeyPair);
+    FeeResult feeResult = xrplClient.fee();
+    AmmInfoResult amm = createAmm(issuerKeyPair, feeResult);
     KeyPair traderKeyPair = createRandomAccountEd25519();
     KeyPair authAccount1 = createRandomAccountEd25519();
 
-    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult traderAccount = scanForResult(
       () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
@@ -218,13 +202,13 @@ public class AmmIT extends AbstractIT {
       .containsExactly(authAccount1.publicKey().deriveAddress());
   }
 
-  //  @Test
+  @Test
   void depositAndWithdraw() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    AmmInfoResult amm = createAmm(issuerKeyPair);
+    FeeResult feeResult = xrplClient.fee();
+    AmmInfoResult amm = createAmm(issuerKeyPair, feeResult);
     KeyPair traderKeyPair = createRandomAccountEd25519();
 
-    FeeResult feeResult = xrplClient.fee();
     AccountInfoResult traderAccount = scanForResult(
       () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
@@ -305,6 +289,7 @@ public class AmmIT extends AbstractIT {
           .build()
       )
       .asset(Issue.XRP)
+      .flags(AmmDepositFlags.SINGLE_ASSET)
       .amount(depositAmount)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(traderAccount.accountData().sequence())
@@ -347,10 +332,13 @@ public class AmmIT extends AbstractIT {
     return traderAccountAfterDeposit;
   }
 
-  private AmmInfoResult createAmm(KeyPair issuerKeyPair) throws JsonRpcClientErrorException, JsonProcessingException {
+  private AmmInfoResult createAmm(KeyPair issuerKeyPair, FeeResult feeResult) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult issuerAccount = scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
+
+    enableRippling(issuerKeyPair, issuerAccount, feeResult);
+
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
       .map(
         rippled -> rippled.closedLedger().orElse(rippled.validatedLedger().get()).reserveIncXrp(),
@@ -359,7 +347,7 @@ public class AmmIT extends AbstractIT {
       );
     AmmCreate ammCreate = AmmCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
-      .sequence(issuerAccount.accountData().sequence())
+      .sequence(issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE))
       .fee(reserveAmount)
       .amount(
         IssuedCurrencyAmount.builder()
@@ -405,8 +393,33 @@ public class AmmIT extends AbstractIT {
     AccountInfoResult ammAccountInfo = xrplClient.accountInfo(
       AccountInfoRequestParams.of(ammInfoResult.amm().account())
     );
-    assertThat(ammAccountInfo.accountData().flags().lsfAmm()).isTrue();
+
+    assertThat(ammAccountInfo.accountData().ammId()).isNotEmpty();
 
     return ammInfoResult;
+  }
+
+  private void enableRippling(KeyPair issuerKeyPair, AccountInfoResult issuerAccount, FeeResult feeResult)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .sequence(issuerAccount.accountData().sequence())
+      .setFlag(AccountSetFlag.DEFAULT_RIPPLE)
+      .build();
+
+    SingleSignedTransaction<AccountSet> signed = signatureService.sign(issuerKeyPair.privateKey(), accountSet);
+    SubmitResult<AccountSet> setResult = xrplClient.submit(signed);
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      setResult.transactionResult().hash()
+    );
+
+    scanForResult(
+      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().flags().lsfDefaultRipple()
+    );
   }
 }

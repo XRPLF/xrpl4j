@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class AccountRootFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(14);
+    return getBooleanCombinations(13);
   }
 
   @ParameterizedTest
@@ -53,8 +53,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     boolean lsfDisallowIncomingNFTokenOffer,
     boolean lsfDisallowIncomingCheck,
     boolean lsfDisallowIncomingPayChan,
-    boolean lsfDisallowIncomingTrustline,
-    boolean lsfAmm
+    boolean lsfDisallowIncomingTrustline
   ) {
     long expectedFlags = (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE.getValue() : 0L) |
       (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH.getValue() : 0L) |
@@ -68,8 +67,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfDisallowIncomingNFTokenOffer ? AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER.getValue() : 0L) |
       (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK.getValue() : 0L) |
       (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN.getValue() : 0L) |
-      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE.getValue() : 0L) |
-      (lsfAmm ? AccountRootFlags.AMM.getValue() : 0L);
+      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE.getValue() : 0L);
     Flags flagsFromFlags = AccountRootFlags.of(
       (lsfDefaultRipple ? AccountRootFlags.DEFAULT_RIPPLE : AccountRootFlags.UNSET),
       (lsfDepositAuth ? AccountRootFlags.DEPOSIT_AUTH : AccountRootFlags.UNSET),
@@ -83,8 +81,7 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
       (lsfDisallowIncomingNFTokenOffer ? AccountRootFlags.DISALLOW_INCOMING_NFT_OFFER : AccountRootFlags.UNSET),
       (lsfDisallowIncomingCheck ? AccountRootFlags.DISALLOW_INCOMING_CHECK : AccountRootFlags.UNSET),
       (lsfDisallowIncomingPayChan ? AccountRootFlags.DISALLOW_INCOMING_PAY_CHAN : AccountRootFlags.UNSET),
-      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE : AccountRootFlags.UNSET),
-      (lsfAmm ? AccountRootFlags.AMM : AccountRootFlags.UNSET)
+      (lsfDisallowIncomingTrustline ? AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE : AccountRootFlags.UNSET)
     );
     assertThat(flagsFromFlags.getValue()).isEqualTo(expectedFlags);
 
@@ -105,7 +102,6 @@ public class AccountRootFlagsTests extends AbstractFlagsTest {
     assertThat(flagsFromLong.lsfDisallowIncomingCheck()).isEqualTo(lsfDisallowIncomingCheck);
     assertThat(flagsFromLong.lsfDisallowIncomingPayChan()).isEqualTo(lsfDisallowIncomingPayChan);
     assertThat(flagsFromLong.lsfDisallowIncomingTrustline()).isEqualTo(lsfDisallowIncomingTrustline);
-    assertThat(flagsFromLong.lsfAmm()).isEqualTo(lsfAmm);
   }
 
   @ParameterizedTest

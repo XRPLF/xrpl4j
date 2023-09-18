@@ -332,7 +332,10 @@ public class AmmIT extends AbstractIT {
     return traderAccountAfterDeposit;
   }
 
-  private AmmInfoResult createAmm(KeyPair issuerKeyPair, FeeResult feeResult) throws JsonRpcClientErrorException, JsonProcessingException {
+  private AmmInfoResult createAmm(
+    KeyPair issuerKeyPair,
+    FeeResult feeResult
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult issuerAccount = scanForResult(
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );

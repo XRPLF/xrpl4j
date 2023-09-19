@@ -160,7 +160,12 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link UnlModify} transaction.
    */
-  UNL_MODIFY("UNLModify");
+  UNL_MODIFY("UNLModify"),
+
+  /**
+   * The {@link TransactionType} for the {@link Clawback} transaction.
+   */
+  CLAWBACK("Clawback");
 
   private final String value;
 

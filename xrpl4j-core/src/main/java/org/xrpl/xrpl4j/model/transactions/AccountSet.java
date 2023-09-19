@@ -440,7 +440,11 @@ public interface AccountSet extends Transaction {
     /**
      * Block incoming Trustlines.
      */
-    DISALLOW_INCOMING_TRUSTLINE(15);
+    DISALLOW_INCOMING_TRUSTLINE(15),
+    /**
+     * Enable clawback on the account's trustlines.
+     */
+    ALLOW_TRUSTLINE_CLAWBACK(16);
 
     final int value;
 

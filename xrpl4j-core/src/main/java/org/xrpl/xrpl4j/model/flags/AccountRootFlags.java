@@ -98,6 +98,11 @@ public class AccountRootFlags extends Flags {
   public static final AccountRootFlags DISALLOW_INCOMING_TRUSTLINE = new AccountRootFlags(0x20000000);
 
   /**
+   * Constant {@link AccountRootFlags} for the {@code lsfAllowTrustLineClawback} account flag.
+   */
+  public static final AccountRootFlags ALLOW_TRUSTLINE_CLAWBACK = new AccountRootFlags(0x80000000L);
+
+  /**
    * Required-args Constructor.
    *
    * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
@@ -234,5 +239,14 @@ public class AccountRootFlags extends Flags {
    */
   public boolean lsfDisallowIncomingTrustline() {
     return this.isSet(AccountRootFlags.DISALLOW_INCOMING_TRUSTLINE);
+  }
+
+  /**
+   * Allows trustline clawback on this account.
+   *
+   * @return {@code true} if {@code lsfAllowTrustLineClawback} is set, otherwise {@code false}.
+   */
+  public boolean lsfAllowTrustLineClawback() {
+    return this.isSet(AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK);
   }
 }

@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
+import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
@@ -271,6 +272,10 @@ public class SignatureUtils {
       transactionWithSignature = TicketCreate.builder().from((TicketCreate) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (Clawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = Clawback.builder().from((Clawback) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -403,6 +408,10 @@ public class SignatureUtils {
         .build();
     } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = TicketCreate.builder().from((TicketCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (Clawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = Clawback.builder().from((Clawback) transaction)
         .signers(signers)
         .build();
     } else {

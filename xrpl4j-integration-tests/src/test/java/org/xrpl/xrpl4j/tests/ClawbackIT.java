@@ -143,7 +143,9 @@ public class ClawbackIT extends AbstractIT {
       .setFlag(AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK)
       .build();
 
-    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(issuerKeyPair.privateKey(), accountSet);
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      issuerKeyPair.privateKey(), accountSet
+    );
     SubmitResult<AccountSet> submitResult = xrplClient.submit(signedAccountSet);
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 

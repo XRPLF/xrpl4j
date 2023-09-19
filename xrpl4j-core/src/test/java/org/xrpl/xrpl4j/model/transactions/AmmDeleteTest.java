@@ -25,7 +25,9 @@ class AmmDeleteTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(9))
       .flags(TransactionFlags.UNSET)
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
+      ))
       .build();
 
     String json = "{\n" +

@@ -24,7 +24,6 @@ class AmmDeleteTest extends AbstractJsonTest {
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(9))
-      .flags(TransactionFlags.UNSET)
       .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
         "EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156"
       ))
@@ -40,7 +39,6 @@ class AmmDeleteTest extends AbstractJsonTest {
       "        \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
       "    },\n" +
       "    \"Fee\" : \"10\",\n" +
-      "    \"Flags\" : 0,\n" +
       "    \"Sequence\" : 9,\n" +
       "    \"SigningPubKey\" : \"EDD299D60BCE7980F6082945B5597FFFD35223F1950673BFA4D4AED6FDE5097156\",\n" +
       "    \"TransactionType\" : \"AMMDelete\"\n" +

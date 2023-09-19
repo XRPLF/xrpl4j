@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.flags;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 
 /**
@@ -99,7 +100,11 @@ public class AccountRootFlags extends Flags {
 
   /**
    * Constant {@link AccountRootFlags} for the {@code lsfAllowTrustLineClawback} account flag.
+   *
+   * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+   * to change.</p>
    */
+  @Beta
   public static final AccountRootFlags ALLOW_TRUSTLINE_CLAWBACK = new AccountRootFlags(0x80000000L);
 
   /**
@@ -115,6 +120,7 @@ public class AccountRootFlags extends Flags {
    * Construct {@link AccountRootFlags} with a given value.
    *
    * @param value The long-number encoded flags value of this {@link AccountRootFlags}.
+   *
    * @return New {@link AccountRootFlags}.
    */
   public static AccountRootFlags of(long value) {
@@ -244,8 +250,12 @@ public class AccountRootFlags extends Flags {
   /**
    * Allows trustline clawback on this account.
    *
+   * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+   * to change.</p>
+   *
    * @return {@code true} if {@code lsfAllowTrustLineClawback} is set, otherwise {@code false}.
    */
+  @Beta
   public boolean lsfAllowTrustLineClawback() {
     return this.isSet(AccountRootFlags.ALLOW_TRUSTLINE_CLAWBACK);
   }

@@ -3,16 +3,21 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
  * Clawback an issued currency that exists on a Trustline.
+ *
+ * <p>This class will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+ * to change.</p>
  */
 @Immutable
 @JsonSerialize(as = ImmutableClawback.class)
 @JsonDeserialize(as = ImmutableClawback.class)
+@Beta
 public interface Clawback extends Transaction {
 
   /**

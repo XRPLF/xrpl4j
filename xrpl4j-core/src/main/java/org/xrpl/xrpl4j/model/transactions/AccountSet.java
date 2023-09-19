@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
@@ -445,7 +446,11 @@ public interface AccountSet extends Transaction {
     DISALLOW_INCOMING_TRUSTLINE(15),
     /**
      * Enable clawback on the account's trustlines.
+     *
+     * <p>This value will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+     * to change.</p>
      */
+    @Beta
     ALLOW_TRUSTLINE_CLAWBACK(16);
 
     final int value;

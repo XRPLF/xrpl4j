@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.Beta;
 
 /**
  * Market interface for XRP Ledger Objects.
@@ -144,7 +145,11 @@ public interface LedgerObject {
 
     /**
      * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+     *  change.</p>
      */
+    @Beta
     AMM("AMM");
 
     private final String value;

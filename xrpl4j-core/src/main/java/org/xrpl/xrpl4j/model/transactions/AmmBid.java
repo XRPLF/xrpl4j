@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
@@ -13,10 +14,14 @@ import java.util.Optional;
 
 /**
  * Object mapping for the AMMBid transaction.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmBid.class)
 @JsonDeserialize(as = ImmutableAmmBid.class)
+@Beta
 public interface AmmBid extends Transaction {
 
   /**
@@ -29,8 +34,8 @@ public interface AmmBid extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link AmmBid}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link AmmBid}, which only allows the {@code tfFullyCanonicalSig} flag,
+   * which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -17,10 +18,14 @@ import java.util.List;
  * Object mapping for an AMM auction slot returned in response to an {@code amm_info} RPC call. The structure
  * of the response object is similar but has a slightly different format from
  * {@link org.xrpl.xrpl4j.model.ledger.AuctionSlot}.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ *  change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmInfoAuctionSlot.class)
 @JsonDeserialize(as = ImmutableAmmInfoAuctionSlot.class)
+@Beta
 public interface AmmInfoAuctionSlot {
 
   /**

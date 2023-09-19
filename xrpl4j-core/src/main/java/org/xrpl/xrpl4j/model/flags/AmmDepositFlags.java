@@ -1,16 +1,20 @@
 package org.xrpl.xrpl4j.model.flags;
 
+import com.google.common.annotations.Beta;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 
 /**
- * A set of {@link TransactionFlags} that can be set on {@link AmmDeposit} transactions. Exactly
- * one flag must be set on each {@link AmmDeposit} transaction, so this class does not allow for combination
- * of multiple flags.
+ * A set of {@link TransactionFlags} that can be set on {@link AmmDeposit} transactions. Exactly one flag must be set on
+ * each {@link AmmDeposit} transaction, so this class does not allow for combination of multiple flags.
  *
  * <p>While most other TransactionFlags support empty flags or 0, AmmDeposit transactions must have a Flags field
  * to denote the deposit mode. Therefore, AmmDepositFlags does not support empty or unset flags.
  * </p>
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
+@Beta
 public class AmmDepositFlags extends TransactionFlags {
 
   /**

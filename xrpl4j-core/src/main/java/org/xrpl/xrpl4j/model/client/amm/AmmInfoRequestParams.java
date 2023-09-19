@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.amm;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.ledger.Issue;
@@ -12,10 +13,14 @@ import java.util.Optional;
 
 /**
  * Request parameters for the {@code amm_info} rippled API method.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmInfoRequestParams.class)
 @JsonDeserialize(as = ImmutableAmmInfoRequestParams.class)
+@Beta
 public interface AmmInfoRequestParams extends XrplRequestParams {
 
   /**

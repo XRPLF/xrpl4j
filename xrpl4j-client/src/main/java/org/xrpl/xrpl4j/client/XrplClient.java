@@ -772,6 +772,7 @@ public class XrplClient {
    * @return A {@link AmmInfoResult}.
    * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
    */
+  @Beta
   public AmmInfoResult ammInfo(
     AmmInfoRequestParams params
   ) throws JsonRpcClientErrorException {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -13,10 +14,14 @@ import java.util.Optional;
 
 /**
  * The result of an "amm_info" rippled API method call.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmInfoResult.class)
 @JsonDeserialize(as = ImmutableAmmInfoResult.class)
+@Beta
 public interface AmmInfoResult extends XrplResult {
 
   /**

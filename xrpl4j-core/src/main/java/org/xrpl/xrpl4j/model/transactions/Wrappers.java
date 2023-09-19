@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
@@ -343,8 +344,8 @@ public class Wrappers {
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    *
    * <p>Valid values for this field are between 0 and 50000 inclusive, allowing transfer rates of between 0.00% and
-   * 50.00% in increments of 0.001. If this field is provided in a {@link NfTokenMint} transaction, the transaction
-   * MUST have the {@code tfTransferable} flag enabled.
+   * 50.00% in increments of 0.001. If this field is provided in a {@link NfTokenMint} transaction, the transaction MUST
+   * have the {@code tfTransferable} flag enabled.
    */
   @Value.Immutable
   @Wrapped
@@ -419,11 +420,15 @@ public class Wrappers {
 
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   *
+   * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
    */
   @Value.Immutable
   @Wrapped
   @JsonSerialize(as = TradingFee.class, using = TradingFeeSerializer.class)
   @JsonDeserialize(as = TradingFee.class, using = TradingFeeDeserializer.class)
+  @Beta
   abstract static class _TradingFee extends Wrapper<UnsignedInteger> implements Serializable {
 
     @Override
@@ -459,11 +464,15 @@ public class Wrappers {
 
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the VoteWeight.
+   *
+   * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
    */
   @Value.Immutable
   @Wrapped
   @JsonSerialize(as = VoteWeight.class, using = VoteWeightSerializer.class)
   @JsonDeserialize(as = VoteWeight.class, using = VoteWeightDeserializer.class)
+  @Beta
   abstract static class _VoteWeight extends Wrapper<UnsignedInteger> implements Serializable {
 
     @Override

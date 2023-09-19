@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
@@ -13,10 +14,14 @@ import java.util.Optional;
 
 /**
  * Object mapping for the AMMWithdraw transaction.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
 @Immutable
 @JsonSerialize(as = ImmutableAmmWithdraw.class)
 @JsonDeserialize(as = ImmutableAmmWithdraw.class)
+@Beta
 public interface AmmWithdraw extends Transaction {
 
   /**
@@ -53,8 +58,8 @@ public interface AmmWithdraw extends Transaction {
   Issue asset2();
 
   /**
-   * The amount of one asset to deposit to the AMM. If present, this must match the type of one of the assets
-   * (tokens or XRP) in the AMM's pool.
+   * The amount of one asset to deposit to the AMM. If present, this must match the type of one of the assets (tokens or
+   * XRP) in the AMM's pool.
    *
    * @return An optionally present {@link CurrencyAmount}.
    */
@@ -62,8 +67,8 @@ public interface AmmWithdraw extends Transaction {
   Optional<CurrencyAmount> amount();
 
   /**
-   * The amount of another asset to add to the AMM. If present, this must match the type of the other asset in the
-   * AMM's pool and cannot be the same asset as Amount.
+   * The amount of another asset to add to the AMM. If present, this must match the type of the other asset in the AMM's
+   * pool and cannot be the same asset as Amount.
    *
    * @return An optionally present {@link CurrencyAmount}.
    */

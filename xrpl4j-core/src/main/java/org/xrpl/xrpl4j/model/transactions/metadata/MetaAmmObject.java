@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.Flags;
@@ -20,10 +21,14 @@ import java.util.stream.Collectors;
 
 /**
  * Represents an AMM ledger object, which describes a single Automated Market Maker instance.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
 @Immutable
 @JsonSerialize(as = ImmutableMetaAmmObject.class)
 @JsonDeserialize(as = ImmutableMetaAmmObject.class)
+@Beta
 public interface MetaAmmObject extends MetaLedgerObject {
 
   /**
@@ -70,9 +75,9 @@ public interface MetaAmmObject extends MetaLedgerObject {
   Optional<MetaAuctionSlot> auctionSlot();
 
   /**
-   * The total outstanding balance of liquidity provider tokens from this AMM instance. The holders of these tokens
-   * can vote on the AMM's trading fee in proportion to their holdings, or redeem the tokens for a share of the AMM's
-   * assets which grows with the trading fees collected.
+   * The total outstanding balance of liquidity provider tokens from this AMM instance. The holders of these tokens can
+   * vote on the AMM's trading fee in proportion to their holdings, or redeem the tokens for a share of the AMM's assets
+   * which grows with the trading fees collected.
    *
    * @return An {@link IssuedCurrencyAmount}.
    */

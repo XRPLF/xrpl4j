@@ -3,6 +3,7 @@ package org.xrpl.xrpl4j.model.client.amm;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -17,10 +18,14 @@ import java.util.Optional;
  * Information about the requested AMM ledger entry. This response is very closely related to
  * {@link org.xrpl.xrpl4j.model.ledger.AmmObject}, however rippled returns the object in a different format in
  * responses to {@code amm_info} RPC requests.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmInfo.class)
 @JsonDeserialize(as = ImmutableAmmInfo.class)
+@Beta
 public interface AmmInfo extends XrplResult {
 
   /**

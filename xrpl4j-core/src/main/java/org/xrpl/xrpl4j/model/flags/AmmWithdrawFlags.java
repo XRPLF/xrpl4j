@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.flags;
 
+import com.google.common.annotations.Beta;
+
 /**
  * A set of {@link TransactionFlags} that can be set on {@link org.xrpl.xrpl4j.model.transactions.AmmWithdraw}
  * transactions. Exactly one flag must be set on each {@link org.xrpl.xrpl4j.model.transactions.AmmWithdraw}
@@ -8,7 +10,11 @@ package org.xrpl.xrpl4j.model.flags;
  * <p>While most other TransactionFlags support empty flags or 0, AmmWithdraw transactions must have a Flags field
  * to denote the withdraw mode. Therefore, AmmWithdrawFlags does not support empty or unset flags.
  * </p>
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * change.</p>
  */
+@Beta
 public class AmmWithdrawFlags extends TransactionFlags {
 
   /**

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -16,10 +17,14 @@ import java.util.stream.Collectors;
 /**
  * Represents an AuctionSlot object in an {@link AmmObject}, containing details of the current owner of the auction
  * slot.
+ *
+ * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ *  change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAuctionSlot.class)
 @JsonDeserialize(as = ImmutableAuctionSlot.class)
+@Beta
 public interface AuctionSlot {
 
   /**

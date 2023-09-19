@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.client;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
+
 /**
  * A definition class for all rippled method name constants.
  */
@@ -179,6 +181,7 @@ public class XrplMethods {
   /**
    * Constant for the <a href="https://xrpl.org/amm_info.html">ripple_path_find</a> rippled API method.
    */
+  @Beta
   public static final String AMM_INFO = "amm_info";
 
   // Payment Channel methods

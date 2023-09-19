@@ -230,8 +230,8 @@ public interface AccountRootObject extends LedgerObject {
    * The ledger entry ID of the corresponding AMM ledger entry. Set during account creation; cannot be modified.
    * If present, indicates that this is a special AMM AccountRoot; always omitted on non-AMM accounts.
    *
-   * <p>This method will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
-   *  change.</p>
+   * <p>This method will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
    *
    * @return An optionally-present {@link Hash256}.
    */

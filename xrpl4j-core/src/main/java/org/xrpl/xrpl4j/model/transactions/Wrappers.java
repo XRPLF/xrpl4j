@@ -421,8 +421,8 @@ public class Wrappers {
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    *
-   * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
-   * change.</p>
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
    */
   @Value.Immutable
   @Wrapped
@@ -465,8 +465,8 @@ public class Wrappers {
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the VoteWeight.
    *
-   * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
-   * change.</p>
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
    */
   @Value.Immutable
   @Wrapped

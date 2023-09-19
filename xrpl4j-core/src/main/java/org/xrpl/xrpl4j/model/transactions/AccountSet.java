@@ -31,6 +31,8 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -143,7 +145,7 @@ public interface AccountSet extends Transaction {
       //   2. JSON has ClearFlag and jackson sets clearFlagRawValue.
       // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
       // so no lower bound check is required.
-      if (clearFlagRawValue().get().longValue() <= 15) {
+      if (clearFlagRawValue().get().longValue() <= AccountSetFlag.MAX_VALUE) {
         // Set clearFlag to clearFlagRawValue if clearFlagRawValue matches a valid AccountSetFlag variant.
         return AccountSet.builder().from(this)
           .clearFlag(AccountSetFlag.forValue(clearFlagRawValue().get().intValue()))
@@ -236,7 +238,7 @@ public interface AccountSet extends Transaction {
       //   2. JSON has ClearFlag and jackson sets setFlagRawValue.
       // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
       // so no lower bound check is required.
-      if (setFlagRawValue().get().longValue() <= 15) {
+      if (setFlagRawValue().get().longValue() <= AccountSetFlag.MAX_VALUE) {
         // Set setFlag to setFlagRawValue if setFlagRawValue matches a valid AccountSetFlag variant.
         return AccountSet.builder().from(this)
           .setFlag(AccountSetFlag.forValue(setFlagRawValue().get().intValue()))
@@ -451,6 +453,12 @@ public interface AccountSet extends Transaction {
     AccountSetFlag(int value) {
       this.value = value;
     }
+
+    /**
+     * The maximum underlying value of AccountSetFlags. This is useful for the normalization methods of AccountSet
+     * so that adding a new AccountSetFlag does not require a change to those normalization functions.
+     */
+    static final int MAX_VALUE = Collections.max(Arrays.asList(AccountSetFlag.values())).getValue();
 
     /**
      * To deserialize enums with integer values, you need to specify this factory method with the {@link JsonCreator}

@@ -164,6 +164,15 @@ public enum TransactionType {
   UNL_MODIFY("UNLModify"),
 
   /**
+   * The {@link TransactionType} for the {@link Clawback} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+   * to change.</p>
+   */
+  @Beta
+  CLAWBACK("Clawback"),
+
+  /**
    * The {@link TransactionType} for the {@link AmmBid} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to

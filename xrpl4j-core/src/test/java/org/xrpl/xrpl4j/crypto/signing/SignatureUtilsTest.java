@@ -65,6 +65,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
+import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
@@ -716,6 +717,25 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToClawback() {
+    Clawback clawback = Clawback.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(sourcePublicKey)
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("FOO")
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .value("314.159")
+          .build()
+      )
+      .build();
+
+    addSignatureToTransactionHelper(clawback);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -1032,6 +1052,24 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(ticketCreate);
+  }
+
+  @Test
+  void addMultiSignaturesToClawback() {
+    Clawback clawback = Clawback.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("FOO")
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .value("314.159")
+          .build()
+      )
+      .build();
+
+    addMultiSignatureToTransactionHelper(clawback);
   }
 
   @Test

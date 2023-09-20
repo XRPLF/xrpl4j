@@ -77,6 +77,7 @@ public interface Transaction {
       .put(ImmutableAmmVote.class, TransactionType.AMM_VOTE)
       .put(ImmutableAmmWithdraw.class, TransactionType.AMM_WITHDRAW)
       .put(ImmutableAmmDelete.class, TransactionType.AMM_DELETE)
+      .put(ImmutableClawback.class, TransactionType.CLAWBACK)
       .build();
 
   /**

@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
+import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
@@ -277,6 +278,10 @@ public class SignatureUtils {
       transactionWithSignature = TicketCreate.builder().from((TicketCreate) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (Clawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = Clawback.builder().from((Clawback) transaction)
+        .transactionSignature(signature)
+        .build();
     } else if (AmmBid.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AmmBid.builder().from((AmmBid) transaction)
         .transactionSignature(signature)
@@ -433,6 +438,10 @@ public class SignatureUtils {
         .build();
     } else if (TicketCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = TicketCreate.builder().from((TicketCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (Clawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = Clawback.builder().from((Clawback) transaction)
         .signers(signers)
         .build();
     } else if (AmmBid.class.isAssignableFrom(transaction.getClass())) {

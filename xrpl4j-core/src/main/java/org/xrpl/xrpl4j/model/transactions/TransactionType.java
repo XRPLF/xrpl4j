@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.Beta;
 
 /**
  * Enumeration of the types of Transactions on the XRP Ledger.
@@ -160,7 +161,16 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link UnlModify} transaction.
    */
-  UNL_MODIFY("UNLModify");
+  UNL_MODIFY("UNLModify"),
+
+  /**
+   * The {@link TransactionType} for the {@link Clawback} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+   * to change.</p>
+   */
+  @Beta
+  CLAWBACK("Clawback");
 
   private final String value;
 

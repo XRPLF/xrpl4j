@@ -71,6 +71,7 @@ public interface Transaction {
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
+      .put(ImmutableClawback.class, TransactionType.CLAWBACK)
       .build();
 
   /**

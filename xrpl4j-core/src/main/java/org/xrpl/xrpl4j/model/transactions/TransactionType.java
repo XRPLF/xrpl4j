@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -170,7 +170,61 @@ public enum TransactionType {
    * to change.</p>
    */
   @Beta
-  CLAWBACK("Clawback");
+  CLAWBACK("Clawback"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmBid} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  AMM_BID("AMMBid"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmCreate} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  AMM_CREATE("AMMCreate"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmDeposit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  AMM_DEPOSIT("AMMDeposit"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmVote} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  AMM_VOTE("AMMVote"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmWithdraw} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  AMM_WITHDRAW("AMMWithdraw"),
+
+  /**
+   * The {@link TransactionType} for the {@link AmmDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  AMM_DELETE("AMMDelete");
 
   private final String value;
 

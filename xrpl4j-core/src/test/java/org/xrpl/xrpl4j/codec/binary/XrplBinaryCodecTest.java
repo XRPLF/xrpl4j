@@ -28,11 +28,15 @@ import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
+import org.xrpl.xrpl4j.codec.fixtures.codec.CodecFixture;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
@@ -69,6 +73,10 @@ class XrplBinaryCodecTest {
   private static Stream<Arguments> dataDrivenFixtures() throws IOException {
     return FixtureUtils.getDataDrivenFixtures().wholeObjectTests().stream()
       .map(Arguments::of);
+  }
+
+  private static Stream<Arguments> transactionCodecFixtures() throws IOException {
+    return FixtureUtils.getCodecFixtures().transactions().stream().map(Arguments::of);
   }
 
   @Test
@@ -450,6 +458,15 @@ class XrplBinaryCodecTest {
   @MethodSource("dataDrivenFixtures")
   void dataDriven(WholeObject wholeObject) throws IOException {
     assertThat(encoder.encode(wholeObject.txJson().toString())).isEqualTo(wholeObject.expectedHex());
+  }
+
+  @ParameterizedTest
+  @MethodSource("transactionCodecFixtures")
+  void transactionFixtureTests(CodecFixture codecFixture) throws JsonProcessingException, JSONException {
+    assertThat(encoder.encode(codecFixture.json().toString())).isEqualTo(codecFixture.binary());
+    JSONAssert.assertEquals(
+      encoder.decode(codecFixture.binary()), codecFixture.json().toString(), JSONCompareMode.STRICT
+    );
   }
 
 }

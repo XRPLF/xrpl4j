@@ -70,6 +70,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -1023,6 +1025,20 @@ public class XrplClientTest {
     verify(jsonRpcClientMock).send(jsonRpcRequestArgumentCaptor.capture(), eq(NftSellOffersResult.class));
     assertThat(jsonRpcRequestArgumentCaptor.getValue().method()).isEqualTo(XrplMethods.NFT_SELL_OFFERS);
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
+  }
+
+  @Test
+  void ammInfo() throws JsonRpcClientErrorException {
+    AmmInfoRequestParams params = mock(AmmInfoRequestParams.class);
+    JsonRpcRequest expectedRequest = JsonRpcRequest.builder()
+      .method(XrplMethods.AMM_INFO)
+      .addParams(params)
+      .build();
+    AmmInfoResult mockResult = mock(AmmInfoResult.class);
+    when(jsonRpcClientMock.send(expectedRequest, AmmInfoResult.class)).thenReturn(mockResult);
+    AmmInfoResult result = xrplClient.ammInfo(params);
+
+    assertThat(result).isEqualTo(mockResult);
   }
 
   @Test

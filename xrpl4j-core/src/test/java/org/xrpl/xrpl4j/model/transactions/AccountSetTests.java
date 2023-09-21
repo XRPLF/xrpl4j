@@ -152,12 +152,12 @@ public class AccountSetTests {
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(5))
-      .clearFlagRawValue(UnsignedInteger.valueOf(16))
+      .clearFlagRawValue(UnsignedInteger.valueOf(AccountSetFlag.MAX_VALUE + 1))
       .build();
 
     assertThat(accountSet.clearFlag()).isEmpty();
     assertThat(accountSet.clearFlagRawValue()).isNotEmpty().get()
-      .isEqualTo(UnsignedInteger.valueOf(16));
+      .isEqualTo(UnsignedInteger.valueOf(AccountSetFlag.MAX_VALUE + 1));
   }
 
   //////////////////////////////////////
@@ -245,12 +245,12 @@ public class AccountSetTests {
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(5))
-      .setFlagRawValue(UnsignedInteger.valueOf(16))
+      .setFlagRawValue(UnsignedInteger.valueOf(AccountSetFlag.MAX_VALUE + 1))
       .build();
 
     assertThat(accountSet.setFlag()).isEmpty();
     assertThat(accountSet.setFlagRawValue()).isNotEmpty().get()
-      .isEqualTo(UnsignedInteger.valueOf(16));
+      .isEqualTo(UnsignedInteger.valueOf(AccountSetFlag.MAX_VALUE + 1));
 
     accountSet = AccountSet.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

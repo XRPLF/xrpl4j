@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.ledger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
@@ -224,6 +225,19 @@ public interface AccountRootObject extends LedgerObject {
    */
   @JsonProperty("NFTokenMinter")
   Optional<Address> nfTokenMinter();
+
+  /**
+   * The ledger entry ID of the corresponding AMM ledger entry. Set during account creation; cannot be modified.
+   * If present, indicates that this is a special AMM AccountRoot; always omitted on non-AMM accounts.
+   *
+   * <p>This method will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @Beta
+  @JsonProperty("AMMID")
+  Optional<Hash256> ammId();
 
   /**
    * The unique ID of this {@link AccountRootObject} ledger object.

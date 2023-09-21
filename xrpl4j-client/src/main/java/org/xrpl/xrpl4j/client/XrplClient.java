@@ -55,6 +55,8 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -760,6 +762,26 @@ public class XrplClient {
       .addParams(params)
       .build();
     return jsonRpcClient.send(request, GatewayBalancesResult.class);
+  }
+
+  /**
+   * Get info about an AMM by making a call to the amm_info rippled RPC method.
+   *
+   * @param params The {@link AmmInfoRequestParams} to send in the request.
+   *
+   * @return A {@link AmmInfoResult}.
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  @Beta
+  public AmmInfoResult ammInfo(
+    AmmInfoRequestParams params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.AMM_INFO)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AmmInfoResult.class);
   }
 
   public JsonRpcClient getJsonRpcClient() {

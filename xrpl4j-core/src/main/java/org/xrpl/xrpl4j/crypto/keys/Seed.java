@@ -389,9 +389,11 @@ public interface Seed extends javax.security.auth.Destroyable {
         final BigInteger privateKeyInt = derivePrivateKey(seedBytes, accountNumber);
         final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
 
-        // Both ed25519 and secp256k1 _private_ keys are always 32 bytes long. However, in this library, both types of
-        // private key are prefixed with one byte (0xED for ed25519 and 0x00 for secp256k1) because this is what other
-        // libraries do, and also so that any particular set of 32 private key bytes can be properly disambiguated.
+        // All natural secp256k1 private keys always have only 32-bytes. However, when computing `publicKeyInt`,
+        // the `BigInteger.toByteArray()` will return the byte array in two's-complement form and occasionally prepend
+        // a zero byte to ensure the number is not negative. When this doesn't happen, we want to normalize the
+        // private key bytes to always have this one-byte prefix because this library prefixes all private keys with a
+        // prefix to identify the key type (`0xED` for ed25519 and `0x00` for secp256k1).
         // See https://github.com/XRPLF/xrpl4j/issues/486 for more details.
         final UnsignedByteArray prefixedPrivateKey;
         if (privateKeyInt.toByteArray().length == 32) {

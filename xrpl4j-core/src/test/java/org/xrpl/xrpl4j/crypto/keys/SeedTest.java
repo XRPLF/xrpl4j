@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,6 +27,7 @@ import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
+import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
@@ -163,6 +164,48 @@ public class SeedTest {
     assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("0102030405060708090A0B0C0D0E0F10");
   }
 
+  /**
+   * Verify {@link Seed#deriveKeyPair()} using a seed that would have produced a 32 byte private key prior to fixing
+   * #486.
+   *
+   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
+   */
+  @Test
+  void deriveKeyPairFor32ByteEcSeed() {
+    // Without explicit padding added by xrpl4j, but instead due to twos-complement padding, this seed would have
+    // (prior to fixing #486) produced a 32 byte private key. We validate here that it produces the correct output
+    // for either value() call.
+    final Seed ecSeedFor32BytePrivateKey = Seed.secp256k1SeedFromEntropy(
+      Entropy.of(BaseEncoding.base16().decode("B7E99C6BB9786494238D2BA84EABE854"))
+    );
+    final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
+    assertThat(privateKey.value().hexValue())
+      .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
+    assertThat(privateKey.valueWithoutPrefix().hexValue())
+      .isEqualTo("7030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
+  }
+
+  /**
+   * Verify {@link Seed#deriveKeyPair()} using a seed that would have produced a 33 byte private key prior to fixing
+   * #486.
+   *
+   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
+   */
+  @Test
+  void deriveKeyPairFor33ByteEcSeed() {
+    // Without explicit padding added by xrpl4j, but instead due to twos-complement padding, this seed would have
+    // (prior to fixing #486) produced a 33 byte private key. We validate here that it produces the correct output
+    // for either value() call.
+    final Seed ecSeedFor32BytePrivateKey = Seed.secp256k1SeedFromEntropy(
+      Entropy.of(BaseEncoding.base16().decode("358C75D5AD5E2FF5E19256978F18F0B9"))
+    );
+    final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
+    assertThat(privateKey.value().hexValue())
+      .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+    assertThat(privateKey.valueWithoutPrefix().hexValue())
+      .isEqualTo("FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+  }
+
   @Test
   void testEquals() {
     assertThat(edSeed).isEqualTo(edSeed);
@@ -262,7 +305,7 @@ public class SeedTest {
     assertThat(seed.deriveKeyPair().publicKey().base16Value()).isEqualTo(
       "02FD0E8479CE8182ABD35157BB0FA17A469AF27DCB12B5DDED697C61809116A33B");
     assertThat(seed.deriveKeyPair().privateKey().value().hexValue()).isEqualTo(
-      "27690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438");
+      "0027690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438");
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
       "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2");
   }

@@ -74,9 +74,9 @@ class BcKeyUtilsTest {
     // To PrivateKey
     PrivateKey privateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters);
     assertThat(Base58.encode(privateKey.value().toByteArray()))
-      .isEqualTo("EnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
+      .isEqualTo("rEnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
     assertThat(BaseEncoding.base16().encode(privateKey.value().toByteArray()))
-      .isEqualTo("D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6");
+      .isEqualTo("00D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6");
     assertThat(BcKeyUtils.toEcPrivateKeyParams(privateKey)).usingRecursiveComparison()
       .isEqualTo(ecPrivateKeyParameters);
 

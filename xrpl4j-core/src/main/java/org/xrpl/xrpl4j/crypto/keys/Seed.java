@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -172,6 +172,7 @@ public interface Seed extends javax.security.auth.Destroyable {
    * @param base58EncodedSecret A base58-encoded {@link String} that represents an encoded seed.
    *
    * @return A {@link Seed}.
+   *
    * @see "https://xrpl.org/xrp-testnet-faucet.html"
    */
   static Seed fromBase58EncodedSecret(final Base58EncodedSecret base58EncodedSecret) {
@@ -313,8 +314,10 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         Ed25519PublicKeyParameters publicKey = privateKey.generatePublicKey();
 
-        // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of secp256k1
-        // keys. Note that Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
+        // Both ed25519 and secp256k1 _private_ keys are always 32 bytes long. However, in this library, both types of
+        // private key are prefixed with one byte (0xED for ed25519 and 0x00 for secp256k1) because this is what other
+        // libraries do, and also so that any particular set of 32 private key bytes can be properly disambiguated.
+        // See https://github.com/XRPLF/xrpl4j/issues/486 for more details.
         final UnsignedByte prefix = UnsignedByte.of(0xED);
         final UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(prefix)
           .append(UnsignedByteArray.of(privateKey.getEncoded()));
@@ -386,11 +389,24 @@ public interface Seed extends javax.security.auth.Destroyable {
         final BigInteger privateKeyInt = derivePrivateKey(seedBytes, accountNumber);
         final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
 
+        // Both ed25519 and secp256k1 _private_ keys are always 32 bytes long. However, in this library, both types of
+        // private key are prefixed with one byte (0xED for ed25519 and 0x00 for secp256k1) because this is what other
+        // libraries do, and also so that any particular set of 32 private key bytes can be properly disambiguated.
+        // See https://github.com/XRPLF/xrpl4j/issues/486 for more details.
+        final UnsignedByteArray prefixedPrivateKey;
+        if (privateKeyInt.toByteArray().length == 32) {
+          prefixedPrivateKey = UnsignedByteArray.of(PrivateKey.SECP256K1_PREFIX)
+            .append(UnsignedByteArray.of(privateKeyInt.toByteArray()));
+        } else {
+          prefixedPrivateKey = UnsignedByteArray.of(privateKeyInt.toByteArray());
+        }
+
+        // No need to prefix secp256k1 public keys because they are always 33 bytes.
+        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(publicKeyInt.toByteArray());
+
         return KeyPair.builder()
-          .privateKey(PrivateKey.of(UnsignedByteArray.of(privateKeyInt.toByteArray())))
-          .publicKey(PublicKey.fromBase16EncodedPublicKey(
-            UnsignedByteArray.of(publicKeyInt.toByteArray()).hexValue()
-          ))
+          .privateKey(PrivateKey.of(prefixedPrivateKey))
+          .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
           .build();
       }
 

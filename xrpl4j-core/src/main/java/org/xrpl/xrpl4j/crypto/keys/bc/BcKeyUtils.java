@@ -100,8 +100,10 @@ public final class BcKeyUtils {
   public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
     // Convert the HEX representation of the BigInteger into bytes.
     byte[] privateKeyBytes = BaseEncoding.base16().decode(ecPrivateKeyParameters.getD().toString(16).toUpperCase());
-    final UnsignedByteArray privateKeyUba = UnsignedByteArray.of(privateKeyBytes);
-    return PrivateKey.of(privateKeyUba);
+    return PrivateKey.of(
+      UnsignedByteArray.of(PrivateKey.SECP256K1_PREFIX) // <-- Per #486, always append 0x00 to secp256k1 private keys
+        .append(UnsignedByteArray.of(privateKeyBytes))
+    );
   }
 
   /**

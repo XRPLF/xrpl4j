@@ -37,7 +37,7 @@ import java.util.List;
 @Value.Immutable
 @JsonSerialize(as = ImmutableSignerListSet.class)
 @JsonDeserialize(as = ImmutableSignerListSet.class)
-public interface SignerListSet extends Transaction {
+public interface  SignerListSet extends Transaction {
 
   /**
    * Construct a builder for this class.

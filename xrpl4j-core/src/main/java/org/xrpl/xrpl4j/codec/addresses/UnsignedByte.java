@@ -25,7 +25,6 @@ import com.google.common.io.BaseEncoding;
 
 import java.math.BigInteger;
 import java.util.Objects;
-
 import javax.security.auth.Destroyable;
 
 /**

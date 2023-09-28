@@ -33,6 +33,8 @@ import java.util.Objects;
 public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyable {
 
   /**
+   * A one-byte prefix for ed25519 keys.
+   *
    * @deprecated This value will be removed in a future version. Prefer {@link #ED2559_PREFIX} or
    *   {@link #SECP256K1_PREFIX} instead.
    */

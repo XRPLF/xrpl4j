@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.crypto.keys;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY_B58;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PUBLIC_KEY_HEX;
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.addresses.exceptions.EncodeException;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
@@ -39,6 +41,15 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  * Unit tests for {@link PublicKey}.
  */
 public class PublicKeyTest {
+
+  @Test
+  public void fromBase58EncodedStringEd25519WithTooFewBytes() {
+    UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0xED, (byte) 0xFF});
+    EncodeException exception = assertThrows(
+      EncodeException.class, () -> PublicKey.fromBase16EncodedPublicKey(twoBytes.hexValue())
+    );
+    assertThat(exception.getMessage()).isEqualTo("Length of bytes does not match expectedLength of 33.");
+  }
 
   @Test
   public void fromBase58EncodedStringEd25519() {
@@ -196,7 +207,7 @@ public class PublicKeyTest {
     PublicKey actual = ObjectMapperFactory.create().readValue(json, PublicKey.class);
     assertThat(actual.base16Value()).isEqualTo("");
   }
-  
+
   @Test
   void jsonSerializeAndDeserializeEc() throws JsonProcessingException {
     String json = ObjectMapperFactory.create().writeValueAsString(EC_PUBLIC_KEY);

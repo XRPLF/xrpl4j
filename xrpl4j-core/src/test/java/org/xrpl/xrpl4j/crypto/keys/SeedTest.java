@@ -27,16 +27,8 @@ import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
-import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
-import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
-import org.xrpl.xrpl4j.crypto.keys.Entropy;
-import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
 
 import javax.security.auth.DestroyFailedException;
@@ -44,10 +36,11 @@ import javax.security.auth.DestroyFailedException;
 /**
  * Unit tests for {@link Seed}.
  */
+@SuppressWarnings("deprecation")
 public class SeedTest {
 
-  private Seed edSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
-  private Seed ecSeed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
+  private final Seed edSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
+  private final Seed ecSeed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
 
   @Test
   void constructorWithNullSeed() {
@@ -59,10 +52,7 @@ public class SeedTest {
 
   @Test
   void constructorWithNullUnsignedByteArray() {
-    assertThrows(NullPointerException.class, () -> {
-      UnsignedByteArray nullUba = null;
-      new DefaultSeed(nullUba);
-    });
+    assertThrows(NullPointerException.class, () -> new DefaultSeed((UnsignedByteArray) null));
   }
 
   @Test
@@ -127,6 +117,7 @@ public class SeedTest {
 
   @Test
   public void testEd25519SeedFromPassphrase() throws DestroyFailedException {
+    //noinspection OptionalGetWithoutIsPresent
     assertThat(edSeed.decodedSeed().type().get()).isEqualTo(KeyType.ED25519);
     assertThat(BaseEncoding.base64().encode(edSeed.decodedSeed().bytes().toByteArray()))
       .isEqualTo("m3HSJL1i83hdltRq0+o9cw==");
@@ -137,6 +128,7 @@ public class SeedTest {
 
   @Test
   public void testSecp256k1SeedFromPassphrase() throws DestroyFailedException {
+    //noinspection OptionalGetWithoutIsPresent
     assertThat(ecSeed.decodedSeed().type().get()).isEqualTo(KeyType.SECP256K1);
     assertThat(BaseEncoding.base64().encode(ecSeed.decodedSeed().bytes().toByteArray()))
       .isEqualTo("m3HSJL1i83hdltRq0+o9cw==");
@@ -181,7 +173,9 @@ public class SeedTest {
     final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
     assertThat(privateKey.value().hexValue())
       .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
-    assertThat(privateKey.valueWithoutPrefix().hexValue())
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue())
+      .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
+    assertThat(privateKey.valueWithNaturalBytes().hexValue())
       .isEqualTo("7030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
   }
 
@@ -202,14 +196,16 @@ public class SeedTest {
     final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
     assertThat(privateKey.value().hexValue())
       .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
-    assertThat(privateKey.valueWithoutPrefix().hexValue())
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue())
+      .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+    assertThat(privateKey.valueWithNaturalBytes().hexValue())
       .isEqualTo("FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
   }
 
   @Test
   void testEquals() {
-    assertThat(edSeed).isEqualTo(edSeed);
-    assertThat(ecSeed).isEqualTo(ecSeed);
+    assertThat(edSeed.equals(edSeed)).isTrue();
+    assertThat(ecSeed.equals(ecSeed)).isTrue();
     assertThat(edSeed).isNotEqualTo(ecSeed);
     assertThat(ecSeed).isNotEqualTo(edSeed);
     assertThat(ecSeed).isNotEqualTo(new Object());

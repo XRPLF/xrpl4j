@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.crypto;
  */
 
 import com.google.common.io.BaseEncoding;
+import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -36,18 +37,26 @@ public interface TestConstants {
   String ED_PUBLIC_KEY_B58 = "aKEusmsH9dJvjfeEg8XhDfpEgmhcK1epAtFJfAQbACndz5mUA73B";
   PublicKey ED_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(ED_PUBLIC_KEY_HEX);
 
-  String ED_PRIVATE_KEY_HEX = "EDB224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
-  String ED_PRIVATE_KEY_B58 = "pDcQTi2uFBAzQ7cY2mYQtk9QuQBoLU6rJypEf8EYPQoouh";
-  PrivateKey ED_PRIVATE_KEY = PrivateKey.of(UnsignedByteArray.of(BaseEncoding.base16().decode(ED_PRIVATE_KEY_HEX)));
+  String ED_PRIVATE_KEY_HEX = "B224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
+  String ED_PRIVATE_KEY_WITH_PREFIX_HEX = "ED" + ED_PRIVATE_KEY_HEX;
+  String ED_PRIVATE_KEY_B58 = "UzQrAxCr8oeMRzzm6FFVJao8xkFc3g2ZQBs5GNBWRhZg";
+  PrivateKey ED_PRIVATE_KEY = PrivateKey.fromNaturalBytes(
+    UnsignedByteArray.of(BaseEncoding.base16().decode(ED_PRIVATE_KEY_HEX)),
+    KeyType.ED25519
+  );
 
   // Secp256k1 Public Key
   String EC_PUBLIC_KEY_HEX = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
   String EC_PUBLIC_KEY_B58 = "aB4ifx88a26RYRSSzeKW8HpbXfbpzQFRsX6dMNmMwEVHUTKzfWdk";
   PublicKey EC_PUBLIC_KEY = PublicKey.fromBase16EncodedPublicKey(EC_PUBLIC_KEY_HEX);
 
-  String EC_PRIVATE_KEY_HEX = "00DAD3C2B4BF921398932C889DE5335F89D90249355FC6FFB73F1256D2957F9F17";
-  String EC_PRIVATE_KEY_B58 = "rEjDwJp2Pm3NrUtcf8v17jWopvqPJxyi5RTrDfhcJcWSi";
-  PrivateKey EC_PRIVATE_KEY = PrivateKey.of(UnsignedByteArray.of(BaseEncoding.base16().decode(EC_PRIVATE_KEY_HEX)));
+  String EC_PRIVATE_KEY_HEX = "DAD3C2B4BF921398932C889DE5335F89D90249355FC6FFB73F1256D2957F9F17";
+  String EC_PRIVATE_KEY_WITH_PREFIX_HEX = "00" + EC_PRIVATE_KEY_HEX;
+  String EC_PRIVATE_KEY_WITH_PREFIX_B58 = "rEjDwJp2Pm3NrUtcf8v17jWopvqPJxyi5RTrDfhcJcWSi";
+
+  PrivateKey EC_PRIVATE_KEY = PrivateKey.fromNaturalBytes(
+    UnsignedByteArray.of(BaseEncoding.base16().decode(EC_PRIVATE_KEY_HEX)), KeyType.SECP256K1
+  );
 
   // Both generated from Passphrase.of("hello")
   Address ED_ADDRESS = Address.of("rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466");

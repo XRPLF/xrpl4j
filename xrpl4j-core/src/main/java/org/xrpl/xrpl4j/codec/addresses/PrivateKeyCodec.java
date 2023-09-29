@@ -28,69 +28,69 @@ import java.util.Objects;
 /**
  * A Codec for encoding/decoding various seed primitives.
  */
-public class PublicKeyCodec {
+public class PrivateKeyCodec {
 
-  private static final PublicKeyCodec INSTANCE = new PublicKeyCodec();
+  private static final PrivateKeyCodec INSTANCE = new PrivateKeyCodec();
 
-  public static PublicKeyCodec getInstance() {
+  public static PrivateKeyCodec getInstance() {
     return INSTANCE;
   }
 
   /**
-   * Encode an XRPL Node Public Key to a Base58Check encoded {@link String}.
+   * Encode an XRPL Node Private Key to a Base58Check encoded {@link String}.
    *
-   * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
+   * @param privateKeyBytes An {@link UnsignedByteArray} containing the public key to be encoded.
    *
-   * @return The Base58 representation of publicKey.
+   * @return The Base58 representation of privateKeyBytes.
    */
-  public String encodeNodePublicKey(final UnsignedByteArray publicKey) {
-    Objects.requireNonNull(publicKey);
+  public String encodeNodePrivateKey(final UnsignedByteArray privateKeyBytes) {
+    Objects.requireNonNull(privateKeyBytes);
 
     return AddressBase58.encode(
-      publicKey,
-      Lists.newArrayList(Version.NODE_PUBLIC),
-      UnsignedInteger.valueOf(33)
+      privateKeyBytes,
+      Lists.newArrayList(Version.NODE_PRIVATE),
+      UnsignedInteger.valueOf(32)
     );
   }
 
   /**
-   * Decode a Base58Check encoded XRPL Node Public Key.
+   * Decode a Base58Check encoded XRPL Node Private Key.
    *
-   * @param publicKey The Base58 encoded public key to be decoded.
+   * @param privateKeyBytes The Base58 encoded public key to be decoded.
    *
    * @return An {@link UnsignedByteArray} containing the decoded public key.
    *
    * @see "https://xrpl.org/base58-encodings.html"
    */
-  public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
-    Objects.requireNonNull(publicKey);
+  public UnsignedByteArray decodeNodePrivateKey(final String privateKeyBytes) {
+    Objects.requireNonNull(privateKeyBytes);
 
     return AddressBase58.decode(
-      publicKey,
-      Lists.newArrayList(Version.NODE_PUBLIC),
-      UnsignedInteger.valueOf(33)
+      privateKeyBytes,
+      Lists.newArrayList(Version.NODE_PRIVATE),
+      UnsignedInteger.valueOf(32)
     ).bytes();
   }
 
   /**
-   * Encode an XRPL Account Public Key to a Base58Check encoded {@link String}.
+   * Encode an XRPL Account Private Key to a Base58Check encoded {@link String}.
    *
-   * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
+   * @param privateKeyBytes An {@link UnsignedByteArray} containing the public key to be encoded.
    *
-   * @return The Base58 representation of publicKey.
+   * @return The Base58 representation of privateKeyBytes.
    */
-  public String encodeAccountPublicKey(final UnsignedByteArray publicKey) {
-    Objects.requireNonNull(publicKey);
+  public String encodeAccountPrivateKey(final UnsignedByteArray privateKeyBytes) {
+    Objects.requireNonNull(privateKeyBytes);
 
     return AddressBase58.encode(
-      publicKey,
-      Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY),
-      UnsignedInteger.valueOf(33)
+      privateKeyBytes,
+      Lists.newArrayList(Version.ACCOUNT_SECRET_KEY),
+      UnsignedInteger.valueOf(32)
     );
   }
 
   /**
-   * Decode a Base58Check encoded XRPL Account Public Key.
+   * Decode a Base58Check encoded XRPL Account Private Key.
    *
    * @param publicKey The Base58 encoded public key to be decoded.
    *
@@ -98,13 +98,13 @@ public class PublicKeyCodec {
    *
    * @see "https://xrpl.org/base58-encodings.html"
    */
-  public UnsignedByteArray decodeAccountPublicKey(final String publicKey) {
+  public UnsignedByteArray decodeAccountPrivateKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
 
     return AddressBase58.decode(
       publicKey,
-      Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY),
-      UnsignedInteger.valueOf(33)
+      Lists.newArrayList(Version.ACCOUNT_SECRET_KEY),
+      UnsignedInteger.valueOf(32)
     ).bytes();
   }
 

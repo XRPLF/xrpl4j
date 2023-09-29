@@ -21,10 +21,12 @@ package org.xrpl.xrpl4j.crypto.keys;
  */
 
 import com.google.common.base.Preconditions;
+import com.google.common.hash.HashCode;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
+import java.security.Key;
 import java.util.Objects;
 
 /**
@@ -60,26 +62,64 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   public static final UnsignedByte SECP256K1_PREFIX = UnsignedByte.of(0x00);
 
   private final UnsignedByteArray value;
+
+  private final KeyType keyType;
+
   private boolean destroyed;
 
+  private static final String CONSTRUCTOR_ERROR_MESSAGE =
+    "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural bytes of a" +
+      " private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys.";
+
   /**
-   * Instantiates a new instance of {@link PrivateKey} using the supplied bytes.
+   * Instantiates a new instance of {@link PrivateKey} using the supplied 32 bytes and specified key type.
+   *
+   * @param value   An {@link UnsignedByteArray} containing a private key's natural bytes (i.e., 32 bytes).
+   * @param keyType A {@link KeyType} for this private key.
+   *
+   * @return A {@link PrivateKey}.
+   */
+  public static PrivateKey fromNaturalBytes(final UnsignedByteArray value, final KeyType keyType) {
+    return new PrivateKey(value, keyType); // <-- rely on constructor for all validation and error messaging.
+  }
+
+  /**
+   * Instantiates a new instance of {@link PrivateKey} using the supplied bytes by inspecting the first byte out of 33
+   * to see which {@link KeyType} to assign.
+   *
+   * @param value An {@link UnsignedByteArray} containing a private key's natural bytes (i.e., 32 bytes).
+   *
+   * @return A {@link PrivateKey}.
+   */
+  public static PrivateKey fromPrefixedBytes(final UnsignedByteArray value) {
+    Objects.requireNonNull(value);
+
+    Preconditions.checkArgument(value.length() == 33, CONSTRUCTOR_ERROR_MESSAGE);
+
+    final UnsignedByte prefixByte = value.get(0); // <-- relies upon the above length check.
+    if (ED2559_PREFIX.equals(prefixByte)) {
+      return new PrivateKey(value.slice(1, 33), KeyType.ED25519);
+    } else if (SECP256K1_PREFIX.equals(prefixByte)) {
+      return new PrivateKey(value.slice(1, 33), KeyType.SECP256K1);
+    } else {
+      throw new IllegalArgumentException(CONSTRUCTOR_ERROR_MESSAGE);
+    }
+  }
+
+  /**
+   * Instantiates a new instance of {@link PrivateKey} using the supplied bytes by inspecting the first byte out of 33
+   * to see which {@link KeyType} to assign.
    *
    * @param value An {@link UnsignedByteArray} containing this key's binary value.
    *
    * @return A {@link PrivateKey}.
+   *
+   * @deprecated This method will be removed in a future version. Prefer {@link #fromPrefixedBytes(UnsignedByteArray)}
+   *   instead.
    */
+  @Deprecated
   public static PrivateKey of(final UnsignedByteArray value) {
-    Objects.requireNonNull(value);
-
-    final UnsignedByte firstByte = value.get(0);
-    Preconditions.checkArgument(
-      value.length() == 33 && (ED2559_PREFIX.equals(firstByte) || SECP256K1_PREFIX.equals(firstByte)),
-      "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural " +
-        "bytes of a private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys."
-    );
-
-    return new PrivateKey(value);
+    return fromPrefixedBytes(value);
   }
 
   /**
@@ -87,16 +127,49 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    *
    * @param value An {@link UnsignedByteArray} for this key's value.
    */
-  private PrivateKey(final UnsignedByteArray value) {
+  private PrivateKey(final UnsignedByteArray value, final KeyType keyType) {
     this.value = Objects.requireNonNull(value);
+    this.keyType = Objects.requireNonNull(keyType);
+
+    // We assert this precondition here instead of allowing 33 bytes because this is a private constructor that can be
+    // fully tested via unit test, so this precondition should never be violated, and if it is, then it's a bug in
+    // xrpl4j.
+    Preconditions.checkArgument(
+      value.length() == 32,
+      "Byte values passed to this constructor must be 32 bytes long, with no prefix."
+    );
   }
 
   /**
    * Accessor for the key value, in binary (Note: will be 33 bytes).
    *
    * @return An instance of {@link UnsignedByteArray}.
+   *
+   * @deprecated Prefer {@link #valueWithPrefixedBytes()} or {@link #valueWithNaturalBytes()} instead.
    */
+  @Deprecated
   public UnsignedByteArray value() {
+    // This is technically wrong (because `value()` had an ambiguous meaning prior to fixing #486), but this mirrors
+    // what's in v3 prior to fixing #486, and will be fixed in v4 once the deprecated `.value()` is removed.
+    if (value.length() == 0) {
+      return UnsignedByteArray.empty();
+    } else {
+
+      return this.valueWithPrefixedBytes();
+    }
+  }
+
+  /**
+   * Accessor for the byte value in {@link #value()} but in a more natural form (i.e., the size of the returned value
+   * will be 32 bytes). Natural ed25519 or secp256k1 private keys will ordinarily contain only 32 bytes. However, in
+   * XRPL, private keys are represented with a single-byte prefix (i.e., `0xED` for ed25519 and `0x00` for secp256k1
+   * keys).
+   *
+   * @return An instance of {@link UnsignedByteArray}.
+   */
+  public UnsignedByteArray valueWithNaturalBytes() {
+    // Note: `toByteArray()` will perform a copy, which is what we want in order to enforce immutability of this
+    // PrivateKey (because Java 8 doesn't support immutable byte arrays).
     return UnsignedByteArray.of(value.toByteArray());
   }
 
@@ -108,11 +181,21 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    *
    * @return An instance of {@link UnsignedByteArray}.
    */
-  public UnsignedByteArray valueWithoutPrefix() {
+  public UnsignedByteArray valueWithPrefixedBytes() {
     // Note: value.slice() will take a view of the existing UBA, then `.toByteArray()` will perform a copy, which is
     // what we want in order to enforce immutability of this PrivateKey (because Java 8 doesn't support immutable byte
     // arrays).
-    return UnsignedByteArray.of(value.slice(1, 33).toByteArray());
+    switch (keyType) {
+      case ED25519: {
+        return UnsignedByteArray.of(ED2559_PREFIX).append(value);
+      }
+      case SECP256K1: {
+        return UnsignedByteArray.of(SECP256K1_PREFIX).append(value);
+      }
+      default: {
+        throw new IllegalStateException(String.format("Invalid keyType=%s", keyType));
+      }
+    }
   }
 
   /**
@@ -121,14 +204,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    * @return A {@link KeyType}.
    */
   public final KeyType keyType() {
-    final UnsignedByte prefixByte = this.value().get(0);
-    if (ED2559_PREFIX.equals(prefixByte)) {
-      return KeyType.ED25519;
-    } else if (SECP256K1_PREFIX.equals(prefixByte)) {
-      return KeyType.SECP256K1;
-    } else {
-      throw new IllegalStateException("Prefix may only be 0xED or 0x00");
-    }
+    return this.keyType;
   }
 
   @Override
@@ -147,25 +223,25 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof PrivateKey)) {
+    if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-
     PrivateKey that = (PrivateKey) obj;
-
-    return value.equals(that.value);
+    return Objects.equals(value, that.value) && keyType == that.keyType;
   }
 
   @Override
   public int hashCode() {
-    return value.hashCode();
+    return Objects.hash(value, keyType);
   }
 
   @Override
   public String toString() {
-    return "PrivateKey{" +
-      "value=[redacted]" +
-      ", destroyed=" + destroyed +
-      '}';
+    return String.format("PrivateKey{" +
+      "value=[redacted]," +
+      "keyType=%s," +
+      "destroyed=%s" +
+      "}", this.keyType(), this.isDestroyed()
+    );
   }
 }

@@ -239,6 +239,36 @@ class PrivateKeyTest {
     assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
   }
 
+  @Test
+  void testEdFromPrefixedBytesWith0Bytes() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.empty())
+    );
+    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+  }
+
+  @Test
+  void testEcFromPrefixedBytesWithLess0Bytes() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.empty())
+    );
+    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+  }
+
+  @Test
+  void testFromPrefixedBytesWithInvalidPrefix() {
+    final byte[] invalidPrefixBytes = BaseEncoding.base16().decode(
+      "20000000000000000000000000000000" +
+        "00000000000000000000000000000000");
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(invalidPrefixBytes))
+    );
+    assertThat(exception.getMessage()).isEqualTo(
+      "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural bytes of a " +
+        "private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys."
+    );
+  }
+
   ///////////////////
   // Constants
   ///////////////////

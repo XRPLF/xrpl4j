@@ -142,17 +142,17 @@ public class CurrencyAmountTest {
   }
 
   /**
-   * Verify that xrpl4j is unaffected by the bug discovered in rippled. When rippled APIs are provided 3-character
-   * currency codes, those APIs will upper-case the supplied currency values. Only after that normalization will those
-   * APIs then convert to binary. For example, if a request is made to rippled to sign a payload with a currency code of
-   * `UsD`, the API layer will normalize this value to `USD` (i.e., all-caps) before signing. However, tooling (like
-   * xrpl4j) is not forced to do this kind of upper-case normalization. So, it's possible for any tooling (like xrpl4j)
-   * to unintentionally allow issuers to issue mixed-case, 3-character currency codes. However, there's debate in the GH
-   * issue linked below about whether this is a bug in tooling (like xrpl4j), or if this is actually a bug in the
-   * rippled code base (in which case, the normalization functionality should be removed from rippled, and tooling
-   * should do nothing). Contributors to the issue assert the latter -- i.e., it's a bug in rippled and should be
-   * removed from rippled. There is also PR to this effect. Thus, this test ensures that xrpl4j tooling does the correct
-   * thing (i.e., no currency code normalization, either in our Transaction layer or in the binary codec).
+   * Verify that xrpl4j is unaffected by the bug reported in rippled issue #4112. When rippled APIs are provided
+   * 3-character currency codes, those APIs will upper-case the supplied currency values. Only after that normalization
+   * will those APIs then convert to binary. For example, if a request is made to rippled to sign a payload with a
+   * currency code of `UsD`, the API layer will normalize this value to `USD` (i.e., all-caps) before signing. However,
+   * tooling (like xrpl4j) is not forced to do this kind of upper-case normalization. So, it's possible for any tooling
+   * (like xrpl4j) to unintentionally allow issuers to issue mixed-case, 3-character currency codes. However, there's
+   * debate in the GH issue linked below about whether this is a bug in tooling (like xrpl4j), or if this is actually a
+   * bug in the rippled code base (in which case, the normalization functionality should be removed from rippled, and
+   * tooling should do nothing). Contributors to the issue assert the latter -- i.e., it's a bug in rippled and should
+   * be removed from rippled. There is also PR to this effect. Thus, this test ensures that xrpl4j tooling does the
+   * correct thing (i.e., no currency code normalization, either in our Transaction layer or in the binary codec).
    *
    * @see "https://github.com/XRPLF/rippled/issues/4112"
    */
@@ -185,7 +185,7 @@ public class CurrencyAmountTest {
   private void currencyTestHelper(String currencyCode) throws JsonProcessingException {
     if (currencyCode.length() > 3) {
       currencyCode = ByteUtils.padded(
-        BaseEncoding.base16().encode("$GHOST".getBytes(StandardCharsets.US_ASCII)),
+        BaseEncoding.base16().encode(currencyCode.getBytes(StandardCharsets.US_ASCII)),
         40 // <-- Non-standard currency codes must be 40 bytes.
       );
     }

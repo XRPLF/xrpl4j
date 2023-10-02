@@ -67,10 +67,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
 
   private boolean destroyed;
 
-  private static final String CONSTRUCTOR_ERROR_MESSAGE =
-    "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural bytes of a" +
-      " private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys.";
-
   /**
    * Instantiates a new instance of {@link PrivateKey} using the supplied 32 bytes and specified key type.
    *
@@ -94,7 +90,10 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   public static PrivateKey fromPrefixedBytes(final UnsignedByteArray value) {
     Objects.requireNonNull(value);
 
-    Preconditions.checkArgument(value.length() == 33, CONSTRUCTOR_ERROR_MESSAGE);
+    Preconditions.checkArgument(value.length() == 33, String.format(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but %s were supplied.",
+      value.length()
+    ));
 
     final UnsignedByte prefixByte = value.get(0); // <-- relies upon the above length check.
     if (ED2559_PREFIX.equals(prefixByte)) {
@@ -102,7 +101,11 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     } else if (SECP256K1_PREFIX.equals(prefixByte)) {
       return new PrivateKey(value.slice(1, 33), KeyType.SECP256K1);
     } else {
-      throw new IllegalArgumentException(CONSTRUCTOR_ERROR_MESSAGE);
+      throw new IllegalArgumentException(String.format(
+        "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural bytes of a" +
+          " private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys. " +
+          "Length was %s bytes.", value.length())
+      );
     }
   }
 

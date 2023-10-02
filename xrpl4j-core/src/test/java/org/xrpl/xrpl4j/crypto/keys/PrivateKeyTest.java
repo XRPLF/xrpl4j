@@ -39,11 +39,6 @@ import org.xrpl.xrpl4j.crypto.TestConstants;
 @SuppressWarnings("deprecation")
 class PrivateKeyTest {
 
-  private static final String EXPECTED_ERROR =
-    "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural" +
-      " bytes of a private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private " +
-      "keys.";
-
   ////////////////////
   // of
   ////////////////////
@@ -63,7 +58,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.of(thirtyTwoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 32 were supplied."
+    );
   }
 
   @Test
@@ -76,7 +73,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.of(thirtyTwoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 32 were supplied."
+    );
   }
 
   @Test
@@ -84,16 +83,19 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.of(UnsignedByteArray.empty())
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage())
+      .isEqualTo("The `fromPrefixedBytes` function requires input length of 33 bytes, but 0 were supplied.");
   }
 
   @Test
   void testEdOfWithLessThan32Bytes() {
     UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0xED, (byte) 0xFF});
     IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class, () -> PrivateKey.of(UnsignedByteArray.empty())
+      IllegalArgumentException.class, () -> PrivateKey.of(twoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 2 were supplied."
+    );
   }
 
   @Test
@@ -102,7 +104,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.of(twoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 2 were supplied."
+    );
   }
 
   ///////////////////
@@ -204,7 +208,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(thirtyTwoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 32 were supplied."
+    );
   }
 
   @Test
@@ -218,7 +224,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(thirtyTwoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 32 were supplied."
+    );
   }
 
   @Test
@@ -227,7 +235,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(twoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 2 were supplied."
+    );
   }
 
   @Test
@@ -236,7 +246,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(twoBytes)
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 2 were supplied."
+    );
   }
 
   @Test
@@ -244,7 +256,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.empty())
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 0 were supplied."
+    );
   }
 
   @Test
@@ -252,7 +266,9 @@ class PrivateKeyTest {
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.empty())
     );
-    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+    assertThat(exception.getMessage()).isEqualTo(
+      "The `fromPrefixedBytes` function requires input length of 33 bytes, but 0 were supplied."
+    );
   }
 
   @Test
@@ -265,7 +281,8 @@ class PrivateKeyTest {
     );
     assertThat(exception.getMessage()).isEqualTo(
       "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural bytes of a " +
-        "private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys."
+        "private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys. " +
+        "Length was 33 bytes."
     );
   }
 

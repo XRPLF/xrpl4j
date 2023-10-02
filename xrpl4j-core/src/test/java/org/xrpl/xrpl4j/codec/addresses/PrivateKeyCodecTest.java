@@ -23,7 +23,7 @@ class PrivateKeyCodecTest extends AbstractCodecTest {
     testEncodeDecode(
       prefixedNodePrivateKey -> privateKeyCodec.encodeNodePrivateKey(prefixedNodePrivateKey),
       prefixedNodePrivateKey -> privateKeyCodec.decodeNodePrivateKey(prefixedNodePrivateKey),
-      TestConstants.ED_PRIVATE_KEY.valueWithNaturalBytes(),
+      TestConstants.getEdPrivateKey().valueWithNaturalBytes(),
       "paZHnTCvwm4GsxZ7qiA2nUBKE2DLnCoDWYqyocVZfVEZx3kvA4u"
     );
   }
@@ -48,7 +48,7 @@ class PrivateKeyCodecTest extends AbstractCodecTest {
     testEncodeDecode(
       prefixedAccountPrivateKey -> privateKeyCodec.encodeAccountPrivateKey(prefixedAccountPrivateKey),
       prefixedAccountPrivateKey -> privateKeyCodec.decodeAccountPrivateKey(prefixedAccountPrivateKey),
-      TestConstants.ED_PRIVATE_KEY.valueWithNaturalBytes(),
+      TestConstants.getEdPrivateKey().valueWithNaturalBytes(),
       "pwSmRvZy1c55Kb5tCpBZyq41noSmPn7ynFzUHu1MaoGLAP1VfrT"
     );
   }
@@ -73,7 +73,7 @@ class PrivateKeyCodecTest extends AbstractCodecTest {
     testEncodeDecode(
       prefixedNodePrivate -> privateKeyCodec.encodeNodePrivateKey(prefixedNodePrivate),
       prefixedNodePrivate -> privateKeyCodec.decodeNodePrivateKey(prefixedNodePrivate),
-      TestConstants.EC_PRIVATE_KEY.valueWithNaturalBytes(),
+      TestConstants.getEcPrivateKey().valueWithNaturalBytes(),
       "pa1UHARsPMiuDqrJLwFhzcJokoHgyiuaxgPhUGYhkG5ArCfG2vt"
     );
   }
@@ -83,7 +83,7 @@ class PrivateKeyCodecTest extends AbstractCodecTest {
     testEncodeDecode(
       prefixedAccountPrivateKey -> privateKeyCodec.encodeAccountPrivateKey(prefixedAccountPrivateKey),
       prefixedNodePrivateKey -> privateKeyCodec.decodeAccountPrivateKey(prefixedNodePrivateKey),
-      TestConstants.EC_PRIVATE_KEY.valueWithNaturalBytes(),
+      TestConstants.getEcPrivateKey().valueWithNaturalBytes(),
       "pwkgeQKfaDDMV7w59LhhuEWMbpX3HG2iXxXGgZuij2j6z1RYY7n"
     );
   }

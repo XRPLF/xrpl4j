@@ -119,6 +119,10 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   @Deprecated
   public static PrivateKey of(final UnsignedByteArray value) {
+    // Assumption: Any developer using this method before this method was deprecated (i.e., v3.3) will likely have
+    // expected `value` to have been prefixed. That said, this assumption is technically invalid because it's ambiguous
+    // what any particular developer would have meant (see #486) because prior to #486, there was no byte-length check
+    // on these bytes.
     return fromPrefixedBytes(value);
   }
 
@@ -128,16 +132,17 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    * @param value An {@link UnsignedByteArray} for this key's value.
    */
   private PrivateKey(final UnsignedByteArray value, final KeyType keyType) {
-    this.value = Objects.requireNonNull(value);
+    Objects.requireNonNull(value); // <-- Check not-null first.
     this.keyType = Objects.requireNonNull(keyType);
 
-    // We assert this precondition here instead of allowing 33 bytes because this is a private constructor that can be
-    // fully tested via unit test, so this precondition should never be violated, and if it is, then it's a bug in
-    // xrpl4j.
+    // We assert this precondition here because this is a private constructor that can be fully tested via unit test,
+    // so this precondition should never be violated, and if it is, then it's a bug in xrpl4j.
     Preconditions.checkArgument(
       value.length() == 32,
       "Byte values passed to this constructor must be 32 bytes long, with no prefix."
     );
+
+    this.value = UnsignedByteArray.of(value.toByteArray()); // <- Always copy to ensure immutability
   }
 
   /**
@@ -149,12 +154,12 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   @Deprecated
   public UnsignedByteArray value() {
-    // This is technically wrong (because `value()` had an ambiguous meaning prior to fixing #486), but this mirrors
-    // what's in v3 prior to fixing #486, and will be fixed in v4 once the deprecated `.value()` is removed.
+    // Check for empty value, which can occur if this PrivateKey is "destroyed" but still in memory.
     if (value.length() == 0) {
       return UnsignedByteArray.empty();
     } else {
-
+      // This is technically wrong (because `value()` had an ambiguous meaning prior to fixing #486), but this mirrors
+      // what's in v3 prior to fixing #486, and will be fixed in v4 once the deprecated `.value()` is removed.
       return this.valueWithPrefixedBytes();
     }
   }
@@ -168,9 +173,14 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    * @return An instance of {@link UnsignedByteArray}.
    */
   public UnsignedByteArray valueWithNaturalBytes() {
-    // Note: `toByteArray()` will perform a copy, which is what we want in order to enforce immutability of this
-    // PrivateKey (because Java 8 doesn't support immutable byte arrays).
-    return UnsignedByteArray.of(value.toByteArray());
+    // Check for empty value, which can occur if this PrivateKey is "destroyed" but still in memory.
+    if (value.length() == 0) {
+      return UnsignedByteArray.empty();
+    } else {
+      // Note: `toByteArray()` will perform a copy, which is what we want in order to enforce immutability of this
+      // PrivateKey (because Java 8 doesn't support immutable byte arrays).
+      return UnsignedByteArray.of(value.slice(0, 32).toByteArray());
+    }
   }
 
   /**
@@ -182,18 +192,23 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    * @return An instance of {@link UnsignedByteArray}.
    */
   public UnsignedByteArray valueWithPrefixedBytes() {
-    // Note: value.slice() will take a view of the existing UBA, then `.toByteArray()` will perform a copy, which is
-    // what we want in order to enforce immutability of this PrivateKey (because Java 8 doesn't support immutable byte
-    // arrays).
-    switch (keyType) {
-      case ED25519: {
-        return UnsignedByteArray.of(ED2559_PREFIX).append(value);
-      }
-      case SECP256K1: {
-        return UnsignedByteArray.of(SECP256K1_PREFIX).append(value);
-      }
-      default: {
-        throw new IllegalStateException(String.format("Invalid keyType=%s", keyType));
+    // Check for empty value, which can occur if this PrivateKey is "destroyed" but still in memory.
+    if (value.length() == 0) {
+      return UnsignedByteArray.empty();
+    } else {
+      // Note: value.slice() will take a view of the existing UBA, then `.toByteArray()` will perform a copy, which is
+      // what we want in order to enforce immutability of this PrivateKey (because Java 8 doesn't support immutable byte
+      // arrays).
+      switch (keyType) {
+        case ED25519: {
+          return UnsignedByteArray.of(ED2559_PREFIX).append(value);
+        }
+        case SECP256K1: {
+          return UnsignedByteArray.of(SECP256K1_PREFIX).append(value);
+        }
+        default: {
+          throw new IllegalStateException(String.format("Invalid keyType=%s", keyType));
+        }
       }
     }
   }

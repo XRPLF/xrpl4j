@@ -22,10 +22,8 @@ package org.xrpl.xrpl4j.crypto.keys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PRIVATE_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PRIVATE_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PRIVATE_KEY_WITH_PREFIX_HEX;
-import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY_WITH_PREFIX_HEX;
 
@@ -33,6 +31,7 @@ import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.TestConstants;
 
 /**
  * Unit tests for {@link PrivateKey}.
@@ -58,7 +57,7 @@ class PrivateKeyTest {
   void testEcOf() {
     UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
       BaseEncoding.base16().decode(EC_PRIVATE_KEY_WITH_PREFIX_HEX));
-    assertThat(PrivateKey.of(thirtyThreeBytes)).isEqualTo(EC_PRIVATE_KEY);
+    assertThat(PrivateKey.of(thirtyThreeBytes)).isEqualTo(TestConstants.getEcPrivateKey());
 
     UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
     IllegalArgumentException exception = assertThrows(
@@ -71,7 +70,7 @@ class PrivateKeyTest {
   void testEdOf() {
     UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
       BaseEncoding.base16().decode(ED_PRIVATE_KEY_WITH_PREFIX_HEX));
-    assertThat(PrivateKey.of(thirtyThreeBytes)).isEqualTo(ED_PRIVATE_KEY);
+    assertThat(PrivateKey.of(thirtyThreeBytes)).isEqualTo(TestConstants.getEdPrivateKey());
 
     UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
     IllegalArgumentException exception = assertThrows(
@@ -81,10 +80,18 @@ class PrivateKeyTest {
   }
 
   @Test
+  void testOfWithLessWithEmpty() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.of(UnsignedByteArray.empty())
+    );
+    assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
+  }
+
+  @Test
   void testEdOfWithLessThan32Bytes() {
     UnsignedByteArray twoBytes = UnsignedByteArray.of(new byte[] {(byte) 0xED, (byte) 0xFF});
     IllegalArgumentException exception = assertThrows(
-      IllegalArgumentException.class, () -> PrivateKey.of(twoBytes)
+      IllegalArgumentException.class, () -> PrivateKey.of(UnsignedByteArray.empty())
     );
     assertThat(exception.getMessage()).isEqualTo(EXPECTED_ERROR);
   }
@@ -109,9 +116,28 @@ class PrivateKeyTest {
   }
 
   @Test
+  void testEcFromNaturalBytesWithEmpty() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(UnsignedByteArray.empty(), KeyType.SECP256K1)
+    );
+    assertThat(exception.getMessage())
+      .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
+  }
+
+  @Test
+  void testEdFromNaturalBytesWithEmpty() {
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(UnsignedByteArray.empty(), KeyType.ED25519)
+    );
+    assertThat(exception.getMessage())
+      .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
+  }
+
+  @Test
   void testEcFromNaturalBytes() {
     UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
-      BaseEncoding.base16().decode(EC_PRIVATE_KEY_WITH_PREFIX_HEX));
+      BaseEncoding.base16().decode(EC_PRIVATE_KEY_WITH_PREFIX_HEX)
+    );
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromNaturalBytes(thirtyThreeBytes, KeyType.SECP256K1)
     );
@@ -119,7 +145,9 @@ class PrivateKeyTest {
       .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
 
     UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
-    assertThat(PrivateKey.fromNaturalBytes(thirtyTwoBytes, KeyType.SECP256K1)).isEqualTo(EC_PRIVATE_KEY);
+    assertThat(PrivateKey.fromNaturalBytes(thirtyTwoBytes, KeyType.SECP256K1)).isEqualTo(
+      TestConstants.getEcPrivateKey()
+    );
   }
 
   @Test
@@ -133,7 +161,7 @@ class PrivateKeyTest {
       .isEqualTo("Byte values passed to this constructor must be 32 bytes long, with no prefix.");
 
     UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
-    assertThat(PrivateKey.fromNaturalBytes(thirtyTwoBytes, KeyType.ED25519)).isEqualTo(ED_PRIVATE_KEY);
+    assertThat(PrivateKey.fromNaturalBytes(thirtyTwoBytes, KeyType.ED25519)).isEqualTo(TestConstants.getEdPrivateKey());
   }
 
   @Test
@@ -170,7 +198,7 @@ class PrivateKeyTest {
     UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
       BaseEncoding.base16().decode(EC_PRIVATE_KEY_WITH_PREFIX_HEX)
     );
-    assertThat(PrivateKey.fromPrefixedBytes(thirtyThreeBytes)).isEqualTo(EC_PRIVATE_KEY);
+    assertThat(PrivateKey.fromPrefixedBytes(thirtyThreeBytes)).isEqualTo(TestConstants.getEcPrivateKey());
 
     UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
     IllegalArgumentException exception = assertThrows(
@@ -184,7 +212,7 @@ class PrivateKeyTest {
     UnsignedByteArray thirtyThreeBytes = UnsignedByteArray.of(
       BaseEncoding.base16().decode(ED_PRIVATE_KEY_WITH_PREFIX_HEX)
     );
-    assertThat(PrivateKey.fromPrefixedBytes(thirtyThreeBytes)).isEqualTo(ED_PRIVATE_KEY);
+    assertThat(PrivateKey.fromPrefixedBytes(thirtyThreeBytes)).isEqualTo(TestConstants.getEdPrivateKey());
 
     UnsignedByteArray thirtyTwoBytes = UnsignedByteArray.of(thirtyThreeBytes.slice(1, 33).toByteArray());
     IllegalArgumentException exception = assertThrows(
@@ -230,16 +258,18 @@ class PrivateKeyTest {
 
   @Test
   void valueForEd25519() {
-    assertThat(ED_PRIVATE_KEY.value().hexValue()).isEqualTo(ED_PRIVATE_KEY_WITH_PREFIX_HEX);
-    assertThat(ED_PRIVATE_KEY.valueWithPrefixedBytes().hexValue()).isEqualTo(ED_PRIVATE_KEY_WITH_PREFIX_HEX);
-    assertThat(ED_PRIVATE_KEY.valueWithNaturalBytes().hexValue()).isEqualTo(ED_PRIVATE_KEY_HEX);
+    assertThat(TestConstants.getEdPrivateKey().value().hexValue()).isEqualTo(ED_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getEdPrivateKey().valueWithPrefixedBytes().hexValue()).isEqualTo(
+      ED_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getEdPrivateKey().valueWithNaturalBytes().hexValue()).isEqualTo(ED_PRIVATE_KEY_HEX);
   }
 
   @Test
   void valueForSecp256k1() {
-    assertThat(EC_PRIVATE_KEY.value().hexValue()).isEqualTo(EC_PRIVATE_KEY_WITH_PREFIX_HEX);
-    assertThat(EC_PRIVATE_KEY.valueWithPrefixedBytes().hexValue()).isEqualTo(EC_PRIVATE_KEY_WITH_PREFIX_HEX);
-    assertThat(EC_PRIVATE_KEY.valueWithNaturalBytes().hexValue()).isEqualTo(EC_PRIVATE_KEY_HEX);
+    assertThat(TestConstants.getEcPrivateKey().value().hexValue()).isEqualTo(EC_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getEcPrivateKey().valueWithPrefixedBytes().hexValue()).isEqualTo(
+      EC_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getEcPrivateKey().valueWithNaturalBytes().hexValue()).isEqualTo(EC_PRIVATE_KEY_HEX);
   }
 
   ///////////////////
@@ -248,17 +278,17 @@ class PrivateKeyTest {
 
   @Test
   void keyTypeEd25519() {
-    assertThat(ED_PRIVATE_KEY.keyType()).isEqualTo(KeyType.ED25519);
+    assertThat(TestConstants.getEdPrivateKey().keyType()).isEqualTo(KeyType.ED25519);
   }
 
   @Test
   void keyTypeSecp256k1() {
-    assertThat(EC_PRIVATE_KEY.keyType()).isEqualTo(KeyType.SECP256K1);
+    assertThat(TestConstants.getEcPrivateKey().keyType()).isEqualTo(KeyType.SECP256K1);
   }
 
   @Test
   void destroy() {
-    PrivateKey privateKey = PrivateKey.of(ED_PRIVATE_KEY.value());
+    PrivateKey privateKey = PrivateKey.of(TestConstants.getEdPrivateKey().value());
     assertThat(privateKey.isDestroyed()).isFalse();
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
@@ -266,8 +296,11 @@ class PrivateKeyTest {
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
     assertThat(privateKey.value().hexValue()).isEqualTo("");
+    assertThat(privateKey.valueWithNaturalBytes()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.valueWithPrefixedBytes()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty());
 
-    privateKey = PrivateKey.of(EC_PRIVATE_KEY.value());
+    privateKey = PrivateKey.of(TestConstants.getEcPrivateKey().value());
     assertThat(privateKey.isDestroyed()).isFalse();
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
@@ -275,33 +308,36 @@ class PrivateKeyTest {
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
     assertThat(privateKey.value().hexValue()).isEqualTo("");
+    assertThat(privateKey.valueWithNaturalBytes()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.valueWithPrefixedBytes()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty());
   }
 
   @Test
   void equals() {
-    assertThat(ED_PRIVATE_KEY).isEqualTo(ED_PRIVATE_KEY);
-    assertThat(ED_PRIVATE_KEY).isEqualTo(PrivateKey.of(ED_PRIVATE_KEY.value()));
-    assertThat(ED_PRIVATE_KEY).isNotEqualTo(EC_PRIVATE_KEY);
-    assertThat(EC_PRIVATE_KEY).isNotEqualTo(new Object());
+    assertThat(TestConstants.getEdPrivateKey()).isEqualTo(TestConstants.getEdPrivateKey());
+    assertThat(TestConstants.getEdPrivateKey()).isEqualTo(PrivateKey.of(TestConstants.getEdPrivateKey().value()));
+    assertThat(TestConstants.getEdPrivateKey()).isNotEqualTo(TestConstants.getEcPrivateKey());
+    assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(new Object());
 
-    assertThat(EC_PRIVATE_KEY).isEqualTo(EC_PRIVATE_KEY);
-    assertThat(EC_PRIVATE_KEY).isEqualTo(PrivateKey.of(EC_PRIVATE_KEY.value()));
-    assertThat(EC_PRIVATE_KEY).isNotEqualTo(ED_PRIVATE_KEY);
-    assertThat(EC_PRIVATE_KEY).isNotEqualTo(new Object());
+    assertThat(TestConstants.getEcPrivateKey()).isEqualTo(TestConstants.getEcPrivateKey());
+    assertThat(TestConstants.getEcPrivateKey()).isEqualTo(PrivateKey.of(TestConstants.getEcPrivateKey().value()));
+    assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(TestConstants.getEdPrivateKey());
+    assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(new Object());
   }
 
   @Test
   void testHashcode() {
-    assertThat(ED_PRIVATE_KEY.hashCode()).isEqualTo(ED_PRIVATE_KEY.hashCode());
-    assertThat(ED_PRIVATE_KEY.hashCode()).isNotEqualTo(EC_PRIVATE_KEY.hashCode());
+    assertThat(TestConstants.getEdPrivateKey().hashCode()).isEqualTo(TestConstants.getEdPrivateKey().hashCode());
+    assertThat(TestConstants.getEdPrivateKey().hashCode()).isNotEqualTo(TestConstants.getEcPrivateKey().hashCode());
 
-    assertThat(EC_PRIVATE_KEY.hashCode()).isEqualTo(EC_PRIVATE_KEY.hashCode());
-    assertThat(EC_PRIVATE_KEY.hashCode()).isNotEqualTo(ED_PRIVATE_KEY.hashCode());
+    assertThat(TestConstants.getEcPrivateKey().hashCode()).isEqualTo(TestConstants.getEcPrivateKey().hashCode());
+    assertThat(TestConstants.getEcPrivateKey().hashCode()).isNotEqualTo(TestConstants.getEdPrivateKey().hashCode());
   }
 
   @Test
   void testToString() {
-    assertThat(ED_PRIVATE_KEY.toString()).isEqualTo(
+    assertThat(TestConstants.getEdPrivateKey().toString()).isEqualTo(
       "PrivateKey{" +
         "value=[redacted]," +
         "keyType=ED25519," +
@@ -309,7 +345,7 @@ class PrivateKeyTest {
         "}"
     );
 
-    assertThat(EC_PRIVATE_KEY.toString()).isEqualTo(
+    assertThat(TestConstants.getEcPrivateKey().toString()).isEqualTo(
       "PrivateKey{" +
         "value=[redacted]," +
         "keyType=SECP256K1," +

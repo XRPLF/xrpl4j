@@ -39,11 +39,13 @@ public interface TestConstants {
 
   String ED_PRIVATE_KEY_HEX = "B224AFDCCEC7AA4E245E35452585D4FBBE37519BCA3929578BFC5BBD4640E163";
   String ED_PRIVATE_KEY_WITH_PREFIX_HEX = "ED" + ED_PRIVATE_KEY_HEX;
-  String ED_PRIVATE_KEY_B58 = "UzQrAxCr8oeMRzzm6FFVJao8xkFc3g2ZQBs5GNBWRhZg";
-  PrivateKey ED_PRIVATE_KEY = PrivateKey.fromNaturalBytes(
-    UnsignedByteArray.of(BaseEncoding.base16().decode(ED_PRIVATE_KEY_HEX)),
-    KeyType.ED25519
-  );
+
+  static PrivateKey getEdPrivateKey() {
+    return PrivateKey.fromNaturalBytes(
+      UnsignedByteArray.of(BaseEncoding.base16().decode(ED_PRIVATE_KEY_HEX)),
+      KeyType.ED25519
+    );
+  }
 
   // Secp256k1 Public Key
   String EC_PUBLIC_KEY_HEX = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
@@ -52,11 +54,12 @@ public interface TestConstants {
 
   String EC_PRIVATE_KEY_HEX = "DAD3C2B4BF921398932C889DE5335F89D90249355FC6FFB73F1256D2957F9F17";
   String EC_PRIVATE_KEY_WITH_PREFIX_HEX = "00" + EC_PRIVATE_KEY_HEX;
-  String EC_PRIVATE_KEY_WITH_PREFIX_B58 = "rEjDwJp2Pm3NrUtcf8v17jWopvqPJxyi5RTrDfhcJcWSi";
 
-  PrivateKey EC_PRIVATE_KEY = PrivateKey.fromNaturalBytes(
-    UnsignedByteArray.of(BaseEncoding.base16().decode(EC_PRIVATE_KEY_HEX)), KeyType.SECP256K1
-  );
+  static PrivateKey getEcPrivateKey() {
+    return PrivateKey.fromNaturalBytes(
+      UnsignedByteArray.of(BaseEncoding.base16().decode(EC_PRIVATE_KEY_HEX)), KeyType.SECP256K1
+    );
+  }
 
   // Both generated from Passphrase.of("hello")
   Address ED_ADDRESS = Address.of("rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466");

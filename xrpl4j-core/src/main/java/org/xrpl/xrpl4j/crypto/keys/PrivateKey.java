@@ -207,6 +207,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
           return UnsignedByteArray.of(SECP256K1_PREFIX).append(value);
         }
         default: {
+          // This should never happen; if it does, there's a bug in this implementation
           throw new IllegalStateException(String.format("Invalid keyType=%s", keyType));
         }
       }

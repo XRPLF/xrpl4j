@@ -258,8 +258,8 @@ class PrivateKeyTest {
   @Test
   void testFromPrefixedBytesWithInvalidPrefix() {
     final byte[] invalidPrefixBytes = BaseEncoding.base16().decode(
-      "20000000000000000000000000000000" +
-        "00000000000000000000000000000000");
+      "20000000000000000000000000000000" + // <-- 16 bytes
+        "0000000000000000000000000000000000"); // <-- 17 bytes
     IllegalArgumentException exception = assertThrows(
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(invalidPrefixBytes))
     );
@@ -345,6 +345,9 @@ class PrivateKeyTest {
 
   @Test
   void equals() {
+    PrivateKey privateKey = TestConstants.getEdPrivateKey();
+    assertThat(privateKey).isEqualTo(privateKey); // <-- To cover reference equality in .equals
+
     assertThat(TestConstants.getEdPrivateKey()).isEqualTo(TestConstants.getEdPrivateKey());
     assertThat(TestConstants.getEdPrivateKey()).isEqualTo(PrivateKey.of(TestConstants.getEdPrivateKey().value()));
     assertThat(TestConstants.getEdPrivateKey()).isNotEqualTo(TestConstants.getEcPrivateKey());

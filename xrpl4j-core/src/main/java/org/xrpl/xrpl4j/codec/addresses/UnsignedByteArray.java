@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.base.Preconditions;
+
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,6 +76,50 @@ public class UnsignedByteArray implements Destroyable {
     unsignedBytes.add(first);
     Collections.addAll(unsignedBytes, rest);
     return new UnsignedByteArray(unsignedBytes);
+  }
+
+  /**
+   * Creates an {@link UnsignedByteArray} from a {@link BigInteger} with a minimum number of prefix padding bytes.
+   * <p>
+   * This function primarily exists to ensure that transforming a secp256k1 private key (as a {@link BigInteger}) to an
+   * instance of {@link UnsignedByteArray} is always done in a consistent fashion yielding the desired number of bytes.
+   * For example, secp256k1 private keys are 32-bytes long naturally. However, when transformed to a byte array via
+   * `BigInteger.toByteArray()`, the result will occasionally be unexpectedly (though correctly) truncated. For example,
+   * sometimes the returned array will have 33 bytes, one of which is a zero-byte prefix pad that is meant to ensure the
+   * underlying number is not represented as a negative number. Other times, the array will have fewer than 32 bytes,
+   * for example 31 or even 30, if the byte array has redundant leading zero bytes. Thus, this function can be used to
+   * normalize the bytes array with a desired number of 0-byte padding to ensure that the resulting byte array is always
+   * the desired {@code minFinalByteLength} (e.g., in this library, secp256k1 private keys should always be comprised of
+   * a 32-byte natural private key with a one-byte `0x00` prefix pad). For more details, see
+   * <a href="https://github.com/XRPLF/xrpl4j/issues/486">Github issue #486</a>.
+   * </p>
+   *
+   * @param amount             A {@link BigInteger} to convert into an {@link UnsignedByteArray}.
+   * @param minFinalByteLength The minimum length, in bytes, that the final result must be. If the final byte length is
+   *                           less than this number, the resulting array will be prefix padded to increase its length
+   *                           to this number.
+   *
+   * @return An {@link UnsignedByteArray}with a length of at least {@code minFinalByteLength} (possibly via zero-byte
+   *   prefix padding).
+   */
+  public static UnsignedByteArray from(final BigInteger amount, int minFinalByteLength) {
+    Objects.requireNonNull(amount);
+    Preconditions.checkArgument(amount.signum() >= 0, "amount must not be negative");
+    Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
+
+    final byte[] provisionalBytes = amount.toByteArray(); // <-- No padding if provisionalBytes.length > finalByteLength
+
+    // Ensure that `numPadBytes` will never be negative; `minFinalByteLength` will always be at least
+    // provisionalBytes.length
+    if (provisionalBytes.length > minFinalByteLength) {
+      minFinalByteLength = provisionalBytes.length; // Extend the final numBytes to be at `minFinalByteLength`
+    }
+    // E.g., finalByteLength=33; provisionalBytes=31
+    int numPadBytes = minFinalByteLength - provisionalBytes.length;
+
+    byte[] resultBytes = new byte[minFinalByteLength];
+    System.arraycopy(provisionalBytes, 0, resultBytes, numPadBytes, provisionalBytes.length);
+    return UnsignedByteArray.of(resultBytes);
   }
 
   /**

@@ -20,7 +20,10 @@ package org.xrpl.xrpl4j.crypto.keys;
  * =========================LICENSE_END==================================
  */
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
@@ -314,18 +317,13 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         Ed25519PublicKeyParameters publicKey = privateKey.generatePublicKey();
 
-        // Both ed25519 and secp256k1 _private_ keys are always 32 bytes long. However, in this library, both types of
-        // private key are prefixed with one byte (0xED for ed25519 and 0x00 for secp256k1) because this is what other
-        // libraries do, and also so that any particular set of 32 private key bytes can be properly disambiguated.
-        // See https://github.com/XRPLF/xrpl4j/issues/486 for more details.
-        final UnsignedByte prefix = UnsignedByte.of(0xED);
-        final UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(prefix)
-          .append(UnsignedByteArray.of(privateKey.getEncoded()));
-        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(prefix)
+        // ed25519 public keys in XRPL have a one-byte prefix of `0xED` so that all public keys have 33 bytes (this is
+        // to conform with secp256k1 public keys, which are 33 bytes long and have a `0x00` byte prefix.
+        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PrivateKey.ED2559_PREFIX)
           .append(UnsignedByteArray.of(publicKey.getEncoded()));
 
         return KeyPair.builder()
-          .privateKey(PrivateKey.of(prefixedPrivateKey))
+          .privateKey(PrivateKey.fromNaturalBytes(UnsignedByteArray.of(privateKey.getEncoded()), KeyType.ED25519))
           .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
           .build();
       }
@@ -388,26 +386,17 @@ public interface Seed extends javax.security.auth.Destroyable {
         // private key needs to be a BigInteger so we can derive the public key by multiplying G by the private key.
         final BigInteger privateKeyInt = derivePrivateKey(seedBytes, accountNumber);
         final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
+        // TODO: FIXME with padding in derivePublicKey
+        Preconditions.checkArgument(publicKeyInt.length() == 33, "Length was " + publicKeyInt.length());
 
-        // All natural secp256k1 private keys always have only 32-bytes. However, when computing `publicKeyInt`,
-        // the `BigInteger.toByteArray()` will return the byte array in two's-complement form and occasionally prepend
-        // a zero byte to ensure the number is not negative. When this doesn't happen, we want to normalize the
-        // private key bytes to always have this one-byte prefix because this library prefixes all private keys with a
-        // prefix to identify the key type (`0xED` for ed25519 and `0x00` for secp256k1).
-        // See https://github.com/XRPLF/xrpl4j/issues/486 for more details.
-        final UnsignedByteArray prefixedPrivateKey;
-        if (privateKeyInt.toByteArray().length == 32) {
-          prefixedPrivateKey = UnsignedByteArray.of(PrivateKey.SECP256K1_PREFIX)
-            .append(UnsignedByteArray.of(privateKeyInt.toByteArray()));
-        } else {
-          prefixedPrivateKey = UnsignedByteArray.of(privateKeyInt.toByteArray());
-        }
-
-        // No need to prefix secp256k1 public keys because they are always 33 bytes.
+        // No need to prefix secp256k1 public keys because these are always 33 bytes.
         final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(publicKeyInt.toByteArray());
 
         return KeyPair.builder()
-          .privateKey(PrivateKey.of(prefixedPrivateKey))
+          .privateKey(
+            // `UnsignedByteArray.from` centralized all padding logic.
+            PrivateKey.fromPrefixedBytes(UnsignedByteArray.from(privateKeyInt, 33))
+          )
           .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
           .build();
       }
@@ -421,6 +410,8 @@ public interface Seed extends javax.security.auth.Destroyable {
        */
       private static UnsignedByteArray derivePublicKey(final BigInteger privateKey) {
         Objects.requireNonNull(privateKey);
+
+        // TODO: Pad the result here to 32/33, just in case.
         return UnsignedByteArray.of(EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true));
       }
 

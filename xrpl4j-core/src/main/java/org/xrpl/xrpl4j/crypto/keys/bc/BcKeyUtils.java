@@ -84,10 +84,11 @@ public final class BcKeyUtils {
     Objects.requireNonNull(ed25519PrivateKeyParameters);
 
     // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of sekp256k1 keys.
-    // Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
-    UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(PrivateKey.ED2559_PREFIX)
-      .append(UnsignedByteArray.of(ed25519PrivateKeyParameters.getEncoded()));
-    return PrivateKey.of(prefixedPrivateKey);
+    // Bouncy Castle only deals with 32 byte keys, but in XRPL these often include a one byte prefix (i.e., `0xED`) to
+    // indicate this is an ed25519 private key. However, this is taken care of by the `PrivateKey.fromNaturalBytes`.
+    return PrivateKey.fromNaturalBytes(
+      UnsignedByteArray.of(ed25519PrivateKeyParameters.getEncoded()), KeyType.ED25519
+    );
   }
 
   /**
@@ -98,11 +99,9 @@ public final class BcKeyUtils {
    * @return A {@link PrivateKey}.
    */
   public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
-    // Convert the HEX representation of the BigInteger into bytes.
-    byte[] privateKeyBytes = BaseEncoding.base16().decode(ecPrivateKeyParameters.getD().toString(16).toUpperCase());
-    return PrivateKey.of(
-      UnsignedByteArray.of(PrivateKey.SECP256K1_PREFIX) // <-- Per #486, always append 0x00 to secp256k1 private keys
-        .append(UnsignedByteArray.of(privateKeyBytes))
+    return PrivateKey.fromPrefixedBytes(
+      // Call `UnsignedByteArray.from` to properly prefix-pad the BigInteger's bytes.
+      UnsignedByteArray.from(ecPrivateKeyParameters.getD(), 33)
     );
   }
 
@@ -205,7 +204,8 @@ public final class BcKeyUtils {
   public static Ed25519PrivateKeyParameters toEd25519PrivateKeyParams(PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
     Preconditions.checkArgument(privateKey.keyType() == ED25519);
-    return new Ed25519PrivateKeyParameters(privateKey.value().toByteArray(), 1); // <-- Strip leading prefix byte.
+    // Use offset 0 with no prefix
+    return new Ed25519PrivateKeyParameters(privateKey.valueWithNaturalBytes().toByteArray(), 0);
   }
 
   /**
@@ -236,7 +236,7 @@ public final class BcKeyUtils {
     Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "KeyType must be SECP256K1");
 
     final BigInteger privateKeyInt = new BigInteger(
-      BaseEncoding.base16().encode(privateKey.value().toByteArray()), 16
+      BaseEncoding.base16().encode(privateKey.valueWithNaturalBytes().toByteArray()), 16
     );
     return new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
   }

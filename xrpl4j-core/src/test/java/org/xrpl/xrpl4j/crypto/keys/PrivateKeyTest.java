@@ -305,17 +305,21 @@ class PrivateKeyTest {
 
   @Test
   void valueForEd25519() {
-    assertThat(TestConstants.getEdPrivateKey().value().hexValue()).isEqualTo(ED_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getEdPrivateKey().value().hexValue()) // <-- Overtly test .value()
+      .isEqualTo(ED_PRIVATE_KEY_WITH_PREFIX_HEX);
     assertThat(TestConstants.getEdPrivateKey().valueWithPrefixedBytes().hexValue()).isEqualTo(
-      ED_PRIVATE_KEY_WITH_PREFIX_HEX);
+      ED_PRIVATE_KEY_WITH_PREFIX_HEX
+    );
     assertThat(TestConstants.getEdPrivateKey().valueWithNaturalBytes().hexValue()).isEqualTo(ED_PRIVATE_KEY_HEX);
   }
 
   @Test
   void valueForSecp256k1() {
-    assertThat(TestConstants.getEcPrivateKey().value().hexValue()).isEqualTo(EC_PRIVATE_KEY_WITH_PREFIX_HEX);
+    assertThat(TestConstants.getEcPrivateKey().value().hexValue()) // <-- Overtly test .value()
+      .isEqualTo(EC_PRIVATE_KEY_WITH_PREFIX_HEX);
     assertThat(TestConstants.getEcPrivateKey().valueWithPrefixedBytes().hexValue()).isEqualTo(
-      EC_PRIVATE_KEY_WITH_PREFIX_HEX);
+      EC_PRIVATE_KEY_WITH_PREFIX_HEX
+    );
     assertThat(TestConstants.getEcPrivateKey().valueWithNaturalBytes().hexValue()).isEqualTo(EC_PRIVATE_KEY_HEX);
   }
 
@@ -335,29 +339,36 @@ class PrivateKeyTest {
 
   @Test
   void destroy() {
-    PrivateKey privateKey = PrivateKey.of(TestConstants.getEdPrivateKey().value());
+    PrivateKey privateKey = PrivateKey.fromPrefixedBytes(TestConstants.getEdPrivateKey().valueWithPrefixedBytes());
     assertThat(privateKey.isDestroyed()).isFalse();
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
-    assertThat(privateKey.value().hexValue()).isEqualTo("");
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue()).isEqualTo("");
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
-    assertThat(privateKey.value().hexValue()).isEqualTo("");
-    assertThat(privateKey.valueWithNaturalBytes()).isEqualTo(UnsignedByteArray.empty());
-    assertThat(privateKey.valueWithPrefixedBytes()).isEqualTo(UnsignedByteArray.empty());
-    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.value().hexValue()).isEqualTo(""); // <-- Overtly test .value()
+    assertThat(privateKey.valueWithNaturalBytes().hexValue()).isEqualTo("");
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue()).isEqualTo("");
 
-    privateKey = PrivateKey.of(TestConstants.getEcPrivateKey().value());
+    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty()); // <-- Overtly test .value()
+    assertThat(privateKey.valueWithNaturalBytes()).isEqualTo(UnsignedByteArray.empty());
+    assertThat(privateKey.valueWithPrefixedBytes()).isEqualTo(UnsignedByteArray.empty());
+
+    privateKey = PrivateKey.fromPrefixedBytes(TestConstants.getEcPrivateKey().valueWithPrefixedBytes());
     assertThat(privateKey.isDestroyed()).isFalse();
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
-    assertThat(privateKey.value().hexValue()).isEqualTo("");
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue()).isEqualTo("");
     privateKey.destroy();
     assertThat(privateKey.isDestroyed()).isTrue();
-    assertThat(privateKey.value().hexValue()).isEqualTo("");
+
+    assertThat(privateKey.value().hexValue()).isEqualTo(""); // <-- Overtly test .value()
+    assertThat(privateKey.valueWithNaturalBytes().hexValue()).isEqualTo("");
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue()).isEqualTo("");
+
+    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty()); // <-- Overtly test .value()
     assertThat(privateKey.valueWithNaturalBytes()).isEqualTo(UnsignedByteArray.empty());
     assertThat(privateKey.valueWithPrefixedBytes()).isEqualTo(UnsignedByteArray.empty());
-    assertThat(privateKey.value()).isEqualTo(UnsignedByteArray.empty());
   }
 
   @Test
@@ -366,12 +377,23 @@ class PrivateKeyTest {
     assertThat(privateKey).isEqualTo(privateKey); // <-- To cover reference equality in .equals
 
     assertThat(TestConstants.getEdPrivateKey()).isEqualTo(TestConstants.getEdPrivateKey());
-    assertThat(TestConstants.getEdPrivateKey()).isEqualTo(PrivateKey.of(TestConstants.getEdPrivateKey().value()));
+    assertThat(TestConstants.getEdPrivateKey()).isEqualTo(
+      PrivateKey.fromPrefixedBytes(TestConstants.getEdPrivateKey().valueWithPrefixedBytes())
+    );
+    assertThat(TestConstants.getEdPrivateKey()).isEqualTo(
+      PrivateKey.fromNaturalBytes(TestConstants.getEdPrivateKey().valueWithNaturalBytes(), KeyType.ED25519)
+    );
     assertThat(TestConstants.getEdPrivateKey()).isNotEqualTo(TestConstants.getEcPrivateKey());
     assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(new Object());
 
     assertThat(TestConstants.getEcPrivateKey()).isEqualTo(TestConstants.getEcPrivateKey());
-    assertThat(TestConstants.getEcPrivateKey()).isEqualTo(PrivateKey.of(TestConstants.getEcPrivateKey().value()));
+    assertThat(TestConstants.getEcPrivateKey()).isEqualTo(
+      PrivateKey.fromPrefixedBytes(TestConstants.getEcPrivateKey().valueWithPrefixedBytes())
+    );
+    assertThat(TestConstants.getEcPrivateKey()).isEqualTo(
+      PrivateKey.fromNaturalBytes(TestConstants.getEcPrivateKey().valueWithNaturalBytes(), KeyType.SECP256K1)
+    );
+
     assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(TestConstants.getEdPrivateKey());
     assertThat(TestConstants.getEcPrivateKey()).isNotEqualTo(new Object());
   }

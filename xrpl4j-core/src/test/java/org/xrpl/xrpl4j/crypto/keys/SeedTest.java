@@ -171,7 +171,7 @@ public class SeedTest {
       Entropy.of(BaseEncoding.base16().decode("B7E99C6BB9786494238D2BA84EABE854"))
     );
     final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
-    assertThat(privateKey.value().hexValue())
+    assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
       .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
     assertThat(privateKey.valueWithPrefixedBytes().hexValue())
       .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
@@ -194,7 +194,7 @@ public class SeedTest {
       Entropy.of(BaseEncoding.base16().decode("358C75D5AD5E2FF5E19256978F18F0B9"))
     );
     final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
-    assertThat(privateKey.value().hexValue())
+    assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
       .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
     assertThat(privateKey.valueWithPrefixedBytes().hexValue())
       .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
@@ -239,7 +239,7 @@ public class SeedTest {
     KeyPair keyPair = Seed.DefaultSeed.Ed25519KeyPairService.deriveKeyPair(seed);
 
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey(PrivateKey.of(UnsignedByteArray.of(
+      .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(
         BaseEncoding.base16().decode("ED2F1185B6F5525D7A7D2A22C1D8BAEEBEEFFE597C9010AF916EBB9447BECC5BE6"
         ))))
       .publicKey(
@@ -271,7 +271,7 @@ public class SeedTest {
     Seed seed = Seed.fromBase58EncodedSecret(Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
     KeyPair keyPair = Seed.DefaultSeed.Secp256k1KeyPairService.deriveKeyPair(seed);
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey(PrivateKey.of(UnsignedByteArray.of(
+      .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(
         BaseEncoding.base16().decode("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23"
         ))))
       .publicKey(
@@ -288,8 +288,9 @@ public class SeedTest {
     Seed seed = Seed.ed25519SeedFromEntropy(entropy);
     assertThat(seed.deriveKeyPair().publicKey()).isEqualTo(
       PublicKey.fromBase16EncodedPublicKey("ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63"));
-    assertThat(seed.deriveKeyPair().privateKey()).isEqualTo(
-      PrivateKey.of(UnsignedByteArray.fromHex("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")));
+    assertThat(seed.deriveKeyPair().privateKey()).isEqualTo(PrivateKey.fromPrefixedBytes(
+      UnsignedByteArray.fromHex("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")
+    ));
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
       "rLUEXYuLiQptky37CqLcm9USQpPiz5rkpD");
   }
@@ -299,10 +300,13 @@ public class SeedTest {
     Entropy entropy = Entropy.of(BaseEncoding.base16().decode("CC4E55BC556DD561CBE990E3D4EF7069"));
     Seed seed = Seed.secp256k1SeedFromEntropy(entropy);
     assertThat(seed.deriveKeyPair().publicKey().base16Value()).isEqualTo(
-      "02FD0E8479CE8182ABD35157BB0FA17A469AF27DCB12B5DDED697C61809116A33B");
-    assertThat(seed.deriveKeyPair().privateKey().value().hexValue()).isEqualTo(
-      "0027690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438");
+      "02FD0E8479CE8182ABD35157BB0FA17A469AF27DCB12B5DDED697C61809116A33B"
+    );
+    assertThat(seed.deriveKeyPair().privateKey().valueWithPrefixedBytes().hexValue()).isEqualTo(
+      "0027690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438"
+    );
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
-      "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2");
+      "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2"
+    );
   }
 }

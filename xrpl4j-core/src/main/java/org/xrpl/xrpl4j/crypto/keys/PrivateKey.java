@@ -21,12 +21,10 @@ package org.xrpl.xrpl4j.crypto.keys;
  */
 
 import com.google.common.base.Preconditions;
-import com.google.common.hash.HashCode;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 
-import java.security.Key;
 import java.util.Objects;
 
 /**
@@ -182,7 +180,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     } else {
       // Note: `toByteArray()` will perform a copy, which is what we want in order to enforce immutability of this
       // PrivateKey (because Java 8 doesn't support immutable byte arrays).
-      return UnsignedByteArray.of(value.slice(0, 32).toByteArray());
+      return UnsignedByteArray.of(value.toByteArray());
     }
   }
 
@@ -204,10 +202,12 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
       // arrays).
       switch (keyType) {
         case ED25519: {
-          return UnsignedByteArray.of(ED2559_PREFIX).append(value);
+          return UnsignedByteArray.of(ED2559_PREFIX)
+            .append(this.valueWithNaturalBytes()); // <-- Forward to this function to guarantee copied bytes
         }
         case SECP256K1: {
-          return UnsignedByteArray.of(SECP256K1_PREFIX).append(value);
+          return UnsignedByteArray.of(SECP256K1_PREFIX)
+            .append(this.valueWithNaturalBytes()); // <-- Forward to this function to guarantee copied bytes
         }
         default: {
           // This should never happen; if it does, there's a bug in this implementation

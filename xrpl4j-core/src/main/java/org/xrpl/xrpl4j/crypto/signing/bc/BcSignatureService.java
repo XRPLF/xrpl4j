@@ -97,7 +97,7 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
     final byte[] privateKeyBytes = new byte[32];
     try {
       // Remove ED prefix byte (if it's there)
-      System.arraycopy(privateKey.value().toByteArray(), 1, privateKeyBytes, 0, 32);
+      System.arraycopy(privateKey.valueWithNaturalBytes().toByteArray(), 0, privateKeyBytes, 0, 32);
       Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
         privateKeyBytes, 0
       );
@@ -127,8 +127,7 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
     Objects.requireNonNull(transactionBytes);
 
     final UnsignedByteArray messageHash = HashingUtils.sha512Half(transactionBytes);
-
-    final BigInteger privateKeyInt = new BigInteger(privateKey.value().toByteArray());
+    final BigInteger privateKeyInt = new BigInteger(privateKey.valueWithPrefixedBytes().toByteArray());
     final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
 
     ecdsaSigner.init(true, parameters);

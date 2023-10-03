@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
 import javax.security.auth.Destroyable;
 
 /**
@@ -107,18 +108,31 @@ public class UnsignedByteArray implements Destroyable {
     Preconditions.checkArgument(amount.signum() >= 0, "amount must not be negative");
     Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
 
-    final byte[] provisionalBytes = amount.toByteArray(); // <-- No padding if provisionalBytes.length > finalByteLength
+    // Return the `amount` as an UnsignedByteArray, but with the proper zero-byte prefix padding.
+    return withPrefixPadding(amount.toByteArray(), minFinalByteLength);
+  }
 
-    // Ensure that `numPadBytes` will never be negative; `minFinalByteLength` will always be at least
-    // provisionalBytes.length
-    if (provisionalBytes.length > minFinalByteLength) {
-      minFinalByteLength = provisionalBytes.length; // Extend the final numBytes to be at `minFinalByteLength`
+  /**
+   * Creates a new {@link UnsignedByteArray} from a byte array by prefixing enough zero-pad bytes to ensure that the
+   * result has at least {@code minFinalByteLength} bytes.
+   *
+   * @param bytes              A byte array to convert into an {@link UnsignedByteArray}.
+   * @param minFinalByteLength The minimum length, in bytes, that the final result must be prefix-padded to. If this
+   *                           number is greater-than {@code amount#length}, then this value will be reduced to
+   *                           {@code amount#length}.
+   *
+   * @return A zero-byte prefix-padded {@link UnsignedByteArray} with a length of at least {@code minFinalByteLength}.
+   */
+  private static UnsignedByteArray withPrefixPadding(final byte[] bytes, int minFinalByteLength) {
+    Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
+
+    if (bytes.length > minFinalByteLength) { // <-- Increase `minFinalByteLength` to be at least bytes.length
+      minFinalByteLength = bytes.length;
     }
-    // E.g., finalByteLength=33; provisionalBytes=31
-    int numPadBytes = minFinalByteLength - provisionalBytes.length;
 
+    final int numPadBytes = minFinalByteLength - bytes.length; // <-- numPadBytes will never be negative
     byte[] resultBytes = new byte[minFinalByteLength];
-    System.arraycopy(provisionalBytes, 0, resultBytes, numPadBytes, provisionalBytes.length);
+    System.arraycopy(bytes, 0, resultBytes, numPadBytes, bytes.length);
     return UnsignedByteArray.of(resultBytes);
   }
 
@@ -161,6 +175,23 @@ public class UnsignedByteArray implements Destroyable {
       unsignedBytes.add(i, UnsignedByte.of(0));
     }
     return unsignedBytes;
+  }
+
+  /**
+   * Construct a new {@link UnsignedByteArray} that contains this byte array's bytes, but with enough `0x00` prefix
+   * padding bytes such that the final length of the returned value is {@code minFinalByteLength}.
+   *
+   * @param minFinalByteLength The minimum length, in bytes, that the final result must be zero-byte prefix-padded to.
+   *                           If this number is greater-than {@code #length}, then this value will be reduced to
+   *                           {@code #length}.
+   *
+   * @return A copy of this {@link UnsignedByteArray} that has been zero-byte prefix-padded such that its final length
+   *   is at least {@code minFinalByteLength}.
+   */
+  public UnsignedByteArray withPrefixPadding(int minFinalByteLength) {
+    Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
+
+    return withPrefixPadding(this.toByteArray(), minFinalByteLength);
   }
 
   /**

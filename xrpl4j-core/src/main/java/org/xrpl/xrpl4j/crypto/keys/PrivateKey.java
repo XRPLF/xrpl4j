@@ -120,10 +120,11 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    */
   @Deprecated
   public static PrivateKey of(final UnsignedByteArray value) {
-    // Assumption: Any developer using this method before this method was deprecated (i.e., v3.3) will likely have
-    // expected `value` to have been prefixed. That said, this assumption is technically invalid because it's ambiguous
-    // what any particular developer would have meant (see #486) because prior to #486, there was no byte-length check
-    // on these bytes.
+    // Assumption: Any developer using this method before it was deprecated (i.e., v3.2.1 and before) will likely have
+    // expected `value` to have been prefixed. However, until this method was "fixed" in v3.2.2, a developer might have
+    // used this method incorrectly because (1) this method had no length check and (2) the computation of the KeyType
+    // naively inspected the first byte, and defaulted to secp256k1 if the first byte was `0xED`. For example, in that
+    // world, padding in a one-byte value of `0x00` would have produced a `PrivateKey` object with invalid byte data.
     return fromPrefixedBytes(value);
   }
 

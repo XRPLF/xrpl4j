@@ -101,8 +101,8 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     } else {
       throw new IllegalArgumentException(String.format(
         "PrivateKey construction requires 32 natural bytes plug a one-byte prefix value of either `0xED` for ed25519 " +
-          "private keys or `0x00` for secp256k1 private keys. Input byte length was %s bytes with a prefixByte value of " +
-          "`0x%s`", value.length(), prefixByte.hexValue())
+          "private keys or `0x00` for secp256k1 private keys. Input byte length was %s bytes with a prefixByte value " +
+          "of `0x%s`", value.length(), prefixByte.hexValue())
       );
     }
   }

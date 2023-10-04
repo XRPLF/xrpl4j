@@ -144,6 +144,8 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
       "Byte values passed to this constructor must be 32 bytes long, with no prefix."
     );
 
+    // Note: `UnsignedByteArray#toByteArray` will perform a copy, which is what we want in order to enforce
+    // immutability of this PrivateKey (because Java 8 doesn't support immutable byte arrays).
     this.value = UnsignedByteArray.of(value.toByteArray()); // <- Always copy to ensure immutability
   }
 
@@ -198,9 +200,6 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     if (value.length() == 0) {
       return UnsignedByteArray.empty();
     } else {
-      // Note: value.slice() will take a view of the existing UBA, then `.toByteArray()` will perform a copy, which is
-      // what we want in order to enforce immutability of this PrivateKey (because Java 8 doesn't support immutable byte
-      // arrays).
       switch (keyType) {
         case ED25519: {
           return UnsignedByteArray.of(ED2559_PREFIX)

@@ -86,7 +86,7 @@ public class UnsignedByteArray implements Destroyable {
    * <p>This function primarily exists to ensure that transformation of secp256k1 private keys from one form to another
    * (e.g., from {@link BigInteger} to a byte array) are done in a consistent manner, always yielding the desired number
    * of bytes. For example, secp256k1 private keys are 32-bytes long naturally. However, when transformed to a byte
-   * array via `BigInteger.toByteArray()`, the result will not always have the same number of leading zero bytes that
+   * array via {@link BigInteger#toByteArray()}, the result will not always have the same number of leading zero bytes that
    * one might expect. Sometimes the returned array will have 33 bytes, one of which is a zero-byte prefix pad that is
    * meant to ensure the underlying number is not represented as a negative number. Other times, the array will have
    * fewer than 32 bytes, for example 31 or even 30, if the byte array has redundant leading zero bytes.

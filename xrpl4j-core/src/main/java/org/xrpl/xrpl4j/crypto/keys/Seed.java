@@ -313,6 +313,7 @@ public interface Seed extends javax.security.auth.Destroyable {
         }
 
         UnsignedByteArray rawPrivateKey = HashingUtils.sha512Half(decoded.bytes());
+        // `rawPrivateKey` will be 32 bytes due to hashing, so no padding required.
         Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(rawPrivateKey.toByteArray(), 0);
 
         Ed25519PublicKeyParameters publicKey = privateKey.generatePublicKey();
@@ -385,18 +386,16 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         // private key needs to be a BigInteger so we can derive the public key by multiplying G by the private key.
         final BigInteger privateKeyInt = derivePrivateKey(seedBytes, accountNumber);
+
+        // This derivePublicKey will pad to 33 bytes.
         final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
-        // TODO: FIXME with padding in derivePublicKey
         Preconditions.checkArgument(publicKeyInt.length() == 33, "Length was " + publicKeyInt.length());
 
         // No need to prefix secp256k1 public keys because these are always 33 bytes.
         final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(publicKeyInt.toByteArray());
 
         return KeyPair.builder()
-          .privateKey(
-            // `UnsignedByteArray.from` centralized all padding logic.
-            PrivateKey.fromPrefixedBytes(UnsignedByteArray.from(privateKeyInt, 33))
-          )
+          .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.from(privateKeyInt, 33)))
           .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
           .build();
       }
@@ -411,8 +410,8 @@ public interface Seed extends javax.security.auth.Destroyable {
       private static UnsignedByteArray derivePublicKey(final BigInteger privateKey) {
         Objects.requireNonNull(privateKey);
 
-        // TODO: Pad the result here to 32/33, just in case.
-        return UnsignedByteArray.of(EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true));
+        return UnsignedByteArray.of(EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true))
+          .withPrefixPadding(33); // <-- Ensure that the returned UBA has 33 bytes.
       }
 
       /**

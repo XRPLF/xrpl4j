@@ -80,16 +80,16 @@ public class UnsignedByteArray implements Destroyable {
 
   /**
    * Creates an {@link UnsignedByteArray} from the bytes of a supplied {@link BigInteger}. If the length of the
-   * resulting array is not at least {@code minFinalByteLength}, then the result prefix padded with `0x00` bytes until
-   * the final array length is {@code minFinalByteLength}.
+   * resulting array is not at least {@code minFinalByteLength}, then the result is prefix padded with `0x00` bytes
+   * until the final array length is {@code minFinalByteLength}.
    *
    * <p>This function primarily exists to ensure that transformation of secp256k1 private keys from one form to another
    * (e.g., from {@link BigInteger} to a byte array) are done in a consistent manner, always yielding the desired number
    * of bytes. For example, secp256k1 private keys are 32-bytes long naturally. However, when transformed to a byte
    * array via `BigInteger.toByteArray()`, the result will not always have the same number of leading zero bytes that
-   * one might expect. For example, sometimes the returned array will have 33 bytes, one of which is a zero-byte prefix
-   * pad that is meant to ensure the underlying number is not represented as a negative number. Other times, the array
-   * will have fewer than 32 bytes, for example 31 or even 30, if the byte array has redundant leading zero bytes.
+   * one might expect. Sometimes the returned array will have 33 bytes, one of which is a zero-byte prefix pad that is
+   * meant to ensure the underlying number is not represented as a negative number. Other times, the array will have
+   * fewer than 32 bytes, for example 31 or even 30, if the byte array has redundant leading zero bytes.
    *
    * <p>Thus, this function can be used to normalize a byte array with a desired number of 0-byte padding to ensure
    * that the resulting byte array is always the desired {@code minFinalByteLength} (e.g., in this library, secp256k1
@@ -100,8 +100,7 @@ public class UnsignedByteArray implements Destroyable {
    *                           less than this number, the resulting array will be prefix padded to increase its length
    *                           to this number.
    *
-   * @return An {@link UnsignedByteArray}with a length of at least {@code minFinalByteLength} (possibly via zero-byte
-   *   prefix padding).
+   * @return An {@link UnsignedByteArray} with a length of at least {@code minFinalByteLength}.
    *
    * @see "https://github.com/XRPLF/xrpl4j/issues/486"
    */

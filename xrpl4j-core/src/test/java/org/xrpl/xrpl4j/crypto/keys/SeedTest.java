@@ -31,6 +31,8 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
 
+import java.math.BigInteger;
+
 import javax.security.auth.DestroyFailedException;
 
 /**
@@ -200,6 +202,60 @@ public class SeedTest {
       .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
     assertThat(privateKey.valueWithNaturalBytes().hexValue())
       .isEqualTo("FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+  }
+
+  /**
+   * Verify that BigInteger construction behaves the same no matter how many zero-byte prefix pads are used.
+   */
+  @Test
+  void verifyBigIntegerConstructionForSecp256k1PrivateKeys() {
+    // This seed will generate a secp256k1 SecretKey D value of
+    // 53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236 (which is only 31 bytes long).
+    Seed ecSeedFor31BytePrivateKey = Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("shZrqKhyGi5Gyvrv5AJawNMuR2WaN")
+    );
+
+    assertThat(BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236").length)
+      .isEqualTo(31);
+    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithNaturalBytes().toByteArray().length)
+      .isEqualTo(32);
+    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithPrefixedBytes().toByteArray().length)
+      .isEqualTo(33);
+
+    // Assert that all BigIntegers are equivalent (i.e., that the constructor ignores zero-byte pads)
+    BigInteger shortBigInt = new BigInteger(
+      BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236")
+    );
+    BigInteger unPaddedBitInt = new BigInteger(
+      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithNaturalBytes().toByteArray()
+    );
+    BigInteger paddedBitInt = new BigInteger(
+      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithPrefixedBytes().toByteArray()
+    );
+
+    assertThat(shortBigInt).isEqualTo(unPaddedBitInt);
+    assertThat(shortBigInt).isEqualTo(paddedBitInt);
+    assertThat(paddedBitInt).isEqualTo(unPaddedBitInt);
+  }
+
+  /**
+   * Verify {@link Seed#deriveKeyPair()} using a seed that would have produced a 31 byte private key (prior to fixing
+   * #486) generates expected results.
+   *
+   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
+   */
+  @Test
+  void deriveKeyPairFor31ByteEcSeed() {
+    Seed ecSeedFor31BytePrivateKey = Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("shZrqKhyGi5Gyvrv5AJawNMuR2WaN")
+    );
+    final PrivateKey privateKey = ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey();
+    assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
+      .isEqualTo("000053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
+    assertThat(privateKey.valueWithPrefixedBytes().hexValue())
+      .isEqualTo("000053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
+    assertThat(privateKey.valueWithNaturalBytes().hexValue())
+      .isEqualTo("0053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
   }
 
   @Test

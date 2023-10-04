@@ -20,8 +20,6 @@ package org.xrpl.xrpl4j.crypto.keys;
  * =========================LICENSE_END==================================
  */
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -37,7 +35,6 @@ import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
@@ -384,20 +381,17 @@ public interface Seed extends javax.security.auth.Destroyable {
       private static KeyPair deriveKeyPair(final UnsignedByteArray seedBytes, final int accountNumber) {
         Objects.requireNonNull(seedBytes);
 
-        // private key needs to be a BigInteger so we can derive the public key by multiplying G by the private key.
+        // private key needs to be a BigInteger, so we can derive the public key by multiplying G by the private key.
         final BigInteger privateKeyInt = derivePrivateKey(seedBytes, accountNumber);
 
         // This derivePublicKey will pad to 33 bytes.
-        final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
+        final UnsignedByteArray publicKeyByteArray = derivePublicKey(privateKeyInt);
         // This merely enforces the invariant that should be defined in `derivePublicKey(privateKeyInt);`
-        Preconditions.checkArgument(publicKeyInt.length() == 33, "Length was " + publicKeyInt.length());
-
-        // No need to prefix secp256k1 public keys because these are always 33 bytes.
-        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(publicKeyInt.toByteArray());
+        Preconditions.checkArgument(publicKeyByteArray.length() == 33, "Length was " + publicKeyByteArray.length());
 
         return KeyPair.builder()
           .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.from(privateKeyInt, 33)))
-          .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
+          .publicKey(PublicKey.builder().value(publicKeyByteArray).build())
           .build();
       }
 

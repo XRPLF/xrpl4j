@@ -280,9 +280,9 @@ class PrivateKeyTest {
       IllegalArgumentException.class, () -> PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(invalidPrefixBytes))
     );
     assertThat(exception.getMessage()).isEqualTo(
-      "Constructing a PrivateKey with raw bytes requires a one-byte prefix in front of the 32 natural bytes of a " +
-        "private key. Use the prefix `0xED` for ed25519 private keys, or `0x00` for secp256k1 private keys. " +
-        "Length was 33 bytes."
+      "PrivateKey construction requires 32 natural bytes plug a one-byte prefix value of either `0xED` for " +
+        "ed25519 private keys or `0x00` for secp256k1 private keys. Input byte length was 33 bytes with a prefixByte " +
+        "value of `0x20`"
     );
   }
 

@@ -389,6 +389,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         // This derivePublicKey will pad to 33 bytes.
         final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
+        // This merely enforces the invariant that should be defined in `derivePublicKey(privateKeyInt);`
         Preconditions.checkArgument(publicKeyInt.length() == 33, "Length was " + publicKeyInt.length());
 
         // No need to prefix secp256k1 public keys because these are always 33 bytes.

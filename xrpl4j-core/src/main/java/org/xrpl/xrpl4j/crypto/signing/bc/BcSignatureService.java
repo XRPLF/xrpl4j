@@ -96,17 +96,14 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
 
     final byte[] privateKeyBytes = new byte[32];
     try {
-      // Remove ED prefix byte (if it's there)
       System.arraycopy(privateKey.valueWithNaturalBytes().toByteArray(), 0, privateKeyBytes, 0, 32);
-      Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(
-        privateKeyBytes, 0
-      );
+      Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(privateKeyBytes, 0);
+
+      final byte[] signableBytes = signableTransactionBytes.toByteArray();
 
       ed25519Signer.reset();
       ed25519Signer.init(true, privateKeyParameters);
-      ed25519Signer.update(
-        signableTransactionBytes.toByteArray(), 0, signableTransactionBytes.getUnsignedBytes().size()
-      );
+      ed25519Signer.update(signableTransactionBytes.toByteArray(), 0, signableBytes.length);
 
       final UnsignedByteArray sigBytes = UnsignedByteArray.of(ed25519Signer.generateSignature());
       return Signature.builder()

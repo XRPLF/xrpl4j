@@ -318,7 +318,7 @@ public interface Seed extends javax.security.auth.Destroyable {
 
         // ed25519 public keys in XRPL have a one-byte prefix of `0xED` so that all public keys have 33 bytes (this is
         // to conform with secp256k1 public keys, which are 33 bytes long and have a `0x00` byte prefix.
-        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PrivateKey.ED2559_PREFIX)
+        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PublicKey.ED2559_PREFIX)
           .append(UnsignedByteArray.of(publicKey.getEncoded()));
 
         return KeyPair.builder()

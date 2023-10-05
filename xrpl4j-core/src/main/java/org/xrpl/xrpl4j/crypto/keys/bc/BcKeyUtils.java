@@ -136,7 +136,7 @@ public final class BcKeyUtils {
     Objects.requireNonNull(ed25519PublicKeyParameters);
     // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of sekp256k1 keys.
     // Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
-    UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PrivateKey.ED2559_PREFIX)
+    UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PublicKey.ED2559_PREFIX)
       .append(UnsignedByteArray.of(ed25519PublicKeyParameters.getEncoded()));
 
     return PublicKey.builder()

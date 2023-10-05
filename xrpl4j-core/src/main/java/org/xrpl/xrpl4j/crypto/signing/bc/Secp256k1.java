@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 
@@ -56,6 +57,14 @@ public interface Secp256k1 {
     EC_PARAMETERS.getH()
   );
 
+  /**
+   * Private keys (whether from the ed25519 or secp256k1 curves) have 32 bytes naturally. At the same time, secp256k1
+   * public keys have 33 bytes naturally, whereas ed25519 public keys have 32 bytes naturally. Because of this, in XRPL,
+   * ed25519 public keys are prefixed with a one-byte prefix (i.e., 0xED). For consistency, this library (and other XRPL
+   * tooling) also prepends all private keys with artificial prefixes (0xED for ed25519 or 0x00 for secp256k1).  This
+   * value is the one-byte prefix for secp256k1 keys.
+   */
+  UnsignedByte SECP256K1_PREFIX = UnsignedByte.of(0x00);
 
   /**
    * Creates an {@link UnsignedByteArray} from the bytes of a supplied {@link BigInteger}. If the length of the

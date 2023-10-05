@@ -222,4 +222,14 @@ public class PublicKeyTest {
     assertThat(ED_PUBLIC_KEY.deriveAddress().value()).isEqualTo("rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466");
     assertThat(EC_PUBLIC_KEY.deriveAddress().value()).isEqualTo("rD8ATvjj9mfnFuYYTGRNb9DygnJW9JNN1C");
   }
+
+  ///////////////////
+  // Constants
+  ///////////////////
+
+  @Test
+  void testConstants() {
+    assertThat(PublicKey.ED2559_PREFIX.asInt()).isEqualTo(0xED);
+    assertThat(PublicKey.ED2559_PREFIX.asByte()).isEqualTo((byte) 0xED);
+  }
 }

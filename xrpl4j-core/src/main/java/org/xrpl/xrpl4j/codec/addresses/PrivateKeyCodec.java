@@ -62,7 +62,7 @@ public class PrivateKeyCodec {
    *
    * @see "https://xrpl.org/base58-encodings.html"
    */
-  public UnsignedByteArray decodeNodePrivateKey(final String privateKeyBytes) {
+  public UnsignedByteArray decodeNodePrivateKey(final String privateKeyBase58) {
     Objects.requireNonNull(privateKeyBytes);
 
     return AddressBase58.decode(

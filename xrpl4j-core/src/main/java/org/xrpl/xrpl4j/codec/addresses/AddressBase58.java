@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,7 +56,7 @@ public class AddressBase58 extends Base58 {
     Objects.requireNonNull(expectedLength);
 
     if (expectedLength.intValue() != bytes.getUnsignedBytes().size()) {
-      throw new EncodeException("Length of bytes does not match expectedLength.");
+      throw new EncodeException(String.format("Length of bytes does not match expectedLength of %s.", expectedLength));
     }
 
     return encodeChecked(bytes.toByteArray(), versions);
@@ -99,6 +99,7 @@ public class AddressBase58 extends Base58 {
    * @param version     The {@link Version} to try decoding with.
    *
    * @return A {@link Decoded} containing the decoded value and version.
+   *
    * @throws EncodingFormatException If the version bytes of the Base58 value are invalid.
    */
   public static Decoded decode(
@@ -136,14 +137,14 @@ public class AddressBase58 extends Base58 {
    * Decode a Base58Check {@link String}.
    *
    * @param base58Value    The Base58Check encoded {@link String} to be decoded.
-   * @param keyTypes   A {@link List} of {@link KeyType}s which can be associated with the result of this
-   *                       method.
+   * @param keyTypes       A {@link List} of {@link KeyType}s which can be associated with the result of this method.
    * @param versions       A {@link List} of {@link Version}s to try decoding with.
    * @param expectedLength The expected length of the decoded value.
    *
    * @return A {@link Decoded} containing the decoded value, version, and type.
-   * @throws EncodingFormatException If more than one version is supplied without an expectedLength value present,
-   *                                 or if the version bytes of the Base58 value are invalid.
+   *
+   * @throws EncodingFormatException If more than one version is supplied without an expectedLength value present, or if
+   *                                 the version bytes of the Base58 value are invalid.
    */
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static Decoded decode(

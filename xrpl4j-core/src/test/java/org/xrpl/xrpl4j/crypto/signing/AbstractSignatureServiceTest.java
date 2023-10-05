@@ -193,12 +193,12 @@ public class AbstractSignatureServiceTest {
   @Test
   public void signWithNullTransaction() {
     assertThrows(NullPointerException.class,
-      () -> signatureService.sign(TestConstants.ED_PRIVATE_KEY, (Transaction) null));
+      () -> signatureService.sign(TestConstants.getEdPrivateKey(), (Transaction) null));
   }
 
   @Test
   public void signEd25519() {
-    signatureService.sign(TestConstants.ED_PRIVATE_KEY, transactionMock);
+    signatureService.sign(TestConstants.getEdPrivateKey(), transactionMock);
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
     verify(signatureUtilsMock).toSignableBytes(transactionMock);
@@ -208,7 +208,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void signSecp256k1() {
-    signatureService.sign(TestConstants.EC_PRIVATE_KEY, transactionMock);
+    signatureService.sign(TestConstants.getEcPrivateKey(), transactionMock);
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
     verify(signatureUtilsMock).toSignableBytes(transactionMock);
@@ -220,7 +220,7 @@ public class AbstractSignatureServiceTest {
   void multiSignEd25519() {
     when(signedTransactionMock.signature()).thenReturn(ed25519SignatureMock);
 
-    final Signature signature = signatureService.multiSign(TestConstants.ED_PRIVATE_KEY, transactionMock);
+    final Signature signature = signatureService.multiSign(TestConstants.getEdPrivateKey(), transactionMock);
     assertThat(signature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.ED_ADDRESS);
@@ -232,7 +232,7 @@ public class AbstractSignatureServiceTest {
   void multiSignSecp256k1() {
     when(signedTransactionMock.signature()).thenReturn(secp256k1SignatureMock);
 
-    final Signature signature = signatureService.multiSign(TestConstants.EC_PRIVATE_KEY, transactionMock);
+    final Signature signature = signatureService.multiSign(TestConstants.getEcPrivateKey(), transactionMock);
     assertThat(signature).isEqualTo(secp256k1SignatureMock);
 
     verify(signatureUtilsMock).toMultiSignableBytes(transactionMock, TestConstants.EC_ADDRESS);
@@ -252,7 +252,7 @@ public class AbstractSignatureServiceTest {
   @Test
   public void signUnsignedClaimWithNullUnsignedClaim() {
     assertThrows(NullPointerException.class,
-      () -> signatureService.sign(TestConstants.ED_PRIVATE_KEY, (UnsignedClaim) null));
+      () -> signatureService.sign(TestConstants.getEdPrivateKey(), (UnsignedClaim) null));
   }
 
   @Test
@@ -260,7 +260,7 @@ public class AbstractSignatureServiceTest {
     UnsignedClaim unsignedClaimMock = mock(UnsignedClaim.class);
     when(signatureUtilsMock.toSignableBytes(unsignedClaimMock)).thenReturn(UnsignedByteArray.empty());
 
-    Signature actualSignature = signatureService.sign(TestConstants.ED_PRIVATE_KEY, unsignedClaimMock);
+    Signature actualSignature = signatureService.sign(TestConstants.getEdPrivateKey(), unsignedClaimMock);
     assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
@@ -350,7 +350,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void edDsaSign() {
-    Signature actual = signatureService.edDsaSign(TestConstants.ED_PRIVATE_KEY, UnsignedByteArray.empty());
+    Signature actual = signatureService.edDsaSign(TestConstants.getEdPrivateKey(), UnsignedByteArray.empty());
 
     assertThat(actual).isEqualTo(ed25519SignatureMock);
     assertThat(ed25519VerifyCalled.get()).isFalse();
@@ -364,7 +364,7 @@ public class AbstractSignatureServiceTest {
 
   @Test
   public void ecDsaSign() {
-    Signature actual = signatureService.ecDsaSign(TestConstants.EC_PRIVATE_KEY, UnsignedByteArray.empty());
+    Signature actual = signatureService.ecDsaSign(TestConstants.getEcPrivateKey(), UnsignedByteArray.empty());
 
     assertThat(actual).isEqualTo(secp256k1SignatureMock);
 

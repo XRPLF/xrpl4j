@@ -226,10 +226,10 @@ public class SeedTest {
       BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236")
     );
     BigInteger unPaddedBitInt = new BigInteger(
-      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().naturalBytes().toByteArray()
+      1, ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().naturalBytes().toByteArray()
     );
     BigInteger paddedBitInt = new BigInteger(
-      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().prefixedBytes().toByteArray()
+      1, ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().prefixedBytes().toByteArray()
     );
 
     assertThat(shortBigInt).isEqualTo(unPaddedBitInt);

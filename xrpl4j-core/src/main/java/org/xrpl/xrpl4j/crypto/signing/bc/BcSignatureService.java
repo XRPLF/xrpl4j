@@ -94,27 +94,21 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
     Objects.requireNonNull(privateKey);
     Objects.requireNonNull(signableTransactionBytes);
 
-    final byte[] privateKeyBytes = new byte[32];
-    try {
-      System.arraycopy(privateKey.naturalBytes().toByteArray(), 0, privateKeyBytes, 0, 32);
-      Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(privateKeyBytes, 0);
+    final Ed25519PrivateKeyParameters privateKeyParameters = BcKeyUtils.toEd25519PrivateKeyParams(privateKey);
 
-      final byte[] signableBytes = signableTransactionBytes.toByteArray();
+    final byte[] signableBytes = signableTransactionBytes.toByteArray();
 
-      ed25519Signer.reset();
-      ed25519Signer.init(true, privateKeyParameters);
-      ed25519Signer.update(signableTransactionBytes.toByteArray(), 0, signableBytes.length);
+    ed25519Signer.reset();
+    ed25519Signer.init(true, privateKeyParameters);
+    ed25519Signer.update(signableBytes, 0, signableBytes.length);
 
-      final UnsignedByteArray sigBytes = UnsignedByteArray.of(ed25519Signer.generateSignature());
-      return Signature.builder()
-        .value(sigBytes)
-        .build();
-    } finally {
-      // Clear out the copied array, which was only used for signing.
-      for (int i = 0; i < 32; i++) {
-        privateKeyBytes[i] = (byte) 0;
-      }
-    }
+    final UnsignedByteArray sigBytes = UnsignedByteArray.of(ed25519Signer.generateSignature());
+    return Signature.builder()
+      .value(sigBytes)
+      .build();
+
+    // Note: Ed25519PrivateKeyParameters does not provide a destroy function, but it will be eligible for cleanup (in
+    // the next GC) once this function exits.
   }
 
   @SuppressWarnings("checkstyle:LocalVariableName")
@@ -125,12 +119,9 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
 
     final UnsignedByteArray messageHash = HashingUtils.sha512Half(transactionBytes);
 
-    // From http://www.secg.org/sec1-v2.pdf:  consists of an elliptic curve secret key `d` which is an integer in
-    // the interval [1, n − 1]
-    final BigInteger secretKeyD = new BigInteger(privateKey.prefixedBytes().toByteArray());
-    final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(secretKeyD, BcKeyUtils.PARAMS);
+    final ECPrivateKeyParameters ecPrivateKeyParams = BcKeyUtils.toEcPrivateKeyParams(privateKey);
 
-    ecdsaSigner.init(true, parameters);
+    ecdsaSigner.init(true, ecPrivateKeyParams);
     final BigInteger[] signatures = ecdsaSigner.generateSignature(messageHash.toByteArray());
     final BigInteger r = signatures[0];
     BigInteger s = signatures[1];

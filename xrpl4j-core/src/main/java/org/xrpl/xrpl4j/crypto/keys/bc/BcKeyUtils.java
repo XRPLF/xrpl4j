@@ -236,9 +236,9 @@ public final class BcKeyUtils {
     Objects.requireNonNull(privateKey);
     Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "KeyType must be SECP256K1");
 
-    final BigInteger privateKeyInt = new BigInteger(
-      BaseEncoding.base16().encode(privateKey.naturalBytes().toByteArray()), 16
-    );
-    return new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
+    // From http://www.secg.org/sec1-v2.pdf: A PrivateKey consists of an elliptic curve secret key `d` which is an
+    // integer in the interval [1, n − 1]. Therefore, it is safe to assume that the signum below should always be 1.
+    final BigInteger secretKeyD = new BigInteger(1, privateKey.naturalBytes().toByteArray());
+    return new ECPrivateKeyParameters(secretKeyD, BcKeyUtils.PARAMS);
   }
 }

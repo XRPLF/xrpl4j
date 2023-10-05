@@ -191,10 +191,9 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
   }
 
   /**
-   * Accessor for the byte value in {@link #value()} but in a more natural form (i.e., the size of the returned value
-   * will be 32 bytes). Natural ed25519 or secp256k1 private keys will ordinarily contain only 32 bytes. However, in
-   * XRPL, private keys are represented with a single-byte prefix (i.e., `0xED` for ed25519 and `0x00` for secp256k1
-   * keys).
+   * Accessor for the bytes of this private key in a prefixed. Natural ed25519 or secp256k1 private keys will ordinarily
+   * contain only 32 bytes. However, in XRPL, private keys are typically represented with a single-byte prefix (i.e.,
+   * `0xED` for ed25519 and `0x00` for secp256k1 keys), which this method provides.
    *
    * @return An instance of {@link UnsignedByteArray}.
    */

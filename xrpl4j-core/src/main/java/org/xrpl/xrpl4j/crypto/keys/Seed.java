@@ -409,15 +409,13 @@ public interface Seed extends javax.security.auth.Destroyable {
         UnsignedByteArray unpaddedBytes = UnsignedByteArray.of(
           EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true));
 
-        return Secp256k1.withZeroPrefixPadding(unpaddedBytes, 33);
-
-//        return unpaddedBytes.withZeroPrefixPadding(33); // <-- Ensure that the returned UBA has 33 bytes.
+        return Secp256k1.withZeroPrefixPadding(unpaddedBytes, 33); // <-- Ensure returned UBA has 33 bytes.
       }
 
       /**
        * Derive a public key from the supplied {@code seed} and {@code accountNumber}.
        *
-       * @param seed          A {@link UnsignedByteArray} representing a seed that can be used to generated an XRPL
+       * @param seed          A {@link UnsignedByteArray} representing a seed that can be used to generate an XRPL
        *                      address.
        * @param accountNumber An integer representing the account nunmber.
        *

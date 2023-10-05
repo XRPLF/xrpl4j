@@ -32,7 +32,6 @@ import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
 
 import java.math.BigInteger;
-
 import javax.security.auth.DestroyFailedException;
 
 /**

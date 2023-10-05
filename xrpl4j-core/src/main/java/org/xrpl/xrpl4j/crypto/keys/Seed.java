@@ -39,6 +39,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
+import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 import java.util.Objects;
@@ -390,7 +391,7 @@ public interface Seed extends javax.security.auth.Destroyable {
         Preconditions.checkArgument(publicKeyByteArray.length() == 33, "Length was " + publicKeyByteArray.length());
 
         return KeyPair.builder()
-          .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.from(privateKeyInt, 33)))
+          .privateKey(PrivateKey.fromPrefixedBytes(Secp256k1.toUnsignedByteArray(privateKeyInt, 33)))
           .publicKey(PublicKey.builder().value(publicKeyByteArray).build())
           .build();
       }
@@ -405,8 +406,12 @@ public interface Seed extends javax.security.auth.Destroyable {
       private static UnsignedByteArray derivePublicKey(final BigInteger privateKey) {
         Objects.requireNonNull(privateKey);
 
-        return UnsignedByteArray.of(EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true))
-          .withPrefixPadding(33); // <-- Ensure that the returned UBA has 33 bytes.
+        UnsignedByteArray unpaddedBytes = UnsignedByteArray.of(
+          EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true));
+
+        return Secp256k1.withZeroPrefixPadding(unpaddedBytes, 33);
+
+//        return unpaddedBytes.withZeroPrefixPadding(33); // <-- Ensure that the returned UBA has 33 bytes.
       }
 
       /**

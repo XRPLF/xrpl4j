@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
 import javax.security.auth.Destroyable;
 
 /**
@@ -76,82 +77,6 @@ public class UnsignedByteArray implements Destroyable {
     unsignedBytes.add(first);
     Collections.addAll(unsignedBytes, rest);
     return new UnsignedByteArray(unsignedBytes);
-  }
-
-  /**
-   * Creates an {@link UnsignedByteArray} from the bytes of a supplied {@link BigInteger}. If the length of the
-   * resulting array is not at least {@code minFinalByteLength}, then the result is prefix padded with `0x00` bytes
-   * until the final array length is {@code minFinalByteLength}.
-   *
-   * <p>This function primarily exists to ensure that transformation of secp256k1 private keys from one form to another
-   * (e.g., from {@link BigInteger} to a byte array) are done in a consistent manner, always yielding the desired number
-   * of bytes. For example, secp256k1 private keys are 32-bytes long naturally. However, when transformed to a byte
-   * array via {@link BigInteger#toByteArray()}, the result will not always have the same number of leading zero bytes
-   * that one might expect. Sometimes the returned array will have 33 bytes, one of which is a zero-byte prefix pad that
-   * is meant to ensure the underlying number is not represented as a negative number. Other times, the array will have
-   * fewer than 32 bytes, for example 31 or even 30, if the byte array has redundant leading zero bytes.
-   *
-   * <p>Thus, this function can be used to normalize a byte array with a desired number of 0-byte padding to ensure
-   * that the resulting byte array is always the desired {@code minFinalByteLength} (e.g., in this library, secp256k1
-   * private keys should always be comprised of a 32-byte natural private key with a one-byte `0x00` prefix pad).
-   *
-   * @param amount             A {@link BigInteger} to convert into an {@link UnsignedByteArray}.
-   * @param minFinalByteLength The minimum length, in bytes, that the final result must be. If the final byte length is
-   *                           less than this number, the resulting array will be prefix padded to increase its length
-   *                           to this number.
-   *
-   * @return An {@link UnsignedByteArray} with a length of at least {@code minFinalByteLength}.
-   *
-   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
-   */
-  public static UnsignedByteArray from(final BigInteger amount, int minFinalByteLength) {
-    Objects.requireNonNull(amount);
-    Preconditions.checkArgument(amount.signum() >= 0, "amount must not be negative");
-    Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
-
-    // Return the `amount` as an UnsignedByteArray, but with the proper zero-byte prefix padding.
-    return withPrefixPadding(amount.toByteArray(), minFinalByteLength);
-  }
-
-  /**
-   * Construct a new {@link UnsignedByteArray} that contains this byte array's bytes, but with enough `0x00` prefix
-   * padding bytes such that the final length of the returned value is {@code minFinalByteLength}.
-   *
-   * @param minFinalByteLength The minimum length, in bytes, that the final result must be zero-byte prefix-padded to.
-   *                           If this number is greater-than {@code #length}, then this value will be reduced to
-   *                           {@code #length}.
-   *
-   * @return A copy of this {@link UnsignedByteArray} that has been zero-byte prefix-padded such that its final length
-   *   is at least {@code minFinalByteLength}.
-   */
-  public UnsignedByteArray withPrefixPadding(int minFinalByteLength) {
-    Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
-
-    return withPrefixPadding(this.toByteArray(), minFinalByteLength);
-  }
-
-  /**
-   * Creates a new {@link UnsignedByteArray} from a byte array by prefixing enough zero-pad bytes to ensure that the
-   * result has at least {@code minFinalByteLength} bytes.
-   *
-   * @param bytes              A byte array to convert into an {@link UnsignedByteArray}.
-   * @param minFinalByteLength The minimum length, in bytes, that the final result must be prefix-padded to. If this
-   *                           number is greater-than {@code amount#length}, then this value will be reduced to
-   *                           {@code amount#length}.
-   *
-   * @return A zero-byte prefix-padded {@link UnsignedByteArray} with a length of at least {@code minFinalByteLength}.
-   */
-  private static UnsignedByteArray withPrefixPadding(final byte[] bytes, int minFinalByteLength) {
-    Preconditions.checkArgument(minFinalByteLength >= 0, "minFinalByteLength must not be negative");
-
-    if (bytes.length > minFinalByteLength) { // <-- Increase `minFinalByteLength` to be at least bytes.length
-      minFinalByteLength = bytes.length;
-    }
-
-    final int numPadBytes = minFinalByteLength - bytes.length; // <-- numPadBytes will never be negative
-    byte[] resultBytes = new byte[minFinalByteLength];
-    System.arraycopy(bytes, 0, resultBytes, numPadBytes, bytes.length);
-    return UnsignedByteArray.of(resultBytes);
   }
 
   /**

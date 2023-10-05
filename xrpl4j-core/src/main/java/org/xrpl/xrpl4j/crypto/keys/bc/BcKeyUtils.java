@@ -37,6 +37,7 @@ import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 import java.security.Security;
@@ -101,7 +102,7 @@ public final class BcKeyUtils {
   public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
     return PrivateKey.fromPrefixedBytes(
       // Call `UnsignedByteArray.from` to properly prefix-pad the BigInteger's bytes.
-      UnsignedByteArray.from(ecPrivateKeyParameters.getD(), 33)
+      Secp256k1.toUnsignedByteArray(ecPrivateKeyParameters.getD(), 33)
     );
   }
 

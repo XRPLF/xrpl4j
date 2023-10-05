@@ -124,8 +124,11 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
     Objects.requireNonNull(transactionBytes);
 
     final UnsignedByteArray messageHash = HashingUtils.sha512Half(transactionBytes);
-    final BigInteger privateKeyInt = new BigInteger(privateKey.valueWithPrefixedBytes().toByteArray());
-    final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
+
+    // From http://www.secg.org/sec1-v2.pdf:  consists of an elliptic curve secret key `d` which is an integer in
+    // the interval [1, n − 1]
+    final BigInteger secretKeyD = new BigInteger(privateKey.valueWithPrefixedBytes().toByteArray());
+    final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(secretKeyD, BcKeyUtils.PARAMS);
 
     ecdsaSigner.init(true, parameters);
     final BigInteger[] signatures = ecdsaSigner.generateSignature(messageHash.toByteArray());

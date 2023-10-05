@@ -31,7 +31,9 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import java.util.Objects;
 
 /**
- * An abstract implementation of {@link SignatureService} with common functionality that sub-classes can utilize.
+ * An abstract implementation of {@link SignatureService} with common functionality that subclasses can utilize.
+ *
+ * @param <P> A type that extends {@link PrivateKeyable}.
  */
 public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implements TransactionSigner<P> {
 

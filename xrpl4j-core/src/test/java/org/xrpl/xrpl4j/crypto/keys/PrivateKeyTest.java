@@ -27,11 +27,13 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.EC_PRIVATE_KEY_WITH_PREFIX_HE
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY_HEX;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PRIVATE_KEY_WITH_PREFIX_HEX;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.TestConstants;
+import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 /**
  * Unit tests for {@link PrivateKey}.
@@ -424,6 +426,63 @@ class PrivateKeyTest {
         "destroyed=false" +
         "}"
     );
+  }
+
+  /**
+   * Ensure that no part of a {@link PrivateKey} is mutable from the outside (except for {@link PrivateKey#destroy()}.
+   */
+  @Test
+  void testImmutability() {
+    // Never changes, used to compare later in this test.
+    final UnsignedByteArray controlBytes = UnsignedByteArray.of(
+      BaseEncoding.base16().decode("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+    );
+    Preconditions.checkArgument(controlBytes.length() == 32); // <-- Start from a known value.
+
+    UnsignedByteArray bytes32 = UnsignedByteArray.of(
+      BaseEncoding.base16().decode("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+    );
+    Preconditions.checkArgument(bytes32.length() == 32); // <-- Start from a known value.
+    Preconditions.checkArgument(bytes32.equals(controlBytes));
+
+    ///////////////
+    // The tests
+    ///////////////
+
+    // Check that mutating the result of PrivateKey.fromNaturalBytes() doesn't enable inner mutability of the original.
+    PrivateKey testPrivateKey = PrivateKey.fromNaturalBytes(bytes32, KeyType.ED25519); // <-- The crux of the test
+    Preconditions.checkArgument(testPrivateKey.naturalBytes().equals(controlBytes)); // <-- Sanity check
+    testPrivateKey.destroy(); // <-- Set all bytes to 0
+    assertThat(testPrivateKey.naturalBytes()).isNotEqualTo(controlBytes); // <-- The test
+
+    // Check that mutating the result of PrivateKey.fromPrefixedBytes() doesn't enable inner mutability of the original.
+    testPrivateKey = PrivateKey.fromPrefixedBytes( // <-- The crux of the test
+      Secp256k1.withZeroPrefixPadding(bytes32, 33)
+    );
+    Preconditions.checkArgument(testPrivateKey.naturalBytes().equals(controlBytes)); // <-- Sanity check
+    testPrivateKey.destroy(); // <-- Set all bytes to 0
+    assertThat(testPrivateKey.naturalBytes()).isNotEqualTo(controlBytes); // <-- The test
+
+    // Check that mutating the result of PrivateKey.naturalBytes() doesn't enable inner mutability of the original.
+    testPrivateKey = PrivateKey.fromNaturalBytes(bytes32, KeyType.SECP256K1);
+    Preconditions.checkArgument(testPrivateKey.naturalBytes().equals(controlBytes)); // <-- Sanity check
+    UnsignedByteArray valueBytes = testPrivateKey.naturalBytes(); // <-- The crux of the test
+    valueBytes.destroy(); // <-- Set all bytes to 0
+    assertThat(testPrivateKey.naturalBytes()).isEqualTo(controlBytes); // <-- The test
+
+    // Check that mutating the result of PrivateKey.prefixedBytes() doesn't enable inner mutability of the original.
+    testPrivateKey = PrivateKey.fromNaturalBytes(bytes32, KeyType.SECP256K1);
+    Preconditions.checkArgument(testPrivateKey.naturalBytes().equals(controlBytes)); // <-- Sanity check
+    valueBytes = testPrivateKey.prefixedBytes(); // <-- The crux of the test
+    valueBytes.destroy(); // <-- Set all bytes to 0
+    assertThat(testPrivateKey.naturalBytes()).isEqualTo(controlBytes); // <-- The test
+
+    // Check that PrivateKey.value() doesn't enable inner mutability.
+    testPrivateKey = PrivateKey.fromNaturalBytes(bytes32, KeyType.SECP256K1);
+    Preconditions.checkArgument(testPrivateKey.naturalBytes().equals(controlBytes)); // <-- Sanity check
+    valueBytes = testPrivateKey.value(); // <-- The crux of the test
+    valueBytes.destroy(); // <-- Set all bytes to 0
+    assertThat(testPrivateKey.naturalBytes()).isEqualTo(controlBytes); // <-- The test
   }
 
 }

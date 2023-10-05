@@ -63,10 +63,10 @@ public class PrivateKeyCodec {
    * @see "https://xrpl.org/base58-encodings.html"
    */
   public UnsignedByteArray decodeNodePrivateKey(final String privateKeyBase58) {
-    Objects.requireNonNull(privateKeyBytes);
+    Objects.requireNonNull(privateKeyBase58);
 
     return AddressBase58.decode(
-      privateKeyBytes,
+      privateKeyBase58,
       Lists.newArrayList(Version.NODE_PRIVATE),
       UnsignedInteger.valueOf(32)
     ).bytes();
@@ -99,10 +99,10 @@ public class PrivateKeyCodec {
    * @see "https://xrpl.org/base58-encodings.html"
    */
   public UnsignedByteArray decodeAccountPrivateKey(final String privateKeyBase58) {
-    Objects.requireNonNull(publicKey);
+    Objects.requireNonNull(privateKeyBase58);
 
     return AddressBase58.decode(
-      publicKey,
+      privateKeyBase58,
       Lists.newArrayList(Version.ACCOUNT_SECRET_KEY),
       UnsignedInteger.valueOf(32)
     ).bytes();

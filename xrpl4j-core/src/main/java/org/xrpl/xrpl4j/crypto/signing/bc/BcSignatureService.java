@@ -96,7 +96,7 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
 
     final byte[] privateKeyBytes = new byte[32];
     try {
-      System.arraycopy(privateKey.valueWithNaturalBytes().toByteArray(), 0, privateKeyBytes, 0, 32);
+      System.arraycopy(privateKey.naturalBytes().toByteArray(), 0, privateKeyBytes, 0, 32);
       Ed25519PrivateKeyParameters privateKeyParameters = new Ed25519PrivateKeyParameters(privateKeyBytes, 0);
 
       final byte[] signableBytes = signableTransactionBytes.toByteArray();
@@ -127,7 +127,7 @@ public class BcSignatureService extends AbstractSignatureService<PrivateKey> imp
 
     // From http://www.secg.org/sec1-v2.pdf:  consists of an elliptic curve secret key `d` which is an integer in
     // the interval [1, n − 1]
-    final BigInteger secretKeyD = new BigInteger(privateKey.valueWithPrefixedBytes().toByteArray());
+    final BigInteger secretKeyD = new BigInteger(privateKey.prefixedBytes().toByteArray());
     final ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(secretKeyD, BcKeyUtils.PARAMS);
 
     ecdsaSigner.init(true, parameters);

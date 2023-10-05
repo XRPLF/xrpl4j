@@ -174,9 +174,9 @@ public class SeedTest {
     final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
     assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
       .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
-    assertThat(privateKey.valueWithPrefixedBytes().hexValue())
+    assertThat(privateKey.prefixedBytes().hexValue())
       .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
-    assertThat(privateKey.valueWithNaturalBytes().hexValue())
+    assertThat(privateKey.naturalBytes().hexValue())
       .isEqualTo("7030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
   }
 
@@ -197,9 +197,9 @@ public class SeedTest {
     final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
     assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
       .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
-    assertThat(privateKey.valueWithPrefixedBytes().hexValue())
+    assertThat(privateKey.prefixedBytes().hexValue())
       .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
-    assertThat(privateKey.valueWithNaturalBytes().hexValue())
+    assertThat(privateKey.naturalBytes().hexValue())
       .isEqualTo("FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
   }
 
@@ -216,9 +216,9 @@ public class SeedTest {
 
     assertThat(BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236").length)
       .isEqualTo(31);
-    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithNaturalBytes().toByteArray().length)
+    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().naturalBytes().toByteArray().length)
       .isEqualTo(32);
-    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithPrefixedBytes().toByteArray().length)
+    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().prefixedBytes().toByteArray().length)
       .isEqualTo(33);
 
     // Assert that all BigIntegers are equivalent (i.e., that the constructor ignores zero-byte pads)
@@ -226,10 +226,10 @@ public class SeedTest {
       BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236")
     );
     BigInteger unPaddedBitInt = new BigInteger(
-      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithNaturalBytes().toByteArray()
+      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().naturalBytes().toByteArray()
     );
     BigInteger paddedBitInt = new BigInteger(
-      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().valueWithPrefixedBytes().toByteArray()
+      ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().prefixedBytes().toByteArray()
     );
 
     assertThat(shortBigInt).isEqualTo(unPaddedBitInt);
@@ -251,9 +251,9 @@ public class SeedTest {
     final PrivateKey privateKey = ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey();
     assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
       .isEqualTo("000053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
-    assertThat(privateKey.valueWithPrefixedBytes().hexValue())
+    assertThat(privateKey.prefixedBytes().hexValue())
       .isEqualTo("000053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
-    assertThat(privateKey.valueWithNaturalBytes().hexValue())
+    assertThat(privateKey.naturalBytes().hexValue())
       .isEqualTo("0053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
   }
 
@@ -357,7 +357,7 @@ public class SeedTest {
     assertThat(seed.deriveKeyPair().publicKey().base16Value()).isEqualTo(
       "02FD0E8479CE8182ABD35157BB0FA17A469AF27DCB12B5DDED697C61809116A33B"
     );
-    assertThat(seed.deriveKeyPair().privateKey().valueWithPrefixedBytes().hexValue()).isEqualTo(
+    assertThat(seed.deriveKeyPair().privateKey().prefixedBytes().hexValue()).isEqualTo(
       "0027690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438"
     );
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(

@@ -157,7 +157,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    *
    * @return An instance of {@link UnsignedByteArray}.
    *
-   * @deprecated Prefer {@link #valueWithPrefixedBytes()} or {@link #valueWithNaturalBytes()} instead.
+   * @deprecated Prefer {@link #prefixedBytes()} or {@link #naturalBytes()} instead.
    */
   @Deprecated
   public UnsignedByteArray value() {
@@ -167,7 +167,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
     } else {
       // This is technically wrong (because `value()` had an ambiguous meaning prior to fixing #486), but this mirrors
       // what's in v3 prior to fixing #486, and will be fixed in v4 once the deprecated `.value()` is removed.
-      return this.valueWithPrefixedBytes();
+      return this.prefixedBytes();
     }
   }
 
@@ -179,7 +179,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    *
    * @return An instance of {@link UnsignedByteArray}.
    */
-  public UnsignedByteArray valueWithNaturalBytes() {
+  public UnsignedByteArray naturalBytes() {
     // Check for empty value, which can occur if this PrivateKey is "destroyed" but still in memory.
     if (value.length() == 0) {
       return UnsignedByteArray.empty();
@@ -198,7 +198,7 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
    *
    * @return An instance of {@link UnsignedByteArray}.
    */
-  public UnsignedByteArray valueWithPrefixedBytes() {
+  public UnsignedByteArray prefixedBytes() {
     // Check for empty value, which can occur if this PrivateKey is "destroyed" but still in memory.
     if (value.length() == 0) {
       return UnsignedByteArray.empty();
@@ -206,11 +206,11 @@ public class PrivateKey implements PrivateKeyable, javax.security.auth.Destroyab
       switch (keyType) {
         case ED25519: {
           return UnsignedByteArray.of(ED2559_PREFIX)
-            .append(this.valueWithNaturalBytes()); // <-- Forward to this function to guarantee copied bytes
+            .append(this.naturalBytes()); // <-- Forward to this function to guarantee copied bytes
         }
         case SECP256K1: {
           return UnsignedByteArray.of(SECP256K1_PREFIX)
-            .append(this.valueWithNaturalBytes()); // <-- Forward to this function to guarantee copied bytes
+            .append(this.naturalBytes()); // <-- Forward to this function to guarantee copied bytes
         }
         default: {
           // This should never happen; if it does, there's a bug in this implementation

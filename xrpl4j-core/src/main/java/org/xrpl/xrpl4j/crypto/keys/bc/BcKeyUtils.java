@@ -206,7 +206,7 @@ public final class BcKeyUtils {
     Objects.requireNonNull(privateKey);
     Preconditions.checkArgument(privateKey.keyType() == ED25519);
     // Use offset 0 with no prefix
-    return new Ed25519PrivateKeyParameters(privateKey.valueWithNaturalBytes().toByteArray(), 0);
+    return new Ed25519PrivateKeyParameters(privateKey.naturalBytes().toByteArray(), 0);
   }
 
   /**
@@ -237,7 +237,7 @@ public final class BcKeyUtils {
     Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "KeyType must be SECP256K1");
 
     final BigInteger privateKeyInt = new BigInteger(
-      BaseEncoding.base16().encode(privateKey.valueWithNaturalBytes().toByteArray()), 16
+      BaseEncoding.base16().encode(privateKey.naturalBytes().toByteArray()), 16
     );
     return new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
   }

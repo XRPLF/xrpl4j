@@ -56,7 +56,7 @@ public class PrivateKeyCodec {
   /**
    * Decode a Base58Check encoded XRPL Node Private Key.
    *
-   * @param privateKeyBytes The Base58 encoded public key to be decoded.
+   * @param privateKeyBase58 The Base58 encoded public key to be decoded.
    *
    * @return An {@link UnsignedByteArray} containing the decoded public key.
    *

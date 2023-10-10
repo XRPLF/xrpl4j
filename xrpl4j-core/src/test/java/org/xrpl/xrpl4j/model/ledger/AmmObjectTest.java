@@ -39,6 +39,7 @@ class AmmObjectTest extends AbstractJsonTest {
         VoteEntryWrapper.of(voteEntry2)
       )
       .index(HASH_256)
+      .ownerNode("0")
       .build();
 
     assertThat(ammObject.voteSlotsUnwrapped()).asList()
@@ -100,6 +101,7 @@ class AmmObjectTest extends AbstractJsonTest {
           .build()
       )
       .index(HASH_256)
+      .ownerNode("0")
       .build();
 
     String json = String.format("{\n" +
@@ -112,6 +114,7 @@ class AmmObjectTest extends AbstractJsonTest {
       "    \"LPTokenBalance\" : " + objectMapper.writeValueAsString(ammObject.lpTokenBalance()) + "," +
       "    \"TradingFee\" : 600,\n" +
       "    \"index\" : %s,\n" +
+      "    \"OwnerNode\" : \"0\",\n" +
       "    \"VoteSlots\" : [\n" +
               objectMapper.writeValueAsString(ammObject.voteSlots().get(0)) +
       "    ]\n" +

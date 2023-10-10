@@ -1058,7 +1058,9 @@ public class XrplClientTest {
         .method(XrplMethods.LEDGER_ENTRY)
         .addParams(params)
         .build(),
-        ObjectMapperFactory.create().getTypeFactory().constructParametricType(LedgerEntryResult.class, LedgerObject.class)
+        ObjectMapperFactory.create().getTypeFactory().constructParametricType(
+          LedgerEntryResult.class, LedgerObject.class
+        )
     )).thenReturn(mockResult);
 
     LedgerEntryResult<LedgerObject> result = xrplClient.ledgerEntry(params);

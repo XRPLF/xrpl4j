@@ -26,6 +26,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 /**
  * Constants used for testing.
@@ -74,4 +75,9 @@ public interface TestConstants {
   // Both generated from Passphrase.of("hello")
   Address ED_ADDRESS = Address.of("rwGWYtRR6jJJJq7FKQg74YwtkiPyUqJ466");
   Address EC_ADDRESS = Address.of("rD8ATvjj9mfnFuYYTGRNb9DygnJW9JNN1C");
+
+  /**
+   * A sample {@link Hash256}.
+   */
+  Hash256 HASH_256 = Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E");
 }

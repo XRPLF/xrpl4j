@@ -224,7 +224,16 @@ public enum TransactionType {
    * change.</p>
    */
   @Beta
-  AMM_DELETE("AMMDelete");
+  AMM_DELETE("AMMDelete"),
+
+  /**
+   * The {@link TransactionType} for the {@link XChainAccountCreateCommit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * change.</p>
+   */
+  @Beta
+  XCHAIN_ACCOUNT_CREATE_COMMIT("XChainAccountCreateCommit");
 
   private final String value;
 

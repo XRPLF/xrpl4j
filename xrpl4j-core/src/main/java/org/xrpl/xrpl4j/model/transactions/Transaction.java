@@ -78,6 +78,7 @@ public interface Transaction {
       .put(ImmutableAmmWithdraw.class, TransactionType.AMM_WITHDRAW)
       .put(ImmutableAmmDelete.class, TransactionType.AMM_DELETE)
       .put(ImmutableClawback.class, TransactionType.CLAWBACK)
+      .put(ImmutableXChainAccountCreateCommit.class, TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT)
       .build();
 
   /**

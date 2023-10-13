@@ -61,6 +61,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -75,7 +76,9 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -1786,6 +1789,49 @@ public class BinarySerializationTests {
       "9A79DEA67CB5D585111FEF0A29203FA0408014145E7A3E3D7200A794FA801C66CE3775B6416EE4128015145E7A3E3D7200A794FA8" +
       "01C66CE3775B6416EE4120010130101191486F0B1126CE1205E59FDFDD2661A9FB7505CA70F000000000000000000000000000000" +
       "000000000014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(attestation, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainAddClaimAttestation() throws JsonProcessingException {
+    XChainAddClaimAttestation attestation = XChainAddClaimAttestation.builder()
+      .account(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .attestationRewardAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .attestationSignerAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .lastLedgerSequence(UnsignedInteger.valueOf(19))
+      .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
+      .sequence(UnsignedInteger.valueOf(9))
+      .publicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136")
+      )
+      .signature(
+        Signature.fromBase16("7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44" +
+          "528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C")
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C")
+      )
+      .wasLockingChainSend(true)
+      .xChainBridge(
+        XChainBridge.builder()
+          .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+          .issuingChainIssue(Issue.XRP)
+          .lockingChainDoor(Address.of("rDJVtEuDKr4rj1B3qtW7R5TVWdXV2DY7Qg"))
+          .lockingChainIssue(Issue.XRP)
+          .build()
+      )
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.MAX_VALUE))
+      .transactionSignature(
+        Signature.fromBase16("D0423649E48A44F181262CF5FC08A68E7FA5CD9E55843E4F09014B76E602574" +
+          "741E8553383A4B43CABD194BB96713647FC0B885BE248E4FFA068FA3E6994CF04")
+      )
+      .build();
+
+    String expectedBinary = "12002D2400000009201B000000133014FFFFFFFFFFFFFFFF6140000000009896806840000000000000147121ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E11367321ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C7440D0423649E48A44F181262CF5FC08A68E7FA5CD9E55843E4F09014B76E602574741E8553383A4B43CABD194BB96713647FC0B885BE248E4FFA068FA3E6994CF0476407C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C81141F30A4D728AB98B0950EC3B9815E6C8D43A7D5598314C15F113E49BCC4B9FFF43CD0366C23ACD82F75638012143FD9ED9A79DEA67CB5D585111FEF0A29203FA0408014141F30A4D728AB98B0950EC3B9815E6C8D43A7D5598015141F30A4D728AB98B0950EC3B9815E6C8D43A7D5590010130101191486F0B1126CE1205E59FDFDD2661A9FB7505CA70F000000000000000000000000000000000000000014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000";
 
     assertSerializesAndDeserializes(attestation, expectedBinary);
   }

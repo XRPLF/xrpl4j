@@ -32,8 +32,8 @@ public interface XChainAccountCreateCommit extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link TicketCreate}, which only allows the {@code tfFullyCanonicalSig}
-   * flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link XChainAccountCreateCommit}, which only allows the
+   * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * @return A set of {@link TransactionFlags}, default is {@link TransactionFlags#EMPTY}.
    */
@@ -61,8 +61,8 @@ public interface XChainAccountCreateCommit extends Transaction {
   Address destination();
 
   /**
-   * The amount, in XRP, to be used to reward the witness servers for providing signatures. This must match the
-   * amount on the {@code Bridge} ledger object.
+   * The amount, in XRP, to be used to reward the witness servers for providing signatures. This must match the amount
+   * on the {@code Bridge} ledger object.
    *
    * @return An optionally-present {@link XrpCurrencyAmount}.
    */

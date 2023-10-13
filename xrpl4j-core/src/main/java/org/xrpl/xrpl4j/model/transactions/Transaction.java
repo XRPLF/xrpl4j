@@ -79,6 +79,13 @@ public interface Transaction {
       .put(ImmutableAmmDelete.class, TransactionType.AMM_DELETE)
       .put(ImmutableClawback.class, TransactionType.CLAWBACK)
       .put(ImmutableXChainAccountCreateCommit.class, TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT)
+      .put(ImmutableXChainAddAccountCreateAttestation.class, TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION)
+//      .put(ImmutableXChainAddClaimAttestation.class, TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION)
+//      .put(ImmutableXChainClaim.class, TransactionType.XCHAIN_CLAIM)
+//      .put(ImmutableXChainCommit.class, TransactionType.XCHAIN_COMMIT)
+//      .put(ImmutableXChainCreateBridge.class, TransactionType.XCHAIN_CREATE_BRIDGE)
+//      .put(ImmutableXChainCreateClaimId.class, TransactionType.XCHAIN_CREATE_CLAIM_ID)
+//      .put(ImmutableXChainModifyBridge.class, TransactionType.XCHAIN_MODIFY_BRIDGE)
       .build();
 
   /**

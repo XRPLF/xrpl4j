@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.codec.binary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +74,7 @@ import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -1734,6 +1736,58 @@ public class BinarySerializationTests {
       "785DC231A1058A05E56E3F09CF4E60000000000000000000000004554480000000000FBEF9A3A2B814E807745FA3D9C32FFD155FA2E8C";
 
     assertSerializesAndDeserializes(commit, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainAddAccountCreateAttestation() throws JsonProcessingException {
+    XChainAddAccountCreateAttestation attestation = XChainAddAccountCreateAttestation.builder()
+      .account(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
+      .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
+      .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .publicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC2")
+      )
+      .signature(
+        Signature.fromBase16("EEFCFA3DC2AB4AB7C4D2EBBC168CB621A11B82BABD86534DFC8EFA72439A49662" +
+          "D744073CD848E7A587A95B35162CDF9A69BB237E72C9537A987F5B8C394F30D")
+      )
+      .wasLockingChainSend(true)
+      .attestationRewardAccount(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
+      .attestationSignerAccount(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
+      .xChainAccountCreateCount(UnsignedLong.valueOf(6))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rDJVtEuDKr4rj1B3qtW7R5TVWdXV2DY7Qg"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .sequence(UnsignedInteger.valueOf(5))
+      .lastLedgerSequence(UnsignedInteger.valueOf(13))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDF54108BA2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1")
+      )
+      .transactionSignature(
+        Signature.fromBase16("03E74AEF1F585F156786429D2FC87A89E5C6B5A56D68BFC9A6A329F3AC67CBF" +
+          "2B6958283C663A4522278CA162C69B23CF75149AF022B410EA0508C16F4205800")
+      )
+      .build();
+
+    String expectedBinary = "12002E2400000005201B0000000D3015000000000000000661400000000098968068400000000000001" +
+      "4601D40000000000000647121ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC27321EDF54108BA" +
+      "2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1744003E74AEF1F585F156786429D2FC87A89E5C6B5A56D68B" +
+      "FC9A6A329F3AC67CBF2B6958283C663A4522278CA162C69B23CF75149AF022B410EA0508C16F42058007640EEFCFA3DC2AB4AB7C4" +
+      "D2EBBC168CB621A11B82BABD86534DFC8EFA72439A49662D744073CD848E7A587A95B35162CDF9A69BB237E72C9537A987F5B8C39" +
+      "4F30D81145E7A3E3D7200A794FA801C66CE3775B6416EE4128314C15F113E49BCC4B9FFF43CD0366C23ACD82F75638012143FD9ED" +
+      "9A79DEA67CB5D585111FEF0A29203FA0408014145E7A3E3D7200A794FA801C66CE3775B6416EE4128015145E7A3E3D7200A794FA8" +
+      "01C66CE3775B6416EE4120010130101191486F0B1126CE1205E59FDFDD2661A9FB7505CA70F000000000000000000000000000000" +
+      "000000000014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(attestation, expectedBinary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

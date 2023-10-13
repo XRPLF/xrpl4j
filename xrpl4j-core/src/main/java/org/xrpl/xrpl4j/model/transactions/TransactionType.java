@@ -166,7 +166,8 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link Clawback} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+   * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is
+   * subject
    * to change.</p>
    */
   @Beta
@@ -229,11 +230,77 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainAccountCreateCommit} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to
    * change.</p>
    */
   @Beta
-  XCHAIN_ACCOUNT_CREATE_COMMIT("XChainAccountCreateCommit");
+  XCHAIN_ACCOUNT_CREATE_COMMIT("XChainAccountCreateCommit"),
+
+  /**
+   * The {@link TransactionType} for the {@link XChainAddAccountCreateAttestation} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION("XChainAddAccountCreateAttestation"),
+
+  /**
+   * The {@link TransactionType} for the {@link XChainAddClaimAttestation} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_ADD_CLAIM_ATTESTATION("XChainAddClaimAttestation"),
+
+
+  /**
+   * The {@link TransactionType} for the {@link XChainClaim} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_CLAIM("XChainClaim"),
+
+
+  /**
+   * The {@link TransactionType} for the {@link XChainCommit} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_COMMIT("XChainCommit"),
+
+  /**
+   * The {@link TransactionType} for the {@link XChainCreateBridge} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_CREATE_BRIDGE("XChainCreateBridge"),
+
+  /**
+   * The {@link TransactionType} for the {@link XChainCreateClaimID} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_CREATE_CLAIM_ID("XChainCreateClaimID"),
+
+  /**
+   * The {@link TransactionType} for the {@link XChainModifyBridge} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  XCHAIN_MODIFY_BRIDGE("XChainModifyBridge");
 
   private final String value;
 

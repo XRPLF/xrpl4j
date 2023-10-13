@@ -132,8 +132,7 @@ public interface XChainAddAccountCreateAttestation extends Transaction {
    * @return An {@link UnsignedLong}.
    */
   @JsonProperty("XChainAccountCreateCount")
-  @JsonFormat(shape = Shape.STRING)
-  UnsignedLong xChainAccountCreateCount();
+  XChainCount xChainAccountCreateCount();
 
   /**
    * The bridge associated with the attestation.

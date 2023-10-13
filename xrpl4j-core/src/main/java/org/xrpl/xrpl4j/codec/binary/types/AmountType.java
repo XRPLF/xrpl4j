@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
@@ -140,8 +141,14 @@ class AmountType extends SerializedType<AmountType> {
   public AmountType fromJson(JsonNode value) throws JsonProcessingException {
     if (value.isValueNode()) {
       assertXrpIsValid(value.asText());
-      UInt64Type number = new UInt64Type().fromJson(value.asText());
-      byte[] rawBytes = number.toBytes();
+
+      UnsignedByteArray number = UnsignedByteArray.fromHex(
+        ByteUtils.padded(
+          UnsignedLong.valueOf(value.asText()).toString(16),
+          64 / 4
+        )
+      );
+      byte[] rawBytes = number.toByteArray();
       rawBytes[0] |= 0x40;
       return new AmountType(UnsignedByteArray.of(rawBytes));
     }

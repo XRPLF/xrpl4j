@@ -79,6 +79,7 @@ import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainCount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -1758,7 +1759,7 @@ public class BinarySerializationTests {
       .wasLockingChainSend(true)
       .attestationRewardAccount(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
       .attestationSignerAccount(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
-      .xChainAccountCreateCount(UnsignedLong.valueOf(6))
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.valueOf("ffffffffffffffff", 16)))
       .signatureReward(XrpCurrencyAmount.ofDrops(100))
       .xChainBridge(
         XChainBridge.builder()
@@ -1780,7 +1781,7 @@ public class BinarySerializationTests {
       )
       .build();
 
-    String expectedBinary = "12002E2400000005201B0000000D3015000000000000000661400000000098968068400000000000001" +
+    String expectedBinary = "12002E2400000005201B0000000D3015FFFFFFFFFFFFFFFF61400000000098968068400000000000001" +
       "4601D40000000000000647121ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC27321EDF54108BA" +
       "2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1744003E74AEF1F585F156786429D2FC87A89E5C6B5A56D68B" +
       "FC9A6A329F3AC67CBF2B6958283C663A4522278CA162C69B23CF75149AF022B410EA0508C16F42058007640EEFCFA3DC2AB4AB7C4" +

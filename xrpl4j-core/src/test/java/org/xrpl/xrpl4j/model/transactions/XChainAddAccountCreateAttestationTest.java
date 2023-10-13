@@ -211,7 +211,7 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       .wasLockingChainSend(true)
       .attestationRewardAccount(Address.of("rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es"))
       .attestationSignerAccount(Address.of("rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw"))
-      .xChainAccountCreateCount(UnsignedLong.valueOf(2))
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.valueOf(2)))
       .signatureReward(XrpCurrencyAmount.ofDrops(204))
       .xChainBridge(
         XChainBridge.builder()

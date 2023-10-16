@@ -81,6 +81,7 @@ import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 import org.xrpl.xrpl4j.model.transactions.XChainClaim;
 import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainCount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -1882,6 +1883,42 @@ public class BinarySerializationTests {
       "E56E3F09CF4E60000000000000000000000000000000000000000";
 
     assertSerializesAndDeserializes(claim, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainCommit() throws JsonProcessingException {
+    XChainCommit commit = XChainCommit.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.MAX_VALUE))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("3043021F177323F0D93612C82A4393A99B23905A7E675753FD80C52997AFA" +
+          "B13F5F9D002203BFFAF457E90BDA65AABE8F8762BD96162FAD98A0C030CCD69B06EE9B12BBFFE")
+      )
+      .build();
+
+    String expectedBinary = "12002A228000000024000000013014FFFFFFFFFFFFFFFF6140000000000027106840000000000000" +
+      "0A73210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD02074453043021F177323F0D93612C82A" +
+      "4393A99B23905A7E675753FD80C52997AFAB13F5F9D002203BFFAF457E90BDA65AABE8F8762BD96162FAD98A0C030CCD69B06E" +
+      "E9B12BBFFE8114B5F762798A53D543A014CAF8B297CFF8F2F937E8011914AF80285F637EE4AF3C20378F9DFB12511ACB8D2700" +
+      "0000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F09CF4E60000000000000000000000" +
+      "000000000000000000";
+
+    assertSerializesAndDeserializes(commit, expectedBinary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

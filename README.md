@@ -141,17 +141,24 @@ For use-cases that require private keys to exist inside the running JVM, the fol
 generate a keypair, and also how to derive an XRPL address from there:
 
 ```java
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
-  
+import org.xrpl.xrpl4j.model.transactions.XAddress;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 ...
+Seed seed = Seed.ed25519Seed(); // <-- Generates a random seed.
 
-Seed seed = Seed.ed255519Seed(); // <-- Generates a random seed.
-PrivateKey privateKey = seed.derivePrivateKey(); // <-- Derive a private key from the seed.
-PublicKey publicKey = privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
-Address address = publicKey.deriveAddress(); // <-- Derive an address from the public key.
+KeyPair pair = seed.deriveKeyPair(); // <-- Derive a key pair from seed;
+PublicKey pubKey = pair.publicKey(); // <-- Public key from KeyPair
+PrivateKey privKey = pair.privateKey() // <-- Private key from KeyPair
+
+// Classic Addresss
+Address classicAddress = pubKey.deriveAddress();
+// Derive the Classic and X-Addresses from testWallet
+XAddress xAddress = AddressCodec.getInstance().classicAddressToXAddress(classicAddress, true)
 ```
 
 #### Private Key References (`PrivateKeyReference`)
@@ -183,12 +190,13 @@ The following example illustrates how to construct a payment transaction, sign i
 then submit that transaction to the XRP Ledger for processing and validation:
 
 ```java
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
+
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 
 // Construct a SignatureService that uses in-memory Keys (see SignatureService.java for alternatives).
@@ -199,6 +207,11 @@ Seed senderSeed = Seed.ed255519Seed();
 PrivateKey senderPrivateKey = senderSeed.derivePrivateKey();
 PublicKey senderPublicKey = senderPrivateKey.derivePublicKey();
 Address senderAddress = senderPublicKey.deriveAddress();
+
+KeyPair pair = Seed.ed25519Seed().deriveKeyPair(); // <-- Generate Key Pair from random seed;
+PublicKey pubKey = pair.publicKey(); // <-- Public key from KeyPair
+PrivateKey privKey = pair.privateKey() // <-- Private key from KeyPair
+Address classicAddress = pubKey.deriveAddress();
 
 // Receiver (using secp256k1 key)
 Address receiverAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");

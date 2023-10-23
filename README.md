@@ -156,7 +156,7 @@ PublicKey publicKey = pair.publicKey(); // <-- Public key from KeyPair
 PrivateKey privateKey = pair.privateKey() // <-- Private key from KeyPair
 
 // Classic Address
-Address classicAddress = pubKey.deriveAddress();
+Address classicAddress = publicKey.deriveAddress();
 // Derive the Classic and X-Addresses from testWallet
 XAddress xAddress = AddressCodec.getInstance().classicAddressToXAddress(classicAddress, true)
 ```

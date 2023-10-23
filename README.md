@@ -152,8 +152,8 @@ import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 Seed seed = Seed.ed25519Seed(); // <-- Generates a random seed.
 
 KeyPair pair = seed.deriveKeyPair(); // <-- Derive a key pair from seed;
-PublicKey pubKey = pair.publicKey(); // <-- Public key from KeyPair
-PrivateKey privKey = pair.privateKey() // <-- Private key from KeyPair
+PublicKey publicKey = pair.publicKey(); // <-- Public key from KeyPair
+PrivateKey privateKey = pair.privateKey() // <-- Private key from KeyPair
 
 // Classic Addresss
 Address classicAddress = pubKey.deriveAddress();

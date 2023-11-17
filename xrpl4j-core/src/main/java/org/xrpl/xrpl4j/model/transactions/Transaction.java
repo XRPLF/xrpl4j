@@ -83,7 +83,7 @@ public interface Transaction {
       .put(ImmutableXChainAddClaimAttestation.class, TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION)
       .put(ImmutableXChainClaim.class, TransactionType.XCHAIN_CLAIM)
       .put(ImmutableXChainCommit.class, TransactionType.XCHAIN_COMMIT)
-//      .put(ImmutableXChainCreateBridge.class, TransactionType.XCHAIN_CREATE_BRIDGE)
+      .put(ImmutableXChainCreateBridge.class, TransactionType.XCHAIN_CREATE_BRIDGE)
 //      .put(ImmutableXChainCreateClaimId.class, TransactionType.XCHAIN_CREATE_CLAIM_ID)
 //      .put(ImmutableXChainModifyBridge.class, TransactionType.XCHAIN_MODIFY_BRIDGE)
       .build();

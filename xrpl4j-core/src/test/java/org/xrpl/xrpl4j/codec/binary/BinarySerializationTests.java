@@ -43,6 +43,7 @@ import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
+import org.xrpl.xrpl4j.model.flags.XChainModifyBridgeFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
@@ -65,6 +66,7 @@ import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateBridge;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -87,6 +89,7 @@ import org.xrpl.xrpl4j.model.transactions.XChainCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainCount;
 import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
 import org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -1995,6 +1998,42 @@ public class BinarySerializationTests {
       "9CF4E60000000000000000000000000000000000000000";
 
     assertSerializesAndDeserializes(claimId, binary);
+  }
+
+  @Test
+  void serializeXChainModifyBridge() throws JsonProcessingException {
+    XChainModifyBridge transaction = XChainModifyBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .signatureReward(XrpCurrencyAmount.ofDrops(1000))
+      .minAccountCreateAmount(XrpCurrencyAmount.ofDrops(10000))
+      .flags(XChainModifyBridgeFlags.UNSET)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("3045022100D2CABC1B0E0635A8EE2E6554F6D474C49BC292C995C5C9F83179F" +
+          "4A60634B04C02205D1DB569D9593136F2FBEA7140010C8F46794D653AFDBEA8D30B8750BA4805E5")
+      )
+      .build();
+
+    String binary = "12002F2200000000240000000168400000000000000A601D40000000000003E8601E40000000000027107" +
+      "3210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD02074473045022100D2CABC1B0E0635A8E" +
+      "E2E6554F6D474C49BC292C995C5C9F83179F4A60634B04C02205D1DB569D9593136F2FBEA7140010C8F46794D653AFDBEA8D" +
+      "30B8750BA4805E58114B5F762798A53D543A014CAF8B297CFF8F2F937E8011914AF80285F637EE4AF3C20378F9DFB12511AC" +
+      "B8D27000000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F09CF4E60000000000000" +
+      "000000000000000000000000000";
+
+    assertSerializesAndDeserializes(transaction, binary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

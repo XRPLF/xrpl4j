@@ -8,31 +8,29 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
-import java.util.Optional;
-
 /**
- * Object mapping for the {@code XChainCreateBridge} transaction.
+ * Object mapping for the {@code XChainCreateClaimId} transaction.
  *
  * <p>This interface will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
  * is subject to change.</p>
  */
 @Beta
 @Immutable
-@JsonSerialize(as = ImmutableXChainCreateBridge.class)
-@JsonDeserialize(as = ImmutableXChainCreateBridge.class)
-public interface XChainCreateBridge extends Transaction {
+@JsonSerialize(as = ImmutableXChainCreateClaimId.class)
+@JsonDeserialize(as = ImmutableXChainCreateClaimId.class)
+public interface XChainCreateClaimId extends Transaction {
 
   /**
-   * Construct a {@code XChainCreateBridge} builder.
+   * Construct a {@code XChainCreateClaimId} builder.
    *
-   * @return An {@link ImmutableXChainCreateBridge.Builder}.
+   * @return An {@link ImmutableXChainCreateClaimId.Builder}.
    */
-  static ImmutableXChainCreateBridge.Builder builder() {
-    return ImmutableXChainCreateBridge.builder();
+  static ImmutableXChainCreateClaimId.Builder builder() {
+    return ImmutableXChainCreateClaimId.builder();
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link XChainCreateBridge}, which only allows the
+   * Set of {@link TransactionFlags}s for this {@link XChainCreateClaimId}, which only allows the
    * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * @return A set of {@link TransactionFlags}, default is {@link TransactionFlags#EMPTY}.
@@ -44,16 +42,16 @@ public interface XChainCreateBridge extends Transaction {
   }
 
   /**
-   * The minimum amount, in XRP, required for a {@link XChainAccountCreateCommit} transaction. If this isn't present,
-   * the {@link XChainAccountCreateCommit} transaction will fail. This field can only be present on XRP-XRP bridges.
+   * The account that must send the {@link XChainCommit} transaction on the source chain.
    *
-   * @return An optionally-present {@link XrpCurrencyAmount}.
+   * @return An {@link Address}.
    */
-  @JsonProperty("MinAccountCreateAmount")
-  Optional<XrpCurrencyAmount> minAccountCreateAmount();
+  @JsonProperty("OtherChainSource")
+  Address otherChainSource();
 
   /**
-   * The total amount to pay the witness servers for their signatures. This amount will be split among the signers.
+   * The amount, in XRP, to reward the witness servers for providing signatures. This must match the amount on the
+   * {@code Bridge} ledger object.
    *
    * @return An {@link XrpCurrencyAmount}.
    */
@@ -61,7 +59,7 @@ public interface XChainCreateBridge extends Transaction {
   XrpCurrencyAmount signatureReward();
 
   /**
-   * The bridge (door accounts and assets) to create.
+   * The bridge to create the claim ID for.
    *
    * @return An {@link XChainBridge}.
    */

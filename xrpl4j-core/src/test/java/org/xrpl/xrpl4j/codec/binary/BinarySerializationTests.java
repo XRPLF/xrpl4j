@@ -64,6 +64,7 @@ import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateBridge;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -85,6 +86,7 @@ import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
 import org.xrpl.xrpl4j.model.transactions.XChainCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainCount;
 import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -1957,6 +1959,42 @@ public class BinarySerializationTests {
       "F4E60000000000000000000000000000000000000000";
 
     assertSerializesAndDeserializes(createBridge, binary);
+  }
+
+  @Test
+  void serializeXChainCreateClaimId() throws JsonProcessingException {
+    XChainCreateClaimId claimId = XChainCreateClaimId.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .otherChainSource(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+      .signatureReward(XrpCurrencyAmount.ofDrops(10000))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("30440220247B20A1B9C48E21A374CB9B3E1FE2A7C528151868DF8D307E9FBE" +
+          "15237E531A02207C20C092DDCC525E583EF4AB7CB91E862A6DED19426997D3F0A2C84E2BE8C5DD")
+      )
+      .build();
+
+    String binary = "1200292280000000240000000168400000000000000A601D400000000000271073210330E7FC9D56BB25D68" +
+      "93BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020744630440220247B20A1B9C48E21A374CB9B3E1FE2A7C528151868" +
+      "DF8D307E9FBE15237E531A02207C20C092DDCC525E583EF4AB7CB91E862A6DED19426997D3F0A2C84E2BE8C5DD8114B5F7627" +
+      "98A53D543A014CAF8B297CFF8F2F937E8801214AF80285F637EE4AF3C20378F9DFB12511ACB8D27011914AF80285F637EE4AF" +
+      "3C20378F9DFB12511ACB8D27000000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F0" +
+      "9CF4E60000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(claimId, binary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

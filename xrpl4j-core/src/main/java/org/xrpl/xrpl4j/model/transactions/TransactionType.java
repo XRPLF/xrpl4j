@@ -285,7 +285,7 @@ public enum TransactionType {
   XCHAIN_CREATE_BRIDGE("XChainCreateBridge"),
 
   /**
-   * The {@link TransactionType} for the {@link XChainCreateClaimID} transaction.
+   * The {@link TransactionType} for the {@link XChainCreateClaimId} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
    * is subject to change.</p>

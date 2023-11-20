@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -26,6 +27,9 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType TICKET = MetaLedgerEntryType.of("Ticket");
   MetaLedgerEntryType NFTOKEN_PAGE = MetaLedgerEntryType.of("NFTokenPage");
   MetaLedgerEntryType AMM = MetaLedgerEntryType.of("AMM");
+
+  @Beta
+  MetaLedgerEntryType BRIDGE = MetaLedgerEntryType.of("Bridge");
 
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.

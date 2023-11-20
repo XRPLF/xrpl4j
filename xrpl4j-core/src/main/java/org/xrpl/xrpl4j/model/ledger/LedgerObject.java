@@ -55,6 +55,9 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
   @JsonSubTypes.Type(value = ImmutableAmmObject.class, name = "AMM"),
   @JsonSubTypes.Type(value = ImmutableNfTokenPageObject.class, name = "NFTokenPage"),
+  @JsonSubTypes.Type(value = ImmutableBridgeObject.class, name = "Bridge"),
+//  @JsonSubTypes.Type(value = ImmutableXChainOwnedCreateAccountClaimId.class, name = "XChainOwnedCreateAccountClaimID"),
+//  @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimId.class, name = "XChainOwnedClaimID"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -150,7 +153,34 @@ public interface LedgerObject {
      *  change.</p>
      */
     @Beta
-    AMM("AMM");
+    AMM("AMM"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Bridge} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    BRIDGE("Bridge"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code XChainOwnedCreateAccountClaimID} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID("XChainOwnedCreateAccountClaimID"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code XChainOwnedClaimID} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    XCHAIN_OWNED_CLAIM_ID("XChainOwnedClaimID");
 
     private final String value;
 

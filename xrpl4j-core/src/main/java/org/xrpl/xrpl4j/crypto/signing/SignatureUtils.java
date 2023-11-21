@@ -62,6 +62,14 @@ import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainClaim;
+import org.xrpl.xrpl4j.model.transactions.XChainCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainModifyBridge;
 
 import java.util.List;
 import java.util.Objects;
@@ -306,6 +314,39 @@ public class SignatureUtils {
       transactionWithSignature = AmmDelete.builder().from((AmmDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (XChainAccountCreateCommit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainAccountCreateCommit.builder().from((XChainAccountCreateCommit) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainAddAccountCreateAttestation.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainAddAccountCreateAttestation.builder()
+        .from((XChainAddAccountCreateAttestation) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainAddClaimAttestation.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainAddClaimAttestation.builder().from((XChainAddClaimAttestation) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainClaim.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainClaim.builder().from((XChainClaim) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainCommit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainCommit.builder().from((XChainCommit) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainCreateBridge.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainCreateBridge.builder().from((XChainCreateBridge) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainCreateClaimId.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainCreateClaimId.builder().from((XChainCreateClaimId) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (XChainModifyBridge.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = XChainModifyBridge.builder().from((XChainModifyBridge) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -466,6 +507,39 @@ public class SignatureUtils {
         .build();
     } else if (AmmDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = AmmDelete.builder().from((AmmDelete) transaction)
+        .signers(signers)
+        .build();
+    }  else if (XChainAccountCreateCommit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainAccountCreateCommit.builder().from((XChainAccountCreateCommit) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainAddAccountCreateAttestation.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainAddAccountCreateAttestation.builder()
+        .from((XChainAddAccountCreateAttestation) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainAddClaimAttestation.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainAddClaimAttestation.builder().from((XChainAddClaimAttestation) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainClaim.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainClaim.builder().from((XChainClaim) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainCommit.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainCommit.builder().from((XChainCommit) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainCreateBridge.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainCreateBridge.builder().from((XChainCreateBridge) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainCreateClaimId.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainCreateClaimId.builder().from((XChainCreateClaimId) transaction)
+        .signers(signers)
+        .build();
+    } else if (XChainModifyBridge.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = XChainModifyBridge.builder().from((XChainModifyBridge) transaction)
         .signers(signers)
         .build();
     } else {

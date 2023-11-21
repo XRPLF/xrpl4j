@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.awaitility.Durations;
@@ -76,6 +77,7 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
@@ -203,6 +205,30 @@ public abstract class AbstractIT {
   protected void fundAccount(final Address address) {
     Objects.requireNonNull(address);
     xrplEnvironment.fundAccount(address);
+  }
+
+  protected <T extends Transaction> Finality signSubmitAndWait(
+    T transaction,
+    KeyPair keyPair
+  )
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    Preconditions.checkArgument(transaction.lastLedgerSequence().isPresent());
+
+    SingleSignedTransaction<T> signedTransaction = signatureService.sign(
+      keyPair.privateKey(),
+      transaction
+    );
+
+    SubmitResult<T> voteSubmitResult = xrplClient.submit(signedTransaction);
+    assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    return scanForFinality(
+      signedTransaction.hash(),
+      voteSubmitResult.validatedLedgerIndex(),
+      transaction.lastLedgerSequence().get(),
+      transaction.sequence(),
+      keyPair.publicKey().deriveAddress()
+    );
   }
 
   //////////////////////

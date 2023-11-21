@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -71,6 +72,10 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
@@ -91,6 +96,17 @@ import org.xrpl.xrpl4j.model.transactions.TicketCreate;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainClaim;
+import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainCount;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.ArrayList;
@@ -104,6 +120,17 @@ import java.util.Optional;
 public class SignatureUtilsTest {
 
   private static final String HEX_PUBLIC_KEY = "027535A4E90B2189CF9885563F45C4F454B3BFAB21930089C3878A9427B4D648D9";
+  public static final ImmutableXChainBridge XCHAIN_BRIDGE = XChainBridge.builder()
+    .lockingChainDoor(Address.of("rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4"))
+    .lockingChainIssue(Issue.XRP)
+    .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+    .issuingChainIssue(
+      Issue.builder()
+        .currency("TST")
+        .issuer(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+        .build()
+    )
+    .build();
 
   PublicKey sourcePublicKey;
 
@@ -736,6 +763,147 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToXChainAccountCreateCommit() {
+    XChainAccountCreateCommit commit = XChainAccountCreateCommit.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of("rD323VyRjgzzhY4bFpo44rmyh2neB5d8Mo"))
+      .amount(XrpCurrencyAmount.ofDrops(20000000))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey(sourcePublicKey)
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addSignatureToTransactionHelper(commit);
+  }
+
+  @Test
+  void addSignatureToXChainAddAccountCreateAttestation() {
+    XChainAddAccountCreateAttestation transaction = XChainAddAccountCreateAttestation.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .otherChainSource(Address.of("rUzB7yg1LcFa7m3q1hfrjr5w53vcWzNh3U"))
+      .destination(Address.of("rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd"))
+      .amount(XrpCurrencyAmount.ofDrops(2000000000))
+      .publicKey(sourcePublicKey)
+      .wasLockingChainSend(true)
+      .attestationRewardAccount(Address.of("rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es"))
+      .attestationSignerAccount(Address.of("rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw"))
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.valueOf(2)))
+      .signatureReward(XrpCurrencyAmount.ofDrops(204))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(sourcePublicKey)
+      .signature(
+        Signature.fromBase16("F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E" +
+          "9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500")
+      )
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToXChainAddClaimAttestation() {
+    XChainAddClaimAttestation transaction = XChainAddClaimAttestation.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .attestationRewardAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .attestationSignerAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .lastLedgerSequence(UnsignedInteger.valueOf(19))
+      .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
+      .sequence(UnsignedInteger.valueOf(9))
+      .publicKey(sourcePublicKey)
+      .signingPublicKey(sourcePublicKey)
+      .signature(
+        Signature.fromBase16("F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E" +
+          "9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500")
+      )
+      .wasLockingChainSend(true)
+      .xChainBridge(XCHAIN_BRIDGE)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToXChainClaim() {
+    XChainClaim transaction = XChainClaim.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(sourcePublicKey)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.valueOf(0x13F)))
+      .destination(Address.of("rahDmoXrtPdh7sUdrPjini3gcnTVYjbjjw"))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToXChainCommit() {
+    XChainCommit transaction = XChainCommit.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.valueOf(0x13f)))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToXChainCreateBridge() {
+    XChainCreateBridge transaction = XChainCreateBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToXChainCreateClaimId() {
+    XChainCreateClaimId transaction = XChainCreateClaimId.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .otherChainSource(Address.of("rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo"))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToXChainModifyBridge() {
+    XChainModifyBridge transaction = XChainModifyBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .xChainBridge(XCHAIN_BRIDGE)
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -1193,6 +1361,139 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(ammDelete);
+  }
+
+  @Test
+  void addMultiSignatureToXChainAccountCreateCommit() {
+    XChainAccountCreateCommit transaction = XChainAccountCreateCommit.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of("rD323VyRjgzzhY4bFpo44rmyh2neB5d8Mo"))
+      .amount(XrpCurrencyAmount.ofDrops(20000000))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainAddAccountCreateAttestation() {
+    XChainAddAccountCreateAttestation transaction = XChainAddAccountCreateAttestation.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .otherChainSource(Address.of("rUzB7yg1LcFa7m3q1hfrjr5w53vcWzNh3U"))
+      .destination(Address.of("rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd"))
+      .amount(XrpCurrencyAmount.ofDrops(2000000000))
+      .publicKey(sourcePublicKey)
+      .wasLockingChainSend(true)
+      .attestationRewardAccount(Address.of("rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es"))
+      .attestationSignerAccount(Address.of("rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw"))
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.valueOf(2)))
+      .signatureReward(XrpCurrencyAmount.ofDrops(204))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .sequence(UnsignedInteger.ONE)
+      .signature(
+        Signature.fromBase16("F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E" +
+          "9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500")
+      )
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainAddClaimAttestation() {
+    XChainAddClaimAttestation transaction = XChainAddClaimAttestation.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .attestationRewardAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .attestationSignerAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .lastLedgerSequence(UnsignedInteger.valueOf(19))
+      .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
+      .sequence(UnsignedInteger.valueOf(9))
+      .publicKey(sourcePublicKey)
+      .signature(
+        Signature.fromBase16("F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E" +
+          "9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500")
+      )
+      .wasLockingChainSend(true)
+      .xChainBridge(XCHAIN_BRIDGE)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainClaim() {
+    XChainClaim transaction = XChainClaim.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.valueOf(0x13F)))
+      .destination(Address.of("rahDmoXrtPdh7sUdrPjini3gcnTVYjbjjw"))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainCommit() {
+    XChainCommit transaction = XChainCommit.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.valueOf(0x13f)))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainCreateBridge() {
+    XChainCreateBridge transaction = XChainCreateBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainCreateClaimId() {
+    XChainCreateClaimId transaction = XChainCreateClaimId.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .otherChainSource(Address.of("rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo"))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToXChainModifyBridge() {
+    XChainModifyBridge transaction = XChainModifyBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(sourcePublicKey.deriveAddress())
+      .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
   }
 
   @Test

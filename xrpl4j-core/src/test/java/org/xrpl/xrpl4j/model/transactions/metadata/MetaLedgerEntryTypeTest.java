@@ -31,6 +31,9 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.NFTOKEN_PAGE.value()).isEqualTo("NFTokenPage");
     assertThat(MetaLedgerEntryType.AMM.value()).isEqualTo("AMM");
     assertThat(MetaLedgerEntryType.BRIDGE.value()).isEqualTo("Bridge");
+    assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID.value())
+      .isEqualTo("XChainOwnedCreateAccountClaimID");
+    assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
   }
 
   @Test

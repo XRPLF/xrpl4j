@@ -56,7 +56,10 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableAmmObject.class, name = "AMM"),
   @JsonSubTypes.Type(value = ImmutableNfTokenPageObject.class, name = "NFTokenPage"),
   @JsonSubTypes.Type(value = ImmutableBridgeObject.class, name = "Bridge"),
-//  @JsonSubTypes.Type(value = ImmutableXChainOwnedCreateAccountClaimId.class, name = "XChainOwnedCreateAccountClaimID"),
+  @JsonSubTypes.Type(
+    value = ImmutableXChainOwnedCreateAccountClaimIdObject.class,
+    name = "XChainOwnedCreateAccountClaimID"
+  ),
 //  @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimId.class, name = "XChainOwnedClaimID"),
 })
 // TODO: Uncomment subtypes as we implement
@@ -149,8 +152,9 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
      *
-     * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
-     *  change.</p>
+     * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject
+     * to
+     * change.</p>
      */
     @Beta
     AMM("AMM"),
@@ -195,6 +199,7 @@ public interface LedgerObject {
      * <p>Mostly used by Jackson for deserialization.
      *
      * @param value The {@link String} value of a {@link LedgerEntryType}.
+     *
      * @return A {@link LedgerEntryType}.
      */
     @JsonCreator

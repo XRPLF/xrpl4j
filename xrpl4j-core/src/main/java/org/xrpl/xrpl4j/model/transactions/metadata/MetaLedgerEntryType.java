@@ -31,6 +31,14 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType BRIDGE = MetaLedgerEntryType.of("Bridge");
 
+  @Beta
+  MetaLedgerEntryType XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID = MetaLedgerEntryType.of(
+    "XChainOwnedCreateAccountClaimID"
+  );
+
+  @Beta
+  MetaLedgerEntryType XCHAIN_OWNED_CLAIM_ID = MetaLedgerEntryType.of("XChainOwnedClaimID");
+
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *

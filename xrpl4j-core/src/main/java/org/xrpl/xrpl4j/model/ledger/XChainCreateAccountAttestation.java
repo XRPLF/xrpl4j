@@ -9,7 +9,8 @@ import org.immutables.value.Value.Immutable;
 /**
  * A wrapper around {@link XChainCreateAccountProofSig}s.
  *
- * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+ * <p>This class will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API is
+ * subject to
  * change.</p>
  */
 @Beta
@@ -19,8 +20,7 @@ import org.immutables.value.Value.Immutable;
 public interface XChainCreateAccountAttestation {
 
   /**
-   * Construct an {@link XChainCreateAccountAttestation} containing the specified
-   * {@link XChainCreateAccountProofSig}.
+   * Construct an {@link XChainCreateAccountAttestation} containing the specified {@link XChainCreateAccountProofSig}.
    *
    * @param proofSig An {@link XChainCreateAccountProofSig}.
    *

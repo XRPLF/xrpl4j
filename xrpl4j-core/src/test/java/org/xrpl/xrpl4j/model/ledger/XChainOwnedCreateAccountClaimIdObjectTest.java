@@ -33,7 +33,7 @@ class XChainOwnedCreateAccountClaimIdObjectTest extends AbstractJsonTest {
           .build()
       )
       .addXChainCreateAccountAttestations(
-        XChainCreateAccountProofSigWrapper.of(
+        XChainCreateAccountAttestation.of(
           XChainCreateAccountProofSig.builder()
             .amount(XrpCurrencyAmount.ofDrops(20000000))
             .attestationRewardAccount(Address.of("rDUQ7WUgMZ6V75v3CFb1tqm1XPizmkWtTm"))
@@ -44,7 +44,7 @@ class XChainOwnedCreateAccountClaimIdObjectTest extends AbstractJsonTest {
             .wasLockingChainSend(true)
             .build()
         ),
-        XChainCreateAccountProofSigWrapper.of(
+        XChainCreateAccountAttestation.of(
           XChainCreateAccountProofSig.builder()
             .amount(
               IssuedCurrencyAmount.builder()

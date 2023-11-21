@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.ledger.ImmutableXChainCreateAccountProofSigWrapper;
 
 /**
  * A wrapper around {@link MetaXChainCreateAccountProofSig}s.
@@ -15,9 +14,9 @@ import org.xrpl.xrpl4j.model.ledger.ImmutableXChainCreateAccountProofSigWrapper;
  */
 @Beta
 @Immutable
-@JsonSerialize(as = ImmutableMetaXChainCreateAccountProofSigWrapper.class)
-@JsonDeserialize(as = ImmutableMetaXChainCreateAccountProofSigWrapper.class)
-public interface MetaXChainCreateAccountProofSigWrapper {
+@JsonSerialize(as = ImmutableMetaXChainCreateAccountAttestation.class)
+@JsonDeserialize(as = ImmutableMetaXChainCreateAccountAttestation.class)
+public interface MetaXChainCreateAccountAttestation {
 
   /**
    * An {@link MetaXChainCreateAccountProofSig}.

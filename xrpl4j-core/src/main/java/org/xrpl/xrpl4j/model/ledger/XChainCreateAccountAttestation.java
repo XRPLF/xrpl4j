@@ -14,20 +14,20 @@ import org.immutables.value.Value.Immutable;
  */
 @Beta
 @Immutable
-@JsonSerialize(as = ImmutableXChainCreateAccountProofSigWrapper.class)
-@JsonDeserialize(as = ImmutableXChainCreateAccountProofSigWrapper.class)
-public interface XChainCreateAccountProofSigWrapper {
+@JsonSerialize(as = ImmutableXChainCreateAccountAttestation.class)
+@JsonDeserialize(as = ImmutableXChainCreateAccountAttestation.class)
+public interface XChainCreateAccountAttestation {
 
   /**
-   * Construct an {@link XChainCreateAccountProofSigWrapper} containing the specified
+   * Construct an {@link XChainCreateAccountAttestation} containing the specified
    * {@link XChainCreateAccountProofSig}.
    *
    * @param proofSig An {@link XChainCreateAccountProofSig}.
    *
-   * @return An {@link XChainCreateAccountProofSigWrapper}.
+   * @return An {@link XChainCreateAccountAttestation}.
    */
-  static XChainCreateAccountProofSigWrapper of(XChainCreateAccountProofSig proofSig) {
-    return ImmutableXChainCreateAccountProofSigWrapper.builder()
+  static XChainCreateAccountAttestation of(XChainCreateAccountProofSig proofSig) {
+    return ImmutableXChainCreateAccountAttestation.builder()
       .xChainCreateAccountProofSig(proofSig)
       .build();
   }

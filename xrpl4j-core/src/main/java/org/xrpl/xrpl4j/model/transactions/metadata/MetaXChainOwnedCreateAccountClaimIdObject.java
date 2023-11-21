@@ -8,8 +8,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.ledger.ImmutableXChainOwnedCreateAccountClaimIdObject;
-import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
@@ -71,10 +69,10 @@ public interface MetaXChainOwnedCreateAccountClaimIdObject extends MetaLedgerObj
    * was signed, including the amount, destination, signature reward amount, and reward account for that signature. With
    * the exception of the reward account, all signatures must sign the message created with common parameters.
    *
-   * @return A {@link List} of {@link MetaXChainCreateAccountProofSigWrapper}s.
+   * @return A {@link List} of {@link MetaXChainCreateAccountAttestation}s.
    */
   @JsonProperty("XChainCreateAccountAttestations")
-  List<MetaXChainCreateAccountProofSigWrapper> xChainCreateAccountAttestations();
+  List<MetaXChainCreateAccountAttestation> xChainCreateAccountAttestations();
 
   /**
    * An integer that determines the order that accounts created through cross-chain transfers must be performed. Smaller

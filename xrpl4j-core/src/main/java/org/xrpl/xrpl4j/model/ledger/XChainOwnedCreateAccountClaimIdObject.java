@@ -10,14 +10,10 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
-import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
 import org.xrpl.xrpl4j.model.transactions.XChainCount;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The {@code XChainOwnedCreateAccountClaimID} ledger object is used to collect attestations for creating an account via
@@ -92,10 +88,10 @@ public interface XChainOwnedCreateAccountClaimIdObject extends LedgerObject {
    * was signed, including the amount, destination, signature reward amount, and reward account for that signature. With
    * the exception of the reward account, all signatures must sign the message created with common parameters.
    *
-   * @return A {@link List} of {@link XChainCreateAccountProofSigWrapper}s.
+   * @return A {@link List} of {@link XChainCreateAccountAttestation}s.
    */
   @JsonProperty("XChainCreateAccountAttestations")
-  List<XChainCreateAccountProofSigWrapper> xChainCreateAccountAttestations();
+  List<XChainCreateAccountAttestation> xChainCreateAccountAttestations();
 
   /**
    * An integer that determines the order that accounts created through cross-chain transfers must be performed. Smaller

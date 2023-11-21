@@ -60,7 +60,7 @@ import com.google.common.annotations.Beta;
     value = ImmutableXChainOwnedCreateAccountClaimIdObject.class,
     name = "XChainOwnedCreateAccountClaimID"
   ),
-//  @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimId.class, name = "XChainOwnedClaimID"),
+  @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {

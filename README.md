@@ -33,7 +33,7 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
         <dependency>
             <groupId>org.xrpl</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>3.0.1</version>
+            <version>3.2.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -141,17 +141,17 @@ For use-cases that require private keys to exist inside the running JVM, the fol
 generate a keypair, and also how to derive an XRPL address from there:
 
 ```java
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.transactions.Address;
-  
-...
 
-Seed seed = Seed.ed255519Seed(); // <-- Generates a random seed.
-PrivateKey privateKey = seed.derivePrivateKey(); // <-- Derive a private key from the seed.
-PublicKey publicKey = privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
-Address address = publicKey.deriveAddress(); // <-- Derive an address from the public key.
+Seed seed = Seed.ed25519Seed(); // <-- Generates a random seed.
+KeyPair keyPair = seed.deriveKeyPair(); // <-- Derive a KeyPair from the seed.
+PrivateKey privateKey = keyPair.privateKey(); // <-- Derive a privateKey from the KeyPair.
+PublicKey publicKey = keyPair.publicKey(); // <-- Derive a publicKey from the KeyPair.
+Address address = publicKey.deriveAddress(); // <-- Derive an address from the publicKey
 ```
 
 #### Private Key References (`PrivateKeyReference`)
@@ -183,23 +183,24 @@ The following example illustrates how to construct a payment transaction, sign i
 then submit that transaction to the XRP Ledger for processing and validation:
 
 ```java
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
+
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 
 // Construct a SignatureService that uses in-memory Keys (see SignatureService.java for alternatives).
 SignatureService signatureService = new BcSignatureService();
 
 // Sender (using ed25519 key)
-Seed senderSeed = Seed.ed255519Seed();
-PrivateKey senderPrivateKey = senderSeed.derivePrivateKey();
-PublicKey senderPublicKey = senderPrivateKey.derivePublicKey();
-Address senderAddress = senderPublicKey.deriveAddress();
-
+Seed seed = Seed.ed25519Seed(); // <-- Generates a random seed.
+PrivateKey senderPrivateKey = seed.deriveKeyPair().privateKey();
+  
 // Receiver (using secp256k1 key)
 Address receiverAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
@@ -208,7 +209,7 @@ Payment payment = ...; // See V3 ITs for examples.
 
 SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey,payment);
 SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
-assertThat(result.result()).isEqualTo("tesSUCCESS");
+assert result.engineResult().equals("tesSUCCESS");
 ```
 
 ### Codecs
@@ -216,7 +217,7 @@ This library relies upon two important sub-modules called Codecs (One for the XR
 canonical JSON encoding). Read more about each here:
 
 - [Binary Codec](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/binary/README.md)
-- [Address Coded](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/addresses/README.md)
+- [Address Codec](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/addresses/README.md)
 
 ## Development
 

@@ -10,7 +10,6 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.XChainCommit;
 
 import java.util.Optional;
 
@@ -51,7 +50,8 @@ public interface XChainClaimProofSig {
   PublicKey publicKey();
 
   /**
-   * The amount to claim in the {@link XChainCommit} transaction on the destination chain.
+   * The amount to claim in the {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} transaction on the destination
+   * chain.
    *
    * @return A {@link CurrencyAmount}.
    */

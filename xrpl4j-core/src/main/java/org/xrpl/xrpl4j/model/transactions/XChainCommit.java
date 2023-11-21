@@ -55,8 +55,8 @@ public interface XChainCommit extends Transaction {
 
   /**
    * The destination account on the destination chain. If this is not specified, the account that submitted the
-   * {@link XChainCreateClaimId} transaction on the destination chain will need to submit a {@link XChainClaim}
-   * transaction to claim the funds.
+   * {@link org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId} transaction on the destination chain will need to
+   * submit a {@link XChainClaim} transaction to claim the funds.
    *
    * @return An optionally-present {@link Address}.
    */
@@ -69,16 +69,18 @@ public interface XChainCommit extends Transaction {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
   /**
    * The unique integer ID for a cross-chain transfer. This must be acquired on the destination chain (via a
-   * {@link XChainCreateClaimId} transaction) and checked from a validated ledger before submitting this transaction. If
-   * an incorrect sequence number is specified, the funds will be lost.
+   * {@link org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId} transaction) and checked from a validated ledger
+   * before submitting this transaction. If an incorrect sequence number is specified, the funds will be lost.
    *
    * @return An {@link XChainClaimId}.
    */
   @JsonProperty("XChainClaimID")
+  @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
 
 }

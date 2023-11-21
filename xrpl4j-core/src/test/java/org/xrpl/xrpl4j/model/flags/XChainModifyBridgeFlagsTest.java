@@ -84,6 +84,6 @@ class XChainModifyBridgeFlagsTest extends AbstractFlagsTest {
     boolean tfClearAccountCreateAmount
   ) {
     return (XChainModifyBridgeFlags.FULLY_CANONICAL_SIG.getValue()) |
-      (tfClearAccountCreateAmount? XChainModifyBridgeFlags.CLEAR_ACCOUNT_CREATE_AMOUNT.getValue() : 0L);
+      (tfClearAccountCreateAmount ? XChainModifyBridgeFlags.CLEAR_ACCOUNT_CREATE_AMOUNT.getValue() : 0L);
   }
 }

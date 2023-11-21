@@ -29,7 +29,8 @@ import java.util.Optional;
 public interface MetaXChainCreateAccountProofSig {
 
   /**
-   * The amount committed by the {@link XChainAccountCreateCommit} transaction on the source chain.
+   * The amount committed by the {@link org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit} transaction on the
+   * source chain.
    *
    * @return A {@link CurrencyAmount}.
    */

@@ -43,7 +43,8 @@ public interface MetaXChainClaimProofSig {
   Optional<PublicKey> publicKey();
 
   /**
-   * The amount to claim in the {@link XChainCommit} transaction on the destination chain.
+   * The amount to claim in the {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} transaction on the destination
+   * chain.
    *
    * @return A {@link CurrencyAmount}.
    */

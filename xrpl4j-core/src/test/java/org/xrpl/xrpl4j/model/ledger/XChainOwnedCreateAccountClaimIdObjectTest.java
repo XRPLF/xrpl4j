@@ -39,7 +39,9 @@ class XChainOwnedCreateAccountClaimIdObjectTest extends AbstractJsonTest {
             .attestationRewardAccount(Address.of("rDUQ7WUgMZ6V75v3CFb1tqm1XPizmkWtTm"))
             .attestationSignerAccount(Address.of("rUNdUjNcQde1Ye3823hn4RWjBYJEZYye3x"))
             .destination(Address.of("rESSoiapL4EmPZTos6ks9FDZ6pbf261b3g"))
-            .publicKey(PublicKey.fromBase16EncodedPublicKey("0300C9F746EF04811BB5529F7E58ACECA6DC5CFD5FDFB42C55C8630FC981D37A4E"))
+            .publicKey(
+              PublicKey.fromBase16EncodedPublicKey("0300C9F746EF04811BB5529F7E58ACECA6DC5CFD5FDFB42C55C8630FC981D37A4E")
+            )
             .signatureReward(XrpCurrencyAmount.ofDrops(100))
             .wasLockingChainSend(true)
             .build()
@@ -56,7 +58,9 @@ class XChainOwnedCreateAccountClaimIdObjectTest extends AbstractJsonTest {
             .attestationRewardAccount(Address.of("rLsS3B2m23Ms4oydi1bzNEp4R4EVxTFMrU"))
             .attestationSignerAccount(Address.of("rJMQeMMRjsKmSwJ4ewMhVMVq3mbxTBwT3a"))
             .destination(Address.of("rESSoiapL4EmPZTos6ks9FDZ6pbf261b3g"))
-            .publicKey(PublicKey.fromBase16EncodedPublicKey("02C39C1AD5DBE3702D7D6A4A115618F5A0105EA394A0BD52FFA0C4787C3CB626CD"))
+            .publicKey(
+              PublicKey.fromBase16EncodedPublicKey("02C39C1AD5DBE3702D7D6A4A115618F5A0105EA394A0BD52FFA0C4787C3CB626CD")
+            )
             .signatureReward(XrpCurrencyAmount.ofDrops(100))
             .wasLockingChainSend(false)
             .build()

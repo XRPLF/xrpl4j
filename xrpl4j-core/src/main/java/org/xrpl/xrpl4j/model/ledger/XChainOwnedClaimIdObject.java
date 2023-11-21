@@ -24,8 +24,8 @@ import java.util.List;
  * account on the source chain that locks or burns the funds on the source chain.
  *
  * <p>The {@code XChainOwnedClaimID} object must be acquired on the destination chain before submitting a
- * {@link XChainCommit} on the source chain. Its purpose is to prevent transaction replay attacks and is also used as a
- * place to collect attestations from witness servers.</p>
+ * {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} on the source chain. Its purpose is to prevent transaction
+ * replay attacks and is also used as a place to collect attestations from witness servers.</p>
  *
  * <p> An {@link XChainCreateClaimId} transaction is used to create a new {@code XChainOwnedClaimID}. The ledger object
  * is destroyed when the funds are successfully claimed on the destination chain.</p>
@@ -84,6 +84,7 @@ public interface XChainOwnedClaimIdObject extends LedgerObject {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
   /**
@@ -92,13 +93,15 @@ public interface XChainOwnedClaimIdObject extends LedgerObject {
    * @return An {@link XChainClaimId}.
    */
   @JsonProperty("XChainClaimID")
+  @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
 
   /**
-   * The account that must send the corresponding {@link XChainCommit} on the source chain. The destination may be
-   * specified in the {@link XChainCommit} transaction, which means that if the OtherChainSource isn't specified,
-   * another account can try to specify a different destination and steal the funds. This also allows tracking only a
-   * single set of signatures, since we know which account will send the {@link XChainCommit} transaction.
+   * The account that must send the corresponding {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} on the source
+   * chain. The destination may be specified in the {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} transaction,
+   * which means that if the OtherChainSource isn't specified, another account can try to specify a different
+   * destination and steal the funds. This also allows tracking only a single set of signatures, since we know which
+   * account will send the {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} transaction.
    *
    * @return An {@link Address}.
    */
@@ -113,6 +116,7 @@ public interface XChainOwnedClaimIdObject extends LedgerObject {
    * @return A {@link List} of {@link XChainClaimAttestation}s.
    */
   @JsonProperty("XChainClaimAttestations")
+  @SuppressWarnings("MethodName")
   List<XChainClaimAttestation> xChainClaimAttestations();
 
   /**

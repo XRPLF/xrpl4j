@@ -72,7 +72,8 @@ public interface BridgeObject extends LedgerObject {
 
   /**
    * The minimum amount, in XRP, required for an XChainAccountCreateCommit transaction. If this isn't present, the
-   * {@link XChainAccountCreateCommit} transaction will fail. This field can only be present on XRP-XRP bridges.
+   * {@link org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit} transaction will fail. This field can only be
+   * present on XRP-XRP bridges.
    *
    * @return An optionally-present {@link XrpCurrencyAmount}.
    */
@@ -94,6 +95,7 @@ public interface BridgeObject extends LedgerObject {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
   /**
@@ -102,28 +104,32 @@ public interface BridgeObject extends LedgerObject {
    * @return An {@link XChainClaimId}.
    */
   @JsonProperty("XChainClaimID")
+  @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
 
   /**
    * A counter used to order the execution of account create transactions. It is incremented every time a successful
-   * {@link XChainAccountCreateCommit} transaction is run for the source chain.
+   * {@link org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit} transaction is run for the source chain.
    *
    * @return An {@link XChainCount}.
    */
   @JsonProperty("XChainAccountCreateCount")
+  @SuppressWarnings("MethodName")
   XChainCount xChainAccountCreateCount();
 
   /**
    * A counter used to order the execution of account create transactions. It is incremented every time a
-   * {@link XChainAccountCreateCommit} transaction is "claimed" on the destination chain. When the "claim" transaction
-   * is run on the destination chain, the {@link #xChainAccountClaimCount()} must match the value that the
-   * {@link #xChainAccountCreateCount()} had at the time the {@link #xChainAccountClaimCount()} was run on the source
-   * chain. This orders the claims so that they run in the same order that the {@link XChainAccountCreateCommit}
-   * transactions ran on the source chain, to prevent transaction replay.
+   * {@link org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit} transaction is "claimed" on the destination
+   * chain. When the "claim" transaction is run on the destination chain, the {@link #xChainAccountClaimCount()} must
+   * match the value that the {@link #xChainAccountCreateCount()} had at the time the {@link #xChainAccountClaimCount()}
+   * was run on the source chain. This orders the claims so that they run in the same order that the
+   * {@link org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit} transactions ran on the source chain, to
+   * prevent transaction replay.
    *
    * @return An {@link XChainCount}.
    */
   @JsonProperty("XChainAccountClaimCount")
+  @SuppressWarnings("MethodName")
   XChainCount xChainAccountClaimCount();
 
   /**

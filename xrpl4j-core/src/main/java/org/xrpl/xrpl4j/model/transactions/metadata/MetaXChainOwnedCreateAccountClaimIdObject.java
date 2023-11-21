@@ -62,6 +62,7 @@ public interface MetaXChainOwnedCreateAccountClaimIdObject extends MetaLedgerObj
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   Optional<XChainBridge> xChainBridge();
 
   /**
@@ -72,6 +73,7 @@ public interface MetaXChainOwnedCreateAccountClaimIdObject extends MetaLedgerObj
    * @return A {@link List} of {@link MetaXChainCreateAccountAttestation}s.
    */
   @JsonProperty("XChainCreateAccountAttestations")
+  @SuppressWarnings("MethodName")
   List<MetaXChainCreateAccountAttestation> xChainCreateAccountAttestations();
 
   /**
@@ -81,6 +83,7 @@ public interface MetaXChainOwnedCreateAccountClaimIdObject extends MetaLedgerObj
    * @return An {@link XChainCount}.
    */
   @JsonProperty("XChainAccountCreateCount")
+  @SuppressWarnings("MethodName")
   Optional<XChainCount> xChainAccountCreateCount();
 
   /**

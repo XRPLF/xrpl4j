@@ -42,7 +42,8 @@ import java.util.Optional;
 public interface MetaXChainOwnedClaimIdObject extends MetaLedgerObject {
 
   /**
-   * A bit-map of boolean flags. No flags are defined for {@link MetaXChainOwnedClaimIdObject}, so this value is always 0.
+   * A bit-map of boolean flags. No flags are defined for {@link MetaXChainOwnedClaimIdObject}, so this value is always
+   * 0.
    *
    * @return Always {@link Flags#UNSET}.
    */
@@ -66,6 +67,7 @@ public interface MetaXChainOwnedClaimIdObject extends MetaLedgerObject {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   Optional<XChainBridge> xChainBridge();
 
   /**
@@ -74,13 +76,15 @@ public interface MetaXChainOwnedClaimIdObject extends MetaLedgerObject {
    * @return An {@link XChainClaimId}.
    */
   @JsonProperty("XChainClaimID")
+  @SuppressWarnings("MethodName")
   Optional<XChainClaimId> xChainClaimId();
 
   /**
-   * The account that must send the corresponding {@link XChainCommit} on the source chain. The destination may be
-   * specified in the {@link XChainCommit} transaction, which means that if the OtherChainSource isn't specified,
-   * another account can try to specify a different destination and steal the funds. This also allows tracking only a
-   * single set of signatures, since we know which account will send the {@link XChainCommit} transaction.
+   * The account that must send the corresponding {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} on the source
+   * chain. The destination may be specified in the {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} transaction,
+   * which means that if the OtherChainSource isn't specified, another account can try to specify a different
+   * destination and steal the funds. This also allows tracking only a single set of signatures, since we know which
+   * account will send the {@link org.xrpl.xrpl4j.model.transactions.XChainCommit} transaction.
    *
    * @return An {@link Address}.
    */
@@ -95,6 +99,7 @@ public interface MetaXChainOwnedClaimIdObject extends MetaLedgerObject {
    * @return A {@link List} of {@link MetaXChainClaimAttestation}s.
    */
   @JsonProperty("XChainClaimAttestations")
+  @SuppressWarnings("MethodName")
   List<MetaXChainClaimAttestation> xChainClaimAttestations();
 
   /**

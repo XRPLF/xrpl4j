@@ -25,6 +25,7 @@ public interface MetaXChainClaimAttestation {
    * @return An {@link MetaXChainClaimProofSig}.
    */
   @JsonProperty("XChainClaimProofSig")
+  @SuppressWarnings("MethodName")
   MetaXChainClaimProofSig xChainClaimProofSig();
 
 }

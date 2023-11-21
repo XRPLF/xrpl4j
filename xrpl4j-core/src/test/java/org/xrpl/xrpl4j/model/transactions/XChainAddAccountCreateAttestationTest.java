@@ -25,7 +25,8 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       "  \"Destination\": \"rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd\",\n" +
       "  \"Amount\": \"2000000000\",\n" +
       "  \"PublicKey\": \"EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614\",\n" +
-      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
+      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09EC" +
+      "FFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
       "  \"WasLockingChainSend\": 1,\n" +
       "  \"AttestationRewardAccount\": \"rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es\",\n" +
       "  \"AttestationSignerAccount\": \"rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw\",\n" +
@@ -61,7 +62,8 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       "  \"Destination\": \"rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd\",\n" +
       "  \"Amount\": \"2000000000\",\n" +
       "  \"PublicKey\": \"EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614\",\n" +
-      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
+      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46" +
+      "F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
       "  \"WasLockingChainSend\": 1,\n" +
       "  \"AttestationRewardAccount\": \"rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es\",\n" +
       "  \"AttestationSignerAccount\": \"rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw\",\n" +
@@ -98,7 +100,8 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       "  \"Destination\": \"rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd\",\n" +
       "  \"Amount\": \"2000000000\",\n" +
       "  \"PublicKey\": \"EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614\",\n" +
-      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
+      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09ECFF" +
+      "B04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
       "  \"WasLockingChainSend\": 1,\n" +
       "  \"AttestationRewardAccount\": \"rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es\",\n" +
       "  \"AttestationSignerAccount\": \"rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw\",\n" +
@@ -135,7 +138,8 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       "  \"Destination\": \"rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd\",\n" +
       "  \"Amount\": \"2000000000\",\n" +
       "  \"PublicKey\": \"EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614\",\n" +
-      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
+      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09E" +
+      "CFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
       "  \"WasLockingChainSend\": 1,\n" +
       "  \"AttestationRewardAccount\": \"rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es\",\n" +
       "  \"AttestationSignerAccount\": \"rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw\",\n" +
@@ -171,7 +175,8 @@ class XChainAddAccountCreateAttestationTest extends AbstractJsonTest {
       "  \"Destination\": \"rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd\",\n" +
       "  \"Amount\": \"2000000000\",\n" +
       "  \"PublicKey\": \"EDF7C3F9C80C102AF6D241752B37356E91ED454F26A35C567CF6F8477960F66614\",\n" +
-      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F09ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
+      "  \"Signature\": \"F95675BA8FDA21030DE1B687937A79E8491CE51832D6BEEBC071484FA5AF5B8A0E9AFF11A4AA46F0" +
+      "9ECFFB04C6A8DAE8284AF3ED8128C7D0046D842448478500\",\n" +
       "  \"WasLockingChainSend\": 0,\n" +
       "  \"AttestationRewardAccount\": \"rpFp36UHW6FpEcZjZqq5jSJWY6UCj3k4Es\",\n" +
       "  \"AttestationSignerAccount\": \"rpWLegmW9WrFBzHUj7brhQNZzrxgLj9oxw\",\n" +

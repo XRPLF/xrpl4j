@@ -10,7 +10,6 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
@@ -35,7 +34,8 @@ public interface XChainCreateAccountProofSig {
   }
 
   /**
-   * The amount committed by the {@link XChainAccountCreateCommit} transaction on the source chain.
+   * The amount committed by the {@link org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit} transaction on the
+   * source chain.
    *
    * @return A {@link CurrencyAmount}.
    */

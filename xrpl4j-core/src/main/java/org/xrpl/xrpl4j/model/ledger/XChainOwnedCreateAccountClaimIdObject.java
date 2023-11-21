@@ -81,6 +81,7 @@ public interface XChainOwnedCreateAccountClaimIdObject extends LedgerObject {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
   /**
@@ -91,6 +92,7 @@ public interface XChainOwnedCreateAccountClaimIdObject extends LedgerObject {
    * @return A {@link List} of {@link XChainCreateAccountAttestation}s.
    */
   @JsonProperty("XChainCreateAccountAttestations")
+  @SuppressWarnings("MethodName")
   List<XChainCreateAccountAttestation> xChainCreateAccountAttestations();
 
   /**
@@ -100,6 +102,7 @@ public interface XChainOwnedCreateAccountClaimIdObject extends LedgerObject {
    * @return An {@link XChainCount}.
    */
   @JsonProperty("XChainAccountCreateCount")
+  @SuppressWarnings("MethodName")
   XChainCount xChainAccountCreateCount();
 
   /**

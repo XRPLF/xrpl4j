@@ -37,6 +37,7 @@ public interface XChainClaimAttestation {
    * @return An {@link XChainClaimProofSig}.
    */
   @JsonProperty("XChainClaimProofSig")
+  @SuppressWarnings("MethodName")
   XChainClaimProofSig xChainClaimProofSig();
 
 }

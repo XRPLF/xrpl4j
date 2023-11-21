@@ -32,7 +32,8 @@ class XChainAddClaimAttestationTest extends AbstractJsonTest {
       "        \"OtherChainSource\": \"raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym\",\n" +
       "        \"PublicKey\": \"ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136\",\n" +
       "        \"Sequence\": 9,\n" +
-      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
+      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA5" +
+      "0E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
       "        \"SigningPubKey\": \"ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C\",\n" +
       "        \"TransactionType\": \"XChainAddClaimAttestation\",\n" +
       "        \"WasLockingChainSend\": 0,\n" +
@@ -68,7 +69,8 @@ class XChainAddClaimAttestationTest extends AbstractJsonTest {
       "        \"OtherChainSource\": \"raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym\",\n" +
       "        \"PublicKey\": \"ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136\",\n" +
       "        \"Sequence\": 9,\n" +
-      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
+      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E716" +
+      "60A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
       "        \"SigningPubKey\": \"ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C\",\n" +
       "        \"TransactionType\": \"XChainAddClaimAttestation\",\n" +
       "        \"WasLockingChainSend\": 1,\n" +
@@ -103,7 +105,8 @@ class XChainAddClaimAttestationTest extends AbstractJsonTest {
       "        \"OtherChainSource\": \"raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym\",\n" +
       "        \"PublicKey\": \"ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136\",\n" +
       "        \"Sequence\": 9,\n" +
-      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
+      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E7166" +
+      "0A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
       "        \"SigningPubKey\": \"ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C\",\n" +
       "        \"TransactionType\": \"XChainAddClaimAttestation\",\n" +
       "        \"WasLockingChainSend\": 1,\n" +
@@ -141,7 +144,8 @@ class XChainAddClaimAttestationTest extends AbstractJsonTest {
       "        \"OtherChainSource\": \"raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym\",\n" +
       "        \"PublicKey\": \"ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136\",\n" +
       "        \"Sequence\": 9,\n" +
-      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
+      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA5" +
+      "0E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
       "        \"SigningPubKey\": \"ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C\",\n" +
       "        \"TransactionType\": \"XChainAddClaimAttestation\",\n" +
       "        \"WasLockingChainSend\": 1,\n" +
@@ -179,7 +183,8 @@ class XChainAddClaimAttestationTest extends AbstractJsonTest {
       "        \"OtherChainSource\": \"raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym\",\n" +
       "        \"PublicKey\": \"ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136\",\n" +
       "        \"Sequence\": 9,\n" +
-      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
+      "        \"Signature\": \"7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44528FE99A" +
+      "A50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C\",\n" +
       "        \"SigningPubKey\": \"ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C\",\n" +
       "        \"TransactionType\": \"XChainAddClaimAttestation\",\n" +
       "        \"WasLockingChainSend\": 1,\n" +

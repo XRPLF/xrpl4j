@@ -106,7 +106,8 @@ public class TransactionTypeTests {
     assertThat(TransactionType.AMM_WITHDRAW.value()).isEqualTo("AMMWithdraw");
     assertThat(TransactionType.AMM_DELETE.value()).isEqualTo("AMMDelete");
     assertThat(TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT.value()).isEqualTo("XChainAccountCreateCommit");
-    assertThat(TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION.value()).isEqualTo("XChainAddAccountCreateAttestation");
+    assertThat(TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION.value())
+      .isEqualTo("XChainAddAccountCreateAttestation");
     assertThat(TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION.value()).isEqualTo("XChainAddClaimAttestation");
     assertThat(TransactionType.XCHAIN_CLAIM.value()).isEqualTo("XChainClaim");
     assertThat(TransactionType.XCHAIN_COMMIT.value()).isEqualTo("XChainCommit");

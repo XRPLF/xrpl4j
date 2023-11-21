@@ -38,6 +38,7 @@ public interface XChainCreateAccountAttestation {
    * @return An {@link XChainCreateAccountProofSig}.
    */
   @JsonProperty("XChainCreateAccountProofSig")
+  @SuppressWarnings("MethodName")
   XChainCreateAccountProofSig xChainCreateAccountProofSig();
 
 }

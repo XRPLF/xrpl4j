@@ -33,20 +33,20 @@ public class XChainBridgeType extends SerializedType<XChainBridgeType> {
     if (!node.isObject()) {
       throw new IllegalArgumentException("node is not an object");
     }
-    XChainBridge xChainBridge = objectMapper.treeToValue(node, XChainBridge.class);
+    XChainBridge bridge = objectMapper.treeToValue(node, XChainBridge.class);
 
     // AccountIDs have a VL prefix that is always 20 (except for ACCOUNT_ZERO). Usually this length prefix is
     // added in BinarySerializer.writeFieldAndValue because STAccounts are VL encoded according to definitions.json.
     // However, because STXChainBridges are not VL encoded, we need to manually add the length prefix to the two
     // STAccount types here.
     UnsignedByteArray byteArray = UnsignedByteArray.of(UnsignedByte.of(20));
-    byteArray.append(new AccountIdType().fromJson(xChainBridge.lockingChainDoor()).value());
-    byteArray.append(new IssueType().fromJson(xChainBridge.lockingChainIssue()).value());
+    byteArray.append(new AccountIdType().fromJson(bridge.lockingChainDoor()).value());
+    byteArray.append(new IssueType().fromJson(bridge.lockingChainIssue()).value());
 
     // Need to add length prefix for issuing chain door account.
     byteArray.append(UnsignedByte.of(20));
-    byteArray.append(new AccountIdType().fromJson(xChainBridge.issuingChainDoor()).value());
-    byteArray.append(new IssueType().fromJson(xChainBridge.issuingChainIssue()).value());
+    byteArray.append(new AccountIdType().fromJson(bridge.issuingChainDoor()).value());
+    byteArray.append(new IssueType().fromJson(bridge.issuingChainIssue()).value());
 
     return new XChainBridgeType(byteArray);
   }
@@ -80,13 +80,13 @@ public class XChainBridgeType extends SerializedType<XChainBridgeType> {
     AccountIdType issuingChainDoor = new AccountIdType().fromParser(parser);
     IssueType issuingChainIssue = new IssueType().fromParser(parser);
 
-    XChainBridge xChainBridge = XChainBridge.builder()
+    XChainBridge bridge = XChainBridge.builder()
       .lockingChainDoor(lockingChainDoor.toJson())
       .lockingChainIssue(lockingChainIssue.toJson())
       .issuingChainDoor(issuingChainDoor.toJson())
       .issuingChainIssue(issuingChainIssue.toJson())
       .build();
 
-    return objectMapper.valueToTree(xChainBridge);
+    return objectMapper.valueToTree(bridge);
   }
 }

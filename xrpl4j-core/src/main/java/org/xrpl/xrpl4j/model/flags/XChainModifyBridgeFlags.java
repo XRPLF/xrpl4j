@@ -40,6 +40,13 @@ public class XChainModifyBridgeFlags extends TransactionFlags {
     return new XChainModifyBridgeFlags(value);
   }
 
+  private static XChainModifyBridgeFlags of(boolean tfFullyCanonicalSig, boolean tfClearAccountCreateAmount) {
+    return new XChainModifyBridgeFlags(of(
+      tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+      tfClearAccountCreateAmount ? CLEAR_ACCOUNT_CREATE_AMOUNT : UNSET
+    ).getValue());
+  }
+
   /**
    * Construct an empty instance of {@link XChainModifyBridgeFlags}. Transactions with empty flags will
    * not be serialized with a {@code Flags} field.
@@ -57,13 +64,6 @@ public class XChainModifyBridgeFlags extends TransactionFlags {
    */
   public boolean tfClearAccountCreateAmount() {
     return this.isSet(XChainModifyBridgeFlags.CLEAR_ACCOUNT_CREATE_AMOUNT);
-  }
-
-  private static XChainModifyBridgeFlags of(boolean tfFullyCanonicalSig, boolean tfClearAccountCreateAmount) {
-    return new XChainModifyBridgeFlags(of(
-      tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-      tfClearAccountCreateAmount ? CLEAR_ACCOUNT_CREATE_AMOUNT : UNSET
-    ).getValue());
   }
 
   /**

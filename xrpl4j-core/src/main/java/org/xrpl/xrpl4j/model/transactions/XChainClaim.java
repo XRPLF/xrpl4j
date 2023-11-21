@@ -77,6 +77,7 @@ public interface XChainClaim extends Transaction {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
   /**
@@ -86,6 +87,7 @@ public interface XChainClaim extends Transaction {
    * @return An {@link XChainClaimId}.
    */
   @JsonProperty("XChainClaimID")
+  @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
 
 }

@@ -21,8 +21,8 @@ public class XChainClaimIdSerializer extends StdScalarSerializer<XChainClaimId> 
   }
 
   @Override
-  public void serialize(XChainClaimId xChainClaimId, JsonGenerator gen, SerializerProvider provider) throws IOException {
+  public void serialize(XChainClaimId claimId, JsonGenerator gen, SerializerProvider provider) throws IOException {
     // sfXChainClaimID is a STUInt64, which in JSON is represented as a hex-encoded String.
-    gen.writeString(xChainClaimId.value().toString(16));
+    gen.writeString(claimId.value().toString(16));
   }
 }

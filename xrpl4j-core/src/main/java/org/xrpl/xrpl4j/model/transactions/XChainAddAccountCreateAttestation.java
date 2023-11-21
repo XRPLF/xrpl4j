@@ -130,6 +130,7 @@ public interface XChainAddAccountCreateAttestation extends Transaction {
    * @return An {@link XChainCount}.
    */
   @JsonProperty("XChainAccountCreateCount")
+  @SuppressWarnings("MethodName")
   XChainCount xChainAccountCreateCount();
 
   /**
@@ -138,6 +139,7 @@ public interface XChainAddAccountCreateAttestation extends Transaction {
    * @return An {@link XChainBridge}.
    */
   @JsonProperty("XChainBridge")
+  @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
 }

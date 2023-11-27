@@ -52,6 +52,11 @@ public interface MetaLedgerEntryType {
       .build();
   }
 
+  /**
+   * Get the {@link MetaLedgerObject} concrete type associated with this {@link MetaLedgerEntryType}.
+   *
+   * @return A {@link Class} of {@link MetaLedgerObject}.
+   */
   @Value.Auxiliary
   default Class<? extends MetaLedgerObject> ledgerObjectType() {
     switch (this.value()) {

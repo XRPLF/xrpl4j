@@ -45,6 +45,7 @@ public interface AttestationClaim extends Attestation {
    * @return An {@link XChainClaimId}.
    */
   @JsonProperty("XChainClaimID")
+  @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
 
 }

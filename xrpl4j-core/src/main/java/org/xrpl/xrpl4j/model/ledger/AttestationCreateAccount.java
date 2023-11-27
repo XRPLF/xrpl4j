@@ -37,6 +37,7 @@ public interface AttestationCreateAccount extends Attestation {
    * @return An {@link XChainCount}.
    */
   @JsonProperty("XChainAccountCreateCount")
+  @SuppressWarnings("MethodName")
   XChainCount xChainAccountCreateCount();
 
   /**

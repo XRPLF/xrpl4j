@@ -31,16 +31,26 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
+import org.xrpl.xrpl4j.model.ledger.SignerListObject;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -117,6 +127,8 @@ public class SignerListSetIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
+
+    assertSignerListEntryEqualsAccountInfo(signedSignerListSet.hash(), sourceAccountInfoAfterSignerListSet);
 
     assertThat(
       sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
@@ -226,6 +238,8 @@ public class SignerListSetIT extends AbstractIT {
       infoResult -> infoResult.accountData().signerLists().size() == 1
     );
 
+    assertSignerListEntryEqualsAccountInfo(signedSignerListSet.hash(), sourceAccountInfoAfterSignerListSet);
+
     assertThat(
       sourceAccountInfoAfterSignerListSet.accountData().signerLists().get(0)
         .signerEntries().stream()
@@ -262,5 +276,31 @@ public class SignerListSetIT extends AbstractIT {
       infoResult -> infoResult.accountData().signerLists().size() == 0
     );
 
+  }
+
+  private void assertSignerListEntryEqualsAccountInfo(Hash256 signerListSetTx, AccountInfoResult accountInfo)
+    throws JsonRpcClientErrorException {
+
+    TransactionResult<SignerListSet> signerListSet = this.getValidatedTransaction(signerListSetTx,
+      SignerListSet.class);
+    Hash256 signerListId = signerListSet.metadata().get()
+      .affectedNodes()
+      .stream()
+      .filter(affectedNode -> affectedNode.ledgerEntryType().equals(MetaLedgerEntryType.SIGNER_LIST))
+      .findFirst()
+      .map(AffectedNode::ledgerIndex)
+      .get();
+
+    LedgerEntryResult<SignerListObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(signerListId, SignerListObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(accountInfo.accountData().signerLists().get(0));
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(signerListId, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
   }
 }

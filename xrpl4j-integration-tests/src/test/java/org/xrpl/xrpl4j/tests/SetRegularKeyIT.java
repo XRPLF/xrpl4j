@@ -30,9 +30,14 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 
@@ -50,6 +55,7 @@ public class SetRegularKeyIT extends AbstractIT {
     //////////////////////////
     // Wait for the account to show up on ledger
     AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()));
+    assertEntryEqualsAccountInfo(wallet, accountInfo);
 
     //////////////////////////
     // Generate a new wallet locally
@@ -100,6 +106,10 @@ public class SetRegularKeyIT extends AbstractIT {
       }
     );
 
+    AccountInfoResult accountInfoAfterRegKeySet = scanForResult(
+      () -> getValidatedAccountInfo(wallet.publicKey().deriveAddress())
+    );
+    assertEntryEqualsAccountInfo(wallet, accountInfoAfterRegKeySet);
   }
 
   @Test
@@ -111,6 +121,7 @@ public class SetRegularKeyIT extends AbstractIT {
     //////////////////////////
     // Wait for the account to show up on ledger
     AccountInfoResult accountInfo = scanForResult(() -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()));
+    assertEntryEqualsAccountInfo(wallet, accountInfo);
 
     //////////////////////////
     // Generate a new wallet locally
@@ -161,6 +172,11 @@ public class SetRegularKeyIT extends AbstractIT {
         }
       }
     );
+
+    AccountInfoResult accountInfoAfterSet = scanForResult(
+      () -> getValidatedAccountInfo(wallet.publicKey().deriveAddress())
+    );
+    assertEntryEqualsAccountInfo(wallet, accountInfoAfterSet);
 
     SetRegularKey removeRegularKey = SetRegularKey.builder()
       .account(wallet.publicKey().deriveAddress())
@@ -178,9 +194,34 @@ public class SetRegularKeyIT extends AbstractIT {
       removeResult.transactionResult().hash()
     );
 
-    scanForResult(
+    AccountInfoResult accountInfoAfterRemoving = scanForResult(
       () -> getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
       infoResult -> !infoResult.accountData().regularKey().isPresent()
     );
+
+    assertEntryEqualsAccountInfo(wallet, accountInfoAfterRemoving);
+  }
+
+  private void assertEntryEqualsAccountInfo(
+    KeyPair keyPair,
+    AccountInfoResult accountInfo
+  ) throws JsonRpcClientErrorException {
+    LedgerEntryResult<AccountRootObject> accountRoot = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.accountRoot(keyPair.publicKey().deriveAddress(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(accountInfo.accountData()).isEqualTo(accountRoot.node());
+
+    LedgerEntryResult<AccountRootObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(accountRoot.index(), AccountRootObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(accountRoot.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(accountRoot.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
   }
 }

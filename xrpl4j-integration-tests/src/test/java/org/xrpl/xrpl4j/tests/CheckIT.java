@@ -30,10 +30,14 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
+import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
@@ -96,6 +100,8 @@ public class CheckIT extends AbstractIT {
       .accountObjects().stream()
       .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
+
+    assertEntryEqualsObjectFromAccountObjects(checkObject);
 
     //////////////////////
     // Destination wallet cashes the Check
@@ -188,6 +194,8 @@ public class CheckIT extends AbstractIT {
       .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
+    assertEntryEqualsObjectFromAccountObjects(checkObject);
+
     //////////////////////
     // Source account cancels the Check
     feeResult = xrplClient.fee();
@@ -265,6 +273,8 @@ public class CheckIT extends AbstractIT {
       .filter(findCheck(sourceKeyPair, destinationKeyPair, invoiceId))
       .findFirst().get();
 
+    assertEntryEqualsObjectFromAccountObjects(checkObject);
+
     //////////////////////
     // Destination account cancels the Check
     feeResult = xrplClient.fee();
@@ -304,4 +314,23 @@ public class CheckIT extends AbstractIT {
         ((CheckObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress());
   }
 
+
+  private void assertEntryEqualsObjectFromAccountObjects(CheckObject checkObject) throws JsonRpcClientErrorException {
+    LedgerEntryResult<CheckObject> checkEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.check(checkObject.index(), LedgerSpecifier.CURRENT));
+
+    assertThat(checkEntry.node()).isEqualTo(checkObject);
+
+    LedgerEntryResult<CheckObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(checkObject.index(), CheckObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(checkEntry.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(checkObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
+  }
 }

@@ -77,6 +77,8 @@ import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
@@ -104,8 +106,10 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
@@ -1038,6 +1042,28 @@ public class XrplClientTest {
     when(jsonRpcClientMock.send(expectedRequest, AmmInfoResult.class)).thenReturn(mockResult);
     AmmInfoResult result = xrplClient.ammInfo(params);
 
+    assertThat(result).isEqualTo(mockResult);
+  }
+
+  @Test
+  void ledgerEntry() throws JsonRpcClientErrorException {
+    LedgerEntryRequestParams<LedgerObject> params = LedgerEntryRequestParams.index(
+      Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"),
+      LedgerSpecifier.VALIDATED
+    );
+
+    LedgerEntryResult<?> mockResult = mock(LedgerEntryResult.class);
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.LEDGER_ENTRY)
+        .addParams(params)
+        .build(),
+        ObjectMapperFactory.create().getTypeFactory().constructParametricType(
+          LedgerEntryResult.class, LedgerObject.class
+        )
+    )).thenReturn(mockResult);
+
+    LedgerEntryResult<LedgerObject> result = xrplClient.ledgerEntry(params);
     assertThat(result).isEqualTo(mockResult);
   }
 

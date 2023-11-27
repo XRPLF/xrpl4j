@@ -110,4 +110,11 @@ public interface TicketObject extends LedgerObject {
    */
   @JsonProperty("TicketSequence")
   UnsignedInteger ticketSequence();
+
+  /**
+   * The unique ID of the {@link TicketObject}.
+   *
+   * @return A {@link Hash256}.
+   */
+  Hash256 index();
 }

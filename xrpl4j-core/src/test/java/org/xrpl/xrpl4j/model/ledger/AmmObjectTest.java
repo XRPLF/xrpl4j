@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.ledger;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -37,6 +38,8 @@ class AmmObjectTest extends AbstractJsonTest {
         VoteEntryWrapper.of(voteEntry1),
         VoteEntryWrapper.of(voteEntry2)
       )
+      .index(HASH_256)
+      .ownerNode("0")
       .build();
 
     assertThat(ammObject.voteSlotsUnwrapped()).asList()
@@ -97,9 +100,11 @@ class AmmObjectTest extends AbstractJsonTest {
           .expiration(UnsignedInteger.valueOf(721870180))
           .build()
       )
+      .index(HASH_256)
+      .ownerNode("0")
       .build();
 
-    String json = "{\n" +
+    String json = String.format("{\n" +
       "    \"Account\" : \"rE54zDvgnghAoPopCgvtiqWNq3dU5y836S\",\n" +
       "    \"LedgerEntryType\" : \"AMM\",\n" +
       "    \"Asset\" : " + objectMapper.writeValueAsString(ammObject.asset())  + "," +
@@ -108,10 +113,12 @@ class AmmObjectTest extends AbstractJsonTest {
       "    \"Flags\" : 0,\n" +
       "    \"LPTokenBalance\" : " + objectMapper.writeValueAsString(ammObject.lpTokenBalance()) + "," +
       "    \"TradingFee\" : 600,\n" +
+      "    \"index\" : %s,\n" +
+      "    \"OwnerNode\" : \"0\",\n" +
       "    \"VoteSlots\" : [\n" +
               objectMapper.writeValueAsString(ammObject.voteSlots().get(0)) +
       "    ]\n" +
-      "}";
+      "}", HASH_256);
 
     assertCanSerializeAndDeserialize(ammObject, json);
   }

@@ -8,6 +8,7 @@ import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * Represents an AMM ledger object, which describes a single Automated Market Maker instance.
  *
  * <p>This class will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
- *  change.</p>
+ * change.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmObject.class)
@@ -91,9 +92,9 @@ public interface AmmObject extends LedgerObject {
   Optional<AuctionSlot> auctionSlot();
 
   /**
-   * The total outstanding balance of liquidity provider tokens from this AMM instance. The holders of these tokens
-   * can vote on the AMM's trading fee in proportion to their holdings, or redeem the tokens for a share of the AMM's
-   * assets which grows with the trading fees collected.
+   * The total outstanding balance of liquidity provider tokens from this AMM instance. The holders of these tokens can
+   * vote on the AMM's trading fee in proportion to their holdings, or redeem the tokens for a share of the AMM's assets
+   * which grows with the trading fees collected.
    *
    * @return An {@link IssuedCurrencyAmount}.
    */
@@ -118,6 +119,18 @@ public interface AmmObject extends LedgerObject {
   List<VoteEntryWrapper> voteSlots();
 
   /**
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages.
+   *
+   * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
+   * derived from the Account.
+   *
+   * @return A {@link String} containing the owner node hint.
+   */
+  @JsonProperty("OwnerNode")
+  String ownerNode();
+
+  /**
    * Unwraps the {@link VoteEntryWrapper}s in {@link #voteSlots()} for easier access to {@link VoteEntry}s.
    *
    * @return A {@link List} of {@link VoteEntry}.
@@ -129,4 +142,11 @@ public interface AmmObject extends LedgerObject {
       .map(VoteEntryWrapper::voteEntry)
       .collect(Collectors.toList());
   }
+
+  /**
+   * The unique ID of the {@link AmmObject}.
+   *
+   * @return A {@link Hash256}.
+   */
+  Hash256 index();
 }

@@ -296,7 +296,7 @@ public class SignatureUtilsTest {
 
     verify(objectMapperMock).writeValueAsString(any());
     verifyNoMoreInteractions(objectMapperMock);
-    verify(xrplBinaryCodecMock).encodeForSigningClaim(any());
+    verify(xrplBinaryCodecMock).encode(any());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 
@@ -382,7 +382,7 @@ public class SignatureUtilsTest {
 
     verify(objectMapperMock).writeValueAsString(any());
     verifyNoMoreInteractions(objectMapperMock);
-    verify(xrplBinaryCodecMock).encodeForSigningClaim(any());
+    verify(xrplBinaryCodecMock).encode(any());
     verifyNoMoreInteractions(xrplBinaryCodecMock);
   }
 

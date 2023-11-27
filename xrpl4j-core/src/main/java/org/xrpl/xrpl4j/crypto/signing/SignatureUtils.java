@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.signing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,12 +22,14 @@ package org.xrpl.xrpl4j.crypto.signing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -144,6 +146,28 @@ public class SignatureUtils {
   }
 
   /**
+   * Helper method to convert an {@link Attestation} into bytes that can be used directly for signing.
+   *
+   * <p>This method will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param attestation An {@link Attestation} to be signed.
+   *
+   * @return An {@link UnsignedByteArray}.
+   */
+  @Beta
+  public UnsignedByteArray toSignableBytes(final Attestation attestation) {
+    Objects.requireNonNull(attestation);
+    try {
+      final String unsignedJson = objectMapper.writeValueAsString(attestation);
+      final String unsignedBinaryHex = binaryCodec.encode(unsignedJson);
+      return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
    * Helper method to convert a {@link Transaction} into bytes that can be signed by multiple signers, as is the case
    * when the source account has set a SignerList.
    *
@@ -170,9 +194,9 @@ public class SignatureUtils {
    * Immutable object, it does not have a generated builder like its subclasses do. Thus, this method needs to rebuild
    * transactions based on their runtime type.
    *
-   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that {@link
-   *                    Transaction#transactionSignature()} must not be provided, and {@link
-   *                    Transaction#signingPublicKey()} must be provided.
+   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that
+   *                    {@link Transaction#transactionSignature()} must not be provided, and
+   *                    {@link Transaction#signingPublicKey()} must be provided.
    * @param signature   A {@link Signature} containing the transaction signature.
    * @param <T>         extends {@link Transaction}.
    *
@@ -359,13 +383,13 @@ public class SignatureUtils {
   }
 
   /**
-   * Add {@link Transaction#signers()}} to the given transaction. Because {@link Transaction} is not an
-   * Immutable object, it does not have a generated builder like its subclasses do. Thus, this method needs to rebuild
+   * Add {@link Transaction#signers()}} to the given transaction. Because {@link Transaction} is not an Immutable
+   * object, it does not have a generated builder like its subclasses do. Thus, this method needs to rebuild
    * transactions based on their runtime type.
    *
-   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that {@link
-   *                    Transaction#transactionSignature()} must not be provided, and {@link
-   *                    Transaction#signingPublicKey()} must be an empty string.
+   * @param transaction An unsigned {@link Transaction} to add a signature to. Note that
+   *                    {@link Transaction#transactionSignature()} must not be provided, and
+   *                    {@link Transaction#signingPublicKey()} must be an empty string.
    * @param signers     A {@link List} of {@link SignerWrapper}s containing the transaction signatures.
    * @param <T>         extends {@link Transaction}.
    *
@@ -509,7 +533,7 @@ public class SignatureUtils {
       transactionWithSignatures = AmmDelete.builder().from((AmmDelete) transaction)
         .signers(signers)
         .build();
-    }  else if (XChainAccountCreateCommit.class.isAssignableFrom(transaction.getClass())) {
+    } else if (XChainAccountCreateCommit.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = XChainAccountCreateCommit.builder().from((XChainAccountCreateCommit) transaction)
         .signers(signers)
         .build();

@@ -207,9 +207,10 @@ public abstract class AbstractIT {
     xrplEnvironment.fundAccount(address);
   }
 
-  protected <T extends Transaction> Finality signSubmitAndWait(
+  protected <T extends Transaction> TransactionResult<T> signSubmitAndWait(
     T transaction,
-    KeyPair keyPair
+    KeyPair keyPair,
+    Class<T> transactionType
   )
     throws JsonRpcClientErrorException, JsonProcessingException {
     Preconditions.checkArgument(transaction.lastLedgerSequence().isPresent());
@@ -222,13 +223,17 @@ public abstract class AbstractIT {
     SubmitResult<T> voteSubmitResult = xrplClient.submit(signedTransaction);
     assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    return scanForFinality(
+    Finality finality = scanForFinality(
       signedTransaction.hash(),
       voteSubmitResult.validatedLedgerIndex(),
       transaction.lastLedgerSequence().get(),
       transaction.sequence(),
       keyPair.publicKey().deriveAddress()
     );
+
+    assertThat(finality.finalityStatus()).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
+
+    return this.getValidatedTransaction(signedTransaction.hash(), transactionType);
   }
 
   //////////////////////

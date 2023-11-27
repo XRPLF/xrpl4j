@@ -47,10 +47,13 @@ import org.mockito.Mock;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
+import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.Issue;
@@ -259,6 +262,180 @@ public class SignatureUtilsTest {
       .build();
     assertThat(SignatureUtils.getInstance().toSignableBytes(unsignedClaim).hexValue())
       .isEqualTo("434C4D00ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD0000000000000001");
+  }
+
+  //////////////////
+  // toSignableBytes (AttestationClaim)
+  //////////////////
+
+  @Test
+  void attestationClaimToSignableBytesWhenNull() {
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSignableBytes((AttestationClaim) null));
+  }
+
+  @Test
+  void attestationClaimToSignableBytes() throws JsonProcessingException {
+    when(xrplBinaryCodecMock.encode(any())).thenReturn("ABCD1234");
+    final AttestationClaim unsignedAttestation = AttestationClaim.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .build();
+    assertThat(signatureUtils.toSignableBytes(unsignedAttestation).hexValue()).isEqualTo("ABCD1234");
+
+    verify(objectMapperMock).writeValueAsString(any());
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForSigningClaim(any());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  public void attestationClaimToSignableBytesWithJsonException() throws JsonProcessingException {
+    final AttestationClaim unsignedAttestation = AttestationClaim.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .build();
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(unsignedAttestation);
+    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(unsignedAttestation));
+  }
+
+  @Test
+  void attestationClaimToSignableBytesActual() {
+    final AttestationClaim unsignedAttestation = AttestationClaim.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .build();
+    assertThat(SignatureUtils.getInstance().toSignableBytes(unsignedAttestation).hexValue())
+      .isEqualTo("3014000000000000000161400000000000000A8314B5F762798A53D543A014CAF8B297CFF8F2F937E" +
+        "8801214B5F762798A53D543A014CAF8B297CFF8F2F937E8801514B5F762798A53D543A014CAF8B297CFF8F2F937E8001013" +
+        "01011914B5F762798A53D543A014CAF8B297CFF8F2F937E8000000000000000000000000000000000000000014B5F762798" +
+        "A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000");
+  }
+
+  //////////////////
+  // toSignableBytes (AttestationCreateAccount)
+  //////////////////
+
+  @Test
+  void attestationCreateAccountToSignableBytesWhenNull() {
+    assertThrows(NullPointerException.class, () -> signatureUtils.toSignableBytes((AttestationCreateAccount) null));
+  }
+
+  @Test
+  void attestationCreateToSignableBytes() throws JsonProcessingException {
+    when(xrplBinaryCodecMock.encode(any())).thenReturn("ABCD1234");
+    final AttestationCreateAccount unsignedAttestation = AttestationCreateAccount.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.ONE))
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .build();
+
+    assertThat(signatureUtils.toSignableBytes(unsignedAttestation).hexValue()).isEqualTo("ABCD1234");
+
+    verify(objectMapperMock).writeValueAsString(any());
+    verifyNoMoreInteractions(objectMapperMock);
+    verify(xrplBinaryCodecMock).encodeForSigningClaim(any());
+    verifyNoMoreInteractions(xrplBinaryCodecMock);
+  }
+
+  @Test
+  public void attestationCreateToSignableBytesWithJsonException() throws JsonProcessingException {
+    final AttestationCreateAccount unsignedAttestation = AttestationCreateAccount.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.ONE))
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .build();
+
+    doThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)))
+      .when(objectMapperMock).writeValueAsString(unsignedAttestation);
+    assertThrows(RuntimeException.class, () -> signatureUtils.toSignableBytes(unsignedAttestation));
+  }
+
+  @Test
+  void attestationCreateToSignableBytesActual() {
+    final AttestationCreateAccount unsignedAttestation = AttestationCreateAccount.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.ONE))
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .build();
+
+    assertThat(SignatureUtils.getInstance().toSignableBytes(unsignedAttestation).hexValue())
+      .isEqualTo("3015000000000000000161400000000000000A601D40000000000000C88314B5F762798A53D543A014C" +
+        "AF8B297CFF8F2F937E8801214B5F762798A53D543A014CAF8B297CFF8F2F937E8801514B5F762798A53D543A014CAF8B297CF" +
+        "F8F2F937E800101301011914B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000" +
+        "00014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000");
   }
 
   //////////////////

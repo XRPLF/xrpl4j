@@ -43,12 +43,51 @@ public interface MetaLedgerEntryType {
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *
    * @param value The {@link String} value.
+   *
    * @return A {@link MetaLedgerEntryType} wrapping the supplied value.
    */
   static MetaLedgerEntryType of(String value) {
     return ImmutableMetaLedgerEntryType.builder()
       .value(value)
       .build();
+  }
+
+  @Value.Auxiliary
+  default Class<? extends MetaLedgerObject> ledgerObjectType() {
+    switch (this.value()) {
+      case "AccountRoot":
+        return MetaAccountRootObject.class;
+      case "Check":
+        return MetaCheckObject.class;
+      case "DepositPreauth":
+        return MetaDepositPreAuthObject.class;
+      case "Escrow":
+        return MetaEscrowObject.class;
+      case "NFTokenOffer":
+        return MetaNfTokenOfferObject.class;
+      case "Offer":
+        return MetaOfferObject.class;
+      case "PayChannel":
+        return MetaPayChannelObject.class;
+      case "RippleState":
+        return MetaRippleStateObject.class;
+      case "SignerList":
+        return MetaSignerListObject.class;
+      case "Ticket":
+        return MetaTicketObject.class;
+      case "NFTokenPage":
+        return MetaNfTokenPageObject.class;
+      case "AMM":
+        return MetaAmmObject.class;
+      case "Bridge":
+        return MetaBridgeObject.class;
+      case "XChainOwnedClaimID":
+        return MetaXChainOwnedClaimIdObject.class;
+      case "XChainOwnedCreateAccountClaimID":
+        return MetaXChainOwnedCreateAccountClaimIdObject.class;
+      default:
+        return MetaUnknownObject.class;
+    }
   }
 
   String value();

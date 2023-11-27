@@ -30,20 +30,8 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaAmmObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaCheckObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenOfferObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenPageObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaOfferObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaPayChannelObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaRippleStateObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaSignerListObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaTicketObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.MetaUnknownObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
 
 import java.io.IOException;
@@ -68,8 +56,10 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
     Map.Entry<String, JsonNode> nodeFieldAndValue = jsonNode.fields().next();
     String affectedNodeType = nodeFieldAndValue.getKey();
 
-    String ledgerEntryType = nodeFieldAndValue.getValue().get("LedgerEntryType").asText();
-    Class<? extends MetaLedgerObject> ledgerObjectClass = determineLedgerObjectType(ledgerEntryType);
+    MetaLedgerEntryType ledgerEntryType = MetaLedgerEntryType.of(
+      nodeFieldAndValue.getValue().get("LedgerEntryType").asText()
+    );
+    Class<? extends MetaLedgerObject> ledgerObjectClass = ledgerEntryType.ledgerObjectType();
 
     switch (affectedNodeType) {
       case "CreatedNode":
@@ -91,37 +81,6 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
         throw JsonMappingException.from(
           jsonParser, String.format("Unrecognized AffectedNode type %s.", affectedNodeType)
         );
-    }
-  }
-
-  private Class<? extends MetaLedgerObject> determineLedgerObjectType(String ledgerEntryType) {
-    switch (ledgerEntryType) {
-      case "AccountRoot":
-        return MetaAccountRootObject.class;
-      case "Check":
-        return MetaCheckObject.class;
-      case "DepositPreauth":
-        return MetaDepositPreAuthObject.class;
-      case "Escrow":
-        return MetaEscrowObject.class;
-      case "NFTokenOffer":
-        return MetaNfTokenOfferObject.class;
-      case "Offer":
-        return MetaOfferObject.class;
-      case "PayChannel":
-        return MetaPayChannelObject.class;
-      case "RippleState":
-        return MetaRippleStateObject.class;
-      case "SignerList":
-        return MetaSignerListObject.class;
-      case "Ticket":
-        return MetaTicketObject.class;
-      case "NFTokenPage":
-        return MetaNfTokenPageObject.class;
-      case "AMM":
-        return MetaAmmObject.class;
-      default:
-        return MetaUnknownObject.class;
     }
   }
 }

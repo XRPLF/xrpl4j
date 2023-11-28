@@ -71,6 +71,11 @@ import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.DidData;
+import org.xrpl.xrpl4j.model.transactions.DidDelete;
+import org.xrpl.xrpl4j.model.transactions.DidDocument;
+import org.xrpl.xrpl4j.model.transactions.DidSet;
+import org.xrpl.xrpl4j.model.transactions.DidUri;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
@@ -1081,6 +1086,30 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToDidSet() {
+    DidSet transaction = DidSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToDidDelete() {
+    DidDelete transaction = DidDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -1668,6 +1697,28 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.ONE)
       .account(sourcePublicKey.deriveAddress())
       .xChainBridge(XCHAIN_BRIDGE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToDidSet() {
+    DidSet transaction = DidSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToDidDelete() {
+    DidDelete transaction = DidDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
       .build();
 
     addMultiSignatureToTransactionHelper(transaction);

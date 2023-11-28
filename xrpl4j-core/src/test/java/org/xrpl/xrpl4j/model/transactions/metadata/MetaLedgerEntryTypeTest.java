@@ -35,6 +35,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID.value())
       .isEqualTo("XChainOwnedCreateAccountClaimID");
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
+    assertThat(MetaLedgerEntryType.DID.value()).isEqualTo("DID");
   }
 
   @Test
@@ -62,6 +63,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.ledgerObjectType()).isEqualTo(
       MetaXChainOwnedClaimIdObject.class
     );
+    assertThat(MetaLedgerEntryType.DID.ledgerObjectType()).isEqualTo(MetaDidObject.class);
   }
 
   @Test

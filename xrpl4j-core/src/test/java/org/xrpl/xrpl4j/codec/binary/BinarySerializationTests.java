@@ -58,6 +58,7 @@ import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.DidData;
+import org.xrpl.xrpl4j.model.transactions.DidDelete;
 import org.xrpl.xrpl4j.model.transactions.DidDocument;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
 import org.xrpl.xrpl4j.model.transactions.DidUri;
@@ -65,6 +66,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableDidDelete;
 import org.xrpl.xrpl4j.model.transactions.ImmutableDidSet;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
@@ -2091,6 +2093,29 @@ public class BinarySerializationTests {
       "27958D5C0C111CC7CF947FC5A933477440AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD7729993" +
       "25667A6AA2520A63756EE84F3657298815019DD56A1AECE796B08535C4009C087500701A00701B00811401476926B590BA" +
       "3245F63C829116A0A3AF7F382D";
+
+    assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void serializeDidDelete() throws JsonProcessingException {
+    DidDelete transaction = DidDelete.builder()
+      .account(Address.of("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(4))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .transactionSignature(
+        Signature.fromBase16("71E28B12465A1B47162C22E121DF61089DCD9AAF5773704B76179E771666" +
+          "886C8AAD5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String binary = "1200322280000000240000000468400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F22" +
+      "7958D5C0C111CC7CF947FC5A93347744071E28B12465A1B47162C22E121DF61089DCD9AAF5773704B76179E771666886C8AA" +
+      "D5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802811401476926B590BA3245F63C829116A0A3AF7F382D";
 
     assertSerializesAndDeserializes(transaction, binary);
   }

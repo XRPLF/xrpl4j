@@ -87,7 +87,7 @@ public interface Transaction {
       .put(ImmutableXChainCreateClaimId.class, TransactionType.XCHAIN_CREATE_CLAIM_ID)
       .put(ImmutableXChainModifyBridge.class, TransactionType.XCHAIN_MODIFY_BRIDGE)
       .put(ImmutableDidSet.class, TransactionType.DID_SET)
-//      .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
+      .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
       .build();
 
   /**

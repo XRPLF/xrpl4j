@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.ledger.RippleStateLedgerEntryParams.RippleStateAccounts;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
+import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -27,6 +28,8 @@ import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 
 class LedgerEntryRequestParamsTest extends AbstractJsonTest {
 
@@ -47,6 +50,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = String.format("{\n" +
       "            \"index\": \"%s\",\n" +
@@ -80,6 +85,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = String.format("{\n" +
       "            \"index\": \"%s\",\n" +
@@ -108,6 +115,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = String.format("{\n" +
       "            \"account_root\": \"%s\",\n" +
@@ -144,6 +153,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = "{\n" +
       "          \"amm\": {\n" +
@@ -185,6 +196,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = "{\n" +
       "      \"offer\": {\n" +
@@ -224,6 +237,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = "{\n" +
       "    \"ripple_state\": {\n" +
@@ -256,6 +271,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"check\": \"%s\",\n" +
@@ -288,6 +305,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = "{\n" +
       "    \"escrow\": {\n" +
@@ -319,6 +338,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"payment_channel\": \"%s\",\n" +
@@ -352,6 +373,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.paymentChannel()).isEmpty();
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = "{\n" +
       "    \"deposit_preauth\": {\n" +
@@ -388,6 +411,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.paymentChannel()).isEmpty();
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = "{\n" +
       "    \"ticket\": {\n" +
@@ -420,12 +445,53 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.paymentChannel()).isEmpty();
     assertThat(params.depositPreAuth()).isEmpty();
     assertThat(params.ticket()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"nft_page\": \"%s\",\n" +
       "    \"binary\": false,\n" +
       "    \"ledger_index\": \"validated\"\n" +
       "  }", HASH_256);
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testBridgeParams() throws JSONException, JsonProcessingException {
+    XChainBridge bridge = XChainBridge.builder()
+      .lockingChainDoor(ED_ADDRESS)
+      .lockingChainIssue(Issue.XRP)
+      .issuingChainDoor(ED_ADDRESS)
+      .issuingChainIssue(Issue.XRP)
+      .build();
+    LedgerEntryRequestParams<BridgeObject> params = LedgerEntryRequestParams.bridge(
+      ED_ADDRESS,
+      bridge,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.bridgeAccount()).isNotEmpty().get().isEqualTo(ED_ADDRESS);
+    assertThat(params.bridge()).isNotEmpty().get().isEqualTo(bridge);
+    assertThat(params.ledgerObjectClass()).isEqualTo(BridgeObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+
+    String json = String.format("{\n" +
+      "    \"bridge_account\": \"%s\",\n" +
+      "    \"bridge\": %s,\n" +
+      "    \"binary\": false,\n" +
+      "    \"ledger_index\": \"validated\"\n" +
+      "  }", ED_ADDRESS, objectMapper.writeValueAsString(bridge));
 
     assertCanSerializeAndDeserialize(params, json);
   }

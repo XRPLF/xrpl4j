@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
+import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
@@ -23,6 +24,7 @@ import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 
 import java.util.Optional;
 
@@ -302,6 +304,27 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link BridgeObject} ledger entry.
+   *
+   * @param bridgeAccount   The address of the account that owned the {@link BridgeObject}.
+   * @param bridge          The bridge spec, as an {@link XChainBridge}.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link NfTokenPageObject}.
+   */
+  static LedgerEntryRequestParams<BridgeObject> bridge(
+    Address bridgeAccount,
+    XChainBridge bridge,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<BridgeObject>builder()
+      .bridgeAccount(bridgeAccount)
+      .bridge(bridge)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link DidObject} ledger entry.
    *
    * @param address              The address of the owner of the {@link DidObject}.
@@ -429,6 +452,23 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<Address> did();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.BridgeObject} by {@link Address}. The {@link #bridge()} field must
+   * also be present.
+   *
+   * @return An optionally-present {@link Address}.
+   */
+  @JsonProperty("bridge_account")
+  Optional<Address> bridgeAccount();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.BridgeObject} by {@link XChainBridge}. The {@link #bridgeAccount()}
+   * field must also be present.
+   *
+   * @return An optionally-present {@link XChainBridge}.
+   */
+  Optional<XChainBridge> bridge();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -475,6 +515,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (ticket().isPresent()) {
       return (Class<T>) TicketObject.class;
+    }
+
+    if (bridgeAccount().isPresent() || bridge().isPresent()) {
+      return (Class<T>) BridgeObject.class;
     }
 
     if (did().isPresent()) {

@@ -916,6 +916,21 @@ public class XChainIT extends AbstractIT {
     assertThat(bridgeObject.xChainBridge()).isEqualTo(bridge);
     assertThat(bridgeObject.xChainClaimId()).isEqualTo(XChainClaimId.of(UnsignedLong.ZERO));
 
+    LedgerEntryResult<BridgeObject> bridgeLedgerEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(
+        bridgeObject.index(), BridgeObject.class, LedgerSpecifier.of(doorObjects.ledgerIndexSafe())
+      )
+    );
+
+    assertThat(bridgeLedgerEntry.node()).isEqualTo(bridgeObject);
+
+    LedgerEntryResult<BridgeObject> bridgeLedgerEntryTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.bridge(
+        bridgeObject.account(), bridgeObject.xChainBridge(), LedgerSpecifier.of(doorObjects.ledgerIndexSafe())
+      )
+    );
+    assertThat(bridgeLedgerEntryTyped).isEqualTo(bridgeLedgerEntry);
+
     KeyPair witnessKeyPair = this.createRandomAccountEd25519();
     Address witnessAddress = witnessKeyPair.publicKey().deriveAddress();
     KeyPair witnessKeyPair2 = this.createRandomAccountEd25519();

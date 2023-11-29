@@ -32,8 +32,8 @@ public interface DidDelete extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link DidDelete}, which only allows the {@code tfFullyCanonicalSig} flag,
-   * which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link DidDelete}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags can be set manually, but exists mostly for JSON serialization/deserialization only and
    * for proper signature computation in rippled.

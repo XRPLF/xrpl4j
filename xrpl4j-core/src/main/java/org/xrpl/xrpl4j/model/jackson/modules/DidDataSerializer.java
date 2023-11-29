@@ -40,7 +40,7 @@ public class DidDataSerializer extends StdScalarSerializer<DidData> {
   }
 
   @Override
-  public void serialize(DidData DidData, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(DidData.value());
+  public void serialize(DidData didData, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    gen.writeString(didData.value());
   }
 }

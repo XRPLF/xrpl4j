@@ -85,12 +85,8 @@ public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1KeyPair() throws JsonRpcClientErrorException, JsonProcessingException {
-    KeyPair senderKeyPair = Seed.fromBase58EncodedSecret(
-      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5")
-    ).deriveKeyPair();
+    KeyPair senderKeyPair = this.createRandomAccountSecp256k1();
     logger.info("Generated source testnet wallet with address " + senderKeyPair.publicKey().deriveAddress());
-
-    fundAccount(senderKeyPair.publicKey().deriveAddress());
 
     KeyPair destinationKeyPair = createRandomAccountEd25519();
 

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,6 +40,17 @@ public class UnsignedByte implements Destroyable {
     Preconditions.checkArgument(value >= 0);
     Preconditions.checkArgument(value <= 255);
     this.value = value;
+  }
+
+  /**
+   * Copy constructor. Constructs an {@link UnsignedByte} from an {@code UnsignedByte}.
+   *
+   * @param value An {@code int} value.
+   *
+   * @return An {@link UnsignedByte}.
+   */
+  public static UnsignedByte of(final UnsignedByte value) {
+    return new UnsignedByte(value.asInt());
   }
 
   /**
@@ -141,8 +152,8 @@ public class UnsignedByte implements Destroyable {
   }
 
   /**
-   * Does a bitwise OR on this {@link UnsignedByte} and the given {@link UnsignedByte}, and returns a new {@link
-   * UnsignedByte} as the result.
+   * Does a bitwise OR on this {@link UnsignedByte} and the given {@link UnsignedByte}, and returns a new
+   * {@link UnsignedByte} as the result.
    *
    * @param unsignedByte The {@link UnsignedByte} to perform a bitwise OR on.
    *

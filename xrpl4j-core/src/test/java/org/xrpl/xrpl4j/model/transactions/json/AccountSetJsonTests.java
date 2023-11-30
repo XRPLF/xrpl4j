@@ -25,6 +25,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
@@ -190,6 +191,36 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"NFTokenMinter\" : \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(accountSet, json);
+  }
+
+  @Test
+  void testJsonWithUnrecognizedClearAndSetFlag() throws JSONException, JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rhyg7sn3ZQj9aja9CBuLETFKdkG9Fte7ck"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(40232131))
+      .setFlagRawValue(UnsignedInteger.valueOf(4294967295L))
+      .clearFlagRawValue(UnsignedInteger.valueOf(4294967295L))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A"
+      ))
+      .transactionSignature(Signature.fromBase16("8D0915449FB617234DD54E1BA79136B50C4439696BB4287F" +
+        "CA25717F3FD4875D5A1FEE6269B91D71D9306B48DECAAE1F1C91CAD1AAD0E0D683DC11E68212740E"))
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\": \"rhyg7sn3ZQj9aja9CBuLETFKdkG9Fte7ck\",\n" +
+      "    \"Fee\": \"15\",\n" +
+      "    \"Sequence\": 40232131,\n" +
+      "    \"SetFlag\": 4294967295,\n" +
+      "    \"ClearFlag\": 4294967295,\n" +
+      "    \"SigningPubKey\": \"ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A\",\n" +
+      "    \"TransactionType\": \"AccountSet\",\n" +
+      "    \"TxnSignature\": \"8D0915449FB617234DD54E1BA79136B50C4439696BB4287FCA25717F3FD4875D5A1FEE6269B" +
+      "91D71D9306B48DECAAE1F1C91CAD1AAD0E0D683DC11E68212740E\"" +
       "}";
 
     assertCanSerializeAndDeserialize(accountSet, json);

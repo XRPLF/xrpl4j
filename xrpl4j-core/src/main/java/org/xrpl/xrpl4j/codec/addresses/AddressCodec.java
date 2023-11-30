@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -86,7 +86,10 @@ public class AddressCodec {
    * @param publicKey An {@link UnsignedByteArray} containing the public key to be encoded.
    *
    * @return The Base58 representation of publicKey.
+   *
+   * @deprecated Prefer {@link PublicKeyCodec#encodeNodePublicKey(UnsignedByteArray)}.
    */
+  @Deprecated
   public String encodeNodePublicKey(final UnsignedByteArray publicKey) {
     Objects.requireNonNull(publicKey);
 
@@ -101,7 +104,9 @@ public class AddressCodec {
    * @return An {@link UnsignedByteArray} containing the decoded public key.
    *
    * @see "https://xrpl.org/base58-encodings.html"
+   * @deprecated Prefer {@link PublicKeyCodec#decodeNodePublicKey(String)}.
    */
+  @Deprecated
   public UnsignedByteArray decodeNodePublicKey(final String publicKey) {
     Objects.requireNonNull(publicKey);
 

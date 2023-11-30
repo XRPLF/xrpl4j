@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.crypto.keys;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedInteger;
@@ -34,11 +35,11 @@ import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.SeedCodec;
-import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
 import org.xrpl.xrpl4j.crypto.HashingUtils;
+import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 import java.util.Objects;
@@ -172,6 +173,7 @@ public interface Seed extends javax.security.auth.Destroyable {
    * @param base58EncodedSecret A base58-encoded {@link String} that represents an encoded seed.
    *
    * @return A {@link Seed}.
+   *
    * @see "https://xrpl.org/xrp-testnet-faucet.html"
    */
   static Seed fromBase58EncodedSecret(final Base58EncodedSecret base58EncodedSecret) {
@@ -309,20 +311,18 @@ public interface Seed extends javax.security.auth.Destroyable {
         }
 
         UnsignedByteArray rawPrivateKey = HashingUtils.sha512Half(decoded.bytes());
+        // `rawPrivateKey` will be 32 bytes due to hashing, so no padding required.
         Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(rawPrivateKey.toByteArray(), 0);
 
         Ed25519PublicKeyParameters publicKey = privateKey.generatePublicKey();
 
-        // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of secp256k1
-        // keys. Note that Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
-        final UnsignedByte prefix = UnsignedByte.of(0xED);
-        final UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(prefix)
-          .append(UnsignedByteArray.of(privateKey.getEncoded()));
-        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(prefix)
+        // ed25519 public keys in XRPL have a one-byte prefix of `0xED` so that all public keys have 33 bytes (this is
+        // to conform with secp256k1 public keys, which are 33 bytes long and have a `0x00` byte prefix.
+        final UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PublicKey.ED2559_PREFIX)
           .append(UnsignedByteArray.of(publicKey.getEncoded()));
 
         return KeyPair.builder()
-          .privateKey(PrivateKey.of(prefixedPrivateKey))
+          .privateKey(PrivateKey.fromNaturalBytes(UnsignedByteArray.of(privateKey.getEncoded()), KeyType.ED25519))
           .publicKey(PublicKey.fromBase16EncodedPublicKey(prefixedPublicKey.hexValue()))
           .build();
       }
@@ -382,15 +382,17 @@ public interface Seed extends javax.security.auth.Destroyable {
       private static KeyPair deriveKeyPair(final UnsignedByteArray seedBytes, final int accountNumber) {
         Objects.requireNonNull(seedBytes);
 
-        // private key needs to be a BigInteger so we can derive the public key by multiplying G by the private key.
+        // private key needs to be a BigInteger, so we can derive the public key by multiplying G by the private key.
         final BigInteger privateKeyInt = derivePrivateKey(seedBytes, accountNumber);
-        final UnsignedByteArray publicKeyInt = derivePublicKey(privateKeyInt);
+
+        // This derivePublicKey will pad to 33 bytes.
+        final UnsignedByteArray publicKeyByteArray = derivePublicKey(privateKeyInt);
+        // This merely enforces the invariant that should be defined in `derivePublicKey(privateKeyInt);`
+        Preconditions.checkArgument(publicKeyByteArray.length() == 33, "Length was " + publicKeyByteArray.length());
 
         return KeyPair.builder()
-          .privateKey(PrivateKey.of(UnsignedByteArray.of(privateKeyInt.toByteArray())))
-          .publicKey(PublicKey.fromBase16EncodedPublicKey(
-            UnsignedByteArray.of(publicKeyInt.toByteArray()).hexValue()
-          ))
+          .privateKey(PrivateKey.fromPrefixedBytes(Secp256k1.toUnsignedByteArray(privateKeyInt, 33)))
+          .publicKey(PublicKey.builder().value(publicKeyByteArray).build())
           .build();
       }
 
@@ -403,13 +405,17 @@ public interface Seed extends javax.security.auth.Destroyable {
        */
       private static UnsignedByteArray derivePublicKey(final BigInteger privateKey) {
         Objects.requireNonNull(privateKey);
-        return UnsignedByteArray.of(EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true));
+
+        UnsignedByteArray unpaddedBytes = UnsignedByteArray.of(
+          EC_DOMAIN_PARAMETERS.getG().multiply(privateKey).getEncoded(true));
+
+        return Secp256k1.withZeroPrefixPadding(unpaddedBytes, 33); // <-- Ensure returned UBA has 33 bytes.
       }
 
       /**
        * Derive a public key from the supplied {@code seed} and {@code accountNumber}.
        *
-       * @param seed          A {@link UnsignedByteArray} representing a seed that can be used to generated an XRPL
+       * @param seed          A {@link UnsignedByteArray} representing a seed that can be used to generate an XRPL
        *                      address.
        * @param accountNumber An integer representing the account nunmber.
        *

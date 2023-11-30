@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,8 @@ package org.xrpl.xrpl4j.model.client;
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+
+import com.google.common.annotations.Beta;
 
 /**
  * A definition class for all rippled method name constants.
@@ -175,6 +177,12 @@ public class XrplMethods {
    * Constant for the <a href="https://xrpl.org/ripple_path_find.html">ripple_path_find</a> rippled API method.
    */
   public static final String RIPPLE_PATH_FIND = "ripple_path_find";
+
+  /**
+   * Constant for the <a href="https://xrpl.org/amm_info.html">ripple_path_find</a> rippled API method.
+   */
+  @Beta
+  public static final String AMM_INFO = "amm_info";
 
   // Payment Channel methods
   /**

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,6 @@ import java.util.Objects;
 /**
  * A Codec for encoding/decoding various seed primitives.
  */
-@SuppressWarnings( {"OptionalUsedAsFieldOrParameterType", "ParameterName", "MethodName"})
 public class PublicKeyCodec {
 
   private static final PublicKeyCodec INSTANCE = new PublicKeyCodec();
@@ -46,7 +45,12 @@ public class PublicKeyCodec {
    */
   public String encodeNodePublicKey(final UnsignedByteArray publicKey) {
     Objects.requireNonNull(publicKey);
-    return AddressBase58.encode(publicKey, Lists.newArrayList(Version.NODE_PUBLIC), UnsignedInteger.valueOf(33));
+
+    return AddressBase58.encode(
+      publicKey,
+      Lists.newArrayList(Version.NODE_PUBLIC),
+      UnsignedInteger.valueOf(33)
+    );
   }
 
   /**
@@ -78,7 +82,11 @@ public class PublicKeyCodec {
   public String encodeAccountPublicKey(final UnsignedByteArray publicKey) {
     Objects.requireNonNull(publicKey);
 
-    return AddressBase58.encode(publicKey, Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY), UnsignedInteger.valueOf(33));
+    return AddressBase58.encode(
+      publicKey,
+      Lists.newArrayList(Version.ACCOUNT_PUBLIC_KEY),
+      UnsignedInteger.valueOf(33)
+    );
   }
 
   /**

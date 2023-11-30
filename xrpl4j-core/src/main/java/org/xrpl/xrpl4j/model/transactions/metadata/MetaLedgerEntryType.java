@@ -1,9 +1,11 @@
 package org.xrpl.xrpl4j.model.transactions.metadata;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableMetaLedgerEntryType.class)
@@ -60,7 +62,8 @@ public interface MetaLedgerEntryType {
    *
    * @return A {@link Class} of {@link MetaLedgerObject}.
    */
-  @Value.Auxiliary
+  @Derived
+  @JsonIgnore
   default Class<? extends MetaLedgerObject> ledgerObjectType() {
     switch (this.value()) {
       case "AccountRoot":

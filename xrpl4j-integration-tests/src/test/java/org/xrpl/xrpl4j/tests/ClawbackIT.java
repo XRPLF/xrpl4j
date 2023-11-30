@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -22,7 +23,13 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+@DisabledIf(value = "shouldNotRun", disabledReason = "ClawbackIT only runs on local rippled node or devnet.")
 public class ClawbackIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
 
   @Test
   void issueBalanceAndClawback() throws JsonRpcClientErrorException, JsonProcessingException {

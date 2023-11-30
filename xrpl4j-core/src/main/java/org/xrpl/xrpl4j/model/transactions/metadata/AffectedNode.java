@@ -22,6 +22,7 @@ public interface AffectedNode {
    * @param createdNodeConsumer  A {@link Consumer} that is called if this instance is of type {@link CreatedNode}.
    * @param modifiedNodeConsumer A {@link Consumer} that is called if this instance is of type {@link ModifiedNode}.
    * @param deletedNodeConsumer  A {@link Consumer} that is called if this instance is of type {@link DeletedNode}.
+   * @param <T>                  An instance that extends {@link MetaLedgerObject}.
    */
   default <T extends MetaLedgerObject> void handle(
     final Consumer<CreatedNode<T>> createdNodeConsumer,
@@ -50,7 +51,9 @@ public interface AffectedNode {
    * @param modifiedNodeMapper A {@link Function} that is called if this instance is  of type {@link ModifiedNode}.
    * @param deletedNodeMapper  A {@link Function} that is called if this instance is  of type {@link DeletedNode}.
    * @param <R>                The type of object to return after mapping.
-   * @return A {@link R} that is constructed by the appropriate mapper function.
+   * @param <T>                An instance that extends {@link MetaLedgerObject}.
+   *
+   * @return An {@link R} that is constructed by the appropriate mapper function.
    */
   default <T extends MetaLedgerObject, R> R map(
     final Function<CreatedNode<T>, R> createdNodeMapper,

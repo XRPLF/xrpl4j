@@ -30,12 +30,17 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
@@ -59,8 +64,11 @@ public class AccountSetIT extends AbstractIT {
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
+
     assertThat(accountInfo.status()).isNotEmpty().get().isEqualTo("success");
     assertThat(accountInfo.accountData().flags().lsfGlobalFreeze()).isEqualTo(false);
+
+    assertEntryEqualsAccountInfo(keyPair, accountInfo);
 
     UnsignedInteger sequence = accountInfo.accountData().sequence();
     //////////////////////
@@ -384,9 +392,33 @@ public class AccountSetIT extends AbstractIT {
     assertThat(accountSetTransactionResult.transaction().clearFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.NONE);
   }
 
+
   //////////////////////
   // Test Helpers
   //////////////////////
+
+  private void assertEntryEqualsAccountInfo(
+    KeyPair keyPair,
+    AccountInfoResult accountInfo
+  ) throws JsonRpcClientErrorException {
+    LedgerEntryResult<AccountRootObject> accountRoot = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.accountRoot(keyPair.publicKey().deriveAddress(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(accountInfo.accountData()).isEqualTo(accountRoot.node());
+
+    LedgerEntryResult<AccountRootObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(accountRoot.index(), AccountRootObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(accountRoot.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(accountRoot.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
+  }
 
   private void assertSetFlag(
     final KeyPair keyPair,
@@ -420,12 +452,14 @@ public class AccountSetIT extends AbstractIT {
 
     /////////////////////////
     // Validate Account State
-    this.scanForResult(
+    AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
       accountInfoResult -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return accountInfoResult.accountData().flags().isSet(accountRootFlag);
       });
+
+    assertEntryEqualsAccountInfo(keyPair, accountInfo);
   }
 
   private void assertClearFlag(
@@ -460,11 +494,13 @@ public class AccountSetIT extends AbstractIT {
 
     /////////////////////////
     // Validate Account State
-    this.scanForResult(
+    AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress()),
       accountInfoResult -> {
         logger.info("AccountInfoResponse Flags: {}", accountInfoResult.accountData().flags());
         return !accountInfoResult.accountData().flags().isSet(accountRootFlag);
       });
+
+    assertEntryEqualsAccountInfo(keyPair, accountInfo);
   }
 }

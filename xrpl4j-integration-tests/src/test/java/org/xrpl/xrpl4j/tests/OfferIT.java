@@ -36,12 +36,17 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
+import org.xrpl.xrpl4j.model.client.ledger.OfferLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.flags.OfferFlags;
+import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -197,45 +202,9 @@ public class OfferIT extends AbstractIT {
     assertThat(offerObject.takerGets()).isEqualTo(offerCreate.takerGets());
     assertThat(offerObject.takerPays()).isEqualTo(offerCreate.takerPays());
 
+    assertThatEntryEqualsObjectFromAccountObjects(offerObject);
+
     cancelOffer(purchaser, offerObject.sequence(), "tesSUCCESS");
-  }
-
-  /**
-   * Cancels an offer and verifies the offer no longer exists on ledger for the account.
-   *
-   * @param purchaser     The {@link KeyPair} of the buyer.
-   * @param offerSequence The sequence of the offer.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  private void cancelOffer(
-    KeyPair purchaser,
-    UnsignedInteger offerSequence,
-    String expectedResult
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult infoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(purchaser.publicKey().deriveAddress()));
-    UnsignedInteger nextSequence = infoResult.accountData().sequence();
-
-    FeeResult feeResult = xrplClient.fee();
-
-    OfferCancel offerCancel = OfferCancel.builder()
-      .account(purchaser.publicKey().deriveAddress())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .sequence(nextSequence)
-      .offerSequence(offerSequence)
-      .signingPublicKey(purchaser.publicKey())
-      .build();
-
-    SingleSignedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
-      purchaser.privateKey(), offerCancel
-    );
-    SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(signedOfferCancel);
-    assertThat(cancelResponse.engineResult()).isEqualTo(expectedResult);
-
-    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
-    assertEmptyResults(
-      () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class));
   }
 
   @Test
@@ -287,17 +256,6 @@ public class OfferIT extends AbstractIT {
     assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
     assertEmptyResults(
       () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class));
-  }
-
-  /**
-   * Asserts the supplier returns empty results, waiting up to 10 seconds for that condition to be true.
-   *
-   * @param supplier results supplier.
-   */
-  private void assertEmptyResults(Supplier<Collection<?>> supplier) {
-    Awaitility.await()
-      .atMost(Durations.TEN_SECONDS)
-      .until(supplier::get, Matchers.empty());
   }
 
   @Test
@@ -404,4 +362,77 @@ public class OfferIT extends AbstractIT {
         .orElse(null));
   }
 
+
+  private void assertThatEntryEqualsObjectFromAccountObjects(OfferObject offerObject)
+    throws JsonRpcClientErrorException {
+    LedgerEntryResult<OfferObject> entry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.offer(
+        OfferLedgerEntryParams.builder()
+          .account(offerObject.account())
+          .seq(offerObject.sequence())
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+    LedgerEntryResult<OfferObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(offerObject.index(), OfferObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entry.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(offerObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
+  }
+
+  /**
+   * Asserts the supplier returns empty results, waiting up to 10 seconds for that condition to be true.
+   *
+   * @param supplier results supplier.
+   */
+  private void assertEmptyResults(Supplier<Collection<?>> supplier) {
+    Awaitility.await()
+      .atMost(Durations.TEN_SECONDS)
+      .until(supplier::get, Matchers.empty());
+  }
+
+  /**
+   * Cancels an offer and verifies the offer no longer exists on ledger for the account.
+   *
+   * @param purchaser     The {@link KeyPair} of the buyer.
+   * @param offerSequence The sequence of the offer.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  private void cancelOffer(
+    KeyPair purchaser,
+    UnsignedInteger offerSequence,
+    String expectedResult
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    AccountInfoResult infoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaser.publicKey().deriveAddress()));
+    UnsignedInteger nextSequence = infoResult.accountData().sequence();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(purchaser.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(nextSequence)
+      .offerSequence(offerSequence)
+      .signingPublicKey(purchaser.publicKey())
+      .build();
+
+    SingleSignedTransaction<OfferCancel> signedOfferCancel = signatureService.sign(
+      purchaser.privateKey(), offerCancel
+    );
+    SubmitResult<OfferCancel> cancelResponse = xrplClient.submit(signedOfferCancel);
+    assertThat(cancelResponse.engineResult()).isEqualTo(expectedResult);
+
+    assertEmptyResults(() -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), OfferObject.class));
+    assertEmptyResults(
+      () -> this.getValidatedAccountObjects(purchaser.publicKey().deriveAddress(), RippleStateObject.class));
+  }
 }

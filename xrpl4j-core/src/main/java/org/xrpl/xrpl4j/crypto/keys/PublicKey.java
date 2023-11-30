@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.Decoded;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.PublicKeyCodec;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.Version;
 import org.xrpl.xrpl4j.model.jackson.modules.PublicKeyDeserializer;
@@ -53,12 +54,18 @@ import java.util.Objects;
 public interface PublicKey {
 
   /**
-   * Multi-signed transactions must contain an empty String in the SigningPublicKey field. This constant
-   * is an {@link PublicKey} that can be used as the {@link Transaction#signingPublicKey()} value for multi-signed
+   * A one-byte prefix for ed25519 keys. In XRPL, ed25519 public keys are prefixed with a one-byte prefix (i.e., `0xED`)
+   * in order to be consistent with secp256k1 public keys, which always have 33 bytes.
+   */
+  UnsignedByte ED2559_PREFIX = UnsignedByte.of(0xED);
+
+  /**
+   * Multi-signed transactions must contain an empty String in the SigningPublicKey field. This constant is an
+   * {@link PublicKey} that can be used as the {@link Transaction#signingPublicKey()} value for multi-signed
    * transactions.
    */
   PublicKey MULTI_SIGN_PUBLIC_KEY = PublicKey.builder().value(UnsignedByteArray.empty()).build();
-  
+
   /**
    * Instantiates a new builder.
    *
@@ -77,11 +84,11 @@ public interface PublicKey {
    */
   static PublicKey fromBase58EncodedPublicKey(final String base58EncodedPublicKey) {
     Objects.requireNonNull(base58EncodedPublicKey);
-    
+
     if (base58EncodedPublicKey.isEmpty()) {
       return MULTI_SIGN_PUBLIC_KEY;
     }
-    
+
     return PublicKey.builder()
       .value(PublicKeyCodec.getInstance().decodeAccountPublicKey(base58EncodedPublicKey))
       .build();
@@ -100,7 +107,7 @@ public interface PublicKey {
     if (base16EncodedPublicKey.isEmpty()) {
       return MULTI_SIGN_PUBLIC_KEY;
     }
-    
+
     return PublicKey.builder()
       .value(UnsignedByteArray.of(BaseEncoding.base16().decode(base16EncodedPublicKey.toUpperCase())))
       .build();
@@ -123,7 +130,7 @@ public interface PublicKey {
     if (value().length() == 0) {
       return "";
     }
-    
+
     return PublicKeyCodec.getInstance().encodeAccountPublicKey(this.value());
   }
 
@@ -175,5 +182,5 @@ public interface PublicKey {
     digest.doFinal(ripemdSha256, 0);
     return UnsignedByteArray.of(ripemdSha256);
   }
-  
+
 }

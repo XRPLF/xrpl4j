@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.Beta;
 
 /**
  * Market interface for XRP Ledger Objects.
@@ -52,6 +53,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
   @JsonSubTypes.Type(value = ImmutableSignerListObject.class, name = "SignerList"),
   @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
+  @JsonSubTypes.Type(value = ImmutableAmmObject.class, name = "AMM"),
   @JsonSubTypes.Type(value = ImmutableNfTokenPageObject.class, name = "NFTokenPage"),
 })
 // TODO: Uncomment subtypes as we implement
@@ -139,7 +141,16 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code NfTokenPageObject} ledger objects.
      */
-    NFTOKEN_PAGE("NFTokenPage");
+    NFTOKEN_PAGE("NFTokenPage"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject to
+     *  change.</p>
+     */
+    @Beta
+    AMM("AMM");
 
     private final String value;
 

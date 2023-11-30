@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
@@ -42,8 +43,12 @@ import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
 
@@ -339,8 +344,8 @@ public class Wrappers {
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    *
    * <p>Valid values for this field are between 0 and 50000 inclusive, allowing transfer rates of between 0.00% and
-   * 50.00% in increments of 0.001. If this field is provided in a {@link NfTokenMint} transaction, the transaction
-   * MUST have the {@code tfTransferable} flag enabled.
+   * 50.00% in increments of 0.001. If this field is provided in a {@link NfTokenMint} transaction, the transaction MUST
+   * have the {@code tfTransferable} flag enabled.
    */
   @Value.Immutable
   @Wrapped
@@ -411,5 +416,78 @@ public class Wrappers {
     public static NetworkId of(long networkId) {
       return NetworkId.of(UnsignedInteger.valueOf(networkId));
     }
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = TradingFee.class, using = TradingFeeSerializer.class)
+  @JsonDeserialize(as = TradingFee.class, using = TradingFeeDeserializer.class)
+  @Beta
+  abstract static class _TradingFee extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Construct {@link TradingFee} as a percentage value.
+     *
+     * @param percent The trading fee, as a {@link BigDecimal}.
+     *
+     * @return A {@link TradingFee}.
+     */
+    public static TradingFee ofPercent(BigDecimal percent) {
+      Preconditions.checkArgument(
+        Math.max(0, percent.stripTrailingZeros().scale()) <= 3,
+        "Percent value should have a maximum of 3 decimal places."
+      );
+      return TradingFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
+    }
+
+    /**
+     * Get the {@link TradingFee} as a {@link BigDecimal}.
+     *
+     * @return A {@link BigDecimal}.
+     */
+    public BigDecimal bigDecimalValue() {
+      return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the VoteWeight.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = VoteWeight.class, using = VoteWeightSerializer.class)
+  @JsonDeserialize(as = VoteWeight.class, using = VoteWeightDeserializer.class)
+  @Beta
+  abstract static class _VoteWeight extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Get the {@link VoteWeight} as a {@link BigDecimal}.
+     *
+     * @return A {@link BigDecimal}.
+     */
+    public BigDecimal bigDecimalValue() {
+      return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
   }
 }

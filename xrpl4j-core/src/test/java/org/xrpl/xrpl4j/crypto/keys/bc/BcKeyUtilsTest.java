@@ -56,9 +56,10 @@ class BcKeyUtilsTest {
 
     // To PrivateKey
     PrivateKey privateKey = BcKeyUtils.toPrivateKey(ed25519PrivateKeyParameters);
-    assertThat(Base58.encode(privateKey.value().toByteArray()))
+    assertThat(Base58.encode(privateKey.prefixedBytes().toByteArray()))
       .isEqualTo("pDcQTi2uFBAzQ7cY2mYQtk9QuQBoLU6rJypEf8EYPQoouh");
-    assertThat(BaseEncoding.base16().encode(privateKey.value().toByteArray())).isEqualTo("ED" + ED_PRIVATE_KEY_HEX);
+    assertThat(BaseEncoding.base16().encode(privateKey.prefixedBytes().toByteArray()))
+      .isEqualTo("ED" + ED_PRIVATE_KEY_HEX);
 
     // Convert back
     Ed25519PrivateKeyParameters converted = BcKeyUtils.toEd25519PrivateKeyParams(privateKey);
@@ -73,10 +74,10 @@ class BcKeyUtilsTest {
 
     // To PrivateKey
     PrivateKey privateKey = BcKeyUtils.toPrivateKey(ecPrivateKeyParameters);
-    assertThat(Base58.encode(privateKey.value().toByteArray()))
-      .isEqualTo("EnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
-    assertThat(BaseEncoding.base16().encode(privateKey.value().toByteArray()))
-      .isEqualTo("D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6");
+    assertThat(Base58.encode(privateKey.prefixedBytes().toByteArray()))
+      .isEqualTo("rEnYwxojogCYKG3F5Bf7zvcZjo76pEqKwG9wGH14JngcV");
+    assertThat(BaseEncoding.base16().encode(privateKey.prefixedBytes().toByteArray()))
+      .isEqualTo("00D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6");
     assertThat(BcKeyUtils.toEcPrivateKeyParams(privateKey)).usingRecursiveComparison()
       .isEqualTo(ecPrivateKeyParameters);
 

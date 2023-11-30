@@ -25,6 +25,7 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType SIGNER_LIST = MetaLedgerEntryType.of("SignerList");
   MetaLedgerEntryType TICKET = MetaLedgerEntryType.of("Ticket");
   MetaLedgerEntryType NFTOKEN_PAGE = MetaLedgerEntryType.of("NFTokenPage");
+  MetaLedgerEntryType AMM = MetaLedgerEntryType.of("AMM");
 
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.

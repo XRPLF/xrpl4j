@@ -29,6 +29,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.SIGNER_LIST.value()).isEqualTo("SignerList");
     assertThat(MetaLedgerEntryType.TICKET.value()).isEqualTo("Ticket");
     assertThat(MetaLedgerEntryType.NFTOKEN_PAGE.value()).isEqualTo("NFTokenPage");
+    assertThat(MetaLedgerEntryType.AMM.value()).isEqualTo("AMM");
   }
 
   @Test

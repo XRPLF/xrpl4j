@@ -71,6 +71,13 @@ public interface Transaction {
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
+      .put(ImmutableAmmBid.class, TransactionType.AMM_BID)
+      .put(ImmutableAmmCreate.class, TransactionType.AMM_CREATE)
+      .put(ImmutableAmmDeposit.class, TransactionType.AMM_DEPOSIT)
+      .put(ImmutableAmmVote.class, TransactionType.AMM_VOTE)
+      .put(ImmutableAmmWithdraw.class, TransactionType.AMM_WITHDRAW)
+      .put(ImmutableAmmDelete.class, TransactionType.AMM_DELETE)
+      .put(ImmutableClawback.class, TransactionType.CLAWBACK)
       .build();
 
   /**

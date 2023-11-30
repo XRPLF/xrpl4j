@@ -49,6 +49,7 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +60,15 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromEd25519Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", KeyType.ED25519);
+    // We must use a random key identifier here rather than a hardcoded identifier because the keypair associated
+    // with the hard coded identifier is deterministic. When we run ITs on a real network in CI like testnet or devnet,
+    // we sometimes see `tefPAST_SEQ` errors when submitting the transaction because another CI job has submitted
+    // a transaction for the account between when this test gets the source's account info and when it submits the
+    // transaction. Using a random account every time ensures this test's behavior is isolated from other tests.
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference(
+      UUID.randomUUID().toString(),
+      KeyType.ED25519
+    );
     final PublicKey sourceWalletPublicKey = derivedKeySignatureService.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);
@@ -94,7 +103,15 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1Account() throws JsonRpcClientErrorException, JsonProcessingException {
-    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference("sourceWallet", KeyType.SECP256K1);
+    // We must use a random key identifier here rather than a hardcoded identifier because the keypair associated
+    // with the hard coded identifier is deterministic. When we run ITs on a real network in CI like testnet or devnet,
+    // we sometimes see `tefPAST_SEQ` errors when submitting the transaction because another CI job has submitted
+    // a transaction for the account between when this test gets the source's account info and when it submits the
+    // transaction. Using a random account every time ensures this test's behavior is isolated from other tests.
+    final PrivateKeyReference sourceKeyMetadata = constructPrivateKeyReference(
+      UUID.randomUUID().toString(),
+      KeyType.SECP256K1
+    );
     final PublicKey sourceWalletPublicKey = derivedKeySignatureService.derivePublicKey(sourceKeyMetadata);
     final Address sourceWalletAddress = sourceWalletPublicKey.deriveAddress();
     this.fundAccount(sourceWalletAddress);

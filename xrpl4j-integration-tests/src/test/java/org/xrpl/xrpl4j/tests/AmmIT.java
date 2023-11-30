@@ -6,7 +6,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
@@ -18,27 +20,32 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.amm.AmmInfoAuctionSlot;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoAuthAccount;
 import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.common.TimeUtils;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.AmmLedgerEntryParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.ledger.AmmObject;
+import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
 import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
-import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
-import org.xrpl.xrpl4j.model.transactions.ImmutableAmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
@@ -46,8 +53,15 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.stream.Collectors;
 
+@DisabledIf(value = "shouldNotRun", disabledReason = "AmmIT only runs on local rippled node or devnet.")
 public class AmmIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+      System.getProperty("useClioTestnet") != null;
+  }
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
@@ -404,6 +418,62 @@ public class AmmIT extends AbstractIT {
     );
 
     assertThat(ammInfoByAccount).isEqualTo(ammInfoResult);
+
+    LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.amm(
+        AmmLedgerEntryParams.builder()
+          .asset(Issue.XRP)
+          .asset2(
+            Issue.builder()
+              .issuer(issuerKeyPair.publicKey().deriveAddress())
+              .currency(xrpl4jCoin)
+              .build()
+          )
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    );
+
+    assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
+    assertThat(ammObject.node().asset()).isEqualTo(Issue.XRP);
+    assertThat(ammObject.node().asset2()).isEqualTo(
+      Issue.builder()
+        .issuer(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).issuer())
+        .currency(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).currency())
+        .build()
+    );
+    assertThat(
+      (ammObject.node().auctionSlot().isPresent() && ammInfoByAccount.amm().auctionSlot().isPresent()) ||
+        (!ammObject.node().auctionSlot().isPresent() && !ammInfoByAccount.amm().auctionSlot().isPresent())
+    ).isTrue();
+    if (ammObject.node().auctionSlot().isPresent()) {
+      AuctionSlot entryAuctionSlot = ammObject.node().auctionSlot().get();
+      AmmInfoAuctionSlot infoAuctionSlot = ammInfoByAccount.amm().auctionSlot().get();
+      assertThat(entryAuctionSlot.account()).isEqualTo(infoAuctionSlot.account());
+      assertThat(entryAuctionSlot.authAccountsAddresses()).isEqualTo(infoAuctionSlot.authAccounts().stream().map(
+        AmmInfoAuthAccount::account).collect(Collectors.toList()));
+      assertThat(entryAuctionSlot.price()).isEqualTo(infoAuctionSlot.price());
+      assertThat(TimeUtils.xrplTimeToZonedDateTime(UnsignedLong.valueOf(entryAuctionSlot.expiration().longValue())))
+        .isEqualTo(infoAuctionSlot.expiration());
+      assertThat(entryAuctionSlot.discountedFee()).isEqualTo(infoAuctionSlot.discountedFee());
+    }
+
+    assertThat(ammObject.node().lpTokenBalance()).isEqualTo(ammInfoByAccount.amm().lpToken());
+    assertThat(ammObject.node().tradingFee()).isEqualTo(ammInfoByAccount.amm().tradingFee());
+
+    assertThat(ammObject.node().voteSlots().size()).isEqualTo(ammInfoByAccount.amm().voteSlots().size());
+
+    LedgerEntryResult<AmmObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(ammObject.index(), AmmObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(ammObject.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(ammObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
 
     return ammInfoResult;
   }

@@ -489,7 +489,7 @@
         <!-- org.apache.maven.plugins:maven-surefire-plugin -->
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>3.1.2</version>
           <configuration>
             <argLine>${argLine}</argLine>
             <reuseForks>true</reuseForks>

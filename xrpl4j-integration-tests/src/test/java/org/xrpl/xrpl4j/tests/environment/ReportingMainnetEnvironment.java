@@ -30,7 +30,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
  */
 public class ReportingMainnetEnvironment extends MainnetEnvironment {
 
-  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://s2-reporting.ripple.com:51234"));
+  private final XrplClient xrplClient = new XrplClient(HttpUrl.parse("https://xrplcluster.com"));
 
   @Override
   public XrplClient getXrplClient() {

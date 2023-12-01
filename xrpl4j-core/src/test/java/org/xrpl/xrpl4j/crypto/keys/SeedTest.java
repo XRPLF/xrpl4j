@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.crypto.keys;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,24 +29,19 @@ import org.xrpl.xrpl4j.codec.addresses.Base58;
 import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.addresses.exceptions.DecodeException;
-import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
-import org.xrpl.xrpl4j.crypto.keys.Entropy;
-import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.Passphrase;
-import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
-import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.Seed.DefaultSeed;
 
+import java.math.BigInteger;
 import javax.security.auth.DestroyFailedException;
 
 /**
  * Unit tests for {@link Seed}.
  */
+@SuppressWarnings("deprecation")
 public class SeedTest {
 
-  private Seed edSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
-  private Seed ecSeed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
+  private final Seed edSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("hello"));
+  private final Seed ecSeed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("hello"));
 
   @Test
   void constructorWithNullSeed() {
@@ -58,10 +53,7 @@ public class SeedTest {
 
   @Test
   void constructorWithNullUnsignedByteArray() {
-    assertThrows(NullPointerException.class, () -> {
-      UnsignedByteArray nullUba = null;
-      new DefaultSeed(nullUba);
-    });
+    assertThrows(NullPointerException.class, () -> new DefaultSeed((UnsignedByteArray) null));
   }
 
   @Test
@@ -126,6 +118,7 @@ public class SeedTest {
 
   @Test
   public void testEd25519SeedFromPassphrase() throws DestroyFailedException {
+    //noinspection OptionalGetWithoutIsPresent
     assertThat(edSeed.decodedSeed().type().get()).isEqualTo(KeyType.ED25519);
     assertThat(BaseEncoding.base64().encode(edSeed.decodedSeed().bytes().toByteArray()))
       .isEqualTo("m3HSJL1i83hdltRq0+o9cw==");
@@ -136,6 +129,7 @@ public class SeedTest {
 
   @Test
   public void testSecp256k1SeedFromPassphrase() throws DestroyFailedException {
+    //noinspection OptionalGetWithoutIsPresent
     assertThat(ecSeed.decodedSeed().type().get()).isEqualTo(KeyType.SECP256K1);
     assertThat(BaseEncoding.base64().encode(ecSeed.decodedSeed().bytes().toByteArray()))
       .isEqualTo("m3HSJL1i83hdltRq0+o9cw==");
@@ -163,10 +157,110 @@ public class SeedTest {
     assertThat(seed.decodedSeed().bytes().hexValue()).isEqualTo("0102030405060708090A0B0C0D0E0F10");
   }
 
+  /**
+   * Verify {@link Seed#deriveKeyPair()} using a seed that would have produced a 32 byte private key prior to fixing
+   * #486.
+   *
+   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
+   */
+  @Test
+  void deriveKeyPairFor32ByteEcSeed() {
+    // Without explicit padding added by xrpl4j, but instead due to twos-complement padding, this seed would have
+    // (prior to fixing #486) produced a 32 byte private key. We validate here that it produces the correct output
+    // for either value() call.
+    final Seed ecSeedFor32BytePrivateKey = Seed.secp256k1SeedFromEntropy(
+      Entropy.of(BaseEncoding.base16().decode("B7E99C6BB9786494238D2BA84EABE854"))
+    );
+    final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
+    assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
+      .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
+    assertThat(privateKey.prefixedBytes().hexValue())
+      .isEqualTo("007030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
+    assertThat(privateKey.naturalBytes().hexValue())
+      .isEqualTo("7030CBD40D6961E625AD73159A4B463AA42B4E88CC2248AC49E1EDCB50AF2924");
+  }
+
+  /**
+   * Verify {@link Seed#deriveKeyPair()} using a seed that would have produced a 33 byte private key prior to fixing
+   * #486.
+   *
+   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
+   */
+  @Test
+  void deriveKeyPairFor33ByteEcSeed() {
+    // Without explicit padding added by xrpl4j, but instead due to twos-complement padding, this seed would have
+    // (prior to fixing #486) produced a 33 byte private key. We validate here that it produces the correct output
+    // for either value() call.
+    final Seed ecSeedFor32BytePrivateKey = Seed.secp256k1SeedFromEntropy(
+      Entropy.of(BaseEncoding.base16().decode("358C75D5AD5E2FF5E19256978F18F0B9"))
+    );
+    final PrivateKey privateKey = ecSeedFor32BytePrivateKey.deriveKeyPair().privateKey();
+    assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
+      .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+    assertThat(privateKey.prefixedBytes().hexValue())
+      .isEqualTo("00FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+    assertThat(privateKey.naturalBytes().hexValue())
+      .isEqualTo("FBD60C9C99BA3D4706A449C30E4D61DCC3811E23EF69291F98A886CEC6A8B0B5");
+  }
+
+  /**
+   * Verify that BigInteger construction behaves the same no matter how many zero-byte prefix pads are used.
+   */
+  @Test
+  void verifyBigIntegerConstructionForSecp256k1PrivateKeys() {
+    // This seed will generate a secp256k1 SecretKey D value of
+    // 53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236 (which is only 31 bytes long).
+    Seed ecSeedFor31BytePrivateKey = Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("shZrqKhyGi5Gyvrv5AJawNMuR2WaN")
+    );
+
+    assertThat(BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236").length)
+      .isEqualTo(31);
+    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().naturalBytes().toByteArray().length)
+      .isEqualTo(32);
+    assertThat(ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().prefixedBytes().toByteArray().length)
+      .isEqualTo(33);
+
+    // Assert that all BigIntegers are equivalent (i.e., that the constructor ignores zero-byte pads)
+    BigInteger shortBigInt = new BigInteger(
+      BaseEncoding.base16().decode("53AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236")
+    );
+    BigInteger unPaddedBitInt = new BigInteger(
+      1, ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().naturalBytes().toByteArray()
+    );
+    BigInteger paddedBitInt = new BigInteger(
+      1, ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey().prefixedBytes().toByteArray()
+    );
+
+    assertThat(shortBigInt).isEqualTo(unPaddedBitInt);
+    assertThat(shortBigInt).isEqualTo(paddedBitInt);
+    assertThat(paddedBitInt).isEqualTo(unPaddedBitInt);
+  }
+
+  /**
+   * Verify {@link Seed#deriveKeyPair()} using a seed that would have produced a 31 byte private key (prior to fixing
+   * #486) generates expected results.
+   *
+   * @see "https://github.com/XRPLF/xrpl4j/issues/486"
+   */
+  @Test
+  void deriveKeyPairFor31ByteEcSeed() {
+    Seed ecSeedFor31BytePrivateKey = Seed.fromBase58EncodedSecret(
+      Base58EncodedSecret.of("shZrqKhyGi5Gyvrv5AJawNMuR2WaN")
+    );
+    final PrivateKey privateKey = ecSeedFor31BytePrivateKey.deriveKeyPair().privateKey();
+    assertThat(privateKey.value().hexValue()) // <- Overtly test .value()
+      .isEqualTo("000053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
+    assertThat(privateKey.prefixedBytes().hexValue())
+      .isEqualTo("000053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
+    assertThat(privateKey.naturalBytes().hexValue())
+      .isEqualTo("0053AC3F62A5A6E598C7D1E31AB92587C56823A1BE5C21E53ABE9D9A722E5236");
+  }
+
   @Test
   void testEquals() {
-    assertThat(edSeed).isEqualTo(edSeed);
-    assertThat(ecSeed).isEqualTo(ecSeed);
+    assertThat(edSeed.equals(edSeed)).isTrue();
+    assertThat(ecSeed.equals(ecSeed)).isTrue();
     assertThat(edSeed).isNotEqualTo(ecSeed);
     assertThat(ecSeed).isNotEqualTo(edSeed);
     assertThat(ecSeed).isNotEqualTo(new Object());
@@ -200,7 +294,7 @@ public class SeedTest {
     KeyPair keyPair = Seed.DefaultSeed.Ed25519KeyPairService.deriveKeyPair(seed);
 
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey(PrivateKey.of(UnsignedByteArray.of(
+      .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(
         BaseEncoding.base16().decode("ED2F1185B6F5525D7A7D2A22C1D8BAEEBEEFFE597C9010AF916EBB9447BECC5BE6"
         ))))
       .publicKey(
@@ -232,7 +326,7 @@ public class SeedTest {
     Seed seed = Seed.fromBase58EncodedSecret(Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5"));
     KeyPair keyPair = Seed.DefaultSeed.Secp256k1KeyPairService.deriveKeyPair(seed);
     KeyPair expectedKeyPair = KeyPair.builder()
-      .privateKey(PrivateKey.of(UnsignedByteArray.of(
+      .privateKey(PrivateKey.fromPrefixedBytes(UnsignedByteArray.of(
         BaseEncoding.base16().decode("00D78B9735C3F26501C7337B8A5727FD53A6EFDBC6AA55984F098488561F985E23"
         ))))
       .publicKey(
@@ -249,8 +343,9 @@ public class SeedTest {
     Seed seed = Seed.ed25519SeedFromEntropy(entropy);
     assertThat(seed.deriveKeyPair().publicKey()).isEqualTo(
       PublicKey.fromBase16EncodedPublicKey("ED01FA53FA5A7E77798F882ECE20B1ABC00BB358A9E55A202D0D0676BD0CE37A63"));
-    assertThat(seed.deriveKeyPair().privateKey()).isEqualTo(
-      PrivateKey.of(UnsignedByteArray.fromHex("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")));
+    assertThat(seed.deriveKeyPair().privateKey()).isEqualTo(PrivateKey.fromPrefixedBytes(
+      UnsignedByteArray.fromHex("EDB4C4E046826BD26190D09715FC31F4E6A728204EADD112905B08B14B7F15C4F3")
+    ));
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
       "rLUEXYuLiQptky37CqLcm9USQpPiz5rkpD");
   }
@@ -260,10 +355,13 @@ public class SeedTest {
     Entropy entropy = Entropy.of(BaseEncoding.base16().decode("CC4E55BC556DD561CBE990E3D4EF7069"));
     Seed seed = Seed.secp256k1SeedFromEntropy(entropy);
     assertThat(seed.deriveKeyPair().publicKey().base16Value()).isEqualTo(
-      "02FD0E8479CE8182ABD35157BB0FA17A469AF27DCB12B5DDED697C61809116A33B");
-    assertThat(seed.deriveKeyPair().privateKey().value().hexValue()).isEqualTo(
-      "27690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438");
+      "02FD0E8479CE8182ABD35157BB0FA17A469AF27DCB12B5DDED697C61809116A33B"
+    );
+    assertThat(seed.deriveKeyPair().privateKey().prefixedBytes().hexValue()).isEqualTo(
+      "0027690792130FC12883E83AE85946B018B3BEDE6EEDCDA3452787A94FC0A17438"
+    );
     assertThat(seed.deriveKeyPair().publicKey().deriveAddress().value()).isEqualTo(
-      "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2");
+      "rByLcEZ7iwTBAK8FfjtpFuT7fCzt4kF4r2"
+    );
   }
 }

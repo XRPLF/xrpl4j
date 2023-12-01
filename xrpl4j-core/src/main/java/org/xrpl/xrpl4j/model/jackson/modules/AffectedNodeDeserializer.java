@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaAmmObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaCheckObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
@@ -117,6 +118,8 @@ public class AffectedNodeDeserializer extends StdDeserializer<AffectedNode> {
         return MetaTicketObject.class;
       case "NFTokenPage":
         return MetaNfTokenPageObject.class;
+      case "AMM":
+        return MetaAmmObject.class;
       default:
         return MetaUnknownObject.class;
     }

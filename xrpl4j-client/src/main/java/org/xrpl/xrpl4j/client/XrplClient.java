@@ -55,11 +55,15 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
@@ -87,6 +91,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -671,6 +676,28 @@ public class XrplClient {
   }
 
   /**
+   * Retrieve a {@link LedgerObject} by sending a {@code ledger_entry} RPC request.
+   *
+   * @param params A {@link LedgerEntryRequestParams} containing the request parameters.
+   * @param <T>    The type of {@link LedgerObject} that should be returned in rippled's response.
+   *
+   * @return A {@link LedgerEntryResult} of type {@link T}.
+   */
+  public <T extends LedgerObject> LedgerEntryResult<T> ledgerEntry(
+    LedgerEntryRequestParams<T> params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.LEDGER_ENTRY)
+      .addParams(params)
+      .build();
+
+    JavaType resultType = objectMapper.getTypeFactory()
+      .constructParametricType(LedgerEntryResult.class, params.ledgerObjectClass());
+
+    return jsonRpcClient.send(request, resultType);
+  }
+
+  /**
    * Try to find a payment path for a rippling payment by sending a ripple_path_find method request.
    *
    * @param params The {@link RipplePathFindRequestParams} to send in the request.
@@ -760,6 +787,27 @@ public class XrplClient {
       .addParams(params)
       .build();
     return jsonRpcClient.send(request, GatewayBalancesResult.class);
+  }
+
+  /**
+   * Get info about an AMM by making a call to the amm_info rippled RPC method.
+   *
+   * @param params The {@link AmmInfoRequestParams} to send in the request.
+   *
+   * @return A {@link AmmInfoResult}.
+   *
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  @Beta
+  public AmmInfoResult ammInfo(
+    AmmInfoRequestParams params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.AMM_INFO)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, AmmInfoResult.class);
   }
 
   public JsonRpcClient getJsonRpcClient() {

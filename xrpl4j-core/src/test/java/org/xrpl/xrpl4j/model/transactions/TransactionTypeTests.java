@@ -98,5 +98,21 @@ public class TransactionTypeTests {
     assertThat(TransactionType.TRUST_SET.value()).isEqualTo("TrustSet");
     assertThat(TransactionType.TICKET_CREATE.value()).isEqualTo("TicketCreate");
     assertThat(TransactionType.UNL_MODIFY.value()).isEqualTo("UNLModify");
+    assertThat(TransactionType.CLAWBACK.value()).isEqualTo("Clawback");
+    assertThat(TransactionType.AMM_BID.value()).isEqualTo("AMMBid");
+    assertThat(TransactionType.AMM_CREATE.value()).isEqualTo("AMMCreate");
+    assertThat(TransactionType.AMM_DEPOSIT.value()).isEqualTo("AMMDeposit");
+    assertThat(TransactionType.AMM_VOTE.value()).isEqualTo("AMMVote");
+    assertThat(TransactionType.AMM_WITHDRAW.value()).isEqualTo("AMMWithdraw");
+    assertThat(TransactionType.AMM_DELETE.value()).isEqualTo("AMMDelete");
+    assertThat(TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT.value()).isEqualTo("XChainAccountCreateCommit");
+    assertThat(TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION.value())
+      .isEqualTo("XChainAddAccountCreateAttestation");
+    assertThat(TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION.value()).isEqualTo("XChainAddClaimAttestation");
+    assertThat(TransactionType.XCHAIN_CLAIM.value()).isEqualTo("XChainClaim");
+    assertThat(TransactionType.XCHAIN_COMMIT.value()).isEqualTo("XChainCommit");
+    assertThat(TransactionType.XCHAIN_CREATE_BRIDGE.value()).isEqualTo("XChainCreateBridge");
+    assertThat(TransactionType.XCHAIN_CREATE_CLAIM_ID.value()).isEqualTo("XChainCreateClaimID");
+    assertThat(TransactionType.XCHAIN_MODIFY_BRIDGE.value()).isEqualTo("XChainModifyBridge");
   }
 }

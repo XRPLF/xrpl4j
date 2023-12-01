@@ -69,7 +69,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.2.11</version>
+        <version>1.4.11</version>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -197,7 +197,7 @@
       <dependency>
         <groupId>com.github.docker-java</groupId>
         <artifactId>docker-java-api</artifactId>
-        <version>3.3.1</version>
+        <version>3.3.4</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
@@ -292,7 +292,7 @@
     <jackson.version>2.15.2</jackson.version>
     <feign.version>12.3</feign.version>
     <slf4j.version>1.7.36</slf4j.version>
-    <junit-jupiter.version>5.9.3</junit-jupiter.version>
+    <junit-jupiter.version>5.10.0</junit-jupiter.version>
     <guava.version>32.1.1-jre</guava.version>
   </properties>
 
@@ -489,7 +489,7 @@
         <!-- org.apache.maven.plugins:maven-surefire-plugin -->
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>3.1.2</version>
           <configuration>
             <argLine>${argLine}</argLine>
             <reuseForks>true</reuseForks>

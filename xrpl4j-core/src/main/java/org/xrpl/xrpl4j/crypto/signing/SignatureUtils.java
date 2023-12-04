@@ -44,6 +44,8 @@ import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.DidDelete;
+import org.xrpl.xrpl4j.model.transactions.DidSet;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
@@ -371,6 +373,14 @@ public class SignatureUtils {
       transactionWithSignature = XChainModifyBridge.builder().from((XChainModifyBridge) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (DidSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = DidSet.builder().from((DidSet) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (DidDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = DidDelete.builder().from((DidDelete) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -564,6 +574,14 @@ public class SignatureUtils {
         .build();
     } else if (XChainModifyBridge.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = XChainModifyBridge.builder().from((XChainModifyBridge) transaction)
+        .signers(signers)
+        .build();
+    } else if (DidSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = DidSet.builder().from((DidSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (DidDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = DidDelete.builder().from((DidDelete) transaction)
         .signers(signers)
         .build();
     } else {

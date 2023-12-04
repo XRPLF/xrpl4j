@@ -300,7 +300,25 @@ public enum TransactionType {
    * is subject to change.</p>
    */
   @Beta
-  XCHAIN_MODIFY_BRIDGE("XChainModifyBridge");
+  XCHAIN_MODIFY_BRIDGE("XChainModifyBridge"),
+
+  /**
+   * The {@link TransactionType} for the {@link DidSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureDID amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  DID_SET("DIDSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link DidDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featureDID amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
+  @Beta
+  DID_DELETE("DIDDelete");
 
   private final String value;
 

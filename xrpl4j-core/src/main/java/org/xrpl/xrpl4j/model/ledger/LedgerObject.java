@@ -61,6 +61,7 @@ import com.google.common.annotations.Beta;
     name = "XChainOwnedCreateAccountClaimID"
   ),
   @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
+  @JsonSubTypes.Type(value = ImmutableDidObject.class, name = "DID"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -184,7 +185,16 @@ public interface LedgerObject {
      * Its API is subject to change.</p>
      */
     @Beta
-    XCHAIN_OWNED_CLAIM_ID("XChainOwnedClaimID");
+    XCHAIN_OWNED_CLAIM_ID("XChainOwnedClaimID"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code DID} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureDID amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    DID("DID");
 
     private final String value;
 

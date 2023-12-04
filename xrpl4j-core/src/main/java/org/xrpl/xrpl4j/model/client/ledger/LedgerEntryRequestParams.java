@@ -14,6 +14,7 @@ import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
+import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
@@ -324,6 +325,24 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link DidObject} ledger entry.
+   *
+   * @param address              The address of the owner of the {@link DidObject}.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link DidObject}.
+   */
+  static LedgerEntryRequestParams<DidObject> did(
+    Address address,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<DidObject>builder()
+      .did(address)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -426,6 +445,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<TicketLedgerEntryParams> ticket();
 
   /**
+   * Loop up a {@link org.xrpl.xrpl4j.model.ledger.DidObject} by {@link Address}.
+   *
+   * @return An optionally-present {@link Address}.
+   */
+  Optional<Address> did();
+
+  /**
    * Look up a {@link org.xrpl.xrpl4j.model.ledger.BridgeObject} by {@link Address}. The {@link #bridge()} field must
    * also be present.
    *
@@ -493,6 +519,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (bridgeAccount().isPresent() || bridge().isPresent()) {
       return (Class<T>) BridgeObject.class;
+    }
+
+    if (did().isPresent()) {
+      return (Class<T>) DidObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

@@ -41,6 +41,9 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType XCHAIN_OWNED_CLAIM_ID = MetaLedgerEntryType.of("XChainOwnedClaimID");
 
+  @Beta
+  MetaLedgerEntryType DID = MetaLedgerEntryType.of("DID");
+
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *
@@ -93,6 +96,8 @@ public interface MetaLedgerEntryType {
         return MetaXChainOwnedClaimIdObject.class;
       case "XChainOwnedCreateAccountClaimID":
         return MetaXChainOwnedCreateAccountClaimIdObject.class;
+      case "DID":
+        return MetaDidObject.class;
       default:
         return MetaUnknownObject.class;
     }

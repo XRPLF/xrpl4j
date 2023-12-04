@@ -20,12 +20,17 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.jackson.modules.BaseFeeDropsDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.BaseFeeDropsSerializer;
 
 import java.util.Optional;
 
@@ -45,6 +50,7 @@ public interface SetFee extends Transaction {
    *
    * @return An {@link ImmutableSetFee.Builder}.
    */
+  // TODO say that we Assume no one will ever serialize a SetFee transaction to JSON...
   static ImmutableSetFee.Builder builder() {
     return ImmutableSetFee.builder();
   }
@@ -55,16 +61,63 @@ public interface SetFee extends Transaction {
    *
    * @return A hex {@link String} basefee value.
    */
-  @JsonProperty("BaseFee")
-  String baseFee();
+//  @JsonProperty("BaseFee")
+  @Value.Default
+  @Deprecated
+  @JsonIgnore
+  default String baseFee() {
+    return baseFeeDrops().value().toString(16);
+  }
+
+
+  /*@JsonProperty("BaseFeeDrops")
+  @JsonSerialize(using = BaseFeeDropsSerializer.class)
+  @JsonDeserialize(using = BaseFeeDropsDeserializer.class)
+  @Value.Default
+  default XrpCurrencyAmount baseFeeDrops() {
+    return XrpCurrencyAmount.of(UnsignedLong.valueOf(baseFee(), 16));
+  }*/
+
+  @JsonProperty("BaseFeeDrops")
+  @JsonAlias({"BaseFee"})
+  XrpCurrencyAmount baseFeeDrops();
+
+  /*@JsonProperty("BaseFee")
+  @Value.Default
+  default String baseFee() {
+    if isPostXrpFeesAmendment() {
+      return baseFeeDrops().toString();
+    } else {
+      throw new RuntimeException();
+    }
+  }
+
+  @JsonProperty("BaseFeeDrops")
+  @Value.Default
+  default XrpCurrencyAmount baseFeeDrops() {
+    if isPostXrpFeesAmendment() {
+      throw new RuntimeException();
+    } else {
+      return baseFee()
+    }
+  }
+
+  @JsonIgnore
+  default boolean isPostXrpFeesAmendment() {
+    return false;
+  }*/
 
   /**
    * The cost, in fee units, of the reference transaction.
    *
    * @return An {@link UnsignedInteger} cost of ref transaction.
    */
+  // FIXME: Deprecate this and make it @Nullable. Add a new field Optional<UnsignedInteger> maybeReferenceFeeUnits()
   @JsonProperty("ReferenceFeeUnits")
-  UnsignedInteger referenceFeeUnits();
+  @Value.Default
+  default UnsignedInteger referenceFeeUnits() {
+    return UnsignedInteger.ZERO;
+  }
 
   /**
    * The base reserve, in drops.
@@ -72,7 +125,16 @@ public interface SetFee extends Transaction {
    * @return An {@link UnsignedInteger} base reverse value in {@link org.xrpl.xrpl4j.model.client.fees.FeeDrops}.
    */
   @JsonProperty("ReserveBase")
-  UnsignedInteger reserveBase();
+  @Value.Default
+  default UnsignedInteger reserveBase() {
+    return UnsignedInteger.valueOf(reserveBaseDrops().value().longValue());
+  }
+
+  @JsonProperty("ReserveBaseDrops")
+  @Value.Default
+  default XrpCurrencyAmount reserveBaseDrops() {
+    return XrpCurrencyAmount.ofDrops(reserveBase().longValue());
+  }
 
   /**
    * The incremental reserve, in drops.
@@ -80,7 +142,16 @@ public interface SetFee extends Transaction {
    * @return An {@link UnsignedInteger} incremental reserve in {@link org.xrpl.xrpl4j.model.client.fees.FeeDrops}.
    */
   @JsonProperty("ReserveIncrement")
-  UnsignedInteger reserveIncrement();
+  @Value.Default
+  default UnsignedInteger reserveIncrement() {
+    return UnsignedInteger.valueOf(reserveIncrementDrops().value().longValue());
+  }
+
+  @JsonProperty("ReserveIncrementDrops")
+  @Value.Default
+  default XrpCurrencyAmount reserveIncrementDrops() {
+    return XrpCurrencyAmount.ofDrops(reserveIncrement().longValue());
+  }
 
   /**
    * The index of the ledger version where this pseudo-transaction appears. This distinguishes the pseudo-transaction

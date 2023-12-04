@@ -22,14 +22,17 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
 import java.util.Optional;
 
-public class SetFeeTest {
+public class SetFeeTest extends AbstractJsonTest {
 
   @Test
   public void testBuilder() {
@@ -52,5 +55,33 @@ public class SetFeeTest {
     assertThat(setFee.referenceFeeUnits()).isEqualTo(UnsignedInteger.valueOf(10));
     assertThat(setFee.reserveIncrement()).isEqualTo(UnsignedInteger.valueOf(5000000));
     assertThat(setFee.reserveBase()).isEqualTo(UnsignedInteger.valueOf(20000000));
+  }
+
+  @Test
+  public void testJson() throws JsonProcessingException, JSONException {
+    SetFee setFee = SetFee.builder()
+      .account(Address.of("rrrrrrrrrrrrrrrrrrrrrhoLvTp"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(2470665))
+      .baseFee("000000000000000A")
+      .referenceFeeUnits(UnsignedInteger.valueOf(10))
+      .reserveBase(UnsignedInteger.valueOf(20000000))
+      .reserveIncrement(UnsignedInteger.valueOf(5000000))
+      .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(67850752))))
+      .build();
+
+    String json = "{" +
+      "\"Account\":\"rrrrrrrrrrrrrrrrrrrrrhoLvTp\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"SetFee\"," +
+      "\"ReserveIncrement\":5000000," +
+      "\"ReserveBase\":20000000," +
+      "\"ReferenceFeeUnits\":10," +
+      "\"BaseFee\":\"000000000000000A\"}";
+
+    assertCanSerializeAndDeserialize(setFee, json);
   }
 }

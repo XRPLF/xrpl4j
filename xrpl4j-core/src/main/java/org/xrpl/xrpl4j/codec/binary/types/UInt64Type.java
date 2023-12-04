@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
  */
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
@@ -44,7 +45,12 @@ public class UInt64Type extends UIntType<UInt64Type> {
 
   @Override
   public UInt64Type fromJson(JsonNode value) {
-    return new UInt64Type(UnsignedLong.valueOf(value.asText()));
+    // STUInt64s are represented as hex-encoded Strings in JSON.
+    return new UInt64Type(UnsignedLong.valueOf(value.asText(), 16));
   }
 
+  @Override
+  public JsonNode toJson() {
+    return new TextNode(UnsignedLong.valueOf(toHex(), 16).toString(16));
+  }
 }

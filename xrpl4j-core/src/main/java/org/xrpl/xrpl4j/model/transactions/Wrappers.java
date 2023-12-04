@@ -34,6 +34,12 @@ import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
@@ -49,6 +55,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainCountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
 
@@ -487,6 +497,108 @@ public class Wrappers {
      */
     public BigDecimal bigDecimalValue() {
       return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedLong} containing an XChainClaimID.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = XChainClaimId.class, using = XChainClaimIdSerializer.class)
+  @JsonDeserialize(as = XChainClaimId.class, using = XChainClaimIdDeserializer.class)
+  @Beta
+  abstract static class _XChainClaimId extends Wrapper<UnsignedLong> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedLong} representing a counter for XLS-38 sidechains. This
+   * wrapper mostly exists to ensure we serialize fields of this type as a hex String in JSON, as these fields are
+   * STUInt64s in rippled, which are hex encoded in JSON.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = XChainCount.class, using = XChainCountSerializer.class)
+  @JsonDeserialize(as = XChainCount.class, using = XChainCountDeserializer.class)
+  @Beta
+  abstract static class _XChainCount extends Wrapper<UnsignedLong> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a DID Document.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureDID amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = DidDocument.class, using = DidDocumentSerializer.class)
+  @JsonDeserialize(as = DidDocument.class, using = DidDocumentDeserializer.class)
+  @Beta
+  abstract static class _DidDocument extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a DID URI.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureDID amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = DidUri.class, using = DidUriSerializer.class)
+  @JsonDeserialize(as = DidUri.class, using = DidUriDeserializer.class)
+  @Beta
+  abstract static class _DidUri extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing DID Data.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureDID amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = DidData.class, using = DidDataSerializer.class)
+  @JsonDeserialize(as = DidData.class, using = DidDataDeserializer.class)
+  @Beta
+  abstract static class _DidData extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
     }
 
   }

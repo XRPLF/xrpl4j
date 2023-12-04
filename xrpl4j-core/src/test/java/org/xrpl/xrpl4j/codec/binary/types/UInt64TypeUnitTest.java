@@ -41,11 +41,11 @@ public class UInt64TypeUnitTest {
 
   @Test
   void encode() {
-    assertThat(codec.fromJson("0").toHex()).isEqualTo("0000000000000000");
-    assertThat(codec.fromJson("15").toHex()).isEqualTo("000000000000000F");
-    assertThat(codec.fromJson("65535").toHex()).isEqualTo("000000000000FFFF");
-    assertThat(codec.fromJson("4294967295").toHex()).isEqualTo("00000000FFFFFFFF");
-    assertThat(codec.fromJson(maxUint64.toString()).toHex()).isEqualTo("FFFFFFFFFFFFFFFF");
+    assertThat(codec.fromJson("\"0\"").toHex()).isEqualTo("0000000000000000");
+    assertThat(codec.fromJson("\"F\"").toHex()).isEqualTo("000000000000000F");
+    assertThat(codec.fromJson("\"FFFF\"").toHex()).isEqualTo("000000000000FFFF");
+    assertThat(codec.fromJson("\"FFFFFFFF\"").toHex()).isEqualTo("00000000FFFFFFFF");
+    assertThat(codec.fromJson("\"FFFFFFFFFFFFFFFF\"").toHex()).isEqualTo("FFFFFFFFFFFFFFFF");
   }
 
   @Test

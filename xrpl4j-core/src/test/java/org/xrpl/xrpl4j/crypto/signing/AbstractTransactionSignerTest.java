@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.crypto.TestConstants;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -179,6 +180,48 @@ public class AbstractTransactionSignerTest {
     Signature actual = transactionSigner.sign(privateKeyableMock, unsignedClaimMock);
 
     verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+    assertThat(actual).isEqualTo(secp256k1SignatureMock);
+  }
+
+  ///////////////////
+  // Sign (Attestation)
+  ///////////////////
+
+  @Test
+  void signAttestationWithNullMetadata() {
+    Attestation unsignedAttestationMock = mock(Attestation.class);
+    assertThrows(NullPointerException.class, () -> transactionSigner.sign(null, unsignedAttestationMock));
+  }
+
+  @Test
+  void signAttestationWithNullTransaction() {
+    assertThrows(NullPointerException.class,
+      () -> transactionSigner.sign(privateKeyableMock, (Attestation) null));
+  }
+
+  @Test
+  void signAttestationEd25519() {
+    keyType = KeyType.ED25519;
+    Attestation unsignedAttestationMock = mock(Attestation.class);
+    when(signatureUtilsMock.toSignableBytes(unsignedAttestationMock)).thenReturn(UnsignedByteArray.empty());
+
+    Signature actual = transactionSigner.sign(privateKeyableMock, unsignedAttestationMock);
+
+    verify(signatureUtilsMock).toSignableBytes(unsignedAttestationMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+    assertThat(actual).isEqualTo(ed25519SignatureMock);
+  }
+
+  @Test
+  void signAttestationClaimSecp256k1() {
+    keyType = KeyType.SECP256K1;
+    Attestation unsignedAttestationMock = mock(Attestation.class);
+    when(signatureUtilsMock.toSignableBytes(unsignedAttestationMock)).thenReturn(UnsignedByteArray.empty());
+
+    Signature actual = transactionSigner.sign(privateKeyableMock, unsignedAttestationMock);
+
+    verify(signatureUtilsMock).toSignableBytes(unsignedAttestationMock);
     verifyNoMoreInteractions(signatureUtilsMock);
     assertThat(actual).isEqualTo(secp256k1SignatureMock);
   }

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
+import org.xrpl.xrpl4j.model.jackson.modules.BaseFeeDropsDeserializer;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -77,6 +78,7 @@ public interface SetFee extends Transaction {
    */
   @JsonProperty("BaseFeeDrops")
   @JsonAlias("BaseFee")
+  @JsonDeserialize(using = BaseFeeDropsDeserializer.class)
   XrpCurrencyAmount baseFeeDrops();
 
   /**

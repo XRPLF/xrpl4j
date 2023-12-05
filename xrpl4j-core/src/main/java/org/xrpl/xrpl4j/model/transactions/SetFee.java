@@ -30,7 +30,6 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
 import java.util.Optional;
-
 import javax.annotation.Nullable;
 
 /**

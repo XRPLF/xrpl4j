@@ -66,10 +66,11 @@
         <artifactId>jackson-datatype-cryptoconditions</artifactId>
         <version>${cryptoconditions.version}</version>
       </dependency>
+      <!--   This is the highest version we can use if we want to support Java 8. See https://logback.qos.ch/download.html   -->
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.4.11</version>
+        <version>1.3.8</version>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -291,7 +292,7 @@
     <cryptoconditions.version>1.0.4</cryptoconditions.version>
     <jackson.version>2.15.2</jackson.version>
     <feign.version>12.3</feign.version>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>2.0.7</slf4j.version>
     <junit-jupiter.version>5.10.0</junit-jupiter.version>
     <guava.version>32.1.1-jre</guava.version>
   </properties>

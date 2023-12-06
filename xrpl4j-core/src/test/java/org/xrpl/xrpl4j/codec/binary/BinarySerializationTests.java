@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.codec.binary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +35,7 @@ import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
@@ -41,7 +43,9 @@ import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.RippleStateFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
+import org.xrpl.xrpl4j.model.flags.XChainModifyBridgeFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
@@ -53,10 +57,23 @@ import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.DidData;
+import org.xrpl.xrpl4j.model.transactions.DidDelete;
+import org.xrpl.xrpl4j.model.transactions.DidDocument;
+import org.xrpl.xrpl4j.model.transactions.DidSet;
+import org.xrpl.xrpl4j.model.transactions.DidUri;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.ImmutableDidDelete;
+import org.xrpl.xrpl4j.model.transactions.ImmutableDidSet;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateBridge;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
+import org.xrpl.xrpl4j.model.transactions.ImmutableXChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
@@ -69,6 +86,17 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
+import org.xrpl.xrpl4j.model.transactions.XChainBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainClaim;
+import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainCommit;
+import org.xrpl.xrpl4j.model.transactions.XChainCount;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainCreateClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -925,7 +953,6 @@ public class BinarySerializationTests {
       .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .build();
 
-
     String expectedBinary = "12001421FFFFFFFF240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
       "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
       "300183E3";
@@ -945,7 +972,6 @@ public class BinarySerializationTests {
         .value("10000000")
         .build())
       .build();
-
 
     String expectedBinary = "1200142200000000240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
       "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
@@ -968,7 +994,6 @@ public class BinarySerializationTests {
         .value("10000000")
         .build())
       .build();
-
 
     String expectedBinary = "1200142280020000240000002C63D6438D7EA4C68000000000000000000000000000574347000000" +
       "0000832297BEF589D59F9C03A84F920F8D9128CC1CE468400000000000000C73008114BE6C30732AE33CF2AF3344CE8172A6B9" +
@@ -1691,6 +1716,408 @@ public class BinarySerializationTests {
       "8EA896C3580A399F0EE78611C8E3E1EB13000181143A4C02EA95AD6AC3BED92FA036E0BBFB712C030CE1F1";
 
     assertSerializesAndDeserializes(signerListSet, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainAccountCreateCommitTest() throws JsonProcessingException {
+    XChainAccountCreateCommit commit = XChainAccountCreateCommit.builder()
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .destination(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+      .sequence(UnsignedInteger.ONE)
+      .signatureReward(XrpCurrencyAmount.ofDrops(10000))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB3265" +
+        "4A313222F7FD020"))
+      .transactionSignature(Signature.fromBase16(
+        "304402202984DDE7F0B566F081F7953D7212BF031ACBF8860FE114102E9512C4C8768C770220701" +
+          "13F4630B1DC3045E4A98DDD648CEBC31B12774F7B44A1B8123CD2C9F5CF18")
+      )
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(
+            Issue.builder()
+              .currency("ETH")
+              .issuer(Address.of("rPyfep3gcLzkosKC9XiE77Y8DZWG6iWDT9"))
+              .build()
+          )
+          .build()
+      )
+      .build();
+
+    String expectedBinary = "12002C228000000024000000016140000000000F424068400000000000000A601D4000000000002" +
+      "71073210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD0207446304402202984DDE7F0B566F0" +
+      "81F7953D7212BF031ACBF8860FE114102E9512C4C8768C77022070113F4630B1DC3045E4A98DDD648CEBC31B12774F7B44A1B" +
+      "8123CD2C9F5CF188114B5F762798A53D543A014CAF8B297CFF8F2F937E88314AF80285F637EE4AF3C20378F9DFB12511ACB8D" +
+      "27011914AF80285F637EE4AF3C20378F9DFB12511ACB8D27000000000000000000000000000000000000000014550FC62003E" +
+      "785DC231A1058A05E56E3F09CF4E60000000000000000000000004554480000000000FBEF9A3A2B814E807745FA3D9C32FFD155FA2E8C";
+
+    assertSerializesAndDeserializes(commit, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainAddAccountCreateAttestation() throws JsonProcessingException {
+    XChainAddAccountCreateAttestation attestation = XChainAddAccountCreateAttestation.builder()
+      .account(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
+      .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
+      .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .publicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC2")
+      )
+      .signature(
+        Signature.fromBase16("EEFCFA3DC2AB4AB7C4D2EBBC168CB621A11B82BABD86534DFC8EFA72439A49662" +
+          "D744073CD848E7A587A95B35162CDF9A69BB237E72C9537A987F5B8C394F30D")
+      )
+      .wasLockingChainSend(true)
+      .attestationRewardAccount(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
+      .attestationSignerAccount(Address.of("r9cYxdjQsoXAEz3qQJc961SNLaXRkWXCvT"))
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.valueOf("ffffffffffffffff", 16)))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rDJVtEuDKr4rj1B3qtW7R5TVWdXV2DY7Qg"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .sequence(UnsignedInteger.valueOf(5))
+      .lastLedgerSequence(UnsignedInteger.valueOf(13))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("EDF54108BA2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1")
+      )
+      .transactionSignature(
+        Signature.fromBase16("03E74AEF1F585F156786429D2FC87A89E5C6B5A56D68BFC9A6A329F3AC67CBF" +
+          "2B6958283C663A4522278CA162C69B23CF75149AF022B410EA0508C16F4205800")
+      )
+      .build();
+
+    String expectedBinary = "12002E2400000005201B0000000D3015FFFFFFFFFFFFFFFF61400000000098968068400000000000001" +
+      "4601D40000000000000647121ED1F4A024ACFEBDB6C7AA88DEDE3364E060487EA31B14CC9E0D610D152B31AADC27321EDF54108BA" +
+      "2E0A0D3DC2AE3897F8BE0EFE776AE8D0F9FB0D0B9D64233084A8DDD1744003E74AEF1F585F156786429D2FC87A89E5C6B5A56D68B" +
+      "FC9A6A329F3AC67CBF2B6958283C663A4522278CA162C69B23CF75149AF022B410EA0508C16F42058007640EEFCFA3DC2AB4AB7C4" +
+      "D2EBBC168CB621A11B82BABD86534DFC8EFA72439A49662D744073CD848E7A587A95B35162CDF9A69BB237E72C9537A987F5B8C39" +
+      "4F30D81145E7A3E3D7200A794FA801C66CE3775B6416EE4128314C15F113E49BCC4B9FFF43CD0366C23ACD82F75638012143FD9ED" +
+      "9A79DEA67CB5D585111FEF0A29203FA0408014145E7A3E3D7200A794FA801C66CE3775B6416EE4128015145E7A3E3D7200A794FA8" +
+      "01C66CE3775B6416EE4120010130101191486F0B1126CE1205E59FDFDD2661A9FB7505CA70F000000000000000000000000000000" +
+      "000000000014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(attestation, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainAddClaimAttestation() throws JsonProcessingException {
+    XChainAddClaimAttestation attestation = XChainAddClaimAttestation.builder()
+      .account(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .attestationRewardAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .attestationSignerAccount(Address.of("rsqvD8WFFEBBv4nztpoW9YYXJ7eRzLrtc3"))
+      .destination(Address.of("rJdTJRJZ6GXCCRaamHJgEqVzB7Zy4557Pi"))
+      .fee(XrpCurrencyAmount.ofDrops(20))
+      .lastLedgerSequence(UnsignedInteger.valueOf(19))
+      .otherChainSource(Address.of("raFcdz1g8LWJDJWJE2ZKLRGdmUmsTyxaym"))
+      .sequence(UnsignedInteger.valueOf(9))
+      .publicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E1136")
+      )
+      .signature(
+        Signature.fromBase16("7C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2A049474275153D9D4DD44" +
+          "528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C")
+      )
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED0406B134786FE0751717226657F7BF8AFE96442C05D28ACEC66FB64852BA604C")
+      )
+      .wasLockingChainSend(true)
+      .xChainBridge(
+        XChainBridge.builder()
+          .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+          .issuingChainIssue(Issue.XRP)
+          .lockingChainDoor(Address.of("rDJVtEuDKr4rj1B3qtW7R5TVWdXV2DY7Qg"))
+          .lockingChainIssue(Issue.XRP)
+          .build()
+      )
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.MAX_VALUE))
+      .transactionSignature(
+        Signature.fromBase16("D0423649E48A44F181262CF5FC08A68E7FA5CD9E55843E4F09014B76E602574" +
+          "741E8553383A4B43CABD194BB96713647FC0B885BE248E4FFA068FA3E6994CF04")
+      )
+      .build();
+
+    String expectedBinary = "12002D2400000009201B000000133014FFFFFFFFFFFFFFFF614000000000989680684000000000000014" +
+      "7121ED7541DEC700470F54276C90C333A13CDBB5D341FD43C60CEA12170F6D6D4E11367321ED0406B134786FE0751717226657F7BF" +
+      "8AFE96442C05D28ACEC66FB64852BA604C7440D0423649E48A44F181262CF5FC08A68E7FA5CD9E55843E4F09014B76E602574741E8" +
+      "553383A4B43CABD194BB96713647FC0B885BE248E4FFA068FA3E6994CF0476407C175050B08000AD35EEB2D87E16CD3F95A0AEEBF2" +
+      "A049474275153D9D4DD44528FE99AA50E71660A15B0B768E1B90E609BBD5DC7AFAFD45D9705D72D40EA10C81141F30A4D728AB98B0" +
+      "950EC3B9815E6C8D43A7D5598314C15F113E49BCC4B9FFF43CD0366C23ACD82F75638012143FD9ED9A79DEA67CB5D585111FEF0A29" +
+      "203FA0408014141F30A4D728AB98B0950EC3B9815E6C8D43A7D5598015141F30A4D728AB98B0950EC3B9815E6C8D43A7D559001013" +
+      "0101191486F0B1126CE1205E59FDFDD2661A9FB7505CA70F000000000000000000000000000000000000000014B5F762798A53D543" +
+      "A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(attestation, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainClaim() throws JsonProcessingException {
+    XChainClaim claim = XChainClaim.builder()
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .transactionSignature(
+        Signature.fromBase16("30440220445F7469FDA401787D9EE8A9B6E24DFF81E94F4C09FD311D2C0" +
+          "A58FCC02C684A022029E2EF34A5EA35F50D5BB57AC6320AD3AE12C13C8D1379B255A486D72CED142E")
+      )
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.MAX_VALUE))
+      .destination(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .build();
+
+    String expectedBinary = "12002B228000000024000000013014FFFFFFFFFFFFFFFF61400000000000271068400000000000000A" +
+      "73210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020744630440220445F7469FDA401787D9EE8" +
+      "A9B6E24DFF81E94F4C09FD311D2C0A58FCC02C684A022029E2EF34A5EA35F50D5BB57AC6320AD3AE12C13C8D1379B255A486D72C" +
+      "ED142E8114B5F762798A53D543A014CAF8B297CFF8F2F937E88314550FC62003E785DC231A1058A05E56E3F09CF4E6011914AF80" +
+      "285F637EE4AF3C20378F9DFB12511ACB8D27000000000000000000000000000000000000000014550FC62003E785DC231A1058A05" +
+      "E56E3F09CF4E60000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(claim, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainCommit() throws JsonProcessingException {
+    XChainCommit commit = XChainCommit.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.MAX_VALUE))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("3043021F177323F0D93612C82A4393A99B23905A7E675753FD80C52997AFA" +
+          "B13F5F9D002203BFFAF457E90BDA65AABE8F8762BD96162FAD98A0C030CCD69B06EE9B12BBFFE")
+      )
+      .build();
+
+    String expectedBinary = "12002A228000000024000000013014FFFFFFFFFFFFFFFF6140000000000027106840000000000000" +
+      "0A73210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD02074453043021F177323F0D93612C82A" +
+      "4393A99B23905A7E675753FD80C52997AFAB13F5F9D002203BFFAF457E90BDA65AABE8F8762BD96162FAD98A0C030CCD69B06E" +
+      "E9B12BBFFE8114B5F762798A53D543A014CAF8B297CFF8F2F937E8011914AF80285F637EE4AF3C20378F9DFB12511ACB8D2700" +
+      "0000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F09CF4E60000000000000000000000" +
+      "000000000000000000";
+
+    assertSerializesAndDeserializes(commit, expectedBinary);
+  }
+
+  @Test
+  void serializeXChainCreateBridge() throws JsonProcessingException {
+    XChainCreateBridge createBridge = XChainCreateBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .signatureReward(XrpCurrencyAmount.ofDrops(1000))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .minAccountCreateAmount(XrpCurrencyAmount.ofDrops(10000))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("30440220101BCA4B5B5A37C6F44480F9A34752C9AA8B2CDF5AD47E3CB424DEDC" +
+          "21C06DB702206EEB257E82A89B1F46A0A2C7F070B0BD181D980FF86FE4269E369F6FC7A27091")
+      )
+      .flags(TransactionFlags.UNSET)
+      .build();
+
+    String binary = "1200302200000000240000000168400000000000000A601D40000000000003E8601E40000000000027" +
+      "1073210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020744630440220101BCA4B5B5A" +
+      "37C6F44480F9A34752C9AA8B2CDF5AD47E3CB424DEDC21C06DB702206EEB257E82A89B1F46A0A2C7F070B0BD181D980F" +
+      "F86FE4269E369F6FC7A270918114B5F762798A53D543A014CAF8B297CFF8F2F937E8011914AF80285F637EE4AF3C2037" +
+      "8F9DFB12511ACB8D27000000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F09C" +
+      "F4E60000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(createBridge, binary);
+  }
+
+  @Test
+  void serializeXChainCreateClaimId() throws JsonProcessingException {
+    XChainCreateClaimId claimId = XChainCreateClaimId.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .otherChainSource(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+      .signatureReward(XrpCurrencyAmount.ofDrops(10000))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("30440220247B20A1B9C48E21A374CB9B3E1FE2A7C528151868DF8D307E9FBE" +
+          "15237E531A02207C20C092DDCC525E583EF4AB7CB91E862A6DED19426997D3F0A2C84E2BE8C5DD")
+      )
+      .build();
+
+    String binary = "1200292280000000240000000168400000000000000A601D400000000000271073210330E7FC9D56BB25D68" +
+      "93BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020744630440220247B20A1B9C48E21A374CB9B3E1FE2A7C528151868" +
+      "DF8D307E9FBE15237E531A02207C20C092DDCC525E583EF4AB7CB91E862A6DED19426997D3F0A2C84E2BE8C5DD8114B5F7627" +
+      "98A53D543A014CAF8B297CFF8F2F937E8801214AF80285F637EE4AF3C20378F9DFB12511ACB8D27011914AF80285F637EE4AF" +
+      "3C20378F9DFB12511ACB8D27000000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F0" +
+      "9CF4E60000000000000000000000000000000000000000";
+
+    assertSerializesAndDeserializes(claimId, binary);
+  }
+
+  @Test
+  void serializeXChainModifyBridge() throws JsonProcessingException {
+    XChainModifyBridge transaction = XChainModifyBridge.builder()
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .signatureReward(XrpCurrencyAmount.ofDrops(1000))
+      .minAccountCreateAmount(XrpCurrencyAmount.ofDrops(10000))
+      .flags(XChainModifyBridgeFlags.UNSET)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020")
+      )
+      .transactionSignature(
+        Signature.fromBase16("3045022100D2CABC1B0E0635A8EE2E6554F6D474C49BC292C995C5C9F83179F" +
+          "4A60634B04C02205D1DB569D9593136F2FBEA7140010C8F46794D653AFDBEA8D30B8750BA4805E5")
+      )
+      .build();
+
+    String binary = "12002F2200000000240000000168400000000000000A601D40000000000003E8601E40000000000027107" +
+      "3210330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD02074473045022100D2CABC1B0E0635A8E" +
+      "E2E6554F6D474C49BC292C995C5C9F83179F4A60634B04C02205D1DB569D9593136F2FBEA7140010C8F46794D653AFDBEA8D" +
+      "30B8750BA4805E58114B5F762798A53D543A014CAF8B297CFF8F2F937E8011914AF80285F637EE4AF3C20378F9DFB12511AC" +
+      "B8D27000000000000000000000000000000000000000014550FC62003E785DC231A1058A05E56E3F09CF4E60000000000000" +
+      "000000000000000000000000000";
+
+    assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void serializeDidSet() throws JsonProcessingException {
+    DidSet transaction = DidSet.builder()
+      .account(Address.of("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .sequence(UnsignedInteger.valueOf(3))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .transactionSignature(
+        Signature.fromBase16("AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD7729993" +
+          "25667A6AA2520A63756EE84F3657298815019DD56A1AECE796B08535C4009C08")
+      )
+      .didDocument(DidDocument.of("646F63"))
+      .data(DidData.of("617474657374"))
+      .uri(DidUri.of("6469645F6578616D706C65"))
+      .build();
+
+    String binary = "1200312280000000240000000368400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F227" +
+      "958D5C0C111CC7CF947FC5A933477440AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD77299932566" +
+      "7A6AA2520A63756EE84F3657298815019DD56A1AECE796B08535C4009C08750B6469645F6578616D706C65701A03646F6370" +
+      "1B06617474657374811401476926B590BA3245F63C829116A0A3AF7F382D";
+
+    assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void serializeDidSetWithEmptyValues() throws JsonProcessingException {
+    DidSet transaction = DidSet.builder()
+      .account(Address.of("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .sequence(UnsignedInteger.valueOf(3))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .transactionSignature(
+        Signature.fromBase16("AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD7729993" +
+          "25667A6AA2520A63756EE84F3657298815019DD56A1AECE796B08535C4009C08")
+      )
+      .didDocument(DidDocument.of(""))
+      .data(DidData.of(""))
+      .uri(DidUri.of(""))
+      .build();
+
+    String binary = "1200312280000000240000000368400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F2" +
+      "27958D5C0C111CC7CF947FC5A933477440AACD31A04CAE14670FC483A1382F393AA96B49C84479B58067F049FBD7729993" +
+      "25667A6AA2520A63756EE84F3657298815019DD56A1AECE796B08535C4009C087500701A00701B00811401476926B590BA" +
+      "3245F63C829116A0A3AF7F382D";
+
+    assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void serializeDidDelete() throws JsonProcessingException {
+    DidDelete transaction = DidDelete.builder()
+      .account(Address.of("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(4))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED9861C4CB029C0DA737B823D7D3459A70F227958D5C0C111CC7CF947FC5A93347")
+      )
+      .transactionSignature(
+        Signature.fromBase16("71E28B12465A1B47162C22E121DF61089DCD9AAF5773704B76179E771666" +
+          "886C8AAD5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    String binary = "1200322280000000240000000468400000000000000A7321ED9861C4CB029C0DA737B823D7D3459A70F22" +
+      "7958D5C0C111CC7CF947FC5A93347744071E28B12465A1B47162C22E121DF61089DCD9AAF5773704B76179E771666886C8AA" +
+      "D5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802811401476926B590BA3245F63C829116A0A3AF7F382D";
+
+    assertSerializesAndDeserializes(transaction, binary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

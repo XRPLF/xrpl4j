@@ -1,8 +1,11 @@
 package org.xrpl.xrpl4j.model.transactions.metadata;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableMetaLedgerEntryType.class)
@@ -27,16 +30,77 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType NFTOKEN_PAGE = MetaLedgerEntryType.of("NFTokenPage");
   MetaLedgerEntryType AMM = MetaLedgerEntryType.of("AMM");
 
+  @Beta
+  MetaLedgerEntryType BRIDGE = MetaLedgerEntryType.of("Bridge");
+
+  @Beta
+  MetaLedgerEntryType XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID = MetaLedgerEntryType.of(
+    "XChainOwnedCreateAccountClaimID"
+  );
+
+  @Beta
+  MetaLedgerEntryType XCHAIN_OWNED_CLAIM_ID = MetaLedgerEntryType.of("XChainOwnedClaimID");
+
+  @Beta
+  MetaLedgerEntryType DID = MetaLedgerEntryType.of("DID");
+
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *
    * @param value The {@link String} value.
+   *
    * @return A {@link MetaLedgerEntryType} wrapping the supplied value.
    */
   static MetaLedgerEntryType of(String value) {
     return ImmutableMetaLedgerEntryType.builder()
       .value(value)
       .build();
+  }
+
+  /**
+   * Get the {@link MetaLedgerObject} concrete type associated with this {@link MetaLedgerEntryType}.
+   *
+   * @return A {@link Class} of {@link MetaLedgerObject}.
+   */
+  @Derived
+  @JsonIgnore
+  default Class<? extends MetaLedgerObject> ledgerObjectType() {
+    switch (this.value()) {
+      case "AccountRoot":
+        return MetaAccountRootObject.class;
+      case "Check":
+        return MetaCheckObject.class;
+      case "DepositPreauth":
+        return MetaDepositPreAuthObject.class;
+      case "Escrow":
+        return MetaEscrowObject.class;
+      case "NFTokenOffer":
+        return MetaNfTokenOfferObject.class;
+      case "Offer":
+        return MetaOfferObject.class;
+      case "PayChannel":
+        return MetaPayChannelObject.class;
+      case "RippleState":
+        return MetaRippleStateObject.class;
+      case "SignerList":
+        return MetaSignerListObject.class;
+      case "Ticket":
+        return MetaTicketObject.class;
+      case "NFTokenPage":
+        return MetaNfTokenPageObject.class;
+      case "AMM":
+        return MetaAmmObject.class;
+      case "Bridge":
+        return MetaBridgeObject.class;
+      case "XChainOwnedClaimID":
+        return MetaXChainOwnedClaimIdObject.class;
+      case "XChainOwnedCreateAccountClaimID":
+        return MetaXChainOwnedCreateAccountClaimIdObject.class;
+      case "DID":
+        return MetaDidObject.class;
+      default:
+        return MetaUnknownObject.class;
+    }
   }
 
   String value();

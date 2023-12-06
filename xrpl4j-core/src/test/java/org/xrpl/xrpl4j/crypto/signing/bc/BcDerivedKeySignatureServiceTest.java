@@ -42,14 +42,21 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
+import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
+import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
+import org.xrpl.xrpl4j.model.transactions.XChainBridge;
+import org.xrpl.xrpl4j.model.transactions.XChainClaimId;
+import org.xrpl.xrpl4j.model.transactions.XChainCount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.nio.charset.StandardCharsets;
@@ -497,6 +504,200 @@ class BcDerivedKeySignatureServiceTest {
       assertThat(signature.base16Value()).isEqualTo(
         "304402201D8C29FF455AFCD80F09892057B7A2A2E956A2B4B505B46722AC14ED3D6ACC5B02204EB2DF84D97AF5C4A83" +
           "3D2BA5442F6D906BDE466C32A9E58A5474A0CEA6B4534"
+      );
+      return true;
+    };
+
+    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+    for (int i = 0; i < 500; i++) {
+      futureSeeds.add(pool.submit(signedTxCallable));
+    }
+
+    futureSeeds.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void signAttestationClaimEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+
+    final AttestationClaim unsignedAttestation = AttestationClaim.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "C436AA1F579C2ADCE04143A8BCF77C8A10BD2EA2ADD9989FD381AD65123C977294C248157686149D9D8552C2A35A90" +
+          "28D577B244CE079020372A229D06D03504"
+      );
+      return true;
+    };
+
+    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+    for (int i = 0; i < 500; i++) {
+      futureSeeds.add(pool.submit(signedTxCallable));
+    }
+
+    futureSeeds.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void signAttestationClaimEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+
+    final AttestationClaim unsignedAttestation = AttestationClaim.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "30440220078E2379E68E59D60DFF4054FE0F988A95595E7A0DB2DB7215A3B7C03232CC7C022021BDB527050084BD9" +
+          "533BD21FAC0ABB63FD21754AC87C5F580AC583DDF1A9740"
+      );
+      return true;
+    };
+
+    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+    for (int i = 0; i < 500; i++) {
+      futureSeeds.add(pool.submit(signedTxCallable));
+    }
+
+    futureSeeds.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void signAttestationCreateAccountEd() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.ED25519);
+
+    final AttestationCreateAccount unsignedAttestation = AttestationCreateAccount.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.ONE))
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "D44CFFD228B1A17DEC47433F4E14DD3FD844513129EB68725D45A3D9FA89AFDD45C433579BC9B31FFC109181" +
+          "AF565BD63B49011BC6784F9861C33BD7B1235007"
+      );
+      return true;
+    };
+
+    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+    for (int i = 0; i < 500; i++) {
+      futureSeeds.add(pool.submit(signedTxCallable));
+    }
+
+    futureSeeds.stream()
+      .map($ -> {
+        try {
+          return $.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      })
+      .forEach(validSig -> assertThat(validSig).isTrue());
+  }
+
+  @Test
+  void signAttestationCreateAccountEc() {
+    final PrivateKeyReference privateKeyReference = privateKeyReference("foo", KeyType.SECP256K1);
+
+    final AttestationCreateAccount unsignedAttestation = AttestationCreateAccount.builder()
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(AddressConstants.GENESIS_ACCOUNT)
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .otherChainSource(AddressConstants.GENESIS_ACCOUNT)
+      .amount(XrpCurrencyAmount.ofDrops(10))
+      .attestationRewardAccount(AddressConstants.GENESIS_ACCOUNT)
+      .wasLockingChainSend(true)
+      .destination(AddressConstants.GENESIS_ACCOUNT)
+      .xChainAccountCreateCount(XChainCount.of(UnsignedLong.ONE))
+      .signatureReward(XrpCurrencyAmount.ofDrops(200))
+      .build();
+
+    final ExecutorService pool = Executors.newFixedThreadPool(5);
+    final Callable<Boolean> signedTxCallable = () -> {
+      Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
+      assertThat(signature).isNotNull();
+      assertThat(signature.base16Value()).isEqualTo(
+        "3044022024A4E54773DCC751082D2F9DAEC60C06960E2DE40BC2896B9690D917DA310EB902202547C4569E817" +
+          "C4505C4B672D65CF24B93B3EB6748564E819EB26E8ED5A20790"
       );
       return true;
     };

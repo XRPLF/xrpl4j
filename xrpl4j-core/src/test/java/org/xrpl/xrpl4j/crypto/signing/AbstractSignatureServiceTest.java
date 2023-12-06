@@ -41,6 +41,7 @@ import org.xrpl.xrpl4j.crypto.TestConstants;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -265,6 +266,34 @@ public class AbstractSignatureServiceTest {
 
     verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
     verify(signatureUtilsMock).toSignableBytes(unsignedClaimMock);
+    verifyNoMoreInteractions(signatureUtilsMock);
+  }
+
+  ///////////////////
+  // Sign (privateKey, Attestation)
+  ///////////////////
+
+  @Test
+  public void signAttestationWithNullPrivateKey() {
+    assertThrows(NullPointerException.class, () -> signatureService.sign(null, mock(Attestation.class)));
+  }
+
+  @Test
+  public void signAttestationWithNullUnsignedClaim() {
+    assertThrows(NullPointerException.class,
+      () -> signatureService.sign(TestConstants.getEdPrivateKey(), (Attestation) null));
+  }
+
+  @Test
+  public void signAttestationEd25519() {
+    Attestation unsignedAttestationMock = mock(Attestation.class);
+    when(signatureUtilsMock.toSignableBytes(unsignedAttestationMock)).thenReturn(UnsignedByteArray.empty());
+
+    Signature actualSignature = signatureService.sign(TestConstants.getEdPrivateKey(), unsignedAttestationMock);
+    assertThat(actualSignature).isEqualTo(ed25519SignatureMock);
+
+    verify(signatureUtilsMock, times(0)).toMultiSignableBytes(any(), any());
+    verify(signatureUtilsMock).toSignableBytes(unsignedAttestationMock);
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 

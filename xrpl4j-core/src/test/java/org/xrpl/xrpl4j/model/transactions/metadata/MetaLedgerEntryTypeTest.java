@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
+import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 
 class MetaLedgerEntryTypeTest extends AbstractJsonTest {
 
@@ -30,6 +31,39 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.TICKET.value()).isEqualTo("Ticket");
     assertThat(MetaLedgerEntryType.NFTOKEN_PAGE.value()).isEqualTo("NFTokenPage");
     assertThat(MetaLedgerEntryType.AMM.value()).isEqualTo("AMM");
+    assertThat(MetaLedgerEntryType.BRIDGE.value()).isEqualTo("Bridge");
+    assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID.value())
+      .isEqualTo("XChainOwnedCreateAccountClaimID");
+    assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
+    assertThat(MetaLedgerEntryType.DID.value()).isEqualTo("DID");
+  }
+
+  @Test
+  void testLedgerObjectType() {
+    assertThat(MetaLedgerEntryType.ACCOUNT_ROOT.ledgerObjectType()).isEqualTo(MetaAccountRootObject.class);
+    assertThat(MetaLedgerEntryType.AMENDMENTS.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
+    assertThat(MetaLedgerEntryType.CHECK.ledgerObjectType()).isEqualTo(MetaCheckObject.class);
+    assertThat(MetaLedgerEntryType.DEPOSIT_PRE_AUTH.ledgerObjectType()).isEqualTo(MetaDepositPreAuthObject.class);
+    assertThat(MetaLedgerEntryType.DIRECTORY_NODE.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
+    assertThat(MetaLedgerEntryType.ESCROW.ledgerObjectType()).isEqualTo(MetaEscrowObject.class);
+    assertThat(MetaLedgerEntryType.FEE_SETTINGS.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
+    assertThat(MetaLedgerEntryType.LEDGER_HASHES.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
+    assertThat(MetaLedgerEntryType.NEGATIVE_UNL.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
+    assertThat(MetaLedgerEntryType.NFTOKEN_OFFER.ledgerObjectType()).isEqualTo(MetaNfTokenOfferObject.class);
+    assertThat(MetaLedgerEntryType.OFFER.ledgerObjectType()).isEqualTo(MetaOfferObject.class);
+    assertThat(MetaLedgerEntryType.PAY_CHANNEL.ledgerObjectType()).isEqualTo(MetaPayChannelObject.class);
+    assertThat(MetaLedgerEntryType.RIPPLE_STATE.ledgerObjectType()).isEqualTo(MetaRippleStateObject.class);
+    assertThat(MetaLedgerEntryType.SIGNER_LIST.ledgerObjectType()).isEqualTo(MetaSignerListObject.class);
+    assertThat(MetaLedgerEntryType.TICKET.ledgerObjectType()).isEqualTo(MetaTicketObject.class);
+    assertThat(MetaLedgerEntryType.NFTOKEN_PAGE.ledgerObjectType()).isEqualTo(MetaNfTokenPageObject.class);
+    assertThat(MetaLedgerEntryType.AMM.ledgerObjectType()).isEqualTo(MetaAmmObject.class);
+    assertThat(MetaLedgerEntryType.BRIDGE.ledgerObjectType()).isEqualTo(MetaBridgeObject.class);
+    assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID.ledgerObjectType())
+      .isEqualTo(MetaXChainOwnedCreateAccountClaimIdObject.class);
+    assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.ledgerObjectType()).isEqualTo(
+      MetaXChainOwnedClaimIdObject.class
+    );
+    assertThat(MetaLedgerEntryType.DID.ledgerObjectType()).isEqualTo(MetaDidObject.class);
   }
 
   @Test

@@ -705,7 +705,7 @@ class TransactionMetadataTest {
             assertThat(CreatedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
             if (node.getValue().get("NewFields") != null) {
               MetaLedgerObject newFields = ((CreatedNode<?>) transactionMetadata.affectedNodes().get(i)).newFields();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(newFields.getClass());
             }
           } else if (node.getKey().equals("ModifiedNode")) {
@@ -714,14 +714,14 @@ class TransactionMetadataTest {
               Optional<?> previousFields = ((ModifiedNode<?>) transactionMetadata.affectedNodes().get(i))
                 .previousFields();
               assertThat(previousFields).isPresent();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(previousFields.get().getClass());
             }
 
             if (node.getValue().get("FinalFields") != null) {
               Optional<?> finalFields = ((ModifiedNode<?>) transactionMetadata.affectedNodes().get(i)).finalFields();
               assertThat(finalFields).isPresent();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(finalFields.get().getClass());
             }
           } else if (node.getKey().equals("DeletedNode")) {
@@ -729,7 +729,7 @@ class TransactionMetadataTest {
             if (node.getValue().get("FinalFields") != null) {
               MetaLedgerObject finalFields = ((DeletedNode<?>) transactionMetadata.affectedNodes().get(i))
                 .finalFields();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(finalFields.getClass());
             }
           }
@@ -779,36 +779,5 @@ class TransactionMetadataTest {
     }
 
     return destFile;
-  }
-
-  private Class<? extends MetaLedgerObject> determineLedgerObjectType(String ledgerEntryType) {
-    switch (ledgerEntryType) {
-      case "AccountRoot":
-        return MetaAccountRootObject.class;
-      case "Check":
-        return MetaCheckObject.class;
-      case "DepositPreauth":
-        return MetaDepositPreAuthObject.class;
-      case "Escrow":
-        return MetaEscrowObject.class;
-      case "NFTokenOffer":
-        return MetaNfTokenOfferObject.class;
-      case "Offer":
-        return MetaOfferObject.class;
-      case "PayChannel":
-        return MetaPayChannelObject.class;
-      case "RippleState":
-        return MetaRippleStateObject.class;
-      case "SignerList":
-        return MetaSignerListObject.class;
-      case "Ticket":
-        return MetaTicketObject.class;
-      case "NFTokenPage":
-        return MetaNfTokenPageObject.class;
-      case "AMM":
-        return MetaAmmObject.class;
-      default:
-        return MetaUnknownObject.class;
-    }
   }
 }

@@ -86,6 +86,7 @@ import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
+import org.xrpl.xrpl4j.model.transactions.UnknownTransaction;
 import org.xrpl.xrpl4j.model.transactions.XChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.XChainAddAccountCreateAttestation;
 import org.xrpl.xrpl4j.model.transactions.XChainAddClaimAttestation;
@@ -100,6 +101,8 @@ import org.xrpl.xrpl4j.model.transactions.XChainModifyBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class BinarySerializationTests {
 
@@ -2118,6 +2121,62 @@ public class BinarySerializationTests {
       "D5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802811401476926B590BA3245F63C829116A0A3AF7F382D";
 
     assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void deserializeUnknown() throws JsonProcessingException {
+    String json = "{\n" +
+            "  \"Account\": \"rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8\",\n" +
+            "  \"Fee\": \"10\",\n" +
+            "  \"Sequence\": 4,\n" +
+            "  \"TransactionType\": \"UnknownCustom\",\n" +
+            "  \"UnknownProperty\": \"value123\",\n" +
+            "  \"UnknownObject\": {\n" +
+            "    \"name\": \"value0\",\n" +
+            "    \"key1\": 1\n" +
+            "  },\n" +
+            "  \"UnknownArray\": [\n" +
+            "    {\n" +
+            "      \"UnknownDetail\": {\n" +
+            "        \"Amount\": \"1666671963\",\n" +
+            "        \"Destination\": \"rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL\"\n" +
+            "      }\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"UnknownDetail\": {\n" +
+            "        \"Amount\": \"83333166\",\n" +
+            "        \"Destination\": \"r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
+
+    UnknownTransaction transaction = objectMapper.readValue(json, UnknownTransaction.class);
+
+    assertThat(transaction.account().value()).isEqualTo("rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8");
+    assertThat(transaction.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(10));
+    assertThat(transaction.sequence()).isEqualTo(UnsignedInteger.valueOf(4));
+    assertThat(transaction.transactionTypeText()).isEqualTo("UnknownCustom");
+
+    assertThat(transaction.unknowns().size()).isEqualTo(3);
+    assertThat(transaction.unknowns().get("UnknownProperty")).isEqualTo("value123");
+
+    Map<?, ?> unknownObject = (Map<?, ?>)transaction.unknowns().get("UnknownObject");
+    assertThat(unknownObject).isNotNull();
+    assertThat(unknownObject.get("name")).isEqualTo("value0");
+    assertThat(unknownObject.get("key1")).isEqualTo(1);
+
+    ArrayList<?> unknownArray = (ArrayList<?>)transaction.unknowns().get("UnknownArray");
+    assertThat(unknownArray).isNotNull();
+    assertThat(unknownArray.size()).isEqualTo(2);
+    Map<?, ?> elem0 = (Map<?, ?>)unknownArray.get(0);
+    Map<?, ?> elem0Detail = (Map<?, ?>)elem0.get("UnknownDetail");
+    assertThat(elem0Detail.get("Amount")).isEqualTo("1666671963");
+    assertThat(elem0Detail.get("Destination")).isEqualTo("rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL");
+    Map<?, ?> elem1 = (Map<?, ?>)unknownArray.get(1);
+    Map<?, ?> elem1Detail = (Map<?, ?>)elem1.get("UnknownDetail");
+    assertThat(elem1Detail.get("Amount")).isEqualTo("83333166");
+    assertThat(elem1Detail.get("Destination")).isEqualTo("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV");
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

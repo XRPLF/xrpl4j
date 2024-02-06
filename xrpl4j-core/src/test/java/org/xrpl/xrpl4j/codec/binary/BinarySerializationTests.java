@@ -2125,30 +2125,30 @@ public class BinarySerializationTests {
 
   @Test
   void deserializeUnknown() throws JsonProcessingException {
-    String json = "{\n" +
-            "  \"Account\": \"rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8\",\n" +
-            "  \"Fee\": \"10\",\n" +
-            "  \"Sequence\": 4,\n" +
-            "  \"TransactionType\": \"UnknownCustom\",\n" +
-            "  \"UnknownProperty\": \"value123\",\n" +
-            "  \"UnknownObject\": {\n" +
-            "    \"name\": \"value0\",\n" +
-            "    \"key1\": 1\n" +
-            "  },\n" +
-            "  \"UnknownArray\": [\n" +
-            "    {\n" +
-            "      \"UnknownDetail\": {\n" +
-            "        \"Amount\": \"1666671963\",\n" +
-            "        \"Destination\": \"rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL\"\n" +
-            "      }\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"UnknownDetail\": {\n" +
-            "        \"Amount\": \"83333166\",\n" +
-            "        \"Destination\": \"r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV\"\n" +
-            "      }\n" +
-            "    }\n" +
-            "  ]\n" +
+    String json = "{" +
+            "  \"Account\": \"rfmDuhDyLGgx94qiwf3YF8BUV5j6KSvE8\"," +
+            "  \"Fee\": \"10\"," +
+            "  \"Sequence\": 4," +
+            "  \"TransactionType\": \"UnknownCustom\"," +
+            "  \"UnknownProperty\": \"value123\"," +
+            "  \"UnknownObject\": {" +
+            "    \"name\": \"value0\"," +
+            "    \"key1\": 1" +
+            "  }," +
+            "  \"UnknownArray\": [" +
+            "    {" +
+            "      \"UnknownDetail\": {" +
+            "        \"Amount\": \"1666671963\"," +
+            "        \"Destination\": \"rGzx83BVoqTYbGn7tiVAnFw7cbxjin13jL\"" +
+            "      }" +
+            "    }," +
+            "    {" +
+            "      \"UnknownDetail\": {" +
+            "        \"Amount\": \"83333166\"," +
+            "        \"Destination\": \"r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV\"" +
+            "      }" +
+            "    }" +
+            "  ]" +
             "}";
 
     UnknownTransaction transaction = objectMapper.readValue(json, UnknownTransaction.class);

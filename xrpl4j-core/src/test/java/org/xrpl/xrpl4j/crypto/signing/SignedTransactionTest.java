@@ -149,7 +149,7 @@ class SignedTransactionTest {
 
   /**
    * This test constructs the transaction with hash 1A1953AC3BA3123254AA912CE507514A6AAD05EED8981A870B45F604936F0997 to
-   * check that the hash that's on livenet does not match when the signature is supplied incorrectly (i.e., this test
+   * check that the hash that's on livenet _does not_ match when the signature is supplied incorrectly (i.e., this test
    * validates that a transaction's signature is always used to compute a transaction hash).
    *
    * @see "https://livenet.xrpl.org/transactions/1A1953AC3BA3123254AA912CE507514A6AAD05EED8981A870B45F604936F0997"

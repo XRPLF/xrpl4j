@@ -28,6 +28,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.CryptoConditionReader;
+import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Condition;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
@@ -176,6 +177,29 @@ public class EscrowFinishTest {
     assertThat(actual.conditionRawValue()).isNotEmpty().get().isEqualTo("1234");
   }
 
+  /**
+   * This tests the case where conditionRawValue is present and is parseable to a Condition but when the
+   * parsed Condition is written to a byte array, the value differs from the conditionRawValue bytes. This
+   * can occur if the condition raw value contains a valid condition in the first 32 bytes, but also includes
+   * extra bytes afterward.
+   */
+  @Test
+  void normalizeConditionWithRawValueThatIsParseableButNotValid() {
+    EscrowFinish actual = EscrowFinish.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .conditionRawValue(GOOD_CONDITION_STR + GOOD_CONDITION_STR)
+      .build();
+
+    assertThat(actual.condition()).isEmpty();
+    assertThat(actual.conditionRawValue()).isNotEmpty().get().isEqualTo(
+      GOOD_CONDITION_STR + GOOD_CONDITION_STR
+    );
+  }
+
   @Test
   void normalizeWithNoConditionAndRawValueForBadHexLengthCondition() {
     EscrowFinish actual = EscrowFinish.builder()
@@ -282,6 +306,29 @@ public class EscrowFinishTest {
 
     assertThat(actual.fulfillment()).isEmpty();
     assertThat(actual.fulfillmentRawValue()).isNotEmpty().get().isEqualTo("1234");
+  }
+
+  /**
+   * This tests the case where fulfillmentRawValue is present and is parseable to a Fulfillment<?> but when the
+   * parsed Fulfillment is written to a byte array, the value differs from the fulfillmentRawValue bytes. This
+   * can occur if the fulfillment raw value contains a valid fulfillment in the first 32 bytes, but also includes
+   * extra bytes afterward, such as in transaction 138543329687544CDAFCD3AB0DCBFE9C4F8E710397747BA7155F19426F493C8D.
+   */
+  @Test
+  void normalizeFulfillmentWithRawValueThatIsParseableButNotValid() {
+    EscrowFinish actual = EscrowFinish.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .fulfillmentRawValue(GOOD_FULFILLMENT_STR + GOOD_FULFILLMENT_STR)
+      .build();
+
+    assertThat(actual.fulfillment()).isEmpty();
+    assertThat(actual.fulfillmentRawValue()).isNotEmpty().get().isEqualTo(
+      GOOD_FULFILLMENT_STR + GOOD_FULFILLMENT_STR
+    );
   }
 
   @Test

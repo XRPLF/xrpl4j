@@ -72,7 +72,7 @@ public interface OracleSet extends Transaction {
   Optional<OracleUri> uri();
 
   /**
-   * The time the data was last updated, represented in the ripple epoch time.
+   * The time the data was last updated, represented in Unix time.
    *
    * @return An {@link UnsignedInteger}.
    */

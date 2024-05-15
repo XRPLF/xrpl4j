@@ -62,6 +62,7 @@ import com.google.common.annotations.Beta;
   ),
   @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
   @JsonSubTypes.Type(value = ImmutableDidObject.class, name = "DID"),
+  @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -194,7 +195,16 @@ public interface LedgerObject {
      * Its API is subject to change.</p>
      */
     @Beta
-    DID("DID");
+    DID("DID"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Oracle} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featurePriceOracle amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    ORACLE("Oracle");
 
     private final String value;
 

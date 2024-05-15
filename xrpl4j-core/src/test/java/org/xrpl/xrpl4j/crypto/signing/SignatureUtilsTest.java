@@ -1755,6 +1755,31 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addMultiSignatureToOracleSet() {
+    OracleSet transaction = OracleSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .lastUpdateTime(UnsignedInteger.ONE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToOracleDelete() {
+    OracleDelete transaction = OracleDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addMultiSignaturesToTransactionUnsupported() {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
     when(transactionMock.signingPublicKey()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY);

@@ -1481,64 +1481,6 @@ public class BinarySerializationTests {
   }
 
   @Test
-  void name() throws JsonProcessingException {
-    OracleSet oracleSet = OracleSet.builder()
-      .account(Address.of("rMS69A6J39RmBg5yWDft5XAM8zTGbtMMZy"))
-      .assetClass("63757272656E6379")
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.valueOf(3)))
-      .provider(OracleProvider.of("68747470733A2F2F74687265657872702E646576"))
-      .sequence(UnsignedInteger.valueOf(2019238))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC"))
-      .lastUpdateTime(UnsignedInteger.valueOf(1715785124))
-      .addPriceDataSeries(
-        PriceDataWrapper.of(
-          PriceData.builder()
-            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("1ff4", 16)))
-            .baseAsset("XRP")
-            .quoteAsset("IDR")
-            .build()
-        ),
-        PriceDataWrapper.of(
-          PriceData.builder()
-            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("13652", 16)))
-            .baseAsset("XRP")
-            .quoteAsset("JPY")
-            .scale(UnsignedInteger.valueOf(3))
-            .build()
-        ),
-        PriceDataWrapper.of(
-          PriceData.builder()
-            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("117bf", 16)))
-            .baseAsset("XRP")
-            .quoteAsset("KRW")
-            .scale(UnsignedInteger.valueOf(2))
-            .build()
-        ),
-        PriceDataWrapper.of(
-          PriceData.builder()
-            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("14d6a", 16)))
-            .baseAsset("XRP")
-            .quoteAsset("MXN")
-            .scale(UnsignedInteger.valueOf(4))
-            .build()
-        ),
-        PriceDataWrapper.of(
-          PriceData.builder()
-            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("5dfe", 16)))
-            .baseAsset("XRP")
-            .quoteAsset("MYR")
-            .scale(UnsignedInteger.valueOf(4))
-            .build()
-        )
-      )
-      .build();
-
-    String expectedBinary = "12003324001ECFA62F6644CDA420330000000368400000000000000A7321EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC744007205F518BC5D1D4F67E33101F140F69279670627825CDFA4BECDFE7C1D38B40B4101F62264C280C3C9A492B3FF01DCF4AE0CEF12BB6FB2E4EB681B9B81D710A701C0863757272656E6379701D1468747470733A2F2F74687265657872702E6465768114E03E6F0A3D378C02E4CB7769053F8AA4EB3649ECF018E02030170000000000001FF4011A0000000000000000000000000000000000000000021A0000000000000000000000004944520000000000E1E02030170000000000013652041003011A0000000000000000000000000000000000000000021A0000000000000000000000004A50590000000000E1E020301700000000000117BF041002011A0000000000000000000000000000000000000000021A0000000000000000000000004B52570000000000E1E02030170000000000014D6A041004011A0000000000000000000000000000000000000000021A0000000000000000000000004D584E0000000000E1E02030170000000000005DFE041004011A0000000000000000000000000000000000000000021A0000000000000000000000004D59520000000000E1F1";
-    assertSerializesAndDeserializes(oracleSet, expectedBinary);
-  }
-
-  @Test
   public void serializeOfferCreateWithZeroFlags() throws JsonProcessingException {
     OfferCreate offerCreate = OfferCreate.builder()
       .takerGets(currencyAmount(100))
@@ -2182,6 +2124,80 @@ public class BinarySerializationTests {
       "D5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802811401476926B590BA3245F63C829116A0A3AF7F382D";
 
     assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void serializeOracleSet() throws JsonProcessingException {
+    OracleSet oracleSet = OracleSet.builder()
+      .account(Address.of("rMS69A6J39RmBg5yWDft5XAM8zTGbtMMZy"))
+      .assetClass("63757272656E6379")
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.valueOf(3)))
+      .provider(OracleProvider.of("68747470733A2F2F74687265657872702E646576"))
+      .sequence(UnsignedInteger.valueOf(2019238))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC"))
+      .lastUpdateTime(UnsignedInteger.valueOf(1715785124))
+      .addPriceDataSeries(
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("1ff4", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("IDR")
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("13652", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("JPY")
+            .scale(UnsignedInteger.valueOf(3))
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("117bf", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("KRW")
+            .scale(UnsignedInteger.valueOf(2))
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("14d6a", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("MXN")
+            .scale(UnsignedInteger.valueOf(4))
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("5dfe", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("MYR")
+            .scale(UnsignedInteger.valueOf(4))
+            .build()
+        )
+      )
+      .build();
+
+    String expectedBinary = "12003324001ECFA62F6644CDA420330000000368400000000000000A7321EDA6501D3E53D47" +
+      "F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC744007205F518BC5D1D4F67E33101F140F692796706278" +
+      "25CDFA4BECDFE7C1D38B40B4101F62264C280C3C9A492B3FF01DCF4AE0CEF12BB6FB2E4EB681B9B81D710A701C0863757" +
+      "272656E6379701D1468747470733A2F2F74687265657872702E6465768114E03E6F0A3D378C02E4CB7769053F8AA4EB3" +
+      "649ECF018E02030170000000000001FF4011A0000000000000000000000000000000000000000021A000000000000000" +
+      "0000000004944520000000000E1E02030170000000000013652041003011A00000000000000000000000000000000000" +
+      "00000021A0000000000000000000000004A50590000000000E1E020301700000000000117BF041002011A00000000000" +
+      "00000000000000000000000000000021A0000000000000000000000004B52570000000000E1E02030170000000000014" +
+      "D6A041004011A0000000000000000000000000000000000000000021A0000000000000000000000004D584E000000000" +
+      "0E1E02030170000000000005DFE041004011A0000000000000000000000000000000000000000021A000000000000000" +
+      "0000000004D59520000000000E1F1";
+    assertSerializesAndDeserializes(oracleSet, expectedBinary);
+  }
+
+  // FIXME: Once IT is written, add a serialization test here with a well-formed transaction
+  @Test
+  void serializeOracleDelete() {
+
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

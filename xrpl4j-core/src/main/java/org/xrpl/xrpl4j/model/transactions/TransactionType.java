@@ -318,7 +318,13 @@ public enum TransactionType {
    * is subject to change.</p>
    */
   @Beta
-  DID_DELETE("DIDDelete");
+  DID_DELETE("DIDDelete"),
+
+  @Beta
+  ORACLE_SET("OracleSet"),
+
+  @Beta
+  ORACLE_DELETE("OracleDelete");
 
   private final String value;
 

@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -34,9 +35,17 @@ public interface CurrencyAmount {
   long ONE_XRP_IN_DROPS = 1_000_000L;
   long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
   long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
+  BigDecimal MAX_XRP_BD = BigDecimal.valueOf(MAX_XRP);
 
   /**
-   * Handle this {@link CurrencyAmount} depending on its actual polymorphic sub-type.
+   * Indicates whether this amount is positive or negative.
+   *
+   * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
+   */
+  boolean isNegative();
+
+  /**
+   * Handle this {@link CurrencyAmount} depending on its actual polymorphic subtype.
    *
    * @param xrpCurrencyAmountHandler     A {@link Consumer} that is called if this instance is of type
    *                                     {@link XrpCurrencyAmount}.
@@ -60,7 +69,7 @@ public interface CurrencyAmount {
   }
 
   /**
-   * Map this {@link CurrencyAmount} to an instance of {@link R}, depending on its actualy polymorphic sub-type.
+   * Map this {@link CurrencyAmount} to an instance of {@link R}, depending on its actual polymorphic subtype.
    *
    * @param xrpCurrencyAmountMapper    A {@link Function} that is called if this instance is of type
    *                                   {@link XrpCurrencyAmount}.

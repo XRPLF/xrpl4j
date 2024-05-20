@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -29,6 +30,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
@@ -171,14 +173,21 @@ public class Wrappers {
     static final DecimalFormat FORMATTER = new DecimalFormat("###,###");
 
     /**
-     * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     * Constructs an {@link XrpCurrencyAmount} using a number of drops. Because XRP is capped to 100B units (1e17
+     * drops), this value will never overflow Java's signed long number.
      *
      * @param drops A long representing the number of drops of XRP of this amount.
      *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
-    public static XrpCurrencyAmount ofDrops(long drops) {
-      return ofDrops(UnsignedLong.valueOf(drops));
+    public static XrpCurrencyAmount ofDrops(final long drops) {
+      if (drops < 0) {
+        // Normalize the drops value to be a positive number; indicated negativity via property.
+        return ofDrops(UnsignedLong.valueOf(drops * -1), true);
+      } else {
+        // Default to positive number and negativity indicator of `false`.
+        return ofDrops(UnsignedLong.valueOf(drops));
+      }
     }
 
     /**
@@ -188,8 +197,28 @@ public class Wrappers {
      *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
-    public static XrpCurrencyAmount ofDrops(UnsignedLong drops) {
-      return XrpCurrencyAmount.of(drops);
+    public static XrpCurrencyAmount ofDrops(final UnsignedLong drops) {
+      Objects.requireNonNull(drops);
+
+      // Note: ofDrops() throws an exception if too big.
+      return _XrpCurrencyAmount.ofDrops(drops, false);
+    }
+
+    /**
+     * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     *
+     * @param drops      An {@link UnsignedLong} representing the number of drops of XRP of this amount.
+     * @param isNegative Indicates whether this amount is positive or negative.
+     *
+     * @return An {@link XrpCurrencyAmount} of {@code drops}.
+     */
+    public static XrpCurrencyAmount ofDrops(final UnsignedLong drops, final boolean isNegative) {
+      Objects.requireNonNull(drops);
+
+      return XrpCurrencyAmount.builder()
+        .value(drops)
+        .isNegative(isNegative)
+        .build();
     }
 
     /**
@@ -199,11 +228,44 @@ public class Wrappers {
      *
      * @return An {@link XrpCurrencyAmount} of the amount of drops in {@code amount}.
      */
-    public static XrpCurrencyAmount ofXrp(BigDecimal amount) {
-      if (FluentCompareTo.is(amount).notEqualTo(BigDecimal.ZERO)) {
-        Preconditions.checkArgument(FluentCompareTo.is(amount).greaterThanEqualTo(SMALLEST_XRP));
+    public static XrpCurrencyAmount ofXrp(final BigDecimal amount) {
+      Objects.requireNonNull(amount);
+
+      if (FluentCompareTo.is(amount).equalTo(BigDecimal.ZERO)) {
+        return ofDrops(UnsignedLong.ZERO);
       }
-      return ofDrops(UnsignedLong.valueOf(amount.scaleByPowerOfTen(6).toBigIntegerExact()));
+
+      // Whether positive or negative, clamp the amount to 0 if it's too small, or 100B if it's too big.
+      final BigDecimal absAmount = amount.abs();
+
+      Preconditions.checkArgument(
+        FluentCompareTo.is(absAmount).greaterThanEqualTo(SMALLEST_XRP),
+        String.format("Amount must be greater-than %s", SMALLEST_XRP)
+      );
+
+      Preconditions.checkArgument(
+        FluentCompareTo.is(absAmount).lessThanOrEqualTo(MAX_XRP_BD),
+        String.format("Amount must be less-than-or-equal to %s", MAX_XRP_BD)
+      );
+
+      if (amount.signum() == 0) { // zero
+        return ofDrops(UnsignedLong.ZERO); // <-- Should never happen per the first check, but just in case.s
+      } else { // positive or negative
+        final boolean isNegative = amount.signum() < 0;
+        return ofDrops(UnsignedLong.valueOf(absAmount.scaleByPowerOfTen(6).toBigIntegerExact()), isNegative);
+      }
+    }
+
+    /**
+     * Indicates whether this amount is positive or negative.
+     *
+     * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
+     */
+    @Default
+    @Override
+    @JsonIgnore // <-- This is not actually part of the binary serialization format, so exclude from JSON
+    public boolean isNegative() {
+      return false;
     }
 
     /**
@@ -213,8 +275,13 @@ public class Wrappers {
      * @return A {@link BigDecimal} representing this value denominated in whole XRP units.
      */
     public BigDecimal toXrp() {
-      return new BigDecimal(this.value().bigIntegerValue())
+      final BigDecimal amount = new BigDecimal(this.value().bigIntegerValue())
         .divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS), MathContext.DECIMAL128);
+      if (this.isNegative()) {
+        return amount.negate();
+      } else {
+        return amount;
+      }
     }
 
     /**
@@ -225,7 +292,11 @@ public class Wrappers {
      * @return The sum of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.of(this.value().plus(other.value()));
+      // Convert each value to a long (positive or negative works)
+      long result =
+        this.value().longValue() * (this.isNegative() ? -1 : 1) +
+          other.value().longValue() * (other.isNegative() ? -1 : 1);
+      return XrpCurrencyAmount.ofDrops(result);
     }
 
     /**
@@ -236,7 +307,11 @@ public class Wrappers {
      * @return The difference of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.of(this.value().minus(other.value()));
+      // Convert each value to a long (positive or negative works)
+      long result =
+        this.value().longValue() * (this.isNegative() ? -1 : 1) -
+          other.value().longValue() * (other.isNegative() ? -1 : 1);
+      return XrpCurrencyAmount.ofDrops(result);
     }
 
     /**
@@ -247,12 +322,16 @@ public class Wrappers {
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.of(this.value().times(other.value()));
+      return XrpCurrencyAmount.ofDrops(this.value().times(other.value()), this.isNegative() | other.isNegative());
     }
 
     @Override
     public String toString() {
-      return this.value().toString();
+      if (isNegative()) {
+        return "-" + this.value().toString();
+      } else {
+        return this.value().toString();
+      }
     }
 
     /**
@@ -504,8 +583,8 @@ public class Wrappers {
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedLong} containing an XChainClaimID.
    *
-   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment is
-   * enabled on mainnet. Its API is subject to change.</p>
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
    */
   @Value.Immutable
   @Wrapped
@@ -526,8 +605,8 @@ public class Wrappers {
    * wrapper mostly exists to ensure we serialize fields of this type as a hex String in JSON, as these fields are
    * STUInt64s in rippled, which are hex encoded in JSON.
    *
-   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment is
-   * enabled on mainnet. Its API is subject to change.</p>
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
    */
   @Value.Immutable
   @Wrapped

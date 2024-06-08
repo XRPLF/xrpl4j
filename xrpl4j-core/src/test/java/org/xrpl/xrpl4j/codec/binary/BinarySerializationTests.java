@@ -69,6 +69,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutableDidDelete;
 import org.xrpl.xrpl4j.model.transactions.ImmutableDidSet;
+import org.xrpl.xrpl4j.model.transactions.ImmutableOracleDelete;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
@@ -79,6 +80,7 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.OracleDelete;
 import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
 import org.xrpl.xrpl4j.model.transactions.OracleProvider;
 import org.xrpl.xrpl4j.model.transactions.OracleSet;
@@ -2135,7 +2137,9 @@ public class BinarySerializationTests {
       .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.valueOf(3)))
       .provider(OracleProvider.of("68747470733A2F2F74687265657872702E646576"))
       .sequence(UnsignedInteger.valueOf(2019238))
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC"))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC"
+      ))
       .lastUpdateTime(UnsignedInteger.valueOf(1715785124))
       .addPriceDataSeries(
         PriceDataWrapper.of(
@@ -2194,10 +2198,22 @@ public class BinarySerializationTests {
     assertSerializesAndDeserializes(oracleSet, expectedBinary);
   }
 
-  // FIXME: Once IT is written, add a serialization test here with a well-formed transaction
   @Test
-  void serializeOracleDelete() {
+  void serializeOracleDelete() throws JsonProcessingException {
+    OracleDelete oracleDelete = OracleDelete.builder()
+      .account(Address.of("rsTkARdP8evWbRcAoD1ZJX7bDtAf5BVspg"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(10))
+      .lastLedgerSequence(UnsignedInteger.valueOf(17))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "ED6884529D21E8059F689827F5BF2AD5CBC138A3427A04C12B004C9BE9BBB22A77"
+      ))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .build();
+    String expectedBinary = "120034240000000A201B0000001120330000000168400000000000000F7321ED6884529" +
+      "D21E8059F689827F5BF2AD5CBC138A3427A04C12B004C9BE9BBB22A7781141AFFBE9553C7325305491B100D02E6BED8CE6BA5";
 
+    assertSerializesAndDeserializes(oracleDelete, expectedBinary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

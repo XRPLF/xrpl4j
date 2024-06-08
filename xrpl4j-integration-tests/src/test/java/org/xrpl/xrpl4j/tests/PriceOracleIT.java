@@ -150,7 +150,9 @@ public class PriceOracleIT extends AbstractIT {
       ))
       .build();
 
-    SingleSignedTransaction<OracleSet> signedOracleUpdate = signatureService.sign(sourceKeyPair.privateKey(), oracleUpdate);
+    SingleSignedTransaction<OracleSet> signedOracleUpdate = signatureService.sign(
+      sourceKeyPair.privateKey(), oracleUpdate
+    );
     SubmitResult<OracleSet> oracleUpdateSubmitResult = xrplClient.submit(signedOracleUpdate);
     assertThat(oracleUpdateSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
 
@@ -188,7 +190,9 @@ public class PriceOracleIT extends AbstractIT {
       .signingPublicKey(sourceKeyPair.publicKey())
       .oracleDocumentId(oracleSet.oracleDocumentId())
       .build();
-    SingleSignedTransaction<OracleDelete> signedOracleDelete = signatureService.sign(sourceKeyPair.privateKey(), oracleDelete);
+    SingleSignedTransaction<OracleDelete> signedOracleDelete = signatureService.sign(
+      sourceKeyPair.privateKey(), oracleDelete
+    );
     SubmitResult<OracleDelete> oracleDeleteSubmitResult = xrplClient.submit(signedOracleDelete);
     assertThat(oracleDeleteSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
 

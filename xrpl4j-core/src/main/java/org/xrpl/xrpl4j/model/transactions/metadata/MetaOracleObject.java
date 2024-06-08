@@ -17,6 +17,9 @@ import org.xrpl.xrpl4j.model.transactions.PriceDataWrapper;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Transaction metadata for Oracle objects.
+ */
 @Beta
 @Immutable
 @JsonSerialize(as = ImmutableMetaOracleObject.class)

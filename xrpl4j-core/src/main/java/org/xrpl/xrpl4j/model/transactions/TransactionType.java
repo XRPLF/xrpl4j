@@ -320,9 +320,21 @@ public enum TransactionType {
   @Beta
   DID_DELETE("DIDDelete"),
 
+  /**
+   * The {@link TransactionType} for the {@link OracleSet} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featurePriceOracle amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
   @Beta
   ORACLE_SET("OracleSet"),
 
+  /**
+   * The {@link TransactionType} for the {@link OracleDelete} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the featurePriceOracle amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   */
   @Beta
   ORACLE_DELETE("OracleDelete");
 

@@ -8,6 +8,10 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
 
+/**
+ * Parameters specifying an {@link org.xrpl.xrpl4j.model.ledger.OracleObject} to retrieve via a {@code ledger_entry} RPC
+ * call.
+ */
 @Beta
 @Immutable
 @JsonSerialize(as = ImmutableOracleLedgerEntryParams.class)

@@ -156,7 +156,9 @@ public interface JsonRpcClient {
       if (result.has("error")) {
         String errorMessage = Optional.ofNullable(result.get("error_exception"))
           .map(JsonNode::asText)
-          .orElseGet(() -> result.get("error_message").asText());
+          .orElseGet(() -> Optional.ofNullable(result.get("error_message"))
+            .map(JsonNode::asText)
+            .orElseGet(() -> result.get("error").asText()));
         throw new JsonRpcClientErrorException(errorMessage);
       }
     }

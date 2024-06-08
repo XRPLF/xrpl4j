@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -22,6 +23,8 @@ import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.OracleLedgerEntryParams;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceRequestParams;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.transactions.AssetPrice;
@@ -33,6 +36,7 @@ import org.xrpl.xrpl4j.model.transactions.OracleUri;
 import org.xrpl.xrpl4j.model.transactions.PriceData;
 import org.xrpl.xrpl4j.model.transactions.PriceDataWrapper;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -197,7 +201,7 @@ public class PriceOracleIT extends AbstractIT {
     );
     assertThat(deleteFinality.finalityStatus()).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
 
-    xrplClient.ledgerEntry(
+    assertThatThrownBy(() -> xrplClient.ledgerEntry(
       LedgerEntryRequestParams.oracle(
         OracleLedgerEntryParams.builder()
           .oracleDocumentId(oracleSet.oracleDocumentId())
@@ -205,7 +209,114 @@ public class PriceOracleIT extends AbstractIT {
           .build(),
         LedgerSpecifier.VALIDATED
       )
+    )).isInstanceOf(JsonRpcClientErrorException.class)
+      .hasMessage("entryNotFound");
+  }
+
+  @Test
+  void createTwoOraclesAndGetAggregatePrice() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
+
+    FeeResult feeResult = xrplClient.fee();
+    OracleProvider provider = OracleProvider.of(BaseEncoding.base16().encode("DIA".getBytes()));
+    OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("http://example.com".getBytes()));
+    UnsignedInteger lastUpdateTime = unixTimestamp();
+    String assetClass = BaseEncoding.base16().encode("currency".getBytes());
+    PriceDataWrapper priceData1 = PriceDataWrapper.of(
+      PriceData.builder()
+        .baseAsset("XRP")
+        .quoteAsset("EUR")
+        .assetPrice(AssetPrice.of(UnsignedLong.ONE))
+        .build()
+    );
+    OracleSet oracleSet = OracleSet.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .provider(provider)
+      .uri(uri)
+      .lastUpdateTime(lastUpdateTime)
+      .assetClass(assetClass)
+      .addPriceDataSeries(priceData1)
+      .build();
+
+    SingleSignedTransaction<OracleSet> signedOracleSet = signatureService.sign(sourceKeyPair.privateKey(), oracleSet);
+    SubmitResult<OracleSet> oracleSetSubmitResult = xrplClient.submit(signedOracleSet);
+    assertThat(oracleSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    Finality finality = scanForFinality(
+      signedOracleSet.hash(),
+      accountInfo.ledgerIndexSafe(),
+      oracleSet.lastLedgerSequence().get(),
+      oracleSet.sequence(),
+      sourceKeyPair.publicKey().deriveAddress()
+    );
+    assertThat(finality.finalityStatus()).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
+
+    PriceDataWrapper priceData2 = PriceDataWrapper.of(
+      PriceData.builder()
+        .baseAsset("XRP")
+        .quoteAsset("EUR")
+        .assetPrice(AssetPrice.of(UnsignedLong.valueOf(2)))
+        .build()
+    );
+    OracleSet oracleSet2 = OracleSet.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.valueOf(2)))
+      .provider(provider)
+      .uri(uri)
+      .lastUpdateTime(lastUpdateTime)
+      .assetClass(assetClass)
+      .addPriceDataSeries(priceData2)
+      .build();
+
+    SingleSignedTransaction<OracleSet> signedOracleSet2 = signatureService.sign(sourceKeyPair.privateKey(), oracleSet2);
+    SubmitResult<OracleSet> oracleSetSubmitResult2 = xrplClient.submit(signedOracleSet2);
+    assertThat(oracleSetSubmitResult2.engineResult()).isEqualTo("tesSUCCESS");
+
+    Finality finality2 = scanForFinality(
+      signedOracleSet2.hash(),
+      accountInfo.ledgerIndexSafe(),
+      oracleSet2.lastLedgerSequence().get(),
+      oracleSet2.sequence(),
+      sourceKeyPair.publicKey().deriveAddress()
+    );
+    assertThat(finality2.finalityStatus()).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
+
+    GetAggregatePriceResult aggregatePrice = xrplClient.getAggregatePrice(
+      GetAggregatePriceRequestParams.builder()
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .baseAsset("XRP")
+        .quoteAsset("EUR")
+        .trim(UnsignedInteger.ONE)
+        .addOracles(
+          OracleLedgerEntryParams.builder()
+            .account(sourceKeyPair.publicKey().deriveAddress())
+            .oracleDocumentId(oracleSet.oracleDocumentId())
+            .build(),
+          OracleLedgerEntryParams.builder()
+            .account(sourceKeyPair.publicKey().deriveAddress())
+            .oracleDocumentId(oracleSet2.oracleDocumentId())
+            .build()
+        )
+        .build()
+    );
+    assertThat(aggregatePrice.median()).isEqualTo(BigDecimal.valueOf(1.5));
+    assertThat(aggregatePrice.status()).isNotEmpty().get().isEqualTo("success");
+    assertThat(aggregatePrice.entireSet().mean()).isEqualTo(BigDecimal.valueOf(1.5));
+    assertThat(aggregatePrice.entireSet().size()).isEqualTo(UnsignedLong.valueOf(2));
+    assertThat(aggregatePrice.trimmedSet()).isNotEmpty().get().isEqualTo(aggregatePrice.entireSet());
   }
 
   private static UnsignedInteger unixTimestamp() {

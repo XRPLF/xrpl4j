@@ -20,7 +20,7 @@ POM file. For example:
       <dependency>
         <groupId>org.xrpl.xrpl4j</groupId>
         <artifactId>xrpl4j-bom</artifactId>
-        <version>3.2.1</version>
+        <version>3.3.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

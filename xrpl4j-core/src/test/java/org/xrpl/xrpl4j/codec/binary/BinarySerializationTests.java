@@ -2182,6 +2182,10 @@ public class BinarySerializationTests {
             .build()
         )
       )
+      .transactionSignature(
+        Signature.fromBase16("07205F518BC5D1D4F67E33101F140F69279670627825CDFA4BECDFE7C1D38" +
+          "B40B4101F62264C280C3C9A492B3FF01DCF4AE0CEF12BB6FB2E4EB681B9B81D710A")
+      )
       .build();
 
     String expectedBinary = "12003324001ECFA62F6644CDA420330000000368400000000000000A7321EDA6501D3E53D47" +

@@ -29,7 +29,14 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link XrpCurrencyAmount}s.
+ * Custom Jackson deserializer for {@link XrpCurrencyAmount} instances found in {@link SetFee}.
+ * <p>
+ * Before the <a href="https://xrpl.org/resources/known-amendments/#xrpfees">XRPFees amendment</a>, a {@link SetFee}
+ * transaction serializes its `BaseFee` to a hex string. After the
+ * <a href="https://xrpl.org/resources/known-amendments/#xrpfees">XRPFees amendment</a>, a {@link SetFee} transaction
+ * serializes its `BaseFee` to a decimal string.
+ *
+ * @see "https://xrpl.org/resources/known-amendments/#xrpfees"
  */
 public class BaseFeeDropsDeserializer extends StdDeserializer<XrpCurrencyAmount> {
 
@@ -42,7 +49,7 @@ public class BaseFeeDropsDeserializer extends StdDeserializer<XrpCurrencyAmount>
 
   @Override
   public XrpCurrencyAmount deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    // Pre-XRPFees SetFee transactions serialize `BaseFee` to a hex string. Post XRPFees SetFee transactions
+    // Pre-XRPFees, SetFee transactions serialize `BaseFee` to a hex string. Post XRPFees SetFee transactions
     // have a `BaseFeeDrops` field which is a decimal string.
     if (jsonParser.currentName().equals("BaseFee")) {
       return XrpCurrencyAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));

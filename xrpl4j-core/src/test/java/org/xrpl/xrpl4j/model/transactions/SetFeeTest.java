@@ -32,6 +32,9 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
 import java.util.Optional;
 
+/**
+ * Unit tests for {@link SetFee}.
+ */
 public class SetFeeTest extends AbstractJsonTest {
 
   @Test

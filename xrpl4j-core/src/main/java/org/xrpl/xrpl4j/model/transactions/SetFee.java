@@ -59,7 +59,8 @@ public interface SetFee extends Transaction {
    *
    * @return A hex {@link String} baseFee value.
    *
-   * @deprecated Prefer {@link #baseFeeDrops()} over this field.
+   * @deprecated Prefer {@link #baseFeeDrops()} over this field because the XRPFees ammendment now serializes this
+   *   object's base fee into XRP drops.
    */
   @Value.Default
   @Deprecated

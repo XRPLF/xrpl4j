@@ -21,7 +21,7 @@ package org.xrpl.xrpl4j.model.transactions.metadata;
  */
 
 /**
- * Market interface for XRP Ledger Objects as represented in transaction metadata. Unlike descendants of
+ * Marker interface for XRP Ledger Objects as represented in transaction metadata. Unlike descendants of
  * {@link org.xrpl.xrpl4j.model.ledger.LedgerObject}, all descendants of this interface will have all fields typed as
  * {@link java.util.Optional} because ledger objects represented in transaction metadata often do not contain
  * all fields of the ledger object.

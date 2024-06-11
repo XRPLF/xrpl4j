@@ -32,12 +32,33 @@ import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
 /**
  * Unit tests for {@link CurrencyAmount}.
  */
 public class CurrencyAmountTest {
+
+  @Test
+  public void isNegative() {
+    // Not negative
+    CurrencyAmount currencyAmount = new CurrencyAmount() {
+      @Override
+      public boolean isNegative() {
+        return false;
+      }
+    };
+    assertThat(currencyAmount.isNegative()).isFalse();
+    // Negative
+    currencyAmount = new CurrencyAmount() {
+      @Override
+      public boolean isNegative() {
+        return true;
+      }
+    };
+    assertThat(currencyAmount.isNegative()).isTrue();
+  }
 
   @Test
   public void handleXrp() {
@@ -59,13 +80,11 @@ public class CurrencyAmountTest {
     );
 
     // Unhandled...
-    CurrencyAmount currencyAmount = new CurrencyAmount() {
-    };
+    CurrencyAmount currencyAmount = () -> false;
     assertThrows(IllegalStateException.class, () ->
       currencyAmount.handle(($) -> new Object(), ($) -> new Object())
     );
   }
-
 
   @Test
   public void handleIssuance() {
@@ -110,8 +129,7 @@ public class CurrencyAmountTest {
     );
 
     // Unhandled...
-    CurrencyAmount currencyAmount = new CurrencyAmount() {
-    };
+    CurrencyAmount currencyAmount = () -> false;
     assertThrows(IllegalStateException.class, () ->
       currencyAmount.map(($) -> new Object(), ($) -> new Object())
     );
@@ -220,5 +238,6 @@ public class CurrencyAmountTest {
     assertThat(CurrencyAmount.ONE_XRP_IN_DROPS).isEqualTo(1_000_000L);
     assertThat(CurrencyAmount.MAX_XRP).isEqualTo(100_000_000_000L);
     assertThat(CurrencyAmount.MAX_XRP_IN_DROPS).isEqualTo(100_000_000_000_000_000L);
+    assertThat(CurrencyAmount.MAX_XRP_BD).isEqualTo(new BigDecimal(100_000_000_000L));
   }
 }

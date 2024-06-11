@@ -35,6 +35,28 @@ class AmmWithdrawTest extends AbstractJsonTest {
   }
 
   @Test
+  void constructLpTokenWithdrawWithXrpCurrencyAmountAndTestJson() throws JSONException, JsonProcessingException {
+    AmmWithdraw withdraw = baseBuilder()
+      .flags(AmmWithdrawFlags.LP_TOKEN)
+      .lpTokensIn(XrpCurrencyAmount.ofDrops(10))
+      .build();
+
+    String json = "{\n" +
+      "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
+      "    \"LPTokensIn\" : \"10\"," +
+      "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
+      "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
+      "    \"Fee\" : \"10\",\n" +
+      "    \"Flags\" : " + AmmWithdrawFlags.LP_TOKEN + ",\n" +
+      "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TransactionType\" : \"AMMWithdraw\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(withdraw, json);
+  }
+
+  @Test
   void constructWithdrawAllAndTestJson() throws JSONException, JsonProcessingException {
     AmmWithdraw withdraw = baseBuilder()
       .flags(AmmWithdrawFlags.WITHDRAW_ALL)

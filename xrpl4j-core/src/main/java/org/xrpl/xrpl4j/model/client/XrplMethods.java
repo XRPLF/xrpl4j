@@ -233,4 +233,5 @@ public class XrplMethods {
    */
   public static final String PING = "ping";
 
+  public static final String GET_AGGREGATE_PRICE = "get_aggregate_price";
 }

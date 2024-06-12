@@ -93,6 +93,9 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.OracleDelete;
+import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
+import org.xrpl.xrpl4j.model.transactions.OracleSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
@@ -1110,6 +1113,33 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToOracleSet() {
+    OracleSet transaction = OracleSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .lastUpdateTime(UnsignedInteger.ONE)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToOracleDelete() {
+    OracleDelete transaction = OracleDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -1719,6 +1749,31 @@ public class SignatureUtilsTest {
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(391))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToOracleSet() {
+    OracleSet transaction = OracleSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .lastUpdateTime(UnsignedInteger.ONE)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToOracleDelete() {
+    OracleDelete transaction = OracleDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
       .build();
 
     addMultiSignatureToTransactionHelper(transaction);

@@ -52,6 +52,7 @@ import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.AssetPrice;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -68,6 +69,7 @@ import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.ImmutableDidDelete;
 import org.xrpl.xrpl4j.model.transactions.ImmutableDidSet;
+import org.xrpl.xrpl4j.model.transactions.ImmutableOracleDelete;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAccountCreateCommit;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
@@ -78,10 +80,16 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.OracleDelete;
+import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
+import org.xrpl.xrpl4j.model.transactions.OracleProvider;
+import org.xrpl.xrpl4j.model.transactions.OracleSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.PriceData;
+import org.xrpl.xrpl4j.model.transactions.PriceDataWrapper;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -2118,6 +2126,98 @@ public class BinarySerializationTests {
       "D5A33A87E34CC381A7D924E3FE3645F0BF98D565DE42C81E1A7A7E7981802811401476926B590BA3245F63C829116A0A3AF7F382D";
 
     assertSerializesAndDeserializes(transaction, binary);
+  }
+
+  @Test
+  void serializeOracleSet() throws JsonProcessingException {
+    OracleSet oracleSet = OracleSet.builder()
+      .account(Address.of("rMS69A6J39RmBg5yWDft5XAM8zTGbtMMZy"))
+      .assetClass("63757272656E6379")
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.valueOf(3)))
+      .provider(OracleProvider.of("68747470733A2F2F74687265657872702E646576"))
+      .sequence(UnsignedInteger.valueOf(2019238))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "EDA6501D3E53D47F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC"
+      ))
+      .lastUpdateTime(UnsignedInteger.valueOf(1715785124))
+      .addPriceDataSeries(
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("1ff4", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("IDR")
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("13652", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("JPY")
+            .scale(UnsignedInteger.valueOf(3))
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("117bf", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("KRW")
+            .scale(UnsignedInteger.valueOf(2))
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("14d6a", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("MXN")
+            .scale(UnsignedInteger.valueOf(4))
+            .build()
+        ),
+        PriceDataWrapper.of(
+          PriceData.builder()
+            .assetPrice(AssetPrice.of(UnsignedLong.valueOf("5dfe", 16)))
+            .baseAsset("XRP")
+            .quoteAsset("MYR")
+            .scale(UnsignedInteger.valueOf(4))
+            .build()
+        )
+      )
+      .transactionSignature(
+        Signature.fromBase16("07205F518BC5D1D4F67E33101F140F69279670627825CDFA4BECDFE7C1D38" +
+          "B40B4101F62264C280C3C9A492B3FF01DCF4AE0CEF12BB6FB2E4EB681B9B81D710A")
+      )
+      .build();
+
+    String expectedBinary = "12003324001ECFA62F6644CDA420330000000368400000000000000A7321EDA6501D3E53D47" +
+      "F10AE37A0C6B34194CF8A205DE9611FE81B63E7B62105E90EAC744007205F518BC5D1D4F67E33101F140F692796706278" +
+      "25CDFA4BECDFE7C1D38B40B4101F62264C280C3C9A492B3FF01DCF4AE0CEF12BB6FB2E4EB681B9B81D710A701C0863757" +
+      "272656E6379701D1468747470733A2F2F74687265657872702E6465768114E03E6F0A3D378C02E4CB7769053F8AA4EB3" +
+      "649ECF018E02030170000000000001FF4011A0000000000000000000000000000000000000000021A000000000000000" +
+      "0000000004944520000000000E1E02030170000000000013652041003011A00000000000000000000000000000000000" +
+      "00000021A0000000000000000000000004A50590000000000E1E020301700000000000117BF041002011A00000000000" +
+      "00000000000000000000000000000021A0000000000000000000000004B52570000000000E1E02030170000000000014" +
+      "D6A041004011A0000000000000000000000000000000000000000021A0000000000000000000000004D584E000000000" +
+      "0E1E02030170000000000005DFE041004011A0000000000000000000000000000000000000000021A000000000000000" +
+      "0000000004D59520000000000E1F1";
+    assertSerializesAndDeserializes(oracleSet, expectedBinary);
+  }
+
+  @Test
+  void serializeOracleDelete() throws JsonProcessingException {
+    OracleDelete oracleDelete = OracleDelete.builder()
+      .account(Address.of("rsTkARdP8evWbRcAoD1ZJX7bDtAf5BVspg"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(10))
+      .lastLedgerSequence(UnsignedInteger.valueOf(17))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "ED6884529D21E8059F689827F5BF2AD5CBC138A3427A04C12B004C9BE9BBB22A77"
+      ))
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .build();
+    String expectedBinary = "120034240000000A201B0000001120330000000168400000000000000F7321ED6884529" +
+      "D21E8059F689827F5BF2AD5CBC138A3427A04C12B004C9BE9BBB22A7781141AFFBE9553C7325305491B100D02E6BED8CE6BA5";
+
+    assertSerializesAndDeserializes(oracleDelete, expectedBinary);
   }
 
   private <T extends Transaction> void assertSerializesAndDeserializes(

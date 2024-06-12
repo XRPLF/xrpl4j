@@ -9,6 +9,7 @@ import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
+import org.xrpl.xrpl4j.model.ledger.OracleObject;
 
 class MetaLedgerEntryTypeTest extends AbstractJsonTest {
 
@@ -36,6 +37,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
       .isEqualTo("XChainOwnedCreateAccountClaimID");
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
     assertThat(MetaLedgerEntryType.DID.value()).isEqualTo("DID");
+    assertThat(MetaLedgerEntryType.ORACLE.value()).isEqualTo("Oracle");
   }
 
   @Test
@@ -64,6 +66,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
       MetaXChainOwnedClaimIdObject.class
     );
     assertThat(MetaLedgerEntryType.DID.ledgerObjectType()).isEqualTo(MetaDidObject.class);
+    assertThat(MetaLedgerEntryType.ORACLE.ledgerObjectType()).isEqualTo(MetaOracleObject.class);
   }
 
   @Test

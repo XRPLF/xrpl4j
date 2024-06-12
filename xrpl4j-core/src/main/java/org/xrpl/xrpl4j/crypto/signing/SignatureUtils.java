@@ -56,6 +56,8 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenCreateOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
+import org.xrpl.xrpl4j.model.transactions.OracleDelete;
+import org.xrpl.xrpl4j.model.transactions.OracleSet;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
@@ -381,6 +383,14 @@ public class SignatureUtils {
       transactionWithSignature = DidDelete.builder().from((DidDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (OracleSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = OracleSet.builder().from((OracleSet) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (OracleDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = OracleDelete.builder().from((OracleDelete) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -582,6 +592,14 @@ public class SignatureUtils {
         .build();
     } else if (DidDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = DidDelete.builder().from((DidDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (OracleSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = OracleSet.builder().from((OracleSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (OracleDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = OracleDelete.builder().from((OracleDelete) transaction)
         .signers(signers)
         .build();
     } else {

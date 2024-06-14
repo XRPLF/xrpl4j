@@ -318,7 +318,12 @@ public enum TransactionType {
    * is subject to change.</p>
    */
   @Beta
-  DID_DELETE("DIDDelete");
+  DID_DELETE("DIDDelete"),
+
+  /**
+   * The {@link TransactionType} for an unknown transaction.
+   */
+  UNKNOWN("");
 
   private final String value;
 
@@ -331,7 +336,7 @@ public enum TransactionType {
    *
    * @param value The {@link String} value corresponding to a {@link TransactionType}.
    *
-   * @return The {@link TransactionType} with the corresponding value.
+   * @return The {@link TransactionType} with the corresponding value or {@link TransactionType#UNKNOWN} if the given string value is unknown.
    */
   public static TransactionType forValue(String value) {
     for (TransactionType transactionType : TransactionType.values()) {
@@ -340,7 +345,7 @@ public enum TransactionType {
       }
     }
 
-    throw new IllegalArgumentException("No matching TransactionType enum value for String value " + value);
+    return TransactionType.UNKNOWN;
   }
 
   /**

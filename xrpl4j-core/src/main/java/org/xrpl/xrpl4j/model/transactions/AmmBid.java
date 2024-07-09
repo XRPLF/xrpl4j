@@ -68,19 +68,35 @@ public interface AmmBid extends Transaction {
    * Pay at least this amount for the slot. Setting this value higher makes it harder for others to outbid you. If
    * omitted, pay the minimum necessary to win the bid.
    *
-   * @return An optionally present {@link IssuedCurrencyAmount}.
+   * <p>
+   * In a well-formed transaction, this field is always an {@link IssuedCurrencyAmount}. However, the XRPL will fail AMM
+   * transactions that specify {@link XrpCurrencyAmount}s with a {@code tec} error code, which means these malformed
+   * transactions can be included in validated ledgers. Therefore, this field is typed as a {@link CurrencyAmount} so
+   * that malformed transactions can be correctly deserialized. See <a
+   * href="https://github.com/XRPLF/xrpl4j/issues/529">#529</a>
+   * </p>
+   *
+   * @return An optionally present {@link CurrencyAmount}.
    */
   @JsonProperty("BidMin")
-  Optional<IssuedCurrencyAmount> bidMin();
+  Optional<CurrencyAmount> bidMin();
 
   /**
    * Pay at most this amount for the slot. If the cost to win the bid is higher than this amount, the transaction fails.
    * If omitted, pay as much as necessary to win the bid.
    *
-   * @return An optionally present {@link IssuedCurrencyAmount}.
+   * <p>
+   * In a well-formed transaction, this field is always an {@link IssuedCurrencyAmount}. However, the XRPL will fail AMM
+   * transactions that specify {@link XrpCurrencyAmount}s with a {@code tec} error code, which means these malformed
+   * transactions can be included in validated ledgers. Therefore, this field is typed as a {@link CurrencyAmount} so
+   * that malformed transactions can be correctly deserialized. See <a
+   * href="https://github.com/XRPLF/xrpl4j/issues/529">#529</a>
+   * </p>
+   *
+   * @return An optionally present {@link CurrencyAmount}.
    */
   @JsonProperty("BidMax")
-  Optional<IssuedCurrencyAmount> bidMax();
+  Optional<CurrencyAmount> bidMax();
 
   /**
    * A list of up to 4 additional accounts that you allow to trade at the discounted fee. This cannot include the

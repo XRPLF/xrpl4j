@@ -6,7 +6,7 @@
   <groupId>org.xrpl</groupId>
   <artifactId>xrpl4j-parent</artifactId>
   <packaging>pom</packaging>
-  <version>3.3.1-SNAPSHOT</version>
+  <version>3.3.2-SNAPSHOT</version>
 
   <name>xrpl4j parent</name>
   <description>Parent project for xrpl4j modules.</description>
@@ -498,18 +498,28 @@
           </configuration>
         </plugin>
 
-        <!-- org.sonatype.plugins:nexus-staging-maven-plugin -->
+        <!-- org.sonatype.central:central-publishing-maven-plugin -->
         <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.13</version>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.5.0</version>
           <extensions>true</extensions>
           <configuration>
-            <serverId>ossrh-snapshots</serverId>
-            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            <publishingServerId>central</publishingServerId>
           </configuration>
         </plugin>
+        <!-- org.sonatype.plugins:nexus-staging-maven-plugin -->
+        <!--        <plugin>-->
+        <!--          <groupId>org.sonatype.plugins</groupId>-->
+        <!--          <artifactId>nexus-staging-maven-plugin</artifactId>-->
+        <!--          <version>1.6.13</version>-->
+        <!--          <extensions>true</extensions>-->
+        <!--          <configuration>-->
+        <!--            <serverId>ossrh-snapshots</serverId>-->
+        <!--            <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
+        <!--            <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
+        <!--          </configuration>-->
+        <!--        </plugin>-->
 
         <!-- org.codehaus.mojo:license-maven-plugin -->
         <plugin>
@@ -609,9 +619,15 @@
       </plugin>
 
       <!-- org.sonatype.plugins:nexus-staging-maven-plugin -->
+      <!--      <plugin>-->
+      <!--        <groupId>org.sonatype.plugins</groupId>-->
+      <!--        <artifactId>nexus-staging-maven-plugin</artifactId>-->
+      <!--      </plugin>-->
+
+      <!-- org.sonatype.central:central-publishing-maven-plugin -->
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
       </plugin>
 
       <plugin>
@@ -678,15 +694,11 @@
     </plugins>
   </reporting>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-    </repository>
-  </distributionManagement>
+<!--  <distributionManagement>-->
+<!--    <repository>-->
+<!--      <id>central</id>-->
+<!--      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>-->
+<!--    </repository>-->
+<!--  </distributionManagement>-->
 
 </project>

@@ -16,6 +16,9 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
+/**
+ * Unit tests for {@link OracleDocumentId}.
+ */
 public class OracleDocumentIdTest {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();

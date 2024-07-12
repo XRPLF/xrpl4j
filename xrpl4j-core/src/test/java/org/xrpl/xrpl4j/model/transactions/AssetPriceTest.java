@@ -15,6 +15,9 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
+/**
+ * Unit tests for {@link AssetPrice}.
+ */
 public class AssetPriceTest {
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();

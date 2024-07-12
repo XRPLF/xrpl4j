@@ -29,13 +29,13 @@ class OracleDocumentIdDeserializerTest {
   void testDeserialize() throws IOException {
     JsonParser mockJsonParser = mock(JsonParser.class);
 
+    when(mockJsonParser.getLongValue()).thenReturn(0L);
     OracleDocumentId expected = OracleDocumentId.of(UnsignedInteger.ZERO);
-    when(mockJsonParser.getText()).thenReturn("0");
     OracleDocumentId oracleDocumentId = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
     assertThat(oracleDocumentId).isEqualTo(expected);
 
+    when(mockJsonParser.getLongValue()).thenReturn(4294967295L);
     expected = OracleDocumentId.of(UnsignedInteger.MAX_VALUE);
-    when(mockJsonParser.getText()).thenReturn("ffffffff");
     oracleDocumentId = deserializer.deserialize(mockJsonParser, mock(DeserializationContext.class));
     assertThat(oracleDocumentId).isEqualTo(expected);
   }

@@ -30,11 +30,11 @@ class OracleDocumentIdSerializerTest {
 
     OracleDocumentId expected = OracleDocumentId.of(UnsignedInteger.ZERO);
     serializer.serialize(expected, jsonGeneratorMock, mock(SerializerProvider.class));
-    verify(jsonGeneratorMock).writeString("0");
+    verify(jsonGeneratorMock).writeNumber(0L);
 
     expected = OracleDocumentId.of(UnsignedInteger.MAX_VALUE);
     serializer.serialize(expected, jsonGeneratorMock, mock(SerializerProvider.class));
-    verify(jsonGeneratorMock).writeString("ffffffff");
+    verify(jsonGeneratorMock).writeNumber(4294967295L);
   }
 
 }

@@ -59,7 +59,7 @@ public class NftInfoIT {
     assertThatThrownBy(
       () -> client.nftInfo(params)
     ).isInstanceOf(JsonRpcClientErrorException.class)
-      .hasMessage("Unknown method.");
+      .hasMessage("unknownCmd (Unknown method.)");
 
   }
 }

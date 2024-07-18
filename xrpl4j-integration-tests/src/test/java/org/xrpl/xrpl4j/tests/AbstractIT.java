@@ -545,7 +545,8 @@ public abstract class AbstractIT {
 
     this.scanForResult(
       () -> getValidatedAccountInfo(issuerAddress),
-      result -> result.accountData().sequence().equals(issuerAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+      result -> result.accountData().sequence()
+        .equals(issuerAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
     );
   }
 

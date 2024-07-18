@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,6 +68,7 @@ import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -77,7 +78,6 @@ import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XChainCreateBridge;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
@@ -128,29 +128,27 @@ public abstract class AbstractIT {
   protected void logInfo(TransactionType transactionType, Hash256 hash) {
     String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
       (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info(transactionType.value() + " transaction successful: {}{}", url, hash);
+    logger.info("{} transaction successful: {}{}", transactionType.value(), url, hash);
   }
 
   protected KeyPair createRandomAccountEd25519() {
     // Create the account
     final KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
-    logger.info(
-      "Generated testnet wallet with ClassicAddress={})",
-      randomKeyPair.publicKey().deriveAddress()
-    );
+    logAccountCreation(randomKeyPair.publicKey().deriveAddress());
 
     fundAccount(randomKeyPair.publicKey().deriveAddress());
 
     return randomKeyPair;
   }
 
+  private void logAccountCreation(Address address) {
+    logger.info("Generated wallet with ClassicAddress={})", address);
+  }
+
   protected KeyPair createRandomAccountSecp256k1() {
     // Create the account
     final KeyPair randomKeyPair = Seed.secp256k1Seed().deriveKeyPair();
-    logger.info(
-      "Generated testnet wallet with ClassicAddress={})",
-      randomKeyPair.publicKey().deriveAddress()
-    );
+    logAccountCreation(randomKeyPair.publicKey().deriveAddress());
 
     fundAccount(randomKeyPair.publicKey().deriveAddress());
 
@@ -171,7 +169,8 @@ public abstract class AbstractIT {
     };
 
     PublicKey publicKey = derivedKeySignatureService.derivePublicKey(privateKeyReference);
-    logger.info("Generated testnet wallet with ClassicAddress={})", publicKey.deriveAddress());
+    logAccountCreation(publicKey.deriveAddress());
+
     fundAccount(publicKey.deriveAddress());
 
     return privateKeyReference;
@@ -191,7 +190,8 @@ public abstract class AbstractIT {
     };
 
     PublicKey publicKey = derivedKeySignatureService.derivePublicKey(privateKeyReference);
-    logger.info("Generated testnet wallet with ClassicAddress={})", publicKey.deriveAddress());
+    logAccountCreation(publicKey.deriveAddress());
+
     fundAccount(publicKey.deriveAddress());
 
     return privateKeyReference;
@@ -425,28 +425,23 @@ public abstract class AbstractIT {
   }
 
   /**
-   * Create a trustline between the given issuer and counterparty accounts for the given currency code and with the
-   * given limit.
+   * Create a trustline between the issuer of the specified {@param trustlineLimitAmount} and specified counterparty for
+   * the given currency code with the given limit.
    *
-   * @param currency           The currency code of the trustline to create.
-   * @param value              The trustline limit of the trustline to create.
-   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
-   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
-   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
+   * @param counterpartyKeyPair  The {@link KeyPair} of the counterparty account.
+   * @param trustlineLimitAmount A {@link IssuedCurrencyAmount} representing the trust limit for the counterparty.
+   * @param fee                  The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @return The {@link TrustLine} that gets created.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(
-    String currency,
-    String value,
-    KeyPair issuerKeyPair,
     KeyPair counterpartyKeyPair,
+    IssuedCurrencyAmount trustlineLimitAmount,
     XrpCurrencyAmount fee
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
-    Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
 
     AccountInfoResult counterpartyAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(counterpartyAddress)
@@ -456,10 +451,9 @@ public abstract class AbstractIT {
       .account(counterpartyAddress)
       .fee(fee)
       .sequence(counterpartyAccountInfo.accountData().sequence())
-      .limitAmount(IssuedCurrencyAmount.builder()
-        .currency(currency)
-        .issuer(issuerAddress)
-        .value(value)
+      .limitAmount(trustlineLimitAmount)
+      .flags(TrustSetFlags.builder()
+        .tfSetNoRipple()
         .build())
       .signingPublicKey(counterpartyKeyPair.publicKey())
       .build();
@@ -477,72 +471,135 @@ public abstract class AbstractIT {
     );
 
     return scanForResult(
-      () ->
-        getValidatedAccountLines(issuerAddress, counterpartyAddress),
+      () -> getValidatedAccountLines(trustlineLimitAmount.issuer(), counterpartyAddress),
       linesResult -> !linesResult.lines().isEmpty()
-    )
-      .lines().get(0);
+    ).lines().get(0);
   }
 
   /**
-   * Send issued currency funds from an issuer to a counterparty.
+   * Send issued currency funds from a sender to a receiver.
    *
-   * @param currency           The currency code to send.
-   * @param value              The amount of currency to send.
-   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
-   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
-   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
+   * @param senderKeyPair   The {@link KeyPair} of the payment sender.
+   * @param receiverKeyPair The {@link KeyPair} of the payment receiver.
+   * @param amount          An {@link IssuedCurrencyAmount} to send.
+   * @param fee             The current network fee, as an {@link XrpCurrencyAmount}.
    *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public void sendIssuedCurrency(
-    String currency,
-    String value,
-    KeyPair issuerKeyPair,
-    KeyPair counterpartyKeyPair,
+    KeyPair senderKeyPair,
+    KeyPair receiverKeyPair,
+    IssuedCurrencyAmount amount,
     XrpCurrencyAmount fee
   ) throws JsonRpcClientErrorException, JsonProcessingException {
-    Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
-    Address issuerAddress = issuerKeyPair.publicKey().deriveAddress();
+    sendIssuedCurrency(senderKeyPair, receiverKeyPair, amount, fee, TransactionResultCodes.TES_SUCCESS);
+  }
 
-    ///////////////////////////
-    // Issuer sends a payment with the issued currency to the counterparty
-    AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> getValidatedAccountInfo(issuerAddress)
-    );
+  /**
+   * Send issued currency funds from a sender to a receiver.
+   *
+   * @param senderKeyPair        The {@link KeyPair} of the payment sender.
+   * @param receiverKeyPair      The {@link KeyPair} of the payment receiver.
+   * @param amount               An {@link IssuedCurrencyAmount} to send.
+   * @param fee                  The current network fee, as an {@link XrpCurrencyAmount}.
+   * @param expectedEngineResult The expected engine result.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  public void sendIssuedCurrency(
+    KeyPair senderKeyPair,
+    KeyPair receiverKeyPair,
+    IssuedCurrencyAmount amount,
+    XrpCurrencyAmount fee,
+    String expectedEngineResult
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    Objects.requireNonNull(senderKeyPair);
+    Objects.requireNonNull(receiverKeyPair);
+    Objects.requireNonNull(amount);
+    Objects.requireNonNull(fee);
+    Objects.requireNonNull(expectedEngineResult);
 
-    Payment fundCounterparty = Payment.builder()
-      .account(issuerAddress)
-      .fee(fee)
-      .sequence(issuerAccountInfo.accountData().sequence())
-      .destination(counterpartyAddress)
-      .amount(IssuedCurrencyAmount.builder()
-        .issuer(issuerAddress)
-        .currency(currency)
-        .value(value)
-        .build())
-      .signingPublicKey(issuerKeyPair.publicKey())
-      .build();
+    final Address senderAddress = senderKeyPair.publicKey().deriveAddress();
+    final Address receiverAddress = receiverKeyPair.publicKey().deriveAddress();
 
-    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
-      issuerKeyPair.privateKey(),
-      fundCounterparty
-    );
-    SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
-    assertThat(paymentResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    assertThat(paymentResult.transactionResult().hash()).isEqualTo(signedPayment.hash());
+    int loopGuard = 0;
+    String paymentEngineResult = null;
 
-    logInfo(
-      paymentResult.transactionResult().transaction().transactionType(),
-      paymentResult.transactionResult().hash()
-    );
+    while (!expectedEngineResult.equalsIgnoreCase(paymentEngineResult)) {
+      if (loopGuard++ > 30) {
+        throw new RuntimeException(
+          String.format("engineResult should have been `%s`, but was `%s` instead",
+            expectedEngineResult, paymentEngineResult
+          )
+        );
+      }
 
-    this.scanForResult(
-      () -> getValidatedTransaction(
-        paymentResult.transactionResult().hash(),
-        Payment.class)
-    );
+      ///////////////////////////
+      // Sender sends a payment with the issued currency to the counterparty
+      AccountInfoResult senderAccountInfo = this.scanForResult(
+        () -> getValidatedAccountInfo(senderAddress)
+      );
+      UnsignedInteger currentSenderSequence = senderAccountInfo.accountData().sequence();
+      logger.info("About to send a payment on Sequence={}", currentSenderSequence);
 
+      Payment fundCounterparty = Payment.builder()
+        .account(senderAddress)
+        .fee(fee)
+        .sequence(senderAccountInfo.accountData().sequence())
+        .destination(receiverAddress)
+        .amount(amount)
+        .signingPublicKey(senderKeyPair.publicKey())
+        .build();
+
+      SingleSignedTransaction<Payment> signedPayment = signatureService.sign(
+        senderKeyPair.privateKey(), fundCounterparty
+      );
+      SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
+      assertThat(paymentResult.transactionResult().hash()).isEqualTo(signedPayment.hash());
+
+      paymentEngineResult = paymentResult.engineResult();
+      if (!paymentResult.engineResult().equals(expectedEngineResult)) {
+        try {
+          // If the code gets here, it means the transaction did not succeed. The most typical reason here is a latent
+          // Clio node (see description at the end of this function). This loop allows the code to retry for just a bit
+          // longer than the current 60s DNS TTL.
+          Thread.sleep(3000); // <-- Sleep for 3 seconds and try again
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+        continue; // <-- Try again, up to the loop guard above.
+      }
+
+      logInfo(
+        paymentResult.transactionResult().transaction().transactionType(),
+        paymentResult.transactionResult().hash()
+      );
+
+      this.scanForResult(
+        () -> getValidatedTransaction(
+          paymentResult.transactionResult().hash(),
+          Payment.class)
+      );
+
+      // This extra check exists for Clio servers. Occasionally, one Clio server in the cluster will report that a TX
+      // (e.g., with sequence 5) is `VALIDATED`. Subsequent calls to `account_info` should return an account sequence
+      // number of 6, but sometimes one of the servers in the cluster will return the old sequence value of 5. This
+      // scanner simply waits until at least one of the Clio server reports the correct account_sequence number so that
+      // subsequent calls to `account_info` will typically have the correct account sequence. Note that this solution
+      // will _mostly_ work, but not always.  Consider an example with three Clio nodes in a cluster. Node A is latent,
+      // but B & C are not (i.e., B & C have an up-to-date account sequence). In this instance, this scanner might
+      // receive a result from B or C, but on the next payment, this code might get a response from the (incorrect)
+      // node A. In reality, this should _almost_ never happen because the current testnet DNS configuration
+      // pegs JSON-RPC clients to a single IP address (i.e., single clio server) for 60s. Therefore, there should
+      // only be very tiny windows where this solution does not fix the issue. For that, we have the loop above as
+      // well to retry.
+      this.scanForResult(
+        () -> getValidatedAccountInfo(senderAddress),
+        result -> result.accountData().sequence().equals(
+          senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE)
+        )
+      );
+    }
   }
 
   //////////////////

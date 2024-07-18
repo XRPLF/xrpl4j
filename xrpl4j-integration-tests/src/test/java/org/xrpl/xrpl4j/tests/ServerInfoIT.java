@@ -54,11 +54,7 @@ public class ServerInfoIT {
     );
 
     // XRPL Cluster (testnet)
-    getXrplClient(HttpUrl.parse("https://testnet.xrpl-labs.com/")).serverInformation().info().handle(
-      this::assertValidNetworkId,
-      clioServerInfo -> fail("Shouldn't be a Clio server"),
-      reportingModeServerInfo -> fail("Shouldn't be a Reporting server")
-    );
+    // Not executed due to rate limiting.
 
     // Ripple Mainnet (s1)
     getXrplClient(HttpUrl.parse("https://s1.ripple.com:51234")).serverInformation().info().handle(

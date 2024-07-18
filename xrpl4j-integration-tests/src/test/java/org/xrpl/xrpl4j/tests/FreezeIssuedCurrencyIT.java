@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
+import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -379,6 +380,12 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       );
     }
     this.scanForResult(() -> getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class));
+
+    this.scanForResult(
+      () -> getValidatedAccountInfo(sender.publicKey().deriveAddress()),
+      result -> result.accountData().sequence()
+        .equals(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+    );
   }
 
   /**

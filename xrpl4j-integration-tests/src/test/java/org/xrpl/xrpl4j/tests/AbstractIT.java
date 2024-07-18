@@ -543,6 +543,10 @@ public abstract class AbstractIT {
         Payment.class)
     );
 
+    this.scanForResult(
+      () -> getValidatedAccountInfo(issuerAddress),
+      result -> result.accountData().sequence().equals(issuerAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
+    );
   }
 
   //////////////////

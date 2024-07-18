@@ -58,8 +58,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableBridgeObject.class, name = "Bridge"),
   @JsonSubTypes.Type(
     value = ImmutableXChainOwnedCreateAccountClaimIdObject.class,
-    name = "XChainOwnedCreateAccountClaimID"
-  ),
+    name = "XChainOwnedCreateAccountClaimID"),
   @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
   @JsonSubTypes.Type(value = ImmutableDidObject.class, name = "DID"),
   @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
@@ -155,8 +154,7 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
      *
      * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject
-     * to
-     * change.</p>
+     * to change.</p>
      */
     @Beta
     AMM("AMM"),

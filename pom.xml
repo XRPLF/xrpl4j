@@ -432,7 +432,7 @@
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.36.1</version>
+              <version>10.17.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -650,7 +650,8 @@
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <encoding>UTF-8</encoding>
+          <inputEncoding>UTF-8</inputEncoding>
+          <outputEncoding>UTF-8</outputEncoding>
           <consoleOutput>true</consoleOutput>
           <linkXRef>false</linkXRef>
           <excludes>**/generated-sources/**/*,**/generated-test-sources/**/*</excludes>

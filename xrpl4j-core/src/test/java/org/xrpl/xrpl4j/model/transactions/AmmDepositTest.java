@@ -71,6 +71,47 @@ class AmmDepositTest extends AbstractJsonTest {
   }
 
   @Test
+  void constructLpTokenDepositWithXrpLpTokenAmountAndTestJson() throws JSONException, JsonProcessingException {
+    AmmDeposit deposit = AmmDeposit.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AmmDepositFlags.LP_TOKEN)
+      .asset(Issue.XRP)
+      .asset2(
+        Issue.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .lpTokenOut(XrpCurrencyAmount.ofDrops(10))
+      .build();
+
+    assertThat(deposit.flags()).isEqualTo(AmmDepositFlags.LP_TOKEN);
+
+    String json = "{\n" +
+      "    \"Account\" : \"" + deposit.account() + "\",\n" +
+      "    \"LPTokenOut\" : \"10\",\n" +
+      "    \"Asset2\" : {\n" +
+      "        \"currency\" : \"TST\",\n" +
+      "        \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
+      "    },\n" +
+      "    \"Asset\" : {\n" +
+      "        \"currency\" : \"XRP\"\n" +
+      "    },\n" +
+      "    \"Fee\" : \"10\",\n" +
+      "    \"Flags\" : " + AmmDepositFlags.LP_TOKEN + ",\n" +
+      "    \"Sequence\" : 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"TransactionType\" : \"AMMDeposit\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(deposit, json);
+  }
+
+  @Test
   void constructTwoAssetDepositAndTestJson() throws JSONException, JsonProcessingException {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))

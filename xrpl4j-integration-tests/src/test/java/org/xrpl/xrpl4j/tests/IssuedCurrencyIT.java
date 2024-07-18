@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.RippleStateLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.RippleStateLedgerEntryParams.RippleStateAccounts;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
@@ -404,7 +405,7 @@ public class IssuedCurrencyIT extends AbstractIT {
    */
   @Test
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
-    // NOTE: Only run this on non-testnet and non-devnet evironmens.
+    // NOTE: Only run this on non-testnet and non-devnet environments.
     if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass()) ||
       DevnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
       return;
@@ -415,8 +416,8 @@ public class IssuedCurrencyIT extends AbstractIT {
     final KeyPair issuerAKeyPair = createRandomAccountEd25519();
     final KeyPair issuerBKeyPair = createRandomAccountEd25519();
     final KeyPair charlieKeyPair = createRandomAccountEd25519();
-    final KeyPair danielKeyPair = createRandomAccountEd25519();
     final KeyPair emilyKeyPair = createRandomAccountEd25519();
+    final KeyPair danielKeyPair = createRandomAccountEd25519();
 
     ///////////////////////////
     // Set the lsfDefaultRipple AccountRoot flag so that all trustlines in this topography allow rippling
@@ -424,8 +425,8 @@ public class IssuedCurrencyIT extends AbstractIT {
     setDefaultRipple(issuerAKeyPair, feeResult);
     setDefaultRipple(issuerBKeyPair, feeResult);
     setDefaultRipple(charlieKeyPair, feeResult);
-    setDefaultRipple(danielKeyPair, feeResult);
     setDefaultRipple(emilyKeyPair, feeResult);
+    setDefaultRipple(danielKeyPair, feeResult);
 
     ///////////////////////////
     // Create a Trustline between charlie and issuerA
@@ -436,7 +437,8 @@ public class IssuedCurrencyIT extends AbstractIT {
         .currency("USD")
         .value("10000")
         .build(),
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
@@ -448,7 +450,8 @@ public class IssuedCurrencyIT extends AbstractIT {
         .currency("USD")
         .value("10000")
         .build(),
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
@@ -460,7 +463,8 @@ public class IssuedCurrencyIT extends AbstractIT {
         .currency("USD")
         .value("10000")
         .build(),
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
@@ -472,7 +476,8 @@ public class IssuedCurrencyIT extends AbstractIT {
         .currency("USD")
         .value("10000")
         .build(),
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
@@ -536,11 +541,12 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
     List<List<PathStep>> pathSteps = scanForResult(
-      () -> getValidatedRipplePath(charlieKeyPair, danielKeyPair, IssuedCurrencyAmount.builder()
-        .issuer(issuerBKeyPair.publicKey().deriveAddress())
-        .currency(charlieTrustLineWithIssuerA.currency())
-        .value("10")
-        .build()),
+      () -> getValidatedRipplePath(charlieKeyPair, danielKeyPair,
+        IssuedCurrencyAmount.builder()
+          .issuer(issuerBKeyPair.publicKey().deriveAddress())
+          .currency(charlieTrustLineWithIssuerA.currency())
+          .value("10")
+          .build()),
       path -> !path.alternatives().isEmpty()
     )
       .alternatives().stream()

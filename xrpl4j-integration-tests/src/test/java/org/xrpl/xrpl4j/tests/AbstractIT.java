@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -437,6 +437,30 @@ public abstract class AbstractIT {
     IssuedCurrencyAmount trustlineLimitAmount,
     XrpCurrencyAmount fee
   ) throws JsonRpcClientErrorException, JsonProcessingException {
+    return createTrustLine(
+      counterpartyKeyPair, trustlineLimitAmount, fee, TrustSetFlags.builder().tfSetNoRipple().build()
+    );
+  }
+
+  /**
+   * Create a trustline between the issuer of the specified {@param trustlineLimitAmount} and specified counterparty for
+   * the given currency code with the given limit.
+   *
+   * @param counterpartyKeyPair  The {@link KeyPair} of the counterparty account.
+   * @param trustlineLimitAmount A {@link IssuedCurrencyAmount} representing the trust limit for the counterparty.
+   * @param fee                  The current network fee, as an {@link XrpCurrencyAmount}.
+   * @param trustSetFlags        A {@link TrustSetFlags} to use when creating the trustline.
+   *
+   * @return The {@link TrustLine} that gets created.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  public TrustLine createTrustLine(
+    KeyPair counterpartyKeyPair,
+    IssuedCurrencyAmount trustlineLimitAmount,
+    XrpCurrencyAmount fee,
+    TrustSetFlags trustSetFlags
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
     Address counterpartyAddress = counterpartyKeyPair.publicKey().deriveAddress();
 
     AccountInfoResult counterpartyAccountInfo = this.scanForResult(
@@ -448,9 +472,7 @@ public abstract class AbstractIT {
       .fee(fee)
       .sequence(counterpartyAccountInfo.accountData().sequence())
       .limitAmount(trustlineLimitAmount)
-      .flags(TrustSetFlags.builder()
-        .tfSetNoRipple()
-        .build())
+      .flags(trustSetFlags)
       .signingPublicKey(counterpartyKeyPair.publicKey())
       .build();
 
@@ -563,6 +585,9 @@ public abstract class AbstractIT {
         } catch (InterruptedException e) {
           throw new RuntimeException(e.getMessage(), e);
         }
+        logger.error(
+          "PaymentEngineResult `{}` did not equal expectedEngineResult `{}`", paymentEngineResult, expectedEngineResult
+        );
         continue; // <-- Try again, up to the loop guard above.
       }
 

@@ -50,7 +50,7 @@ public class NftInfoIT {
   }
 
   @Test
-  void getNftInfoFromReportingModeThrows() throws JsonRpcClientErrorException {
+  void getNftInfoFromReportingModeThrows() {
     XrplClient client = new ReportingMainnetEnvironment().getXrplClient();
     NftInfoRequestParams params = NftInfoRequestParams.builder()
       .nfTokenId(NfTokenId.of("0008138808C4E53F4F6EF5D5B2AF64F96B457F42E0ED9530FE9B131300001178"))

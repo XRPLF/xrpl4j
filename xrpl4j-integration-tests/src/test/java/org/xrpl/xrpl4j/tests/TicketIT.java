@@ -45,6 +45,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TicketIT extends AbstractIT {
 
@@ -91,8 +92,11 @@ public class TicketIT extends AbstractIT {
       .map(AffectedNode::ledgerIndex)
       .get();
 
-    AccountInfoResult accountInfoAfterTicketCreate = getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress());
-    assertThat(accountInfoAfterTicketCreate.accountData().ticketCount()).isNotEmpty().get()
+    Optional<UnsignedInteger> ticketCount = this.scanForResult(
+      () -> getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountData().ticketCount().isPresent()
+    ).accountData().ticketCount();
+    assertThat(ticketCount).isNotEmpty().get()
       .isEqualTo(ticketCreate.ticketCount());
 
     List<TicketObject> tickets = getValidatedAccountObjects(

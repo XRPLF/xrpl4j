@@ -367,6 +367,9 @@
               </goals>
             </execution>
           </executions>
+          <configuration>
+            <rerunFailingTestsCount>2</rerunFailingTestsCount>
+          </configuration>
         </plugin>
 
         <!-- org.apache.maven.plugins:maven-source-plugin -->

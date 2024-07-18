@@ -490,7 +490,6 @@ public class IssuedCurrencyIT extends AbstractIT {
         .issuer(issuerAKeyPair.publicKey().deriveAddress())
         .currency("USD")
         .value("10")
-        .issuer(issuerAKeyPair.publicKey().deriveAddress())
         .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
@@ -505,7 +504,6 @@ public class IssuedCurrencyIT extends AbstractIT {
         .issuer(issuerAKeyPair.publicKey().deriveAddress())
         .currency("USD")
         .value("1")
-        .issuer(issuerAKeyPair.publicKey().deriveAddress())
         .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );

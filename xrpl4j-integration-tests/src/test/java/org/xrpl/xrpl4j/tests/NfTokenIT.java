@@ -491,8 +491,27 @@ public class NfTokenIT extends AbstractIT {
     );
     logger.info("NFT Accept Offer transaction was validated successfully.");
 
-    assertThat(xrplClient.accountNfts(keypair.publicKey().deriveAddress()).accountNfts().size()).isEqualTo(0);
-    assertThat(xrplClient.accountNfts(wallet2.publicKey().deriveAddress()).accountNfts().size()).isEqualTo(1);
+    this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountNfts(keypair.publicKey().deriveAddress()).accountNfts().size();
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      size -> size == 0
+    );
+
+    this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountNfts(wallet2.publicKey().deriveAddress()).accountNfts().size();
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      size -> size == 1
+    );
 
     logger.info("The NFT ownership was transferred.");
   }

@@ -88,6 +88,8 @@ public interface Transaction {
       .put(ImmutableXChainModifyBridge.class, TransactionType.XCHAIN_MODIFY_BRIDGE)
       .put(ImmutableDidSet.class, TransactionType.DID_SET)
       .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
+      .put(ImmutableOracleSet.class, TransactionType.ORACLE_SET)
+      .put(ImmutableOracleDelete.class, TransactionType.ORACLE_DELETE)
       .build();
 
   /**

@@ -61,7 +61,7 @@ public class RippledContainer {
       LOGGER.warn("Ledger accept failed", e);
     }
   };
-  private final GenericContainer rippledContainer;
+  private final GenericContainer<?> rippledContainer;
   private final ScheduledExecutorService ledgerAcceptor;
   private boolean started;
 
@@ -69,7 +69,7 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    rippledContainer = new GenericContainer("rippleci/rippled:2.0.0-b4")
+    rippledContainer = new GenericContainer<>("rippleci/rippled:2.2.0-rc3")
       .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
         cmd.withEntrypoint("/opt/ripple/bin/rippled"))
       .withCommand("-a --start --conf /config/rippled.cfg")
@@ -92,8 +92,6 @@ public class RippledContainer {
 
   /**
    * Starts container with default interval (1s) for closing ledgers.
-   *
-   * @return
    */
   public RippledContainer start() {
     return this.start(1000);
@@ -102,9 +100,9 @@ public class RippledContainer {
   /**
    * Start contain with given interval for closing ledgers.
    *
-   * @param acceptIntervalMillis
+   * @param acceptIntervalMillis The number of milliseconds before each accept call to close the ledger.
    *
-   * @return
+   * @return A {@link RippledContainer}.
    */
   public RippledContainer start(int acceptIntervalMillis) {
     if (started) {
@@ -166,7 +164,7 @@ public class RippledContainer {
   /**
    * Provides an instance of an {@link XrplAdminClient} that will connect to the rippled container.
    *
-   * @return
+   * @return A {@link XrplAdminClient}.
    */
   public XrplAdminClient getXrplAdminClient() {
     return new XrplAdminClient(this.getBaseUri());
@@ -175,13 +173,13 @@ public class RippledContainer {
   /**
    * Provides an instance of an {@link XrplClient} that will connect to the rippled container.
    *
-   * @return
+   * @return A {@link XrplAdminClient}.
    */
   public XrplClient getXrplClient() {
     return new XrplClient(this.getBaseUri());
   }
 
-  private static HttpUrl getBaseUri(GenericContainer rippledContainer) {
+  private static HttpUrl getBaseUri(GenericContainer<?> rippledContainer) {
     return HttpUrl.parse("http://" + rippledContainer.getHost() + ":" + rippledContainer.getMappedPort(5005) + "/");
   }
 

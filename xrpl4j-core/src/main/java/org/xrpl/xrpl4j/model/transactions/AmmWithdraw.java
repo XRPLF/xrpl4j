@@ -86,9 +86,17 @@ public interface AmmWithdraw extends Transaction {
   /**
    * How many of the AMM's LP Tokens to buy.
    *
+   * <p>
+   * In a well-formed transaction, this field is always an {@link IssuedCurrencyAmount}. However, the XRPL will fail AMM
+   * transactions that specify {@link XrpCurrencyAmount}s with a {@code tec} error code, which means these malformed
+   * transactions can be included in validated ledgers. Therefore, this field is typed as a {@link CurrencyAmount} so
+   * that malformed transactions can be correctly deserialized. See <a
+   * href="https://github.com/XRPLF/xrpl4j/issues/529">#529</a>
+   * </p>
+   *
    * @return An optionally present {@link IssuedCurrencyAmount}.
    */
   @JsonProperty("LPTokensIn")
-  Optional<IssuedCurrencyAmount> lpTokensIn();
+  Optional<CurrencyAmount> lpTokensIn();
 
 }

@@ -44,6 +44,9 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType DID = MetaLedgerEntryType.of("DID");
 
+  @Beta
+  MetaLedgerEntryType ORACLE = MetaLedgerEntryType.of("Oracle");
+
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *
@@ -98,6 +101,8 @@ public interface MetaLedgerEntryType {
         return MetaXChainOwnedCreateAccountClaimIdObject.class;
       case "DID":
         return MetaDidObject.class;
+      case "Oracle":
+        return MetaOracleObject.class;
       default:
         return MetaUnknownObject.class;
     }

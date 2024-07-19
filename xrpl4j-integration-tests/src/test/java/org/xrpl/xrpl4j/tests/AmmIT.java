@@ -144,8 +144,8 @@ public class AmmIT extends AbstractIT {
     TradingFee expectedTradingFee = TradingFee.ofPercent(
       issuerLpTokenBalance.multiply(amm.amm().tradingFee().bigDecimalValue()).add(
           traderLpTokenBalance.multiply(newTradingFee.bigDecimalValue())
-        ).divide(issuerLpTokenBalance.add(traderLpTokenBalance), RoundingMode.FLOOR)
-        .setScale(3, RoundingMode.FLOOR)
+        ).divide(issuerLpTokenBalance.add(traderLpTokenBalance), RoundingMode.HALF_UP)
+        .setScale(3, RoundingMode.HALF_UP)
     );
 
     AmmInfoResult ammAfterVote = getAmmInfo(issuerKeyPair);
@@ -255,7 +255,7 @@ public class AmmIT extends AbstractIT {
           .build()
       )
       .asset(Issue.XRP)
-      .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(90)))
+      .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .build();
 
@@ -296,7 +296,7 @@ public class AmmIT extends AbstractIT {
     SignatureService<PrivateKey> signatureService,
     FeeResult feeResult
   ) throws JsonRpcClientErrorException, JsonProcessingException {
-    XrpCurrencyAmount depositAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100));
+    XrpCurrencyAmount depositAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10));
     AmmDeposit deposit = AmmDeposit.builder()
       .account(traderAccount.accountData().account())
       .asset2(
@@ -373,10 +373,10 @@ public class AmmIT extends AbstractIT {
         IssuedCurrencyAmount.builder()
           .issuer(issuerKeyPair.publicKey().deriveAddress())
           .currency(xrpl4jCoin)
-          .value("25")
+          .value("2.5")
           .build()
       )
-      .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(100)))
+      .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
       .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
       .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())

@@ -72,6 +72,8 @@ import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftInfoResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceRequestParams;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceResult;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
@@ -808,6 +810,28 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, AmmInfoResult.class);
+  }
+
+  /**
+   * Retreive the aggregate price of specified oracle objects, returning three price statistics: mean, median, and
+   * trimmed mean.
+   *
+   * @param params A {@link GetAggregatePriceRequestParams}.
+   *
+   * @return A {@link GetAggregatePriceResult}.
+   *
+   * @throws JsonRpcClientErrorException if {@code jsonRpcClient} throws an error.
+   */
+  @Beta
+  public GetAggregatePriceResult getAggregatePrice(
+    GetAggregatePriceRequestParams params
+  ) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.GET_AGGREGATE_PRICE)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, GetAggregatePriceResult.class);
   }
 
   public JsonRpcClient getJsonRpcClient() {

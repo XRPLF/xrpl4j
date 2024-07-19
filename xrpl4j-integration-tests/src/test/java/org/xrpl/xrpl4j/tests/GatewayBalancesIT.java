@@ -36,6 +36,7 @@ import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -55,20 +56,25 @@ public class GatewayBalancesIT extends AbstractIT {
     String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
     TrustLine trustLine = createTrustLine(
-      xrpl4jCoin,
-      "10000",
-      issuerKeyPair,
       counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value("10000")
+        .build(),
       XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
     sendIssuedCurrency(
-      xrpl4jCoin,
-      trustLine.limitPeer(),
-      issuerKeyPair,
-      counterpartyKeyPair,
+      issuerKeyPair, // <-- From
+      counterpartyKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(trustLine.limitPeer())
+        .build(),
       XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1))
     );
 

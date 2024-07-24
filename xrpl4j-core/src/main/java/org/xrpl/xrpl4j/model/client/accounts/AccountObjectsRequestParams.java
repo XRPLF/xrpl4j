@@ -152,7 +152,11 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
     /**
      * State account object type.
      */
-    STATE("state");
+    STATE("state"),
+    /**
+     * NFT offer object type.
+     */
+    NFT_OFFER("nft_offer");
 
     private final String value;
 

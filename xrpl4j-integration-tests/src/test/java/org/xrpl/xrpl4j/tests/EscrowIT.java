@@ -504,18 +504,25 @@ public class EscrowIT extends AbstractIT {
     return closeTime.isBefore(now) ? now : closeTime;
   }
 
-
   private void assertEntryEqualsObjectFromAccountObjects(
     Address escrowOwner,
     UnsignedInteger createSequence
   ) throws JsonRpcClientErrorException {
-
-    EscrowObject escrowObject = (EscrowObject) xrplClient.accountObjects(AccountObjectsRequestParams.builder()
-      .type(AccountObjectType.ESCROW)
-      .account(escrowOwner)
-      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-      .build()
-    ).accountObjects().get(0);
+    EscrowObject escrowObject = (EscrowObject) this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountObjects(AccountObjectsRequestParams.builder()
+            .type(AccountObjectType.ESCROW)
+            .account(escrowOwner)
+            .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+            .build()
+          ).accountObjects();
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.size() == 1
+    ).get(0);
 
     LedgerEntryResult<EscrowObject> escrowEntry = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.escrow(

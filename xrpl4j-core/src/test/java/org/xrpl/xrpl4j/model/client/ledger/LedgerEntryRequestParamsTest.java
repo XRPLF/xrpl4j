@@ -25,11 +25,13 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
+import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
+import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 
 class LedgerEntryRequestParamsTest extends AbstractJsonTest {
@@ -54,6 +56,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
     assertThat(params.did()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "            \"index\": \"%s\",\n" +
@@ -90,6 +93,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "            \"index\": \"%s\",\n" +
@@ -121,6 +125,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "            \"account_root\": \"%s\",\n" +
@@ -160,6 +165,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = "{\n" +
       "          \"amm\": {\n" +
@@ -204,6 +210,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = "{\n" +
       "      \"offer\": {\n" +
@@ -246,6 +253,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = "{\n" +
       "    \"ripple_state\": {\n" +
@@ -281,6 +289,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"check\": \"%s\",\n" +
@@ -316,6 +325,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = "{\n" +
       "    \"escrow\": {\n" +
@@ -350,6 +360,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"payment_channel\": \"%s\",\n" +
@@ -386,6 +397,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = "{\n" +
       "    \"deposit_preauth\": {\n" +
@@ -425,6 +437,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = "{\n" +
       "    \"ticket\": {\n" +
@@ -460,6 +473,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.did()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"nft_page\": \"%s\",\n" +
@@ -492,6 +506,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.nftPage()).isEmpty();
     assertThat(params.bridgeAccount()).isEmpty();
     assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"did\": \"%s\",\n" +
@@ -531,6 +546,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.ticket()).isEmpty();
     assertThat(params.nftPage()).isEmpty();
     assertThat(params.did()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
 
     String json = String.format("{\n" +
       "    \"bridge_account\": \"%s\",\n" +
@@ -538,6 +554,42 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
       "    \"binary\": false,\n" +
       "    \"ledger_index\": \"validated\"\n" +
       "  }", ED_ADDRESS, objectMapper.writeValueAsString(bridge));
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testOracleParams() throws JSONException, JsonProcessingException {
+    OracleLedgerEntryParams oracleParams = OracleLedgerEntryParams.builder()
+      .account(ED_ADDRESS)
+      .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .build();
+    LedgerEntryRequestParams<OracleObject> params = LedgerEntryRequestParams.oracle(
+      oracleParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.oracle()).isNotEmpty().get().isEqualTo(oracleParams);
+    assertThat(params.ledgerObjectClass()).isEqualTo(OracleObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+
+    String json = String.format("{\n" +
+      "      \"oracle\" : %s,\n" +
+      "    \"binary\": false,\n" +
+      "      \"ledger_index\": \"validated\"\n" +
+      "    }", objectMapper.writeValueAsString(oracleParams), ED_ADDRESS);
 
     assertCanSerializeAndDeserialize(params, json);
   }

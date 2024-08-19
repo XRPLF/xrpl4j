@@ -61,6 +61,13 @@ public interface JsonRpcClient {
   int SERVICE_UNAVAILABLE_STATUS = 503;
   Duration RETRY_INTERVAL = Duration.ofSeconds(1);
 
+  String RESULT = "result";
+  String STATUS = "status";
+  String ERROR = "error";
+  String ERROR_EXCEPTION = "error_exception";
+  String ERROR_MESSAGE = "error_message";
+  String N_A = "n/a";
+
   /**
    * Constructs a new client for the given url.
    *
@@ -134,7 +141,7 @@ public interface JsonRpcClient {
     JavaType resultType
   ) throws JsonRpcClientErrorException {
     JsonNode response = postRpcRequest(request);
-    JsonNode result = response.get("result");
+    JsonNode result = response.get(RESULT);
     checkForError(response);
     try {
       return objectMapper.readValue(result.toString(), resultType);
@@ -151,13 +158,25 @@ public interface JsonRpcClient {
    * @throws JsonRpcClientErrorException If rippled returns an error message.
    */
   default void checkForError(JsonNode response) throws JsonRpcClientErrorException {
-    if (response.has("result")) {
-      JsonNode result = response.get("result");
-      if (result.has("error")) {
-        String errorMessage = Optional.ofNullable(result.get("error_exception"))
-          .map(JsonNode::asText)
-          .orElseGet(() -> result.get("error_message").asText());
-        throw new JsonRpcClientErrorException(errorMessage);
+    if (response.has(RESULT)) {
+      JsonNode result = response.get(RESULT);
+      if (result.has(STATUS)) {
+        String status = result.get(STATUS).asText();
+        if (status.equals(ERROR)) { // <-- Only an error if result.status == "error"
+          if (result.has(ERROR)) {
+            String errorCode = result.get(ERROR).asText();
+
+            final String errorMessage;
+            if (result.hasNonNull(ERROR_EXCEPTION)) {
+              errorMessage = result.get(ERROR_EXCEPTION).asText();
+            } else if (result.hasNonNull(ERROR_MESSAGE)) {
+              errorMessage = result.get(ERROR_MESSAGE).asText();
+            } else {
+              errorMessage = N_A;
+            }
+            throw new JsonRpcClientErrorException(String.format("%s (%s)", errorCode, errorMessage));
+          }
+        }
       }
     }
   }

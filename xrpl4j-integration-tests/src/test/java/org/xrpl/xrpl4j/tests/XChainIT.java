@@ -196,17 +196,17 @@ public class XChainIT extends AbstractIT {
     assertThat(newFields.xChainAccountCreateCount()).isNotEmpty().get().isEqualTo(XChainCount.of(UnsignedLong.ONE));
     assertThat(newFields.xChainCreateAccountAttestations()).containsExactly(
       ImmutableMetaXChainCreateAccountAttestation.builder()
-          .xChainCreateAccountProofSig(
-            ImmutableMetaXChainCreateAccountProofSig.builder()
-              .amount(transaction.amount())
-              .signatureReward(transaction.signatureReward())
-              .attestationRewardAccount(transaction.attestationRewardAccount())
-              .attestationSignerAccount(transaction.attestationSignerAccount())
-              .destination(transaction.destination())
-              .publicKey(testBridge.witnessKeyPair().publicKey())
-              .wasLockingChainSend(false)
-              .build()
-          )
+        .xChainCreateAccountProofSig(
+          ImmutableMetaXChainCreateAccountProofSig.builder()
+            .amount(transaction.amount())
+            .signatureReward(transaction.signatureReward())
+            .attestationRewardAccount(transaction.attestationRewardAccount())
+            .attestationSignerAccount(transaction.attestationSignerAccount())
+            .destination(transaction.destination())
+            .publicKey(testBridge.witnessKeyPair().publicKey())
+            .wasLockingChainSend(false)
+            .build()
+        )
         .build()
     );
 
@@ -221,16 +221,16 @@ public class XChainIT extends AbstractIT {
     assertThat(claimIdObject.xChainBridge()).isEqualTo(testBridge.bridge());
     assertThat(claimIdObject.xChainCreateAccountAttestations()).containsExactly(
       XChainCreateAccountAttestation.of(
-          XChainCreateAccountProofSig.builder()
-            .amount(transaction.amount())
-            .signatureReward(transaction.signatureReward().get())
-            .attestationRewardAccount(transaction.attestationRewardAccount())
-            .attestationSignerAccount(transaction.attestationSignerAccount())
-            .destination(transaction.destination())
-            .publicKey(testBridge.witnessKeyPair().publicKey())
-            .wasLockingChainSend(false)
-            .build()
-        )
+        XChainCreateAccountProofSig.builder()
+          .amount(transaction.amount())
+          .signatureReward(transaction.signatureReward().get())
+          .attestationRewardAccount(transaction.attestationRewardAccount())
+          .attestationSignerAccount(transaction.attestationSignerAccount())
+          .destination(transaction.destination())
+          .publicKey(testBridge.witnessKeyPair().publicKey())
+          .wasLockingChainSend(false)
+          .build()
+      )
     );
 
     // Create an attestation for witness 2 to sign
@@ -362,36 +362,38 @@ public class XChainIT extends AbstractIT {
   @Test
   void testAddClaimAttestationIouToIouBridge() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair lockingDoor = Seed.ed25519Seed().deriveKeyPair();
-    KeyPair issuer = Seed.ed25519Seed().deriveKeyPair();
+    KeyPair lockingChainIssuer = Seed.ed25519Seed().deriveKeyPair();
 
-    KeyPair source = this.createRandomAccountEd25519();
+    KeyPair lockingChainSource = this.createRandomAccountEd25519();
     XrpCurrencyAmount fee = FeeUtils.computeNetworkFees(xrplClient.fee()).recommendedFee();
-    enableRippling(source, fee);
+    enableRippling(lockingChainSource, fee);
 
     KeyPair destination = this.createRandomAccountEd25519();
 
     this.createTrustLine(
-      "USD",
-      "1000000000",
-      source,
       destination,
+      IssuedCurrencyAmount.builder()
+        .issuer(lockingChainSource.publicKey().deriveAddress())
+        .currency("USD")
+        .value("1000000000")
+        .build(),
       fee
     );
 
     TestBridge iouBridge = setupBridge(
-      source,
+      lockingChainSource,
       XChainBridge.builder()
         .lockingChainDoor(lockingDoor.publicKey().deriveAddress())
         .lockingChainIssue(
           Issue.builder()
-            .issuer(issuer.publicKey().deriveAddress())
+            .issuer(lockingChainIssuer.publicKey().deriveAddress())
             .currency("USD")
             .build()
         )
-        .issuingChainDoor(source.publicKey().deriveAddress())
+        .issuingChainDoor(lockingChainSource.publicKey().deriveAddress())
         .issuingChainIssue(
           Issue.builder()
-            .issuer(source.publicKey().deriveAddress())
+            .issuer(lockingChainSource.publicKey().deriveAddress())
             .currency("USD")
             .build()
         )
@@ -401,15 +403,17 @@ public class XChainIT extends AbstractIT {
 
     KeyPair otherChainSource = this.createRandomAccountEd25519();
     IssuedCurrencyAmount amount = IssuedCurrencyAmount.builder()
+      .issuer(lockingChainIssuer.publicKey().deriveAddress())
       .currency("USD")
-      .issuer(issuer.publicKey().deriveAddress())
       .value("10")
       .build();
 
     AccountInfoResult sourceAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(source.publicKey().deriveAddress()));
+      () -> this.getValidatedAccountInfo(lockingChainSource.publicKey().deriveAddress()));
 
-    XChainOwnedClaimIdObject claimIdObject = createClaimId(sourceAccountInfo, fee, source, iouBridge, otherChainSource);
+    XChainOwnedClaimIdObject claimIdObject = createClaimId(
+      sourceAccountInfo, fee, lockingChainSource, iouBridge, otherChainSource
+    );
 
     XChainAddClaimAttestation addAttestation = addClaimAttestation(
       otherChainSource,

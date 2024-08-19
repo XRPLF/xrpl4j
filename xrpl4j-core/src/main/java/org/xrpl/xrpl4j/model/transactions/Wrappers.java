@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -36,6 +37,8 @@ import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
@@ -51,6 +54,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleProviderDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleUriDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
@@ -678,6 +685,86 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} containing an Oracle document ID.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = OracleDocumentId.class, using = OracleDocumentIdSerializer.class)
+  @JsonDeserialize(as = OracleDocumentId.class, using = OracleDocumentIdDeserializer.class)
+  @Beta
+  abstract static class _OracleDocumentId extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an Oracle provider.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = OracleProvider.class, using = ToStringSerializer.class)
+  @JsonDeserialize(as = OracleProvider.class, using = OracleProviderDeserializer.class)
+  @Beta
+  abstract static class _OracleProvider extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an Oracle URI.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = OracleUri.class, using = ToStringSerializer.class)
+  @JsonDeserialize(as = OracleUri.class, using = OracleUriDeserializer.class)
+  @Beta
+  abstract static class _OracleUri extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an Oracle asset price.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = AssetPrice.class, using = AssetPriceSerializer.class)
+  @JsonDeserialize(as = AssetPrice.class, using = AssetPriceDeserializer.class)
+  @Beta
+  abstract static class _AssetPrice extends Wrapper<UnsignedLong> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
     }
 
   }

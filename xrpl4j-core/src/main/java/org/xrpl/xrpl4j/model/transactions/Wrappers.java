@@ -190,10 +190,11 @@ public class Wrappers {
     public static XrpCurrencyAmount ofDrops(final long drops) {
       if (drops < 0) {
         // Normalize the drops value to be a positive number; indicated negativity via property.
-        return ofDrops(UnsignedLong.valueOf(drops * -1), true);
+        return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
       } else {
-        // Default to positive number and negativity indicator of `false`.
-        return ofDrops(UnsignedLong.valueOf(drops));
+        // Default to positive number and negativity indicator of `false`. No need for Math.abs(drops) because negative
+        // values cannot enter this else-condition per the above if-check.
+        return ofDrops(UnsignedLong.valueOf(drops), false);
       }
     }
 
@@ -242,21 +243,19 @@ public class Wrappers {
         return ofDrops(UnsignedLong.ZERO);
       }
 
-      // Whether positive or negative, clamp the amount to 0 if it's too small, or 100B if it's too big.
       final BigDecimal absAmount = amount.abs();
-
+      // Whether positive or negative, ensure the amount is not too small and not too big.
       Preconditions.checkArgument(
         FluentCompareTo.is(absAmount).greaterThanEqualTo(SMALLEST_XRP),
         String.format("Amount must be greater-than %s", SMALLEST_XRP)
       );
-
       Preconditions.checkArgument(
         FluentCompareTo.is(absAmount).lessThanOrEqualTo(MAX_XRP_BD),
         String.format("Amount must be less-than-or-equal to %s", MAX_XRP_BD)
       );
 
       if (amount.signum() == 0) { // zero
-        return ofDrops(UnsignedLong.ZERO); // <-- Should never happen per the first check, but just in case.s
+        return ofDrops(UnsignedLong.ZERO); // <-- Should never happen per the first check above, but just in case.
       } else { // positive or negative
         final boolean isNegative = amount.signum() < 0;
         return ofDrops(UnsignedLong.valueOf(absAmount.scaleByPowerOfTen(6).toBigIntegerExact()), isNegative);

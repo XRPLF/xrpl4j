@@ -336,7 +336,10 @@ public class Wrappers {
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.ofDrops(this.value().times(other.value()), this.isNegative() | other.isNegative());
+      return XrpCurrencyAmount.ofDrops(
+        this.value().times(other.value()),
+        this.isNegative() || other.isNegative()
+      );
     }
 
     @Override

@@ -247,11 +247,11 @@ public class Wrappers {
       // Whether positive or negative, ensure the amount is not too small and not too big.
       Preconditions.checkArgument(
         FluentCompareTo.is(absAmount).greaterThanEqualTo(SMALLEST_XRP),
-        String.format("Amount must be greater-than %s", SMALLEST_XRP)
+        String.format("Amount must be greater-than-or-equal-to %s", SMALLEST_XRP)
       );
       Preconditions.checkArgument(
         FluentCompareTo.is(absAmount).lessThanOrEqualTo(MAX_XRP_BD),
-        String.format("Amount must be less-than-or-equal to %s", MAX_XRP_BD)
+        String.format("Amount must be less-than-or-equal-to %s", MAX_XRP_BD)
       );
 
       if (amount.signum() == 0) { // zero

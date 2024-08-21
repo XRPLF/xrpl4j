@@ -15,6 +15,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaNfTokenOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaOfferObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaRippleStateObject;
 
@@ -108,7 +109,9 @@ class NegativeTransactionMetadataTest {
     "ledger-result-354496.json",
     "ledger-result-354575.json",
     "ledger-result-354579.json",
-    "ledger-result-87704323.json"
+    "ledger-result-87704323.json",
+    "ledger-result-90150378.json",
+    "ledger-result-90156059.json"
   })
   void deserializeLedgerResultWithNegativeAmounts(String ledgerResultFileName) throws IOException {
     Objects.requireNonNull(ledgerResultFileName);
@@ -136,18 +139,17 @@ class NegativeTransactionMetadataTest {
             handleMetaLedgerObject((MetaOfferObject) createdNode.newFields());
           } else if (ledgerEntryType.equals(MetaLedgerEntryType.ACCOUNT_ROOT)) {
             handleMetaLedgerObject((MetaAccountRootObject) createdNode.newFields());
+          } else if (ledgerEntryType.equals(MetaLedgerEntryType.RIPPLE_STATE)) {
+            handleMetaLedgerObject((MetaRippleStateObject) createdNode.newFields());
+          } else if (ledgerEntryType.equals(MetaLedgerEntryType.DIRECTORY_NODE)) {
+            logger.warn("Ignoring ledger entry type {}", ledgerEntryType);
           } else {
-            if (ledgerEntryType.equals(MetaLedgerEntryType.DIRECTORY_NODE)) {
-              logger.warn("Ignoring ledger entry type {}", ledgerEntryType);
-            } else {
-              throw new RuntimeException("Unhandled ledger entry type: " + ledgerEntryType);
-            }
+            throw new RuntimeException("Unhandled ledger entry type: " + ledgerEntryType);
           }
         },
         (modifiedNode) -> {
           modifiedNode.previousFields()
             .ifPresent(metaLedgerObject -> {
-
               final MetaLedgerEntryType ledgerEntryType = modifiedNode.ledgerEntryType();
               if (ledgerEntryType.equals(MetaLedgerEntryType.OFFER)) {
                 handleMetaLedgerObject((MetaOfferObject) metaLedgerObject);
@@ -169,19 +171,16 @@ class NegativeTransactionMetadataTest {
                 handleMetaLedgerObject((MetaAccountRootObject) metaLedgerObject);
               } else if (ledgerEntryType.equals(MetaLedgerEntryType.RIPPLE_STATE)) {
                 handleMetaLedgerObject((MetaRippleStateObject) metaLedgerObject);
+              } else if (ledgerEntryType.equals(MetaLedgerEntryType.DIRECTORY_NODE)) {
+                logger.warn("Ignoring ledger entry type {}", ledgerEntryType);
               } else {
-                if (ledgerEntryType.equals(MetaLedgerEntryType.DIRECTORY_NODE)) {
-                  logger.warn("Ignoring ledger entry type {}", ledgerEntryType);
-                } else {
-                  throw new RuntimeException("Unhandled ledger entry type: " + ledgerEntryType);
-                }
+                throw new RuntimeException("Unhandled ledger entry type: " + ledgerEntryType);
               }
             });
         },
         (deletedNode) -> {
           deletedNode.previousFields()
             .ifPresent(metaLedgerObject -> {
-
               final MetaLedgerEntryType ledgerEntryType = deletedNode.ledgerEntryType();
               if (ledgerEntryType.equals(MetaLedgerEntryType.OFFER)) {
                 handleMetaLedgerObject((MetaOfferObject) metaLedgerObject);
@@ -195,7 +194,6 @@ class NegativeTransactionMetadataTest {
             });
 
           final MetaLedgerObject finalFields = deletedNode.finalFields();
-
           final MetaLedgerEntryType ledgerEntryType = deletedNode.ledgerEntryType();
           if (ledgerEntryType.equals(MetaLedgerEntryType.OFFER)) {
             handleMetaLedgerObject((MetaOfferObject) finalFields);
@@ -206,12 +204,12 @@ class NegativeTransactionMetadataTest {
           } else if (ledgerEntryType.equals(MetaLedgerEntryType.TICKET)) {
             logger.info("Ignoring ledger entry type {} because it has no currency values for negative checking",
               ledgerEntryType);
+          } else if (ledgerEntryType.equals(MetaLedgerEntryType.DIRECTORY_NODE)) {
+            logger.warn("Ignoring ledger entry type {}", ledgerEntryType);
+          } else if (ledgerEntryType.equals(MetaLedgerEntryType.NFTOKEN_OFFER)) {
+            handleMetaLedgerObject((MetaNfTokenOfferObject) finalFields);
           } else {
-            if (ledgerEntryType.equals(MetaLedgerEntryType.DIRECTORY_NODE)) {
-              logger.warn("Ignoring ledger entry type {}", ledgerEntryType);
-            } else {
-              throw new RuntimeException("Unhandled ledger entry type: " + ledgerEntryType);
-            }
+            throw new RuntimeException("Unhandled ledger entry type: " + ledgerEntryType);
           }
         }
       );
@@ -219,8 +217,7 @@ class NegativeTransactionMetadataTest {
   }
 
   private void handleMetaLedgerObject(MetaRippleStateObject metaRippleStateObject) {
-    assertThat(metaRippleStateObject.balance().isPresent()).isTrue();
-
+    // Sometimes, there is no balance in a MetaRippleStateObject, so we don't assert on one being present.
     metaRippleStateObject.balance().ifPresent(balance -> {
       if (balance.value().startsWith("-")) {
         assertThat(balance.isNegative()).isTrue();
@@ -247,7 +244,8 @@ class NegativeTransactionMetadataTest {
   }
 
   private void handleMetaLedgerObject(MetaAccountRootObject metaAccountRootObject) {
-    assertThat(metaAccountRootObject.balance().isPresent()).isTrue();
+    // Sometimes, there is no balance in a MetaRippleStateObject, so we don't assert on one being present.
+
     metaAccountRootObject.balance().ifPresent(balance -> {
       if (balance.toXrp().signum() < 0) {
         assertThat(balance.isNegative()).isTrue();
@@ -279,5 +277,17 @@ class NegativeTransactionMetadataTest {
         }
       );
     });
+  }
+
+  private void handleMetaLedgerObject(MetaNfTokenOfferObject metaNfTokenOfferObject) {
+    assertThat(metaNfTokenOfferObject.amount().isPresent()).isTrue();
+
+    metaNfTokenOfferObject.amount()
+      .ifPresent($ -> $.handle(
+        xrpCurrencyAmount -> assertThat(xrpCurrencyAmount.isNegative()).isEqualTo(
+          xrpCurrencyAmount.toXrp().signum() < 0),
+        issuedCurrencyAmount -> assertThat(issuedCurrencyAmount.isNegative()).isEqualTo(
+          issuedCurrencyAmount.value().startsWith("-"))
+      ));
   }
 }

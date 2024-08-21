@@ -36,7 +36,9 @@ import java.math.BigDecimal;
  */
 public class XrpCurrencyAmountTest {
 
+  private static final long NEGATIVE_HALF_XRP_IN_DROPS = -500_000L;
   private static final long HALF_XRP_IN_DROPS = 500_000L;
+  private static final long NEGATIVE_TWO_XRP_IN_DROPS = -2_000_000L;
   private static final long TWO_XRP_IN_DROPS = 2_000_000L;
 
   @Test
@@ -97,8 +99,7 @@ public class XrpCurrencyAmountTest {
 
     // Too big
     assertThrows(IllegalStateException.class,
-      () -> XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(MAX_XRP_IN_DROPS + 1))
-    );
+      () -> XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(MAX_XRP_IN_DROPS + 1)));
   }
 
   @Test
@@ -121,8 +122,7 @@ public class XrpCurrencyAmountTest {
 
     // Too big
     assertThrows(IllegalStateException.class,
-      () -> XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(MAX_XRP_IN_DROPS + 1), true)
-    );
+      () -> XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(MAX_XRP_IN_DROPS + 1), true));
   }
 
   @Test
@@ -240,38 +240,54 @@ public class XrpCurrencyAmountTest {
 
   @Test
   public void plusXrp() {
-    // Positive
-    assertThat(
-      XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
-        .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS));
-    // Negative
-    assertThat(
-      XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS * -1)
-        .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS * -1))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1));
+    // First Positive, Second Positive
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
+        .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS));
+      assertThat(result.value()).isEqualTo(UnsignedLong.valueOf(ONE_XRP_IN_DROPS));
+      assertThat(result.isNegative()).isFalse();
+    }
 
-    // Positive
-    assertThat(
-      XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
-        .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001")))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
-    // Negative
-    assertThat(
-      XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
-        .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
+    // First Positive, Second Negative
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS)
+        .plus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+      assertThat(result.value()).isEqualTo(UnsignedLong.ZERO);
+      assertThat(result.isNegative()).isFalse();
+    }
 
-    // Positive
-    assertThat(
-      XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
-        .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
-    // Negative
-    assertThat(
-      XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
-        .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("+0.000001")))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+    // First Negative, Second Positive
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
+        .plus(XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+      assertThat(result.value()).isEqualTo(UnsignedLong.ZERO);
+      assertThat(result.isNegative()).isFalse();
+    }
+
+    // First Negative, Second Negative
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS)
+        .plus(XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1));
+      assertThat(result.value()).isEqualTo(UnsignedLong.valueOf(ONE_XRP_IN_DROPS));
+      assertThat(result.isNegative()).isTrue();
+    }
+
+    // Decimals (first positive, second positive)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
+      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
+    // Decimals (first positive, second negative)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
+      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+    // Decimals (first negative, second positive)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
+      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("+0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+    // Decimals (first negative, second negative)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
+      .plus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
 
     // Overflow
     assertThrows(IllegalStateException.class, () -> {
@@ -282,62 +298,115 @@ public class XrpCurrencyAmountTest {
 
   @Test
   public void minusXrp() {
-    // Positive
-    assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
-        .minus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
-    // Negative
-    assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1)
-        .minus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS * -1))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS * -1));
+    // First Positive, Second Positive
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+      assertThat(result.value()).isEqualTo(UnsignedLong.valueOf(500_000));
+      assertThat(result.isNegative()).isFalse();
+    }
 
-    // Positive
-    assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
-        .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS))
-    ).isEqualTo((XrpCurrencyAmount.ofDrops(0L)));
-    // Negative
-    assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1)
-        .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1))
-    ).isEqualTo((XrpCurrencyAmount.ofDrops(0L)));
-    assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1)
-        .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1))
-    ).isEqualTo((XrpCurrencyAmount.ofDrops(0L)));
+    // First Positive, Second Negative
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS));
+      assertThat(result.value()).isEqualTo(UnsignedLong.valueOf(500_000L));
+      assertThat(result.isNegative()).isFalse();
+    }
 
-    assertThat(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS).minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)))
-      .isEqualTo((XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(500_000L), true)));
-    assertThat(
-      XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS * -1).minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1)))
-      .isEqualTo((XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(500_000L), false)));
+    // First Negative, Second Positive
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS));
+      assertThat(result.value()).isEqualTo(UnsignedLong.valueOf(ONE_XRP_IN_DROPS));
+      assertThat(result.isNegative()).isFalse();
+    }
+
+    // First Negative, Second Negative
+    {
+      XrpCurrencyAmount result = XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS)
+        .minus(XrpCurrencyAmount.ofDrops(NEGATIVE_HALF_XRP_IN_DROPS));
+      assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(0));
+      assertThat(result.value()).isEqualTo(UnsignedLong.ZERO);
+      assertThat(result.isNegative()).isFalse();
+    }
+
+    // Decimals (first positive, second positive)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
+      .minus(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+    // Decimals (first positive, second negative)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("0.000001"))
+      .minus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(2L));
+    // Decimals (first negative, second positive)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
+      .minus(XrpCurrencyAmount.ofXrp(new BigDecimal("+0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(-2L));
+    // Decimals (first negative, second negative)
+    assertThat(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001"))
+      .minus(XrpCurrencyAmount.ofXrp(new BigDecimal("-0.000001")))).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
 
     // Overflow
     assertThrows(IllegalStateException.class, () -> {
-      XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS * -1) // <-- Min drops
-        .minus(XrpCurrencyAmount.ofDrops(1L)); // <-- minus just one more
+      XrpCurrencyAmount.ofDrops(UnsignedLong.MAX_VALUE, true) // <-- Min drops
+        .minus(XrpCurrencyAmount.ofDrops(1L)); // <-- plus just one more
     });
+
+    assertThat(
+      XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS).minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS))).isEqualTo(
+      (XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(500_000L), true)));
+    assertThat(XrpCurrencyAmount.ofDrops(HALF_XRP_IN_DROPS * -1)
+      .minus(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS * -1))).isEqualTo(
+      (XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(500_000L), false)));
   }
 
   @Test
   public void timesXrp() {
     assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
-        .times(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS * ONE_XRP_IN_DROPS));
+      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS).times(XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS))).isEqualTo(
+      XrpCurrencyAmount.ofDrops(TWO_XRP_IN_DROPS * ONE_XRP_IN_DROPS));
 
-    assertThat(
-      XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS)
-        .times(XrpCurrencyAmount.ofDrops(0L))
-    ).isEqualTo(XrpCurrencyAmount.ofDrops(0L));
+    assertThat(XrpCurrencyAmount.ofDrops(ONE_XRP_IN_DROPS).times(XrpCurrencyAmount.ofDrops(0L))).isEqualTo(
+      XrpCurrencyAmount.ofDrops(0L));
 
     // Overflow
     assertThrows(IllegalStateException.class, () -> {
       XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS) // <-- Max drops
         .times(XrpCurrencyAmount.ofDrops(MAX_XRP_IN_DROPS));
     });
+
+    // Neither Negative
+    {
+      final XrpCurrencyAmount value = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(2L), false)
+        .times(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(3L), false));
+      assertThat(value.value()).isEqualTo(UnsignedLong.valueOf(6L));
+      assertThat(value.isNegative()).isFalse();
+    }
+
+    // First Negative
+    {
+      final XrpCurrencyAmount value = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(2L), false)
+        .times(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(3L), true));
+      assertThat(value.value()).isEqualTo(UnsignedLong.valueOf(6L));
+      assertThat(value.isNegative()).isTrue();
+    }
+
+    {
+      // Second Negative
+      final XrpCurrencyAmount value = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(2L), true)
+        .times(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(3L), false));
+      assertThat(value.value()).isEqualTo(UnsignedLong.valueOf(6L));
+      assertThat(value.isNegative()).isTrue();
+    }
+
+    {
+      // Both Negative
+      final XrpCurrencyAmount value = XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(2L), true)
+        .times(XrpCurrencyAmount.ofDrops(UnsignedLong.valueOf(3L), true));
+      assertThat(value.value()).isEqualTo(UnsignedLong.valueOf(6L));
+      assertThat(value.isNegative()).isTrue();
+    }
   }
 
   @Test

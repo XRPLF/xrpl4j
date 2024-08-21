@@ -264,6 +264,13 @@ public class Wrappers {
 
     /**
      * Indicates whether this amount is positive or negative.
+     * <p/>
+     * Note that this is suitable to declare as the default value for a few reasons. First, deserialization will parse
+     * the payload properly, setting this value correctly (despite this default settings). Second, using a default value
+     * here will not break legacy code that is using a build to construct an {@link XrpCurrencyAmount} correctly (i.e.,
+     * we assume that no developer is constructing a negative XRP amount because the {@link UnsignedLong} preconditions
+     * would not allow them to do such a thing without throwing. Finally, due to the way we've constructed the static
+     * builders of this class, legacy code should continue to work normally.
      *
      * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
      */

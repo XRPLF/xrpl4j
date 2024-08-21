@@ -189,7 +189,7 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final long drops) {
       if (drops < 0) {
-        // Normalize the drops value to be a positive number; indicated negativity via property.
+        // Normalize the drops value to be a positive number; indicate negativity via property.
         return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
       } else {
         // Default to positive number and negativity indicator of `false`. No need for Math.abs(drops) because negative
@@ -300,8 +300,8 @@ public class Wrappers {
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
       // Convert each value to a long (positive or negative works)
       long result =
-        this.value().longValue() * (this.isNegative() ? -1 : 1) +
-          other.value().longValue() * (other.isNegative() ? -1 : 1);
+        (this.value().longValue() * (this.isNegative() ? -1 : 1)) +
+          (other.value().longValue() * (other.isNegative() ? -1 : 1));
       return XrpCurrencyAmount.ofDrops(result);
     }
 
@@ -315,8 +315,8 @@ public class Wrappers {
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
       // Convert each value to a long (positive or negative works)
       long result =
-        this.value().longValue() * (this.isNegative() ? -1 : 1) -
-          other.value().longValue() * (other.isNegative() ? -1 : 1);
+        (this.value().longValue() * (this.isNegative() ? -1 : 1)) -
+          (other.value().longValue() * (other.isNegative() ? -1 : 1));
       return XrpCurrencyAmount.ofDrops(result);
     }
 

@@ -333,11 +333,7 @@ public class Wrappers {
 
     @Override
     public String toString() {
-      if (isNegative()) {
-        return "-" + this.value().toString();
-      } else {
-        return this.value().toString();
-      }
+      return String.format("%s%s", isNegative() ? "-" : "", this.value().toString());
     }
 
     /**

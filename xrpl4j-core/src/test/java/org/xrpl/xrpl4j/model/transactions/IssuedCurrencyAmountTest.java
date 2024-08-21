@@ -21,8 +21,7 @@ class IssuedCurrencyAmountTest {
       "IssuedCurrencyAmount{" +
         "value=-1.00, " +
         "currency=USD, " +
-        "issuer=rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS, " +
-        "isNegative=true" +
+        "issuer=rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS" +
         "}"
     );
     assertThat(issuedCurrency.isNegative()).isTrue();
@@ -37,8 +36,7 @@ class IssuedCurrencyAmountTest {
       "IssuedCurrencyAmount{" +
         "value=1.00, " +
         "currency=USD, " +
-        "issuer=rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS, " +
-        "isNegative=false" +
+        "issuer=rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS" +
         "}"
     );
     assertThat(issuedCurrency.isNegative()).isFalse();
@@ -47,5 +45,34 @@ class IssuedCurrencyAmountTest {
 
   @Test
   void isNegative() {
+    // Negative
+    {
+      final IssuedCurrencyAmount issuedCurrency = IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+        .value("-1.00")
+        .build();
+      assertThat(issuedCurrency.isNegative()).isTrue();
+    }
+
+    // Positive
+    {
+      final IssuedCurrencyAmount issuedCurrency = IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+        .value("1.00")
+        .build();
+      assertThat(issuedCurrency.isNegative()).isFalse();
+    }
+
+    // Zero
+    {
+      final IssuedCurrencyAmount issuedCurrency = IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rP9JR5JTEqaVYbXHtiqR5YvBeoWQeMBipS"))
+        .value("0")
+        .build();
+      assertThat(issuedCurrency.isNegative()).isFalse();
+    }
   }
 }

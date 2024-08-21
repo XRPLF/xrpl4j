@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 
@@ -101,6 +102,7 @@ public interface IssuedCurrencyAmount extends CurrencyAmount {
    */
   @Derived
   @JsonIgnore // <-- This is not actually part of the binary serialization format, so exclude from JSON
+  @Auxiliary
   default boolean isNegative() {
     return value().startsWith("-");
   }

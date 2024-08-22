@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.codec.binary.types;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
@@ -124,9 +125,19 @@ class AmountTypeTest extends BaseSerializerTypeTest {
   @Test
   void encodeOutOfBounds() {
     // Positive
-    assertThrows(IllegalArgumentException.class, () -> codec.fromJson("416345785D8A0001"));
+    {
+      IllegalArgumentException thrownError = assertThrows(
+        IllegalArgumentException.class, () -> codec.fromJson("100000000000000001")
+      );
+      assertThat(thrownError.getMessage()).isEqualTo("100000000000000001 is an illegal amount");
+    }
     // Negative
-    assertThrows(IllegalArgumentException.class, () -> codec.fromJson("-416345785D8A0001"));
+    {
+      IllegalArgumentException thrownError = assertThrows(
+        IllegalArgumentException.class, () -> codec.fromJson("-100000000000000001")
+      );
+      assertThat(thrownError.getMessage()).isEqualTo("-100000000000000001 is an illegal amount");
+    }
   }
 
   @Test

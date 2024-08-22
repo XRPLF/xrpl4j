@@ -92,11 +92,11 @@ class AmountType extends SerializedType<AmountType> {
     if (!value.equals(BigDecimal.ZERO)) {
       if (value.signum() < 0) { // `value` is negative
         if (value.compareTo(MAX_NEGATIVE_XRP) > 0 || value.compareTo(MIN_DROPS) < 0) {
-          throw new IllegalArgumentException(amount + " is an illegal amount");
+          throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
         }
       } else { // `value` is positive
         if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
-          throw new IllegalArgumentException(amount + " is an illegal amount");
+          throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
         }
       }
     }
@@ -181,9 +181,7 @@ class AmountType extends SerializedType<AmountType> {
     result.append(currency);
     result.append(issuer);
 
-    return new
-
-      AmountType(result);
+    return new AmountType(result);
   }
 
   private UnsignedByteArray getAmountBytes(BigDecimal number) {

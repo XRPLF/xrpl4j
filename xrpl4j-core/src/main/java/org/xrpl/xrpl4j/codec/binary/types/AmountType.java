@@ -162,9 +162,7 @@ class AmountType extends SerializedType<AmountType> {
         )
       );
       final byte[] rawBytes = number.toByteArray();
-      if (isValueNegative) {
-        rawBytes[0] |= 0x00;
-      } else {
+      if (!isValueNegative) {
         rawBytes[0] |= 0x40;
       }
       return new AmountType(UnsignedByteArray.of(rawBytes));

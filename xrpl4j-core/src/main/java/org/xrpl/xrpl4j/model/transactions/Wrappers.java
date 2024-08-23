@@ -277,7 +277,9 @@ public class Wrappers {
      */
     @Default
     @Override
-    @JsonIgnore // <-- This is not actually part of the binary serialization format, so exclude from JSON
+    // No `@JsonIgnore` because isNegative isn't a "serializable field" in the definitions.json file, so this won't
+    // get serialized even if it's included in the JSON. Rationale for including in the generated JSON is so that
+    // any software using the JSON variant of an XrpCurrencyAmount will have this information available.
     public boolean isNegative() {
       return false;
     }

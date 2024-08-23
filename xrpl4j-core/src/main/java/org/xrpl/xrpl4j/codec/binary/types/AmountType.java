@@ -158,7 +158,7 @@ class AmountType extends SerializedType<AmountType> {
           UnsignedLong
             .valueOf(isValueNegative ? value.asText().substring(1) : value.asText())
             .toString(16),
-          16 // <-- 64 / 16
+          16 // <-- 64 / 4
         )
       );
       final byte[] rawBytes = number.toByteArray();

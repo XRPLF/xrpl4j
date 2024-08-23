@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.math.MathUtils;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -90,12 +91,13 @@ class AmountType extends SerializedType<AmountType> {
     }
     BigDecimal value = new BigDecimal(amount);
     if (!value.equals(BigDecimal.ZERO)) {
+      final FluentCompareTo<BigDecimal> fluentValue = FluentCompareTo.is(value);
       if (value.signum() < 0) { // `value` is negative
-        if (value.compareTo(MAX_NEGATIVE_XRP) > 0 || value.compareTo(MIN_DROPS) < 0) {
+        if (fluentValue.greaterThan(MAX_NEGATIVE_XRP) || fluentValue.lessThan(MIN_DROPS)) {
           throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
         }
       } else { // `value` is positive
-        if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
+        if (fluentValue.lessThan(MIN_XRP) || fluentValue.greaterThan(MAX_DROPS)) {
           throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
         }
       }
@@ -187,7 +189,7 @@ class AmountType extends SerializedType<AmountType> {
   private UnsignedByteArray getAmountBytes(BigDecimal number) {
     BigInteger paddedNumber = MathUtils.toPaddedBigInteger(number, 16);
     byte[] amountBytes = ByteUtils.toByteArray(paddedNumber, 8);
-    amountBytes[0] |= 0x80;
+    amountBytes[0] |= (byte) 0x80;
     if (number.compareTo(BigDecimal.ZERO) > 0) {
       amountBytes[0] |= 0x40;
     }
@@ -197,8 +199,8 @@ class AmountType extends SerializedType<AmountType> {
       throw new IllegalArgumentException("exponent out of range");
     }
     UnsignedByte exponentByte = UnsignedByte.of(97 + exponent - 15);
-    amountBytes[0] |= exponentByte.asInt() >>> 2;
-    amountBytes[1] |= (exponentByte.asInt() & 0x03) << 6;
+    amountBytes[0] |= (byte) (exponentByte.asInt() >>> 2);
+    amountBytes[1] |= (byte) ((exponentByte.asInt() & 0x03) << 6);
 
     return UnsignedByteArray.of(amountBytes);
   }

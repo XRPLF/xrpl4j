@@ -23,7 +23,6 @@ package org.xrpl.xrpl4j.codec.binary.types;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
@@ -38,8 +37,7 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   private static final AmountType codec = new AmountType();
 
-  // Appears unused but is used by junit
-  private static Stream<Arguments> dataDrivenFixtures() throws IOException {
+  static Stream<Arguments> dataDrivenFixtures() throws IOException {
     return dataDrivenFixturesForType(codec);
   }
 
@@ -124,19 +122,33 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   @Test
   void encodeOutOfBounds() {
-    // Positive
+    // Positive (too big)
     {
       IllegalArgumentException thrownError = assertThrows(
         IllegalArgumentException.class, () -> codec.fromJson("100000000000000001")
       );
       assertThat(thrownError.getMessage()).isEqualTo("100000000000000001 is an illegal amount");
     }
-    // Negative
+    // Positive (too small)
+    {
+      IllegalArgumentException thrownError = assertThrows(
+        IllegalArgumentException.class, () -> codec.fromJson("0.0000005") // <-- 0.000001 is smallest positive XRP
+      );
+      assertThat(thrownError.getMessage()).isEqualTo("5.0E-7 is an illegal amount");
+    }
+    // Negative (too small)
     {
       IllegalArgumentException thrownError = assertThrows(
         IllegalArgumentException.class, () -> codec.fromJson("-100000000000000001")
       );
       assertThat(thrownError.getMessage()).isEqualTo("-100000000000000001 is an illegal amount");
+    }
+    // Negative (too big)
+    {
+      IllegalArgumentException thrownError = assertThrows(
+        IllegalArgumentException.class, () -> codec.fromJson("-0.0000005") // <-- 0.000001 is largest negative XRP
+      );
+      assertThat(thrownError.getMessage()).isEqualTo("-5.0E-7 is an illegal amount");
     }
   }
 

@@ -267,7 +267,7 @@ public class Wrappers {
      *
      * <p>Note that the use of the `@Default` annotation and the default implementation are suitable for a few
      * reasons. First, deserialization will parse the payload properly, setting this value correctly (despite this
-     * default settings). Second, using a default value here will not break legacy code that is using a builder¬ to
+     * default settings). Second, using a default value here will not break legacy code that is using a builder to
      * construct an {@link XrpCurrencyAmount} correctly (i.e., we assume that no developer is constructing a negative
      * XRP amount because the {@link UnsignedLong} precondition in any legacy code would not allow them to do such a
      * thing without throwing an exception). Finally, due to the way this class merely adds new static builders to

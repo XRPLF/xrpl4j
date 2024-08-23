@@ -81,34 +81,18 @@ class NegativeTransactionMetadataTest {
    * This test validates that the ledger 87704323 and all of its transactions and metadata are handled correctly, even
    * in the presence of negative XRP or IOU amounts.
    */
-  @Test
-  void deserializeOfferCreateWithNegativeValues() throws IOException {
-    File jsonFile = new File(
-      "src/test/resources/negative-balance-ledgers/txresult-offercreate-withnegatives.json"
-    );
-
-    TransactionResult<OfferCreate> transactionResult = objectMapper.readValue(
-      jsonFile, objectMapper.getTypeFactory().constructParametricType(TransactionResult.class, OfferCreate.class)
-    );
-
-    assertThat(transactionResult.metadata().isPresent()).isTrue();
-    transactionResult.metadata().ifPresent(this::handleTransactionMetadata);
-  }
-
-  /**
-   * This test validates that the ledger 87704323 and all of its transactions and metadata are handled correctly, even
-   * in the presence of negative XRP or IOU amounts.
-   */
   @ParameterizedTest
   @ValueSource(strings = {
-    "ledger-result-346610.json",
-    "ledger-result-340231.json",
-    "ledger-result-346610.json",
-    "ledger-result-350621.json",
-    "ledger-result-353674.json",
-    "ledger-result-354496.json",
-    "ledger-result-354575.json",
-    "ledger-result-354579.json",
+    "ledger-result-309936.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/473
+    "ledger-result-309937.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/473
+    "ledger-result-329212.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-340231.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-346610.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-350621.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-353674.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-354496.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-354575.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
+    "ledger-result-354579.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/474
     "ledger-result-87704323.json",
     "ledger-result-90150378.json",
     "ledger-result-90156059.json"
@@ -126,6 +110,24 @@ class NegativeTransactionMetadataTest {
       assertThat(transactionResult.metadata().isPresent()).isTrue();
       transactionResult.metadata().ifPresent(this::handleTransactionMetadata);
     });
+  }
+
+  /**
+   * This test validates that the ledger 87704323 and all of its transactions and metadata are handled correctly, even
+   * in the presence of negative XRP or IOU amounts.
+   */
+  @Test
+  void deserializeOfferCreateWithNegativeValues() throws IOException {
+    File jsonFile = new File(
+      "src/test/resources/negative-balance-ledgers/txresult-offercreate-withnegatives.json"
+    );
+
+    TransactionResult<OfferCreate> transactionResult = objectMapper.readValue(
+      jsonFile, objectMapper.getTypeFactory().constructParametricType(TransactionResult.class, OfferCreate.class)
+    );
+
+    assertThat(transactionResult.metadata().isPresent()).isTrue();
+    transactionResult.metadata().ifPresent(this::handleTransactionMetadata);
   }
 
   private void handleTransactionMetadata(final TransactionMetadata transactionMetadata) {

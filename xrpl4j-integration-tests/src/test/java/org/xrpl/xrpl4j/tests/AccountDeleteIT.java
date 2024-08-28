@@ -140,4 +140,64 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(response.engineResult()).isEqualTo("temDST_IS_SRC");
         assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
     }
+
+    @Test
+    void testAccountDeleteItFailsWith_tecDST_TAG_NEEDED() throws JsonRpcClientErrorException, JsonProcessingException {
+        // create two accounts, one will be the destination in the tx
+        KeyPair senderAccount = constructRandomAccount();
+        KeyPair receiverAccount = constructRandomAccount();
+
+        // get account info the sequence number
+        AccountInfoResult receiverAccountInfo = this.scanForResult(
+                () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+        );
+
+        // create, sign & submit account set tx for receiver
+        FeeResult feeResult = xrplClient.fee();
+        AccountSet accountSet = AccountSet.builder()
+                .account(receiverAccount.publicKey().deriveAddress())
+                .fee(feeResult.drops().openLedgerFee())
+                .sequence(receiverAccountInfo.accountData().sequence())
+                .setFlag(AccountSet.AccountSetFlag.REQUIRE_DEST)
+                .signingPublicKey(receiverAccount.publicKey())
+                .build();
+
+        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+                receiverAccount.privateKey(), accountSet
+        );
+        SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
+
+        assertThat(accountSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+        assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
+
+        // get destination tag
+        TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
+                this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
+        );
+
+        AccountInfoResult updatedReceiverAccountInfo = this.scanForResult(
+                () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+        );
+
+        assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.REQUIRE_DEST);
+        assertThat(updatedReceiverAccountInfo.accountData().flags().lsfRequireDestTag()).isTrue();
+
+        // create, sign & submit tx
+        AccountDelete accountDelete = AccountDelete.builder()
+                .account(senderAccount.publicKey().deriveAddress())
+                .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
+                .sequence(receiverAccountInfo.accountData().sequence())
+                .destination(receiverAccount.publicKey().deriveAddress())
+                .signingPublicKey(senderAccount.publicKey())
+                .build();
+
+        SingleSignedTransaction<AccountDelete> signedAccountDelete = signatureService.sign(
+                senderAccount.privateKey(), accountDelete
+        );
+        SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
+
+        // get tecDST_TAG_NEEDED because the destination is required for the receiver
+        assertThat(response.engineResult()).isEqualTo("tecDST_TAG_NEEDED");
+        assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
+    }
 }

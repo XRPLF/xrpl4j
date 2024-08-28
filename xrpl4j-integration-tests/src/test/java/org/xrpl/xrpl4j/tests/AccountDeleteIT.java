@@ -196,7 +196,7 @@ class AccountDeleteIT extends AbstractIT {
         );
         SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
 
-        // get tecDST_TAG_NEEDED because the destination is required for the receiver
+        // get tecDST_TAG_NEEDED because the destination tag is required for the receiver
         assertThat(response.engineResult()).isEqualTo("tecDST_TAG_NEEDED");
         assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
     }

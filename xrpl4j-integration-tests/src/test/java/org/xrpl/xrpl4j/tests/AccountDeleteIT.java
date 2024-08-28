@@ -109,5 +109,6 @@ class AccountDeleteIT extends AbstractIT {
         // get tecTOO_SOON because sequence # is too high, need to wait for ledger index to be
         // greater than sequence number + 256
         assertThat(response.engineResult()).isEqualTo("tecTOO_SOON");
+        assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
     }
 }

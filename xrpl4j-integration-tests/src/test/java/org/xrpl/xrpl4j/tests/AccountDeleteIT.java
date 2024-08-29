@@ -200,4 +200,34 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(response.engineResult()).isEqualTo("tecDST_TAG_NEEDED");
         assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
     }
+
+    @Test
+    void testAccountDeleteItFailsWith_tecNO_DST() throws JsonRpcClientErrorException, JsonProcessingException {
+        // create two accounts, one will be the destination in the tx
+        KeyPair senderAccount = constructRandomAccount();
+        KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
+
+        // get account info the sequence number
+        AccountInfoResult accountInfo = this.scanForResult(
+                () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+        );
+
+        // create, sign & submit tx
+        AccountDelete accountDelete = AccountDelete.builder()
+                .account(senderAccount.publicKey().deriveAddress())
+                .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
+                .sequence(accountInfo.accountData().sequence())
+                .destination(randomKeyPair.publicKey().deriveAddress())
+                .signingPublicKey(senderAccount.publicKey())
+                .build();
+
+        SingleSignedTransaction<AccountDelete> signedAccountDelete = signatureService.sign(
+                senderAccount.privateKey(), accountDelete
+        );
+        SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
+
+        // get tecNO_DST because destination was not funded account in the ledger
+        assertThat(response.engineResult()).isEqualTo("tecNO_DST");
+        assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
+    }
 }

@@ -87,12 +87,12 @@ class AccountDeleteIT extends AbstractIT {
         KeyPair senderAccount = constructRandomAccount();
         KeyPair receiverAccount = constructRandomAccount();
 
-        // get account info the sequence number
+        // get account info for the sequence number
         AccountInfoResult accountInfo = this.scanForResult(
                 () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
         );
 
-        // create, sign & submit tx
+        // create, sign & submit AccountDelete tx
         AccountDelete accountDelete = AccountDelete.builder()
                 .account(senderAccount.publicKey().deriveAddress())
                 .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
@@ -117,12 +117,12 @@ class AccountDeleteIT extends AbstractIT {
         // create one account, will be the sender & destination in the tx
         KeyPair senderAccount = constructRandomAccount();
 
-        // get account info the sequence number
+        // get account info for the sequence number
         AccountInfoResult accountInfo = this.scanForResult(
                 () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
         );
 
-        // create, sign & submit tx
+        // create, sign & submit AccountDelete tx
         AccountDelete accountDelete = AccountDelete.builder()
                 .account(senderAccount.publicKey().deriveAddress())
                 .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
@@ -147,12 +147,12 @@ class AccountDeleteIT extends AbstractIT {
         KeyPair senderAccount = constructRandomAccount();
         KeyPair receiverAccount = constructRandomAccount();
 
-        // get account info the sequence number
+        // get account info for the sequence number
         AccountInfoResult receiverAccountInfo = this.scanForResult(
                 () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
         );
 
-        // create, sign & submit account set tx for receiver
+        // create, sign & submit REQUIRE_DEST AccountSet tx for receiver
         FeeResult feeResult = xrplClient.fee();
         AccountSet accountSet = AccountSet.builder()
                 .account(receiverAccount.publicKey().deriveAddress())
@@ -170,7 +170,7 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(accountSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
         assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
 
-        // get destination tag
+        // confirm flag was set
         TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
                 this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
         );
@@ -182,7 +182,7 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.REQUIRE_DEST);
         assertThat(updatedReceiverAccountInfo.accountData().flags().lsfRequireDestTag()).isTrue();
 
-        // create, sign & submit tx
+        // create, sign & submit AccountDelete tx
         AccountDelete accountDelete = AccountDelete.builder()
                 .account(senderAccount.publicKey().deriveAddress())
                 .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
@@ -207,12 +207,12 @@ class AccountDeleteIT extends AbstractIT {
         KeyPair senderAccount = constructRandomAccount();
         KeyPair receiverAccount = constructRandomAccount();
 
-        // get account info the sequence number
+        // get account info for the sequence number
         AccountInfoResult receiverAccountInfo = this.scanForResult(
                 () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
         );
 
-        // create, sign & submit account set tx for receiver
+        // create, sign & submit DEPOSIT_AUTH AccountSet tx for receiver
         FeeResult feeResult = xrplClient.fee();
         AccountSet accountSet = AccountSet.builder()
                 .account(receiverAccount.publicKey().deriveAddress())
@@ -230,7 +230,7 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(accountSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
         assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
 
-        // get destination tag
+        // confirm flag was set
         TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
                 this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
         );
@@ -242,7 +242,7 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.DEPOSIT_AUTH);
         assertThat(updatedReceiverAccountInfo.accountData().flags().lsfDepositAuth()).isTrue();
 
-        // create, sign & submit tx
+        // create, sign & submit AccountDelete tx
         AccountDelete accountDelete = AccountDelete.builder()
                 .account(senderAccount.publicKey().deriveAddress())
                 .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
@@ -263,16 +263,16 @@ class AccountDeleteIT extends AbstractIT {
 
     @Test
     void testAccountDeleteItFailsWith_tecNO_DST() throws JsonRpcClientErrorException, JsonProcessingException {
-        // create two accounts, one will be the destination in the tx
+        // create two accounts, one will be the destination in the tx, the other is not funded
         KeyPair senderAccount = constructRandomAccount();
         KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
 
-        // get account info the sequence number
+        // get account info for the sequence number
         AccountInfoResult accountInfo = this.scanForResult(
                 () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
         );
 
-        // create, sign & submit tx
+        // create, sign & submit AccountDelete tx
         AccountDelete accountDelete = AccountDelete.builder()
                 .account(senderAccount.publicKey().deriveAddress())
                 .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())

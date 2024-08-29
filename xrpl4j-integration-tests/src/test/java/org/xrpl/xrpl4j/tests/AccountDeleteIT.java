@@ -290,4 +290,74 @@ class AccountDeleteIT extends AbstractIT {
         assertThat(response.engineResult()).isEqualTo("tecNO_DST");
         assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
     }
+
+    @Test // currently does not behave as expected, asking question on issue
+    void testAccountDeleteIt() throws JsonRpcClientErrorException, JsonProcessingException {
+        // create two accounts, one will be the destination in the tx
+        KeyPair senderAccount = constructRandomAccount();
+        KeyPair receiverAccount = constructRandomAccount();
+
+        // get account info for the sequence number
+        AccountInfoResult accountInfo = this.scanForResult(
+                () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+        );
+
+        // make last ledger index at least 256 greater and wait to avoid tec_TOOSOON error case
+        LedgerResult res = xrplClient.ledger(LedgerRequestParams.builder()
+                .ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
+        LedgerIndex index = res.ledgerIndex().get().plus(LedgerIndex.of(UnsignedInteger.valueOf(256)));
+
+        // create, sign & submit AccountDelete tx
+        AccountDelete accountDelete = AccountDelete.builder()
+                .account(senderAccount.publicKey().deriveAddress())
+                .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
+                .sequence(accountInfo.accountData().sequence())
+                .destination(receiverAccount.publicKey().deriveAddress())
+                .lastLedgerSequence(index.unsignedIntegerValue())
+                .signingPublicKey(senderAccount.publicKey())
+                .build();
+
+        SingleSignedTransaction<AccountDelete> signedAccountDelete = signatureService.sign(
+                senderAccount.privateKey(), accountDelete
+        );
+
+        /* ask question on issue
+        for(int i = 0; i < 256; i++) {
+            AccountInfoResult receiverAccountInfo = this.scanForResult(
+                    () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+            );
+
+            FeeResult feeResult = xrplClient.fee();
+
+            AccountSet accountSet = AccountSet.builder()
+                    .account(receiverAccount.publicKey().deriveAddress())
+                    .fee(feeResult.drops().openLedgerFee())
+                    .sequence(receiverAccountInfo.accountData().sequence())
+                    .signingPublicKey(receiverAccount.publicKey())
+                    .build();
+
+            SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+                    receiverAccount.privateKey(), accountSet
+            );
+            SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
+
+            assertThat(accountSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+            assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
+
+            // confirm transaction was successfully submitted
+            TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
+                    this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
+            );
+
+            assertThat(accountSetTransactionResult.transaction().setFlag()).isEmpty();
+        }
+        */
+
+        SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
+
+        // get tecTOO_SOON because sequence # is too high, need to wait for ledger index to be
+        // greater than sequence number + 256
+        assertThat(response.engineResult()).isEqualTo("tecTOO_SOON");
+        assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
+    }
 }

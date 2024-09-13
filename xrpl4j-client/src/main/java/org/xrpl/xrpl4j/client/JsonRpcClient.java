@@ -72,7 +72,7 @@ public interface JsonRpcClient {
   /**
    * Constructs a new client for the given url.
    *
-   * @param rippledUrl url for the faucet server.
+   * @param rippledUrl The {@link HttpUrl} of the node to connect to.
    *
    * @return A {@link JsonRpcClient} that can make request to {@code rippledUrl}
    */
@@ -82,6 +82,14 @@ public interface JsonRpcClient {
     return construct(rippledUrl, new Options());
   }
 
+  /**
+   * Constructs a new client for the given url with the given client options.
+   *
+   * @param rippledUrl The {@link HttpUrl} of the node to connect to.
+   * @param options    An {@link Options}.
+   *
+   * @return A {@link JsonRpcClient}.
+   */
   static JsonRpcClient construct(HttpUrl rippledUrl, Options options) {
     Objects.requireNonNull(rippledUrl);
     Objects.requireNonNull(options);

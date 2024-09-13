@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import feign.Request;
+import feign.Request.Options;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +103,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing
@@ -125,6 +128,30 @@ public class XrplClient {
    */
   public XrplClient(final HttpUrl rippledUrl) {
     this(JsonRpcClient.construct(rippledUrl));
+  }
+
+  /**
+   * Public constructor that allows for configuration of connect and read timeouts.
+   *
+   * @param rippledUrl         The {@link HttpUrl} of the node to connect to.
+   * @param connectTimeout     A {@code long} indicating the client's connect timeout.
+   * @param connectTimeoutUnit The {@link TimeUnit} that {@code connectTimeout} is denominated in.
+   * @param readTimeout        A {@code long} indicating the client's read timeout.
+   * @param readTimeoutUnit    The {@link TimeUnit} that {@code readTimeout} is denominated in.
+   */
+  public XrplClient(
+    HttpUrl rippledUrl,
+    long connectTimeout,
+    TimeUnit connectTimeoutUnit,
+    long readTimeout,
+    TimeUnit readTimeoutUnit
+  ) {
+    this(
+      JsonRpcClient.construct(
+        rippledUrl,
+        new Options(connectTimeout, connectTimeoutUnit, readTimeout, readTimeoutUnit, true)
+      )
+    );
   }
 
   /**

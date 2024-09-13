@@ -125,6 +125,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -597,6 +598,20 @@ public class XrplClientTest {
     HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
     assertThat(new XrplClient(rippledUrl) instanceof XrplClient).isTrue();
     assertThat(new XrplClient(rippledUrl) instanceof JsonRpcClient).isFalse();
+  }
+
+  @Test
+  void createXrplClientWithTimeouts() {
+    HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
+    XrplClient client = new XrplClient(
+      rippledUrl,
+      1,
+      TimeUnit.SECONDS,
+      2,
+      TimeUnit.MINUTES
+    );
+
+    assertThat(client).isInstanceOf(XrplClient.class);
   }
 
   @Test

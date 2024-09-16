@@ -133,30 +133,10 @@ public class XrplClient {
 
   /**
    * Public constructor that allows for configuration of connect and read timeouts.
-   *
-   * @param rippledUrl         The {@link HttpUrl} of the node to connect to.
-   * @param connectTimeout     A {@code long} indicating the client's connect timeout.
-   * @param connectTimeoutUnit The {@link TimeUnit} that {@code connectTimeout} is denominated in.
-   * @param readTimeout        A {@code long} indicating the client's read timeout.
-   * @param readTimeoutUnit    The {@link TimeUnit} that {@code readTimeout} is denominated in.
-   */
-  public XrplClient(
-    HttpUrl rippledUrl,
-    long connectTimeout,
-    TimeUnit connectTimeoutUnit,
-    long readTimeout,
-    TimeUnit readTimeoutUnit
-  ) {
-    this(
-      JsonRpcClient.construct(
-        rippledUrl,
-        new Options(connectTimeout, connectTimeoutUnit, readTimeout, readTimeoutUnit, true)
-      )
-    );
-  }
-
-  /**
-   * Public constructor that allows for configuration of connect and read timeouts.
+   * <p>
+   * Note that any {@link Duration} passed in that is less than one millisecond will result in the actual timeout being
+   * zero milliseconds. It is therefore advised to never set {@code connectTimeout} or {@code readTimeout} to a
+   * {@link Duration} less than one millisecond.
    *
    * @param rippledUrl     The {@link HttpUrl} of the node to connect to.
    * @param connectTimeout A {@link Duration} indicating the client's connect timeout.
@@ -170,7 +150,8 @@ public class XrplClient {
     this(
       JsonRpcClient.construct(
         rippledUrl,
-        new Options(connectTimeout.toNanos(), TimeUnit.NANOSECONDS, readTimeout.toNanos(), TimeUnit.NANOSECONDS, true)
+        new Options(connectTimeout.toMillis(), TimeUnit.MILLISECONDS, readTimeout.toMillis(), TimeUnit.MILLISECONDS,
+          true)
       )
     );
   }

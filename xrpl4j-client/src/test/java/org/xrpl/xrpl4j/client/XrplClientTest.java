@@ -602,20 +602,6 @@ public class XrplClientTest {
   }
 
   @Test
-  void createXrplClientWithTimeouts() {
-    HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
-    XrplClient client = new XrplClient(
-      rippledUrl,
-      1,
-      TimeUnit.SECONDS,
-      2,
-      TimeUnit.MINUTES
-    );
-
-    assertThat(client).isInstanceOf(XrplClient.class);
-  }
-
-  @Test
   void createXrplClientWithDurationTimeouts() {
     HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
     XrplClient client = new XrplClient(

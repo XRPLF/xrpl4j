@@ -133,9 +133,9 @@ public class XrplClient {
 
   /**
    * Public constructor that allows for configuration of connect and read timeouts.
-   * <p>
-   * Note that any {@link Duration} passed in that is less than one millisecond will result in the actual timeout being
-   * zero milliseconds. It is therefore advised to never set {@code connectTimeout} or {@code readTimeout} to a
+   *
+   * <p>Note that any {@link Duration} passed in that is less than one millisecond will result in the actual timeout
+   * being zero milliseconds. It is therefore advised to never set {@code connectTimeout} or {@code readTimeout} to a
    * {@link Duration} less than one millisecond.
    *
    * @param rippledUrl     The {@link HttpUrl} of the node to connect to.

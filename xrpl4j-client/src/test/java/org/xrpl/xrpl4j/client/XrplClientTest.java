@@ -122,6 +122,7 @@ import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -609,6 +610,18 @@ public class XrplClientTest {
       TimeUnit.SECONDS,
       2,
       TimeUnit.MINUTES
+    );
+
+    assertThat(client).isInstanceOf(XrplClient.class);
+  }
+
+  @Test
+  void createXrplClientWithDurationTimeouts() {
+    HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
+    XrplClient client = new XrplClient(
+      rippledUrl,
+      Duration.ofSeconds(1),
+      Duration.ofMinutes(2)
     );
 
     assertThat(client).isInstanceOf(XrplClient.class);

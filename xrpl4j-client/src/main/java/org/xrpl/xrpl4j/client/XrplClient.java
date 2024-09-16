@@ -101,6 +101,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -150,6 +151,26 @@ public class XrplClient {
       JsonRpcClient.construct(
         rippledUrl,
         new Options(connectTimeout, connectTimeoutUnit, readTimeout, readTimeoutUnit, true)
+      )
+    );
+  }
+
+  /**
+   * Public constructor that allows for configuration of connect and read timeouts.
+   *
+   * @param rippledUrl     The {@link HttpUrl} of the node to connect to.
+   * @param connectTimeout A {@link Duration} indicating the client's connect timeout.
+   * @param readTimeout    A {@link Duration} indicating the client's read timeout.
+   */
+  public XrplClient(
+    HttpUrl rippledUrl,
+    Duration connectTimeout,
+    Duration readTimeout
+  ) {
+    this(
+      JsonRpcClient.construct(
+        rippledUrl,
+        new Options(connectTimeout.toNanos(), TimeUnit.NANOSECONDS, readTimeout.toNanos(), TimeUnit.NANOSECONDS, true)
       )
     );
   }

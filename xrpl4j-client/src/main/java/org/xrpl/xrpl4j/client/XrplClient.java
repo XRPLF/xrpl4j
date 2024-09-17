@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import feign.Request;
+import feign.Request.Options;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,8 +101,10 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>A client which wraps a rippled network client and is responsible for higher order functionality such as signing
@@ -125,6 +129,31 @@ public class XrplClient {
    */
   public XrplClient(final HttpUrl rippledUrl) {
     this(JsonRpcClient.construct(rippledUrl));
+  }
+
+  /**
+   * Public constructor that allows for configuration of connect and read timeouts.
+   *
+   * <p>Note that any {@link Duration} passed in that is less than one millisecond will result in the actual timeout
+   * being zero milliseconds. It is therefore advised to never set {@code connectTimeout} or {@code readTimeout} to a
+   * {@link Duration} less than one millisecond.
+   *
+   * @param rippledUrl     The {@link HttpUrl} of the node to connect to.
+   * @param connectTimeout A {@link Duration} indicating the client's connect timeout.
+   * @param readTimeout    A {@link Duration} indicating the client's read timeout.
+   */
+  public XrplClient(
+    HttpUrl rippledUrl,
+    Duration connectTimeout,
+    Duration readTimeout
+  ) {
+    this(
+      JsonRpcClient.construct(
+        rippledUrl,
+        new Options(connectTimeout.toMillis(), TimeUnit.MILLISECONDS, readTimeout.toMillis(), TimeUnit.MILLISECONDS,
+          true)
+      )
+    );
   }
 
   /**

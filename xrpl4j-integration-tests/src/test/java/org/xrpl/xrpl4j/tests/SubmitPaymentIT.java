@@ -114,10 +114,19 @@ public class SubmitPaymentIT extends AbstractIT {
 
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
-    LedgerResult ledger = xrplClient.ledger(
-      LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
-        .build()
+
+    LedgerResult ledger = this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledger(
+            LedgerRequestParams.builder()
+              .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
+              .build()
+          );
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      }
     );
 
     assertThat(validatedPayment.closeDateHuman()).isNotEmpty();

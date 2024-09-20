@@ -87,6 +87,8 @@ import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftInfoResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceRequestParams;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceResult;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
@@ -120,9 +122,11 @@ import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -595,6 +599,18 @@ public class XrplClientTest {
     HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
     assertThat(new XrplClient(rippledUrl) instanceof XrplClient).isTrue();
     assertThat(new XrplClient(rippledUrl) instanceof JsonRpcClient).isFalse();
+  }
+
+  @Test
+  void createXrplClientWithDurationTimeouts() {
+    HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
+    XrplClient client = new XrplClient(
+      rippledUrl,
+      Duration.ofSeconds(1),
+      Duration.ofMinutes(2)
+    );
+
+    assertThat(client).isInstanceOf(XrplClient.class);
   }
 
   @Test
@@ -1086,5 +1102,23 @@ public class XrplClientTest {
     NftInfoResult result = xrplClient.nftInfo(params);
 
     assertThat(result).isEqualTo(mockResult);
+  }
+
+  @Test
+  void getAggregatePrice() throws JsonRpcClientErrorException {
+    GetAggregatePriceRequestParams params = mock(GetAggregatePriceRequestParams.class);
+    GetAggregatePriceResult expectedResult = mock(GetAggregatePriceResult.class);
+
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.GET_AGGREGATE_PRICE)
+        .addParams(params)
+        .build(),
+      GetAggregatePriceResult.class
+    )).thenReturn(expectedResult);
+
+    GetAggregatePriceResult result = xrplClient.getAggregatePrice(params);
+
+    assertThat(result).isEqualTo(expectedResult);
   }
 }

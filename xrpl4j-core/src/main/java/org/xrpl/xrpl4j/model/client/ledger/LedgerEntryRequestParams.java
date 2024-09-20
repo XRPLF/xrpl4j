@@ -19,6 +19,7 @@ import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
+import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
@@ -327,7 +328,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   /**
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link DidObject} ledger entry.
    *
-   * @param address              The address of the owner of the {@link DidObject}.
+   * @param address         The address of the owner of the {@link DidObject}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
    *
    * @return A {@link LedgerEntryRequestParams} for {@link DidObject}.
@@ -338,6 +339,24 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   ) {
     return ImmutableLedgerEntryRequestParams.<DidObject>builder()
       .did(address)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link OracleObject} ledger entry.
+   *
+   * @param oracle          The {@link OracleLedgerEntryParams} specifying the oracle.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
+   */
+  static LedgerEntryRequestParams<OracleObject> oracle(
+    OracleLedgerEntryParams oracle,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<OracleObject>builder()
+      .oracle(oracle)
       .ledgerSpecifier(ledgerSpecifier)
       .build();
   }
@@ -469,6 +488,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<XChainBridge> bridge();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.OracleObject} by {@link OracleLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link OracleLedgerEntryParams}.
+   */
+  Optional<OracleLedgerEntryParams> oracle();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -523,6 +549,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (did().isPresent()) {
       return (Class<T>) DidObject.class;
+    }
+
+    if (oracle().isPresent()) {
+      return (Class<T>) OracleObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

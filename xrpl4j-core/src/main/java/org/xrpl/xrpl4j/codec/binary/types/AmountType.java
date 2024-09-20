@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.math.MathUtils;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -41,7 +42,9 @@ import java.math.BigInteger;
 class AmountType extends SerializedType<AmountType> {
 
   public static final BigDecimal MAX_DROPS = new BigDecimal("1e17");
+  public static final BigDecimal MIN_DROPS = new BigDecimal("-1e17");
   public static final BigDecimal MIN_XRP = new BigDecimal("1e-6");
+  public static final BigDecimal MAX_NEGATIVE_XRP = new BigDecimal("-1e-6");
 
   public static final String DEFAULT_AMOUNT_HEX = "4000000000000000";
   public static final String ZERO_CURRENCY_AMOUNT_HEX = "8000000000000000";
@@ -50,18 +53,18 @@ class AmountType extends SerializedType<AmountType> {
   private static final int MAX_IOU_PRECISION = 16;
 
   /**
-   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>,
-   * the minimum token value exponent is -96. However, because the value field is converted from a {@link String}
-   * to a {@link BigDecimal} when encoding/decoding, and because {@link BigDecimal} defaults to using single
-   * digit number, the minimum exponent in this context is -96 + 15, as XRPL amounts have a precision of 15 digits.
+   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>, the minimum token value
+   * exponent is -96. However, because the value field is converted from a {@link String} to a {@link BigDecimal} when
+   * encoding/decoding, and because {@link BigDecimal} defaults to using single digit number, the minimum exponent in
+   * this context is -96 + 15, as XRPL amounts have a precision of 15 digits.
    */
   private static final int MIN_IOU_EXPONENT = -81;
 
   /**
-   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>,
-   * the maximum token value exponent is 80. However, because the value field is converted from a {@link String}
-   * to a {@link BigDecimal} when encoding/decoding, and because {@link BigDecimal} defaults to using single
-   * digit number, the maximum exponent in this context is 80 + 15, as XRPL amounts have a precision of 15 digits.
+   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>, the maximum token value
+   * exponent is 80. However, because the value field is converted from a {@link String} to a {@link BigDecimal} when
+   * encoding/decoding, and because {@link BigDecimal} defaults to using single digit number, the maximum exponent in
+   * this context is 80 + 15, as XRPL amounts have a precision of 15 digits.
    */
   private static final int MAX_IOU_EXPONENT = 95;
 
@@ -88,8 +91,15 @@ class AmountType extends SerializedType<AmountType> {
     }
     BigDecimal value = new BigDecimal(amount);
     if (!value.equals(BigDecimal.ZERO)) {
-      if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
-        throw new IllegalArgumentException(amount + " is an illegal amount");
+      final FluentCompareTo<BigDecimal> fluentValue = FluentCompareTo.is(value);
+      if (value.signum() < 0) { // `value` is negative
+        if (fluentValue.greaterThan(MAX_NEGATIVE_XRP) || fluentValue.lessThan(MIN_DROPS)) {
+          throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
+        }
+      } else { // `value` is positive
+        if (fluentValue.lessThan(MIN_XRP) || fluentValue.greaterThan(MAX_DROPS)) {
+          throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
+        }
       }
     }
   }
@@ -142,14 +152,19 @@ class AmountType extends SerializedType<AmountType> {
     if (value.isValueNode()) {
       assertXrpIsValid(value.asText());
 
-      UnsignedByteArray number = UnsignedByteArray.fromHex(
+      final boolean isValueNegative = value.asText().startsWith("-");
+      final UnsignedByteArray number = UnsignedByteArray.fromHex(
         ByteUtils.padded(
-          UnsignedLong.valueOf(value.asText()).toString(16),
-          64 / 4
+          UnsignedLong
+            .valueOf(isValueNegative ? value.asText().substring(1) : value.asText())
+            .toString(16),
+          16 // <-- 64 / 4
         )
       );
-      byte[] rawBytes = number.toByteArray();
-      rawBytes[0] |= 0x40;
+      final byte[] rawBytes = number.toByteArray();
+      if (!isValueNegative) {
+        rawBytes[0] |= 0x40;
+      }
       return new AmountType(UnsignedByteArray.of(rawBytes));
     }
 
@@ -172,7 +187,7 @@ class AmountType extends SerializedType<AmountType> {
   private UnsignedByteArray getAmountBytes(BigDecimal number) {
     BigInteger paddedNumber = MathUtils.toPaddedBigInteger(number, 16);
     byte[] amountBytes = ByteUtils.toByteArray(paddedNumber, 8);
-    amountBytes[0] |= 0x80;
+    amountBytes[0] |= (byte) 0x80;
     if (number.compareTo(BigDecimal.ZERO) > 0) {
       amountBytes[0] |= 0x40;
     }
@@ -182,8 +197,8 @@ class AmountType extends SerializedType<AmountType> {
       throw new IllegalArgumentException("exponent out of range");
     }
     UnsignedByte exponentByte = UnsignedByte.of(97 + exponent - 15);
-    amountBytes[0] |= exponentByte.asInt() >>> 2;
-    amountBytes[1] |= (exponentByte.asInt() & 0x03) << 6;
+    amountBytes[0] |= (byte) (exponentByte.asInt() >>> 2);
+    amountBytes[1] |= (byte) ((exponentByte.asInt() & 0x03) << 6);
 
     return UnsignedByteArray.of(amountBytes);
   }

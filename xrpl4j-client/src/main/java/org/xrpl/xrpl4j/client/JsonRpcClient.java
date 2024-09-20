@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.Beta;
 import feign.Feign;
 import feign.Headers;
+import feign.Request.Options;
 import feign.RequestLine;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
@@ -71,18 +72,34 @@ public interface JsonRpcClient {
   /**
    * Constructs a new client for the given url.
    *
-   * @param rippledUrl url for the faucet server.
+   * @param rippledUrl The {@link HttpUrl} of the node to connect to.
    *
    * @return A {@link JsonRpcClient} that can make request to {@code rippledUrl}
    */
   static JsonRpcClient construct(final HttpUrl rippledUrl) {
     Objects.requireNonNull(rippledUrl);
 
+    return construct(rippledUrl, new Options());
+  }
+
+  /**
+   * Constructs a new client for the given url with the given client options.
+   *
+   * @param rippledUrl The {@link HttpUrl} of the node to connect to.
+   * @param options    An {@link Options}.
+   *
+   * @return A {@link JsonRpcClient}.
+   */
+  static JsonRpcClient construct(HttpUrl rippledUrl, Options options) {
+    Objects.requireNonNull(rippledUrl);
+    Objects.requireNonNull(options);
+
     return Feign.builder()
       .encoder(new JacksonEncoder(objectMapper))
       // rate limiting will return a 503 status that can be retried
       .errorDecoder(new RetryStatusDecoder(RETRY_INTERVAL, SERVICE_UNAVAILABLE_STATUS))
       .decode404()
+      .options(options)
       .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
       .target(JsonRpcClient.class, rippledUrl.toString());
   }

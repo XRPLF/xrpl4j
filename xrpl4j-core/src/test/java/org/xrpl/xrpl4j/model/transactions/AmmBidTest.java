@@ -5,6 +5,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AuthAccount;
@@ -248,5 +249,67 @@ class AmmBidTest extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(bid, json);
+  }
+
+  /**
+   * Test that ensures the problematic transaction found in <a
+   * href="https://github.com/XRPLF/xrpl4j/issues/529">#529</a> is deserializable.
+   */
+  @Test
+  void testJsonWithXrpAmountBidMinAndMax() throws JSONException, JsonProcessingException {
+    AmmBid ammBid = AmmBid.builder()
+      .account(Address.of("rammersz4CroiyvbkzeZN1sBDCK9P8DvxF"))
+      .asset(Issue.XRP)
+      .asset2(
+        Issue.builder()
+          .issuer(Address.of("rswh1fvyLqHizBS2awu1vs6QcmwTBd9qiv"))
+          .currency("XAH")
+          .build()
+      )
+      .addAuthAccounts(
+        AuthAccountWrapper.of(
+          AuthAccount.of(Address.of("rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6"))
+        )
+      )
+      .bidMax(XrpCurrencyAmount.ofDrops(10))
+      .bidMin(XrpCurrencyAmount.ofDrops(10))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .sequence(UnsignedInteger.valueOf(87704195))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED2D15BC6B61D6520011E4C794C5B320E584106154D0865BB095D70DA9A2A57B57")
+      )
+      .transactionSignature(
+        Signature.fromBase16("F652BD5369F6EE9A8A1490BD37B8240CEE2B4B6EF94D22EC2DBB6912AA729B829" +
+          "FC3D7E24B30A1E6CC11F868CE229B105398719152B9BEE8992A56D654F79C0A")
+      )
+      .build();
+    String json = "{\n" +
+      "        \"Account\": \"rammersz4CroiyvbkzeZN1sBDCK9P8DvxF\",\n" +
+      "        \"Asset\": {\n" +
+      "            \"currency\": \"XRP\"\n" +
+      "        },\n" +
+      "        \"Asset2\": {\n" +
+      "            \"currency\": \"XAH\",\n" +
+      "            \"issuer\": \"rswh1fvyLqHizBS2awu1vs6QcmwTBd9qiv\"\n" +
+      "        },\n" +
+      "        \"AuthAccounts\": [\n" +
+      "            {\n" +
+      "                \"AuthAccount\": {\n" +
+      "                    \"Account\": \"rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6\"\n" +
+      "                }\n" +
+      "            }\n" +
+      "        ],\n" +
+      "        \"BidMax\": \"10\",\n" +
+      "        \"BidMin\": \"10\",\n" +
+      "        \"Fee\": \"10\",\n" +
+      "        \"Flags\": 2147483648,\n" +
+      "        \"Sequence\": 87704195,\n" +
+      "        \"SigningPubKey\": \"ED2D15BC6B61D6520011E4C794C5B320E584106154D0865BB095D70DA9A2A57B57\",\n" +
+      "        \"TransactionType\": \"AMMBid\",\n" +
+      "        \"TxnSignature\": \"F652BD5369F6EE9A8A1490BD37B8240CEE2B4B6EF94D22EC2DBB6912AA729B829FC3D7E24B30A" +
+      "1E6CC11F868CE229B105398719152B9BEE8992A56D654F79C0A\"\n" +
+      "}";
+    assertCanSerializeAndDeserialize(ammBid, json);
   }
 }

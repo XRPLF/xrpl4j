@@ -24,14 +24,15 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.google.common.primitives.UnsignedLong;
+import org.xrpl.xrpl4j.model.transactions.SetFee;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 
 /**
  * Custom Jackson deserializer for {@link XrpCurrencyAmount} instances found in {@link SetFee}.
- * <p>
- * Before the <a href="https://xrpl.org/resources/known-amendments/#xrpfees">XRPFees amendment</a>, a {@link SetFee}
+ *
+ * <p>Before the <a href="https://xrpl.org/resources/known-amendments/#xrpfees">XRPFees amendment</a>, a {@link SetFee}
  * transaction serializes its `BaseFee` to a hex string. After the
  * <a href="https://xrpl.org/resources/known-amendments/#xrpfees">XRPFees amendment</a>, a {@link SetFee} transaction
  * serializes its `BaseFee` to a decimal string.

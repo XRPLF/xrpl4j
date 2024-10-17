@@ -146,13 +146,15 @@ class AmountType extends SerializedType<AmountType> {
   @Override
   public AmountType fromParser(BinaryParser parser) {
     UnsignedByte nextByte = parser.peek();
-    Preconditions.checkArgument(
-      !(nextByte.isNthBitSet(1) && nextByte.isNthBitSet(3)),
-      "Invalid STAmount: First and third leading bits are set, which indicates the amount is both an IOU and an MPT."
-    );
-    boolean isXrpOrMpt = !nextByte.isNthBitSet(1);
-    boolean isXrp = !nextByte.isNthBitSet(3);
-    int numBytes = isXrpOrMpt ? (isXrp ? NATIVE_AMOUNT_BYTE_LENGTH : MPT_AMOUNT_BYTE_LENGTH) : CURRENCY_AMOUNT_BYTE_LENGTH;
+    int numBytes;
+    if (nextByte.isNthBitSet(1)) {
+      numBytes = CURRENCY_AMOUNT_BYTE_LENGTH;
+    } else {
+      boolean isMpt = nextByte.isNthBitSet(3);
+
+      numBytes = isMpt ? MPT_AMOUNT_BYTE_LENGTH : NATIVE_AMOUNT_BYTE_LENGTH;
+    }
+
     return new AmountType(parser.read(numBytes));
   }
 

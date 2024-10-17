@@ -247,13 +247,4 @@ class AmountTypeTest extends BaseSerializerTypeTest {
     assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Invalid MPT amount: given value requires 64 bits, only 63 allowed.");
   }
-
-  @Test
-  void decodeMptAmountWithIouAndMptBitsSet() {
-    String badHex = "A0000000000000006400002403C84A0A28E0190E208E982C352BBD5006600555CF";
-    assertThatThrownBy(() -> codec.fromParser(new BinaryParser(badHex)))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid STAmount: First and third leading bits are set, " +
-        "which indicates the amount is both an IOU and an MPT.");
-  }
 }

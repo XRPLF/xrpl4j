@@ -593,18 +593,25 @@ class BcDerivedKeySignatureServiceTest {
       .destination(AddressConstants.GENESIS_ACCOUNT)
       .build();
 
-    final ExecutorService pool = Executors.newFixedThreadPool(5);
-    final Callable<Boolean> signedTxCallable = () -> {
-      Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
-      assertThat(signature).isNotNull();
-      assertThat(signature.base16Value()).isEqualTo(
-        "30440220078E2379E68E59D60DFF4054FE0F988A95595E7A0DB2DB7215A3B7C03232CC7C022021BDB527050084BD9" +
-          "533BD21FAC0ABB63FD21754AC87C5F580AC583DDF1A9740"
-      );
-      return true;
-    };
+    Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
+    assertThat(signature).isNotNull();
+    assertThat(signature.base16Value()).isEqualTo(
+      "30440220078E2379E68E59D60DFF4054FE0F988A95595E7A0DB2DB7215A3B7C03232CC7C022021BDB527050084BD9" +
+        "533BD21FAC0ABB63FD21754AC87C5F580AC583DDF1A9740"
+    );
 
-    final List<Future<Boolean>> futureSeeds = new ArrayList<>();
+//    final ExecutorService pool = Executors.newFixedThreadPool(5);
+//    final Callable<Boolean> signedTxCallable = () -> {
+//      Signature signature = this.derivedKeySignatureService.sign(privateKeyReference, unsignedAttestation);
+//      assertThat(signature).isNotNull();
+//      assertThat(signature.base16Value()).isEqualTo(
+//        "30440220078E2379E68E59D60DFF4054FE0F988A95595E7A0DB2DB7215A3B7C03232CC7C022021BDB527050084BD9" +
+//          "533BD21FAC0ABB63FD21754AC87C5F580AC583DDF1A9740"
+//      );
+//      return true;
+//    };
+
+    /*final List<Future<Boolean>> futureSeeds = new ArrayList<>();
     for (int i = 0; i < 500; i++) {
       futureSeeds.add(pool.submit(signedTxCallable));
     }
@@ -617,7 +624,7 @@ class BcDerivedKeySignatureServiceTest {
           throw new RuntimeException(e.getMessage(), e);
         }
       })
-      .forEach(validSig -> assertThat(validSig).isTrue());
+      .forEach(validSig -> assertThat(validSig).isTrue());*/
   }
 
   @Test

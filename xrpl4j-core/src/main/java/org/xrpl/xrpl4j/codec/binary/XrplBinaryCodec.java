@@ -146,7 +146,7 @@ public class XrplBinaryCodec {
     }
     UnsignedByteArray channel = UnsignedByteArray.fromHex(node.get(CHANNEL_FIELD_NAME).asText());
     UnsignedByteArray amount = UnsignedByteArray.of(
-      new UInt64Type(UnsignedLong.valueOf(node.get(AMOUNT_FIELD_NAME).asText())).toBytes()
+      new UInt64Type(UnsignedLong.valueOf(node.get(AMOUNT_FIELD_NAME).asText()), 16).toBytes()
     );
 
     UnsignedByteArray byteArray = UnsignedByteArray.empty();

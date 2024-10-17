@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,40 +20,40 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedLong;
-import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 /**
- * Codec for XRPL UInt64 type.
+ * Model for XRPL MPT Amount JSON.
  */
-public class UInt64Type extends UIntType<UInt64Type> {
+@Immutable
+@JsonSerialize(as = ImmutableMptAmount.class)
+@JsonDeserialize(as = ImmutableMptAmount.class)
+interface MptAmount {
 
-  private final int radix;
-
-  public UInt64Type(int radix) {
-    this(UnsignedLong.ZERO, radix);
+  /**
+   * Construct a {@code MptAmount} builder.
+   *
+   * @return An {@link ImmutableMptAmount.Builder}.
+   */
+  static ImmutableMptAmount.Builder builder() {
+    return ImmutableMptAmount.builder();
   }
 
-  public UInt64Type(UnsignedLong value, int radix) {
-    super(value, 64);
-    this.radix = radix;
+  String value();
+
+  @JsonIgnore
+  @Value.Derived
+  default UnsignedLong unsignedLongValue() {
+    return UnsignedLong.valueOf(value());
   }
 
-  @Override
-  public UInt64Type fromParser(BinaryParser parser) {
-    return new UInt64Type(parser.readUInt64(), radix);
-  }
+  @JsonProperty("mpt_issuance_id")
+  String mptIssuanceId();
 
-  @Override
-  public UInt64Type fromJson(JsonNode value) {
-    // STUInt64s are represented as hex-encoded Strings in JSON.
-    return new UInt64Type(UnsignedLong.valueOf(value.asText(), radix), radix);
-  }
-
-  @Override
-  public JsonNode toJson() {
-    return new TextNode(UnsignedLong.valueOf(toHex(), 16).toString(radix).toUpperCase());
-  }
 }

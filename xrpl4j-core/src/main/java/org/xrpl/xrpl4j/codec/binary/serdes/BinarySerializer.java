@@ -109,9 +109,9 @@ public class BinarySerializer {
     Objects.requireNonNull(value);
     SerializedType typedValue;
     if (field.name().equals("BaseFee")) {
-      typedValue = SerializedType.getTypeByName(field.type()).fromHex(value.asText());
+      typedValue = SerializedType.getTypeByName(field.type(), field.name()).fromHex(value.asText());
     } else {
-      typedValue = SerializedType.getTypeByName(field.type()).fromJson(value);
+      typedValue = SerializedType.getTypeByName(field.type(), field.name()).fromJson(value);
     }
     writeFieldAndValue(field, typedValue);
   }

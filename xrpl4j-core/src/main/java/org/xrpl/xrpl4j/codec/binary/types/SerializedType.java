@@ -41,7 +41,9 @@ import java.util.function.Function;
  */
 public abstract class SerializedType<T extends SerializedType<T>> {
 
-  private static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet("MaximumAmount", "OutstandingAmount", "MPTAmount");
+  private static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet(
+    "MaximumAmount", "OutstandingAmount", "MPTAmount"
+  );
   @SuppressWarnings("all")
   private static final Map<String, Function<String, SerializedType<?>>> typeMap =
     new ImmutableMap.Builder<String, Function<String, SerializedType<?>>>()

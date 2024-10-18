@@ -34,7 +34,11 @@ import java.util.Set;
  */
 public class UInt64Type extends UIntType<UInt64Type> {
 
-  private static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet(
+  /**
+   * These fields are represented as base 10 Strings in JSON, whereas all other STUInt64s are represented
+   * in base16.
+   */
+  protected static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet(
     "MaximumAmount", "OutstandingAmount", "MPTAmount"
   );
 
@@ -58,16 +62,16 @@ public class UInt64Type extends UIntType<UInt64Type> {
   }
 
   @Override
-  public JsonNode toJson() {
-    throw new UnsupportedOperationException("Cannot convert UInt64Type to JSON without a FieldInstance. Call " +
-      "the overload of this method that accepts a FieldInstance instead.");
-  }
-
-  @Override
   public UInt64Type fromJson(JsonNode value, FieldInstance fieldInstance) {
     int radix = getRadix(fieldInstance);
     // STUInt64s are represented as hex-encoded Strings in JSON.
     return new UInt64Type(UnsignedLong.valueOf(value.asText(), radix));
+  }
+
+  @Override
+  public JsonNode toJson() {
+    throw new UnsupportedOperationException("Cannot convert UInt64Type to JSON without a FieldInstance. Call " +
+      "the overload of this method that accepts a FieldInstance instead.");
   }
 
   @Override

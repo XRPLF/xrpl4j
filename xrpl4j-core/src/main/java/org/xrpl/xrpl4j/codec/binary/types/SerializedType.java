@@ -128,10 +128,23 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    * @param node A {@link JsonNode} to use.
    *
    * @return A {@link T} based upon the information found in {@code node}.
+   *
    * @throws JsonProcessingException if {@code node} is not well-formed JSON.
    */
   public abstract T fromJson(JsonNode node) throws JsonProcessingException;
 
+  /**
+   * Obtain a {@link T} using the supplied {@link JsonNode} as well as a {@link FieldInstance}. Prefer using this method
+   * where possible over {@link #fromJson(JsonNode)}, as some {@link SerializedType}s require a {@link FieldInstance} to
+   * accurately serialize and deserialize.
+   *
+   * @param node          A {@link JsonNode} to serialize to binary.
+   * @param fieldInstance The {@link FieldInstance} describing the field being serialized.
+   *
+   * @return A {@link T}.
+   *
+   * @throws JsonProcessingException If {@code node} is not well-formed JSON.
+   */
   public T fromJson(JsonNode node, FieldInstance fieldInstance) throws JsonProcessingException {
     return fromJson(node);
   }
@@ -207,6 +220,15 @@ public abstract class SerializedType<T extends SerializedType<T>> {
     return new TextNode(toHex());
   }
 
+  /**
+   * Convert this {@link SerializedType} to a {@link JsonNode} based on the supplied {@link FieldInstance}. Prefer using
+   * this method where possible over {@link #fromJson(JsonNode)}, as some {@link SerializedType}s require a
+   * {@link FieldInstance} to accurately serialize and deserialize.
+   *
+   * @param fieldInstance A {@link FieldInstance} describing the field being deserialized.
+   *
+   * @return A {@link JsonNode}.
+   */
   public JsonNode toJson(FieldInstance fieldInstance) {
     return toJson();
   }

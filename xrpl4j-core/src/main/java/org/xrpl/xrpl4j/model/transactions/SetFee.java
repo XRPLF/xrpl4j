@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.jackson.modules.BaseFeeDropsDeserializer;
 
 import java.util.Optional;
+
 import javax.annotation.Nullable;
 
 /**
@@ -56,14 +57,13 @@ public interface SetFee extends Transaction {
   /**
    * The charge, in drops of XRP, for the reference transaction, as hex. (This is the transaction cost before scaling
    * for load.)
+   * <p>
+   * This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from ledgers
+   * prior to the {@code XRPFees} amendment, this field will still be set based on {@link #baseFeeDrops()}.
    *
    * @return A hex {@link String} baseFee value.
-   *
-   * @deprecated Prefer {@link #baseFeeDrops()} over this field because the XRPFees ammendment now serializes this
-   *   object's base fee into XRP drops.
    */
-  @Value.Default
-  @Deprecated
+  @Value.Derived
   @JsonIgnore
   default String baseFee() {
     return baseFeeDrops().value().toString(16);
@@ -83,40 +83,24 @@ public interface SetFee extends Transaction {
   XrpCurrencyAmount baseFeeDrops();
 
   /**
-   * The cost, in fee units, of the reference transaction. This field can be {@code null} if this {@link SetFee}
-   * transaction was included in a ledger after the XRPFees amendment was enabled because this amendment removes the
-   * {@code ReferenceFeeUnits} field from the {@link SetFee} transaction.
+   * The cost, in fee units, of the reference transaction. {@link SetFee} transactions deserialized from ledgers prior
+   * to the {@code XRPFees} amendment will always have this field, but transactions deserialized from ledgers post
+   * {@code XRPFees} activation will never have this field.
    *
    * @return An {@link UnsignedInteger} cost of ref transaction.
-   *
-   * @deprecated Prefer {@link #maybeReferenceFeeUnits()} over this field.
-   */
-  @Deprecated
-  @Nullable
-  @Value.Default
-  @JsonIgnore
-  default UnsignedInteger referenceFeeUnits() {
-    return maybeReferenceFeeUnits().orElse(null);
-  }
-
-  /**
-   * The cost, in fee units, of the reference transaction, or empty if this {@link SetFee} transaction occurred after
-   * the XRPFees amendment was enabled.
-   *
-   * @return An optionally-present {@link UnsignedInteger}.
    */
   @JsonProperty("ReferenceFeeUnits")
-  Optional<UnsignedInteger> maybeReferenceFeeUnits();
+  Optional<UnsignedInteger> referenceFeeUnits();
 
   /**
    * The base reserve, in drops.
+   * <p>
+   * This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from ledgers
+   * prior to the {@code XRPFees} amendment, this field will still be set based on {@link #reserveBaseDrops()}}.
    *
    * @return An {@link UnsignedInteger} base reserve value in {@link org.xrpl.xrpl4j.model.client.fees.FeeDrops}.
-   *
-   * @deprecated Prefer {@link #reserveBaseDrops()} over this field.
    */
-  @Value.Default
-  @Deprecated
+  @Value.Derived
   @JsonIgnore
   default UnsignedInteger reserveBase() {
     return UnsignedInteger.valueOf(reserveBaseDrops().value().longValue());
@@ -136,14 +120,14 @@ public interface SetFee extends Transaction {
 
   /**
    * The incremental reserve, in drops.
+   * <p>
+   * This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from ledgers
+   * prior to the {@code XRPFees} amendment, this field will still be set based on {@link #reserveIncrementDrops()}.
    *
    * @return An {@link UnsignedInteger} incremental reserve in {@link org.xrpl.xrpl4j.model.client.fees.FeeDrops}.
-   *
-   * @deprecated Prefer {@link #reserveIncrementDrops()} over this field.
    */
-  @Deprecated
+  @Value.Derived
   @JsonIgnore
-  @Value.Default
   default UnsignedInteger reserveIncrement() {
     return UnsignedInteger.valueOf(reserveIncrementDrops().value().longValue());
   }

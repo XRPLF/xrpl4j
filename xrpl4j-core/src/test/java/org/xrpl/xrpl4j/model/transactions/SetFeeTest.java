@@ -56,8 +56,7 @@ public class SetFeeTest extends AbstractJsonTest {
     assertThat(setFee.ledgerSequence()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(67850752)));
     assertThat(setFee.baseFee()).isEqualTo("a");
     assertThat(setFee.baseFeeDrops()).isEqualTo(XrpCurrencyAmount.ofDrops(10));
-    assertThat(setFee.referenceFeeUnits()).isNull();
-    assertThat(setFee.maybeReferenceFeeUnits()).isEmpty();
+    assertThat(setFee.referenceFeeUnits()).isEmpty();
     assertThat(setFee.reserveIncrement()).isEqualTo(UnsignedInteger.valueOf(5000000));
     assertThat(setFee.reserveIncrementDrops()).isEqualTo(XrpCurrencyAmount.ofDrops(5000000));
     assertThat(setFee.reserveBase()).isEqualTo(UnsignedInteger.valueOf(20000000));
@@ -73,7 +72,7 @@ public class SetFeeTest extends AbstractJsonTest {
       .baseFeeDrops(XrpCurrencyAmount.ofDrops(10))
       .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
       .reserveIncrementDrops(XrpCurrencyAmount.ofDrops(5000000))
-      .maybeReferenceFeeUnits(UnsignedInteger.valueOf(10))
+      .referenceFeeUnits(UnsignedInteger.valueOf(10))
       .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(67850752))))
       .build();
 
@@ -84,8 +83,7 @@ public class SetFeeTest extends AbstractJsonTest {
     assertThat(setFee.ledgerSequence()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.valueOf(67850752)));
     assertThat(setFee.baseFee()).isEqualTo("a");
     assertThat(setFee.baseFeeDrops()).isEqualTo(XrpCurrencyAmount.ofDrops(10));
-    assertThat(setFee.referenceFeeUnits()).isNotNull().isEqualTo(UnsignedInteger.valueOf(10));
-    assertThat(setFee.maybeReferenceFeeUnits()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(10));
+    assertThat(setFee.referenceFeeUnits()).isNotEmpty().get().isEqualTo(UnsignedInteger.valueOf(10));
     assertThat(setFee.reserveIncrement()).isEqualTo(UnsignedInteger.valueOf(5000000));
     assertThat(setFee.reserveIncrementDrops()).isEqualTo(XrpCurrencyAmount.ofDrops(5000000));
     assertThat(setFee.reserveBase()).isEqualTo(UnsignedInteger.valueOf(20000000));
@@ -99,7 +97,7 @@ public class SetFeeTest extends AbstractJsonTest {
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(2470665))
       .baseFeeDrops(XrpCurrencyAmount.ofDrops(10))
-      .maybeReferenceFeeUnits(UnsignedInteger.valueOf(10))
+      .referenceFeeUnits(UnsignedInteger.valueOf(10))
       .reserveBaseDrops(XrpCurrencyAmount.ofDrops(20000000))
       .reserveIncrementDrops(XrpCurrencyAmount.ofDrops(5000000))
       .ledgerSequence(Optional.of(LedgerIndex.of(UnsignedInteger.valueOf(67850752))))

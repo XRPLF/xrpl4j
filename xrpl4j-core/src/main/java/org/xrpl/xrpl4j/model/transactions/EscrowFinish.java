@@ -228,9 +228,19 @@ public interface EscrowFinish extends Transaction {
         // In this case, we should try to read conditionRawValue to a Condition. If that fails, condition()
         // will remain empty, otherwise we will set condition().
         try {
-          Condition condition = CryptoConditionReader.readCondition(
-            BaseEncoding.base16().decode(conditionRawValue().get().toUpperCase(Locale.US))
-          );
+          byte[] conditionRawValueBytes = BaseEncoding.base16()
+            .decode(conditionRawValue().get().toUpperCase(Locale.US));
+          Condition condition = CryptoConditionReader.readCondition(conditionRawValueBytes);
+
+          // CryptoConditionReader.readCondition can succeed if the first part of the condition raw value
+          // is a valid condition, but the raw value has extra bytes afterward. Here, we check that the parsed
+          // condition is equivalent to the raw value when re-written.
+          if (!Arrays.equals(CryptoConditionWriter.writeCondition(condition), conditionRawValueBytes)) {
+            logger.warn("EscrowFinish Condition was malformed: mismatch between raw value and parsed condition. " +
+              "conditionRawValue() will contain the condition value, but condition() will be empty.");
+            return this;
+          }
+
           return EscrowFinish.builder().from(this)
             .condition(condition)
             .build();
@@ -300,9 +310,19 @@ public interface EscrowFinish extends Transaction {
         // In this case, we should try to read fulfillmentRawValue to a Condition. If that fails, fulfillment()
         // will remain empty, otherwise we will set fulfillment().
         try {
-          Fulfillment<?> fulfillment = CryptoConditionReader.readFulfillment(
-            BaseEncoding.base16().decode(fulfillmentRawValue().get().toUpperCase(Locale.US))
-          );
+          byte[] fulfillmentRawValueBytes = BaseEncoding.base16()
+            .decode(fulfillmentRawValue().get().toUpperCase(Locale.US));
+          Fulfillment<?> fulfillment = CryptoConditionReader.readFulfillment(fulfillmentRawValueBytes);
+
+          // CryptoConditionReader.readFulfillment can succeed if the first part of the fulfillment raw value
+          // is a valid fulfillment, but the raw value has extra bytes afterward. Here, we check that the parsed
+          // fulfillment is equivalent to the raw value when re-written.
+          if (!Arrays.equals(CryptoConditionWriter.writeFulfillment(fulfillment), fulfillmentRawValueBytes)) {
+            logger.warn("EscrowFinish Fulfillment was malformed: mismatch between raw value and parsed fulfillment. " +
+              "fulfillmentRawValue() will contain the fulfillment value, but fulfillment() will be empty.");
+            return this;
+          }
+
           return EscrowFinish.builder().from(this)
             .fulfillment(fulfillment)
             .build();
@@ -318,7 +338,7 @@ public interface EscrowFinish extends Transaction {
       }
 
     } catch (DerEncodingException e) {
-      // This should never happen. CryptoconditionWriter.writeCondition errantly declares that it can throw
+      // This should never happen. CryptoconditionWriter.writeFulfillment errantly declares that it can throw
       // a DerEncodingException, but nowhere in its implementation does it throw.
       throw new RuntimeException(e);
     }

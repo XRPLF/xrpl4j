@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,8 +35,7 @@ import java.util.Set;
 public class UInt64Type extends UIntType<UInt64Type> {
 
   /**
-   * These fields are represented as base 10 Strings in JSON, whereas all other STUInt64s are represented
-   * in base16.
+   * These fields are represented as base 10 Strings in JSON, whereas all other STUInt64s are represented in base16.
    */
   protected static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet(
     "MaximumAmount", "OutstandingAmount", "MPTAmount"
@@ -64,7 +63,6 @@ public class UInt64Type extends UIntType<UInt64Type> {
   @Override
   public UInt64Type fromJson(JsonNode value, FieldInstance fieldInstance) {
     int radix = getRadix(fieldInstance);
-    // STUInt64s are represented as hex-encoded Strings in JSON.
     return new UInt64Type(UnsignedLong.valueOf(value.asText(), radix));
   }
 
@@ -80,6 +78,14 @@ public class UInt64Type extends UIntType<UInt64Type> {
     return new TextNode(UnsignedLong.valueOf(toHex(), 16).toString(radix).toUpperCase());
   }
 
+  /**
+   * Most UInt64s are represented as hex Strings in JSON. However, some MPT related fields are represented in base 10 in
+   * JSON. This method determines the radix of the field based on the supplied {@link FieldInstance}'s name.
+   *
+   * @param fieldInstance A {@link FieldInstance}.
+   *
+   * @return An int representing the radix.
+   */
   private static int getRadix(FieldInstance fieldInstance) {
     int radix = 16;
     if (BASE_10_UINT64_FIELD_NAMES.contains(fieldInstance.name())) {

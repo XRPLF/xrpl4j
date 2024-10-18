@@ -91,8 +91,6 @@ public abstract class SerializedType<T extends SerializedType<T>> {
   public static String getNameByType(SerializedType<?> type) {
     return typeMap.entrySet()
       .stream()
-      // We only care about the class name, and the String passed to .apply is only used to figure
-      // out the radix of the JSON string for UInt64Types. Plus this method is only used in a test.
       .filter(entry -> entry.getValue().get().getClass().equals(type.getClass()))
       .map(Map.Entry::getKey)
       .findAny()

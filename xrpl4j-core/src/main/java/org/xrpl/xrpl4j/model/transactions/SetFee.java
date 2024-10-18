@@ -32,8 +32,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.BaseFeeDropsDeserializer;
 
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 /**
  * A {@link SetFee} pseudo-transaction marks a change in transaction cost or reserve requirements as a result of Fee
  * Voting.
@@ -57,9 +55,9 @@ public interface SetFee extends Transaction {
   /**
    * The charge, in drops of XRP, for the reference transaction, as hex. (This is the transaction cost before scaling
    * for load.)
-   * <p>
-   * This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from ledgers
-   * prior to the {@code XRPFees} amendment, this field will still be set based on {@link #baseFeeDrops()}.
+   *
+   * <p>This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from
+   * ledgers prior to the {@code XRPFees} amendment, this field will still be set based on {@link #baseFeeDrops()}.
    *
    * @return A hex {@link String} baseFee value.
    */
@@ -94,9 +92,9 @@ public interface SetFee extends Transaction {
 
   /**
    * The base reserve, in drops.
-   * <p>
-   * This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from ledgers
-   * prior to the {@code XRPFees} amendment, this field will still be set based on {@link #reserveBaseDrops()}}.
+   *
+   * <p>This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from
+   * ledgers prior to the {@code XRPFees} amendment, this field will still be set based on {@link #reserveBaseDrops()}}.
    *
    * @return An {@link UnsignedInteger} base reserve value in {@link org.xrpl.xrpl4j.model.client.fees.FeeDrops}.
    */
@@ -120,9 +118,10 @@ public interface SetFee extends Transaction {
 
   /**
    * The incremental reserve, in drops.
-   * <p>
-   * This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from ledgers
-   * prior to the {@code XRPFees} amendment, this field will still be set based on {@link #reserveIncrementDrops()}.
+   *
+   * <p>This method only exists for historical purposes. When deserialized from a {@link SetFee} transaction from
+   * ledgers prior to the {@code XRPFees} amendment, this field will still be set based on
+   * {@link #reserveIncrementDrops()}.
    *
    * @return An {@link UnsignedInteger} incremental reserve in {@link org.xrpl.xrpl4j.model.client.fees.FeeDrops}.
    */

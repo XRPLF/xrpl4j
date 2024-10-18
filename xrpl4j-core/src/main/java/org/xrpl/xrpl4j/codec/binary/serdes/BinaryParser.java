@@ -195,7 +195,7 @@ public class BinaryParser {
    * @return The type associated with the given field.
    */
   public SerializedType typeForField(FieldInstance field) {
-    return SerializedType.getTypeByName(field.type(), field.name());
+    return SerializedType.getTypeByName(field.type());
   }
 
   /**

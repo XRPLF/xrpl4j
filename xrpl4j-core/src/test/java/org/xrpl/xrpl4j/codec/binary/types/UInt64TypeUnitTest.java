@@ -29,8 +29,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class UInt64TypeUnitTest {
-  private final UInt64Type base16Type = new UInt64Type(16);
-  private final UInt64Type base10Type = new UInt64Type(10);
+  private final UInt64Type base16Type = new UInt64Type();
   private static UnsignedLong maxUint64 = UnsignedLong.valueOf("FFFFFFFFFFFFFFFF", 16);
 
   @Test
@@ -50,28 +49,6 @@ public class UInt64TypeUnitTest {
     assertThat(base16Type.fromJson("\"FFFFFFFFFFFFFFFF\"").toHex()).isEqualTo("FFFFFFFFFFFFFFFF");
   }
 
-  @Test
-  void decodeBase10() {
-    assertThat(base10Type.fromHex("0000000000000000").valueOf()).isEqualTo(UnsignedLong.valueOf(0));
-    assertThat(base10Type.fromHex("000000000000000F").valueOf()).isEqualTo(UnsignedLong.valueOf(15));
-    assertThat(base10Type.fromHex("00000000FFFFFFFF").valueOf()).isEqualTo(UnsignedLong.valueOf(4294967295L));
-    assertThat(base10Type.fromHex("FFFFFFFFFFFFFFFF").valueOf()).isEqualTo(maxUint64);
-  }
-
-  @Test
-  void encodeBase10() {
-    assertThat(base10Type.fromJson("\"0\"").toHex()).isEqualTo("0000000000000000");
-    assertThat(base10Type.fromJson("\"15\"").toHex()).isEqualTo("000000000000000F");
-    assertThat(base10Type.fromJson("\"65535\"").toHex()).isEqualTo("000000000000FFFF");
-    assertThat(base10Type.fromJson("\"4294967295\"").toHex()).isEqualTo("00000000FFFFFFFF");
-    assertThat(base10Type.fromJson("\"18446744073709551615\"").toHex()).isEqualTo("FFFFFFFFFFFFFFFF");
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"\"0\"", "\"15\"", "\"65535\"", "\"4294967295\"", "\"18446744073709551615\""})
-  void toFromJsonBase10(String json) {
-    assertThat(base10Type.fromJson(json).toJson().toString()).isEqualTo(json);
-  }
 
   @ParameterizedTest
   @ValueSource(strings = {"\"0\"", "\"F\"", "\"FFFF\"", "\"FFFFFFFF\"", "\"FFFFFFFFFFFFFFFF\""})

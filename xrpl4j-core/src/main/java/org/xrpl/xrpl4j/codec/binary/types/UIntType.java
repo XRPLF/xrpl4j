@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 
 /**
  * Base codec for XRPL UInt types.
@@ -50,4 +51,5 @@ abstract class UIntType<T extends UIntType<T>> extends SerializedType<T> {
   public JsonNode toJson() {
     return new TextNode(UnsignedLong.valueOf(toHex(), 16).toString());
   }
+
 }

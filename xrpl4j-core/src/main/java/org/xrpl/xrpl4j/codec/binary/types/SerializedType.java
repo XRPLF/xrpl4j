@@ -24,15 +24,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
+import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Defines an abstract type serialization parent-class for all XRPL serialized type definitions.
@@ -41,36 +41,28 @@ import java.util.function.Function;
  */
 public abstract class SerializedType<T extends SerializedType<T>> {
 
-  private static final Set<String> BASE_10_UINT64_FIELD_NAMES = Sets.newHashSet(
-    "MaximumAmount", "OutstandingAmount", "MPTAmount"
-  );
+
   @SuppressWarnings("all")
-  private static final Map<String, Function<String, SerializedType<?>>> typeMap =
-    new ImmutableMap.Builder<String, Function<String, SerializedType<?>>>()
-      .put("AccountID", fieldName -> new AccountIdType())
-      .put("Amount", fieldName -> new AmountType())
-      .put("Blob", fieldName -> new BlobType())
-      .put("Currency", fieldName -> new CurrencyType())
-      .put("Hash128", fieldName -> new Hash128Type())
-      .put("Hash160", fieldName -> new Hash160Type())
-      .put("Hash192", fieldName -> new Hash192Type())
-      .put("Hash256", fieldName -> new Hash256Type())
-      .put("PathSet", fieldName -> new PathSetType())
-      .put("STArray", fieldName -> new STArrayType())
-      .put("STObject", fieldName -> new STObjectType())
-      .put("UInt8", fieldName -> new UInt8Type())
-      .put("UInt16", fieldName -> new UInt16Type())
-      .put("UInt32", fieldName -> new UInt32Type())
-      .put("UInt64", fieldName -> {
-        if (BASE_10_UINT64_FIELD_NAMES.contains(fieldName)) {
-          return new UInt64Type(10);
-        } else {
-          return new UInt64Type(16);
-        }
-      })
-      .put("Vector256", fieldName -> new Vector256Type())
-      .put("Issue", fieldName -> new IssueType())
-      .put("XChainBridge", fieldName -> new XChainBridgeType())
+  private static final Map<String, Supplier<SerializedType<?>>> typeMap =
+    new ImmutableMap.Builder<String, Supplier<SerializedType<?>>>()
+      .put("AccountID", () -> new AccountIdType())
+      .put("Amount", () -> new AmountType())
+      .put("Blob", () -> new BlobType())
+      .put("Currency", () -> new CurrencyType())
+      .put("Hash128", () -> new Hash128Type())
+      .put("Hash160", () -> new Hash160Type())
+      .put("Hash192", () -> new Hash192Type())
+      .put("Hash256", () -> new Hash256Type())
+      .put("PathSet", () -> new PathSetType())
+      .put("STArray", () -> new STArrayType())
+      .put("STObject", () -> new STObjectType())
+      .put("UInt8", () -> new UInt8Type())
+      .put("UInt16", () -> new UInt16Type())
+      .put("UInt32", () -> new UInt32Type())
+      .put("UInt64", () -> new UInt64Type())
+      .put("Vector256", () -> new Vector256Type())
+      .put("Issue", () -> new IssueType())
+      .put("XChainBridge", () -> new XChainBridgeType())
       .build();
   private final UnsignedByteArray bytes;
 
@@ -81,13 +73,12 @@ public abstract class SerializedType<T extends SerializedType<T>> {
   /**
    * Get the {@link SerializedType} for the supplied {@code name}.
    *
-   * @param name      A {@link String} representing the name of a {@link SerializedType}.
-   * @param fieldName The name of the field that is being serialized.
+   * @param name A {@link String} representing the name of a {@link SerializedType}.
    *
    * @return A {@link SerializedType} for the supplied {@code name}.
    */
-  public static SerializedType<?> getTypeByName(String name, String fieldName) {
-    return typeMap.get(name).apply(fieldName);
+  public static SerializedType<?> getTypeByName(String name) {
+    return typeMap.get(name).get();
   }
 
   /**
@@ -102,7 +93,7 @@ public abstract class SerializedType<T extends SerializedType<T>> {
       .stream()
       // We only care about the class name, and the String passed to .apply is only used to figure
       // out the radix of the JSON string for UInt64Types. Plus this method is only used in a test.
-      .filter(entry -> entry.getValue().apply("").getClass().equals(type.getClass()))
+      .filter(entry -> entry.getValue().get().getClass().equals(type.getClass()))
       .map(Map.Entry::getKey)
       .findAny()
       .orElse(null);
@@ -140,6 +131,10 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    * @throws JsonProcessingException if {@code node} is not well-formed JSON.
    */
   public abstract T fromJson(JsonNode node) throws JsonProcessingException;
+
+  public T fromJson(JsonNode node, FieldInstance fieldInstance) throws JsonProcessingException {
+    return fromJson(node);
+  }
 
   /**
    * Construct a concrete instance of {@link SerializedType} from the supplied {@code json}.
@@ -210,6 +205,10 @@ public abstract class SerializedType<T extends SerializedType<T>> {
    */
   public JsonNode toJson() {
     return new TextNode(toHex());
+  }
+
+  public JsonNode toJson(FieldInstance fieldInstance) {
+    return toJson();
   }
 
   /**

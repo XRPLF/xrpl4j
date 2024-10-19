@@ -31,7 +31,6 @@ import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -40,7 +39,6 @@ import java.util.function.Supplier;
  * @param <T> The actual type of this {@link SerializedType}.
  */
 public abstract class SerializedType<T extends SerializedType<T>> {
-
 
   @SuppressWarnings("all")
   private static final Map<String, Supplier<SerializedType<?>>> typeMap =

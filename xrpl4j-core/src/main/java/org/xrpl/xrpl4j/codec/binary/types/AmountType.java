@@ -24,8 +24,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.base.Preconditions;
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
@@ -199,7 +197,7 @@ class AmountType extends SerializedType<AmountType> {
       MptAmount amount = objectMapper.treeToValue(value, MptAmount.class);
 
       if (FluentCompareTo.is(amount.unsignedLongValue()).greaterThan(UnsignedLong.valueOf(Long.MAX_VALUE))) {
-        throw new IllegalArgumentException("Invalid MPT amount: given value requires 64 bits, only 63 allowed.");
+        throw new IllegalArgumentException("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
       }
 
       UnsignedByteArray amountBytes =  UnsignedByteArray.fromHex(
@@ -211,7 +209,8 @@ class AmountType extends SerializedType<AmountType> {
       UnsignedByteArray issuanceIdBytes = new Hash192Type().fromJson(new TextNode(amount.mptIssuanceId())).value();
 
       // MPT Amounts always have 0110000 as its first byte.
-      UnsignedByteArray result = UnsignedByteArray.of(UnsignedByte.of(0x60));
+      int leadingByte = amount.isNegative() ? 0x20 : 0x60;
+      UnsignedByteArray result = UnsignedByteArray.of(UnsignedByte.of(leadingByte));
       result.append(amountBytes);
       result.append(issuanceIdBytes);
 
@@ -251,12 +250,14 @@ class AmountType extends SerializedType<AmountType> {
     } else if (this.isMpt()) {
       BinaryParser parser = new BinaryParser(this.toHex());
       // We know the first byte already based on this.isMpt()
-      parser.skip(1);
+      UnsignedByte leadingByte = parser.read(1).get(0);
+      boolean isNegative = !leadingByte.isNthBitSet(2);
       UnsignedLong amount = parser.readUInt64();
       UnsignedByteArray issuanceId = new Hash192Type().fromParser(parser).value();
 
+      String amountBase10 = amount.toString(10);
       MptAmount mptAmount = MptAmount.builder()
-        .value(amount.toString(10))
+        .value(isNegative ? "-" + amountBase10 : amountBase10)
         .mptIssuanceId(issuanceId.hexValue())
         .build();
 
@@ -301,13 +302,14 @@ class AmountType extends SerializedType<AmountType> {
    */
   private boolean isNative() {
     // 1st bit in 1st byte is set to 0 for native XRP, 3rd bit is also 0.
-    // 0xA0 is 1010 0000
-    return (toBytes()[0] & 0xA0) == 0;
+    byte leadingByte = toBytes()[0];
+    return (leadingByte & 0x80) == 0 && (leadingByte & 0x20) == 0;
   }
 
   private boolean isMpt() {
-    // 1st bit in 1st byte is 0, 2nd bit is 1, and 3rd bit is 1
-    return (toBytes()[0] & 0xA0) == 0x20;
+    // 1st bit in 1st byte is 0, and 3rd bit is 1
+    byte leadingByte = toBytes()[0];
+    return (leadingByte & 0x80) == 0 && (leadingByte & 0x20) != 0;
   }
 
   /**

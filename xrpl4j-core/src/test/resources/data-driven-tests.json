@@ -3701,8 +3701,10 @@
         "mpt_issuance_id": "00002403C84A0A28E0190E208E982C352BBD5006600555CF",
         "value": "-1"
       },
+      "is_native": false,
       "type": "Amount",
-      "error": "Value is negative"
+      "expected_hex": "20000000000000000100002403C84A0A28E0190E208E982C352BBD5006600555CF",
+      "is_negative": false
     },
     {
       "test_json": {
@@ -3798,6 +3800,17 @@
       "is_native": false,
       "type": "Amount",
       "expected_hex": "60000000000000000000002403C84A0A28E0190E208E982C352BBD5006600555CF",
+      "is_negative": false
+    },
+    {
+      "test_json": {
+        "mpt_issuance_id":"00002403C84A0A28E0190E208E982C352BBD5006600555CF",
+        "value": "-0"
+      },
+      "type_id": 6,
+      "is_native": false,
+      "type": "Amount",
+      "expected_hex": "20000000000000000000002403C84A0A28E0190E208E982C352BBD5006600555CF",
       "is_negative": false
     },
     {

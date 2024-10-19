@@ -230,6 +230,15 @@ class AmountTypeTest extends BaseSerializerTypeTest {
   }
 
   @Test
+  void encodeDecodeMptAmountNegative() {
+    String json = "{\"value\":\"-100\",\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    AmountType fromJson = codec.fromJson(json);
+    assertThat(fromJson.toHex())
+      .isEqualTo("20000000000000006400002403C84A0A28E0190E208E982C352BBD5006600555CF");
+    assertThat(fromJson.toJson().toString()).isEqualTo(json);
+  }
+
+  @Test
   void encodeDecodeLargestAmount() {
     String json = "{\"value\":\"9223372036854775807\"," +
       "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
@@ -240,11 +249,30 @@ class AmountTypeTest extends BaseSerializerTypeTest {
   }
 
   @Test
+  void encodeDecodeLargestAmountNegative() {
+    String json = "{\"value\":\"-9223372036854775807\"," +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    AmountType fromJson = codec.fromJson(json);
+    assertThat(fromJson.toHex())
+      .isEqualTo("207FFFFFFFFFFFFFFF00002403C84A0A28E0190E208E982C352BBD5006600555CF");
+    assertThat(fromJson.toJson().toString()).isEqualTo(json);
+  }
+
+  @Test
   void encodeMptAmountWithMoreThan63BitAmountThrows() {
     UnsignedLong maxLongPlusOne = UnsignedLong.valueOf(Long.MAX_VALUE).plus(UnsignedLong.ONE);
     String json = "{\"value\":\"" + maxLongPlusOne + "\"," +
       "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
     assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid MPT amount: given value requires 64 bits, only 63 allowed.");
+      .hasMessage("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
+  }
+
+  @Test
+  void encodeMptAmountWithMoreThan63BitAmountThrowsNegative() {
+    UnsignedLong maxLongPlusOne = UnsignedLong.valueOf(Long.MAX_VALUE).plus(UnsignedLong.ONE);
+    String json = "{\"value\":\"-" + maxLongPlusOne + "\"," +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
   }
 }

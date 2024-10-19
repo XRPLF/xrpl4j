@@ -47,13 +47,20 @@ interface MptAmount {
 
   String value();
 
-  @JsonIgnore
-  @Value.Derived
-  default UnsignedLong unsignedLongValue() {
-    return UnsignedLong.valueOf(value());
-  }
-
   @JsonProperty("mpt_issuance_id")
   String mptIssuanceId();
 
+  @Value.Derived
+  @JsonIgnore
+  default boolean isNegative() {
+    return value().startsWith("-");
+  }
+
+  @Value.Derived
+  @JsonIgnore
+  default UnsignedLong unsignedLongValue() {
+    return isNegative() ?
+      UnsignedLong.valueOf(value().substring(1)) :
+      UnsignedLong.valueOf(value());
+  }
 }

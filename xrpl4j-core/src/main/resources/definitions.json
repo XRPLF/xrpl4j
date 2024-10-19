@@ -223,6 +223,16 @@
       }
     ],
     [
+      "AssetScale",
+      {
+        "nth": 5,
+        "isVLEncoded": false,
+        "isSerialized": true,
+        "isSigningField": true,
+        "type": "UInt8"
+      }
+    ],
+    [
       "TickSize",
       {
         "nth": 16,
@@ -256,16 +266,6 @@
       "WasLockingChainSend",
       {
         "nth": 19,
-        "isVLEncoded": false,
-        "isSerialized": true,
-        "isSigningField": true,
-        "type": "UInt8"
-      }
-    ],
-    [
-      "AssetScale",
-      {
-        "nth": 20,
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
@@ -3062,8 +3062,8 @@
     "LedgerStateFix": 53,
     "MPTokenIssuanceCreate": 54,
     "MPTokenIssuanceDestroy": 55,
-    "MPTokenAuthorize": 56,
-    "MPTokenIssuanceSet": 57,
+    "MPTokenIssuanceSet": 56,
+    "MPTokenAuthorize": 57,
     "EnableAmendment": 100,
     "SetFee": 101,
     "UNLModify": 102

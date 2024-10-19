@@ -18,7 +18,7 @@
     "PathSet": 18,
     "Vector256": 19,
     "UInt96": 20,
-    "Hash192": 21,
+    "UInt192": 21,
     "UInt384": 22,
     "UInt512": 23,
     "Issue": 24,
@@ -1179,7 +1179,7 @@
         "isVLEncoded": false,
         "isSerialized": true,
         "isSigningField": true,
-        "type": "Hash192"
+        "type": "UInt192"
       }
     ],
     [

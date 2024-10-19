@@ -206,7 +206,7 @@ class AmountType extends SerializedType<AmountType> {
           16 // <-- 64 / 4
         )
       );
-      UnsignedByteArray issuanceIdBytes = new Hash192Type().fromJson(new TextNode(amount.mptIssuanceId())).value();
+      UnsignedByteArray issuanceIdBytes = new UInt192Type().fromJson(new TextNode(amount.mptIssuanceId())).value();
 
       // MPT Amounts always have 0110000 as its first byte.
       int leadingByte = amount.isNegative() ? 0x20 : 0x60;
@@ -253,7 +253,7 @@ class AmountType extends SerializedType<AmountType> {
       UnsignedByte leadingByte = parser.read(1).get(0);
       boolean isNegative = !leadingByte.isNthBitSet(2);
       UnsignedLong amount = parser.readUInt64();
-      UnsignedByteArray issuanceId = new Hash192Type().fromParser(parser).value();
+      UnsignedByteArray issuanceId = new UInt192Type().fromParser(parser).value();
 
       String amountBase10 = amount.toString(10);
       MptAmount mptAmount = MptAmount.builder()

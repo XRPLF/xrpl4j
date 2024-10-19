@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.base.Strings;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class HashTypeTest {
@@ -32,7 +31,7 @@ class HashTypeTest {
   public static final char DOUBLE_QUOTE = '"';
   private final Hash128Type codec128 = new Hash128Type();
   private final Hash160Type codec160 = new Hash160Type();
-  private final Hash192Type codec192 = new Hash192Type();
+  private final UInt192Type codec192 = new UInt192Type();
   private final Hash256Type codec256 = new Hash256Type();
 
   @Test

@@ -35,20 +35,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.definitions.FieldInstance;
 
 import java.util.stream.Stream;
 
 public class UInt64TypeUnitTest {
   private final UInt64Type type = new UInt64Type();
-  private static UnsignedLong maxUint64 = UnsignedLong.valueOf("FFFFFFFFFFFFFFFF", 16);
 
   @Test
   void testFromHex() {
-    assertThat(type.fromHex("0000000000000000").valueOf()).isEqualTo(UnsignedLong.valueOf(0));
-    assertThat(type.fromHex("000000000000000F").valueOf()).isEqualTo(UnsignedLong.valueOf(15));
-    assertThat(type.fromHex("00000000FFFFFFFF").valueOf()).isEqualTo(UnsignedLong.valueOf(4294967295L));
-    assertThat(type.fromHex("FFFFFFFFFFFFFFFF").valueOf()).isEqualTo(maxUint64);
+    assertThat(type.fromHex("0000000000000000").toHex()).isEqualTo("0000000000000000");
+    assertThat(type.fromHex("000000000000000F").toHex()).isEqualTo("000000000000000F");
+    assertThat(type.fromHex("00000000FFFFFFFF").toHex()).isEqualTo("00000000FFFFFFFF");
+    assertThat(type.fromHex("FFFFFFFFFFFFFFFF").toHex()).isEqualTo("FFFFFFFFFFFFFFFF");
   }
 
   @ParameterizedTest

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
@@ -56,4 +57,24 @@ public interface Clawback extends Transaction {
   @JsonProperty("MPTokenHolder")
   Optional<Address> mpTokenHolder();
 
+  // TODO: I don't love that this is now a CurrencyAmount, because it can only ever be an IssuedCurrencyAmount
+  //  or MptAmount, and mpTokenHolder can only be present when amount is an MptAmount.
+  //  This might work, but we'd need to do some wonky jackson stuff to make it work
+  /*@JsonUnwrapped
+  ClawbackAmount amount();
+
+  interface ClawbackAmount {}
+
+  @Immutable
+  @JsonSerialize(as = ImmutableIssuedCurrencyClawbackAmount.class)
+  @JsonDeserialize(as = ImmutableIssuedCurrencyClawbackAmount.class)
+  interface IssuedCurrencyClawbackAmount extends ClawbackAmount {
+    IssuedCurrencyAmount amount();
+  }
+
+  interface MptClawbackAmount extends ClawbackAmount {
+    MpTokenAmount amount();
+
+    Optional<Address> mpTokenHolder();
+  }*/
 }

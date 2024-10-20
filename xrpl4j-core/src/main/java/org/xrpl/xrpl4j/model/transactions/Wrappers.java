@@ -39,6 +39,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
@@ -49,6 +51,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MptMaximumAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MptMaximumAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
@@ -773,6 +779,54 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value().toString();
+    }
+
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = AssetScale.class, using = AssetScaleSerializer.class)
+  @JsonDeserialize(as = AssetScale.class, using = AssetScaleDeserializer.class)
+  @Beta
+  abstract static class _AssetScale extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = MptMaximumAmount.class, using = MptMaximumAmountSerializer.class)
+  @JsonDeserialize(as = MptMaximumAmount.class, using = MptMaximumAmountDeserializer.class)
+  @Beta
+  abstract static class _MptMaximumAmount extends Wrapper<UnsignedLong> implements Serializable {
+
+    public static MptMaximumAmount of(long amount) {
+      return MptMaximumAmount.of(UnsignedLong.valueOf(amount));
+    }
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = MpTokenIssuanceId.class, using = MpTokenIssuanceIdSerializer.class)
+  @JsonDeserialize(as = MpTokenIssuanceId.class, using = MpTokenIssuanceIdDeserializer.class)
+  @Beta
+  abstract static class _MpTokenIssuanceId extends Wrapper<String> implements Serializable {
+
+    // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
+
+    @Override
+    public String toString() {
+      return this.value();
     }
 
   }

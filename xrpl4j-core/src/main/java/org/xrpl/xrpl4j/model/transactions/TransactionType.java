@@ -336,7 +336,16 @@ public enum TransactionType {
    * is subject to change.</p>
    */
   @Beta
-  ORACLE_DELETE("OracleDelete");
+  ORACLE_DELETE("OracleDelete"),
+
+  @Beta
+  MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
+  @Beta
+  MPT_ISSUANCE_DESTROY("MPTokenIssuanceDestroy"),
+  @Beta
+  MPT_ISSUANCE_SET("MPTokenIssuanceSet"),
+  @Beta
+  MPT_AUTHORIZE("MPTokenAuthorize");
 
   private final String value;
 

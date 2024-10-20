@@ -8,6 +8,8 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.Optional;
+
 /**
  * Clawback an issued currency that exists on a Trustline.
  *
@@ -49,7 +51,9 @@ public interface Clawback extends Transaction {
    * @return An {@link IssuedCurrencyAmount} indicating the amount to clawback.
    */
   @JsonProperty("Amount")
-  IssuedCurrencyAmount amount();
+  CurrencyAmount amount();
 
+  @JsonProperty("MPTokenHolder")
+  Optional<Address> mpTokenHolder();
 
 }

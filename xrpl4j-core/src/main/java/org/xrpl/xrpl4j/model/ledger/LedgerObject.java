@@ -62,6 +62,8 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
   @JsonSubTypes.Type(value = ImmutableDidObject.class, name = "DID"),
   @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
+  @JsonSubTypes.Type(value = ImmutableMpTokenIssuanceObject.class, name = "MPTokenIssuance"),
+  @JsonSubTypes.Type(value = ImmutableMpTokenObject.class, name = "MPToken"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -202,7 +204,13 @@ public interface LedgerObject {
      * Its API is subject to change.</p>
      */
     @Beta
-    ORACLE("Oracle");
+    ORACLE("Oracle"),
+
+    @Beta
+    MP_TOKEN_ISSUANCE("MPTokenIssuance"),
+
+    @Beta
+    MP_TOKEN("MPToken");
 
     private final String value;
 

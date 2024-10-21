@@ -61,28 +61,42 @@ public class CurrencyAmountTest {
   }
 
   @Test
+  void handleWithNulls() {
+    CurrencyAmount amount = () -> false;
+    // null xrpCurrencyAmountHandler
+    assertThrows(NullPointerException.class, () ->
+      amount.handle(null, ($) -> new Object(), ($) -> new Object())
+    );
+
+    // null issuedCurrencyAmountConsumer
+    assertThrows(NullPointerException.class, () ->
+      amount.handle(($) -> new Object(), null, ($) -> new Object())
+    );
+
+    // null mpTokenAmount
+    assertThrows(NullPointerException.class, () ->
+      amount.handle(($) -> new Object(), ($) -> new Object(), null)
+    );
+  }
+
+  @Test
+  void handleUnhandled() {
+    CurrencyAmount amount = () -> false;
+    // Unhandled...
+    CurrencyAmount currencyAmount = () -> false;
+    assertThrows(IllegalStateException.class, () ->
+      currencyAmount.handle(($) -> new Object(), ($) -> new Object(), ($) -> new Object())
+    );
+  }
+
+  @Test
   public void handleXrp() {
     XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(0L);
 
     xrpCurrencyAmount.handle(
       ($) -> assertThat($.value()).isEqualTo(UnsignedLong.ZERO),
+      ($) -> fail(),
       ($) -> fail()
-    );
-
-    // null xrpCurrencyAmountHandler
-    assertThrows(NullPointerException.class, () ->
-      xrpCurrencyAmount.handle(null, ($) -> new Object())
-    );
-
-    // null issuedCurrencyAmountConsumer
-    assertThrows(NullPointerException.class, () ->
-      xrpCurrencyAmount.handle(($) -> new Object(), null)
-    );
-
-    // Unhandled...
-    CurrencyAmount currencyAmount = () -> false;
-    assertThrows(IllegalStateException.class, () ->
-      currencyAmount.handle(($) -> new Object(), ($) -> new Object())
     );
   }
 
@@ -96,17 +110,10 @@ public class CurrencyAmountTest {
 
     issuedCurrencyAmount.handle(
       ($) -> fail(),
-      ($) -> assertThat($.value()).isEqualTo("100")
+      ($) -> assertThat($.value()).isEqualTo("100"),
+      ($) -> fail()
     );
 
-    // null xrpCurrencyAmountHandler
-    assertThrows(NullPointerException.class, () ->
-      issuedCurrencyAmount.handle(null, ($) -> new Object())
-    );
-    // null issuedCurrencyAmountConsumer
-    assertThrows(NullPointerException.class, () ->
-      issuedCurrencyAmount.handle(($) -> new Object(), null)
-    );
   }
 
   @Test
@@ -115,24 +122,10 @@ public class CurrencyAmountTest {
 
     String actual = xrpCurrencyAmount.map(
       ($) -> "success",
+      ($) -> "fail",
       ($) -> "fail"
     );
     assertThat(actual).isEqualTo("success");
-
-    // null xrpCurrencyAmountHandler
-    assertThrows(NullPointerException.class, () ->
-      xrpCurrencyAmount.map(null, ($) -> new Object())
-    );
-    // null issuedCurrencyAmountConsumer
-    assertThrows(NullPointerException.class, () ->
-      xrpCurrencyAmount.map(($) -> new Object(), null)
-    );
-
-    // Unhandled...
-    CurrencyAmount currencyAmount = () -> false;
-    assertThrows(IllegalStateException.class, () ->
-      currencyAmount.map(($) -> new Object(), ($) -> new Object())
-    );
   }
 
   @Test
@@ -145,18 +138,10 @@ public class CurrencyAmountTest {
 
     String actual = issuedCurrencyAmount.map(
       ($) -> "fail",
-      ($) -> "success"
+      ($) -> "success",
+      ($) -> "fail"
     );
     assertThat(actual).isEqualTo("success");
-
-    // null xrpCurrencyAmountHandler
-    assertThrows(NullPointerException.class, () ->
-      issuedCurrencyAmount.map(null, ($) -> new Object())
-    );
-    // null issuedCurrencyAmountConsumer
-    assertThrows(NullPointerException.class, () ->
-      issuedCurrencyAmount.map(($) -> new Object(), null)
-    );
   }
 
   /**
@@ -229,7 +214,8 @@ public class CurrencyAmountTest {
     final String finalCurrencyCode = currencyCode;
     decodedPayment.amount().handle(
       xrpCurrencyAmount -> fail(),
-      issuedCurrencyAmount -> assertThat(issuedCurrencyAmount.currency()).isEqualTo(finalCurrencyCode)
+      issuedCurrencyAmount -> assertThat(issuedCurrencyAmount.currency()).isEqualTo(finalCurrencyCode),
+      mpTokenAmount -> fail()
     );
   }
 

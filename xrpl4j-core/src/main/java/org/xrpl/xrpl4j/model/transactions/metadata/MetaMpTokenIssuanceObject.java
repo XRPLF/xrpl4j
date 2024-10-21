@@ -1,4 +1,4 @@
-package org.xrpl.xrpl4j.model.ledger;
+package org.xrpl.xrpl4j.model.transactions.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -7,6 +7,8 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
+import org.xrpl.xrpl4j.model.ledger.ImmutableMpTokenIssuanceObject;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -16,42 +18,27 @@ import org.xrpl.xrpl4j.model.transactions.TransferFee;
 import java.util.Optional;
 
 @Immutable
-@JsonSerialize(as = ImmutableMpTokenIssuanceObject.class)
-@JsonDeserialize(as = ImmutableMpTokenIssuanceObject.class)
-public interface MpTokenIssuanceObject extends LedgerObject {
-
-  /**
-   * Construct a {@code MetaMpTokenIssuanceObject} builder.
-   *
-   * @return An {@link ImmutableMpTokenIssuanceObject.Builder}.
-   */
-  static ImmutableMpTokenIssuanceObject.Builder builder() {
-    return ImmutableMpTokenIssuanceObject.builder();
-  }
-
-  @JsonProperty("LedgerEntryType")
-  @Value.Derived
-  default LedgerEntryType ledgerEntryType() {
-    return LedgerEntryType.MP_TOKEN_ISSUANCE;
-  }
+@JsonSerialize(as = ImmutableMetaMpTokenIssuanceObject.class)
+@JsonDeserialize(as = ImmutableMetaMpTokenIssuanceObject.class)
+public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
 
   @JsonProperty("Flags")
-  MpTokenIssuanceFlags flags();
+  Optional<MpTokenIssuanceFlags> flags();
 
   @JsonProperty("Issuer")
-  Address issuer();
+  Optional<Address> issuer();
 
   @JsonProperty("AssetScale")
-  AssetScale assetScale();
+  Optional<AssetScale> assetScale();
 
   @JsonProperty("MaximumAmount")
-  MpTokenObjectAmount maximumAmount();
+  Optional<MpTokenObjectAmount> maximumAmount();
 
   @JsonProperty("OutstandingAmount")
-  MpTokenObjectAmount outstandingAmount();
+  Optional<MpTokenObjectAmount> outstandingAmount();
 
   @JsonProperty("TransferFee")
-  TransferFee transferFee();
+  Optional<TransferFee> transferFee();
 
   @JsonProperty("MPTokenMetadata")
   Optional<String> mpTokenMetadata();
@@ -62,7 +49,7 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    * @return A {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
-  Hash256 previousTransactionId();
+  Optional<Hash256> previousTransactionId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
@@ -70,7 +57,7 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    * @return An {@link UnsignedInteger} representing the previous transaction ledger sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
-  UnsignedInteger previousTransactionLedgerSequence();
+  Optional<UnsignedInteger> previousTransactionLedgerSequence();
 
   /**
    * A 32-bit unsigned integer that is used to ensure issuances from a given sender may only ever exist once, even if an
@@ -80,7 +67,7 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    * @return An {@link UnsignedInteger} representing the account sequence number.
    */
   @JsonProperty("Sequence")
-  UnsignedInteger sequence();
+  Optional<UnsignedInteger> sequence();
 
   /**
    * A hint indicating which page of the owner directory links to this object, in case the directory consists of
@@ -95,10 +82,4 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();
 
-  /**
-   * The unique ID of this {@link MpTokenIssuanceObject}.
-   *
-   * @return A {@link Hash256} containing the ID.
-   */
-  Hash256 index();
 }

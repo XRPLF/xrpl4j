@@ -20,7 +20,6 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -53,8 +52,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MptMaximumAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MptMaximumAmountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenObjectAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenObjectAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
@@ -799,13 +798,13 @@ public class Wrappers {
 
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = MptMaximumAmount.class, using = MptMaximumAmountSerializer.class)
-  @JsonDeserialize(as = MptMaximumAmount.class, using = MptMaximumAmountDeserializer.class)
+  @JsonSerialize(as = MpTokenObjectAmount.class, using = MpTokenObjectAmountSerializer.class)
+  @JsonDeserialize(as = MpTokenObjectAmount.class, using = MpTokenObjectAmountDeserializer.class)
   @Beta
-  abstract static class _MptMaximumAmount extends Wrapper<UnsignedLong> implements Serializable {
+  abstract static class _MpTokenObjectAmount extends Wrapper<UnsignedLong> implements Serializable {
 
-    public static MptMaximumAmount of(long amount) {
-      return MptMaximumAmount.of(UnsignedLong.valueOf(amount));
+    public static MpTokenObjectAmount of(long amount) {
+      return MpTokenObjectAmount.of(UnsignedLong.valueOf(amount));
     }
 
     @Override

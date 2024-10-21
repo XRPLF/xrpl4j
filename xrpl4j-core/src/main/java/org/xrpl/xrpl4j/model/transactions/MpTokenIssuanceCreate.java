@@ -41,7 +41,7 @@ public interface MpTokenIssuanceCreate extends Transaction {
   Optional<TransferFee> transferFee();
 
   @JsonProperty("MaximumAmount")
-  Optional<MptMaximumAmount> maximumAmount();
+  Optional<MpTokenObjectAmount> maximumAmount();
 
   @JsonProperty("MPTokenMetadata")
   Optional<String> mpTokenMetadata();

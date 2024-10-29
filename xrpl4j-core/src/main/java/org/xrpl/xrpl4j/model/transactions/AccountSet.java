@@ -22,6 +22,8 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -261,6 +263,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the domain.
    */
   @JsonProperty("Domain")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> domain();
 
   /**

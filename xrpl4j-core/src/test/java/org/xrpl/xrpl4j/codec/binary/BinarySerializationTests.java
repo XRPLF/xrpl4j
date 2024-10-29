@@ -137,6 +137,36 @@ public class BinarySerializationTests {
   }
 
   @Test
+  public void serializeAccountSetTransactionWithDomain() throws JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(10598))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
+      .domain("ABCD")
+      .build();
+
+    String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A73007702ABCD81140F3D0C7D2CFAB2EC8" +
+      "295451F0B3CA038E8E9CDCD";
+    assertSerializesAndDeserializes(accountSet, expectedBinary);
+  }
+
+  @Test
+  public void serializeAccountSetTransactionWithEmptyStringDomain() throws JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(10598))
+      .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
+      .domain("")
+      .build();
+
+    String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A7300770081140F3D0C7D2CFAB2EC829545" +
+      "1F0B3CA038E8E9CDCD";
+    assertSerializesAndDeserializes(accountSet, expectedBinary);
+  }
+
+  @Test
   public void serializeAccountSetTransactionWithEmptyFlags() throws JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))

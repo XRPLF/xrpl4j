@@ -81,6 +81,88 @@ public class AccountSetJsonTests extends AbstractJsonTest {
   }
 
   @Test
+  public void accountSetWithEmptyDomain() throws JSONException, JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .transferRate(UnsignedInteger.valueOf(1000000001))
+      .tickSize(UnsignedInteger.valueOf(15))
+      .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
+      .emailHash("f9879d71855b5ff21e4963273a886bfc")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .networkId(NetworkId.of(1024))
+      .build();
+
+    String json = "{\n" +
+      "    \"TransactionType\":\"AccountSet\",\n" +
+      "    \"Account\":\"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\":\"12\",\n" +
+      "    \"Sequence\":5,\n" +
+      "    \"Flags\":2147483648,\n" +
+      "    \"SetFlag\":5,\n" +
+      "    \"MessageKey\":\"03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB\",\n" +
+      "    \"TransferRate\":1000000001,\n" +
+      "    \"TickSize\":15,\n" +
+      "    \"ClearFlag\":8,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NFTokenMinter\" : \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"NetworkID\": 1024,\n" +
+      "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(accountSet, json);
+  }
+
+  @Test
+  public void accountSetWithEmptyStringDomain() throws JSONException, JsonProcessingException {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .domain("")
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlag(AccountSetFlag.ACCOUNT_TXN_ID)
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .transferRate(UnsignedInteger.valueOf(1000000001))
+      .tickSize(UnsignedInteger.valueOf(15))
+      .clearFlag(AccountSetFlag.DEFAULT_RIPPLE)
+      .emailHash("f9879d71855b5ff21e4963273a886bfc")
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AccountSetTransactionFlags.of(TransactionFlags.FULLY_CANONICAL_SIG.getValue()))
+      .mintAccount(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .networkId(NetworkId.of(1024))
+      .build();
+
+    String json = "{\n" +
+      "    \"TransactionType\":\"AccountSet\",\n" +
+      "    \"Account\":\"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\":\"12\",\n" +
+      "    \"Sequence\":5,\n" +
+      "    \"Flags\":2147483648,\n" +
+      "    \"Domain\":\"\",\n" +
+      "    \"SetFlag\":5,\n" +
+      "    \"MessageKey\":\"03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB\",\n" +
+      "    \"TransferRate\":1000000001,\n" +
+      "    \"TickSize\":15,\n" +
+      "    \"ClearFlag\":8,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NFTokenMinter\" : \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"NetworkID\": 1024,\n" +
+      "    \"EmailHash\":\"f9879d71855b5ff21e4963273a886bfc\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(accountSet, json);
+  }
+
+  @Test
   public void testJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))

@@ -50,12 +50,17 @@ abstract class BaseSerializerTypeTest {
   @ParameterizedTest
   @MethodSource("dataDrivenFixtures")
   void fixtureTests(ValueTest fixture) throws IOException {
-    SerializedType serializedType = getType();
+    SerializedType<?> serializedType = getType();
     JsonNode value = getValue(fixture);
     if (fixture.error() != null) {
       assertThrows(Exception.class, () -> serializedType.fromJson(value));
     } else {
-      assertThat(serializedType.fromJson(value).toHex()).isEqualTo(fixture.expectedHex());
+      SerializedType<?> serialized = serializedType.fromJson(value);
+      if (fixture.type().equals("Amount")) {
+        assertThat(((AmountType) serialized).isPositive()).isEqualTo(!fixture.isNegative());
+        assertThat(((AmountType) serialized).isNative()).isEqualTo(fixture.isNative());
+      }
+      assertThat(serialized.toHex()).isEqualTo(fixture.expectedHex());
     }
   }
 

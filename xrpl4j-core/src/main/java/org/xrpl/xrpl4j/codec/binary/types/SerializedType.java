@@ -119,7 +119,9 @@ public abstract class SerializedType<T extends SerializedType<T>> {
   }
 
   /**
-   * Obtain a {@link T} using the supplied {@code node}.
+   * Obtain a {@link T} using the supplied {@code node}. Prefer using {@link #fromJson(JsonNode, FieldInstance)} over
+   * this method, as some {@link SerializedType}s require a {@link FieldInstance} to accurately serialize and
+   * deserialize.
    *
    * @param node A {@link JsonNode} to use.
    *
@@ -208,7 +210,9 @@ public abstract class SerializedType<T extends SerializedType<T>> {
   }
 
   /**
-   * Convert this {@link SerializedType} to a {@link JsonNode}.
+   * Convert this {@link SerializedType} to a {@link JsonNode}. Prefer using {@link #toJson(FieldInstance)} over this
+   * method where possible, as some {@link SerializedType}s require a {@link FieldInstance} to accurately serialize and
+   * deserialize.
    *
    * @return A {@link JsonNode}.
    */

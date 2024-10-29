@@ -22,6 +22,8 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -261,6 +263,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the domain.
    */
   @JsonProperty("Domain")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> domain();
 
   /**
@@ -278,6 +281,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the messaging public key.
    */
   @JsonProperty("MessageKey")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> messageKey();
 
   /**
@@ -306,6 +310,23 @@ public interface AccountSet extends Transaction {
    */
   @JsonProperty("NFTokenMinter")
   Optional<Address> mintAccount();
+
+  /**
+   * An arbitrary 256-bit value. If specified, the value is stored as part of the account but has no inherent meaning
+   * or requirements.
+   *
+   * @return The 256-bit value as a hex encoded {@link String}.
+   */
+  @JsonProperty("WalletLocator")
+  Optional<String> walletLocator();
+
+  /**
+   * Not used. This field is valid in AccountSet transactions but does nothing.
+   *
+   * @return An optionally present {@link UnsignedInteger}.
+   */
+  @JsonProperty("WalletSize")
+  Optional<UnsignedInteger> walletSize();
 
   /**
    * Check email hash length.

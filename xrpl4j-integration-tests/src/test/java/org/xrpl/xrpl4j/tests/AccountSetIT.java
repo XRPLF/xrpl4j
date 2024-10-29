@@ -392,6 +392,72 @@ public class AccountSetIT extends AbstractIT {
     assertThat(accountSetTransactionResult.transaction().clearFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.NONE);
   }
 
+  @Test
+  void setAndUnsetDomain() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair keyPair = constructRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet setDomain = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .signingPublicKey(keyPair.publicKey())
+      .domain("ABCD")
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedSetDomain = signatureService.sign(
+      keyPair.privateKey(), setDomain
+    );
+    SubmitResult<AccountSet> response = xrplClient.submit(signedSetDomain);
+
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedSetDomain.hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    );
+
+    this.scanForResult(() ->
+      this.getValidatedTransaction(signedSetDomain.hash(), AccountSet.class)
+    );
+    accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(accountInfo.accountData().domain()).isNotEmpty().isEqualTo(setDomain.domain());
+
+    AccountSet clearDomain = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .signingPublicKey(keyPair.publicKey())
+      .domain("")
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedClearDomain = signatureService.sign(
+      keyPair.privateKey(), clearDomain
+    );
+    SubmitResult<AccountSet> clearDomainSubmitResult = xrplClient.submit(signedClearDomain);
+
+    assertThat(clearDomainSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedClearDomain.hash()).isEqualTo(clearDomainSubmitResult.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        clearDomainSubmitResult.transactionResult().hash()
+    );
+
+    this.scanForResult(() ->
+      this.getValidatedTransaction(signedClearDomain.hash(), AccountSet.class)
+    );
+    accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(accountInfo.accountData().domain()).isEmpty();
+  }
 
   //////////////////////
   // Test Helpers

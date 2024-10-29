@@ -137,32 +137,38 @@ public class BinarySerializationTests {
   }
 
   @Test
-  public void serializeAccountSetTransactionWithDomain() throws JsonProcessingException {
+  public void serializeAccountSetTransactionWithPresentOptionalStringFields() throws JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(10598))
       .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .domain("ABCD")
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .emailHash("F9879D71855B5FF21E4963273A886BFC")
+      .walletLocator("F9879D71855B5FF21E4963273A886BFCF9879D71855B5FF21E4963273A886BFC")
       .build();
 
-    String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A73007702ABCD81140F3D0C7D2CFAB2EC8" +
-      "295451F0B3CA038E8E9CDCD";
+    String expectedBinary = "12000321FFFFFFFF240000296641F9879D71855B5FF21E4963273A886BFC57F98" +
+      "79D71855B5FF21E4963273A886BFCF9879D71855B5FF21E4963273A886BFC68400000000000000A722103AB" +
+      "40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB73007702ABCD81140F3D0C7D2" +
+      "CFAB2EC8295451F0B3CA038E8E9CDCD";
     assertSerializesAndDeserializes(accountSet, expectedBinary);
   }
 
   @Test
-  public void serializeAccountSetTransactionWithEmptyStringDomain() throws JsonProcessingException {
+  public void serializeAccountSetTransactionWithEmptyStrings() throws JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(Address.of("rpP2GdsQwenNnFPefbXFgiTvEgJWQpq8Rw"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(10598))
       .networkId(NetworkId.of(UnsignedInteger.MAX_VALUE))
       .domain("")
+      .messageKey("")
       .build();
 
-    String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A7300770081140F3D0C7D2CFAB2EC829545" +
-      "1F0B3CA038E8E9CDCD";
+    String expectedBinary = "12000321FFFFFFFF240000296668400000000000000A72007300" +
+      "770081140F3D0C7D2CFAB2EC8295451F0B3CA038E8E9CDCD";
     assertSerializesAndDeserializes(accountSet, expectedBinary);
   }
 

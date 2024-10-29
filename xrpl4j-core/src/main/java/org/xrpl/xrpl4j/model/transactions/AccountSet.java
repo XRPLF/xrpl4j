@@ -281,6 +281,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the messaging public key.
    */
   @JsonProperty("MessageKey")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> messageKey();
 
   /**
@@ -309,6 +310,23 @@ public interface AccountSet extends Transaction {
    */
   @JsonProperty("NFTokenMinter")
   Optional<Address> mintAccount();
+
+  /**
+   * An arbitrary 256-bit value. If specified, the value is stored as part of the account but has no inherent meaning
+   * or requirements.
+   *
+   * @return The 256-bit value as a hex encoded {@link String}.
+   */
+  @JsonProperty("WalletLocator")
+  Optional<String> walletLocator();
+
+  /**
+   * Not used. This field is valid in AccountSet transactions but does nothing.
+   *
+   * @return An optionally present {@link UnsignedInteger}.
+   */
+  @JsonProperty("WalletSize")
+  Optional<UnsignedInteger> walletSize();
 
   /**
    * Check email hash length.

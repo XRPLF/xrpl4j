@@ -33,7 +33,7 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
         <dependency>
             <groupId>org.xrpl</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>4.0.1</version>
+            <version>4.0.2</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

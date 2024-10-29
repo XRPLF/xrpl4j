@@ -281,6 +281,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the messaging public key.
    */
   @JsonProperty("MessageKey")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> messageKey();
 
   /**
@@ -310,6 +311,12 @@ public interface AccountSet extends Transaction {
   @JsonProperty("NFTokenMinter")
   Optional<Address> mintAccount();
 
+  @JsonProperty("WalletLocator")
+  Optional<String> walletLocator();
+
+  @JsonProperty("WalletSize")
+  Optional<UnsignedInteger> walletSize();
+
   /**
    * Check email hash length.
    */
@@ -318,8 +325,8 @@ public interface AccountSet extends Transaction {
     emailHash()
       .ifPresent(hash ->
         Preconditions.checkArgument(
-          hash.length() == 32,
-          String.format("emailHash must be 32 characters (128 bits), but was %s characters long.", hash.length())
+          hash.isEmpty() || hash.length() == 32,
+          String.format("emailHash must be 0 or 32 characters (128 bits), but was %s characters long.", hash.length())
         )
       );
   }

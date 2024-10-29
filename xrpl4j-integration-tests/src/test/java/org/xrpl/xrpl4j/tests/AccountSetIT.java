@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -393,7 +394,7 @@ public class AccountSetIT extends AbstractIT {
   }
 
   @Test
-  void setAndUnsetDomain() throws JsonRpcClientErrorException, JsonProcessingException {
+  void setAndUnsetDomainAndMessageKey() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair keyPair = constructRandomAccount();
 
     ///////////////////////
@@ -409,6 +410,9 @@ public class AccountSetIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .signingPublicKey(keyPair.publicKey())
       .domain("ABCD")
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .emailHash("F9879D71855B5FF21E4963273A886BFC")
+      .walletLocator("F9879D71855B5FF21E4963273A886BFCF9879D71855B5FF21E4963273A886BFC")
       .build();
 
     SingleSignedTransaction<AccountSet> signedSetDomain = signatureService.sign(
@@ -429,6 +433,9 @@ public class AccountSetIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
     assertThat(accountInfo.accountData().domain()).isNotEmpty().isEqualTo(setDomain.domain());
+    assertThat(accountInfo.accountData().messageKey()).isNotEmpty().isEqualTo(setDomain.messageKey());
+    assertThat(accountInfo.accountData().emailHash()).isNotEmpty().isEqualTo(setDomain.emailHash());
+    assertThat(accountInfo.accountData().walletLocator()).isNotEmpty().isEqualTo(setDomain.walletLocator());
 
     AccountSet clearDomain = AccountSet.builder()
       .account(keyPair.publicKey().deriveAddress())
@@ -436,6 +443,9 @@ public class AccountSetIT extends AbstractIT {
       .sequence(accountInfo.accountData().sequence())
       .signingPublicKey(keyPair.publicKey())
       .domain("")
+      .messageKey("")
+      .emailHash(Strings.repeat("0", 32))
+      .walletLocator(Strings.repeat("0", 64))
       .build();
 
     SingleSignedTransaction<AccountSet> signedClearDomain = signatureService.sign(
@@ -457,6 +467,9 @@ public class AccountSetIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
     );
     assertThat(accountInfo.accountData().domain()).isEmpty();
+    assertThat(accountInfo.accountData().messageKey()).isEmpty();
+    assertThat(accountInfo.accountData().emailHash()).isEmpty();
+    assertThat(accountInfo.accountData().walletLocator()).isEmpty();
   }
 
   //////////////////////

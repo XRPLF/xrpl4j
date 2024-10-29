@@ -240,6 +240,14 @@ public interface AccountRootObject extends LedgerObject {
   Optional<Hash256> ammId();
 
   /**
+   * An arbitrary 256-bit value that users can set.
+   *
+   * @return An {@link Optional} {@link String}.
+   */
+  @JsonProperty("WalletLocator")
+  Optional<String> walletLocator();
+
+  /**
    * The unique ID of this {@link AccountRootObject} ledger object.
    *
    * @return A {@link Hash256}.

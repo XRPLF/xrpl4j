@@ -59,14 +59,14 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
-  void testAccountDeleteItFailsWith_tecTOO_SOON() throws JsonRpcClientErrorException, JsonProcessingException {
+  void testAccountDeleteItFailsWith_TooSoon() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );
 
     // create, sign & submit AccountDelete tx
@@ -90,13 +90,13 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
-  void testAccountDeleteItFailsWith_temDST_IS_SRC() throws JsonRpcClientErrorException, JsonProcessingException {
+  void testAccountDeleteItFailsWith_DestinationIsSource() throws JsonRpcClientErrorException, JsonProcessingException {
     // create one account, will be the sender & destination in the tx
     KeyPair senderAccount = constructRandomAccount();
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );
 
     // create, sign & submit AccountDelete tx
@@ -119,14 +119,14 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
-  void testAccountDeleteItFailsWith_tecDST_TAG_NEEDED() throws JsonRpcClientErrorException, JsonProcessingException {
+  void testAccountDeleteItFailsWith_DestinationTagNeeded() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
 
     // get account info for the sequence number
     AccountInfoResult receiverAccountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
 
     // create, sign & submit REQUIRE_DEST AccountSet tx for receiver
@@ -153,10 +153,11 @@ class AccountDeleteIT extends AbstractIT {
     );
 
     AccountInfoResult updatedReceiverAccountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
 
-    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.REQUIRE_DEST);
+    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get()
+        .isEqualTo(AccountSet.AccountSetFlag.REQUIRE_DEST);
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfRequireDestTag()).isTrue();
 
     // create, sign & submit AccountDelete tx
@@ -179,14 +180,14 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
-  void testAccountDeleteItFailsWith_tecNO_PERMISSION() throws JsonRpcClientErrorException, JsonProcessingException {
+  void testAccountDeleteItFailsWith_NoPermission() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
 
     // get account info for the sequence number
     AccountInfoResult receiverAccountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
 
     // create, sign & submit DEPOSIT_AUTH AccountSet tx for receiver
@@ -208,15 +209,16 @@ class AccountDeleteIT extends AbstractIT {
     assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
 
     // confirm flag was set
-    TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
-        this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
+    TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
     );
 
     AccountInfoResult updatedReceiverAccountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
 
-    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get().isEqualTo(AccountSet.AccountSetFlag.DEPOSIT_AUTH);
+    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get()
+        .isEqualTo(AccountSet.AccountSetFlag.DEPOSIT_AUTH);
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfDepositAuth()).isTrue();
 
     // create, sign & submit AccountDelete tx
@@ -239,14 +241,14 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
-  void testAccountDeleteItFailsWith_tecNO_DST() throws JsonRpcClientErrorException, JsonProcessingException {
+  void testAccountDeleteItFailsWith_NoDestination() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx, the other is not funded
     KeyPair senderAccount = constructRandomAccount();
     KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );
 
     // create, sign & submit AccountDelete tx
@@ -268,7 +270,7 @@ class AccountDeleteIT extends AbstractIT {
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
 
-  @DisabledIf(value = "shouldRun", disabledReason = "successful use case only runs with local rippled nodes because admin client is used.")
+  @DisabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs with local rippled nodes.")
   @Test
   void testAccountDeleteIt() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
@@ -277,12 +279,13 @@ class AccountDeleteIT extends AbstractIT {
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
-        () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+      () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );
 
     // accept next 256 ledgers
     for (int i = 0; i < 256; i++) {
-      LocalRippledEnvironment localRippledEnvironment = (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
+      LocalRippledEnvironment localRippledEnvironment =
+          (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
       localRippledEnvironment.acceptLedger();
     }
 

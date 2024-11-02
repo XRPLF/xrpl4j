@@ -41,9 +41,12 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.LocalRippledEnvironment;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
+
+import java.time.Duration;
 
 /**
  * An integration test that submits AccountDelete transactions that handle a successful usage along with
@@ -267,6 +270,71 @@ class AccountDeleteIT extends AbstractIT {
 
     // get tecNO_DST because destination was not funded account in the ledger
     assertThat(response.engineResult()).isEqualTo("tecNO_DST");
+    assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
+  }
+
+  @Test
+  void testAccountDeleteItFailsWith_HasObligations() throws JsonRpcClientErrorException, JsonProcessingException {
+    // create two accounts, one will be the destination in the tx
+    KeyPair senderAccount = constructRandomAccount();
+    KeyPair receiverAccount = constructRandomAccount();
+
+    // get account info for the sequence number
+    AccountInfoResult accountInfo = this.scanForResult(
+        () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+    );
+
+    // create EscrowCreate tx to link an account with an object for tecHAS_OBLIGATIONS error
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+        .account(senderAccount.publicKey().deriveAddress())
+        .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(200)).build())
+        .amount(XrpCurrencyAmount.of(UnsignedLong.valueOf(10)))
+        .sequence(accountInfo.accountData().sequence())
+        .destination(senderAccount.publicKey().deriveAddress())
+        .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(10))))
+        .signingPublicKey(senderAccount.publicKey())
+        .build();
+
+    // sign and submit EscrowCreate tx
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+        senderAccount.privateKey(), escrowCreate
+    );
+    SubmitResult<EscrowCreate> escrowCreateResult = xrplClient.submit(signedEscrowCreate);
+
+    assertThat(escrowCreateResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedEscrowCreate.hash()).isEqualTo(escrowCreateResult.transactionResult().hash());
+
+    // accept next 256 ledgers
+    for (int i = 0; i < 256; i++) {
+      LocalRippledEnvironment localRippledEnvironment =
+          (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
+      localRippledEnvironment.acceptLedger();
+    }
+
+    // make last ledger index at least 256 greater and wait to avoid tec_TOOSOON error case
+    LedgerResult res = xrplClient.ledger(LedgerRequestParams.builder()
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
+    LedgerIndex index = res.ledgerIndex().get().plus(LedgerIndex.of(UnsignedInteger.valueOf(300)));
+
+    // create, sign & submit AccountDelete tx
+    AccountDelete accountDelete = AccountDelete.builder()
+        .account(senderAccount.publicKey().deriveAddress())
+        .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
+        .sequence(signedEscrowCreate.signedTransaction().sequence().plus(UnsignedInteger.ONE))
+        .destination(receiverAccount.publicKey().deriveAddress())
+        .lastLedgerSequence(index.unsignedIntegerValue())
+        .signingPublicKey(senderAccount.publicKey())
+        .build();
+
+    SingleSignedTransaction<AccountDelete> signedAccountDelete = signatureService.sign(
+        senderAccount.privateKey(), accountDelete
+    );
+
+    SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
+
+    // get tecHAS_OBLIGATIONS because there are objects depending on the account
+    // that is trying to be deleted
+    assertThat(response.engineResult()).isEqualTo("tecHAS_OBLIGATIONS");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
 

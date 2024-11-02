@@ -57,10 +57,10 @@ import java.time.Instant;
 /**
  * Integration test to validate creation, cancellation, and execution of escrow transactions.
  */
-class EscrowIT extends AbstractIT {
+public class EscrowIT extends AbstractIT {
 
   @Test
-  void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -163,7 +163,7 @@ class EscrowIT extends AbstractIT {
   }
 
   @Test
-  void createAndCancelTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void createAndCancelTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -270,7 +270,7 @@ class EscrowIT extends AbstractIT {
   }
 
   @Test
-  void createAndFinishCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void createAndFinishCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -383,7 +383,7 @@ class EscrowIT extends AbstractIT {
   }
 
   @Test
-  void createAndCancelCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void createAndCancelCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();

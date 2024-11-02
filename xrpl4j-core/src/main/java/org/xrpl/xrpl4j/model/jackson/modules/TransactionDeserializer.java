@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
+import org.xrpl.xrpl4j.model.transactions.UnknownTransaction;
 
 import java.io.IOException;
 

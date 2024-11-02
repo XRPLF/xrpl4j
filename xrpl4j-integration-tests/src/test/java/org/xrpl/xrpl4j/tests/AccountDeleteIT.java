@@ -86,8 +86,7 @@ class AccountDeleteIT extends AbstractIT {
     );
     SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
 
-    // get tecTOO_SOON because sequence # is too high, need to wait for ledger index to be
-    // greater than sequence number + 256
+    // get tecTOO_SOON because need to wait for ledger index to be greater than sequenceNumber + 256
     assertThat(response.engineResult()).isEqualTo("tecTOO_SOON");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
@@ -159,7 +158,7 @@ class AccountDeleteIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
 
-    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get()
+    assertThat(accountSetTransactionResult.transaction().setFlag().orElse(null))
         .isEqualTo(AccountSet.AccountSetFlag.REQUIRE_DEST);
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfRequireDestTag()).isTrue();
 
@@ -177,7 +176,7 @@ class AccountDeleteIT extends AbstractIT {
     );
     SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
 
-    // get tecDST_TAG_NEEDED because the destination tag is required for the receiver
+    // get tecDST_TAG_NEEDED because the receiver requires the destination tag to be set
     assertThat(response.engineResult()).isEqualTo("tecDST_TAG_NEEDED");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
@@ -220,7 +219,7 @@ class AccountDeleteIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
 
-    assertThat(accountSetTransactionResult.transaction().setFlag()).isNotEmpty().get()
+    assertThat(accountSetTransactionResult.transaction().setFlag().orElse(null))
         .isEqualTo(AccountSet.AccountSetFlag.DEPOSIT_AUTH);
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfDepositAuth()).isTrue();
 
@@ -238,14 +237,14 @@ class AccountDeleteIT extends AbstractIT {
     );
     SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
 
-    // get tecNO_PERMISSION because deposit auth is enabled and sender is not authorized
+    // get tecNO_PERMISSION because deposit auth is enabled by receiver and sender is not authorized
     assertThat(response.engineResult()).isEqualTo("tecNO_PERMISSION");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
 
   @Test
   void testAccountDeleteItFailsWith_NoDestination() throws JsonRpcClientErrorException, JsonProcessingException {
-    // create two accounts, one will be the destination in the tx, the other is not funded
+    // create one account and a random key pair that will be used for the destination
     KeyPair senderAccount = constructRandomAccount();
     KeyPair randomKeyPair = Seed.ed25519Seed().deriveKeyPair();
 
@@ -268,7 +267,7 @@ class AccountDeleteIT extends AbstractIT {
     );
     SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
 
-    // get tecNO_DST because destination was not funded account in the ledger
+    // get tecNO_DST because destination was not a funded account on the ledger
     assertThat(response.engineResult()).isEqualTo("tecNO_DST");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
@@ -304,17 +303,15 @@ class AccountDeleteIT extends AbstractIT {
     assertThat(escrowCreateResult.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(signedEscrowCreate.hash()).isEqualTo(escrowCreateResult.transactionResult().hash());
 
-    // accept next 256 ledgers
+    // accept next 256 ledgers to avoid tec_TOOSOON error case and get current ledger index
     for (int i = 0; i < 256; i++) {
       LocalRippledEnvironment localRippledEnvironment =
           (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
       localRippledEnvironment.acceptLedger();
     }
 
-    // make last ledger index at least 256 greater and wait to avoid tec_TOOSOON error case
-    LedgerResult res = xrplClient.ledger(LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
-    LedgerIndex index = res.ledgerIndex().get().plus(LedgerIndex.of(UnsignedInteger.valueOf(300)));
+    LedgerResult lastLedgerResult = xrplClient.ledger(LedgerRequestParams.builder()
+        .ledgerSpecifier(LedgerSpecifier.CURRENT).build());
 
     // create, sign & submit AccountDelete tx
     AccountDelete accountDelete = AccountDelete.builder()
@@ -322,7 +319,7 @@ class AccountDeleteIT extends AbstractIT {
         .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
         .sequence(signedEscrowCreate.signedTransaction().sequence().plus(UnsignedInteger.ONE))
         .destination(receiverAccount.publicKey().deriveAddress())
-        .lastLedgerSequence(index.unsignedIntegerValue())
+        .lastLedgerSequence(lastLedgerResult.ledgerCurrentIndexSafe().unsignedIntegerValue())
         .signingPublicKey(senderAccount.publicKey())
         .build();
 
@@ -332,8 +329,7 @@ class AccountDeleteIT extends AbstractIT {
 
     SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
 
-    // get tecHAS_OBLIGATIONS because there are objects depending on the account
-    // that is trying to be deleted
+    // get tecHAS_OBLIGATIONS because there are objects depending on the account that is trying to be deleted
     assertThat(response.engineResult()).isEqualTo("tecHAS_OBLIGATIONS");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
@@ -350,17 +346,15 @@ class AccountDeleteIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );
 
-    // accept next 256 ledgers
+    // accept next 256 ledgers to avoid tec_TOOSOON error case and get current ledger index
     for (int i = 0; i < 256; i++) {
       LocalRippledEnvironment localRippledEnvironment =
           (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
       localRippledEnvironment.acceptLedger();
     }
 
-    // make last ledger index at least 256 greater and wait to avoid tec_TOOSOON error case
-    LedgerResult res = xrplClient.ledger(LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
-    LedgerIndex index = res.ledgerIndex().get().plus(LedgerIndex.of(UnsignedInteger.valueOf(300)));
+    LedgerResult lastLedgerResult = xrplClient.ledger(LedgerRequestParams.builder()
+        .ledgerSpecifier(LedgerSpecifier.CURRENT).build());
 
     // create, sign & submit AccountDelete tx
     AccountDelete accountDelete = AccountDelete.builder()
@@ -368,7 +362,7 @@ class AccountDeleteIT extends AbstractIT {
         .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
         .sequence(accountInfo.accountData().sequence())
         .destination(receiverAccount.publicKey().deriveAddress())
-        .lastLedgerSequence(index.unsignedIntegerValue())
+        .lastLedgerSequence(lastLedgerResult.ledgerCurrentIndexSafe().unsignedIntegerValue())
         .signingPublicKey(senderAccount.publicKey())
         .build();
 

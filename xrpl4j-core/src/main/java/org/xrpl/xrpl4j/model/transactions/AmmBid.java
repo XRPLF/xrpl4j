@@ -110,7 +110,4 @@ public interface AmmBid extends Transaction {
   @JsonProperty("AuthAccounts")
   List<AuthAccountWrapper> authAccounts();
 
-  /*@Override
-  @JsonAnyGetter
-  Map<String, Object> unknownFields();*/
 }

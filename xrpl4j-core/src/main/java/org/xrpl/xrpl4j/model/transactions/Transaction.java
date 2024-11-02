@@ -227,7 +227,6 @@ public interface Transaction {
   Optional<NetworkId> networkId();
 
   @JsonAnyGetter
-  @JsonInclude(Include.NON_ABSENT)
   Map<String, Object> unknownFields();
 
 }

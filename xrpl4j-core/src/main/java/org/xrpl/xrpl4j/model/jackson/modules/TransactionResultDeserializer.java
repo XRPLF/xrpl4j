@@ -75,7 +75,11 @@ public class TransactionResultDeserializer<T extends Transaction> extends StdDes
     Optional<TransactionMetadata> metadata = getTransactionMetadata(objectMapper, objectNode);
     UnsignedLong closeDate = objectNode.has("date") ? UnsignedLong.valueOf(objectNode.get("date").asLong()) : null;
 
+    // The Transaction is @JsonUnwrapped in TransactionResult, which means these fields
+    // get added to the Transaction.unknownFields Map. To prevent that, we simply remove them from the JSON, because
+    // they should only show up in AccountTransactionsTransaction
     objectNode.remove(EXTRA_TRANSACTION_FIELDS);
+
     JavaType javaType = objectMapper.getTypeFactory().constructType(new TypeReference<T>() {
     });
     T transaction = objectMapper.convertValue(objectNode, javaType);

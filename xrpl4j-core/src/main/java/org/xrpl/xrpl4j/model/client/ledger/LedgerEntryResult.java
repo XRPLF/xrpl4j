@@ -26,6 +26,8 @@ public interface LedgerEntryResult<T extends LedgerObject> extends XrplResult {
   /**
    * Construct a {@code LedgerEntryResult} builder.
    *
+   * @param <T> The type of {@link LedgerObject}.
+   *
    * @return An {@link ImmutableLedgerEntryResult.Builder}.
    */
   static <T extends LedgerObject> ImmutableLedgerEntryResult.Builder<T> builder() {

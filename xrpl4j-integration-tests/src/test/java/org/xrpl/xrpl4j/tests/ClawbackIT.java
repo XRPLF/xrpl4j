@@ -45,24 +45,28 @@ public class ClawbackIT extends AbstractIT {
     setAllowClawback(issuerKeyPair, issuerAccount, fee);
 
     createTrustLine(
-      "USD",
-      "10000",
-      issuerKeyPair,
       holderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
       fee
     );
 
     sendIssuedCurrency(
-      "USD",
-      "100",
       issuerKeyPair,
       holderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("100")
+        .build(),
       fee
     );
 
     issuerAccount = this.getValidatedAccountInfo(issuerAccount.accountData().account());
     clawback(
-      "USD",
       "10",
       holderKeyPair.publicKey().deriveAddress(),
       issuerKeyPair,
@@ -82,7 +86,6 @@ public class ClawbackIT extends AbstractIT {
 
     issuerAccount = this.getValidatedAccountInfo(issuerAccount.accountData().account());
     clawback(
-      "USD",
       "90",
       holderKeyPair.publicKey().deriveAddress(),
       issuerKeyPair,
@@ -101,7 +104,6 @@ public class ClawbackIT extends AbstractIT {
   }
 
   private void clawback(
-    String currencyCode,
     String amount,
     Address holderAddress,
     KeyPair issuerKeyPair,
@@ -115,7 +117,7 @@ public class ClawbackIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .amount(
         IssuedCurrencyAmount.builder()
-          .currency(currencyCode)
+          .currency("USD")
           .value(amount)
           .issuer(holderAddress)
           .build()
@@ -130,7 +132,7 @@ public class ClawbackIT extends AbstractIT {
     scanForFinality(
       signedClawback.hash(),
       issuerAccountInfo.ledgerIndexSafe(),
-      clawback.lastLedgerSequence().get(),
+      clawback.lastLedgerSequence().orElseThrow(() -> new RuntimeException("Clawback lacked lastLedgerSequence")),
       clawback.sequence(),
       clawback.account()
     );
@@ -159,7 +161,7 @@ public class ClawbackIT extends AbstractIT {
     scanForFinality(
       signedAccountSet.hash(),
       issuerAccount.ledgerIndexSafe(),
-      accountSet.lastLedgerSequence().get(),
+      accountSet.lastLedgerSequence().orElseThrow(() -> new RuntimeException("AccountSet lacked lastLedgerSequence")),
       accountSet.sequence(),
       accountSet.account()
     );

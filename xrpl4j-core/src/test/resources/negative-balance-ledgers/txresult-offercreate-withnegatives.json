@@ -1,0 +1,169 @@
+{
+  "Account": "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6",
+  "Fee": "10",
+  "Flags": 655360,
+  "LastLedgerSequence": 87704324,
+  "Memos": [
+    {
+      "Memo": {
+        "MemoData": "4209DCD25EF91F20D6C0FC12F175B6CD0AD6BAF604A22498404A3ED505E3E037401BE767D34DF04E4076E2CE7646AE053FF0000000000000"
+      }
+    }
+  ],
+  "Sequence": 1051567,
+  "SigningPubKey": "EDE30BA017ED458B9B372295863B042C2BA8F11AD53B4BDFB398E778CB7679146B",
+  "TakerGets": "9939",
+  "TakerPays": {
+    "currency": "SGB",
+    "issuer": "rctArjqVvTHihekzDeecKo6mkTYTUSBNc",
+    "value": "-0.0005216884852049924"
+  },
+  "TransactionType": "OfferCreate",
+  "TxnSignature": "7AE0BEC498F6224AB90EB6A6792A39C9EBB01F960BCC1C7963408ECB4CEB58134A0DF586E92A3AA02FFF0CE3BC0B24AF491300B728059D51B258DC43C6FCDC0F",
+  "hash": "C4D4986FE857F144B8F21B8D603430931EE65F382E1FB8547EF23E9FB0664DA5",
+  "metaData": {
+    "AffectedNodes": [
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Account": "rfpBQvCTyCsExf47gvDbY647b9pz67BjsM",
+            "Balance": "-252580537",
+            "Flags": 0,
+            "OwnerCount": 31,
+            "Sequence": 77735066
+          },
+          "LedgerEntryType": "AccountRoot",
+          "LedgerIndex": "0943A7CA0445F090EFA54DF215581407714AE7E396207B491C049F9EB75BB6A5",
+          "PreviousFields": {
+            "Balance": "-252570598"
+          },
+          "PreviousTxnID": "4809E032BE36F28C90A3824DF5F28250BFCCF3985C35E04235CD29411AE227C2",
+          "PreviousTxnLgrSeq": 87704321
+        }
+      },
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Account": "rfpBQvCTyCsExf47gvDbY647b9pz67BjsM",
+            "BookDirectory": "CF4E10710F68879A15534813B9047ED60B2A0E90988B9F965906C4AC0727C256",
+            "BookNode": "0",
+            "Flags": 0,
+            "OwnerNode": "1",
+            "Sequence": 77735064,
+            "TakerGets": {
+              "currency": "SGB",
+              "issuer": "rctArjqVvTHihekzDeecKo6mkTYTUSBNc",
+              "value": "-365.6536989495917"
+            },
+            "TakerPays": "-6966043"
+          },
+          "LedgerEntryType": "Offer",
+          "LedgerIndex": "141FC5FC5B32AD1CF25E80F2DF6B1D4B0E8EF0936967253160D412ACEA3EFC9C",
+          "PreviousFields": {
+            "TakerGets": {
+              "currency": "SGB",
+              "issuer": "rctArjqVvTHihekzDeecKo6mkTYTUSBNc",
+              "value": "-366.175405765622"
+            },
+            "TakerPays": "-6975982"
+          },
+          "PreviousTxnID": "4809E032BE36F28C90A3824DF5F28250BFCCF3985C35E04235CD29411AE227C2",
+          "PreviousTxnLgrSeq": 87704321
+        }
+      },
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Balance": {
+              "currency": "SGB",
+              "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+              "value": "-39.20990285771919"
+            },
+            "Flags": 2228224,
+            "HighLimit": {
+              "currency": "SGB",
+              "issuer": "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6",
+              "value": "-20"
+            },
+            "HighNode": "7",
+            "LowLimit": {
+              "currency": "SGB",
+              "issuer": "rctArjqVvTHihekzDeecKo6mkTYTUSBNc",
+              "value": "-10"
+            },
+            "LowNode": "5f4"
+          },
+          "LedgerEntryType": "RippleState",
+          "LedgerIndex": "8D426D0D58528156D32A4D77C4B176C9552DFD85B2E953F8B4FE971CE52CA294",
+          "PreviousFields": {
+            "Balance": {
+              "currency": "SGB",
+              "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+              "value": "-38.68819604168891"
+            }
+          },
+          "PreviousTxnID": "D76EBAC94363B98275523C0B54EABA77057940B6671BA93AD9ED7E4981FE58F8",
+          "PreviousTxnLgrSeq": 87704321
+        }
+      },
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Balance": {
+              "currency": "SGB",
+              "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+              "value": "-1336.091568733186"
+            },
+            "Flags": 2228224,
+            "HighLimit": {
+              "currency": "SGB",
+              "issuer": "rfpBQvCTyCsExf47gvDbY647b9pz67BjsM",
+              "value": "-23523463"
+            },
+            "HighNode": "0",
+            "LowLimit": {
+              "currency": "SGB",
+              "issuer": "rctArjqVvTHihekzDeecKo6mkTYTUSBNc",
+              "value": "-1"
+            },
+            "LowNode": "571"
+          },
+          "LedgerEntryType": "RippleState",
+          "LedgerIndex": "9A0EB00C56F3A466A7973F355AFF8937FE3F601A379254740E231B9286AE26B2",
+          "PreviousFields": {
+            "Balance": {
+              "currency": "SGB",
+              "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+              "value": "-1336.614840669664"
+            }
+          },
+          "PreviousTxnID": "4809E032BE36F28C90A3824DF5F28250BFCCF3985C35E04235CD29411AE227C2",
+          "PreviousTxnLgrSeq": 87704321
+        }
+      },
+      {
+        "ModifiedNode": {
+          "FinalFields": {
+            "Account": "rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6",
+            "AccountTxnID": "C4D4986FE857F144B8F21B8D603430931EE65F382E1FB8547EF23E9FB0664DA5",
+            "Balance": "-2308705199",
+            "Flags": 0,
+            "OwnerCount": 117,
+            "Sequence": 1051568
+          },
+          "LedgerEntryType": "AccountRoot",
+          "LedgerIndex": "BFF40FB02870A44349BB5E482CD2A4AA3415C7E72F4D2E9E98129972F26DA9AA",
+          "PreviousFields": {
+            "AccountTxnID": "DAD2D087DDD04A9BB8ECA61B729DB8CA2030C8F6BDA1541C84C5155C247AD9A7",
+            "Balance": "-2308715148",
+            "Sequence": 1051567
+          },
+          "PreviousTxnID": "DAD2D087DDD04A9BB8ECA61B729DB8CA2030C8F6BDA1541C84C5155C247AD9A7",
+          "PreviousTxnLgrSeq": 87704321
+        }
+      }
+    ],
+    "TransactionIndex": 9,
+    "TransactionResult": "tesSUCCESS"
+  }
+}

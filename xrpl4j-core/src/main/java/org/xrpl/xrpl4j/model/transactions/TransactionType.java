@@ -336,9 +336,7 @@ public enum TransactionType {
    * is subject to change.</p>
    */
   @Beta
-  ORACLE_DELETE("OracleDelete"),
-
-  UNKNOWN("Unknown");
+  ORACLE_DELETE("OracleDelete");
 
   private final String value;
 
@@ -360,7 +358,7 @@ public enum TransactionType {
       }
     }
 
-    return UNKNOWN;
+    throw new IllegalArgumentException("No matching TransactionType enum value for String value " + value);
   }
 
   /**

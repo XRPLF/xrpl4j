@@ -57,10 +57,10 @@ import java.time.Instant;
 /**
  * Integration test to validate creation, cancellation, and execution of escrow transactions.
  */
-public class EscrowIT extends AbstractIT {
+class EscrowIT extends AbstractIT {
 
   @Test
-  public void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createAndFinishTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -163,7 +163,7 @@ public class EscrowIT extends AbstractIT {
   }
 
   @Test
-  public void createAndCancelTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createAndCancelTimeBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -270,7 +270,7 @@ public class EscrowIT extends AbstractIT {
   }
 
   @Test
-  public void createAndFinishCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createAndFinishCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -383,7 +383,7 @@ public class EscrowIT extends AbstractIT {
   }
 
   @Test
-  public void createAndCancelCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createAndCancelCryptoConditionBasedEscrow() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////
     // Create random sender and receiver accounts
     KeyPair senderKeyPair = createRandomAccountEd25519();
@@ -483,27 +483,6 @@ public class EscrowIT extends AbstractIT {
     );
 
   }
-
-  /**
-   * Returns the minimum time that can be used for escrow expirations. The ledger will not accept an expiration time
-   * that is earlier than the last ledger close time, so we must use the latter of current time or ledger close time
-   * (which for unexplained reasons can sometimes be later than now).
-   *
-   * @return An {@link Instant}.
-   */
-  private Instant getMinExpirationTime() {
-    LedgerResult result = getValidatedLedger();
-    Instant closeTime = xrpTimestampToInstant(
-      result.ledger().closeTime()
-        .orElseThrow(() ->
-          new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
-        )
-    );
-
-    Instant now = Instant.now();
-    return closeTime.isBefore(now) ? now : closeTime;
-  }
-
 
   private void assertEntryEqualsObjectFromAccountObjects(
     Address escrowOwner,

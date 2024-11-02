@@ -8,9 +8,6 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
-/**
- * Mapping for any transaction type that is unrecognized/unsupported by xrpl4j.
- */
 @Immutable
 @JsonSerialize(as = ImmutableUnknownTransaction.class)
 @JsonDeserialize(as = ImmutableUnknownTransaction.class)
@@ -26,9 +23,7 @@ public interface UnknownTransaction extends Transaction {
   }
 
   /**
-   * The actual transaction type found in the {@code "TransactionType"} field of the transaction JSON.
-   *
-   * <p>This has to be a {@link String} because {@link Transaction#transactionType()} is a {@link TransactionType},
+   * This has to be a {@link String} because {@link Transaction#transactionType()} is a {@link TransactionType},
    * which only has an UNKNOWN variant. Because this method is also annotated with {@link JsonProperty} of
    * "TransactionType", this essentially overrides the "TransactionType" field in JSON, but {@link #transactionType()}
    * will always be {@link TransactionType#UNKNOWN} and this field will contain the actual "TransactionType" field.
@@ -38,24 +33,12 @@ public interface UnknownTransaction extends Transaction {
   @JsonProperty("TransactionType")
   String unknownTransactionType();
 
-  /**
-   * The {@link TransactionType} of this UnknownTransaction, which will always be {@link TransactionType#UNKNOWN}.
-   * {@link #unknownTransactionType()} contains the actual transaction type value.
-   *
-   * @return {@link TransactionType#UNKNOWN}.
-   */
   @Override
   @JsonIgnore
-  @Value.Derived
   default TransactionType transactionType() {
     return Transaction.super.transactionType();
   }
 
-  /**
-   * A set of {@link TransactionFlags}.
-   *
-   * @return A {@link TransactionFlags}.
-   */
   @JsonProperty("Flags")
   @Value.Default
   default TransactionFlags flags() {

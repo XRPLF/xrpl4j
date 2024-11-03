@@ -1,26 +1,16 @@
 package org.xrpl.xrpl4j.model.transactions;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.UnsignedInteger;
-import org.immutables.value.Value.Immutable;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
 import java.util.HashMap;
-import java.util.Optional;
 
 class UnknownTransactionTest extends AbstractJsonTest {
 

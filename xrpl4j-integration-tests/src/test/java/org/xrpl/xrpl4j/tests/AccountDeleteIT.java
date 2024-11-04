@@ -274,8 +274,8 @@ class AccountDeleteIT extends AbstractIT {
   @Test
   void testAccountDeleteItFailsWith_HasObligations() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
-    KeyPair senderAccount = constructRandomAccount();
-    KeyPair receiverAccount = constructRandomAccount();
+    final KeyPair senderAccount = constructRandomAccount();
+    final KeyPair receiverAccount = constructRandomAccount();
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(

@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -26,12 +28,13 @@ class UnknownTransactionTest extends AbstractJsonTest {
     unknownFields.put("NFTokenMinter", "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn");
     unknownFields.put("WalletLocator", Strings.repeat("0", 64));
     unknownFields.put("EmailHash", Strings.repeat("0", 32));
-    Transaction transaction = UnknownTransaction.builder()
+    TransactionFlags flags = TransactionFlags.of(2147483648L);
+    UnknownTransaction transaction = UnknownTransaction.builder()
       .unknownTransactionType("AccountSet2")
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
       .fee(XrpCurrencyAmount.ofDrops(12))
       .sequence(UnsignedInteger.valueOf(5))
-      .flags(TransactionFlags.of(2147483648L))
+      .flags(flags)
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"))
       .unknownFields(
@@ -39,6 +42,8 @@ class UnknownTransactionTest extends AbstractJsonTest {
       )
       .networkId(NetworkId.of(UnsignedInteger.valueOf(1024)))
       .build();
+
+    assertThat(transaction.flags()).isEqualTo(flags);
 
     // Same properties as AccountSet, but TransactionType is AccountSet2
     String json = "{\n" +

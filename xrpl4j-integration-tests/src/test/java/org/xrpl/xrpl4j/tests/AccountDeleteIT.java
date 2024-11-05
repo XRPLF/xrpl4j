@@ -273,9 +273,8 @@ class AccountDeleteIT extends AbstractIT {
 
   @Test
   void testAccountDeleteItFailsWith_HasObligations() throws JsonRpcClientErrorException, JsonProcessingException {
-    // create two accounts, one will be the destination in the tx
-    final KeyPair senderAccount = constructRandomAccount();
-    final KeyPair receiverAccount = constructRandomAccount();
+    // create sender account
+    KeyPair senderAccount = constructRandomAccount();
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
@@ -312,7 +311,9 @@ class AccountDeleteIT extends AbstractIT {
     LedgerResult lastLedgerResult = xrplClient.ledger(LedgerRequestParams.builder()
         .ledgerSpecifier(LedgerSpecifier.CURRENT).build());
 
-    // create, sign & submit AccountDelete tx
+    // create receiver account, then create sign & submit AccountDelete tx
+    KeyPair receiverAccount = constructRandomAccount();
+
     AccountDelete accountDelete = AccountDelete.builder()
         .account(senderAccount.publicKey().deriveAddress())
         .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())

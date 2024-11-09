@@ -99,7 +99,7 @@ public interface TransactionMetadata {
    * The {@link MpTokenIssuanceId} of the {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} created
    * via an {@link MpTokenIssuanceCreate} transaction.
    *
-   * @return An {@link Optional}<{@link MpTokenIssuanceId}>.
+   * @return An {@link Optional} {@link MpTokenIssuanceId}.
    */
   @JsonProperty("mpt_issuance_id")
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();

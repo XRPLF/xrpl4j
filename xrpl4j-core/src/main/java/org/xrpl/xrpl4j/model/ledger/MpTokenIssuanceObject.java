@@ -107,7 +107,7 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    * The {@link MpTokenIssuanceId} of the issuance. Only present in responses to {@code ledger_data} and
    * {@code account_objects} RPC calls.
    *
-   * @return An {@link Optional}<{@link MpTokenIssuanceId}>.
+   * @return An {@link Optional} {@link MpTokenIssuanceId}.
    */
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();
 }

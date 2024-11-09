@@ -22,7 +22,8 @@ public class MpTokenObjectAmountDeserializer extends StdDeserializer<MpTokenObje
 
   @Override
   public MpTokenObjectAmount deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    // sfMaximumAmount is an STUInt64s, which in JSON is represented as a hex-encoded String.
-    return MpTokenObjectAmount.of(UnsignedLong.valueOf(jsonParser.getText(), 16));
+    // sfMaximumAmount is an STUInt64, which in JSON is normally represented in base 16, but sfMaximumAmount is
+    // in base 10
+    return MpTokenObjectAmount.of(UnsignedLong.valueOf(jsonParser.getText()));
   }
 }

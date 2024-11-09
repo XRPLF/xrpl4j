@@ -50,17 +50,6 @@ public class MpTokenFlags extends Flags {
   }
 
   /**
-   * Construct {@link MpTokenFlags} with a given value.
-   *
-   * @param value The long-number encoded flags value of this {@link MpTokenFlags}.
-   *
-   * @return New {@link MpTokenFlags}.
-   */
-  public static MpTokenFlags of(long value) {
-    return new MpTokenFlags(value);
-  }
-
-  /**
    * If set, indicates that all balances are locked.
    *
    * @return {@code true} if {@code lsfMPTLocked} is set, otherwise {@code false}.

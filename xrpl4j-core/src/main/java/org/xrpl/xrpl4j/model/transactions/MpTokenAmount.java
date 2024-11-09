@@ -10,6 +10,9 @@ import org.immutables.value.Value.Auxiliary;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
+/**
+ * {@link CurrencyAmount} type for MPT amounts.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMpTokenAmount.class)
 @JsonDeserialize(as = ImmutableMpTokenAmount.class)
@@ -29,6 +32,11 @@ public interface MpTokenAmount extends CurrencyAmount {
 
   String value();
 
+  /**
+   * The amount value, as an {@link UnsignedLong}.
+   *
+   * @return An {@link UnsignedLong}.
+   */
   @Value.Derived
   @JsonIgnore
   default UnsignedLong unsignedLongValue() {

@@ -40,17 +40,6 @@ public class MpTokenAuthorizeFlags extends TransactionFlags {
   }
 
   /**
-   * Construct {@link MpTokenAuthorizeFlags} with a given value.
-   *
-   * @param value The long-number encoded flags value of this {@link MpTokenAuthorizeFlags}.
-   *
-   * @return New {@link MpTokenAuthorizeFlags}.
-   */
-  public static MpTokenAuthorizeFlags of(long value) {
-    return new MpTokenAuthorizeFlags(value);
-  }
-
-  /**
    * Construct an empty instance of {@link MpTokenAuthorizeFlags}. Transactions with empty flags will not be serialized
    * with a {@code Flags} field.
    *

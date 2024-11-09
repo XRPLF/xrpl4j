@@ -92,17 +92,6 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
   }
 
   /**
-   * Construct {@link MpTokenIssuanceCreateFlags} with a given value.
-   *
-   * @param value The long-number encoded flags value of this {@link MpTokenIssuanceCreateFlags}.
-   *
-   * @return New {@link MpTokenIssuanceCreateFlags}.
-   */
-  public static MpTokenIssuanceCreateFlags of(long value) {
-    return new MpTokenIssuanceCreateFlags(value);
-  }
-
-  /**
    * Construct an empty instance of {@link MpTokenIssuanceCreateFlags}. Transactions with empty flags will not be
    * serialized with a {@code Flags} field.
    *

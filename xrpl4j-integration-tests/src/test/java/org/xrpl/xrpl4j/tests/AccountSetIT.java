@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -392,6 +393,84 @@ public class AccountSetIT extends AbstractIT {
     assertThat(accountSetTransactionResult.transaction().clearFlag()).isNotEmpty().get().isEqualTo(AccountSetFlag.NONE);
   }
 
+  @Test
+  void setAndUnsetDomainAndMessageKey() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair keyPair = constructRandomAccount();
+
+    ///////////////////////
+    // Get validated account info and validate account state
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountSet setDomain = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .signingPublicKey(keyPair.publicKey())
+      .domain("ABCD")
+      .messageKey("03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB")
+      .emailHash("F9879D71855B5FF21E4963273A886BFC")
+      .walletLocator("F9879D71855B5FF21E4963273A886BFCF9879D71855B5FF21E4963273A886BFC")
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedSetDomain = signatureService.sign(
+      keyPair.privateKey(), setDomain
+    );
+    SubmitResult<AccountSet> response = xrplClient.submit(signedSetDomain);
+
+    assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedSetDomain.hash()).isEqualTo(response.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" + response.transactionResult().hash()
+    );
+
+    this.scanForResult(() ->
+      this.getValidatedTransaction(signedSetDomain.hash(), AccountSet.class)
+    );
+    accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(accountInfo.accountData().domain()).isNotEmpty().isEqualTo(setDomain.domain());
+    assertThat(accountInfo.accountData().messageKey()).isNotEmpty().isEqualTo(setDomain.messageKey());
+    assertThat(accountInfo.accountData().emailHash()).isNotEmpty().isEqualTo(setDomain.emailHash());
+    assertThat(accountInfo.accountData().walletLocator()).isNotEmpty().isEqualTo(setDomain.walletLocator());
+
+    AccountSet clearDomain = AccountSet.builder()
+      .account(keyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(accountInfo.accountData().sequence())
+      .signingPublicKey(keyPair.publicKey())
+      .domain("")
+      .messageKey("")
+      .emailHash(Strings.repeat("0", 32))
+      .walletLocator(Strings.repeat("0", 64))
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedClearDomain = signatureService.sign(
+      keyPair.privateKey(), clearDomain
+    );
+    SubmitResult<AccountSet> clearDomainSubmitResult = xrplClient.submit(signedClearDomain);
+
+    assertThat(clearDomainSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedClearDomain.hash()).isEqualTo(clearDomainSubmitResult.transactionResult().hash());
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/" +
+        clearDomainSubmitResult.transactionResult().hash()
+    );
+
+    this.scanForResult(() ->
+      this.getValidatedTransaction(signedClearDomain.hash(), AccountSet.class)
+    );
+    accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(keyPair.publicKey().deriveAddress())
+    );
+    assertThat(accountInfo.accountData().domain()).isEmpty();
+    assertThat(accountInfo.accountData().messageKey()).isEmpty();
+    assertThat(accountInfo.accountData().emailHash()).isEmpty();
+    assertThat(accountInfo.accountData().walletLocator()).isEmpty();
+  }
 
   //////////////////////
   // Test Helpers

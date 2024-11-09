@@ -1,7 +1,5 @@
 package org.xrpl.xrpl4j.model.transactions;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -12,7 +10,6 @@ import org.xrpl.xrpl4j.model.ledger.AuthAccountWrapper;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**

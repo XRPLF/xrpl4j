@@ -338,6 +338,9 @@ public enum TransactionType {
   @Beta
   ORACLE_DELETE("OracleDelete"),
 
+  /**
+   * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
+   */
   UNKNOWN("Unknown");
 
   private final String value;

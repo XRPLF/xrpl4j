@@ -10,6 +10,7 @@ import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
@@ -101,4 +102,12 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    * @return A {@link Hash256} containing the ID.
    */
   Hash256 index();
+
+  /**
+   * The {@link MpTokenIssuanceId} of the issuance. Only present in responses to {@code ledger_data} and
+   * {@code account_objects} RPC calls.
+   *
+   * @return An {@link Optional}<{@link MpTokenIssuanceId}>.
+   */
+  Optional<MpTokenIssuanceId> mpTokenIssuanceId();
 }

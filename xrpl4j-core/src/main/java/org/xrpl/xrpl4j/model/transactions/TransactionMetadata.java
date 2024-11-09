@@ -96,6 +96,15 @@ public interface TransactionMetadata {
   List<NfTokenId> nfTokenIds();
 
   /**
+   * The {@link MpTokenIssuanceId} of the {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} created
+   * via an {@link MpTokenIssuanceCreate} transaction.
+   *
+   * @return An {@link Optional}<{@link MpTokenIssuanceId}>.
+   */
+  @JsonProperty("mpt_issuance_id")
+  Optional<MpTokenIssuanceId> mpTokenIssuanceId();
+
+  /**
    * The ID of the offer created by {@link NfTokenCreateOffer} transactions. Only present in metadata for
    * {@link NfTokenCreateOffer} transactions.
    *

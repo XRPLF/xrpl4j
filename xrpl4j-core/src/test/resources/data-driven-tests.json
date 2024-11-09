@@ -3704,7 +3704,7 @@
       "is_native": false,
       "type": "Amount",
       "expected_hex": "20000000000000000100002403C84A0A28E0190E208E982C352BBD5006600555CF",
-      "is_negative": false
+      "is_negative": true
     },
     {
       "test_json": {
@@ -3811,7 +3811,7 @@
       "is_native": false,
       "type": "Amount",
       "expected_hex": "20000000000000000000002403C84A0A28E0190E208E982C352BBD5006600555CF",
-      "is_negative": false
+      "is_negative": true
     },
     {
       "test_json": {

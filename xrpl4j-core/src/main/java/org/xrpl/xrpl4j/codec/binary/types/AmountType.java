@@ -300,13 +300,13 @@ class AmountType extends SerializedType<AmountType> {
    *
    * @return {@code true} if this AmountType is native; {@code false} otherwise.
    */
-  private boolean isNative() {
+  public boolean isNative() {
     // 1st bit in 1st byte is set to 0 for native XRP, 3rd bit is also 0.
     byte leadingByte = toBytes()[0];
     return (leadingByte & 0x80) == 0 && (leadingByte & 0x20) == 0;
   }
 
-  private boolean isMpt() {
+  public boolean isMpt() {
     // 1st bit in 1st byte is 0, and 3rd bit is 1
     byte leadingByte = toBytes()[0];
     return (leadingByte & 0x80) == 0 && (leadingByte & 0x20) != 0;
@@ -317,9 +317,9 @@ class AmountType extends SerializedType<AmountType> {
    *
    * @return {@code true} if this AmountType is positive; {@code false} otherwise.
    */
-  private boolean isPositive() {
+  public boolean isPositive() {
     // 2nd bit in 1st byte is set to 1 for positive amounts
-    return (toBytes()[0] & 0x40) > 0;
+    return toHex().startsWith("00000000000000", 2) || (toBytes()[0] & 0x40) > 0;
   }
 
 }

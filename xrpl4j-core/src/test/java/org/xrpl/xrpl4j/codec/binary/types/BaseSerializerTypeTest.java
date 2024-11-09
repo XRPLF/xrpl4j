@@ -57,8 +57,9 @@ abstract class BaseSerializerTypeTest {
     } else {
       SerializedType<?> serialized = serializedType.fromJson(value);
       if (fixture.type().equals("Amount")) {
-        assertThat(((AmountType) serialized).isPositive()).isEqualTo(!fixture.isNegative());
-        assertThat(((AmountType) serialized).isNative()).isEqualTo(fixture.isNative());
+        AmountType amountType = (AmountType) serialized;
+        assertThat(amountType.isPositive()).isEqualTo(!fixture.isNegative());
+        assertThat(amountType.isNative()).isEqualTo(fixture.isNative());
       }
       assertThat(serialized.toHex()).isEqualTo(fixture.expectedHex());
     }

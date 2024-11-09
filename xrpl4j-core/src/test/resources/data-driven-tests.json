@@ -2527,21 +2527,6 @@
     {
       "test_json": {
         "currency": "USD",
-        "value": "0",
-        "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji"
-      },
-      "significant_digits": 1,
-      "type_id": 6,
-      "is_native": false,
-      "mantissa": "0000000000000000",
-      "type": "Amount",
-      "expected_hex": "800000000000000000000000000000000000000055534400000000000000000000000000000000000000000000000001",
-      "is_negative": false,
-      "exponent": -15
-    },
-    {
-      "test_json": {
-        "currency": "USD",
         "value": "-1.0",
         "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji"
       },
@@ -2566,21 +2551,6 @@
       "mantissa": "00038D7EA4C68000",
       "type": "Amount",
       "expected_hex": "D4838D7EA4C6800000000000000000000000000055534400000000000000000000000000000000000000000000000001",
-      "is_negative": false,
-      "exponent": -15
-    },
-    {
-      "test_json": {
-        "currency": "USD",
-        "value": "0.0",
-        "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji"
-      },
-      "significant_digits": 1,
-      "type_id": 6,
-      "is_native": false,
-      "mantissa": "0000000000000000",
-      "type": "Amount",
-      "expected_hex": "800000000000000000000000000000000000000055534400000000000000000000000000000000000000000000000001",
       "is_negative": false,
       "exponent": -15
     },

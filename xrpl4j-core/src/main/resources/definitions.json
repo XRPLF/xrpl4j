@@ -2143,7 +2143,7 @@
       }
     ],
     [
-      "MPTokenHolder",
+      "Holder",
       {
         "nth": 11,
         "isVLEncoded": true,

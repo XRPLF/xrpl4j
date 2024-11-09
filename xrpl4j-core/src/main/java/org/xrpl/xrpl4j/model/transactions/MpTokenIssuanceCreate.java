@@ -23,9 +23,6 @@ public interface MpTokenIssuanceCreate extends Transaction {
     return ImmutableMpTokenIssuanceCreate.builder();
   }
 
-  @JsonProperty("AssetScale")
-  Optional<AssetScale> assetScale();
-
   /**
    * Set of {@link MpTokenIssuanceCreateFlags}s for this {@link MpTokenIssuanceCreate}.
    *
@@ -36,6 +33,9 @@ public interface MpTokenIssuanceCreate extends Transaction {
   default MpTokenIssuanceCreateFlags flags() {
     return MpTokenIssuanceCreateFlags.empty();
   }
+
+  @JsonProperty("AssetScale")
+  Optional<AssetScale> assetScale();
 
   @JsonProperty("TransferFee")
   Optional<TransferFee> transferFee();

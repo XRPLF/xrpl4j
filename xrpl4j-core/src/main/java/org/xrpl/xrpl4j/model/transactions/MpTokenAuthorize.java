@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenAuthorizeFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 
 import java.util.Optional;
 
@@ -33,7 +32,7 @@ public interface MpTokenAuthorize extends Transaction {
   @JsonProperty("MPTokenIssuanceID")
   MpTokenIssuanceId mpTokenIssuanceId();
 
-  @JsonProperty("MPTokenHolder")
-  Optional<Address> mpTokenHolder();
+  @JsonProperty("Holder")
+  Optional<Address> holder();
 
 }

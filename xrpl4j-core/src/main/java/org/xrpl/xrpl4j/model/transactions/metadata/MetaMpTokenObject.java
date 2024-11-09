@@ -50,16 +50,6 @@ public interface MetaMpTokenObject extends MetaLedgerObject {
   Optional<UnsignedInteger> previousTransactionLedgerSequence();
 
   /**
-   * A 32-bit unsigned integer that is used to ensure issuances from a given sender may only ever exist once, even if an
-   * issuance is later deleted. Whenever a new issuance is created, this value must match the account's current Sequence
-   * number.
-   *
-   * @return An {@link UnsignedInteger} representing the account sequence number.
-   */
-  @JsonProperty("Sequence")
-  Optional<UnsignedInteger> sequence();
-
-  /**
    * A hint indicating which page of the owner directory links to this object, in case the directory consists of
    * multiple pages.
    *

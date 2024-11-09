@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
@@ -319,7 +320,7 @@ class AmountType extends SerializedType<AmountType> {
    */
   public boolean isPositive() {
     // 2nd bit in 1st byte is set to 1 for positive amounts
-    return toHex().startsWith("00000000000000", 2) || (toBytes()[0] & 0x40) > 0;
+    return (toBytes()[0] & 0x40) > 0;
   }
 
 }

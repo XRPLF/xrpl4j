@@ -53,6 +53,7 @@ import java.time.Duration;
  *
  * @see "https://xrpl.org/accountset.html"
  */
+@DisabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs with local rippled nodes.")
 class AccountDeleteIT extends AbstractIT {
   static boolean shouldRun() {
     return System.getProperty("useTestnet") != null ||
@@ -334,7 +335,6 @@ class AccountDeleteIT extends AbstractIT {
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
 
-  @DisabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs with local rippled nodes.")
   @Test
   void testAccountDeleteIt() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx

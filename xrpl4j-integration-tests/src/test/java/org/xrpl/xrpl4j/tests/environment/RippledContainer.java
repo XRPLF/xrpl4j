@@ -188,4 +188,11 @@ public class RippledContainer {
     return getBaseUri(rippledContainer);
   }
 
+  /**
+   * Exposed method to accept next ledger ad hoc.
+   */
+  public void acceptLedger() {
+    assertContainerStarted();
+    LEDGER_ACCEPTOR.accept(this);
+  }
 }

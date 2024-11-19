@@ -85,6 +85,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -268,7 +269,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Durations.ONE_MINUTE)
+      .atMost(Duration.of(15, ChronoUnit.SECONDS))
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {

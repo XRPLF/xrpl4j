@@ -69,7 +69,7 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    rippledContainer = new GenericContainer<>("rippleci/rippled:2.2.0-rc3")
+    rippledContainer = new GenericContainer<>("rippleci/rippled:2.2.0")
       .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
         cmd.withEntrypoint("/opt/ripple/bin/rippled"))
       .withCommand("-a --start --conf /config/rippled.cfg")
@@ -194,5 +194,6 @@ public class RippledContainer {
   public void acceptLedger() {
     assertContainerStarted();
     LEDGER_ACCEPTOR.accept(this);
+    waitForLedgerTimeToSync();
   }
 }

@@ -304,8 +304,7 @@ class AccountDeleteIT extends AbstractIT {
 
     // accept next 256 ledgers to avoid tec_TOOSOON error case and get current ledger index
     for (int i = 0; i < 256; i++) {
-      LocalRippledEnvironment localRippledEnvironment =
-          (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
+      LocalRippledEnvironment localRippledEnvironment = (LocalRippledEnvironment) xrplEnvironment;
       localRippledEnvironment.acceptLedger();
     }
 
@@ -348,8 +347,7 @@ class AccountDeleteIT extends AbstractIT {
 
     // accept next 256 ledgers to avoid tec_TOOSOON error case and get current ledger index
     for (int i = 0; i < 256; i++) {
-      LocalRippledEnvironment localRippledEnvironment =
-          (LocalRippledEnvironment) XrplEnvironment.getConfiguredEnvironment();
+      LocalRippledEnvironment localRippledEnvironment = (LocalRippledEnvironment) xrplEnvironment;
       localRippledEnvironment.acceptLedger();
     }
 

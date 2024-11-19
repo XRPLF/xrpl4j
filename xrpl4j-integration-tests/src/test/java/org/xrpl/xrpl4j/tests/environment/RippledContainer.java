@@ -35,6 +35,7 @@ import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.model.client.admin.AcceptLedgerResult;
 import org.xrpl.xrpl4j.model.client.serverinfo.ReportingModeServerInfo;
 import org.xrpl.xrpl4j.model.client.serverinfo.RippledServerInfo;
 
@@ -44,6 +45,7 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -56,7 +58,9 @@ public class RippledContainer {
   private static final Logger LOGGER = getLogger(RippledContainer.class);
   private static final Consumer<RippledContainer> LEDGER_ACCEPTOR = (rippledContainer) -> {
     try {
-      rippledContainer.getXrplAdminClient().acceptLedger();
+      AcceptLedgerResult status = rippledContainer.getXrplAdminClient()
+        .acceptLedger();
+      LOGGER.info("Accepted ledger status: {}", status);
     } catch (RuntimeException | JsonRpcClientErrorException e) {
       LOGGER.warn("Ledger accept failed", e);
     }
@@ -64,7 +68,7 @@ public class RippledContainer {
   private final GenericContainer<?> rippledContainer;
   private final ScheduledExecutorService ledgerAcceptor;
   private boolean started;
-
+  
   /**
    * No-args constructor.
    */
@@ -194,6 +198,5 @@ public class RippledContainer {
   public void acceptLedger() {
     assertContainerStarted();
     LEDGER_ACCEPTOR.accept(this);
-    waitForLedgerTimeToSync();
   }
 }

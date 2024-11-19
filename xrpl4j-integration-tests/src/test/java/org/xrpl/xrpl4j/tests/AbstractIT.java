@@ -102,7 +102,7 @@ public abstract class AbstractIT {
 
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
-  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getNewConfiguredEnvironment();
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 

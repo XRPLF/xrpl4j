@@ -45,7 +45,7 @@ public interface XrplEnvironment {
    *
    * @return XRPL environment of the correct type.
    */
-  static XrplEnvironment getConfiguredEnvironment() {
+  static XrplEnvironment getNewConfiguredEnvironment() {
     // Use local rippled container by default.
     // Set -DuseTestnet to run against reporting mode testnet node
     // Set -DuseClioTestnet to run against Clio testnet node

@@ -268,7 +268,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Durations.ONE_MINUTEdf/)
+      .atMost(Durations.ONE_MINUTE)
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {

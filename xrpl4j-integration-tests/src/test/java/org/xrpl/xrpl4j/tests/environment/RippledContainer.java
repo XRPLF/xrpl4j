@@ -108,7 +108,7 @@ public class RippledContainer {
    * Starts container with default interval (1s) for closing ledgers.
    */
   public RippledContainer start() {
-    return this.start(1000);
+    return this.start(500);
   }
 
   /**

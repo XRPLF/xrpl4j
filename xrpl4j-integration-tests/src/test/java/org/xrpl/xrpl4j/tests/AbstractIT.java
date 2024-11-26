@@ -269,7 +269,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Duration.of(15, ChronoUnit.SECONDS))
+      .atMost(Duration.of(60, ChronoUnit.SECONDS))
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {

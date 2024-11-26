@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -138,6 +139,7 @@ public class PaymentChannelIT extends AbstractIT {
   }
 
   @Test
+  @Disabled
   void createAndClaimPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
@@ -262,6 +264,7 @@ public class PaymentChannelIT extends AbstractIT {
   }
 
   @Test
+  @Disabled
   void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger

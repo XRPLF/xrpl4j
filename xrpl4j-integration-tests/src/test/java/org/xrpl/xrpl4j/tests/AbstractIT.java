@@ -269,7 +269,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Duration.of(60, ChronoUnit.SECONDS))
+      .atMost(Duration.of(30, ChronoUnit.SECONDS))
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {
@@ -285,7 +285,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(resultSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(Duration.of(30, ChronoUnit.SECONDS))
       .ignoreException(RuntimeException.class)
       .await()
       .until(resultSupplier::get, is(notNullValue()));
@@ -295,7 +295,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(Duration.of(30, ChronoUnit.SECONDS))
       .ignoreException(RuntimeException.class)
       .await()
       .until(ledgerObjectSupplier::get, is(notNullValue()));

@@ -139,7 +139,6 @@ public class PaymentChannelIT extends AbstractIT {
   }
 
   @Test
-  @Disabled
   void createAndClaimPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
@@ -264,7 +263,7 @@ public class PaymentChannelIT extends AbstractIT {
   }
 
   @Test
-  // @Disabled
+  @Disabled
   void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger

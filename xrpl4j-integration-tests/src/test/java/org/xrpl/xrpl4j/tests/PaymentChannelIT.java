@@ -264,7 +264,7 @@ public class PaymentChannelIT extends AbstractIT {
   }
 
   @Test
-  @Disabled
+  // @Disabled
   void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
@@ -350,9 +350,7 @@ public class PaymentChannelIT extends AbstractIT {
     scanForResult(
       () -> getValidatedAccountChannels(sourceKeyPair.publicKey().deriveAddress()),
       channelsResult -> channelsResult.channels().stream()
-        .anyMatch(
-          channel ->
-          {
+        .anyMatch(channel -> {
             logger.warn("PAYCHAN: channel={} paymentChannel={}", channel, paymentChannel);
 
             return channel.channelId().equals(paymentChannel.channelId()) &&

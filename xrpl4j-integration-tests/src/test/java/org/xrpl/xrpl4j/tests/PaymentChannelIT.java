@@ -353,7 +353,7 @@ public class PaymentChannelIT extends AbstractIT {
             logger.warn("PAYCHAN: channel={} paymentChannel={}", channel, paymentChannel);
 
             return channel.channelId().equals(paymentChannel.channelId()) &&
-              channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()))
+              channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
           }
         )
     );

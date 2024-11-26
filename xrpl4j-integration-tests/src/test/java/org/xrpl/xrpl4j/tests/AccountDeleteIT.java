@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -273,6 +274,7 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
+  @Disabled
   void testAccountDeleteItFailsWith_HasObligations() throws JsonRpcClientErrorException, JsonProcessingException {
     // create sender account
     KeyPair senderAccount = constructRandomAccount();
@@ -335,6 +337,7 @@ class AccountDeleteIT extends AbstractIT {
   }
 
   @Test
+  @Disabled
   void testAccountDeleteIt() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();

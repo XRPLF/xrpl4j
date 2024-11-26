@@ -65,10 +65,20 @@ public class RippledContainer {
       LOGGER.warn("Ledger accept failed", e);
     }
   };
+
+  private void acceptCurrentLedger(RippledContainer rippledContainer) {
+    try {
+      AcceptLedgerResult status = rippledContainer.getXrplAdminClient().acceptLedger();
+      LOGGER.info("Accepted ledger status: {}", status);
+    } catch (RuntimeException | JsonRpcClientErrorException e) {
+      LOGGER.warn("Ledger accept failed", e);
+    }
+  }
+
   private final GenericContainer<?> rippledContainer;
   private final ScheduledExecutorService ledgerAcceptor;
   private boolean started;
-  
+
   /**
    * No-args constructor.
    */
@@ -121,7 +131,8 @@ public class RippledContainer {
     ledgerAcceptor.scheduleAtFixedRate(() -> LEDGER_ACCEPTOR.accept(this),
       acceptIntervalMillis,
       acceptIntervalMillis,
-      TimeUnit.MILLISECONDS);
+      TimeUnit.MILLISECONDS
+    );
     waitForLedgerTimeToSync();
     return this;
   }
@@ -197,6 +208,6 @@ public class RippledContainer {
    */
   public void acceptLedger() {
     assertContainerStarted();
-    LEDGER_ACCEPTOR.accept(this);
+    this.acceptCurrentLedger(this);
   }
 }

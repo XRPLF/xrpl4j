@@ -56,20 +56,25 @@ public class RippledContainer {
   // Seed for the Master/Root wallet in the rippled docker container.
   public static final String MASTER_WALLET_SEED = "snoPBrXtMeMyMHUVTgbuqAfg1SUTb";
   private static final Logger LOGGER = getLogger(RippledContainer.class);
+
+  /**
+   * Advances the ledger by one on each call.
+   *
+   * @see "https://xrpl.org/docs/references/http-websocket-apis/admin-api-methods/server-control-methods/ledger_accept"
+   */
   private static final Consumer<RippledContainer> LEDGER_ACCEPTOR = (rippledContainer) -> {
     try {
-      AcceptLedgerResult status = rippledContainer.getXrplAdminClient()
-        .acceptLedger();
-      LOGGER.info("Accepted ledger status: {}", status);
+      AcceptLedgerResult status = rippledContainer.getXrplAdminClient().acceptLedger();
+      LOGGER.info("LEDGER_ACCEPTOR: Accepted ledger status: {}", status);
     } catch (RuntimeException | JsonRpcClientErrorException e) {
       LOGGER.warn("Ledger accept failed", e);
     }
   };
 
-  private void acceptCurrentLedger(RippledContainer rippledContainer) {
+  private void acceptCurrentLedger() {
     try {
-      AcceptLedgerResult status = rippledContainer.getXrplAdminClient().acceptLedger();
-      LOGGER.info("Accepted ledger status: {}", status);
+      AcceptLedgerResult status = this.getXrplAdminClient().acceptLedger();
+      LOGGER.info("acceptCurrentLedger(): Accepted ledger status: {}", status);
     } catch (RuntimeException | JsonRpcClientErrorException e) {
       LOGGER.warn("Ledger accept failed", e);
     }
@@ -77,22 +82,25 @@ public class RippledContainer {
 
   private final GenericContainer<?> rippledContainer;
   private final ScheduledExecutorService ledgerAcceptor;
+  private XrplAdminClient xrplAdminClient;
   private boolean started;
 
   /**
    * No-args constructor.
    */
   public RippledContainer() {
-    rippledContainer = new GenericContainer<>("rippleci/rippled:2.2.0")
-      .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-        cmd.withEntrypoint("/opt/ripple/bin/rippled"))
-      .withCommand("-a --start --conf /config/rippled.cfg")
-      .withExposedPorts(5005)
-      .withClasspathResourceMapping("rippled",
-        "/config",
-        BindMode.READ_ONLY)
-      .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
-    ledgerAcceptor = Executors.newScheduledThreadPool(1);
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:2.2.0")) {
+      this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
+          cmd.withEntrypoint("/opt/ripple/bin/rippled"))
+        .withCommand("-a --start --conf /config/rippled.cfg")
+        .withExposedPorts(5005)
+        .withClasspathResourceMapping("rippled",
+          "/config",
+          BindMode.READ_ONLY)
+        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
+    }
+
+    this.ledgerAcceptor = Executors.newScheduledThreadPool(1);
   }
 
   /**
@@ -108,7 +116,7 @@ public class RippledContainer {
    * Starts container with default interval (1s) for closing ledgers.
    */
   public RippledContainer start() {
-    return this.start(500);
+    return this.start(2000);
   }
 
   /**
@@ -134,6 +142,10 @@ public class RippledContainer {
       TimeUnit.MILLISECONDS
     );
     waitForLedgerTimeToSync();
+
+    // Re-used the same client for all admin requests
+    xrplAdminClient = new XrplAdminClient(this.getBaseUri());
+
     return this;
   }
 
@@ -182,7 +194,7 @@ public class RippledContainer {
    * @return A {@link XrplAdminClient}.
    */
   public XrplAdminClient getXrplAdminClient() {
-    return new XrplAdminClient(this.getBaseUri());
+    return this.xrplAdminClient;
   }
 
   /**
@@ -208,6 +220,6 @@ public class RippledContainer {
    */
   public void acceptLedger() {
     assertContainerStarted();
-    this.acceptCurrentLedger(this);
+    this.acceptCurrentLedger();
   }
 }

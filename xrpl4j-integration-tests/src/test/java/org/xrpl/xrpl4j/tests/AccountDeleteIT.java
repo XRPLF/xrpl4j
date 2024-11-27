@@ -25,9 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
@@ -44,7 +43,6 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.LocalRippledEnvironment;
-import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
 import java.time.Duration;
 
@@ -54,13 +52,19 @@ import java.time.Duration;
  *
  * @see "https://xrpl.org/accountset.html"
  */
-@DisabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs with local rippled nodes.")
+@EnabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs runs with local rippled nodes.")
 class AccountDeleteIT extends AbstractIT {
 
-  static boolean shouldRun() {
-    return System.getProperty("useTestnet") != null ||
-      System.getProperty("useDevnet") != null ||
-      System.getProperty("useClioTestnet") != null;
+  /**
+   * If any "real" testnet is being used (i.e., the enviornment specified is not a local one) then this test should not
+   * be run.
+   *
+   * @return {@code true} if test/dev/clio networks are the execution environment; {@code false} otherwise.
+   */
+  private static boolean shouldRun() {
+    return System.getProperty("useTestnet") == null &&
+      System.getProperty("useDevnet") == null &&
+      System.getProperty("useClioTestnet") == null;
   }
 
   @Test

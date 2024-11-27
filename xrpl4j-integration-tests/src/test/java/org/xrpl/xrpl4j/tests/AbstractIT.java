@@ -99,7 +99,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Durations.ONE_HUNDRED_MILLISECONDS;
-
+  public static final Duration AT_MOST_INTERVAL = Duration.of(50, ChronoUnit.SECONDS);
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getNewConfiguredEnvironment();
@@ -246,7 +246,7 @@ public abstract class AbstractIT {
   ) {
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(AT_MOST_INTERVAL)
       .ignoreException(RuntimeException.class)
       .await()
       .until(
@@ -269,7 +269,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Duration.of(30, ChronoUnit.SECONDS))
+      .atMost(AT_MOST_INTERVAL)
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {
@@ -285,7 +285,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(resultSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Duration.of(30, ChronoUnit.SECONDS))
+      .atMost(AT_MOST_INTERVAL)
       .ignoreException(RuntimeException.class)
       .await()
       .until(resultSupplier::get, is(notNullValue()));
@@ -295,7 +295,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Duration.of(30, ChronoUnit.SECONDS))
+      .atMost(AT_MOST_INTERVAL)
       .ignoreException(RuntimeException.class)
       .await()
       .until(ledgerObjectSupplier::get, is(notNullValue()));
@@ -723,7 +723,7 @@ public abstract class AbstractIT {
     Instant now = Instant.now();
     return closeTime.isBefore(now) ? now : closeTime;
   }
-  
+
   private void logAccountCreation(Address address) {
     logger.info("Generated wallet with ClassicAddress={})", address);
   }

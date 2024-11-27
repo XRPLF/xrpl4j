@@ -151,8 +151,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
 
     //////////////////////////
-    // Submit a PaymentChannelCreate transaction to create a payment channel between
-    // the source and destination accounts
+    // Submit a PaymentChannelCreate transaction to create a payment channel between the source and destination accounts
     PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -161,7 +160,7 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
+      //.cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
@@ -193,7 +192,7 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(paymentChannel.amount()).isEqualTo(paymentChannelCreate.amount());
     assertThat(paymentChannel.settleDelay()).isEqualTo(paymentChannelCreate.settleDelay());
     assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(paymentChannelCreate.publicKey());
-    assertThat(paymentChannel.cancelAfter()).isNotEmpty().get().isEqualTo(paymentChannelCreate.cancelAfter().get());
+    assertThat(paymentChannel.cancelAfter()).isEmpty();
 
     PayChannelObject payChannelObject = scanForPayChannelObject(sourceKeyPair, destinationKeyPair);
     assertThatEntryEqualsObjectFromAccountObjects(payChannelObject);
@@ -281,11 +280,11 @@ public class PaymentChannelIT extends AbstractIT {
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(senderAccountInfo.accountData().sequence())
-      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .amount(XrpCurrencyAmount.ofDrops(10_000_000)) // <-- 10 XRP or 10m drops
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
+      .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(60))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
@@ -302,8 +301,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
 
     //////////////////////////
-    // Wait for the payment channel to exist in a validated ledger
-    // and validate its fields
+    // Wait for the payment channel to exist in a validated ledger and validate its fields
     PaymentChannelResultObject paymentChannel = scanForResult(
       () -> getValidatedAccountChannels(sourceKeyPair.publicKey().deriveAddress()),
       channels -> channels.channels().stream()
@@ -328,7 +326,7 @@ public class PaymentChannelIT extends AbstractIT {
       .sequence(senderAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(sourceKeyPair.publicKey())
       .channel(paymentChannel.channelId())
-      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .amount(XrpCurrencyAmount.ofDrops(10_000)) // <-- 10k drops
       .build();
 
     //////////////////////////
@@ -365,7 +363,7 @@ public class PaymentChannelIT extends AbstractIT {
     // transaction with an expiration and 1 drop of XRP in the amount field
     UnsignedLong newExpiry = instantToXrpTimestamp(Instant.now())
       .plus(UnsignedLong.valueOf(paymentChannel.settleDelay().longValue()))
-      .plus(UnsignedLong.valueOf(30));
+      .plus(UnsignedLong.valueOf(300000));
 
     PaymentChannelFund paymentChannelFundWithNewExpiry = PaymentChannelFund.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())

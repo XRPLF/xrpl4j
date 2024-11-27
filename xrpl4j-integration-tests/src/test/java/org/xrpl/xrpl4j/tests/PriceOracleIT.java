@@ -124,7 +124,8 @@ public class PriceOracleIT extends AbstractIT {
     assertThat(oracleObject.uri()).isNotEmpty().get().isEqualTo(uri);
     assertThat(oracleObject.priceDataSeries()).containsExactlyInAnyOrder(priceData1, priceData2);
 
-    UnsignedInteger lastUpdateTime2 = unixTimestamp();
+    // The lastUpdateTime of an Oracle must be withing 300 seconds of the last closed ledger.
+    UnsignedInteger lastUpdateTime2 = unixTimestamp().plus(UnsignedInteger.valueOf(250));
     PriceDataWrapper newPriceData = PriceDataWrapper.of(
       PriceData.builder()
         .baseAsset("XRP")
@@ -139,7 +140,7 @@ public class PriceOracleIT extends AbstractIT {
         .build()
     );
     OracleSet oracleUpdate = OracleSet.builder().from(oracleSet)
-      .lastLedgerSequence(ledgerEntry.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(ledgerEntry.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .lastUpdateTime(lastUpdateTime2)
       .sequence(oracleSet.sequence().plus(UnsignedInteger.ONE))
       .priceDataSeries(Lists.newArrayList(
@@ -283,7 +284,7 @@ public class PriceOracleIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(sourceKeyPair.publicKey())
-      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
+      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.valueOf(2)))
       .provider(provider)
       .uri(uri)

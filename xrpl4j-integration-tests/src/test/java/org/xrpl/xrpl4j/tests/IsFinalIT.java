@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,10 +45,12 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.Duration;
+
 public class IsFinalIT extends AbstractIT {
 
-  KeyPair keyPair = createRandomAccountEd25519();
-  Address sourceAddress = keyPair.publicKey().deriveAddress();
+  private KeyPair keyPair;
+  private Address sourceAddress;
 
   ImmutablePayment.Builder payment;
   UnsignedInteger lastLedgerSequence;
@@ -56,6 +58,9 @@ public class IsFinalIT extends AbstractIT {
 
   @BeforeEach
   void setup() throws JsonRpcClientErrorException {
+    keyPair = createRandomAccountEd25519();
+    sourceAddress = keyPair.publicKey().deriveAddress();
+
     ///////////////////////
     // Get validated account info and validate account state
     accountInfo = this.scanForResult(() -> this.getValidatedAccountInfo(sourceAddress));
@@ -70,7 +75,6 @@ public class IsFinalIT extends AbstractIT {
       )
       .ledgerIndexSafe();
 
-
     lastLedgerSequence = validatedLedger.plus(UnsignedInteger.ONE).unsignedIntegerValue();
     KeyPair destinationKeyPair = createRandomAccountEd25519();
     payment = Payment.builder()
@@ -84,12 +88,16 @@ public class IsFinalIT extends AbstractIT {
 
   @Test
   public void simpleIsFinalTest() throws JsonRpcClientErrorException, JsonProcessingException {
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.stopLedgerAcceptor();
+
     Payment builtPayment = payment.build();
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(keyPair.privateKey(), builtPayment);
+
+    // Submit TX
     SubmitResult<Payment> response = xrplClient.submit(signedPayment);
     assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
     Hash256 txHash = response.transactionResult().hash();
-
     assertThat(
       xrplClient.isFinal(
         txHash,
@@ -99,6 +107,9 @@ public class IsFinalIT extends AbstractIT {
         sourceAddress
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.NOT_FINAL);
+
+    // Accept the ledger to finalize the transaction...
+    xrplEnvironment.acceptLedger();
 
     this.scanForResult(
       () -> getValidatedTransaction(txHash, Payment.class)
@@ -113,10 +124,15 @@ public class IsFinalIT extends AbstractIT {
         sourceAddress
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.VALIDATED_SUCCESS);
+
+    // Re-enable ledger acceptor for other tests....
+    xrplEnvironment.startLedgerAcceptor(POLL_INTERVAL);
   }
 
   @Test
   public void isFinalExpiredTxTest() throws JsonRpcClientErrorException, JsonProcessingException {
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.stopLedgerAcceptor();
 
     Payment builtPayment = payment
       .sequence(accountInfo.accountData().sequence().minus(UnsignedInteger.ONE))
@@ -135,6 +151,9 @@ public class IsFinalIT extends AbstractIT {
       ).finalityStatus()
     ).isEqualTo(FinalityStatus.NOT_FINAL);
 
+    // Accept the ledger to finalize the transaction...
+    xrplEnvironment.acceptLedger();
+
     this.scanForResult(
       () -> xrplClient.isFinal(
         response.transactionResult().hash(),
@@ -145,15 +164,24 @@ public class IsFinalIT extends AbstractIT {
       ).finalityStatus(),
       finalityStatus -> finalityStatus.equals(FinalityStatus.EXPIRED)
     );
+
+    // Re-enable ledger acceptor for other tests....
+    xrplEnvironment.startLedgerAcceptor(POLL_INTERVAL);
   }
 
   @Test
   public void isFinalNoTrustlineIouPayment_ValidatedFailureResponse()
     throws JsonRpcClientErrorException, JsonProcessingException {
 
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.stopLedgerAcceptor();
+
     Payment builtPayment = payment
-      .amount(IssuedCurrencyAmount.builder().currency("USD").issuer(
-        sourceAddress).value("500").build()
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(sourceAddress)
+        .value("500")
+        .build()
       ).build();
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(keyPair.privateKey(), builtPayment);
     SubmitResult<Payment> response = xrplClient.submit(signedPayment);
@@ -167,17 +195,26 @@ public class IsFinalIT extends AbstractIT {
         accountInfo.accountData().sequence(),
         sourceAddress
       ).finalityStatus()
-    ).isEqualTo(FinalityStatus.NOT_FINAL);
+    ).isEqualTo(FinalityStatus.EXPIRED_WITH_SPENT_ACCOUNT_SEQUENCE);
+
+    // Accept the ledger to finalize the transaction...
+    xrplEnvironment.acceptLedger();
+    xrplEnvironment.acceptLedger();
+    xrplEnvironment.acceptLedger();
+    xrplEnvironment.acceptLedger();
 
     this.scanForResult(
       () -> xrplClient.isFinal(
         response.transactionResult().hash(),
         response.validatedLedgerIndex(),
-        lastLedgerSequence.minus(UnsignedInteger.ONE),
+        response.transactionResult().transaction().sequence().minus(UnsignedInteger.ONE),
         accountInfo.accountData().sequence(),
         sourceAddress
       ).finalityStatus(),
       finalityStatus -> finalityStatus.equals(FinalityStatus.VALIDATED_FAILURE)
     );
+
+    // Re-enable ledger acceptor for other tests....
+    xrplEnvironment.startLedgerAcceptor(POLL_INTERVAL);
   }
 }

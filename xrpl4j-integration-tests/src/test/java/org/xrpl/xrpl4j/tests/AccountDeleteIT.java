@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -67,11 +69,33 @@ class AccountDeleteIT extends AbstractIT {
       System.getProperty("useClioTestnet") == null;
   }
 
+  /**
+   * This test requires the Ledger Acceptor to be disabled, in order to tightly control advancement of ledgers. Because
+   * of this, some of the tests do not execute when running against real networks (because controlling ledger
+   * advancement is not possible).
+   */
+  @BeforeAll
+  static void setupTest() {
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.stopLedgerAcceptor();
+  }
+
+  /**
+   * Because this test requires the Ledger Acceptor to be disabled, once the test completes, the Ledger Acceptor must be
+   * enabled again so that follow-on tests execute as expected.
+   */
+  @AfterAll
+  static void cleanupTest() {
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.startLedgerAcceptor(POLL_INTERVAL);
+  }
+
   @Test
   void testAccountDeleteItFailsWith_TooSoon() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get sender account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
@@ -101,6 +125,7 @@ class AccountDeleteIT extends AbstractIT {
   void testAccountDeleteItFailsWith_DestinationIsSource() throws JsonRpcClientErrorException, JsonProcessingException {
     // create one account, will be the sender & destination in the tx
     KeyPair senderAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get sender account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
@@ -131,6 +156,7 @@ class AccountDeleteIT extends AbstractIT {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get receiver account info for the sequence number
     AccountInfoResult receiverAccountInfo = this.scanForResult(
@@ -151,9 +177,10 @@ class AccountDeleteIT extends AbstractIT {
       receiverAccount.privateKey(), accountSet
     );
     SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
-
     assertThat(accountSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
+
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // confirm flag was set
     TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(() ->
@@ -196,6 +223,7 @@ class AccountDeleteIT extends AbstractIT {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get receiver account info for the sequence number
     AccountInfoResult receiverAccountInfo = this.scanForResult(
@@ -216,26 +244,21 @@ class AccountDeleteIT extends AbstractIT {
       receiverAccount.privateKey(), accountSet
     );
     SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
-
     assertThat(accountSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
     assertThat(signedAccountSet.hash()).isEqualTo(accountSetSubmitResult.transactionResult().hash());
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // confirm flag was set
     TransactionResult<AccountSet> accountSetTransactionResult = this.scanForResult(
       () -> this.getValidatedTransaction(signedAccountSet.hash(), AccountSet.class)
     );
+    assertThat(accountSetTransactionResult.transaction().setFlag().orElse(null))
+      .isEqualTo(AccountSet.AccountSetFlag.DEPOSIT_AUTH);
 
     AccountInfoResult updatedReceiverAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
-
-    assertThat(accountSetTransactionResult.transaction().setFlag().orElse(null))
-      .isEqualTo(AccountSet.AccountSetFlag.DEPOSIT_AUTH);
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfDepositAuth()).isTrue();
-
-    receiverAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
-    );
 
     // get sender account info for the sequence number
     AccountInfoResult senderAccountInfo = this.scanForResult(
@@ -266,6 +289,7 @@ class AccountDeleteIT extends AbstractIT {
     // create one account and a random key pair that will be used for the destination
     KeyPair senderAccount = constructRandomAccount();
     KeyPair randomDestinationKeyPair = Seed.ed25519Seed().deriveKeyPair();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get sender account info for the sequence number
     AccountInfoResult senderAccountInfoResult = this.scanForResult(
@@ -295,6 +319,7 @@ class AccountDeleteIT extends AbstractIT {
   void testAccountDeleteItFailsWith_HasObligations() throws JsonRpcClientErrorException, JsonProcessingException {
     // create sender account
     KeyPair senderAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(
@@ -362,6 +387,7 @@ class AccountDeleteIT extends AbstractIT {
     // create two accounts, one will be the destination in the tx
     KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     // get account info for the sequence number
     AccountInfoResult accountInfo = this.scanForResult(

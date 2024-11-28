@@ -222,8 +222,7 @@ class AccountDeleteIT extends AbstractIT {
 
   @Test
   void testAccountDeleteItFailsWith_NoPermission() throws JsonRpcClientErrorException, JsonProcessingException {
-    // create two accounts, one will be the destination in the tx
-    KeyPair senderAccount = constructRandomAccount();
+    // create the destination account...
     KeyPair receiverAccount = constructRandomAccount();
     xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
@@ -261,6 +260,10 @@ class AccountDeleteIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfDepositAuth()).isTrue();
+
+    // Create the source account
+    KeyPair senderAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger();
 
     // get sender account info for the sequence number
     AccountInfoResult senderAccountInfo = this.scanForResult(

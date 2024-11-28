@@ -41,13 +41,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 
-@DisabledIf(value = "shouldNotRun", disabledReason = "PriceOracleIT only runs on local rippled node or devnet.")
 public class PriceOracleIT extends AbstractIT {
-
-  static boolean shouldNotRun() {
-    return System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null;
-  }
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 

@@ -154,7 +154,6 @@ class AccountDeleteIT extends AbstractIT {
   @Test
   void testAccountDeleteItFailsWith_DestinationTagNeeded() throws JsonRpcClientErrorException, JsonProcessingException {
     // create two accounts, one will be the destination in the tx
-    KeyPair senderAccount = constructRandomAccount();
     KeyPair receiverAccount = constructRandomAccount();
     xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
@@ -193,6 +192,9 @@ class AccountDeleteIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
     assertThat(updatedReceiverAccountInfo.accountData().flags().lsfRequireDestTag()).isTrue();
+
+    KeyPair senderAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledge
 
     // get sender account info for the sequence number
     AccountInfoResult senderAccountInfo = this.scanForResult(

@@ -9,9 +9,10 @@ import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -41,13 +42,49 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 
+@EnabledIf(value = "shouldRun", disabledReason = "IsFinalIT only runs runs with local rippled nodes.")
 public class PriceOracleIT extends AbstractIT {
 
-  String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+  /**
+   * If any "real" testnet is being used (i.e., the enviornment specified is not a local one) then this test should not
+   * be run.
+   *
+   * @return {@code true} if test/dev/clio networks are the execution environment; {@code false} otherwise.
+   */
+  private static boolean shouldRun() {
+    return System.getProperty("useTestnet") == null &&
+      System.getProperty("useDevnet") == null &&
+      System.getProperty("useClioTestnet") == null;
+  }
+
+  /**
+   * This test requires the Ledger Acceptor to be disabled, in order to tightly control advancement of ledgers. Because
+   * of this, some of the tests do not execute when running against real networks (because controlling ledger
+   * advancement is not possible).
+   */
+  @BeforeAll
+  static void setupTest() {
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.stopLedgerAcceptor();
+  }
+
+  /**
+   * Because this test requires the Ledger Acceptor to be disabled, once the test completes, the Ledger Acceptor must be
+   * enabled again so that follow-on tests execute as expected.
+   */
+  @AfterAll
+  static void cleanupTest() {
+    // Turn the LedgerAcceptor off
+    xrplEnvironment.startLedgerAcceptor(POLL_INTERVAL);
+  }
+
+  private static final String xrpl4jCoin =
+    Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
   @Test
   void createAndUpdateAndDeleteOracle() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair sourceKeyPair = createRandomAccountEd25519();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
@@ -56,7 +93,7 @@ public class PriceOracleIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     OracleProvider provider = OracleProvider.of(BaseEncoding.base16().encode("DIA".getBytes()));
     OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("http://example.com".getBytes()));
-    UnsignedInteger lastUpdateTime = unixTimestamp();
+    UnsignedInteger lastUpdateTime = currentUnixTime();
     String assetClass = BaseEncoding.base16().encode("currency".getBytes());
     PriceDataWrapper priceData1 = PriceDataWrapper.of(
       PriceData.builder()
@@ -79,7 +116,7 @@ public class PriceOracleIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .signingPublicKey(sourceKeyPair.publicKey())
-      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
       .provider(provider)
       .uri(uri)
@@ -91,6 +128,7 @@ public class PriceOracleIT extends AbstractIT {
     SingleSignedTransaction<OracleSet> signedOracleSet = signatureService.sign(sourceKeyPair.privateKey(), oracleSet);
     SubmitResult<OracleSet> oracleSetSubmitResult = xrplClient.submit(signedOracleSet);
     assertThat(oracleSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     Finality finality = scanForFinality(
       signedOracleSet.hash(),
@@ -118,8 +156,8 @@ public class PriceOracleIT extends AbstractIT {
     assertThat(oracleObject.uri()).isNotEmpty().get().isEqualTo(uri);
     assertThat(oracleObject.priceDataSeries()).containsExactlyInAnyOrder(priceData1, priceData2);
 
-    // The lastUpdateTime of an Oracle must be withing 300 seconds of the last closed ledger.
-    UnsignedInteger lastUpdateTime2 = unixTimestamp().plus(UnsignedInteger.valueOf(250));
+    // The lastUpdateTime of an Oracle must be within 300 seconds of the last closed ledger.
+    UnsignedInteger lastUpdateTime2 = lastUpdateTime.plus(UnsignedInteger.valueOf(250));
     PriceDataWrapper newPriceData = PriceDataWrapper.of(
       PriceData.builder()
         .baseAsset("XRP")
@@ -157,6 +195,7 @@ public class PriceOracleIT extends AbstractIT {
     );
     SubmitResult<OracleSet> oracleUpdateSubmitResult = xrplClient.submit(signedOracleUpdate);
     assertThat(oracleUpdateSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     Finality updateFinality = scanForFinality(
       signedOracleUpdate.hash(),
@@ -188,7 +227,7 @@ public class PriceOracleIT extends AbstractIT {
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(oracleSet.fee())
       .sequence(oracleUpdate.sequence().plus(UnsignedInteger.ONE))
-      .lastLedgerSequence(ledgerEntry.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(ledgerEntry.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(sourceKeyPair.publicKey())
       .oracleDocumentId(oracleSet.oracleDocumentId())
       .build();
@@ -197,6 +236,7 @@ public class PriceOracleIT extends AbstractIT {
     );
     SubmitResult<OracleDelete> oracleDeleteSubmitResult = xrplClient.submit(signedOracleDelete);
     assertThat(oracleDeleteSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     Finality deleteFinality = scanForFinality(
       signedOracleDelete.hash(),
@@ -222,6 +262,7 @@ public class PriceOracleIT extends AbstractIT {
   @Test
   void createTwoOraclesAndGetAggregatePrice() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair sourceKeyPair = createRandomAccountEd25519();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
@@ -230,7 +271,7 @@ public class PriceOracleIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
     OracleProvider provider = OracleProvider.of(BaseEncoding.base16().encode("DIA".getBytes()));
     OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("http://example.com".getBytes()));
-    UnsignedInteger lastUpdateTime = unixTimestamp();
+    UnsignedInteger lastUpdateTime = currentUnixTime();
     String assetClass = BaseEncoding.base16().encode("currency".getBytes());
     PriceDataWrapper priceData1 = PriceDataWrapper.of(
       PriceData.builder()
@@ -244,7 +285,7 @@ public class PriceOracleIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(accountInfo.accountData().sequence())
       .signingPublicKey(sourceKeyPair.publicKey())
-      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(accountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
       .provider(provider)
       .uri(uri)
@@ -256,6 +297,7 @@ public class PriceOracleIT extends AbstractIT {
     SingleSignedTransaction<OracleSet> signedOracleSet = signatureService.sign(sourceKeyPair.privateKey(), oracleSet);
     SubmitResult<OracleSet> oracleSetSubmitResult = xrplClient.submit(signedOracleSet);
     assertThat(oracleSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     Finality finality = scanForFinality(
       signedOracleSet.hash(),
@@ -290,6 +332,7 @@ public class PriceOracleIT extends AbstractIT {
     SingleSignedTransaction<OracleSet> signedOracleSet2 = signatureService.sign(sourceKeyPair.privateKey(), oracleSet2);
     SubmitResult<OracleSet> oracleSetSubmitResult2 = xrplClient.submit(signedOracleSet2);
     assertThat(oracleSetSubmitResult2.engineResult()).isEqualTo("tesSUCCESS");
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     Finality finality2 = scanForFinality(
       signedOracleSet2.hash(),
@@ -325,7 +368,13 @@ public class PriceOracleIT extends AbstractIT {
     assertThat(aggregatePrice.trimmedSet()).isNotEmpty().get().isEqualTo(aggregatePrice.entireSet());
   }
 
-  private static UnsignedInteger unixTimestamp() {
-    return UnsignedInteger.valueOf(System.currentTimeMillis() / 1000L);
+  /**
+   * Get the current Unix timestamp (i.e., the number of seconds since January 1, 1970 (00:00 UTC)) as an unsigned
+   * integer.
+   *
+   * @return An {@link UnsignedInteger} representing the current unix time.
+   */
+  private static UnsignedInteger currentUnixTime() {
+    return UnsignedInteger.valueOf(Instant.now().getEpochSecond());
   }
 }

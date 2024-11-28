@@ -54,7 +54,7 @@ import java.time.Duration;
 public class IsFinalIT extends AbstractIT {
 
   /**
-   * If any "real" testnet is being used (i.e., the enviornment specified is not a local one) then this test should not
+   * If any "real" testnet is being used (i.e., the environment specified is not a local one) then this test should not
    * be run.
    *
    * @return {@code true} if test/dev/clio networks are the execution environment; {@code false} otherwise.

@@ -42,11 +42,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 
-@EnabledIf(value = "shouldRun", disabledReason = "IsFinalIT only runs runs with local rippled nodes.")
+@EnabledIf(value = "shouldRun", disabledReason = "PriceOracleIT only runs runs with local rippled nodes.")
 public class PriceOracleIT extends AbstractIT {
 
   /**
-   * If any "real" testnet is being used (i.e., the enviornment specified is not a local one) then this test should not
+   * If any "real" testnet is being used (i.e., the environment specified is not a local one) then this test should not
    * be run.
    *
    * @return {@code true} if test/dev/clio networks are the execution environment; {@code false} otherwise.

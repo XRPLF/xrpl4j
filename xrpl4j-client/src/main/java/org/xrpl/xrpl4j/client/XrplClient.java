@@ -307,7 +307,7 @@ public class XrplClient {
       return true; // Assume ledger gaps exist so this can be retried.
     }
 
-    // Clamp the lastLedgerSequence to be at least as large as submittedLedgerSequence
+    // Ensure the lastLedgerSequence is (at least) as large as submittedLedgerSequence
     if (FluentCompareTo.is(lastLedgerSequence).lessThan(submittedLedgerSequence)) {
       lastLedgerSequence = submittedLedgerSequence;
     }

@@ -225,17 +225,12 @@ public class RippledContainer {
     // rippled is run in standalone mode which means that ledgers won't automatically close. You have to manually
     // advance the ledger using the "ledger_accept" method on the admin API. To mimic the behavior of a networked
     // rippled, run a scheduled task to trigger the "ledger_accept" method.
-//    if (ledgerAcceptor.isTerminated()) { // <-- Some tests shutdown the acceptor, so don't check for that condition.
     ledgerAcceptor = Executors.newScheduledThreadPool(1);
     ledgerAcceptor.scheduleAtFixedRate(() -> LEDGER_ACCEPTOR.accept(this),
       acceptIntervalMillis.toMillis(),
       acceptIntervalMillis.toMillis(),
       TimeUnit.MILLISECONDS
     );
-//    }
-    // else {
-    // Do nothing; ledgerAcceptor is running or not yet started.
-    // }
 
     waitForLedgerTimeToSync();
   }
@@ -243,10 +238,11 @@ public class RippledContainer {
   /**
    * Stops the automated Ledger Acceptor, for example to control an integration test more finely.
    */
+  @SuppressWarnings({"all"})
   public void stopLedgerAcceptor() {
     try {
       ledgerAcceptor.shutdown();
-      boolean result = ledgerAcceptor.awaitTermination(5, TimeUnit.SECONDS);
+      ledgerAcceptor.awaitTermination(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       throw new RuntimeException("Unable to stop ledger acceptor", e);
     }

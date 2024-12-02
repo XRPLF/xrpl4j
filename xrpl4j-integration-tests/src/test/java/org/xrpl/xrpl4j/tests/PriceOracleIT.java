@@ -11,7 +11,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.OracleLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceRequestParams;
 import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceResult;
@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.model.transactions.PriceData;
 import org.xrpl.xrpl4j.model.transactions.PriceDataWrapper;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 
 @EnabledIf(value = "shouldRun", disabledReason = "PriceOracleIT only runs runs with local rippled nodes.")
@@ -104,7 +105,7 @@ public class PriceOracleIT extends AbstractIT {
     xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
     OracleProvider provider = OracleProvider.of(BaseEncoding.base16().encode("DIA".getBytes()));
-    OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("http://example.com".getBytes()));
+    OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("https://example.com".getBytes()));
     String assetClass = BaseEncoding.base16().encode("currency".getBytes());
     PriceDataWrapper priceData1 = PriceDataWrapper.of(
       PriceData.builder()
@@ -122,7 +123,9 @@ public class PriceOracleIT extends AbstractIT {
         .scale(UnsignedInteger.valueOf(10))
         .build()
     );
-    UnsignedInteger lastUpdateTime = currentUnixTime();
+
+    UnsignedInteger lastUpdateTime = closeTimeHuman();
+
     OracleSet oracleSet = OracleSet.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -145,7 +148,7 @@ public class PriceOracleIT extends AbstractIT {
     Finality finality = scanForFinality(
       signedOracleSet.hash(),
       accountInfo.ledgerIndexSafe(),
-      oracleSet.lastLedgerSequence().get(),
+      oracleSet.lastLedgerSequence().orElseThrow(RuntimeException::new),
       oracleSet.sequence(),
       sourceKeyPair.publicKey().deriveAddress()
     );
@@ -181,9 +184,7 @@ public class PriceOracleIT extends AbstractIT {
         .assetPrice(AssetPrice.of(UnsignedLong.valueOf(1000)))
         .build()
     );
-
-    // The lastUpdateTime of an Oracle must be within 300 seconds of the last closed ledger.
-    UnsignedInteger moreRecentLastUpdateTime = currentUnixTime().plus(UnsignedInteger.valueOf(100));
+    UnsignedInteger moreRecentLastUpdateTime = closeTimeHuman();
 
     OracleSet oracleUpdate = OracleSet.builder().from(oracleSet)
       .lastLedgerSequence(ledgerEntry.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
@@ -214,7 +215,7 @@ public class PriceOracleIT extends AbstractIT {
     Finality updateFinality = scanForFinality(
       signedOracleUpdate.hash(),
       accountInfo.ledgerIndexSafe(),
-      oracleUpdate.lastLedgerSequence().get(),
+      oracleUpdate.lastLedgerSequence().orElseThrow(RuntimeException::new),
       oracleUpdate.sequence(),
       sourceKeyPair.publicKey().deriveAddress()
     );
@@ -255,7 +256,7 @@ public class PriceOracleIT extends AbstractIT {
     Finality deleteFinality = scanForFinality(
       signedOracleDelete.hash(),
       accountInfo.ledgerIndexSafe(),
-      oracleDelete.lastLedgerSequence().get(),
+      oracleDelete.lastLedgerSequence().orElseThrow(RuntimeException::new),
       oracleDelete.sequence(),
       sourceKeyPair.publicKey().deriveAddress()
     );
@@ -283,7 +284,7 @@ public class PriceOracleIT extends AbstractIT {
 
     FeeResult feeResult = xrplClient.fee();
     OracleProvider provider = OracleProvider.of(BaseEncoding.base16().encode("DIA".getBytes()));
-    OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("http://example.com".getBytes()));
+    OracleUri uri = OracleUri.of(BaseEncoding.base16().encode("https://example.com".getBytes()));
     String assetClass = BaseEncoding.base16().encode("currency".getBytes());
     PriceDataWrapper priceData1 = PriceDataWrapper.of(
       PriceData.builder()
@@ -292,7 +293,8 @@ public class PriceOracleIT extends AbstractIT {
         .assetPrice(AssetPrice.of(UnsignedLong.ONE))
         .build()
     );
-    UnsignedInteger lastUpdateTime = currentUnixTime();
+    UnsignedInteger lastUpdateTime = closeTimeHuman();
+
     OracleSet oracleSet = OracleSet.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -315,7 +317,7 @@ public class PriceOracleIT extends AbstractIT {
     Finality finality = scanForFinality(
       signedOracleSet.hash(),
       accountInfo.ledgerIndexSafe(),
-      oracleSet.lastLedgerSequence().get(),
+      oracleSet.lastLedgerSequence().orElseThrow(RuntimeException::new),
       oracleSet.sequence(),
       sourceKeyPair.publicKey().deriveAddress()
     );
@@ -328,7 +330,9 @@ public class PriceOracleIT extends AbstractIT {
         .assetPrice(AssetPrice.of(UnsignedLong.valueOf(2)))
         .build()
     );
-    UnsignedInteger lastUpdateTime2 = currentUnixTime();
+
+    UnsignedInteger lastUpdateTime2 = closeTimeHuman();
+
     OracleSet oracleSet2 = OracleSet.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -351,7 +355,7 @@ public class PriceOracleIT extends AbstractIT {
     Finality finality2 = scanForFinality(
       signedOracleSet2.hash(),
       accountInfo.ledgerIndexSafe(),
-      oracleSet2.lastLedgerSequence().get(),
+      oracleSet2.lastLedgerSequence().orElseThrow(RuntimeException::new),
       oracleSet2.sequence(),
       sourceKeyPair.publicKey().deriveAddress()
     );
@@ -383,13 +387,30 @@ public class PriceOracleIT extends AbstractIT {
   }
 
   /**
-   * Get the current Unix timestamp (i.e., the number of seconds since January 1, 1970 (00:00 UTC)) as an unsigned
-   * integer.
+   * Get the ledger's view of clock-time by inspecting the `close_time_human` property on the most recently validated
+   * ledger (i.e., The time this ledger was closed, in human-readable format. Always uses the UTC time zone).
+   * <p>
+   * This value is used instead of the unix-time returned by the JVM because these two versions of time will diverge
+   * when ledgers are closed very quickly, as is the case with the default ledger acceptor polling interval (see
+   * {@link AbstractIT#POLL_INTERVAL}).
    *
-   * @return An {@link UnsignedInteger} representing the current unix time.
+   * @return An {@link UnsignedInteger} representing the seconds from the unix epoch of 1970-01-01T00:00:00Z.
+   *
+   * @see "https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/ledger-methods/ledger"
    */
-  private static UnsignedInteger currentUnixTime() {
-    // return UnsignedInteger.valueOf(Instant.now().getEpochSecond());
-    return UnsignedInteger.valueOf(System.currentTimeMillis() / 1000L);
+  private UnsignedInteger closeTimeHuman() throws JsonRpcClientErrorException {
+    Objects.requireNonNull(xrplClient);
+
+    final long closeTimeHuman = xrplClient.ledger(
+        LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build()
+      )
+      .ledger().closeTimeHuman()
+      .orElseThrow(() -> new RuntimeException("closeTimeHuman must exist"))
+      .toInstant()
+      .getEpochSecond();
+
+    return UnsignedInteger.valueOf(closeTimeHuman);
   }
+
+
 }

@@ -15,7 +15,7 @@ and address generation, transaction serialization and signing, provides useful J
 - Example usage can be found in the `xrpl4j-integration-tests`
   module [here](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-integration-tests/src/test/java/org/xrpl/xrpl4j/tests).
 
-## Usage
+## Usage 
 
 ### Requirements
 
@@ -33,7 +33,7 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
         <dependency>
             <groupId>org.xrpl</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>3.5.1</version>
+            <version>4.0.2</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -225,7 +225,7 @@ canonical JSON encoding). Read more about each here:
 
 Xrpl4j is structured as a Maven multi-module project, with the following modules:
 
-- **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
+- **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-core/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-core)
     - Provides core primitives like seeds, public/private keys definitions (supports secp256k1 and ed25519 key types 
       and signing algorithms), signature interfaces, address and binary codecs etc. Also provides Java objects which model XRP Ledger objects, 
       as well as request parameters and response results for the `rippled` websocket and JSON RPC APIs.

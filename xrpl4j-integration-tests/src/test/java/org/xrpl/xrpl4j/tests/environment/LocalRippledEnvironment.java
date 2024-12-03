@@ -103,4 +103,10 @@ public class LocalRippledEnvironment implements XrplEnvironment {
       result.transactionResult().transaction());
   }
 
+  /**
+   * Method to accept next ledger ad hoc, only available in RippledContainer.java implementation.
+   */
+  public void acceptLedger() {
+    rippledContainer.acceptLedger();
+  }
 }

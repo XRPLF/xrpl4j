@@ -389,8 +389,8 @@ public class PriceOracleIT extends AbstractIT {
   /**
    * Get the ledger's view of clock-time by inspecting the `close_time_human` property on the most recently validated
    * ledger (i.e., The time this ledger was closed, in human-readable format. Always uses the UTC time zone).
-   * <p>
-   * This value is used instead of the unix-time returned by the JVM because these two versions of time will diverge
+   *
+   * <p>This value is used instead of the unix-time returned by the JVM because these two versions of time will diverge
    * when ledgers are closed very quickly, as is the case with the default ledger acceptor polling interval (see
    * {@link AbstractIT#POLL_INTERVAL}).
    *

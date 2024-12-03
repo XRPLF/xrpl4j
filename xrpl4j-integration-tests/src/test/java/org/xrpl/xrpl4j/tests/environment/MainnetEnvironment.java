@@ -26,7 +26,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 /**
  * Abstract class representing integration test environment that uses Mainnet as its XRPL network.
  */
-public abstract class MainnetEnvironment implements XrplEnvironment {
+public abstract class MainnetEnvironment extends AbstractXrplEnvironment implements XrplEnvironment {
 
   @Override
   public abstract XrplClient getXrplClient();

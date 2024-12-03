@@ -37,14 +37,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@DisabledIf(value = "shouldRun", disabledReason = "DidIT only runs with local rippled nodes.")
 public class DidIT extends AbstractIT {
-
-  static boolean shouldRun() {
-    return System.getProperty("useTestnet") != null ||
-      System.getProperty("useDevnet") != null ||
-      System.getProperty("useClioTestnet") != null;
-  }
 
   @Test
   void testCreateAndUpdateDid() throws JsonRpcClientErrorException, JsonProcessingException {

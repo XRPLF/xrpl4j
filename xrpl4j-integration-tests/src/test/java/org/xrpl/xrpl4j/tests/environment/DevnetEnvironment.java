@@ -29,7 +29,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 /**
  * XRPL devnet environment.
  */
-public class DevnetEnvironment implements XrplEnvironment {
+public class DevnetEnvironment extends AbstractXrplEnvironment implements XrplEnvironment {
 
   private final FaucetClient faucetClient =
     FaucetClient.construct(HttpUrl.parse("https://faucet.devnet.rippletest.net"));

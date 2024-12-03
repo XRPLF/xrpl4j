@@ -36,5 +36,4 @@ public class ClioMainnetEnvironment extends MainnetEnvironment {
   public XrplClient getXrplClient() {
     return xrplClient;
   }
-
 }

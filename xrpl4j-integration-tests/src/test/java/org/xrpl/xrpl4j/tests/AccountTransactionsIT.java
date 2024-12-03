@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -42,13 +43,26 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.tests.environment.ReportingMainnetEnvironment;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
 /**
  * An Integration Test to validate submission of Account transactions.
  */
+@EnabledIf(value = "shouldRun", disabledReason = "AccountTransactionsIT only runs when Clio Testnet is specified.")
 public class AccountTransactionsIT {
+
+  /**
+   * This test actually hits the production network, so we ordinarily don't want to run this test on every development
+   * run or even CI run. Instead, this test only executes in CI, and only when the suite is pointed at Clio. Note that
+   * Clio is chosen somewhat arbitrarily as the goal is to simply execute this test once per CI run. We could later
+   * adjust this to only run when the environment is chosen to be Mainnet, but this project doesn't yet support that as
+   * an Environment.
+   *
+   * @return {@code true} if clio network is the target execution environment; {@code false} otherwise.
+   */
+  private static boolean shouldRun() {
+    return System.getProperty("useClioTestnet") != null;
+  }
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -67,8 +81,8 @@ public class AccountTransactionsIT {
   }
 
   /**
-   * This test will fail if we hit a Clio node until <a href="https://github.com/XRPLF/clio/pull/687">CLIO-687</a> is deployed
-   * to mainnet. We expect 748 transactions across all pages of account_tx, however Clio duplicates the last
+   * This test will fail if we hit a Clio node until <a href="https://github.com/XRPLF/clio/pull/687">CLIO-687</a> is
+   * deployed to mainnet. We expect 748 transactions across all pages of account_tx, however Clio duplicates the last
    * transaction from each page in the next page, which results in more than 748 transactions returned.
    *
    * @throws JsonRpcClientErrorException If rippled/Clio returns an error or a request fails.

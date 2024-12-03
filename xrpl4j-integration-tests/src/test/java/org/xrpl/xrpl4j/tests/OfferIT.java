@@ -394,7 +394,7 @@ public class OfferIT extends AbstractIT {
    */
   private void assertEmptyResults(Supplier<Collection<?>> supplier) {
     Awaitility.await()
-      .atMost(Durations.TEN_SECONDS)
+      .atMost(AT_MOST_INTERVAL)
       .until(supplier::get, Matchers.empty());
   }
 

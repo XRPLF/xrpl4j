@@ -99,7 +99,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Durations.ONE_HUNDRED_MILLISECONDS;
-  public static final Duration AT_MOST_INTERVAL = Duration.of(5, ChronoUnit.SECONDS);
+  public static final Duration AT_MOST_INTERVAL = Duration.of(30, ChronoUnit.SECONDS);
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
   protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getNewConfiguredEnvironment();

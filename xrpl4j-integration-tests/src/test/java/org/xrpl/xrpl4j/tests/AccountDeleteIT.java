@@ -54,7 +54,7 @@ import java.time.Duration;
  *
  * @see "https://xrpl.org/accountset.html"
  */
-@EnabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs runs with local rippled nodes.")
+@EnabledIf(value = "shouldRun", disabledReason = "AccountDeleteIT only runs with local rippled nodes.")
 class AccountDeleteIT extends AbstractIT {
 
   /**

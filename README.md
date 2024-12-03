@@ -15,7 +15,7 @@ and address generation, transaction serialization and signing, provides useful J
 - Example usage can be found in the `xrpl4j-integration-tests`
   module [here](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-integration-tests/src/test/java/org/xrpl/xrpl4j/tests).
 
-## Usage
+## Usage 
 
 ### Requirements
 

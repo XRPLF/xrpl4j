@@ -87,20 +87,24 @@ public interface EscrowFinish extends Transaction {
     Objects.requireNonNull(currentLedgerBaseFeeDrops);
     Objects.requireNonNull(fulfillment);
 
-    final int fulfillmentByteSize = Base64.getUrlDecoder().decode(
-      ((PreimageSha256Fulfillment) fulfillment).getEncodedPreimage()
-    ).length;
-    final int baseFee = currentLedgerBaseFeeDrops.value().intValue();
+    if (PreimageSha256Fulfillment.class.isAssignableFrom(fulfillment.getClass())) {
 
-    // See https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish#escrowfinish-fields for '
-    // computing the additional fee for Escrows.
-    // In particular: `extraFee = view.fees().base * (32 + (fb->size() / 16))`
-    // See https://github.com/XRPLF/rippled/blob/master/src/xrpld/app/tx/detail/Escrow.cpp#L368
-    final int extraFeeDrops = baseFee * (32 + (fulfillmentByteSize / 16));
-    final int totalFeeDrops = baseFee + extraFeeDrops; // <-- Add an extra base fee
-    return XrpCurrencyAmount.of(
-      UnsignedLong.valueOf(totalFeeDrops)
-    );
+      final long fulfillmentByteSize = Base64.getUrlDecoder().decode(
+        ((PreimageSha256Fulfillment) fulfillment).getEncodedPreimage()
+      ).length;
+      // See https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish#escrowfinish-fields for '
+      // computing the additional fee for Escrows.
+      // In particular: `extraFee = view.fees().base * (32 + (fb->size() / 16))`
+      // See https://github.com/XRPLF/rippled/blob/master/src/xrpld/app/tx/detail/Escrow.cpp#L368
+      final long baseFee = currentLedgerBaseFeeDrops.value().longValue();
+      final long extraFeeDrops = baseFee * (32 + (fulfillmentByteSize / 16));
+      final long totalFeeDrops = baseFee + extraFeeDrops; // <-- Add an extra base fee
+      return XrpCurrencyAmount.of(
+        UnsignedLong.valueOf(totalFeeDrops)
+      );
+    } else {
+      throw new RuntimeException("Only PreimageSha256Fulfillment is supported.");
+    }
   }
 
   /**

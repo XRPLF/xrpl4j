@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.io.BaseEncoding;
@@ -30,6 +31,7 @@ import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
+import com.ripple.cryptoconditions.PrefixSha256Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Condition;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
@@ -420,5 +422,48 @@ public class EscrowFinishTest {
       XrpCurrencyAmount.ofDrops(baseFee), PreimageSha256Fulfillment.from(new byte[numBytes])
     );
     assertThat(computedFee).isEqualTo(XrpCurrencyAmount.ofDrops(expectedDrops));
+  }
+
+  @Test
+  public void testComputeFeeWithWrongFulfillment() {
+    //////////////////////
+    // Invalid Fulfillment
+    //////////////////////
+
+    PreimageSha256Fulfillment preimageSha256Fulfillment = PreimageSha256Fulfillment.from(new byte[10]);
+    PrefixSha256Fulfillment prefixFulfillment = PrefixSha256Fulfillment.from(
+      new byte[1], 50, preimageSha256Fulfillment
+    );
+    Exception thrownException = assertThrows(
+      Exception.class, () -> EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), prefixFulfillment)
+    );
+    assertThat(thrownException instanceof RuntimeException).isTrue();
+    assertThat(thrownException.getMessage()).isEqualTo("Only PreimageSha256Fulfillment is supported.");
+  }
+
+  @Test
+  public void testComputeFeeWithNullParams() {
+    PreimageSha256Fulfillment preimageSha256Fulfillment = PreimageSha256Fulfillment.from(new byte[10]);
+    PrefixSha256Fulfillment prefixFulfillment = PrefixSha256Fulfillment.from(
+      new byte[1], 50, preimageSha256Fulfillment
+    );
+
+    //////////////////////
+    // Null Base Fee
+    //////////////////////
+    Exception thrownException = assertThrows(
+      Exception.class, () -> EscrowFinish.computeFee(null, prefixFulfillment)
+    );
+    assertThat(thrownException instanceof NullPointerException).isTrue();
+    assertThat(thrownException.getMessage()).isNull();
+
+    //////////////////////
+    // Null Fulfillment
+    //////////////////////
+    thrownException = assertThrows(
+      Exception.class, () -> EscrowFinish.computeFee(XrpCurrencyAmount.ofDrops(10), null)
+    );
+    assertThat(thrownException instanceof NullPointerException).isTrue();
+    assertThat(thrownException.getMessage()).isNull();
   }
 }

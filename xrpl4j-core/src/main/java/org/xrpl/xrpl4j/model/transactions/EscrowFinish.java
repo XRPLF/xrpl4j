@@ -92,7 +92,7 @@ public interface EscrowFinish extends Transaction {
       final long fulfillmentByteSize = Base64.getUrlDecoder().decode(
         ((PreimageSha256Fulfillment) fulfillment).getEncodedPreimage()
       ).length;
-      // See https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish#escrowfinish-fields for '
+      // See https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish#escrowfinish-fields for
       // computing the additional fee for Escrows.
       // In particular: `extraFee = view.fees().base * (32 + (fb->size() / 16))`
       // See https://github.com/XRPLF/rippled/blob/master/src/xrpld/app/tx/detail/Escrow.cpp#L368

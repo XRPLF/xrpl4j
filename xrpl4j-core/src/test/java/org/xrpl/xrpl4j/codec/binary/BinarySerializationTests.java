@@ -2277,7 +2277,9 @@ public class BinarySerializationTests {
       .account(Address.of("rpgAg9CgNV9MYUECHTx26h1PEARhreuap7"))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.ONE)
-      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A"))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02B4A8F64B97151FA303F86417751B7EA5AF1D0014FCC110C234D04AF15F3F654A")
+      )
       .flags(AmmWithdrawFlags.LP_TOKEN)
       .asset(Issue.builder()
         .currency("4755534400000000000000000000000000000000")

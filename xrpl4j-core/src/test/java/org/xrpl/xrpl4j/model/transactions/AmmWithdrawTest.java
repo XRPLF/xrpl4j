@@ -21,7 +21,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     String json = "{\n" +
       "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "    \"LPTokensIn\" : " + objectMapper.writeValueAsString(withdraw.lpTokensIn()) + "," +
+      "    \"LPTokenIn\" : " + objectMapper.writeValueAsString(withdraw.lpTokensIn()) + "," +
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
@@ -43,7 +43,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
 
     String json = "{\n" +
       "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "    \"LPTokensIn\" : \"10\"," +
+      "    \"LPTokenIn\" : \"10\"," +
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +
@@ -171,7 +171,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
       "        \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\",\n" +
       "        \"value\" : \"5\"\n" +
       "    },\n" +
-      "    \"LPTokensIn\" : " + objectMapper.writeValueAsString(withdraw.lpTokensIn()) + "," +
+      "    \"LPTokenIn\" : " + objectMapper.writeValueAsString(withdraw.lpTokensIn()) + "," +
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +

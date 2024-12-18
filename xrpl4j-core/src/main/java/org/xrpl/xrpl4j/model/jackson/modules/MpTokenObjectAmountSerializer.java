@@ -21,7 +21,8 @@ public class MpTokenObjectAmountSerializer extends StdScalarSerializer<MpTokenOb
 
   @Override
   public void serialize(MpTokenObjectAmount count, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    // sfMaximumAmount is an STUInt64s, which in JSON is represented as a hex-encoded String.
-    gen.writeString(count.value().toString(16));
+    // sfMaximumAmount is an STUInt64, which in JSON is normally represented in base 16, but sfMaximumAmount is
+    // in base 10
+    gen.writeString(count.value().toString());
   }
 }

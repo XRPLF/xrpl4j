@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
@@ -51,15 +53,24 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
     JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
     if (node.isContainerNode()) {
-      String currency = node.get("currency").asText();
-      String value = node.get("value").asText();
-      String issuer = node.get("issuer").asText();
+      if (node.has("mpt_issuance_id")) {
+        String mptIssuanceId = node.get("mpt_issuance_id").asText();
+        String value = node.get("value").asText();
+        return MpTokenAmount.builder()
+          .mptIssuanceId(MpTokenIssuanceId.of(mptIssuanceId))
+          .value(value)
+          .build();
+      } else {
+        String currency = node.get("currency").asText();
+        String value = node.get("value").asText();
+        String issuer = node.get("issuer").asText();
 
-      return IssuedCurrencyAmount.builder()
-        .value(value)
-        .issuer(Address.of(issuer))
-        .currency(currency)
-        .build();
+        return IssuedCurrencyAmount.builder()
+          .value(value)
+          .issuer(Address.of(issuer))
+          .currency(currency)
+          .build();
+      }
     } else {
       return XrpCurrencyAmount.ofDrops(node.asLong());
     }

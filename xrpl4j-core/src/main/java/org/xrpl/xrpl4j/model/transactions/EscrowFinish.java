@@ -32,6 +32,8 @@ import com.ripple.cryptoconditions.Condition;
 import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
+import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
+import com.ripple.cryptoconditions.PreimageSha256Fulfillment.AbstractPreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -41,6 +43,7 @@ import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,25 +72,39 @@ public interface EscrowFinish extends Transaction {
    * transaction increases if it contains a fulfillment. If the transaction contains a fulfillment, the transaction cost
    * is 330 drops of XRP plus another 10 drops for every 16 bytes in size of the preimage.
    *
-   * @param currentLedgerFeeDrops The number of drops that the ledger demands at present.
-   * @param fulfillment           The {@link Fulfillment} that is being presented to the ledger for computation
-   *                              purposes.
+   * @param currentLedgerBaseFeeDrops The number of drops that the ledger demands at present.
+   * @param fulfillment               The {@link Fulfillment} that is being presented to the ledger for computation
+   *                                  purposes.
    *
    * @return An {@link XrpCurrencyAmount} representing the computed fee.
    *
    * @see "https://xrpl.org/escrowfinish.html"
    */
-  static XrpCurrencyAmount computeFee(final XrpCurrencyAmount currentLedgerFeeDrops, final Fulfillment fulfillment) {
-    Objects.requireNonNull(currentLedgerFeeDrops);
+  static XrpCurrencyAmount computeFee(
+    final XrpCurrencyAmount currentLedgerBaseFeeDrops,
+    final Fulfillment<?> fulfillment
+  ) {
+    Objects.requireNonNull(currentLedgerBaseFeeDrops);
     Objects.requireNonNull(fulfillment);
 
-    UnsignedLong newFee =
-      currentLedgerFeeDrops.value() // <-- usually 10 drops, per the docs.
-        // <-- https://github.com/ripple/rippled/blob/develop/src/ripple/app/tx/impl/Escrow.cpp#L362
-        .plus(UnsignedLong.valueOf(320))
-        // <-- 10 drops for each additional 16 bytes.
-        .plus(UnsignedLong.valueOf(10 * (fulfillment.getDerivedCondition().getCost() / 16)));
-    return XrpCurrencyAmount.of(newFee);
+    if (PreimageSha256Fulfillment.class.isAssignableFrom(fulfillment.getClass())) {
+
+      final long fulfillmentByteSize = Base64.getUrlDecoder().decode(
+        ((PreimageSha256Fulfillment) fulfillment).getEncodedPreimage()
+      ).length;
+      // See https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish#escrowfinish-fields for
+      // computing the additional fee for Escrows.
+      // In particular: `extraFee = view.fees().base * (32 + (fb->size() / 16))`
+      // See https://github.com/XRPLF/rippled/blob/master/src/xrpld/app/tx/detail/Escrow.cpp#L368
+      final long baseFee = currentLedgerBaseFeeDrops.value().longValue();
+      final long extraFeeDrops = baseFee * (32 + (fulfillmentByteSize / 16));
+      final long totalFeeDrops = baseFee + extraFeeDrops; // <-- Add an extra base fee
+      return XrpCurrencyAmount.of(
+        UnsignedLong.valueOf(totalFeeDrops)
+      );
+    } else {
+      throw new RuntimeException("Only PreimageSha256Fulfillment is supported.");
+    }
   }
 
   /**
@@ -144,11 +161,11 @@ public interface EscrowFinish extends Transaction {
    *
    * <p>Note that a similar field does not exist on {@link EscrowCreate},
    * {@link org.xrpl.xrpl4j.model.ledger.EscrowObject}, or
-   * {@link org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject} because {@link EscrowCreate}s with
-   * malformed conditions will never be included in a ledger by the XRPL. Because of this fact, an
+   * {@link org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject} because {@link EscrowCreate}s with malformed
+   * conditions will never be included in a ledger by the XRPL. Because of this fact, an
    * {@link org.xrpl.xrpl4j.model.ledger.EscrowObject} and
-   * {@link org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject} will also never contain a malformed
-   * crypto condition.</p>
+   * {@link org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject} will also never contain a malformed crypto
+   * condition.</p>
    *
    * @return An {@link Optional} {@link String} containing the hex-encoded PREIMAGE-SHA-256 condition.
    */
@@ -191,8 +208,8 @@ public interface EscrowFinish extends Transaction {
    * <p>If {@link #condition()} is present but {@link #conditionRawValue()} is empty, we set
    * {@link #conditionRawValue()} to the underlying value of {@link #condition()}.</p>
    * <p>If {@link #condition()} is empty and {@link #conditionRawValue()} is present, we will set
-   * {@link #condition()} to the {@link Condition} representing the raw condition value, or leave
-   * {@link #condition()} empty if {@link #conditionRawValue()} is a malformed {@link Condition}.</p>
+   * {@link #condition()} to the {@link Condition} representing the raw condition value, or leave {@link #condition()}
+   * empty if {@link #conditionRawValue()} is a malformed {@link Condition}.</p>
    *
    * @return A normalized {@link EscrowFinish}.
    */

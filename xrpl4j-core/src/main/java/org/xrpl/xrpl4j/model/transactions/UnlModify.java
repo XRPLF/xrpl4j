@@ -62,7 +62,7 @@ public interface UnlModify extends Transaction {
    */
   @Override
   @JsonProperty("Account")
-  @Value.Derived
+  @Value.Default
   default Address account() {
     return ACCOUNT_ZERO;
   }

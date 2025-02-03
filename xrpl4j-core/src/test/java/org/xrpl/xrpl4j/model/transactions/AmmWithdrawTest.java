@@ -221,7 +221,7 @@ class AmmWithdrawTest extends AbstractJsonTest {
     String json = "{\n" +
       "    \"Foo\" : \"Bar\",\n" +
       "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-      "    \"LPTokensIn\" : " + objectMapper.writeValueAsString(withdraw.lpTokensIn()) + "," +
+      "    \"LPTokenIn\" : " + objectMapper.writeValueAsString(withdraw.lpTokensIn()) + "," +
       "    \"Asset\" : " + objectMapper.writeValueAsString(withdraw.asset()) + "," +
       "    \"Asset2\" : " + objectMapper.writeValueAsString(withdraw.asset2()) + "," +
       "    \"Fee\" : \"10\",\n" +

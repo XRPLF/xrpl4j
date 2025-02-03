@@ -160,7 +160,6 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      //.cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(1))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
@@ -284,7 +283,6 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-//      .cancelAfter(this.instantToXrpTimestamp(Instant.now().plus(Duration.ofMinutes(60))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 

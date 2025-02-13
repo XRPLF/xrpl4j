@@ -40,38 +40,38 @@ import java.io.IOException;
  * Custom deserializer for {@link Transaction}s, which deserializes to a specific {@link Transaction} type based on the
  * TransactionType JSON field.
  */
-public class TransactionSerializer { //} extends StdSerializer<Transaction> {
-//
-//  /**
-//   * No-args constructor.
-//   */
-//  protected TransactionSerializer() {
-//    super(Transaction.class);
-//  }
-//
-//  @Override
-//  public void serialize(Transaction value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-//
-//    if (UnlModify.class.isAssignableFrom(value.getClass())) {
-//      gen.writeStartObject();
-//
-//      // 1. Delegate to Jackson for the existing fields:
-//      provider.defaultSerializeValue(value, gen); // Delegate to Jackson
-//
-////      ObjectMapperFactory.create().writeValue(gen, value);
-//
-//      // Serialize the existing fields (delegate to Jackson's default if possible)
-////      gen.writeObject((UnlModify) value); // This will handle the standard Transaction fields
-//
-//      // Add the extra "Account" field here because by marking it @Derived in the Immutable, this field does not show
-//      // up during serialization.
-//      gen.writeFieldName("Account");
-//      gen.writeString(value.account().value());
-//
-//      gen.writeEndObject();
-//    } else {
-//      // Rely on Jackson's automatic serialization
-//      gen.writeObject(value);
-//    }
-//  }
+public class TransactionSerializer extends StdSerializer<Transaction> {
+
+  /**
+   * No-args constructor.
+   */
+  protected TransactionSerializer() {
+    super(Transaction.class);
+  }
+
+  @Override
+  public void serialize(Transaction value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+
+    if (UnlModify.class.isAssignableFrom(value.getClass())) {
+      gen.writeStartObject();
+
+      // 1. Delegate to Jackson for the existing fields:
+      provider.defaultSerializeValue(value, gen); // Delegate to Jackson
+
+//      ObjectMapperFactory.create().writeValue(gen, value);
+
+      // Serialize the existing fields (delegate to Jackson's default if possible)
+//      gen.writeObject((UnlModify) value); // This will handle the standard Transaction fields
+
+      // Add the extra "Account" field here because by marking it @Derived in the Immutable, this field does not show
+      // up during serialization.
+      gen.writeFieldName("Account");
+      gen.writeString(value.account().value());
+
+      gen.writeEndObject();
+    } else {
+      // Rely on Jackson's automatic serialization
+      gen.writeObject(value);
+    }
+  }
 }

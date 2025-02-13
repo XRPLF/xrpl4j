@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.xrpl.xrpl4j.crypto.keys.ImmutablePublicKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
@@ -92,9 +93,11 @@ public interface UnlModify extends Transaction {
    * @return Always returns ACCOUNT_ZERO, which is the base58 encoding of the number zero.
    */
   @Override
-  @JsonProperty(value = "Account", access = Access.WRITE_ONLY)
+  @JsonProperty(value = "Account"
+    , access = Access.READ_WRITE
+  )
   @Value.Derived
-  @JsonIgnore(false)
+  @JsonSerialize
   default Address account() {
     return ACCOUNT_ZERO;
   }

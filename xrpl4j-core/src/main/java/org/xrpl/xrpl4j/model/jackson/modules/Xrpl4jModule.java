@@ -61,7 +61,7 @@ public class Xrpl4jModule extends SimpleModule {
     addSerializer(LedgerIndex.class, new LedgerIndexSerializer());
     addDeserializer(LedgerIndex.class, new LedgerIndexDeserializer());
 
-    addSerializer(UnlModify.class, new UnlModifyTransactionSerializer());
+//    addSerializer(UnlModify.class, new UnlModifyTransactionSerializer());
     addDeserializer(Transaction.class, new TransactionDeserializer());
 
     addDeserializer(ServerInfo.class, new ServerInfoDeserializer());

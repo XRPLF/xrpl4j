@@ -21,12 +21,16 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  */
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.UnlModify;
+import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Custom deserializer for {@link Transaction}s, which deserializes to a specific {@link Transaction} type based on the
@@ -44,6 +48,20 @@ public class UnlModifyTransactionSerializer extends StdSerializer<UnlModify> {
   @Override
   public void serialize(UnlModify value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 
+//    ObjectMapper codec = (ObjectMapper) jsonParser.getCodec();
+//    JsonNode jsonNode = jsonParser.readValueAsTree();
+//    Map.Entry<String, JsonNode> nodeFieldAndValue = jsonNode.fields().next();
+//    String affectedNodeType = nodeFieldAndValue.getKey();
+
+//    codec.getTypeFactory().constructParametricType(CreatedNode.class, ledgerObjectClass)
+
+
+//    ObjectMapper objectMapper = (ObjectMapper) gen.getCodec();
+//    String json = objectMapper.writeValueAsString(value);
+
+//    provider.defaultSerializeValue()
+
+
 //    if (UnlModify.class.isAssignableFrom(value.getClass())) {
 //      gen.writeStartObject();
 
@@ -51,7 +69,7 @@ public class UnlModifyTransactionSerializer extends StdSerializer<UnlModify> {
 //    gen.getCurrentValue().toString().length() == 1
 //    ) {
       // 1. Delegate to Jackson for the existing fields:
-      provider.defaultSerializeValue(value, gen); // Delegate to Jackson
+//      provider.defaultSerializeValue(value, gen); // Delegate to Jackson
 //    }
 
 //      ObjectMapperFactory.create().writeValue(gen, value);

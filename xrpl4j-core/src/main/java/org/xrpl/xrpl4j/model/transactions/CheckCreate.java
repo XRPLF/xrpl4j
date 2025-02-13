@@ -106,4 +106,10 @@ public interface CheckCreate extends Transaction {
   @JsonProperty("InvoiceID")
   Optional<Hash256> invoiceId();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.CHECK_CREATE;
+  }
 }

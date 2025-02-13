@@ -44,11 +44,10 @@ public interface UnknownTransaction extends Transaction {
    *
    * @return {@link TransactionType#UNKNOWN}.
    */
-  @Override
   @JsonIgnore
   @Value.Derived
   default TransactionType transactionType() {
-    return Transaction.super.transactionType();
+    return TransactionType.UNKNOWN;
   }
 
   /**
@@ -61,5 +60,4 @@ public interface UnknownTransaction extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-
 }

@@ -129,4 +129,11 @@ public interface NfTokenCreateOffer extends Transaction {
   default NfTokenCreateOfferFlags flags() {
     return NfTokenCreateOfferFlags.empty();
   }
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.NFTOKEN_CREATE_OFFER;
+  }
 }

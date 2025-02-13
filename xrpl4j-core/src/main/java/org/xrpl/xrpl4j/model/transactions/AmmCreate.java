@@ -68,4 +68,9 @@ public interface AmmCreate extends Transaction {
   @JsonProperty("TradingFee")
   TradingFee tradingFee();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.AMM_CREATE;
+  }
 }

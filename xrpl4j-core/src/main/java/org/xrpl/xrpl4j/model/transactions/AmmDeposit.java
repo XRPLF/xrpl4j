@@ -105,4 +105,10 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("TradingFee")
   Optional<TradingFee> tradingFee();
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.AMM_DEPOSIT;
+  }
 }

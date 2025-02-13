@@ -137,4 +137,9 @@ public interface NfTokenAcceptOffer extends Transaction {
     return TransactionFlags.EMPTY;
   }
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.NFTOKEN_ACCEPT_OFFER;
+  }
 }

@@ -71,5 +71,10 @@ public interface DidSet extends Transaction {
   @JsonProperty("Data")
   Optional<DidData> data();
 
-
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.DID_SET;
+  }
 }

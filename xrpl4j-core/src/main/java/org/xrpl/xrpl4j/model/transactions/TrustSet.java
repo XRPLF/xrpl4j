@@ -88,4 +88,10 @@ public interface TrustSet extends Transaction {
   @JsonProperty("QualityOut")
   Optional<UnsignedInteger> qualityOut();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.TRUST_SET;
+  }
 }

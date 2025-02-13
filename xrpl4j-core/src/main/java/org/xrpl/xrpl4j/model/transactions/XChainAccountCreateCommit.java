@@ -78,4 +78,10 @@ public interface XChainAccountCreateCommit extends Transaction {
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT;
+  }
 }

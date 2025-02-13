@@ -94,5 +94,11 @@ public interface OfferCreate extends Transaction {
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.OFFER_CREATE;
+  }
 
 }

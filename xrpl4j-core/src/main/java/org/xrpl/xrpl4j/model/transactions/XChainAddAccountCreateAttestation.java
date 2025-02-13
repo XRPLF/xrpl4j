@@ -142,4 +142,10 @@ public interface XChainAddAccountCreateAttestation extends Transaction {
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION;
+  }
 }

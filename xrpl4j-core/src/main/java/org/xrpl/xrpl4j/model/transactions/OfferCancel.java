@@ -72,4 +72,10 @@ public interface OfferCancel extends Transaction {
   @JsonProperty("OfferSequence")
   Optional<UnsignedInteger> offerSequence();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.OFFER_CANCEL;
+  }
 }

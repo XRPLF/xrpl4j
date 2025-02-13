@@ -107,4 +107,9 @@ public interface AmmBid extends Transaction {
   @JsonProperty("AuthAccounts")
   List<AuthAccountWrapper> authAccounts();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.AMM_BID;
+  }
 }

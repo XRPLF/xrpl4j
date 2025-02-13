@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import java.util.Optional;
 
 /**
- * An {@link EnableAmendment} pseudo-transaction marks a change in status of an amendment.
- * to the XRP Ledger protocol
+ * An {@link EnableAmendment} pseudo-transaction marks a change in status of an amendment. to the XRP Ledger protocol
  *
  * @see "https://xrpl.org/enableamendment.html"
  */
@@ -57,11 +56,17 @@ public interface EnableAmendment extends Transaction {
   Hash256 amendment();
 
   /**
-   * The ledger index where this pseudo-transaction appears. This distinguishes the
-   * pseudo-transaction from other occurrences of the same change.
+   * The ledger index where this pseudo-transaction appears. This distinguishes the pseudo-transaction from other
+   * occurrences of the same change.
    *
    * @return A {@link LedgerIndex} to indicates where the tx appears.
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.ENABLE_AMENDMENT;
+  }
 }

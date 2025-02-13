@@ -83,4 +83,10 @@ public interface SignerListSet extends Transaction {
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.SIGNER_LIST_SET;
+  }
 }

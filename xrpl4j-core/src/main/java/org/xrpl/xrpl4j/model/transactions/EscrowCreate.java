@@ -132,4 +132,11 @@ public interface EscrowCreate extends Transaction {
       );
     }
   }
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.ESCROW_CREATE;
+  }
 }

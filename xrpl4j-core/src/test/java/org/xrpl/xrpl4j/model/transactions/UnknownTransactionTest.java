@@ -36,10 +36,9 @@ class UnknownTransactionTest extends AbstractJsonTest {
       .sequence(UnsignedInteger.valueOf(5))
       .flags(flags)
       .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"))
-      .unknownFields(
-        unknownFields
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .unknownFields(unknownFields)
       .networkId(NetworkId.of(UnsignedInteger.valueOf(1024)))
       .build();
 

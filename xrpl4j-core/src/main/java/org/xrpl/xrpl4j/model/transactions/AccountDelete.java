@@ -81,4 +81,9 @@ public interface AccountDelete extends Transaction {
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.ACCOUNT_DELETE;
+  }
 }

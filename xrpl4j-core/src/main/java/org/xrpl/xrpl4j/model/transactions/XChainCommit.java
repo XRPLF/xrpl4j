@@ -83,4 +83,10 @@ public interface XChainCommit extends Transaction {
   @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.XCHAIN_COMMIT;
+  }
 }

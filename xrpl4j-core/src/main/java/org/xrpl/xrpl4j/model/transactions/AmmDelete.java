@@ -58,4 +58,9 @@ public interface AmmDelete extends Transaction {
   @JsonProperty("Asset2")
   Issue asset2();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.AMM_DELETE;
+  }
 }

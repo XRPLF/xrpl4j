@@ -68,4 +68,10 @@ public interface CheckCancel extends Transaction {
    */
   @JsonProperty("CheckID")
   Hash256 checkId();
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.CHECK_CANCEL;
+  }
 }

@@ -107,4 +107,11 @@ public interface NfTokenMint extends Transaction {
   default NfTokenMintFlags flags() {
     return NfTokenMintFlags.empty();
   }
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.NFTOKEN_MINT;
+  }
 }

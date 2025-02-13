@@ -93,4 +93,11 @@ public interface PaymentChannelFund extends Transaction {
    */
   @JsonProperty("Expiration")
   Optional<UnsignedLong> expiration();
+
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.PAYMENT_CHANNEL_FUND;
+  }
 }

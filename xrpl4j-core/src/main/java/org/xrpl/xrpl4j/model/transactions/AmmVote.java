@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
@@ -68,5 +69,12 @@ public interface AmmVote extends Transaction {
   @JsonProperty("TradingFee")
   TradingFee tradingFee();
 
+  @JsonProperty(value = "TransactionType"
+    //    , access = Access.WRITE_ONLY
+  )  // <-- Serialize only
+  @Value.Derived
+  default TransactionType transactionType() {
+    return TransactionType.AMM_VOTE;
+  }
 
 }

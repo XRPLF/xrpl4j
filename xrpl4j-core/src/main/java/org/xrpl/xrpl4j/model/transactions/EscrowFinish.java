@@ -361,4 +361,10 @@ public interface EscrowFinish extends Transaction {
     }
   }
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.ESCROW_FINISH;
+  }
 }

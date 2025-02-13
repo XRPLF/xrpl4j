@@ -24,12 +24,16 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.model.jackson.modules.TransactionSerializer;
 
 import java.util.List;
 import java.util.Map;
@@ -109,11 +113,21 @@ public interface Transaction {
    *
    * @return A {@link TransactionType}.
    */
+//  // NOTE: This method is marked `@Derived`, which means the Immutable JSON serializer/deserializer won't include
+//  // this property. However, by marking the `access` as `WRITE_ONLY`, we ensure that this property is always serialized
+//  // from Java into JSON, but never deserialized from JSON into Java. This has two effects: (1) The `TransactionType`
+//  // is never entered into the `unknownFields` Map, and (2) The Java default method implementation always ensures that
+//  // the actual Java `TransactionType` is always populated properly, via the lookup in `typeMap`.
+//  @JsonProperty(value = "TransactionType"
+//    , access = Access.WRITE_ONLY
+//  )  // <-- Serialize only
+//  @Value.Derived
+//  default
   @JsonProperty("TransactionType")
-  @Value.Default // must be Default rather than Derived, otherwise Jackson treats "TransactionType" as an unknownField
-  default TransactionType transactionType() {
-    return typeMap.get(this.getClass());
-  }
+  TransactionType transactionType();
+//  {
+//    return typeMap.get(this.getClass());
+//  }
 
   /**
    * The {@link String} representation of an integer amount of XRP, in drops, to be destroyed as a cost for distributing

@@ -73,4 +73,10 @@ public interface SetRegularKey extends Transaction {
   @JsonProperty("RegularKey")
   Optional<Address> regularKey();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.SET_REGULAR_KEY;
+  }
 }

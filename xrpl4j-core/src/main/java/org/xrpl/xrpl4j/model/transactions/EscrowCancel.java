@@ -76,4 +76,10 @@ public interface EscrowCancel extends Transaction {
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();
 
+  @JsonProperty(value = "TransactionType")
+  @Value.Derived
+  @Override
+  default TransactionType transactionType() {
+    return TransactionType.ESCROW_CANCEL;
+  }
 }

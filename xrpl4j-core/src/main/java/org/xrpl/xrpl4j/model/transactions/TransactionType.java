@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -353,7 +353,6 @@ public enum TransactionType {
    * Gets an instance of {@link TransactionType} for the given string value.
    *
    * @param value The {@link String} value corresponding to a {@link TransactionType}.
-   *
    * @return The {@link TransactionType} with the corresponding value.
    */
   public static TransactionType forValue(String value) {

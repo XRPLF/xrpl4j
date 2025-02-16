@@ -1,7 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -113,8 +112,8 @@ class NegativeTransactionMetadataTest {
   }
 
   /**
-   * This test validates that the ledger 87704323 and all of its transactions and metadata are handled correctly, even
-   * in the presence of negative XRP or IOU amounts.
+   * This test validates that the ledger 94084608 and all of its transactions and metadata are handled correctly, even
+   * in the presence of a `UnlModify` transaction that has an empty `Account`.
    */
   @ParameterizedTest
   @ValueSource(strings = {

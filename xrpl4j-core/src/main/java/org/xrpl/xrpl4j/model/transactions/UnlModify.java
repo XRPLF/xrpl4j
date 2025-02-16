@@ -61,7 +61,7 @@ public interface UnlModify extends Transaction {
    * @return Always returns ACCOUNT_ZERO, which is the base58 encoding of the number zero.
    */
   @Override
-  @JsonProperty(value = "Account")
+  @JsonProperty("Account")
   @Value.Default // Must be `Default` not `Derived`, else this field will be serialized into `unknownFields`.
   default Address account() {
     return ACCOUNT_ZERO;

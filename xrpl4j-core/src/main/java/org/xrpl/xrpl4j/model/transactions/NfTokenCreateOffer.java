@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
@@ -128,5 +129,13 @@ public interface NfTokenCreateOffer extends Transaction {
   @Value.Default
   default NfTokenCreateOfferFlags flags() {
     return NfTokenCreateOfferFlags.empty();
+  }
+
+  @Value.Check
+  default NfTokenCreateOffer normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.NFTOKEN_CREATE_OFFER);
+    return this;
   }
 }

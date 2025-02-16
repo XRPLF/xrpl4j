@@ -132,4 +132,12 @@ public interface EscrowCreate extends Transaction {
       );
     }
   }
+
+  @Value.Check
+  default EscrowCreate normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.ESCROW_CREATE);
+    return this;
+  }
 }

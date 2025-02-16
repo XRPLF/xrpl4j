@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,12 +23,10 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A {@link UnlModify} pseudo-transaction marks a change to the Negative UNL, indicating that a trusted validator has
@@ -95,30 +93,11 @@ public interface UnlModify extends Transaction {
   @JsonProperty("UNLModifyValidator")
   String unlModifyValidator();
 
-  // TODO: Check the transactionType and WARN if this is incorrect (but allow it).
-  // TODO: Add the above check to all transactions.
-  // TODO: Add unit tests to verify the transaction for all txs (basically, expect a warning?)
-
   @Value.Check
   default UnlModify normalize() {
-    if (unknownFields().containsKey("Account")) {
-      Map<String, Object> newUnknownFields = new HashMap<>(unknownFields()); // Copy the original
-
-      //      newUnknownFields.remove("Account");
-      //      newUnknownFields.remove("TransactionType");
-
-      //      return ImmutableUnlModify.builder().from(this)
-      //        .unknownFields(Collections.unmodifiableMap(newUnknownFields))
-      //        .build();
-
-    } else {
-
-      //    if (value() == Integer.MIN_VALUE) {
-      //      return ImmutableNormalized.builder()
-      //        .value(0)
-      //        .build();
-      //    }
-    }
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.UNL_MODIFY);
     return this;
   }
 }

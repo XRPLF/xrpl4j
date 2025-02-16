@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
@@ -68,4 +69,11 @@ public interface CheckCancel extends Transaction {
   @JsonProperty("CheckID")
   Hash256 checkId();
 
+  @Value.Check
+  default CheckCancel normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.CHECK_CANCEL);
+    return this;
+  }
 }

@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
@@ -105,5 +106,13 @@ public interface NfTokenMint extends Transaction {
   @Value.Default
   default NfTokenMintFlags flags() {
     return NfTokenMintFlags.empty();
+  }
+
+  @Value.Check
+  default NfTokenMint normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.NFTOKEN_MINT);
+    return this;
   }
 }

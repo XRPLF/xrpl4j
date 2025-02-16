@@ -358,4 +358,11 @@ public interface EscrowFinish extends Transaction {
     }
   }
 
+  @Value.Check
+  default EscrowFinish normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.ESCROW_FINISH);
+    return this;
+  }
 }

@@ -92,4 +92,12 @@ public interface DepositPreAuth extends Transaction {
         !(authorize().isPresent() && unauthorize().isPresent()),
       "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
+
+  @Value.Check
+  default DepositPreAuth normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.DEPOSIT_PRE_AUTH);
+    return this;
+  }
 }

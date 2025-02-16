@@ -109,17 +109,8 @@ public interface Transaction {
    *
    * @return A {@link TransactionType}.
    */
-  // TODO FIX DOCS
-  // NOTE: This method is marked `@Derived`, which means the Immutable JSON serializer/deserializer won't include
-  // this property. However, by marking the `access` as `WRITE_ONLY`, we ensure that this property is always
-  //    serialized
-  // from Java into JSON, but never deserialized from JSON into Java. This has two effects: (1) The
-  //    `TransactionType`
-  // is never entered into the `unknownFields` Map, and (2) The Java default method implementation always ensures
-  //    that
-  // the actual Java `TransactionType` is always populated properly, via the lookup in `typeMap`.
   @JsonProperty("TransactionType")
-  @Value.Default // Must be `Default` not `Derived`, else this field will be serialized into `unknownFields`.
+  @Value.Default // must be Default rather than Derived, otherwise Jackson treats "TransactionType" as an unknownField
   default TransactionType transactionType() {
     return typeMap.get(this.getClass());
   }
@@ -131,6 +122,7 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link XrpCurrencyAmount} representing the transaction cost.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
@@ -143,6 +135,7 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link UnsignedInteger} representing the sequence of the transaction.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @Value.Default

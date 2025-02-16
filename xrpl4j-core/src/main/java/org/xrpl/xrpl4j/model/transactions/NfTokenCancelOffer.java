@@ -90,4 +90,12 @@ public interface NfTokenCancelOffer extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
+
+  @Value.Check
+  default NfTokenCancelOffer normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.NFTOKEN_CANCEL_OFFER);
+    return this;
+  }
 }

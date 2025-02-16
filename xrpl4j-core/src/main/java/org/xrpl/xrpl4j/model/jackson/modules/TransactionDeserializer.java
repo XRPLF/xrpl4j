@@ -33,10 +33,10 @@ import org.xrpl.xrpl4j.model.transactions.UnlModify;
 import java.io.IOException;
 
 /**
- * Custom deserializer for {@link Transaction}s, which deserializes to a specific {@link Transaction} type based on the
- * TransactionType JSON field.
+ * Custom deserializer for instances of {@link Transaction} that deserialize to a specific {@link Transaction} type
+ * based on the`TransactionType` JSON field
  */
-public class TransactionDeserializer<T extends Transaction> extends StdDeserializer<T> {
+public class TransactionDeserializer extends StdDeserializer<Transaction> {
 
   /**
    * No-args constructor.
@@ -46,19 +46,18 @@ public class TransactionDeserializer<T extends Transaction> extends StdDeseriali
   }
 
   @Override
-  public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
-    ObjectNode objectNode = objectMapper.readTree(jsonParser);
+  public Transaction deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+    final ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
+    final ObjectNode objectNode = objectMapper.readTree(jsonParser);
 
-    JsonNode node = objectNode.get("TransactionType");
-    TransactionType transactionType = TransactionType.forValue(node.asText());
-    @SuppressWarnings("unchecked")
-    Class<T> transactionTypeClass = (Class<T>) Transaction.typeMap.inverse().get(transactionType);
+    final JsonNode transactionTypeJsonNode = objectNode.get("TransactionType");
+    final TransactionType transactionType = TransactionType.forValue(transactionTypeJsonNode.asText());
+    final Class<? extends Transaction> transactionTypeClass = Transaction.typeMap.inverse().get(transactionType);
 
-    // Remove the `Account` property from any incoming UnlModify JSON about to be deserialized. This is because the JSON
-    // returned by the rippled/clio API v1 has a bug where the account value is an empty string. For this particular
-    // For `UnlModify` only, the Java value for the Account is always set to ACCOUNT_ZERO via a default
-    // method, so this value is removed from the JSON before deserialization because it's not needed (the default
+    // Remove the `Account` property from any incoming `UnlModify` JSON about to be deserialized. This is because the 
+    // JSON returned by the rippled/clio API v1 has a bug where the account value in `UnlModify` transactions is an 
+    // empty string. In this case, the Java value for the `Account` property is always set to ACCOUNT_ZERO via a default
+    // method, so this property is removed from incoming JSON before deserialization because it's not needed (the default
     // method handles population in Java) and if not removed, this field will end up in the `unknownFields`
     // map of the ultimate Java object, which is incorrect.
     if (UnlModify.class.isAssignableFrom(transactionTypeClass)) {

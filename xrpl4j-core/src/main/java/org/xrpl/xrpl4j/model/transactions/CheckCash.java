@@ -105,4 +105,12 @@ public interface CheckCash extends Transaction {
         !(amount().isPresent() && deliverMin().isPresent()),
       "The CheckCash transaction must include either amount or deliverMin, but not both.");
   }
+
+  @Value.Check
+  default CheckCash normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.CHECK_CASH);
+    return this;
+  }
 }

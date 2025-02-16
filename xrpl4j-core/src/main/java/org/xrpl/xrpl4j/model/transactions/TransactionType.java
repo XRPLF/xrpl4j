@@ -353,6 +353,7 @@ public enum TransactionType {
    * Gets an instance of {@link TransactionType} for the given string value.
    *
    * @param value The {@link String} value corresponding to a {@link TransactionType}.
+   *
    * @return The {@link TransactionType} with the corresponding value.
    */
   public static TransactionType forValue(String value) {

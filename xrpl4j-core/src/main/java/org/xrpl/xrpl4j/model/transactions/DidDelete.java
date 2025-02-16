@@ -45,11 +45,4 @@ public interface DidDelete extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.DID_DELETE;
-  }
 }

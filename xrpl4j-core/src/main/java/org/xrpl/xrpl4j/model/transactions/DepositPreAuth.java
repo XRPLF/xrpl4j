@@ -93,11 +93,4 @@ public interface DepositPreAuth extends Transaction {
         !(authorize().isPresent() && unauthorize().isPresent()),
       "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.DEPOSIT_PRE_AUTH;
-  }
 }

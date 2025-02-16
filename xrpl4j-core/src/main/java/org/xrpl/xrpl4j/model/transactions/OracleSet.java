@@ -97,11 +97,4 @@ public interface OracleSet extends Transaction {
    */
   @JsonProperty("PriceDataSeries")
   List<PriceDataWrapper> priceDataSeries();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.ORACLE_SET;
-  }
 }

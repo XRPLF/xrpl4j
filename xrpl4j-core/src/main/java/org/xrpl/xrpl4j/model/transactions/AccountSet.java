@@ -372,13 +372,7 @@ public interface AccountSet extends Transaction {
       );
 
   }
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.ACCOUNT_SET;
-  }
-
+  
   /**
    * There are several options which can be either enabled or disabled for an account. Account options are represented
    * by different types of flags depending on the situation.

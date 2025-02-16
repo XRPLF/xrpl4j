@@ -101,15 +101,10 @@ public interface CheckCash extends Transaction {
    */
   @Value.Check
   default void validateOnlyOneAmountSet() {
-    Preconditions.checkArgument((amount().isPresent() || deliverMin().isPresent()) &&
-        !(amount().isPresent() && deliverMin().isPresent()),
-      "The CheckCash transaction must include either amount or deliverMin, but not both.");
-  }
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.CHECK_CASH;
+    Preconditions.checkArgument(
+      (amount().isPresent() || deliverMin().isPresent()) &&
+      !(amount().isPresent() && deliverMin().isPresent()),
+      "The CheckCash transaction must include either amount or deliverMin, but not both."
+    );
   }
 }

@@ -20,7 +20,6 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -84,7 +83,7 @@ import java.util.Objects;
  */
 @SuppressWarnings("TypeName")
 public class Wrappers {
-
+  
   /**
    * A wrapped {@link String} representing an address on the XRPL.
    */
@@ -93,24 +92,26 @@ public class Wrappers {
   @JsonSerialize(as = Address.class, using = AddressSerializer.class)
   @JsonDeserialize(as = Address.class, using = AddressDeserializer.class)
   abstract static class _Address extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
     /**
      * Validates that a {@link Address}'s value's length is equal to 34 characters and starts with `r`.
      */
     @Value.Check
     public void validateAddress() {
       Preconditions.checkArgument(this.value().startsWith("r"), "Invalid Address: Bad Prefix");
-      Preconditions.checkArgument(this.value().length() >= 25 && this.value().length() <= 35,
-        "Classic Addresses must be (25,35) characters long inclusive.");
+      Preconditions.checkArgument(
+        this.value().length() >= 25 && this.value().length() <= 35,
+        "Classic Addresses must be (25,35) characters long inclusive."
+      );
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} representing an X-Address on the XRPL.
    */
@@ -119,14 +120,14 @@ public class Wrappers {
   @JsonSerialize(as = XAddress.class)
   @JsonDeserialize(as = XAddress.class)
   abstract static class _XAddress extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing the Hex representation of a 256-bit Hash.
    */
@@ -135,12 +136,12 @@ public class Wrappers {
   @JsonSerialize(as = Hash256.class, using = Hash256Serializer.class)
   @JsonDeserialize(as = Hash256.class, using = Hash256Deserializer.class)
   abstract static class _Hash256 extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
     /**
      * Validates that a {@link Hash256}'s value's length is equal to 64 characters.
      */
@@ -148,7 +149,7 @@ public class Wrappers {
     public void validateLength() {
       Preconditions.checkArgument(this.value().length() == 64, "Hash256 Strings must be 64 characters long.");
     }
-
+    
     @Override
     public boolean equals(Object obj) {
       if (obj != null && obj instanceof Hash256) {
@@ -159,13 +160,13 @@ public class Wrappers {
       }
       return false;
     }
-
+    
     @Override
     public int hashCode() {
       return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
   }
-
+  
   /**
    * A {@link CurrencyAmount} for the XRP currency (non-issued). {@link XrpCurrencyAmount}s are a {@link String}
    * representation of an unsigned integer representing the amount in XRP drops.
@@ -175,10 +176,10 @@ public class Wrappers {
   @JsonSerialize(as = XrpCurrencyAmount.class, using = XrpCurrencyAmountSerializer.class)
   @JsonDeserialize(as = XrpCurrencyAmount.class, using = XrpCurrencyAmountDeserializer.class)
   abstract static class _XrpCurrencyAmount extends Wrapper<UnsignedLong> implements Serializable, CurrencyAmount {
-
+    
     static final BigDecimal SMALLEST_XRP = new BigDecimal("0.000001");
     static final DecimalFormat FORMATTER = new DecimalFormat("###,###");
-
+    
     /**
      * Constructs an {@link XrpCurrencyAmount} using a number of drops. Because XRP is capped to 100B units (1e17
      * drops), this value will never overflow Java's signed long number.
@@ -197,7 +198,7 @@ public class Wrappers {
         return ofDrops(UnsignedLong.valueOf(drops), false);
       }
     }
-
+    
     /**
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
      *
@@ -207,11 +208,11 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final UnsignedLong drops) {
       Objects.requireNonNull(drops);
-
+      
       // Note: ofDrops() throws an exception if too big.
       return _XrpCurrencyAmount.ofDrops(drops, false);
     }
-
+    
     /**
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
      *
@@ -222,13 +223,13 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofDrops(final UnsignedLong drops, final boolean isNegative) {
       Objects.requireNonNull(drops);
-
+      
       return XrpCurrencyAmount.builder()
         .value(drops)
         .isNegative(isNegative)
         .build();
     }
-
+    
     /**
      * Constructs an {@link XrpCurrencyAmount} using decimal amount of XRP.
      *
@@ -238,11 +239,11 @@ public class Wrappers {
      */
     public static XrpCurrencyAmount ofXrp(final BigDecimal amount) {
       Objects.requireNonNull(amount);
-
+      
       if (FluentCompareTo.is(amount).equalTo(BigDecimal.ZERO)) {
         return ofDrops(UnsignedLong.ZERO);
       }
-
+      
       final BigDecimal absAmount = amount.abs();
       // Whether positive or negative, ensure the amount is not too small and not too big.
       Preconditions.checkArgument(
@@ -253,7 +254,7 @@ public class Wrappers {
         FluentCompareTo.is(absAmount).lessThanOrEqualTo(MAX_XRP_BD),
         String.format("Amount must be less-than-or-equal-to %s", MAX_XRP_BD)
       );
-
+      
       if (amount.signum() == 0) { // zero
         return ofDrops(UnsignedLong.ZERO); // <-- Should never happen per the first check above, but just in case.
       } else { // positive or negative
@@ -261,7 +262,7 @@ public class Wrappers {
         return ofDrops(UnsignedLong.valueOf(absAmount.scaleByPowerOfTen(6).toBigIntegerExact()), isNegative);
       }
     }
-
+    
     /**
      * Indicates whether this amount is positive or negative.
      *
@@ -283,7 +284,7 @@ public class Wrappers {
     public boolean isNegative() {
       return false;
     }
-
+    
     /**
      * Convert this XRP amount into a decimal representing a value denominated in whole XRP units. For example, a value
      * of `1.0` represents 1 unit of XRP; a value of `0.5` represents a half of an XRP unit.
@@ -299,7 +300,7 @@ public class Wrappers {
         return amount;
       }
     }
-
+    
     /**
      * Adds another {@link XrpCurrencyAmount} to this amount.
      *
@@ -314,7 +315,7 @@ public class Wrappers {
           (other.value().longValue() * (other.isNegative() ? -1 : 1));
       return XrpCurrencyAmount.ofDrops(result);
     }
-
+    
     /**
      * Subtract another {@link XrpCurrencyAmount} from this amount.
      *
@@ -329,7 +330,7 @@ public class Wrappers {
           (other.value().longValue() * (other.isNegative() ? -1 : 1));
       return XrpCurrencyAmount.ofDrops(result);
     }
-
+    
     /**
      * Multiplies this amount by another {@link XrpCurrencyAmount}.
      *
@@ -343,12 +344,12 @@ public class Wrappers {
         this.isNegative() || other.isNegative()
       );
     }
-
+    
     @Override
     public String toString() {
       return String.format("%s%s", isNegative() ? "-" : "", this.value().toString());
     }
-
+    
     /**
      * Validates that this {@link XrpCurrencyAmount} does not exceed the maximum number of drops.
      */
@@ -361,23 +362,23 @@ public class Wrappers {
         )
       );
     }
-
+    
   }
-
+  
   @Value.Immutable
   @Wrapped
   @JsonSerialize(as = Marker.class, using = MarkerSerializer.class)
   @JsonDeserialize(as = Marker.class, using = MarkerDeserializer.class)
   abstract static class _Marker extends Wrapper<String> implements Serializable {
-
+    
     @Override
     @JsonRawValue
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing the NFT Id.
    */
@@ -386,12 +387,12 @@ public class Wrappers {
   @JsonSerialize(as = NfTokenId.class, using = NfTokenIdSerializer.class)
   @JsonDeserialize(as = NfTokenId.class, using = NfTokenIdDeserializer.class)
   abstract static class _NfTokenId extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
     /**
      * Validates that a NfTokenId value's length is equal to 64 characters.
      */
@@ -399,7 +400,7 @@ public class Wrappers {
     public void validateLength() {
       Preconditions.checkArgument(this.value().length() == 64, "TokenId must be 64 characters long.");
     }
-
+    
     @Override
     public boolean equals(Object obj) {
       if (obj != null && obj instanceof NfTokenId) {
@@ -411,7 +412,7 @@ public class Wrappers {
       return false;
     }
   }
-
+  
   /**
    * A wrapped {@link String} containing the Uri.
    */
@@ -420,7 +421,7 @@ public class Wrappers {
   @JsonSerialize(as = NfTokenUri.class, using = NfTokenUriSerializer.class)
   @JsonDeserialize(as = NfTokenUri.class)
   abstract static class _NfTokenUri extends Wrapper<String> implements Serializable {
-
+    
     /**
      * Constructs an {@link NfTokenUri} using a String value.
      *
@@ -431,7 +432,7 @@ public class Wrappers {
     public static NfTokenUri ofPlainText(String plaintext) {
       return NfTokenUri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
     }
-
+    
     @Override
     public boolean equals(Object obj) {
       if (obj != null && obj instanceof NfTokenUri) {
@@ -443,7 +444,7 @@ public class Wrappers {
       return false;
     }
   }
-
+  
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    *
@@ -456,12 +457,7 @@ public class Wrappers {
   @JsonSerialize(as = TransferFee.class, using = TransferFeeSerializer.class)
   @JsonDeserialize(as = TransferFee.class, using = TransferFeeDeserializer.class)
   abstract static class _TransferFee extends Wrapper<UnsignedInteger> implements Serializable {
-
-    @Override
-    public String toString() {
-      return this.value().toString();
-    }
-
+    
     /**
      * Construct {@link TransferFee} as a percentage value.
      *
@@ -480,8 +476,12 @@ public class Wrappers {
       );
       return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
     }
-
-
+    
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+    
     /**
      * Validates that a NfTokenId value's length is equal to 64 characters.
      */
@@ -490,11 +490,12 @@ public class Wrappers {
       Preconditions.checkArgument(
         FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(50000)) &&
           FluentCompareTo.is(value()).greaterThanEqualTo(UnsignedInteger.valueOf(0)),
-        "TransferFee should be in the range 0 to 50000.");
+        "TransferFee should be in the range 0 to 50000."
+      );
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing a Network ID.
    */
@@ -503,12 +504,7 @@ public class Wrappers {
   @JsonSerialize(as = NetworkId.class, using = NetworkIdSerializer.class)
   @JsonDeserialize(as = NetworkId.class, using = NetworkIdDeserializer.class)
   abstract static class _NetworkId extends Wrapper<UnsignedInteger> implements Serializable {
-
-    @Override
-    public String toString() {
-      return this.value().toString();
-    }
-
+    
     /**
      * Construct a {@link NetworkId} from a {@code long}. The supplied value must be less than or equal to
      * 4,294,967,295, the largest unsigned 32-bit integer.
@@ -520,8 +516,13 @@ public class Wrappers {
     public static NetworkId of(long networkId) {
       return NetworkId.of(UnsignedInteger.valueOf(networkId));
     }
+    
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
   }
-
+  
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
    *
@@ -534,12 +535,7 @@ public class Wrappers {
   @JsonDeserialize(as = TradingFee.class, using = TradingFeeDeserializer.class)
   @Beta
   abstract static class _TradingFee extends Wrapper<UnsignedInteger> implements Serializable {
-
-    @Override
-    public String toString() {
-      return this.value().toString();
-    }
-
+    
     /**
      * Construct {@link TradingFee} as a percentage value.
      *
@@ -554,7 +550,12 @@ public class Wrappers {
       );
       return TradingFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
     }
-
+    
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+    
     /**
      * Get the {@link TradingFee} as a {@link BigDecimal}.
      *
@@ -563,9 +564,9 @@ public class Wrappers {
     public BigDecimal bigDecimalValue() {
       return BigDecimal.valueOf(value().longValue(), 3);
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the VoteWeight.
    *
@@ -578,12 +579,12 @@ public class Wrappers {
   @JsonDeserialize(as = VoteWeight.class, using = VoteWeightDeserializer.class)
   @Beta
   abstract static class _VoteWeight extends Wrapper<UnsignedInteger> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value().toString();
     }
-
+    
     /**
      * Get the {@link VoteWeight} as a {@link BigDecimal}.
      *
@@ -592,9 +593,9 @@ public class Wrappers {
     public BigDecimal bigDecimalValue() {
       return BigDecimal.valueOf(value().longValue(), 3);
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedLong} containing an XChainClaimID.
    *
@@ -607,14 +608,14 @@ public class Wrappers {
   @JsonDeserialize(as = XChainClaimId.class, using = XChainClaimIdDeserializer.class)
   @Beta
   abstract static class _XChainClaimId extends Wrapper<UnsignedLong> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value().toString();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedLong} representing a counter for XLS-38 sidechains. This
    * wrapper mostly exists to ensure we serialize fields of this type as a hex String in JSON, as these fields are
@@ -629,14 +630,14 @@ public class Wrappers {
   @JsonDeserialize(as = XChainCount.class, using = XChainCountDeserializer.class)
   @Beta
   abstract static class _XChainCount extends Wrapper<UnsignedLong> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value().toString();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing a DID Document.
    *
@@ -649,14 +650,14 @@ public class Wrappers {
   @JsonDeserialize(as = DidDocument.class, using = DidDocumentDeserializer.class)
   @Beta
   abstract static class _DidDocument extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing a DID URI.
    *
@@ -669,14 +670,14 @@ public class Wrappers {
   @JsonDeserialize(as = DidUri.class, using = DidUriDeserializer.class)
   @Beta
   abstract static class _DidUri extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing DID Data.
    *
@@ -689,14 +690,14 @@ public class Wrappers {
   @JsonDeserialize(as = DidData.class, using = DidDataDeserializer.class)
   @Beta
   abstract static class _DidData extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link UnsignedInteger} containing an Oracle document ID.
    *
@@ -709,14 +710,14 @@ public class Wrappers {
   @JsonDeserialize(as = OracleDocumentId.class, using = OracleDocumentIdDeserializer.class)
   @Beta
   abstract static class _OracleDocumentId extends Wrapper<UnsignedInteger> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value().toString();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing an Oracle provider.
    *
@@ -729,14 +730,14 @@ public class Wrappers {
   @JsonDeserialize(as = OracleProvider.class, using = OracleProviderDeserializer.class)
   @Beta
   abstract static class _OracleProvider extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing an Oracle URI.
    *
@@ -749,14 +750,14 @@ public class Wrappers {
   @JsonDeserialize(as = OracleUri.class, using = OracleUriDeserializer.class)
   @Beta
   abstract static class _OracleUri extends Wrapper<String> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value();
     }
-
+    
   }
-
+  
   /**
    * A wrapped {@link String} containing an Oracle asset price.
    *
@@ -769,11 +770,11 @@ public class Wrappers {
   @JsonDeserialize(as = AssetPrice.class, using = AssetPriceDeserializer.class)
   @Beta
   abstract static class _AssetPrice extends Wrapper<UnsignedLong> implements Serializable {
-
+    
     @Override
     public String toString() {
       return this.value().toString();
     }
-
+    
   }
 }

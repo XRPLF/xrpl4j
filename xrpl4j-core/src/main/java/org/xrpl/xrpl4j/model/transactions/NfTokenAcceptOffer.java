@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -82,13 +82,13 @@ public interface NfTokenAcceptOffer extends Transaction {
    * for the transfer fee charged by the issuer, the amount that
    * the seller would receive is at least as much as the amount
    * indicated in the sell offer.
-   *
+   * <p>
    * This functionality is intended to allow the owner of an
    * NfT to offer their token for sale to a third party
    * broker, who may then attempt to sell the NfT on for a
    * larger amount, without the broker having to own the NfT
    * or custody funds.
-   *
+   * <p>
    * If both offers are for the same asset, it is possible that
    * the order in which funds are transferred might cause a
    * transaction that would succeed to fail due to an apparent
@@ -97,7 +97,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    * proposal requires that the account attempting to buy the
    * NfT is debited first and that funds due to the broker
    * are credited before crediting the seller.
-   *
+   * <p>
    * Note: in brokered mode, The offers referenced by BuyOffer
    * and SellOffer must both specify the same TokenID; that is,
    * both must be for the same NfT.</p>
@@ -114,10 +114,10 @@ public interface NfTokenAcceptOffer extends Transaction {
   @Value.Check
   default void brokerFeeNotPresentInDirectModeAndAtleastOneOfferPresent() {
     Preconditions.checkState(buyOffer().isPresent() || sellOffer().isPresent(),
-      "PLease specify one offer for direct mode and both offers for brokered mode.");
+      "Please specify one offer for direct mode and both offers for brokered mode.");
 
     if ((buyOffer().isPresent() || sellOffer().isPresent()) &&
-      !(buyOffer().isPresent() && sellOffer().isPresent())) {
+        !(buyOffer().isPresent() && sellOffer().isPresent())) {
       Preconditions.checkState(!brokerFee().isPresent(), "No BrokerFee needed in direct mode.");
     }
   }
@@ -135,11 +135,5 @@ public interface NfTokenAcceptOffer extends Transaction {
   @Value.Default
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
-  }
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.NFTOKEN_ACCEPT_OFFER;
   }
 }

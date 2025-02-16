@@ -21,7 +21,7 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAmmDeposit.class)
 @Beta
 public interface AmmDeposit extends Transaction {
-
+  
   /**
    * Construct a {@code AmmDeposit} builder.
    *
@@ -30,7 +30,7 @@ public interface AmmDeposit extends Transaction {
   static ImmutableAmmDeposit.Builder builder() {
     return ImmutableAmmDeposit.builder();
   }
-
+  
   /**
    * A {@link AmmDepositFlags} for this transaction. This field must be set manually.
    *
@@ -38,7 +38,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("Flags")
   AmmDepositFlags flags();
-
+  
   /**
    * The definition for one of the assets in the AMM's pool.
    *
@@ -46,7 +46,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("Asset")
   Issue asset();
-
+  
   /**
    * The definition for the other asset in the AMM's pool.
    *
@@ -54,7 +54,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("Asset2")
   Issue asset2();
-
+  
   /**
    * The amount of one asset to deposit to the AMM. If present, this must match the type of one of the assets (tokens or
    * XRP) in the AMM's pool.
@@ -63,7 +63,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("Amount")
   Optional<CurrencyAmount> amount();
-
+  
   /**
    * The amount of another asset to add to the AMM. If present, this must match the type of the other asset in the AMM's
    * pool and cannot be the same asset as Amount.
@@ -72,7 +72,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("Amount2")
   Optional<CurrencyAmount> amount2();
-
+  
   /**
    * The maximum effective price, in the deposit asset, to pay for each LP Token received.
    *
@@ -80,7 +80,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("EPrice")
   Optional<CurrencyAmount> effectivePrice();
-
+  
   /**
    * How many of the AMM's LP Tokens to buy.
    *
@@ -96,7 +96,7 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("LPTokenOut")
   Optional<CurrencyAmount> lpTokenOut();
-
+  
   /**
    * An optional {@link TradingFee} to set on the AMM instance. This field is only honored if the AMM's LP token balance
    * is zero, and can only be set if flags is {@link AmmDepositFlags#TWO_ASSET_IF_EMPTY}.
@@ -105,10 +105,4 @@ public interface AmmDeposit extends Transaction {
    */
   @JsonProperty("TradingFee")
   Optional<TradingFee> tradingFee();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.AMM_DEPOSIT;
-  }
 }

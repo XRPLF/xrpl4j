@@ -117,11 +117,4 @@ public interface PaymentChannelCreate extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.PAYMENT_CHANNEL_CREATE;
-  }
-
 }

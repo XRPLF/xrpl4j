@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import java.io.IOException;
 import java.util.Map;
 
+// TOOD: Delete if unused.
 /**
  * Custom deserializer for {@link Transaction}s, which deserializes to a specific {@link Transaction} type based on the
  * TransactionType JSON field.

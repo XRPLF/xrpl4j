@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,19 +24,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
- * Cancels an unredeemed Check, removing it from the ledger without sending any money. The source or the
- * destination of the check can cancel a Check at any time using this transaction type.
- * If the Check has expired, any address can cancel it.
+ * Cancels an unredeemed Check, removing it from the ledger without sending any money. The source or the destination of
+ * the check can cancel a Check at any time using this transaction type. If the Check has expired, any address can
+ * cancel it.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCheckCancel.class)
 @JsonDeserialize(as = ImmutableCheckCancel.class)
 public interface CheckCancel extends Transaction {
-
+  
   /**
    * Construct a builder for this class.
    *
@@ -45,10 +44,10 @@ public interface CheckCancel extends Transaction {
   static ImmutableCheckCancel.Builder builder() {
     return ImmutableCheckCancel.builder();
   }
-
+  
   /**
-   * Set of {@link TransactionFlags}s for this {@link CheckCancel}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link CheckCancel}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -60,7 +59,7 @@ public interface CheckCancel extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-
+  
   /**
    * The ID of the Check ledger object to cancel, as a 64-character hexadecimal string.
    *
@@ -68,10 +67,4 @@ public interface CheckCancel extends Transaction {
    */
   @JsonProperty("CheckID")
   Hash256 checkId();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.CHECK_CANCEL;
-  }
 }

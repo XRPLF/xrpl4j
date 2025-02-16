@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
@@ -38,7 +37,7 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableAccountDelete.class)
 @JsonDeserialize(as = ImmutableAccountDelete.class)
 public interface AccountDelete extends Transaction {
-
+  
   /**
    * Construct a builder for this class.
    *
@@ -47,10 +46,10 @@ public interface AccountDelete extends Transaction {
   static ImmutableAccountDelete.Builder builder() {
     return ImmutableAccountDelete.builder();
   }
-
+  
   /**
-   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -62,7 +61,7 @@ public interface AccountDelete extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-
+  
   /**
    * The {@link Address} of an account to receive any leftover XRP after deleting the sending account. Must be a funded
    * account in the ledger, and must not be the sending account.
@@ -71,7 +70,7 @@ public interface AccountDelete extends Transaction {
    */
   @JsonProperty("Destination")
   Address destination();
-
+  
   /**
    * Arbitrary destination tag that identifies a hosted recipient or other information for the recipient of the deleted
    * account's leftover XRP.
@@ -80,10 +79,4 @@ public interface AccountDelete extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.ACCOUNT_DELETE;
-  }
 }

@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.flags.PaymentFlags;
-import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.flags.XChainModifyBridgeFlags;
 
 import java.util.Optional;
@@ -73,11 +71,4 @@ public interface XChainModifyBridge extends Transaction {
   @JsonProperty("XChainBridge")
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.XCHAIN_MODIFY_BRIDGE;
-  }
 }

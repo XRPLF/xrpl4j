@@ -33,14 +33,11 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
-import com.ripple.cryptoconditions.PreimageSha256Fulfillment.AbstractPreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
-import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -75,9 +72,7 @@ public interface EscrowFinish extends Transaction {
    * @param currentLedgerBaseFeeDrops The number of drops that the ledger demands at present.
    * @param fulfillment               The {@link Fulfillment} that is being presented to the ledger for computation
    *                                  purposes.
-   *
    * @return An {@link XrpCurrencyAmount} representing the computed fee.
-   *
    * @see "https://xrpl.org/escrowfinish.html"
    */
   static XrpCurrencyAmount computeFee(
@@ -254,7 +249,7 @@ public interface EscrowFinish extends Transaction {
           // condition is equivalent to the raw value when re-written.
           if (!Arrays.equals(CryptoConditionWriter.writeCondition(condition), conditionRawValueBytes)) {
             logger.warn("EscrowFinish Condition was malformed: mismatch between raw value and parsed condition. " +
-              "conditionRawValue() will contain the condition value, but condition() will be empty.");
+                        "conditionRawValue() will contain the condition value, but condition() will be empty.");
             return this;
           }
 
@@ -264,7 +259,7 @@ public interface EscrowFinish extends Transaction {
         } catch (DerEncodingException | IllegalArgumentException e) {
           logger.warn(
             "EscrowFinish Condition was malformed. conditionRawValue() will contain the condition value, but " +
-              "condition() will be empty: {}",
+            "condition() will be empty: {}",
             e.getMessage(),
             e
           );
@@ -336,7 +331,7 @@ public interface EscrowFinish extends Transaction {
           // fulfillment is equivalent to the raw value when re-written.
           if (!Arrays.equals(CryptoConditionWriter.writeFulfillment(fulfillment), fulfillmentRawValueBytes)) {
             logger.warn("EscrowFinish Fulfillment was malformed: mismatch between raw value and parsed fulfillment. " +
-              "fulfillmentRawValue() will contain the fulfillment value, but fulfillment() will be empty.");
+                        "fulfillmentRawValue() will contain the fulfillment value, but fulfillment() will be empty.");
             return this;
           }
 
@@ -346,7 +341,7 @@ public interface EscrowFinish extends Transaction {
         } catch (DerEncodingException | IllegalArgumentException e) {
           logger.warn(
             "EscrowFinish Fulfillment was malformed. fulfillmentRawValue() will contain the fulfillment value, " +
-              "but fulfillment() will be empty: {}",
+            "but fulfillment() will be empty: {}",
             e.getMessage(),
             e
           );
@@ -359,12 +354,5 @@ public interface EscrowFinish extends Transaction {
       // a DerEncodingException, but nowhere in its implementation does it throw.
       throw new RuntimeException(e);
     }
-  }
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.ESCROW_FINISH;
   }
 }

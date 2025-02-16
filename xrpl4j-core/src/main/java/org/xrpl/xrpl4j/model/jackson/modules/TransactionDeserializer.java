@@ -22,6 +22,7 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,50 +32,64 @@ import org.xrpl.xrpl4j.model.transactions.UnknownTransaction;
 import org.xrpl.xrpl4j.model.transactions.UnlModify;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Custom deserializer for {@link Transaction}s, which deserializes to a specific {@link Transaction} type based on the
  * TransactionType JSON field.
  */
-public class TransactionDeserializer extends StdDeserializer<Transaction> {
-
+public class TransactionDeserializer<T extends Transaction> extends StdDeserializer<T> {
+  
+  private final Class<T> clazz;
+  
   /**
    * No-args constructor.
    */
   protected TransactionDeserializer() {
     super(Transaction.class);
+    this.clazz = (Class<T>) Transaction.class;
   }
-
+  
+  /**
+   * No-args constructor.
+   */
+  protected TransactionDeserializer(final Class<T> clazz) {
+    super(Transaction.class);
+    this.clazz = Objects.requireNonNull(clazz);
+  }
+  
   @Override
-  public Transaction deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+  public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
     ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
     ObjectNode objectNode = objectMapper.readTree(jsonParser);
-
-    TransactionType transactionType = TransactionType.forValue(objectNode.get("TransactionType").asText());
-    Class<? extends Transaction> transactionTypeClass = Transaction.typeMap.inverse().get(transactionType);
-
+    
+    JsonNode node = objectNode.get("TransactionType");
+    TransactionType transactionType = TransactionType.forValue(node.asText());
+    Class<T> transactionTypeClass = (Class<T>) Transaction.typeMap.inverse().get(transactionType);
+   
+    // TODO: DELETE (no longer needed
     // If the transaction is of type `UnknownTransaction`, the `TransactionType` property must _not_ be removed. Thi
     // is so that the derived functions related to `TransactionType` in that class operate properly. However, for all
     // _other_ transaction types, the `TransactionType` property _must_ be removed so that it doesn't errantly show up
     // in the `unknownTransactionType` map. This approach works because every subclass of `Transaction` has a derived
     // Java method that specifies the type (thus allowing us to ignore this fiele in the general case).
-    if (!UnknownTransaction.class.isAssignableFrom(transactionTypeClass)) {
-      objectNode.remove("TransactionType");
-    }
-
+//    if (!UnknownTransaction.class.isAssignableFrom(transactionTypeClass)) {
+//      objectNode.remove("TransactionType");
+//    }
+    
     // If the transaction is of type `UnlModify`, then remove the `Account` property. This is because the JSON returned
     // by the rippled/clio API v1 has a bug where the account value is often an empty string. For this particular
     // transaction type (i.e., `UnlModify`) the Java value for the account is always set to ACCOUNT_ZERO via a default
     // method, so we remove this value from the JSON before deserialization because (1) it's not needed (the default
     // method handles population in Java) and (2) if not removed, this field will end up in the `unknownFields`
     // property, which is incorrect.
-    if (UnlModify.class.isAssignableFrom(transactionTypeClass)) {
-//    if (objectNode.get("Account").isEmpty()) {
-      if (objectNode.has("Account")) {
-        //objectNode.remove("Account");
-      }
-    }
-
+//    if (UnlModify.class.isAssignableFrom(transactionTypeClass)) {
+//      //    if (objectNode.get("Account").isEmpty()) {
+//      if (objectNode.has("Account")) {
+//        //objectNode.remove("Account");
+//      }
+//    }
+    
     // TODO: Verify, and document if keeping.
     if (UnlModify.class.isAssignableFrom(transactionTypeClass)) {
       objectNode.remove("Account");

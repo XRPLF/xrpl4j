@@ -152,10 +152,4 @@ public interface SetFee extends Transaction {
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.SET_FEE;
-  }
 }

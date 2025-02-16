@@ -128,11 +128,4 @@ public interface PaymentChannelClaim extends Transaction {
    */
   @JsonProperty("PublicKey")
   Optional<String> publicKey();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.PAYMENT_CHANNEL_CLAIM;
-  }
 }

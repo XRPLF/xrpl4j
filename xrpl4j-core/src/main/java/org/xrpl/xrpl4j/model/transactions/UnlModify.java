@@ -20,19 +20,13 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.crypto.keys.ImmutablePublicKey;
-import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,30 +52,6 @@ public interface UnlModify extends Transaction {
     return ImmutableUnlModify.builder();
   }
 
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.UNL_MODIFY;
-  }
-
-//  // TODO: FIXME
-//  @JsonCreator
-//  static UnlModify create(
-//    @JsonProperty("Account") String account, // Only the "name" is in the JSON
-//    @JsonProperty("SigningPubKey") PublicKey signingPublicKey,
-//    @JsonProperty("LedgerSequence") LedgerIndex ledgerSequence,
-//    @JsonProperty("UNLModifyDisabling") UnsignedInteger unlModifyDisabling,
-//    @JsonProperty("UNLModifyValidator") String unlModifyValidator
-//  ) {
-//    return ImmutableUnlModify.builder()
-//      .fee(XrpCurrencyAmount.ofDrops(0))
-//      .signingPublicKey(signingPublicKey)
-//      .unlModifyDisabling(unlModifyDisabling)
-//      .unlModifyValidator(unlModifyValidator)
-//      .ledgerSequence(ledgerSequence)
-//      .build(); // The derived account() will be calculated automatically
-//  }
-
   /**
    * This field is overridden in this class because of a bug in rippled that causes this field to be missing in API
    * responses. In other pseudo-transactions such as {@link SetFee} and {@link EnableAmendment}, the rippled API sets
@@ -93,11 +63,8 @@ public interface UnlModify extends Transaction {
    * @return Always returns ACCOUNT_ZERO, which is the base58 encoding of the number zero.
    */
   @Override
-  @JsonProperty(value = "Account"
-    , access = Access.READ_WRITE
-  )
-  @Value.Derived
-  @JsonSerialize
+  @JsonProperty(value = "Account")
+  @Value.Default // Must be `Default` not `Derived`, else this field will be serialized into `unknownFields`.
   default Address account() {
     return ACCOUNT_ZERO;
   }
@@ -128,26 +95,30 @@ public interface UnlModify extends Transaction {
   @JsonProperty("UNLModifyValidator")
   String unlModifyValidator();
 
+  // TODO: Check the transactionType and WARN if this is incorrect (but allow it).
+  // TODO: Add the above check to all transactions.
+  // TODO: Add unit tests to verify the transaction for all txs (basically, expect a warning?)
+
   @Value.Check
   default UnlModify normalize() {
     if (unknownFields().containsKey("Account")) {
       Map<String, Object> newUnknownFields = new HashMap<>(unknownFields()); // Copy the original
 
-      newUnknownFields.remove("Account");
-      newUnknownFields.remove("TransactionType");
+      //      newUnknownFields.remove("Account");
+      //      newUnknownFields.remove("TransactionType");
 
-      return ImmutableUnlModify.builder().from(this)
-        .unknownFields(Collections.unmodifiableMap(newUnknownFields))
-        .build();
+      //      return ImmutableUnlModify.builder().from(this)
+      //        .unknownFields(Collections.unmodifiableMap(newUnknownFields))
+      //        .build();
+
     } else {
 
-//    if (value() == Integer.MIN_VALUE) {
-//      return ImmutableNormalized.builder()
-//        .value(0)
-//        .build();
-//    }
-
-      return this;
+      //    if (value() == Integer.MIN_VALUE) {
+      //      return ImmutableNormalized.builder()
+      //        .value(0)
+      //        .build();
+      //    }
     }
+    return this;
   }
 }

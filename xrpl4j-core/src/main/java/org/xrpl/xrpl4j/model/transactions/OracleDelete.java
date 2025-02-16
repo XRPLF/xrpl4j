@@ -49,11 +49,4 @@ public interface OracleDelete extends Transaction {
    */
   @JsonProperty("OracleDocumentID")
   OracleDocumentId oracleDocumentId();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.ORACLE_DELETE;
-  }
 }

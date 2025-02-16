@@ -63,10 +63,4 @@ public interface EnableAmendment extends Transaction {
    */
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  default TransactionType transactionType() {
-    return TransactionType.ENABLE_AMENDMENT;
-  }
 }

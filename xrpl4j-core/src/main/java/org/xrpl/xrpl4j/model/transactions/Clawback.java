@@ -50,11 +50,4 @@ public interface Clawback extends Transaction {
    */
   @JsonProperty("Amount")
   IssuedCurrencyAmount amount();
-
-  @JsonProperty(value = "TransactionType")
-  @Value.Derived
-  @Override
-  default TransactionType transactionType() {
-    return TransactionType.CLAWBACK;
-  }
 }

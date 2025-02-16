@@ -17,7 +17,7 @@ public class EscrowCancelJsonTests
   extends AbstractTransactionJsonTest<ImmutableEscrowCancel, ImmutableEscrowCancel.Builder, EscrowCancel> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected EscrowCancelJsonTests() {
     super(EscrowCancel.class, ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL);

@@ -38,7 +38,7 @@ public class CheckCancelJsonTests
   extends AbstractTransactionJsonTest<ImmutableCheckCancel, ImmutableCheckCancel.Builder, CheckCancel> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected CheckCancelJsonTests() {
     super(CheckCancel.class, ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL);

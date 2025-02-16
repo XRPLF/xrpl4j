@@ -40,7 +40,7 @@ public class UnlModifyJsonTests
   extends AbstractTransactionJsonTest<ImmutableUnlModify, ImmutableUnlModify.Builder, UnlModify> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected UnlModifyJsonTests() {
     super(UnlModify.class, ImmutableUnlModify.class, TransactionType.UNL_MODIFY);
@@ -91,14 +91,14 @@ public class UnlModifyJsonTests
       .build();
 
     String json = "{" +
-                  "\"Account\":\"" + UnlModify.ACCOUNT_ZERO + "\"," +
-                  "\"Fee\":\"12\"," +
-                  "\"LedgerSequence\":67850752," +
-                  "\"Sequence\":2470665," +
-                  "\"SigningPubKey\":\"\"," +
-                  "\"TransactionType\":\"UNLModify\"," +
-                  "\"UNLModifyDisabling\":1," +
-                  "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+      "\"Account\":\"" + UnlModify.ACCOUNT_ZERO + "\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
 
     assertCanSerializeAndDeserialize(unlModify, json);
   }
@@ -115,15 +115,15 @@ public class UnlModifyJsonTests
       .build();
 
     String json = "{" +
-                  "\"Foo\" : \"Bar\",\n" +
-                  "\"Account\":\"" + UnlModify.ACCOUNT_ZERO + "\"," +
-                  "\"Fee\":\"12\"," +
-                  "\"LedgerSequence\":67850752," +
-                  "\"Sequence\":2470665," +
-                  "\"SigningPubKey\":\"\"," +
-                  "\"TransactionType\":\"UNLModify\"," +
-                  "\"UNLModifyDisabling\":1," +
-                  "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+      "\"Foo\" : \"Bar\",\n" +
+      "\"Account\":\"" + UnlModify.ACCOUNT_ZERO + "\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
 
     assertCanSerializeAndDeserialize(unlModify, json);
   }
@@ -139,31 +139,32 @@ public class UnlModifyJsonTests
       .build();
 
     // What we expect the ObjectMapper to Serialize (given the above object)
-    String expectedSerializedJson = "{" +
-                                    "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
-                                    "}";
+    String expectedSerializedJson =
+      "{" +
+        "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
+        "\"Fee\":\"12\"," +
+        "\"LedgerSequence\":67850752," +
+        "\"Sequence\":2470665," +
+        "\"SigningPubKey\":\"\"," +
+        "\"TransactionType\":\"UNLModify\"," +
+        "\"UNLModifyDisabling\":1," +
+        "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
+        "}";
 
     String serialized = objectMapper.writeValueAsString(unlModify);
     JSONAssert.assertEquals(expectedSerializedJson, serialized, JSONCompareMode.STRICT);
 
     // What we provide the ObjectMapper to Deserialize
     String jsonForDeserialization = "{" +
-                                    "\"Account\":\"\"," + // <-- The crux of the test!
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
-                                    "}";
+      "\"Account\":\"\"," + // <-- The crux of the test!
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
+      "}";
 
     Transaction deserialized = objectMapper.readValue(jsonForDeserialization, Transaction.class);
     assertThat(deserialized).isEqualTo(unlModify);
@@ -182,32 +183,32 @@ public class UnlModifyJsonTests
 
     // What we expect the ObjectMapper to Serialize (given the above object)
     String expectedSerializedJson = "{" +
-                                    "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
-                                    "\"Foo\" : \"Bar\",\n" + // <-- The crux of the test!
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
-                                    "}";
+      "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
+      "\"Foo\" : \"Bar\",\n" + // <-- The crux of the test!
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
+      "}";
 
     String serialized = objectMapper.writeValueAsString(unlModify);
     JSONAssert.assertEquals(expectedSerializedJson, serialized, JSONCompareMode.STRICT);
 
     // What we provide the ObjectMapper to Deserialize
     String jsonForDeserialization = "{" +
-                                    "\"Foo\" : \"Bar\",\n" + // <-- The crux of the test!
-                                    "\"Account\":\"\"," + // <-- The crux of the test!
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
-                                    "}";
+      "\"Foo\" : \"Bar\",\n" + // <-- The crux of the test!
+      "\"Account\":\"\"," + // <-- The crux of the test!
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
+      "}";
 
     Transaction deserialized = objectMapper.readValue(jsonForDeserialization, Transaction.class);
     assertThat(deserialized).isEqualTo(unlModify);
@@ -225,27 +226,27 @@ public class UnlModifyJsonTests
 
     // What we expect the ObjectMapper to Serialize (given the above object)
     String expectedSerializedJson = "{" +
-                                    "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+      "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
 
     String serialized = objectMapper.writeValueAsString(unlModify);
     JSONAssert.assertEquals(expectedSerializedJson, serialized, JSONCompareMode.STRICT);
 
     // What we provide the ObjectMapper to Deserialize
     String jsonForDeserialization = "{" + // <-- The crux of the test (i.e., missing account)
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"}";
 
     Transaction deserialized = objectMapper.readValue(jsonForDeserialization, Transaction.class);
     assertThat(deserialized).isEqualTo(unlModify);
@@ -264,31 +265,31 @@ public class UnlModifyJsonTests
 
     // What we expect the ObjectMapper to Serialize (given the above object)
     String expectedSerializedJson = "{" +
-                                    "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
-                                    "\"Foo\" : \"Bar\"," + // <-- The crux of the test!
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
-                                    "}";
+      "\"Account\":\"" + ACCOUNT_ZERO + "\"," +
+      "\"Foo\" : \"Bar\"," + // <-- The crux of the test!
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
+      "}";
 
     String serialized = objectMapper.writeValueAsString(unlModify);
     JSONAssert.assertEquals(expectedSerializedJson, serialized, JSONCompareMode.STRICT);
 
     // What we provide the ObjectMapper to Deserialize
     String jsonForDeserialization = "{" + // <-- The crux of the test (i.e., missing account)
-                                    "\"Foo\" : \"Bar\",\n" + // <-- The crux of the test!
-                                    "\"Fee\":\"12\"," +
-                                    "\"LedgerSequence\":67850752," +
-                                    "\"Sequence\":2470665," +
-                                    "\"SigningPubKey\":\"\"," +
-                                    "\"TransactionType\":\"UNLModify\"," +
-                                    "\"UNLModifyDisabling\":1," +
-                                    "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
-                                    "}";
+      "\"Foo\" : \"Bar\",\n" + // <-- The crux of the test!
+      "\"Fee\":\"12\"," +
+      "\"LedgerSequence\":67850752," +
+      "\"Sequence\":2470665," +
+      "\"SigningPubKey\":\"\"," +
+      "\"TransactionType\":\"UNLModify\"," +
+      "\"UNLModifyDisabling\":1," +
+      "\"UNLModifyValidator\":\"EDB6FC8E803EE8EDC2793F1EC917B2EE41D35255618DEB91D3F9B1FC89B75D4539\"" +
+      "}";
 
     Transaction deserializedTransaction = objectMapper.readValue(jsonForDeserialization, Transaction.class);
     assertThat(deserializedTransaction).isEqualTo(unlModify);

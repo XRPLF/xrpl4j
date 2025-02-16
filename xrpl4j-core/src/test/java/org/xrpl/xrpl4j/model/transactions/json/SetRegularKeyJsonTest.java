@@ -37,7 +37,7 @@ public class SetRegularKeyJsonTest
   extends AbstractTransactionJsonTest<ImmutableSetRegularKey, ImmutableSetRegularKey.Builder, SetRegularKey> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected SetRegularKeyJsonTest() {
     super(SetRegularKey.class, ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY);

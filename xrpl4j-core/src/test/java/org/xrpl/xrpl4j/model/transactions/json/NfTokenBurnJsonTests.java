@@ -38,7 +38,7 @@ public class NfTokenBurnJsonTests
   extends AbstractTransactionJsonTest<ImmutableNfTokenBurn, ImmutableNfTokenBurn.Builder, NfTokenBurn> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected NfTokenBurnJsonTests() {
     super(NfTokenBurn.class, ImmutableNfTokenBurn.class, TransactionType.NFTOKEN_BURN);

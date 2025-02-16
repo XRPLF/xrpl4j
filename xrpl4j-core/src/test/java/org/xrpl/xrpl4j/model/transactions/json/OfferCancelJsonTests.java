@@ -37,7 +37,7 @@ public class OfferCancelJsonTests
   extends AbstractTransactionJsonTest<ImmutableOfferCancel, ImmutableOfferCancel.Builder, OfferCancel> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected OfferCancelJsonTests() {
     super(OfferCancel.class, ImmutableOfferCancel.class, TransactionType.OFFER_CANCEL);

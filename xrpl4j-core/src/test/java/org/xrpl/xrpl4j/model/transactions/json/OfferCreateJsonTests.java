@@ -37,7 +37,7 @@ public class OfferCreateJsonTests
   extends AbstractTransactionJsonTest<ImmutableOfferCreate, ImmutableOfferCreate.Builder, OfferCreate> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected OfferCreateJsonTests() {
     super(OfferCreate.class, ImmutableOfferCreate.class, TransactionType.OFFER_CREATE);

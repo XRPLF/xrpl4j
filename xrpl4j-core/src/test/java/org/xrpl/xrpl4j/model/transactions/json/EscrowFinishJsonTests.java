@@ -42,7 +42,7 @@ public class EscrowFinishJsonTests
   extends AbstractTransactionJsonTest<ImmutableEscrowFinish, ImmutableEscrowFinish.Builder, EscrowFinish> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected EscrowFinishJsonTests() {
     super(EscrowFinish.class, ImmutableEscrowFinish.class, TransactionType.ESCROW_FINISH);

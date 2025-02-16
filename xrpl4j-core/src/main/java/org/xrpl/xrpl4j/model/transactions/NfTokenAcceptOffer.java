@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,8 +63,8 @@ public interface NfTokenAcceptOffer extends Transaction {
 
   /**
    * Identifies the NfTOffer that offers to buy the NfT.
-   * <p>
-   * In direct mode this field is optional, but either SellOffer or
+   *
+   * <p>In direct mode this field is optional, but either SellOffer or
    * BuyOffer must be specified. In brokered mode, both SellOffer
    * and BuyOffer MUST be specified.
    *
@@ -74,7 +74,7 @@ public interface NfTokenAcceptOffer extends Transaction {
   Optional<Hash256> buyOffer();
 
   /**
-   * This field is only valid in brokered mode and specifies the
+   * <p>This field is only valid in brokered mode and specifies the
    * amount that the broker will keep as part of their fee for
    * bringing the two offers together; the remaining amount will
    * be sent to the seller of the NfT being bought. If
@@ -82,22 +82,22 @@ public interface NfTokenAcceptOffer extends Transaction {
    * for the transfer fee charged by the issuer, the amount that
    * the seller would receive is at least as much as the amount
    * indicated in the sell offer.
-   * <p>
+   *
    * This functionality is intended to allow the owner of an
    * NfT to offer their token for sale to a third party
    * broker, who may then attempt to sell the NfT on for a
    * larger amount, without the broker having to own the NfT
    * or custody funds.
-   * <p>
+   *
    * If both offers are for the same asset, it is possible that
    * the order in which funds are transferred might cause a
    * transaction that would succeed to fail due to an apparent
    * lack of funds. To ensure deterministic transaction execution
-   * and maximize the chances of successful execution, this
+   * and maximimize the chances of successful execution, this
    * proposal requires that the account attempting to buy the
    * NfT is debited first and that funds due to the broker
    * are credited before crediting the seller.
-   * <p>
+   *
    * Note: in brokered mode, The offers referenced by BuyOffer
    * and SellOffer must both specify the same TokenID; that is,
    * both must be for the same NfT.</p>

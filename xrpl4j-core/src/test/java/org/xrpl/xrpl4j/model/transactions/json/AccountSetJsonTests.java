@@ -42,7 +42,7 @@ public class AccountSetJsonTests
   extends AbstractTransactionJsonTest<ImmutableAccountSet, ImmutableAccountSet.Builder, AccountSet> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected AccountSetJsonTests() {
     super(AccountSet.class, ImmutableAccountSet.class, TransactionType.ACCOUNT_SET);

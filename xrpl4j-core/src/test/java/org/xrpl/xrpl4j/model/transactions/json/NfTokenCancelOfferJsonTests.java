@@ -37,11 +37,12 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NfTokenCancelOfferJsonTests
-  extends AbstractTransactionJsonTest<ImmutableNfTokenCancelOffer, ImmutableNfTokenCancelOffer.Builder, NfTokenCancelOffer> {
+public class NfTokenCancelOfferJsonTests extends AbstractTransactionJsonTest<
+  ImmutableNfTokenCancelOffer, ImmutableNfTokenCancelOffer.Builder, NfTokenCancelOffer
+  > {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected NfTokenCancelOfferJsonTests() {
     super(NfTokenCancelOffer.class, ImmutableNfTokenCancelOffer.class, TransactionType.NFTOKEN_CANCEL_OFFER);
@@ -95,15 +96,15 @@ public class NfTokenCancelOfferJsonTests
   public void testMinimalNfTokenCancelOfferJson() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 0,\n" +
-      "  \"NFTokenOffers\": [" +
-      "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
-      "  ],\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 0,\n" +
+        "  \"NFTokenOffers\": [" +
+        "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
+        "  ],\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(minimallyPopulatedTransaction(), json);
   }
@@ -116,17 +117,17 @@ public class NfTokenCancelOfferJsonTests
 
     String json =
       "{\n" +
-      "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 12,\n" +
-      "  \"Flags\": 0,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"NFTokenOffers\": [" +
-      "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
-      "  ],\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 12,\n" +
+        "  \"Flags\": 0,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"NFTokenOffers\": [" +
+        "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
+        "  ],\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(transaction, json);
   }
@@ -139,17 +140,17 @@ public class NfTokenCancelOfferJsonTests
 
     String json =
       "{\n" +
-      "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 12,\n" +
-      "  \"Flags\": " + TransactionFlags.FULLY_CANONICAL_SIG.getValue() + ",\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"NFTokenOffers\": [" +
-      "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
-      "  ],\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 12,\n" +
+        "  \"Flags\": " + TransactionFlags.FULLY_CANONICAL_SIG.getValue() + ",\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"NFTokenOffers\": [" +
+        "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
+        "  ],\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(transaction, json);
   }
@@ -158,17 +159,17 @@ public class NfTokenCancelOfferJsonTests
   public void testJsonWithUnknownFields() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"Foo\": \"Bar\",\n" +
-      "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 12,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"NFTokenOffers\": [" +
-      "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
-      "  ],\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"Foo\": \"Bar\",\n" +
+        "  \"TransactionType\": \"NFTokenCancelOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 12,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"NFTokenOffers\": [" +
+        "    \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\"" +
+        "  ],\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(fullyPopulatedTransactionWithUnknownFields(), json);
   }

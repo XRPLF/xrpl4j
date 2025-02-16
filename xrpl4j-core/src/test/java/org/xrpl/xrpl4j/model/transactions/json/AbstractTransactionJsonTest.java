@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions.json;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
@@ -31,28 +32,29 @@ import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import java.util.Objects;
 
 /**
- * An abstract class that helps test various flavors of serialization and deserialization for implementations of {@link Transaction}.
+ * An abstract class that helps test various flavors of serialization and deserialization for implementations of
+ * {@link Transaction}.
  *
- * @param <IM> The type of Immutable this class will test.
- * @param <B>  The type of Immutable Builder this class will test.
- * @param <T>  The type of {@link Transaction} this class will test.
+ * @param <I> The type of Immutable this class will test.
+ * @param <B> The type of Immutable Builder this class will test.
+ * @param <T> The type of {@link Transaction} this class will test.
  */
-public abstract class AbstractTransactionJsonTest<IM, B, T extends Transaction> extends AbstractJsonTest {
+public abstract class AbstractTransactionJsonTest<I, B, T extends Transaction> extends AbstractJsonTest {
 
   private final Class<T> interfaceClass;
-  private final Class<IM> immutableClass;
+  private final Class<I> immutableClass;
   private final TransactionType expectedTransactionType;
 
   /**
    * Required-args Constructor.
    *
    * @param interfaceClass          A class of type {@link T} that for the Immutables intefarce.
-   * @param immutableClass          A class of type {@link IM} that for the Immutables implementation.
+   * @param immutableClass          A class of type {@link I} that for the Immutables implementation.
    * @param expectedTransactionType A {@link TransactionType} representing the expected transaction type.
    */
   protected AbstractTransactionJsonTest(
     final Class<T> interfaceClass,
-    final Class<IM> immutableClass,
+    final Class<I> immutableClass,
     final TransactionType expectedTransactionType
   ) {
     this.interfaceClass = Objects.requireNonNull(interfaceClass);
@@ -82,24 +84,6 @@ public abstract class AbstractTransactionJsonTest<IM, B, T extends Transaction> 
   protected abstract T fullyPopulatedTransactionWithUnknownFields();
 
   /**
-   * Helper for populating unknown fields into a Transaction.
-   *
-   * @param <B>
-   */
-  interface UnknownFieldPutter<B> {
-    B putUnknownFields(String key, Object value);
-  }
-
-  /**
-   * Helper for building from an unknown builder.
-   *
-   * @param <T>
-   */
-  interface Builder<T> {
-    T build();
-  }
-
-  /**
    * Construct and return a minimally-populated transaction of type {@link T}.
    *
    * @return An instance of {@link T}.
@@ -113,6 +97,10 @@ public abstract class AbstractTransactionJsonTest<IM, B, T extends Transaction> 
     assertThat(minimallyPopulatedTransaction().transactionType()).isEqualTo(expectedTransactionType);
   }
 
+  /**
+   * This test asserts that deserialization works the same regardless of whether a Java interface, immutable, or
+   * instance of the {@link Transaction} parent class are supplied to the {@link ObjectMapper}.
+   */
   @Test
   public void assertCanDeserializeAllTypesFullyPopulated() throws JsonProcessingException {
     T expectedObject = fullyPopulatedTransaction();
@@ -122,10 +110,14 @@ public abstract class AbstractTransactionJsonTest<IM, B, T extends Transaction> 
     assertThat(deserializedTransaction).isEqualTo(expectedObject);
     T deserializedInterface = objectMapper.readValue(serialized, interfaceClass);
     assertThat(deserializedInterface).isEqualTo(expectedObject);
-    IM deserializedImmutable = objectMapper.readValue(serialized, immutableClass);
+    I deserializedImmutable = objectMapper.readValue(serialized, immutableClass);
     assertThat(deserializedImmutable).isEqualTo(expectedObject);
   }
 
+  /**
+   * This test asserts that deserialization works the same regardless of whether a Java interface, immutable, or
+   * instance of the {@link Transaction} parent class are supplied to the {@link ObjectMapper}.
+   */
   @Test
   public void assertCanDeserializeAllTypesFullyPopulatedWithUnknownFields() throws JsonProcessingException {
     T expectedObject = fullyPopulatedTransactionWithUnknownFields();
@@ -135,10 +127,14 @@ public abstract class AbstractTransactionJsonTest<IM, B, T extends Transaction> 
     assertThat(deserializedTransaction).isEqualTo(expectedObject);
     T deserializedInterface = objectMapper.readValue(serialized, interfaceClass);
     assertThat(deserializedInterface).isEqualTo(expectedObject);
-    IM deserializedImmutable = objectMapper.readValue(serialized, immutableClass);
+    I deserializedImmutable = objectMapper.readValue(serialized, immutableClass);
     assertThat(deserializedImmutable).isEqualTo(expectedObject);
   }
 
+  /**
+   * This test asserts that deserialization works the same regardless of whether a Java interface, immutable, or
+   * instance of the {@link Transaction} parent class are supplied to the {@link ObjectMapper}.
+   */
   @Test
   public void assertCanDeserializeAllTypesWithMinimallyPopulated() throws JsonProcessingException {
     T expectedObject = minimallyPopulatedTransaction();
@@ -148,7 +144,7 @@ public abstract class AbstractTransactionJsonTest<IM, B, T extends Transaction> 
     assertThat(deserializedTransaction).isEqualTo(expectedObject);
     T deserializedInterface = objectMapper.readValue(serialized, interfaceClass);
     assertThat(deserializedInterface).isEqualTo(expectedObject);
-    IM deserializedImmutable = objectMapper.readValue(serialized, immutableClass);
+    I deserializedImmutable = objectMapper.readValue(serialized, immutableClass);
     assertThat(deserializedImmutable).isEqualTo(expectedObject);
   }
 

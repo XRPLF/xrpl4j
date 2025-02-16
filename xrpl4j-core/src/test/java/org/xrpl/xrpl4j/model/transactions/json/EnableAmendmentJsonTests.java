@@ -38,7 +38,7 @@ public class EnableAmendmentJsonTests
   extends AbstractTransactionJsonTest<ImmutableEnableAmendment, ImmutableEnableAmendment.Builder, EnableAmendment> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected EnableAmendmentJsonTests() {
     super(EnableAmendment.class, ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT);

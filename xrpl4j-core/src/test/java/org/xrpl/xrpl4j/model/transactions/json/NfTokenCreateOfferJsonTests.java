@@ -34,10 +34,12 @@ import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-public class NfTokenCreateOfferJsonTests extends AbstractTransactionJsonTest<ImmutableNfTokenCreateOffer, ImmutableNfTokenCreateOffer.Builder, NfTokenCreateOffer> {
+public class NfTokenCreateOfferJsonTests extends AbstractTransactionJsonTest<
+  ImmutableNfTokenCreateOffer, ImmutableNfTokenCreateOffer.Builder, NfTokenCreateOffer
+  > {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected NfTokenCreateOfferJsonTests() {
     super(NfTokenCreateOffer.class, ImmutableNfTokenCreateOffer.class, TransactionType.NFTOKEN_CREATE_OFFER);
@@ -90,14 +92,14 @@ public class NfTokenCreateOfferJsonTests extends AbstractTransactionJsonTest<Imm
   public void testMinimalNfTokenCreateOfferJson() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"TransactionType\": \"NFTokenCreateOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 0,\n" +
-      "  \"Amount\": \"2000\",\n" +
-      "  \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"NFTokenCreateOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 0,\n" +
+        "  \"Amount\": \"2000\",\n" +
+        "  \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(minimallyPopulatedTransaction(), json);
   }
@@ -110,16 +112,16 @@ public class NfTokenCreateOfferJsonTests extends AbstractTransactionJsonTest<Imm
 
     String json =
       "{\n" +
-      "  \"TransactionType\": \"NFTokenCreateOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 12,\n" +
-      "  \"Amount\": \"2000\",\n" +
-      "  \"Flags\": " + NfTokenCreateOfferFlags.SELL_NFTOKEN + ",\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"NFTokenCreateOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 12,\n" +
+        "  \"Amount\": \"2000\",\n" +
+        "  \"Flags\": " + NfTokenCreateOfferFlags.SELL_NFTOKEN + ",\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(transaction, json);
   }
@@ -142,16 +144,16 @@ public class NfTokenCreateOfferJsonTests extends AbstractTransactionJsonTest<Imm
 
     String json =
       "{\n" +
-      "  \"Foo\" : \"Bar\",\n" +
-      "  \"TransactionType\": \"NFTokenCreateOffer\",\n" +
-      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "  \"Fee\": \"12\",\n" +
-      "  \"Sequence\": 12,\n" +
-      "  \"Amount\": \"2000\",\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"Foo\" : \"Bar\",\n" +
+        "  \"TransactionType\": \"NFTokenCreateOffer\",\n" +
+        "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+        "  \"Fee\": \"12\",\n" +
+        "  \"Sequence\": 12,\n" +
+        "  \"Amount\": \"2000\",\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"NFTokenID\": \"000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65\",\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(nfTokenCreateOffer, json);
   }

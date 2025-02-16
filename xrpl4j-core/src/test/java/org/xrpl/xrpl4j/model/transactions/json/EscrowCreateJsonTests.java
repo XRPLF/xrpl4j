@@ -37,11 +37,12 @@ import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-public class EscrowCreateJsonTests
-  extends AbstractTransactionJsonTest<ImmutableEscrowCreate, ImmutableEscrowCreate.Builder, EscrowCreate> {
+public class EscrowCreateJsonTests extends AbstractTransactionJsonTest<
+  ImmutableEscrowCreate, ImmutableEscrowCreate.Builder, EscrowCreate
+  > {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected EscrowCreateJsonTests() {
     super(EscrowCreate.class, ImmutableEscrowCreate.class, TransactionType.ESCROW_CREATE);
@@ -123,20 +124,20 @@ public class EscrowCreateJsonTests
       .build();
 
     String json = "{\n" +
-                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-                  "    \"TransactionType\": \"EscrowCreate\",\n" +
-                  "    \"Amount\": \"10000\",\n" +
-                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-                  "    \"CancelAfter\": 533257958,\n" +
-                  "    \"FinishAfter\": 533171558,\n" +
-                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-                  "    \"DestinationTag\": 23480,\n" +
-                  "    \"SourceTag\": 11747,\n" +
-                  "    \"Sequence\": 1,\n" +
-                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-                  "    \"NetworkID\": 1024,\n" +
-                  "    \"Fee\": \"12\"\n" +
-                  "}";
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"TransactionType\": \"EscrowCreate\",\n" +
+      "    \"Amount\": \"10000\",\n" +
+      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"CancelAfter\": 533257958,\n" +
+      "    \"FinishAfter\": 533171558,\n" +
+      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+      "    \"DestinationTag\": 23480,\n" +
+      "    \"SourceTag\": 11747,\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -164,20 +165,20 @@ public class EscrowCreateJsonTests
       .build();
 
     String json = "{\n" +
-                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-                  "    \"TransactionType\": \"EscrowCreate\",\n" +
-                  "    \"Amount\": \"10000\",\n" +
-                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-                  "    \"CancelAfter\": 533257958,\n" +
-                  "    \"FinishAfter\": 533171558,\n" +
-                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-                  "    \"DestinationTag\": 23480,\n" +
-                  "    \"SourceTag\": 11747,\n" +
-                  "    \"Sequence\": 1,\n" +
-                  "    \"Flags\": 0,\n" +
-                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-                  "    \"Fee\": \"12\"\n" +
-                  "}";
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"TransactionType\": \"EscrowCreate\",\n" +
+      "    \"Amount\": \"10000\",\n" +
+      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"CancelAfter\": 533257958,\n" +
+      "    \"FinishAfter\": 533171558,\n" +
+      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+      "    \"DestinationTag\": 23480,\n" +
+      "    \"SourceTag\": 11747,\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": 0,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -206,20 +207,20 @@ public class EscrowCreateJsonTests
       .build();
 
     String json = String.format("{\n" +
-                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-                                "    \"TransactionType\": \"EscrowCreate\",\n" +
-                                "    \"Amount\": \"10000\",\n" +
-                                "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-                                "    \"CancelAfter\": 533257958,\n" +
-                                "    \"FinishAfter\": 533171558,\n" +
-                                "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-                                "    \"DestinationTag\": 23480,\n" +
-                                "    \"SourceTag\": 11747,\n" +
-                                "    \"Sequence\": 1,\n" +
-                                "    \"Flags\": %s,\n" +
-                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-                                "    \"Fee\": \"12\"\n" +
-                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"TransactionType\": \"EscrowCreate\",\n" +
+      "    \"Amount\": \"10000\",\n" +
+      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"CancelAfter\": 533257958,\n" +
+      "    \"FinishAfter\": 533171558,\n" +
+      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+      "    \"DestinationTag\": 23480,\n" +
+      "    \"SourceTag\": 11747,\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -249,21 +250,21 @@ public class EscrowCreateJsonTests
       .build();
 
     String json = "{\n" +
-                  "    \"Foo\" : \"Bar\",\n" +
-                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-                  "    \"TransactionType\": \"EscrowCreate\",\n" +
-                  "    \"Amount\": \"10000\",\n" +
-                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-                  "    \"CancelAfter\": 533257958,\n" +
-                  "    \"FinishAfter\": 533171558,\n" +
-                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-                  "    \"DestinationTag\": 23480,\n" +
-                  "    \"SourceTag\": 11747,\n" +
-                  "    \"Sequence\": 1,\n" +
-                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-                  "    \"NetworkID\": 1024,\n" +
-                  "    \"Fee\": \"12\"\n" +
-                  "}";
+      "    \"Foo\" : \"Bar\",\n" +
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"TransactionType\": \"EscrowCreate\",\n" +
+      "    \"Amount\": \"10000\",\n" +
+      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+      "    \"CancelAfter\": 533257958,\n" +
+      "    \"FinishAfter\": 533171558,\n" +
+      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+      "    \"DestinationTag\": 23480,\n" +
+      "    \"SourceTag\": 11747,\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NetworkID\": 1024,\n" +
+      "    \"Fee\": \"12\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }

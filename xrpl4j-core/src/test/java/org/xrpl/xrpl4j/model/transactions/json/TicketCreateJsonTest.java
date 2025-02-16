@@ -37,7 +37,7 @@ class TicketCreateJsonTest
   extends AbstractTransactionJsonTest<ImmutableTicketCreate, ImmutableTicketCreate.Builder, TicketCreate> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected TicketCreateJsonTest() {
     super(TicketCreate.class, ImmutableTicketCreate.class, TransactionType.TICKET_CREATE);

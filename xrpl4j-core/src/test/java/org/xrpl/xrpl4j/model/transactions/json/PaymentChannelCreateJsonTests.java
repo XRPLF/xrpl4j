@@ -39,7 +39,7 @@ public class PaymentChannelCreateJsonTests extends AbstractTransactionJsonTest<
   > {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected PaymentChannelCreateJsonTests() {
     super(PaymentChannelCreate.class, ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE);

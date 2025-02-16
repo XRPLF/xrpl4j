@@ -37,7 +37,7 @@ public class AccountDeleteJsonTests
   extends AbstractTransactionJsonTest<ImmutableAccountDelete, ImmutableAccountDelete.Builder, AccountDelete> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected AccountDeleteJsonTests() {
     super(AccountDelete.class, ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE);
@@ -87,17 +87,17 @@ public class AccountDeleteJsonTests
   public void testFullyPopulatedJson() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"Foo\" : \"Bar\",\n" +
-      "  \"TransactionType\": \"AccountDelete\",\n" +
-      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "  \"DestinationTag\": 13,\n" +
-      "  \"Fee\": \"5000000\",\n" +
-      "  \"Flags\": 0,\n" +
-      "  \"Sequence\": 2470665,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"Foo\" : \"Bar\",\n" +
+        "  \"TransactionType\": \"AccountDelete\",\n" +
+        "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+        "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+        "  \"DestinationTag\": 13,\n" +
+        "  \"Fee\": \"5000000\",\n" +
+        "  \"Flags\": 0,\n" +
+        "  \"Sequence\": 2470665,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     this.assertCanSerializeAndDeserialize(fullyPopulatedTransactionWithUnknownFields(), json);
   }
@@ -106,17 +106,17 @@ public class AccountDeleteJsonTests
   public void testFullyPopulatedWithUnknownFieldsJson() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"Foo\" : \"Bar\",\n" +
-      "  \"TransactionType\": \"AccountDelete\",\n" +
-      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "  \"DestinationTag\": 13,\n" +
-      "  \"Fee\": \"5000000\",\n" +
-      "  \"Flags\": 0,\n" +
-      "  \"Sequence\": 2470665,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"Foo\" : \"Bar\",\n" +
+        "  \"TransactionType\": \"AccountDelete\",\n" +
+        "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+        "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+        "  \"DestinationTag\": 13,\n" +
+        "  \"Fee\": \"5000000\",\n" +
+        "  \"Flags\": 0,\n" +
+        "  \"Sequence\": 2470665,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     this.assertCanSerializeAndDeserialize(fullyPopulatedTransactionWithUnknownFields(), json);
   }
@@ -125,13 +125,13 @@ public class AccountDeleteJsonTests
   public void testMinimallyPopulatedJson() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"TransactionType\": \"AccountDelete\",\n" +
-      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "  \"Fee\": \"5000000\",\n" +
-      "  \"Sequence\": 0,\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"AccountDelete\",\n" +
+        "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+        "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+        "  \"Fee\": \"5000000\",\n" +
+        "  \"Sequence\": 0,\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     this.assertCanSerializeAndDeserialize(minimallyPopulatedTransaction(), json);
   }
@@ -145,17 +145,17 @@ public class AccountDeleteJsonTests
 
     String json =
       "{\n" +
-      "  \"Foo\" : \"Bar\",\n" +
-      "  \"TransactionType\": \"AccountDelete\",\n" +
-      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "  \"DestinationTag\": 13,\n" +
-      "  \"Fee\": \"5000000\",\n" +
-      "  \"Flags\": 0,\n" +
-      "  \"Sequence\": 2470665,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"Foo\" : \"Bar\",\n" +
+        "  \"TransactionType\": \"AccountDelete\",\n" +
+        "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+        "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+        "  \"DestinationTag\": 13,\n" +
+        "  \"Fee\": \"5000000\",\n" +
+        "  \"Flags\": 0,\n" +
+        "  \"Sequence\": 2470665,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(fullyPopulatedAccountDelete, json);
   }
@@ -170,17 +170,17 @@ public class AccountDeleteJsonTests
 
     String json = String.format(
       "{\n" +
-      "  \"Foo\" : \"Bar\",\n" +
-      "  \"TransactionType\": \"AccountDelete\",\n" +
-      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "  \"DestinationTag\": 13,\n" +
-      "  \"Fee\": \"5000000\",\n" +
-      "  \"Flags\": %s,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"Sequence\": 2470665,\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+        "  \"Foo\" : \"Bar\",\n" +
+        "  \"TransactionType\": \"AccountDelete\",\n" +
+        "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+        "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+        "  \"DestinationTag\": 13,\n" +
+        "  \"Fee\": \"5000000\",\n" +
+        "  \"Flags\": %s,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"Sequence\": 2470665,\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(fullyPopulatedTransaction, json);
   }
@@ -189,16 +189,16 @@ public class AccountDeleteJsonTests
   public void testJsonWithUnknownFields() throws JsonProcessingException, JSONException {
     String json =
       "{\n" +
-      "  \"TransactionType\": \"AccountDelete\",\n" +
-      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "  \"DestinationTag\": 13,\n" +
-      "  \"Flags\": 0,\n" +
-      "  \"Fee\": \"5000000\",\n" +
-      "  \"Sequence\": 2470665,\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+        "  \"TransactionType\": \"AccountDelete\",\n" +
+        "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+        "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+        "  \"DestinationTag\": 13,\n" +
+        "  \"Flags\": 0,\n" +
+        "  \"Fee\": \"5000000\",\n" +
+        "  \"Sequence\": 2470665,\n" +
+        "  \"NetworkID\": 1024,\n" +
+        "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+        "}";
 
     assertCanSerializeAndDeserialize(fullyPopulatedTransaction(), json);
   }

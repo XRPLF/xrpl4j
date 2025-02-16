@@ -38,7 +38,7 @@ public class CheckCreateJsonTests
   extends AbstractTransactionJsonTest<ImmutableCheckCreate, ImmutableCheckCreate.Builder, CheckCreate> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected CheckCreateJsonTests() {
     super(CheckCreate.class, ImmutableCheckCreate.class, TransactionType.CHECK_CREATE);

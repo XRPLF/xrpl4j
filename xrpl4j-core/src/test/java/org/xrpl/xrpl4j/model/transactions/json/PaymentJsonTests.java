@@ -41,7 +41,7 @@ public class PaymentJsonTests
   extends AbstractTransactionJsonTest<ImmutablePayment, ImmutablePayment.Builder, Payment> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected PaymentJsonTests() {
     super(Payment.class, ImmutablePayment.class, TransactionType.PAYMENT);

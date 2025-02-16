@@ -39,7 +39,7 @@ public class CheckCashJsonTests
   extends AbstractTransactionJsonTest<ImmutableCheckCash, ImmutableCheckCash.Builder, CheckCash> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected CheckCashJsonTests() {
     super(CheckCash.class, ImmutableCheckCash.class, TransactionType.CHECK_CASH);

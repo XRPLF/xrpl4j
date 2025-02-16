@@ -38,7 +38,7 @@ public class TrustSetJsonTests
   extends AbstractTransactionJsonTest<ImmutableTrustSet, ImmutableTrustSet.Builder, TrustSet> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected TrustSetJsonTests() {
     super(TrustSet.class, ImmutableTrustSet.class, TransactionType.TRUST_SET);

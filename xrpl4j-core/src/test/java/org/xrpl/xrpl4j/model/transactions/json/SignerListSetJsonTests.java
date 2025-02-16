@@ -39,7 +39,7 @@ public class SignerListSetJsonTests
   extends AbstractTransactionJsonTest<ImmutableSignerListSet, ImmutableSignerListSet.Builder, SignerListSet> {
 
   /**
-   * No-args Constructor
+   * No-args Constructor.
    */
   protected SignerListSetJsonTests() {
     super(SignerListSet.class, ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET);

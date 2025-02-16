@@ -34,7 +34,7 @@ import java.io.IOException;
 
 /**
  * Custom deserializer for instances of {@link Transaction} that deserialize to a specific {@link Transaction} type
- * based on the`TransactionType` JSON field
+ * based on the`TransactionType` JSON field.
  */
 public class TransactionDeserializer extends StdDeserializer<Transaction> {
 
@@ -57,8 +57,8 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
     // Remove the `Account` property from any incoming `UnlModify` JSON about to be deserialized. This is because the 
     // JSON returned by the rippled/clio API v1 has a bug where the account value in `UnlModify` transactions is an 
     // empty string. In this case, the Java value for the `Account` property is always set to ACCOUNT_ZERO via a default
-    // method, so this property is removed from incoming JSON before deserialization because it's not needed (the default
-    // method handles population in Java) and if not removed, this field will end up in the `unknownFields`
+    // method, so this property is removed from incoming JSON before deserialization because it's not needed (the 
+    // default method handles population in Java) and if not removed, this field will end up in the `unknownFields`
     // map of the ultimate Java object, which is incorrect.
     if (UnlModify.class.isAssignableFrom(transactionTypeClass)) {
       objectNode.remove("Account");

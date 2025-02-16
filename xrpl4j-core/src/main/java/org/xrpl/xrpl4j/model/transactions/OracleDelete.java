@@ -51,6 +51,9 @@ public interface OracleDelete extends Transaction {
   @JsonProperty("OracleDocumentID")
   OracleDocumentId oracleDocumentId();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default OracleDelete normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

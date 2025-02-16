@@ -74,6 +74,9 @@ public interface SetRegularKey extends Transaction {
   @JsonProperty("RegularKey")
   Optional<Address> regularKey();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default SetRegularKey normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

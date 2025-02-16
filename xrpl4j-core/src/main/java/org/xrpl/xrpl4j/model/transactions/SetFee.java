@@ -154,6 +154,9 @@ public interface SetFee extends Transaction {
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default SetFee normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

@@ -99,6 +99,9 @@ public interface OracleSet extends Transaction {
   @JsonProperty("PriceDataSeries")
   List<PriceDataWrapper> priceDataSeries();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default OracleSet normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

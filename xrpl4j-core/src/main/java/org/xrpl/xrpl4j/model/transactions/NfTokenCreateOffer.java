@@ -131,6 +131,9 @@ public interface NfTokenCreateOffer extends Transaction {
     return NfTokenCreateOfferFlags.empty();
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default NfTokenCreateOffer normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

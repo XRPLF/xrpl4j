@@ -69,6 +69,9 @@ public interface CheckCancel extends Transaction {
   @JsonProperty("CheckID")
   Hash256 checkId();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default CheckCancel normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

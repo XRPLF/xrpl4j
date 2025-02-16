@@ -84,6 +84,9 @@ public interface SignerListSet extends Transaction {
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default SignerListSet normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

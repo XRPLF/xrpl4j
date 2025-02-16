@@ -77,6 +77,9 @@ public interface EscrowCancel extends Transaction {
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default EscrowCancel normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

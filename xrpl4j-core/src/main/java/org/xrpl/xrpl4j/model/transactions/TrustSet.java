@@ -87,6 +87,9 @@ public interface TrustSet extends Transaction {
   @JsonProperty("QualityOut")
   Optional<UnsignedInteger> qualityOut();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default TrustSet normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

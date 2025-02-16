@@ -107,6 +107,9 @@ public interface AmmDeposit extends Transaction {
   @JsonProperty("TradingFee")
   Optional<TradingFee> tradingFee();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AmmDeposit normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

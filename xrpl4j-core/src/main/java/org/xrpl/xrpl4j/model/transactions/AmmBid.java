@@ -108,6 +108,9 @@ public interface AmmBid extends Transaction {
   @JsonProperty("AuthAccounts")
   List<AuthAccountWrapper> authAccounts();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AmmBid normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

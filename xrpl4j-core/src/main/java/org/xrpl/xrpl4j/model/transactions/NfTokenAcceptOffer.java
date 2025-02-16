@@ -63,8 +63,8 @@ public interface NfTokenAcceptOffer extends Transaction {
 
   /**
    * Identifies the NfTOffer that offers to buy the NfT.
-   *
-   * <p>In direct mode this field is optional, but either SellOffer or
+   * <p>
+   * In direct mode this field is optional, but either SellOffer or
    * BuyOffer must be specified. In brokered mode, both SellOffer
    * and BuyOffer MUST be specified.
    *
@@ -74,7 +74,7 @@ public interface NfTokenAcceptOffer extends Transaction {
   Optional<Hash256> buyOffer();
 
   /**
-   * <p>This field is only valid in brokered mode and specifies the
+   * This field is only valid in brokered mode and specifies the
    * amount that the broker will keep as part of their fee for
    * bringing the two offers together; the remaining amount will
    * be sent to the seller of the NfT being bought. If
@@ -93,7 +93,7 @@ public interface NfTokenAcceptOffer extends Transaction {
    * the order in which funds are transferred might cause a
    * transaction that would succeed to fail due to an apparent
    * lack of funds. To ensure deterministic transaction execution
-   * and maximimize the chances of successful execution, this
+   * and maximize the chances of successful execution, this
    * proposal requires that the account attempting to buy the
    * NfT is debited first and that funds due to the broker
    * are credited before crediting the seller.
@@ -137,4 +137,14 @@ public interface NfTokenAcceptOffer extends Transaction {
     return TransactionFlags.EMPTY;
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
+  @Value.Check
+  default NfTokenAcceptOffer normalize() {
+    Preconditions.checkState(!unknownFields().containsKey("TransactionType"));
+    Preconditions.checkState(!unknownFields().containsKey("Account"));
+    Preconditions.checkState(transactionType() == TransactionType.NFTOKEN_ACCEPT_OFFER);
+    return this;
+  }
 }

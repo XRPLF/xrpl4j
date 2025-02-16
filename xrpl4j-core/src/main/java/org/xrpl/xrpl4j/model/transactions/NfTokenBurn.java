@@ -97,6 +97,9 @@ public interface NfTokenBurn extends Transaction {
     return TransactionFlags.EMPTY;
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default NfTokenBurn normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

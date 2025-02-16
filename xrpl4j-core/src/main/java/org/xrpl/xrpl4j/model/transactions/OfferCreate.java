@@ -95,6 +95,9 @@ public interface OfferCreate extends Transaction {
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default OfferCreate normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

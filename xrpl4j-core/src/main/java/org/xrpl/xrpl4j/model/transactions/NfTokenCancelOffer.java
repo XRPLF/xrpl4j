@@ -91,6 +91,9 @@ public interface NfTokenCancelOffer extends Transaction {
     return TransactionFlags.EMPTY;
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default NfTokenCancelOffer normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

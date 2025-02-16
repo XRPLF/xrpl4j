@@ -72,6 +72,9 @@ public interface DidSet extends Transaction {
   @JsonProperty("Data")
   Optional<DidData> data();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default DidSet normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

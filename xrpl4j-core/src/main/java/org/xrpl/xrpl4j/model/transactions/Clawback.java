@@ -52,6 +52,9 @@ public interface Clawback extends Transaction {
   @JsonProperty("Amount")
   IssuedCurrencyAmount amount();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default Clawback normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

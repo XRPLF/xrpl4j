@@ -93,6 +93,9 @@ public interface DepositPreAuth extends Transaction {
       "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default DepositPreAuth normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

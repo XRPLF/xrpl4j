@@ -68,6 +68,9 @@ public interface AmmCreate extends Transaction {
   @JsonProperty("TradingFee")
   TradingFee tradingFee();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AmmCreate normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

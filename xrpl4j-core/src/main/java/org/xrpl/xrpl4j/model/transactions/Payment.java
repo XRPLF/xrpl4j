@@ -134,6 +134,9 @@ public interface Payment extends Transaction {
   @JsonProperty("DeliverMin")
   Optional<CurrencyAmount> deliverMin();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default Payment normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

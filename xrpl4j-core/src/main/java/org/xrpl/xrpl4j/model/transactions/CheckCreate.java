@@ -106,6 +106,9 @@ public interface CheckCreate extends Transaction {
   @JsonProperty("InvoiceID")
   Optional<Hash256> invoiceId();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default CheckCreate normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

@@ -73,6 +73,9 @@ public interface OfferCancel extends Transaction {
   @JsonProperty("OfferSequence")
   Optional<UnsignedInteger> offerSequence();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default OfferCancel normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

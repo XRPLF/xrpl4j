@@ -518,6 +518,9 @@ public interface AccountSet extends Transaction {
     }
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AccountSet normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

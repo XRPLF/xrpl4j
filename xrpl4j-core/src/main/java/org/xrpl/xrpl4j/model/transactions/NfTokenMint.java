@@ -108,6 +108,9 @@ public interface NfTokenMint extends Transaction {
     return NfTokenMintFlags.empty();
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default NfTokenMint normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

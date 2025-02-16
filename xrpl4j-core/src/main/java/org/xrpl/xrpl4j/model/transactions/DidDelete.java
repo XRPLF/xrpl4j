@@ -45,6 +45,9 @@ public interface DidDelete extends Transaction {
     return TransactionFlags.EMPTY;
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default DidDelete normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

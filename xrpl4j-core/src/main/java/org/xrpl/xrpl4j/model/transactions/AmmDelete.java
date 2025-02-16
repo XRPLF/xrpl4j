@@ -59,6 +59,9 @@ public interface AmmDelete extends Transaction {
   @JsonProperty("Asset2")
   Issue asset2();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AmmDelete normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

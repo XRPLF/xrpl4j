@@ -93,6 +93,9 @@ public interface UnlModify extends Transaction {
   @JsonProperty("UNLModifyValidator")
   String unlModifyValidator();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default UnlModify normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

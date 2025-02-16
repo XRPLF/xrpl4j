@@ -95,6 +95,9 @@ public interface PaymentChannelFund extends Transaction {
   @JsonProperty("Expiration")
   Optional<UnsignedLong> expiration();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default PaymentChannelFund normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

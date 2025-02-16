@@ -131,6 +131,9 @@ public interface PaymentChannelClaim extends Transaction {
   @JsonProperty("PublicKey")
   Optional<String> publicKey();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default PaymentChannelClaim normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

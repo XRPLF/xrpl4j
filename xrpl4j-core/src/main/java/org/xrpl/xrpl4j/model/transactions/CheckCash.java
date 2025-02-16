@@ -106,6 +106,9 @@ public interface CheckCash extends Transaction {
       "The CheckCash transaction must include either amount or deliverMin, but not both.");
   }
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default CheckCash normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

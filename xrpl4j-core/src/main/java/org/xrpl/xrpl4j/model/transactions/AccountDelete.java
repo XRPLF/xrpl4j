@@ -81,6 +81,9 @@ public interface AccountDelete extends Transaction {
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AccountDelete normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

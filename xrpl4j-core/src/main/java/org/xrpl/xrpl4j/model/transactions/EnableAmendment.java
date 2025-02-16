@@ -66,6 +66,9 @@ public interface EnableAmendment extends Transaction {
   @JsonProperty("LedgerSequence")
   Optional<LedgerIndex> ledgerSequence();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default EnableAmendment normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

@@ -69,6 +69,9 @@ public interface AmmVote extends Transaction {
   @JsonProperty("TradingFee")
   TradingFee tradingFee();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default AmmVote normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

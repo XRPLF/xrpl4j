@@ -119,6 +119,9 @@ public interface PaymentChannelCreate extends Transaction {
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
 
+  /**
+   * Immutables Check to ensure property state after construction.
+   */
   @Value.Check
   default PaymentChannelCreate normalize() {
     Preconditions.checkState(!unknownFields().containsKey("TransactionType"));

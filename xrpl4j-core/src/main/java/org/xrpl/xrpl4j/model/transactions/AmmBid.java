@@ -23,7 +23,7 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableAmmBid.class)
 @Beta
 public interface AmmBid extends Transaction {
-  
+
   /**
    * Construct a {@code AmmBid} builder.
    *
@@ -32,7 +32,7 @@ public interface AmmBid extends Transaction {
   static ImmutableAmmBid.Builder builder() {
     return ImmutableAmmBid.builder();
   }
-  
+
   /**
    * Set of {@link TransactionFlags}s for this {@link AmmBid}, which only allows the {@code tfFullyCanonicalSig} flag,
    * which is deprecated.
@@ -47,7 +47,7 @@ public interface AmmBid extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-  
+
   /**
    * The definition for one of the assets in the AMM's pool.
    *
@@ -55,7 +55,7 @@ public interface AmmBid extends Transaction {
    */
   @JsonProperty("Asset")
   Issue asset();
-  
+
   /**
    * The definition for the other asset in the AMM's pool.
    *
@@ -63,7 +63,7 @@ public interface AmmBid extends Transaction {
    */
   @JsonProperty("Asset2")
   Issue asset2();
-  
+
   /**
    * Pay at least this amount for the slot. Setting this value higher makes it harder for others to outbid you. If
    * omitted, pay the minimum necessary to win the bid.
@@ -80,7 +80,7 @@ public interface AmmBid extends Transaction {
    */
   @JsonProperty("BidMin")
   Optional<CurrencyAmount> bidMin();
-  
+
   /**
    * Pay at most this amount for the slot. If the cost to win the bid is higher than this amount, the transaction fails.
    * If omitted, pay as much as necessary to win the bid.
@@ -97,7 +97,7 @@ public interface AmmBid extends Transaction {
    */
   @JsonProperty("BidMax")
   Optional<CurrencyAmount> bidMax();
-  
+
   /**
    * A list of up to 4 additional accounts that you allow to trade at the discounted fee. This cannot include the
    * address of the transaction sender

@@ -37,7 +37,7 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableAccountDelete.class)
 @JsonDeserialize(as = ImmutableAccountDelete.class)
 public interface AccountDelete extends Transaction {
-  
+
   /**
    * Construct a builder for this class.
    *
@@ -46,7 +46,7 @@ public interface AccountDelete extends Transaction {
   static ImmutableAccountDelete.Builder builder() {
     return ImmutableAccountDelete.builder();
   }
-  
+
   /**
    * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the {@code tfFullyCanonicalSig}
    * flag, which is deprecated.
@@ -61,7 +61,7 @@ public interface AccountDelete extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-  
+
   /**
    * The {@link Address} of an account to receive any leftover XRP after deleting the sending account. Must be a funded
    * account in the ledger, and must not be the sending account.
@@ -70,7 +70,7 @@ public interface AccountDelete extends Transaction {
    */
   @JsonProperty("Destination")
   Address destination();
-  
+
   /**
    * Arbitrary destination tag that identifies a hosted recipient or other information for the recipient of the deleted
    * account's leftover XRP.

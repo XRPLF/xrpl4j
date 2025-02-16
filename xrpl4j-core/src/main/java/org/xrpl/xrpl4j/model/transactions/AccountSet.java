@@ -130,7 +130,7 @@ public interface AccountSet extends Transaction {
       Preconditions.checkState(
         clearFlag().get().getValue() == clearFlagRawValue().get().longValue(),
         String.format("clearFlag and clearFlagRawValue should be equivalent, but clearFlag's underlying " +
-            "value was %s and clearFlagRawValue was %s",
+                      "value was %s and clearFlagRawValue was %s",
           clearFlag().get().getValue(),
           clearFlagRawValue().get().longValue()
         )
@@ -223,7 +223,7 @@ public interface AccountSet extends Transaction {
       Preconditions.checkState(
         setFlag().get().getValue() == setFlagRawValue().get().longValue(),
         String.format("setFlag and setFlagRawValue should be equivalent, but setFlag's underlying " +
-            "value was %s and setFlagRawValue was %s",
+                      "value was %s and setFlagRawValue was %s",
           setFlag().get().getValue(),
           setFlagRawValue().get().longValue()
         )
@@ -350,8 +350,8 @@ public interface AccountSet extends Transaction {
     transferRate()
       .ifPresent(rate ->
         Preconditions.checkArgument(rate.equals(UnsignedInteger.ZERO) ||
-            (rate.compareTo(UnsignedInteger.valueOf(1000000000L)) >= 0 &&
-              rate.compareTo(UnsignedInteger.valueOf(2000000000L)) <= 0),
+                                    (rate.compareTo(UnsignedInteger.valueOf(1000000000L)) >= 0 &&
+                                     rate.compareTo(UnsignedInteger.valueOf(2000000000L)) <= 0),
           "transferRate must be between 1,000,000,000 and 2,000,000,000 or equal to 0."
         )
       );
@@ -365,14 +365,14 @@ public interface AccountSet extends Transaction {
     tickSize()
       .ifPresent(tickSize ->
         Preconditions.checkArgument(tickSize.equals(UnsignedInteger.ZERO) ||
-            (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
-              tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
+                                    (tickSize.compareTo(UnsignedInteger.valueOf(3)) >= 0 &&
+                                     tickSize.compareTo(UnsignedInteger.valueOf(15)) <= 0),
           "tickSize must be between 3 and 15 inclusive or be equal to 0."
         )
       );
 
   }
-  
+
   /**
    * There are several options which can be either enabled or disabled for an account. Account options are represented
    * by different types of flags depending on the situation.
@@ -491,9 +491,7 @@ public interface AccountSet extends Transaction {
      * annotation, otherwise Jackson treats the JSON integer value as an ordinal.
      *
      * @param value The int value of the flag.
-     *
      * @return The {@link AccountSetFlag} for the given integer value.
-     *
      * @see "https://github.com/FasterXML/jackson-databind/issues/1850"
      */
     @JsonCreator

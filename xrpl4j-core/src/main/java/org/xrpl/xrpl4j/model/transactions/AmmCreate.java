@@ -18,7 +18,7 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 @JsonDeserialize(as = ImmutableAmmCreate.class)
 @Beta
 public interface AmmCreate extends Transaction {
-  
+
   /**
    * Construct a {@code AmmCreate} builder.
    *
@@ -27,7 +27,7 @@ public interface AmmCreate extends Transaction {
   static ImmutableAmmCreate.Builder builder() {
     return ImmutableAmmCreate.builder();
   }
-  
+
   /**
    * Set of {@link TransactionFlags}s for this {@link AmmCreate}, which only allows the {@code tfFullyCanonicalSig}
    * flag, which is deprecated.
@@ -42,7 +42,7 @@ public interface AmmCreate extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-  
+
   /**
    * The first of the two assets to fund this AMM with.
    *
@@ -50,7 +50,7 @@ public interface AmmCreate extends Transaction {
    */
   @JsonProperty("Amount")
   CurrencyAmount amount();
-  
+
   /**
    * The second of the two assets to fund this AMM with.
    *
@@ -58,7 +58,7 @@ public interface AmmCreate extends Transaction {
    */
   @JsonProperty("Amount2")
   CurrencyAmount amount2();
-  
+
   /**
    * The fee to charge for trades against this AMM instance.
    *

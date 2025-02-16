@@ -40,7 +40,7 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutablePayment.class)
 @JsonDeserialize(as = ImmutablePayment.class)
 public interface Payment extends Transaction {
-  
+
   /**
    * Construct a builder for this class.
    *
@@ -49,7 +49,7 @@ public interface Payment extends Transaction {
   static ImmutablePayment.Builder builder() {
     return ImmutablePayment.builder();
   }
-  
+
   /**
    * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a
    * {@link PaymentFlags} object containing the {@link Long} representation of the set bits.
@@ -63,7 +63,7 @@ public interface Payment extends Transaction {
   default PaymentFlags flags() {
     return PaymentFlags.empty();
   }
-  
+
   /**
    * The amount of currency to deliver. If the {@link PaymentFlags#tfPartialPayment()} flag is set, deliver up to this
    * amount instead.
@@ -72,7 +72,7 @@ public interface Payment extends Transaction {
    */
   @JsonProperty("Amount")
   CurrencyAmount amount();
-  
+
   /**
    * The unique {@link Address} of the account receiving the payment. Maybe be empty for an AccountSet or other
    * transaction that is not a payment.
@@ -81,7 +81,7 @@ public interface Payment extends Transaction {
    */
   @JsonProperty("Destination")
   Address destination();
-  
+
   /**
    * Arbitrary {@link UnsignedInteger} tag that identifies the reason for the payment to the destination, or a hosted
    * recipient to pay.
@@ -90,7 +90,7 @@ public interface Payment extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
-  
+
   /**
    * Arbitrary 256-bit hash representing a specific reason or identifier for this payment.
    *
@@ -98,7 +98,7 @@ public interface Payment extends Transaction {
    */
   @JsonProperty("InvoiceID")
   Optional<Hash256> invoiceId();
-  
+
   /**
    * A {@link List} of {@link List}s of payment paths to be used for this transaction. Must be omitted for XRP-to-XRP
    * transactions.
@@ -106,12 +106,11 @@ public interface Payment extends Transaction {
    * <p>This field is auto-fillable
    *
    * @return A {@link List} of {@link List}s of {@link PathStep}s.
-   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Paths")
   List<List<PathStep>> paths();
-  
+
   /**
    * Highest amount of source currency this transaction is allowed to cost, including transfer fees, exchange rates, and
    * slippage. Does not include the XRP destroyed as a cost for submitting the transaction.
@@ -119,13 +118,12 @@ public interface Payment extends Transaction {
    * <p>Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
-   *
    * @see "https://xrpl.org/transfer-fees.html"
    * @see "https://en.wikipedia.org/wiki/Slippage_%28finance%29"
    */
   @JsonProperty("SendMax")
   Optional<CurrencyAmount> sendMax();
-  
+
   /**
    * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the
    * {@link PaymentFlags#tfPartialPayment()}* flag is set.

@@ -35,7 +35,7 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 @JsonSerialize(as = ImmutableCheckCancel.class)
 @JsonDeserialize(as = ImmutableCheckCancel.class)
 public interface CheckCancel extends Transaction {
-  
+
   /**
    * Construct a builder for this class.
    *
@@ -44,7 +44,7 @@ public interface CheckCancel extends Transaction {
   static ImmutableCheckCancel.Builder builder() {
     return ImmutableCheckCancel.builder();
   }
-  
+
   /**
    * Set of {@link TransactionFlags}s for this {@link CheckCancel}, which only allows the {@code tfFullyCanonicalSig}
    * flag, which is deprecated.
@@ -59,7 +59,7 @@ public interface CheckCancel extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-  
+
   /**
    * The ID of the Check ledger object to cancel, as a 64-character hexadecimal string.
    *

@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 @JsonDeserialize(as = ImmutableAmmDelete.class)
 @Beta
 public interface AmmDelete extends Transaction {
-  
+
   /**
    * Construct a {@code AmmDelete} builder.
    *
@@ -29,7 +29,7 @@ public interface AmmDelete extends Transaction {
   static ImmutableAmmDelete.Builder builder() {
     return ImmutableAmmDelete.builder();
   }
-  
+
   /**
    * Set of {@link TransactionFlags}s for this {@link AmmDelete}, which only allows the {@code tfFullyCanonicalSig}
    * flag, which is deprecated.
@@ -41,7 +41,7 @@ public interface AmmDelete extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-  
+
   /**
    * The definition for one of the assets in the AMM's pool.
    *
@@ -49,7 +49,7 @@ public interface AmmDelete extends Transaction {
    */
   @JsonProperty("Asset")
   Issue asset();
-  
+
   /**
    * The definition for the other asset in the AMM's pool.
    *

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,6 @@ public abstract class Memo {
    * Construct a {@link ImmutableMemo.Builder} by properly hex-encoding {@code plaintext}.
    *
    * @param plaintext A UTF-8 {@link String}.
-   *
    * @return A {@link ImmutableMemo.Builder}.
    */
   public static ImmutableMemo.Builder withPlaintext(final String plaintext) {
@@ -112,7 +111,6 @@ public abstract class Memo {
    * Determines if an input string is hex-encoded.
    *
    * @param input A {@link String}.
-   *
    * @return {@code true} if every character in {@code input} is hex-encoded; {@code false} otherwise.
    */
   private static boolean isHex(final String input) {
@@ -130,7 +128,6 @@ public abstract class Memo {
    * Determines if an input char is hex-encoded.
    *
    * @param input A {@link char}.
-   *
    * @return {@code true} if {@code input} is hex-encoded; {@code false} otherwise.
    */
   private static boolean isHex(final char input) {

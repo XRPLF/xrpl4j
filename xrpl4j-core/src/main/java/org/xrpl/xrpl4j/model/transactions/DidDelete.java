@@ -8,8 +8,6 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
-import java.util.Optional;
-
 /**
  * Object mapping for the {@code DIDDelete} transaction.
  *

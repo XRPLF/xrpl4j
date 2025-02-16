@@ -19,7 +19,7 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 @JsonDeserialize(as = ImmutableAmmVote.class)
 @Beta
 public interface AmmVote extends Transaction {
-  
+
   /**
    * Construct a {@code AmmVote} builder.
    *
@@ -28,7 +28,7 @@ public interface AmmVote extends Transaction {
   static ImmutableAmmVote.Builder builder() {
     return ImmutableAmmVote.builder();
   }
-  
+
   /**
    * Set of {@link TransactionFlags}s for this {@link AmmVote}, which only allows the {@code tfFullyCanonicalSig} flag,
    * which is deprecated.
@@ -43,7 +43,7 @@ public interface AmmVote extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
-  
+
   /**
    * The definition for one of the assets in the AMM's pool.
    *
@@ -51,7 +51,7 @@ public interface AmmVote extends Transaction {
    */
   @JsonProperty("Asset")
   Issue asset();
-  
+
   /**
    * The definition for the other asset in the AMM's pool.
    *
@@ -59,7 +59,7 @@ public interface AmmVote extends Transaction {
    */
   @JsonProperty("Asset2")
   Issue asset2();
-  
+
   /**
    * The proposed fee to vote for.
    *

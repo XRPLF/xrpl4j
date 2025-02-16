@@ -39,7 +39,7 @@ import java.util.Optional;
  * Provides an abstract interface for all concrete XRPL transactions.
  */
 public interface Transaction {
-  
+
   /**
    * A bidirectional map of immutable transaction types to their corresponding {@link TransactionType}.
    *
@@ -95,7 +95,7 @@ public interface Transaction {
       .put(ImmutableOracleDelete.class, TransactionType.ORACLE_DELETE)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .build();
-  
+
   /**
    * The unique {@link Address} of the account that initiated this transaction.
    *
@@ -103,7 +103,7 @@ public interface Transaction {
    */
   @JsonProperty("Account")
   Address account();
-  
+
   /**
    * The type of transaction.
    *
@@ -123,7 +123,7 @@ public interface Transaction {
   default TransactionType transactionType() {
     return typeMap.get(this.getClass());
   }
-  
+
   /**
    * The {@link String} representation of an integer amount of XRP, in drops, to be destroyed as a cost for distributing
    * this Payment transaction to the network.
@@ -131,12 +131,11 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link XrpCurrencyAmount} representing the transaction cost.
-   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Fee")
   XrpCurrencyAmount fee();
-  
+
   /**
    * The sequence number of the account submitting the {@link Transaction}. A {@link Transaction} is only valid if the
    * Sequence number is exactly 1 greater than the previous transaction from the same account.
@@ -144,7 +143,6 @@ public interface Transaction {
    * <p>This field is auto-fillable
    *
    * @return An {@link UnsignedInteger} representing the sequence of the transaction.
-   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @Value.Default
@@ -152,7 +150,7 @@ public interface Transaction {
   default UnsignedInteger sequence() {
     return UnsignedInteger.ZERO;
   }
-  
+
   /**
    * The sequence number of the {@link org.xrpl.xrpl4j.model.ledger.TicketObject} to use in place of a
    * {@link #sequence()} number. If this is provided, {@link #sequence()} must be 0. Cannot be used with
@@ -162,7 +160,7 @@ public interface Transaction {
    */
   @JsonProperty("TicketSequence")
   Optional<UnsignedInteger> ticketSequence();
-  
+
   /**
    * Hash value identifying another transaction. If provided, this {@link Transaction} is only valid if the sending
    * account's previously-sent transaction matches the provided hash.
@@ -171,7 +169,7 @@ public interface Transaction {
    */
   @JsonProperty("AccountTxnID")
   Optional<Hash256> accountTransactionId();
-  
+
   /**
    * Highest ledger index this transaction can appear in. Specifying this field places a strict upper limit on how long
    * the transaction can wait to be validated or rejected.
@@ -180,7 +178,7 @@ public interface Transaction {
    */
   @JsonProperty("LastLedgerSequence")
   Optional<UnsignedInteger> lastLedgerSequence();
-  
+
   /**
    * Additional arbitrary information used to identify this {@link Transaction}.
    *
@@ -188,7 +186,7 @@ public interface Transaction {
    */
   @JsonProperty("Memos")
   List<MemoWrapper> memos();
-  
+
   /**
    * Array of {@link SignerWrapper}s that represent a multi-signature which authorizes this {@link Transaction}.
    *
@@ -196,7 +194,7 @@ public interface Transaction {
    */
   @JsonProperty("Signers")
   List<SignerWrapper> signers();
-  
+
   /**
    * Arbitrary {@link UnsignedInteger} used to identify the reason for this {@link Transaction}, or a sender on whose
    * behalf this {@link Transaction} is made.
@@ -205,7 +203,7 @@ public interface Transaction {
    */
   @JsonProperty("SourceTag")
   Optional<UnsignedInteger> sourceTag();
-  
+
   /**
    * The {@link PublicKey} that corresponds to the private key used to sign this transaction. If an empty string, ie
    * {@link PublicKey#MULTI_SIGN_PUBLIC_KEY}, indicates a multi-signature is present in the
@@ -220,7 +218,7 @@ public interface Transaction {
   default PublicKey signingPublicKey() {
     return PublicKey.MULTI_SIGN_PUBLIC_KEY;
   }
-  
+
   /**
    * The signature that verifies this transaction as originating from the account it says it is from.
    *
@@ -230,12 +228,12 @@ public interface Transaction {
    */
   @JsonProperty("TxnSignature")
   Optional<Signature> transactionSignature();
-  
+
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
-  
+
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)
   Map<String, Object> unknownFields();
-  
+
 }

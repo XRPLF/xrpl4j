@@ -27,18 +27,16 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.ImmutableUnlModify;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
-import org.xrpl.xrpl4j.model.transactions.UnlModify;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 
 /**
  * Jackson module for the xrpl4j-model project.
  */
 public class Xrpl4jModule extends SimpleModule {
-  
+
   private static final String NAME = "Xrpl4jModule";
-  
+
   /**
    * No-arg constructor.
    */
@@ -54,36 +52,21 @@ public class Xrpl4jModule extends SimpleModule {
         "xrpl4j"
       )
     );
-    
+
     addDeserializer(CurrencyAmount.class, new CurrencyAmountDeserializer());
-    
+
     addSerializer(LedgerIndex.class, new LedgerIndexSerializer());
     addDeserializer(LedgerIndex.class, new LedgerIndexDeserializer());
-    
-    // TODO
-    //    addSerializer(UnlModify.class, new UnlModifyTransactionSerializer());
+
     addDeserializer(Transaction.class, new TransactionDeserializer<>());
-    
+
     addDeserializer(ServerInfo.class, new ServerInfoDeserializer());
-    
+
     addSerializer(UnsignedByteArray.class, new UnsignedByteArraySerializer());
     addDeserializer(UnsignedByteArray.class, new UnsignedByteArrayDeserializer());
-    
+
     addSerializer(Flags.class, new FlagsSerializer());
-    
+
     addDeserializer(AffectedNode.class, new AffectedNodeDeserializer());
-    
-    
-    //    // Add the custom serializer using a BeanSerializerModifier
-    //    setSerializerModifier(new BeanSerializerModifier() {
-    //      @Override
-    //      public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc,
-    //      JsonSerializer<?> serializer) {
-    //        if (Transaction.class.isAssignableFrom(beanDesc.getBeanClass())) { // Check if it's a Transaction
-    //          return new TransactionSerializer();
-    //        }
-    //        return serializer; // Return the original serializer if not a Transaction
-    //      }
-    //    });
   }
 }

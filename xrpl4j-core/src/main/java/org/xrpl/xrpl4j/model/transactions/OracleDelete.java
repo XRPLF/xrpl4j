@@ -49,4 +49,5 @@ public interface OracleDelete extends Transaction {
    */
   @JsonProperty("OracleDocumentID")
   OracleDocumentId oracleDocumentId();
+
 }

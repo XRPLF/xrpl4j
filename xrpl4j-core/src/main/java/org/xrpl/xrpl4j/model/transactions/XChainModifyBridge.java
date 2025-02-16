@@ -35,8 +35,7 @@ public interface XChainModifyBridge extends Transaction {
    * Set of {@link XChainModifyBridgeFlags}s for this {@link XChainModifyBridge}, which have been properly combined to
    * yield a {@link XChainModifyBridgeFlags} object containing the {@link Long} representation of the set bits.
    *
-   * <p>The value of the flags can either be set manually, or constructed using
-   * {@link XChainModifyBridgeFlags.Builder}.
+   * <p>The value of the flags can either be set manually, or constructed using {@link XChainModifyBridgeFlags.Builder}.
    *
    * @return The {@link XChainModifyBridgeFlags} for this transaction.
    */
@@ -71,4 +70,5 @@ public interface XChainModifyBridge extends Transaction {
   @JsonProperty("XChainBridge")
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
+
 }

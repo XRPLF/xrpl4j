@@ -117,4 +117,5 @@ public interface PaymentChannelCreate extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
+
 }

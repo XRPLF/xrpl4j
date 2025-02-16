@@ -136,4 +136,5 @@ public interface NfTokenAcceptOffer extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
+
 }

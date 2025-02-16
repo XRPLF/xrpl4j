@@ -104,4 +104,5 @@ public interface CheckCreate extends Transaction {
    */
   @JsonProperty("InvoiceID")
   Optional<Hash256> invoiceId();
+
 }

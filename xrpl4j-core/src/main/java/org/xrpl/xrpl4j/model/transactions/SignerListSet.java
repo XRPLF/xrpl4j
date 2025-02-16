@@ -82,4 +82,5 @@ public interface SignerListSet extends Transaction {
    */
   @JsonProperty("SignerEntries")
   List<SignerEntryWrapper> signerEntries();
+
 }

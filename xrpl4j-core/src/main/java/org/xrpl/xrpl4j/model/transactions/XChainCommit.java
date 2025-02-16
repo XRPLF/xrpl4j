@@ -81,4 +81,5 @@ public interface XChainCommit extends Transaction {
   @JsonProperty("XChainClaimID")
   @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
+
 }

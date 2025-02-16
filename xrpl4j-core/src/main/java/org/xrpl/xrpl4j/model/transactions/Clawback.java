@@ -50,4 +50,6 @@ public interface Clawback extends Transaction {
    */
   @JsonProperty("Amount")
   IssuedCurrencyAmount amount();
+
+
 }

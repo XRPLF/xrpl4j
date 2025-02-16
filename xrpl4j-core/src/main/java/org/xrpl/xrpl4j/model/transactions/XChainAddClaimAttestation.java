@@ -134,4 +134,5 @@ public interface XChainAddClaimAttestation extends Transaction {
   @JsonProperty("XChainClaimID")
   @SuppressWarnings("MethodName")
   XChainClaimId xChainClaimId();
+
 }

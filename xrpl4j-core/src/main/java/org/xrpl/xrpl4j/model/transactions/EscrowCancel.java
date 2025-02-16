@@ -75,4 +75,5 @@ public interface EscrowCancel extends Transaction {
    */
   @JsonProperty("OfferSequence")
   UnsignedInteger offerSequence();
+
 }

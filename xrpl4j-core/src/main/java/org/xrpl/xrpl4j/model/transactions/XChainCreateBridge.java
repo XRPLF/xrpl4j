@@ -68,4 +68,5 @@ public interface XChainCreateBridge extends Transaction {
   @JsonProperty("XChainBridge")
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
+
 }

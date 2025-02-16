@@ -93,4 +93,6 @@ public interface OfferCreate extends Transaction {
    */
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
+
+
 }

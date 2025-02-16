@@ -85,4 +85,5 @@ public interface TrustSet extends Transaction {
    */
   @JsonProperty("QualityOut")
   Optional<UnsignedInteger> qualityOut();
+
 }

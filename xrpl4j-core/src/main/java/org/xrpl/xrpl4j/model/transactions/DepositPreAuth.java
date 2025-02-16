@@ -89,7 +89,7 @@ public interface DepositPreAuth extends Transaction {
   @Value.Check
   default void validateFieldPresence() {
     Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent()) &&
-                                !(authorize().isPresent() && unauthorize().isPresent()),
+        !(authorize().isPresent() && unauthorize().isPresent()),
       "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
   }
 }

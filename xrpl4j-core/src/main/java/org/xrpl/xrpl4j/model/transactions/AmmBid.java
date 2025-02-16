@@ -106,4 +106,5 @@ public interface AmmBid extends Transaction {
    */
   @JsonProperty("AuthAccounts")
   List<AuthAccountWrapper> authAccounts();
+
 }

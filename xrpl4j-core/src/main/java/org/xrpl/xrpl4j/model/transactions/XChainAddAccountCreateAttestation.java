@@ -141,4 +141,5 @@ public interface XChainAddAccountCreateAttestation extends Transaction {
   @JsonProperty("XChainBridge")
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
+
 }

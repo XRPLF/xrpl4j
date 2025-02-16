@@ -71,4 +71,5 @@ public interface OfferCancel extends Transaction {
    */
   @JsonProperty("OfferSequence")
   Optional<UnsignedInteger> offerSequence();
+
 }

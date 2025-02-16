@@ -29,7 +29,8 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import java.util.Optional;
 
 /**
- * An {@link EnableAmendment} pseudo-transaction marks a change in status of an amendment. to the XRP Ledger protocol
+ * An {@link EnableAmendment} pseudo-transaction marks a change in status of an amendment.
+ * to the XRP Ledger protocol
  *
  * @see "https://xrpl.org/enableamendment.html"
  */
@@ -56,8 +57,8 @@ public interface EnableAmendment extends Transaction {
   Hash256 amendment();
 
   /**
-   * The ledger index where this pseudo-transaction appears. This distinguishes the pseudo-transaction from other
-   * occurrences of the same change.
+   * The ledger index where this pseudo-transaction appears. This distinguishes the
+   * pseudo-transaction from other occurrences of the same change.
    *
    * @return A {@link LedgerIndex} to indicates where the tx appears.
    */

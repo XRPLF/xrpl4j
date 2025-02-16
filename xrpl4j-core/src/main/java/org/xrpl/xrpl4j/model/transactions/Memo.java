@@ -51,6 +51,7 @@ public abstract class Memo {
    * Construct a {@link ImmutableMemo.Builder} by properly hex-encoding {@code plaintext}.
    *
    * @param plaintext A UTF-8 {@link String}.
+   *
    * @return A {@link ImmutableMemo.Builder}.
    */
   public static ImmutableMemo.Builder withPlaintext(final String plaintext) {
@@ -111,6 +112,7 @@ public abstract class Memo {
    * Determines if an input string is hex-encoded.
    *
    * @param input A {@link String}.
+   *
    * @return {@code true} if every character in {@code input} is hex-encoded; {@code false} otherwise.
    */
   private static boolean isHex(final String input) {
@@ -128,6 +130,7 @@ public abstract class Memo {
    * Determines if an input char is hex-encoded.
    *
    * @param input A {@link char}.
+   *
    * @return {@code true} if {@code input} is hex-encoded; {@code false} otherwise.
    */
   private static boolean isHex(final char input) {

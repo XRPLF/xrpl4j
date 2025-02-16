@@ -27,9 +27,9 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
- * Cancels an unredeemed Check, removing it from the ledger without sending any money. The source or the destination of
- * the check can cancel a Check at any time using this transaction type. If the Check has expired, any address can
- * cancel it.
+ * Cancels an unredeemed Check, removing it from the ledger without sending any money. The source or the
+ * destination of the check can cancel a Check at any time using this transaction type.
+ * If the Check has expired, any address can cancel it.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCheckCancel.class)
@@ -46,8 +46,8 @@ public interface CheckCancel extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link CheckCancel}, which only allows the {@code tfFullyCanonicalSig}
-   * flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link CheckCancel}, which only allows the
+   * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -67,4 +67,5 @@ public interface CheckCancel extends Transaction {
    */
   @JsonProperty("CheckID")
   Hash256 checkId();
+
 }

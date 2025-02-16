@@ -46,6 +46,7 @@ public interface SignerWrapper {
    * Construct a {@link SignerWrapper} wrapping the given {@link Signer}.
    *
    * @param signer A {@link Signer}.
+   *
    * @return A {@link SignerWrapper}.
    */
   static SignerWrapper of(Signer signer) {

@@ -67,4 +67,6 @@ public interface AmmVote extends Transaction {
    */
   @JsonProperty("TradingFee")
   TradingFee tradingFee();
+
+
 }

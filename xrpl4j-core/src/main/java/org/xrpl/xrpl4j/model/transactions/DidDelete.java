@@ -43,4 +43,5 @@ public interface DidDelete extends Transaction {
   default TransactionFlags flags() {
     return TransactionFlags.EMPTY;
   }
+
 }

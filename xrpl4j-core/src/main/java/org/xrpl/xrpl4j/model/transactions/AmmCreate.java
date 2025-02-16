@@ -66,4 +66,5 @@ public interface AmmCreate extends Transaction {
    */
   @JsonProperty("TradingFee")
   TradingFee tradingFee();
+
 }

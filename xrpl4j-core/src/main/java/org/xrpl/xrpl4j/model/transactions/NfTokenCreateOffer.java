@@ -88,7 +88,7 @@ public interface NfTokenCreateOffer extends Transaction {
    * <p>If the offer is to buy a token, this field must be present
    * and it must be different than Account (since an offer to
    * buy a token one already holds is meaningless).
-   * <p>
+   *
    * If the offer is to sell a token, this field must not be
    * present, as the owner is, implicitly, the same as Account
    * (since an offer to sell a token one doesn't already hold

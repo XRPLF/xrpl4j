@@ -72,4 +72,5 @@ public interface SetRegularKey extends Transaction {
    */
   @JsonProperty("RegularKey")
   Optional<Address> regularKey();
+
 }

@@ -57,4 +57,5 @@ public interface AmmDelete extends Transaction {
    */
   @JsonProperty("Asset2")
   Issue asset2();
+
 }

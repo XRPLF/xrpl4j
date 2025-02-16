@@ -77,4 +77,5 @@ public interface XChainAccountCreateCommit extends Transaction {
   @JsonProperty("XChainBridge")
   @SuppressWarnings("MethodName")
   XChainBridge xChainBridge();
+
 }

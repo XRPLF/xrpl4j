@@ -263,10 +263,6 @@ public class AmmIT extends AbstractIT {
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .build();
 
-    String x = withdraw.toString();
-
-    System.out.println(x);
-
     SingleSignedTransaction<AmmWithdraw> signedWithdraw = signatureService.sign(traderKeyPair.privateKey(), withdraw);
 
     SubmitResult<AmmWithdraw> voteSubmitResult = xrplClient.submit(signedWithdraw);

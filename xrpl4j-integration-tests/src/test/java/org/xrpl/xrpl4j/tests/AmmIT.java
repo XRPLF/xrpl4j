@@ -48,8 +48,10 @@ import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
+import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
@@ -260,6 +262,10 @@ public class AmmIT extends AbstractIT {
       .flags(AmmWithdrawFlags.SINGLE_ASSET)
       .build();
 
+    String x = withdraw.toString();
+
+    System.out.println(x);
+
     SingleSignedTransaction<AmmWithdraw> signedWithdraw = signatureService.sign(traderKeyPair.privateKey(), withdraw);
 
     SubmitResult<AmmWithdraw> voteSubmitResult = xrplClient.submit(signedWithdraw);
@@ -291,49 +297,255 @@ public class AmmIT extends AbstractIT {
 
   @Test
   void depositAndClawback() throws JsonRpcClientErrorException, JsonProcessingException {
+    // create issuer and trader wallets
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    FeeResult feeResult = xrplClient.fee();
-    AmmInfoResult amm = createAmm(issuerKeyPair, feeResult);
     KeyPair traderKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+
+    AccountInfoResult issuerAccount = scanForResult(
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
 
     AccountInfoResult traderAccount = scanForResult(
         () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
 
-    AccountInfoResult traderAccountAfterDeposit = depositXrp(
-        issuerKeyPair,
-        traderKeyPair,
-        traderAccount,
-        amm,
-        signatureService,
-        feeResult
-    );
-
-    AmmClawback withdraw = AmmClawback.builder()
-        .account(traderKeyPair.publicKey().deriveAddress())
+    // create & submit AccountSet for enabling Trustline Clawback
+    AccountSet accountSet = AccountSet.builder()
+        .account(issuerKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-        .holder(traderKeyPair.publicKey().deriveAddress())
-        .sequence(traderAccountAfterDeposit.accountData().sequence())
-        .lastLedgerSequence(
-            traderAccountAfterDeposit.ledgerCurrentIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue()
-        )
-        .signingPublicKey(traderKeyPair.publicKey())
-        .asset2(
-            Issue.builder()
-                .currency(xrpl4jCoin)
-                .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .build()
-        )
-        .asset(Issue.XRP)
-        .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
-
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .sequence(issuerAccount.accountData().sequence())
+        .setFlag(AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK)
         .build();
 
-    SingleSignedTransaction<AmmClawback> signedWithdraw = signatureService.sign(traderKeyPair.privateKey(), withdraw);
+    SingleSignedTransaction<AccountSet> signedAccountSet =
+        signatureService.sign(issuerKeyPair.privateKey(), accountSet);
 
-    SubmitResult<AmmClawback> voteSubmitResult = xrplClient.submit(signedWithdraw);
+    SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
 
-    assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    assertThat(accountSetSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    // create & submit Trustline from issuer to trader
+    TrustSet trustSet = TrustSet.builder()
+        .account(traderKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(traderAccount.accountData().sequence())
+        .signingPublicKey(traderKeyPair.publicKey())
+        .limitAmount(IssuedCurrencyAmount.builder()
+            .currency(xrpl4jCoin)
+            .issuer(issuerKeyPair.publicKey().deriveAddress())
+            .value("1000000")
+            .build()
+        )
+        .build();
+
+    SingleSignedTransaction<TrustSet> signedTrustline =
+        signatureService.sign(traderKeyPair.privateKey(), trustSet);
+
+    SubmitResult<TrustSet> trustlineSubmitResult = xrplClient.submit(signedTrustline);
+
+    assertThat(trustlineSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    // create AMM with xrpl4j coin from issuer account
+    AmmInfoResult amm = createAmm(issuerKeyPair, feeResult);
+
+    // make payment from issuer to trader of 1000 xrpl4j coin
+    AccountInfoResult issuerAccount2 = scanForResult(
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    Payment payment = Payment.builder()
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .destination(traderKeyPair.publicKey().deriveAddress())
+        .amount(IssuedCurrencyAmount.builder()
+            .currency(xrpl4jCoin)
+            .issuer(issuerKeyPair.publicKey().deriveAddress())
+            .value("1000")
+            .build())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(issuerAccount2.accountData().sequence())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .build();
+
+    SingleSignedTransaction<Payment> signedPayment =
+        signatureService.sign(traderKeyPair.privateKey(), payment);
+
+    SubmitResult<Payment> paymentSubmitResult = xrplClient.submit(signedPayment);
+
+    assertThat(paymentSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    AccountInfoResult traderAccount2 = scanForResult(
+        () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
+    );
+
+
+  }
+
+  @Test
+  void depositAndClawback2() throws JsonRpcClientErrorException, JsonProcessingException {
+    // create issuer wallet
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+    //AmmInfoResult amm231 = createAmm(issuerKeyPair, feeResult);
+
+    AccountInfoResult issuerAccount = scanForResult(
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // create & submit AccountSet for enabling Trustline Clawback
+    AccountSet trustlineAccountSet = AccountSet.builder()
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .sequence(issuerAccount.accountData().sequence())
+        .setFlag(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK)
+        .build();
+
+    SingleSignedTransaction<AccountSet> signedTrustlineAccountSet =
+        signatureService.sign(issuerKeyPair.privateKey(), trustlineAccountSet);
+
+    SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedTrustlineAccountSet);
+
+    assertThat(accountSetSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    logger.info(
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+        accountSetSubmitResult.transactionResult().hash()
+    );
+
+    scanForResult(
+        () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().flags().lsfAllowTrustLineClawback()
+    );
+
+    // create & submit AccountSet for enabling Rippling
+    AccountSet accountSet = AccountSet.builder()
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .sequence(issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE))
+        .setFlag(AccountSetFlag.DEFAULT_RIPPLE)
+        .build();
+
+    SingleSignedTransaction<AccountSet> signed = signatureService.sign(issuerKeyPair.privateKey(), accountSet);
+    SubmitResult<AccountSet> setResult = xrplClient.submit(signed);
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+        setResult.transactionResult().hash()
+    );
+
+    scanForResult(
+        () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().flags().lsfDefaultRipple()
+    );
+
+    // create trader wallet
+    KeyPair traderKeyPair = createRandomAccountEd25519();
+    AccountInfoResult traderAccount = scanForResult(
+        () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
+    );
+
+    // create & submit Trustline from issuer to trader for TST
+    TrustSet trustSet = TrustSet.builder()
+        .account(traderKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(traderAccount.accountData().sequence())
+        .signingPublicKey(traderKeyPair.publicKey())
+        .limitAmount(IssuedCurrencyAmount.builder()
+            .currency("TST")
+            .issuer(issuerKeyPair.publicKey().deriveAddress())
+            .value("1000000")
+            .build()
+        )
+        .build();
+
+    SingleSignedTransaction<TrustSet> signedTrustline =
+        signatureService.sign(traderKeyPair.privateKey(), trustSet);
+
+    SubmitResult<TrustSet> trustlineSubmitResult = xrplClient.submit(signedTrustline);
+
+    assertThat(trustlineSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    // create & submit Trustline from issuer to trader for ZFT
+    TrustSet trustSet2 = TrustSet.builder()
+        .account(traderKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(traderAccount.accountData().sequence().plus(UnsignedInteger.ONE))
+        .signingPublicKey(traderKeyPair.publicKey())
+        .limitAmount(IssuedCurrencyAmount.builder()
+            .currency("ZFT")
+            .issuer(issuerKeyPair.publicKey().deriveAddress())
+            .value("1000000")
+            .build()
+        )
+        .build();
+
+    SingleSignedTransaction<TrustSet> signedTrustline2 =
+        signatureService.sign(traderKeyPair.privateKey(), trustSet2);
+
+    SubmitResult<TrustSet> trustlineSubmitResult2 = xrplClient.submit(signedTrustline2);
+
+    assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    // create AMM with xrpl4j coin from issuer account
+    XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
+        .map(
+            rippled -> rippled.closedLedger().orElse(rippled.validatedLedger().get()).reserveIncXrp(),
+            clio -> clio.validatedLedger().get().reserveIncXrp(),
+            reporting -> reporting.closedLedger().orElse(reporting.validatedLedger().get()).reserveIncXrp()
+        );
+    AmmCreate ammCreate = AmmCreate.builder()
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .sequence(issuerAccount.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
+        .fee(reserveAmount)
+        .amount(
+            IssuedCurrencyAmount.builder()
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .currency("TST")
+                .value("2.5")
+                .build()
+        )
+        .amount2(
+            IssuedCurrencyAmount.builder()
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .currency("ZFT")
+                .value("5")
+                .build()
+        )
+        .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
+        .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .build();
+
+    SingleSignedTransaction<AmmCreate> signedCreate = signatureService.sign(issuerKeyPair.privateKey(), ammCreate);
+    SubmitResult<AmmCreate> submitResult = xrplClient.submit(signedCreate);
+    assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+
+    // make payment from issuer to trader of 1000 xrpl4j coin
+    AccountInfoResult issuerAccount2 = scanForResult(
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    Payment payment = Payment.builder()
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .destination(traderKeyPair.publicKey().deriveAddress())
+        .amount(IssuedCurrencyAmount.builder()
+            .currency(xrpl4jCoin)
+            .issuer(issuerKeyPair.publicKey().deriveAddress())
+            .value("1000")
+            .build())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(issuerAccount2.accountData().sequence())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .build();
+
+    SingleSignedTransaction<Payment> signedPayment =
+        signatureService.sign(traderKeyPair.privateKey(), payment);
+
+    SubmitResult<Payment> paymentSubmitResult = xrplClient.submit(signedPayment);
+
+    assertThat(paymentSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
   }
 
   private AccountInfoResult depositXrp(
@@ -426,7 +638,7 @@ public class AmmIT extends AbstractIT {
       )
       .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
       .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
-      .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
@@ -526,7 +738,7 @@ public class AmmIT extends AbstractIT {
     return ammInfoResult;
   }
 
-  private void enableRippling(KeyPair issuerKeyPair, AccountInfoResult issuerAccount, FeeResult feeResult)
+  public void enableRippling(KeyPair issuerKeyPair, AccountInfoResult issuerAccount, FeeResult feeResult)
     throws JsonRpcClientErrorException, JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())

@@ -608,7 +608,7 @@ public class SignatureUtils {
         .signers(signers)
         .build();
     } else if (AmmClawback.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = OracleDelete.builder().from((AmmClawback) transaction)
+      transactionWithSignatures = AmmClawback.builder().from((AmmClawback) transaction)
           .signers(signers)
           .build();
     } else {

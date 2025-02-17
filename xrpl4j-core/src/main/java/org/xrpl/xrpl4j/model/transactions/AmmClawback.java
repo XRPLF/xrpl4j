@@ -3,9 +3,12 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+
+import java.util.Optional;
 
 /**
  * Object mapping for the {@code AMMClawback} transaction.
@@ -13,9 +16,11 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmClawback.class)
 @JsonDeserialize(as = ImmutableAmmClawback.class)
+@Beta
 public interface AmmClawback extends Transaction {
-  @JsonProperty("Account")
-  Address account();
+
+  @JsonProperty("Holder")
+  Address holder();
 
   @JsonProperty("Asset")
   Issue asset();
@@ -24,16 +29,7 @@ public interface AmmClawback extends Transaction {
   Issue asset2();
 
   @JsonProperty("Amount")
-  CurrencyAmount amount();
-
-  @JsonProperty("Holder")
-  Address holder();
-
-  @JsonProperty("Flags")
-  @Value.Default
-  default TransactionFlags flags() {
-    return TransactionFlags.EMPTY;
-  }
+  Optional<CurrencyAmount> amount();
 
   static ImmutableAmmClawback.Builder builder() {
     return ImmutableAmmClawback.builder();

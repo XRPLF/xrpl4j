@@ -846,7 +846,7 @@ public class SignatureUtilsTest {
 
   @Test
   void addSignatureToAmmClawback() {
-    AmmClawback ammCreate = AmmClawback.builder()
+    AmmClawback ammClawback = AmmClawback.builder()
         .account(sourcePublicKey.deriveAddress())
         .holder(sourcePublicKey.deriveAddress())
         .amount(
@@ -868,7 +868,7 @@ public class SignatureUtilsTest {
         .signingPublicKey(sourcePublicKey)
         .build();
 
-    addSignatureToTransactionHelper(ammCreate);
+    addSignatureToTransactionHelper(ammClawback);
   }
 
   @Test

@@ -646,7 +646,7 @@ public class AmmIT extends AbstractIT {
     return ammInfoResult;
   }
 
-  public void enableRippling(KeyPair issuerKeyPair, AccountInfoResult issuerAccount, FeeResult feeResult)
+  private void enableRippling(KeyPair issuerKeyPair, AccountInfoResult issuerAccount, FeeResult feeResult)
     throws JsonRpcClientErrorException, JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())

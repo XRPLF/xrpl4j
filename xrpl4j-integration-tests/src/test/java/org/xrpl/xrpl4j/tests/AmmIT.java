@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmClawback;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
@@ -286,6 +287,53 @@ public class AmmIT extends AbstractIT {
         .minus(withdraw.fee())
         .plus((XrpCurrencyAmount) withdraw.amount().get())
     );
+  }
+
+  @Test
+  void depositAndClawback() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    FeeResult feeResult = xrplClient.fee();
+    AmmInfoResult amm = createAmm(issuerKeyPair, feeResult);
+    KeyPair traderKeyPair = createRandomAccountEd25519();
+
+    AccountInfoResult traderAccount = scanForResult(
+        () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountInfoResult traderAccountAfterDeposit = depositXrp(
+        issuerKeyPair,
+        traderKeyPair,
+        traderAccount,
+        amm,
+        signatureService,
+        feeResult
+    );
+
+    AmmClawback withdraw = AmmClawback.builder()
+        .account(traderKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .holder(traderKeyPair.publicKey().deriveAddress())
+        .sequence(traderAccountAfterDeposit.accountData().sequence())
+        .lastLedgerSequence(
+            traderAccountAfterDeposit.ledgerCurrentIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue()
+        )
+        .signingPublicKey(traderKeyPair.publicKey())
+        .asset2(
+            Issue.builder()
+                .currency(xrpl4jCoin)
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .build()
+        )
+        .asset(Issue.XRP)
+        .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
+
+        .build();
+
+    SingleSignedTransaction<AmmClawback> signedWithdraw = signatureService.sign(traderKeyPair.privateKey(), withdraw);
+
+    SubmitResult<AmmClawback> voteSubmitResult = xrplClient.submit(signedWithdraw);
+
+    assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
   }
 
   private AccountInfoResult depositXrp(

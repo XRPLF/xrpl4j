@@ -336,7 +336,9 @@ public enum TransactionType {
    * is subject to change.</p>
    */
   @Beta
-  ORACLE_DELETE("OracleDelete");
+  ORACLE_DELETE("OracleDelete"),
+
+  AMM_CLAWBACK("AMMClawback");
 
   private final String value;
 

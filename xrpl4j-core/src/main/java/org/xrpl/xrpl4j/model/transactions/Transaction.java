@@ -90,6 +90,7 @@ public interface Transaction {
       .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
       .put(ImmutableOracleSet.class, TransactionType.ORACLE_SET)
       .put(ImmutableOracleDelete.class, TransactionType.ORACLE_DELETE)
+      .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .build();
 
   /**

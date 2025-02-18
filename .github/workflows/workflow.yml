@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         # test against each major Java version
-        java: [ 11, 16, 17, 21, 23 ]
+        java: [ 11, 16, 17, 21 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4

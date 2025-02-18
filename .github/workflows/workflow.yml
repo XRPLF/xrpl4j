@@ -4,26 +4,20 @@ name: xrpl4j-CI
 on:
   push:
   pull_request:
-    types: [assigned]
+    types: [ assigned ]
 jobs:
   build_java8:
     runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Java 8
       - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: 1.8
-      - name: Cache mvn dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-          restore-keys: ${{ env.cache-name }}-
+          distribution: 'adopt'
+          java-version: '1.8'
+          cache: 'maven'
       - name: Build
         run: mvn dependency:go-offline install
       - name: Upload to Codecov
@@ -36,12 +30,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Android
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
       - name: Cache mvn dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         env:
           cache-name: mvn-deps
         with:
@@ -56,44 +50,31 @@ jobs:
     strategy:
       matrix:
         # test against each major Java version
-        java: [ 9, 10, 11, 12, 13, 14, 15, 16, 17 ]
+        java: [ 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Java version
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
+          distribution: 'adopt'
           java-version: ${{ matrix.java }}
-      - name: Cache mvn dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-          restore-keys: ${{ env.cache-name }}-
+          cache: 'maven'
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
 
   build_open_jdk_non_us:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Adopt OpenJDK Hotspot 16
       - name: Set up OpenJDK 16
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          distribution: adopt
-          java-version: 16
-      - name: Cache mvn dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-          restore-keys: ${{ env.cache-name }}-
+          distribution: 'adopt'
+          java-version: 21
+          cache: 'maven'
       # Maven install with JVM locale = de_DE
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
@@ -102,20 +83,14 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Java 8
       - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: 1.8
-      - name: Cache mvn dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-          restore-keys: ${{ env.cache-name }}-
+          distribution: 'adopt'
+          java-version: '1.8'
+          cache: 'maven'
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseDevnet
 
@@ -123,39 +98,27 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Java 8
       - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: 1.8
-      - name: Cache mvn dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-          restore-keys: ${{ env.cache-name }}-
+          distribution: 'adopt'
+          java-version: '1.8'
+          cache: 'maven' # setup-java v4 includes maven caching
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseTestnet
   build_testnet_clio_its:
     runs-on: ubuntu-20.04
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Set up Java 8
       - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: 1.8
-      - name: Cache mvn dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: mvn-deps
-        with:
-          path: ~/.m2
-          key: ${{ env.cache-name }}-${{ hashFiles('pom.xml') }}
-          restore-keys: ${{ env.cache-name }}-
+          distribution: 'adopt'
+          java-version: '1.8'
+          cache: 'maven'
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseClioTestnet -DuseClioMainnet

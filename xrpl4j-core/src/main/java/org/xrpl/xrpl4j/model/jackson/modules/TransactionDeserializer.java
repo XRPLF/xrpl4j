@@ -22,7 +22,6 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -50,16 +49,16 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
     final ObjectMapper objectMapper = (ObjectMapper) jsonParser.getCodec();
     final ObjectNode objectNode = objectMapper.readTree(jsonParser);
 
-    final JsonNode transactionTypeJsonNode = objectNode.get("TransactionType");
-    final TransactionType transactionType = TransactionType.forValue(transactionTypeJsonNode.asText());
+    TransactionType transactionType = TransactionType.forValue(objectNode.get("TransactionType").asText());
     final Class<? extends Transaction> transactionTypeClass = Transaction.typeMap.inverse().get(transactionType);
 
-    // Remove the `Account` property from any incoming `UnlModify` JSON about to be deserialized. This is because the 
-    // JSON returned by the rippled/clio API v1 has a bug where the account value in `UnlModify` transactions is an 
-    // empty string. In this case, the Java value for the `Account` property is always set to ACCOUNT_ZERO via a default
-    // method, so this property is removed from incoming JSON before deserialization because it's not needed (the 
-    // default method handles population in Java) and if not removed, this field will end up in the `unknownFields`
-    // map of the ultimate Java object, which is incorrect.
+    // Fixes #590 by removing the `Account` property from any incoming `UnlModify` JSON about to be deserialized.
+    // This fixes #590 because the JSON returned by the rippled/clio API v1 has a bug where the account value in
+    // `UnlModify` transactions is an empty string. When this value is deserialized, an exception is thrown because
+    // the empty string value is not a valid `Address`. By removing the property from incoming JSON, the Java value
+    // for the `Account` property is always set to ACCOUNT_ZERO via a default method. One other side effect of this
+    // fix is that `Account` property will not be errantly added to `unknownFields` map of the ultimate Java object,
+    // which is incorrect.
     if (UnlModify.class.isAssignableFrom(transactionTypeClass)) {
       objectNode.remove("Account");
     }

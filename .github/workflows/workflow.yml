@@ -89,21 +89,6 @@ jobs:
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
 
-  build_jdk_temurin_mac:
-    runs-on: macos-latest
-    steps:
-      # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
-      # Set up Java 21
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-      - name: Build
-        run: mvn dependency:go-offline install
-
   build_android:
     runs-on: ubuntu-latest
     steps:

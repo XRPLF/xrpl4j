@@ -1,13 +1,12 @@
 name: xrpl4j-CI
 
-
 on:
   push:
   pull_request:
     types: [ assigned ]
 jobs:
-  build_java8:
-    runs-on: ubuntu-20.04
+  build_jdk_temurin_8:
+    runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
@@ -27,7 +26,7 @@ jobs:
           fail_ci_if_error: true
 
   build_android:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
@@ -44,11 +43,11 @@ jobs:
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -Pandroid
 
-  build_other_java:
-    runs-on: ubuntu-20.04
+  build_jdk_temurin_other:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        # test against each major Java version
+        # test against each major Java version (Java 8 built separately above for codecov upload)
         java: [ 11, 16, 17, 21 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
@@ -63,12 +62,12 @@ jobs:
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
 
-  build_open_jdk_non_us:
-    runs-on: ubuntu-20.04
+  build_jdk_temurin_non_us:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       # Set up Temurin 21
-      - name: Set up OpenJDK 21
+      - name: Set up Temurin v21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -79,7 +78,7 @@ jobs:
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
 
   build_devnet_its:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
@@ -94,7 +93,7 @@ jobs:
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseDevnet
 
   build_testnet_reporting_its:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
@@ -107,8 +106,9 @@ jobs:
           cache: 'maven' # setup-java v4 includes maven caching
       - name: Build
         run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseTestnet
+
   build_testnet_clio_its:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4

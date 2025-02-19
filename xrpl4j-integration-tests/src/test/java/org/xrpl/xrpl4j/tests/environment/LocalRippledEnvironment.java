@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests.environment;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,8 @@ import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Environment that runs a local rippled inside docker in standalone mode.
@@ -54,7 +56,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
   private static final RippledContainer rippledContainer = new RippledContainer().start();
 
   private final SignatureService<PrivateKey> signatureService = new BcSignatureService();
-  
+
   @Override
   public XrplClient getXrplClient() {
     return rippledContainer.getXrplClient();
@@ -71,7 +73,7 @@ public class LocalRippledEnvironment implements XrplEnvironment {
       );
     } catch (JsonRpcClientErrorException | JsonProcessingException e) {
       throw new RuntimeException("could not fund account", e);
-    } 
+    }
   }
 
   protected AccountInfoResult getCurrentAccountInfo(Address classicAddress) {
@@ -103,4 +105,22 @@ public class LocalRippledEnvironment implements XrplEnvironment {
       result.transactionResult().transaction());
   }
 
+  /**
+   * Method to accept next ledger ad hoc, only available in RippledContainer.java implementation.
+   */
+  @Override
+  public void acceptLedger() {
+    rippledContainer.acceptLedger();
+  }
+
+  @Override
+  public void startLedgerAcceptor(Duration acceptIntervalMillis) {
+    Objects.requireNonNull(acceptIntervalMillis);
+    rippledContainer.startLedgerAcceptor(acceptIntervalMillis);
+  }
+
+  @Override
+  public void stopLedgerAcceptor() {
+    rippledContainer.stopLedgerAcceptor();
+  }
 }

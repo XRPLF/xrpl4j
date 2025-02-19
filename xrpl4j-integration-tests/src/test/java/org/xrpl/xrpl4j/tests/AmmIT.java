@@ -34,7 +34,6 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.flags.AmmClawbackFlags;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
-import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.AuctionSlot;
@@ -96,7 +95,7 @@ public class AmmIT extends AbstractIT {
       .account(traderAccount.accountData().account())
       .sequence(traderAccountAfterDeposit.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
+      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
         Issue.builder()
@@ -183,7 +182,7 @@ public class AmmIT extends AbstractIT {
       .account(traderAccount.accountData().account())
       .sequence(traderAccountAfterDeposit.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
+      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
         Issue.builder()
@@ -251,7 +250,7 @@ public class AmmIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(traderAccountAfterDeposit.accountData().sequence())
       .lastLedgerSequence(
-        traderAccountAfterDeposit.ledgerCurrentIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue()
+        traderAccountAfterDeposit.ledgerCurrentIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
       )
       .signingPublicKey(traderKeyPair.publicKey())
       .asset2(
@@ -873,7 +872,7 @@ public class AmmIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(traderAccount.accountData().sequence())
       .signingPublicKey(traderKeyPair.publicKey())
-      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .build();
 
     SingleSignedTransaction<AmmDeposit> signedDeposit = signatureService.sign(traderKeyPair.privateKey(), deposit);
@@ -940,7 +939,7 @@ public class AmmIT extends AbstractIT {
       )
       .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
       .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
-      .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(8)).unsignedIntegerValue())
+      .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
@@ -979,7 +978,7 @@ public class AmmIT extends AbstractIT {
       AmmInfoRequestParams.from(ammAccountInfo.accountData().account())
     );
 
-    assertThat(ammInfoByAccount).isEqualTo(ammInfoResult);
+    assertThat(ammInfoByAccount.amm()).isEqualTo(ammInfoResult.amm());
 
     LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.amm(

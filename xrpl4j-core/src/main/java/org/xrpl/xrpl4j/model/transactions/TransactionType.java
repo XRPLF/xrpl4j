@@ -338,7 +338,11 @@ public enum TransactionType {
   @Beta
   ORACLE_DELETE("OracleDelete"),
 
-  AMM_CLAWBACK("AMMClawback");
+  AMM_CLAWBACK("AMMClawback"),
+  /**
+   * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
+   */
+  UNKNOWN("Unknown");
 
   private final String value;
 
@@ -360,7 +364,7 @@ public enum TransactionType {
       }
     }
 
-    throw new IllegalArgumentException("No matching TransactionType enum value for String value " + value);
+    return UNKNOWN;
   }
 
   /**

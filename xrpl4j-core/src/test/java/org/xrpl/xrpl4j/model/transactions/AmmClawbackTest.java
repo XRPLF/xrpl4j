@@ -6,7 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.flags.AmmClawbackTransactionFlags;
+import org.xrpl.xrpl4j.model.flags.AmmClawbackFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 
@@ -75,7 +75,7 @@ public class AmmClawbackTest extends AbstractJsonTest {
         .signingPublicKey(
             PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
         )
-        .flags(TransactionFlags.UNSET)
+        .flags((AmmClawbackFlags) AmmClawbackFlags.UNSET)
         .build();
 
     String json = "{\n" +
@@ -98,8 +98,6 @@ public class AmmClawbackTest extends AbstractJsonTest {
 
   @Test
   void testJsonWithNonZeroFlags() throws JSONException, JsonProcessingException {
-    AmmClawbackTransactionFlags.Builder builder = new AmmClawbackTransactionFlags.Builder();
-
     AmmClawback ammClawback = AmmClawback.builder()
         .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
         .amount(
@@ -115,7 +113,7 @@ public class AmmClawbackTest extends AbstractJsonTest {
         .signingPublicKey(
             PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
         )
-        .flags(builder.tfClawTwoAssets().build())
+        .flags(AmmClawbackFlags.CLAW_TWO_ASSETS)
         .build();
 
     String json = "{\n" +

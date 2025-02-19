@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 import java.util.Optional;
 
 /**
- * Object mapping for the {@code AMMClawback} transaction.
+ * An {@link AmmClawback} transaction claws back tokens from a holder that has funds in an AMM pool.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmClawback.class)
@@ -20,25 +20,55 @@ import java.util.Optional;
 @Beta
 public interface AmmClawback extends Transaction {
 
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableAmmClawback.Builder}.
+   */
+  static ImmutableAmmClawback.Builder builder() {
+    return ImmutableAmmClawback.builder();
+  }
+
+  /**
+   * The address of the holder that has funds deposited in the AMM pool.
+   *
+   * @return An {@link Address}.
+   */
   @JsonProperty("Holder")
   Address holder();
 
+  /**
+   * The asset in the AMM pool that the issuer is looking to claw back.
+   *
+   * @return An {@link Issue}.
+   */
   @JsonProperty("Asset")
   Issue asset();
 
+  /**
+   * Other asset in the AMM pool that the issuer is looking to claw back.
+   *
+   * @return An {@link Issue}.
+   */
   @JsonProperty("Asset2")
   Issue asset2();
 
+  /**
+   * Optional field that specifies the maximum amount to clawback from the AMM pool.
+   *
+   * @return An {@link CurrencyAmount}.
+   */
   @JsonProperty("Amount")
   Optional<CurrencyAmount> amount();
 
+  /**
+   * Set of {@link TransactionFlags} for {@link AmmClawback}, with the only option being tfClawTwoAssets.
+   *
+   * @return {@link AmmClawbackFlags#UNSET} if field was not set, otherwise returns with the set flag.
+   */
   @JsonProperty("Flags")
   @Value.Default
   default AmmClawbackFlags flags() {
     return AmmClawbackFlags.UNSET;
-  }
-
-  static ImmutableAmmClawback.Builder builder() {
-    return ImmutableAmmClawback.builder();
   }
 }

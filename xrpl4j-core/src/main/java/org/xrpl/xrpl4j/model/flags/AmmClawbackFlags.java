@@ -30,6 +30,10 @@ public class AmmClawbackFlags extends TransactionFlags {
    * Constant {@link AmmDepositFlags} for the {@code tfClawTwoAssets} flag.
    */
   public static final AmmClawbackFlags CLAW_TWO_ASSETS = new AmmClawbackFlags(0x00000001);
+
+  /**
+   * Constant {@link AmmDepositFlags} for an unset value for "flags".
+   */
   public static final AmmClawbackFlags UNSET = new AmmClawbackFlags(0L);
 
   private AmmClawbackFlags(long value) {

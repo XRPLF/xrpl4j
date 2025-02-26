@@ -69,6 +69,7 @@ public class AmmIT extends AbstractIT {
   }
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
+  String usd = "USD";
 
   @Test
   void depositAndVoteOnTradingFee() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -316,15 +317,14 @@ public class AmmIT extends AbstractIT {
     enableFlag(issuerKeyPair, issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE),
         feeResult, AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK);
 
-    // create Trustline from issuer to trader for currency TST and define two currencies
-    String testCurrency = "TST";
+    // create Trustline from issuer to trader for currency USD and define two currencies
     TrustSet trustSet = TrustSet.builder()
         .account(traderKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
         .sequence(traderAccount.accountData().sequence())
         .signingPublicKey(traderKeyPair.publicKey())
         .limitAmount(IssuedCurrencyAmount.builder()
-            .currency(testCurrency)
+            .currency(usd)
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .value("1000")
             .build()
@@ -337,7 +337,7 @@ public class AmmIT extends AbstractIT {
     SubmitResult<TrustSet> trustlineSubmitResult = xrplClient.submit(signedTrustline);
     assertThat(trustlineSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // create Trustline from issuer to trader for ZFT
+    // create Trustline from issuer to trader for xrpl4j coin
     TrustSet trustSet2 = TrustSet.builder()
         .account(traderKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -358,8 +358,8 @@ public class AmmIT extends AbstractIT {
     SubmitResult<TrustSet> trustlineSubmitResult2 = xrplClient.submit(signedTrustline2);
     assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // send payment of ZFT to trader wallet from issuer
-    Payment paymentZft = Payment.builder()
+    // send payment of xrpl4jcoin to trader wallet from issuer
+    Payment paymentXrpl4jCoin = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -372,17 +372,17 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentZft =
-        signatureService.sign(issuerKeyPair.privateKey(), paymentZft);
-    SubmitResult<Payment> paymentZftSubmitResult = xrplClient.submit(signedPaymentZft);
-    assertThat(paymentZftSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentXrpl4jCoin =
+        signatureService.sign(issuerKeyPair.privateKey(), paymentXrpl4jCoin);
+    SubmitResult<Payment> paymentXrpl4jCoinSubmitResult = xrplClient.submit(signedPaymentXrpl4jCoin);
+    assertThat(paymentXrpl4jCoinSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // send payment of TST to trader wallet from issuer
-    Payment paymentTst = Payment.builder()
+    // send payment of USD to trader wallet from issuer
+    Payment paymentUsd = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
-            .currency(testCurrency)
+            .currency(usd)
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .value("1000")
             .build())
@@ -391,9 +391,9 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentTst = signatureService.sign(issuerKeyPair.privateKey(), paymentTst);
-    SubmitResult<Payment> paymentTstSubmitResult = xrplClient.submit(signedPaymentTst);
-    assertThat(paymentTstSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentUsd = signatureService.sign(issuerKeyPair.privateKey(), paymentUsd);
+    SubmitResult<Payment> paymentUsdSubmitResult = xrplClient.submit(signedPaymentUsd);
+    assertThat(paymentUsdSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create AMM from issuer account
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
@@ -416,7 +416,7 @@ public class AmmIT extends AbstractIT {
         .amount2(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("250")
                 .build()
         )
@@ -432,7 +432,7 @@ public class AmmIT extends AbstractIT {
     // create variables for issued currencies
     Issue testCurrencyIssue = Issue.builder()
         .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .currency(testCurrency)
+        .currency(usd)
         .build();
     Issue xrpl4jCoinIssue = Issue.builder()
         .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -449,7 +449,7 @@ public class AmmIT extends AbstractIT {
         .amount(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("10")
                 .build()
         )
@@ -501,15 +501,14 @@ public class AmmIT extends AbstractIT {
     enableFlag(issuerKeyPair, issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE),
         feeResult, AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK);
 
-    // create Trustline from issuer to trader for currency TST and define two currencies
-    String testCurrency = "TST";
+    // create Trustline from issuer to trader for currency USD and define two currencies
     TrustSet trustSet = TrustSet.builder()
         .account(traderKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
         .sequence(traderAccount.accountData().sequence())
         .signingPublicKey(traderKeyPair.publicKey())
         .limitAmount(IssuedCurrencyAmount.builder()
-            .currency(testCurrency)
+            .currency(usd)
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .value("1000")
             .build()
@@ -522,7 +521,7 @@ public class AmmIT extends AbstractIT {
     SubmitResult<TrustSet> trustlineSubmitResult = xrplClient.submit(signedTrustline);
     assertThat(trustlineSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // create Trustline from issuer to trader for ZFT
+    // create Trustline from issuer to trader for xrpl4jcoin
     TrustSet trustSet2 = TrustSet.builder()
         .account(traderKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -543,8 +542,8 @@ public class AmmIT extends AbstractIT {
     SubmitResult<TrustSet> trustlineSubmitResult2 = xrplClient.submit(signedTrustline2);
     assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // send payment of ZFT to trader wallet from issuer
-    Payment paymentZft = Payment.builder()
+    // send payment of xrpl4jcoin to trader wallet from issuer
+    Payment paymentXrpl4jCoin = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -557,17 +556,17 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentZft =
-        signatureService.sign(issuerKeyPair.privateKey(), paymentZft);
-    SubmitResult<Payment> paymentZftSubmitResult = xrplClient.submit(signedPaymentZft);
-    assertThat(paymentZftSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentXrpl4jCoin =
+        signatureService.sign(issuerKeyPair.privateKey(), paymentXrpl4jCoin);
+    SubmitResult<Payment> paymentXrpl4jCoinSubmitResult = xrplClient.submit(signedPaymentXrpl4jCoin);
+    assertThat(paymentXrpl4jCoinSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // send payment of TST to trader wallet from issuer
-    Payment paymentTst = Payment.builder()
+    // send payment of USD to trader wallet from issuer
+    Payment paymentUsd = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
-            .currency(testCurrency)
+            .currency(usd)
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .value("1000")
             .build())
@@ -576,9 +575,9 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentTst = signatureService.sign(issuerKeyPair.privateKey(), paymentTst);
-    SubmitResult<Payment> paymentTstSubmitResult = xrplClient.submit(signedPaymentTst);
-    assertThat(paymentTstSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentUsd = signatureService.sign(issuerKeyPair.privateKey(), paymentUsd);
+    SubmitResult<Payment> paymentUsdSubmitResult = xrplClient.submit(signedPaymentUsd);
+    assertThat(paymentUsdSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create AMM from issuer account
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
@@ -601,7 +600,7 @@ public class AmmIT extends AbstractIT {
         .amount2(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("250")
                 .build()
         )
@@ -617,7 +616,7 @@ public class AmmIT extends AbstractIT {
     // create variables for issued currencies
     Issue testCurrencyIssue = Issue.builder()
         .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .currency(testCurrency)
+        .currency(usd)
         .build();
     Issue xrpl4jCoinIssue = Issue.builder()
         .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -634,7 +633,7 @@ public class AmmIT extends AbstractIT {
         .amount(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("10")
                 .build()
         )
@@ -658,7 +657,7 @@ public class AmmIT extends AbstractIT {
         .amount(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("5")
                 .build()
         )
@@ -693,15 +692,14 @@ public class AmmIT extends AbstractIT {
     enableFlag(issuerKeyPair, issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE),
         feeResult, AccountSetFlag.ALLOW_TRUSTLINE_CLAWBACK);
 
-    // create Trustline from issuer to trader for currency TST
-    String testCurrency = "TST";
+    // create Trustline from issuer to trader for currency USD
     TrustSet trustSet = TrustSet.builder()
         .account(traderKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
         .sequence(traderAccount.accountData().sequence())
         .signingPublicKey(traderKeyPair.publicKey())
         .limitAmount(IssuedCurrencyAmount.builder()
-            .currency(testCurrency)
+            .currency(usd)
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .value("1000")
             .build()
@@ -714,7 +712,7 @@ public class AmmIT extends AbstractIT {
     SubmitResult<TrustSet> trustlineSubmitResult = xrplClient.submit(signedTrustline);
     assertThat(trustlineSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // create Trustline from issuer to trader for ZFT
+    // create Trustline from issuer to trader for xrpl4jcoin
     TrustSet trustSet2 = TrustSet.builder()
         .account(traderKeyPair.publicKey().deriveAddress())
         .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -735,8 +733,8 @@ public class AmmIT extends AbstractIT {
     SubmitResult<TrustSet> trustlineSubmitResult2 = xrplClient.submit(signedTrustline2);
     assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // send payment of ZFT to trader wallet from issuer
-    Payment paymentZft = Payment.builder()
+    // send payment of xrpl4jCoin to trader wallet from issuer
+    Payment paymentXrpl4jCoin = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -749,17 +747,17 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentZft =
-        signatureService.sign(issuerKeyPair.privateKey(), paymentZft);
-    SubmitResult<Payment> paymentZftSubmitResult = xrplClient.submit(signedPaymentZft);
-    assertThat(paymentZftSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentXrpl4jCoin =
+        signatureService.sign(issuerKeyPair.privateKey(), paymentXrpl4jCoin);
+    SubmitResult<Payment> paymentXrpl4jCoinSubmitResult = xrplClient.submit(signedPaymentXrpl4jCoin);
+    assertThat(paymentXrpl4jCoinSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
-    // send payment of TST to trader wallet from issuer
-    Payment paymentTst = Payment.builder()
+    // send payment of USD to trader wallet from issuer
+    Payment paymentUsd = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
-            .currency(testCurrency)
+            .currency(usd)
             .issuer(issuerKeyPair.publicKey().deriveAddress())
             .value("1000")
             .build())
@@ -768,9 +766,9 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentTst = signatureService.sign(issuerKeyPair.privateKey(), paymentTst);
-    SubmitResult<Payment> paymentTstSubmitResult = xrplClient.submit(signedPaymentTst);
-    assertThat(paymentTstSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentUsd = signatureService.sign(issuerKeyPair.privateKey(), paymentUsd);
+    SubmitResult<Payment> paymentUsdSubmitResult = xrplClient.submit(signedPaymentUsd);
+    assertThat(paymentUsdSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create AMM from issuer account
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
@@ -793,7 +791,7 @@ public class AmmIT extends AbstractIT {
         .amount2(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("250")
                 .build()
         )
@@ -809,7 +807,7 @@ public class AmmIT extends AbstractIT {
     // create variables for issued currencies
     Issue testCurrencyIssue = Issue.builder()
         .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .currency(testCurrency)
+        .currency(usd)
         .build();
     Issue xrpl4jCoinIssue = Issue.builder()
         .issuer(issuerKeyPair.publicKey().deriveAddress())
@@ -826,7 +824,7 @@ public class AmmIT extends AbstractIT {
         .amount(
             IssuedCurrencyAmount.builder()
                 .issuer(issuerKeyPair.publicKey().deriveAddress())
-                .currency(testCurrency)
+                .currency(usd)
                 .value("10")
                 .build()
         )

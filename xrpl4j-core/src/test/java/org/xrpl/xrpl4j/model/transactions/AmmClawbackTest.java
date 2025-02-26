@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 public class AmmClawbackTest extends AbstractJsonTest {
 
   String usd = "USD";
+
   @Test
   void testJson() throws JSONException, JsonProcessingException {
     AmmClawback ammClawback = AmmClawback.builder()

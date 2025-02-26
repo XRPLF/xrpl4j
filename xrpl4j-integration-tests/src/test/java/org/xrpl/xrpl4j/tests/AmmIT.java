@@ -65,7 +65,7 @@ public class AmmIT extends AbstractIT {
 
   static boolean shouldNotRun() {
     return System.getProperty("useTestnet") != null ||
-      System.getProperty("useClioTestnet") != null;
+        System.getProperty("useClioTestnet") != null;
   }
 
   String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
@@ -78,34 +78,34 @@ public class AmmIT extends AbstractIT {
     KeyPair traderKeyPair = createRandomAccountEd25519();
 
     AccountInfoResult traderAccount = scanForResult(
-      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
+        () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
 
     AccountInfoResult traderAccountAfterDeposit = depositXrp(
-      issuerKeyPair,
-      traderKeyPair,
-      traderAccount,
-      amm,
-      signatureService,
-      feeResult
+        issuerKeyPair,
+        traderKeyPair,
+        traderAccount,
+        amm,
+        signatureService,
+        feeResult
     );
 
     TradingFee newTradingFee = TradingFee.ofPercent(BigDecimal.valueOf(0.24));
     AmmVote ammVote = AmmVote.builder()
-      .account(traderAccount.accountData().account())
-      .sequence(traderAccountAfterDeposit.accountData().sequence())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
-      .signingPublicKey(traderKeyPair.publicKey())
-      .asset2(
-        Issue.builder()
-          .currency(xrpl4jCoin)
-          .issuer(issuerKeyPair.publicKey().deriveAddress())
-          .build()
-      )
-      .asset(Issue.XRP)
-      .tradingFee(newTradingFee)
-      .build();
+        .account(traderAccount.accountData().account())
+        .sequence(traderAccountAfterDeposit.accountData().sequence())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+        .signingPublicKey(traderKeyPair.publicKey())
+        .asset2(
+            Issue.builder()
+                .currency(xrpl4jCoin)
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .build()
+        )
+        .asset(Issue.XRP)
+        .tradingFee(newTradingFee)
+        .build();
 
     SingleSignedTransaction<AmmVote> signedVote = signatureService.sign(traderKeyPair.privateKey(), ammVote);
 
@@ -113,44 +113,44 @@ public class AmmIT extends AbstractIT {
     assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     scanForFinality(
-      signedVote.hash(),
-      traderAccount.ledgerIndexSafe(),
-      ammVote.lastLedgerSequence().get(),
-      ammVote.sequence(),
-      traderKeyPair.publicKey().deriveAddress()
+        signedVote.hash(),
+        traderAccount.ledgerIndexSafe(),
+        ammVote.lastLedgerSequence().get(),
+        ammVote.sequence(),
+        traderKeyPair.publicKey().deriveAddress()
     );
 
     BigDecimal issuerLpTokenBalance = new BigDecimal(xrplClient.accountLines(
-        AccountLinesRequestParams.builder()
-          .account(issuerKeyPair.publicKey().deriveAddress())
-          .peer(amm.amm().account())
-          .ledgerSpecifier(LedgerSpecifier.CURRENT)
-          .build()
-      ).lines().stream()
-      .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
-      .findFirst()
-      .orElseThrow(RuntimeException::new)
-      .balance());
+            AccountLinesRequestParams.builder()
+                .account(issuerKeyPair.publicKey().deriveAddress())
+                .peer(amm.amm().account())
+                .ledgerSpecifier(LedgerSpecifier.CURRENT)
+                .build()
+        ).lines().stream()
+        .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
+        .findFirst()
+        .orElseThrow(RuntimeException::new)
+        .balance());
 
     BigDecimal traderLpTokenBalance = new BigDecimal(xrplClient.accountLines(
-        AccountLinesRequestParams.builder()
-          .account(traderKeyPair.publicKey().deriveAddress())
-          .peer(amm.amm().account())
-          .ledgerSpecifier(LedgerSpecifier.CURRENT)
-          .build()
-      ).lines().stream()
-      .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
-      .findFirst()
-      .orElseThrow(RuntimeException::new)
-      .balance());
+            AccountLinesRequestParams.builder()
+                .account(traderKeyPair.publicKey().deriveAddress())
+                .peer(amm.amm().account())
+                .ledgerSpecifier(LedgerSpecifier.CURRENT)
+                .build()
+        ).lines().stream()
+        .filter(trustLine -> trustLine.currency().equals(amm.amm().lpToken().currency()))
+        .findFirst()
+        .orElseThrow(RuntimeException::new)
+        .balance());
 
     // Expected trading fee is the weighted average of each vote, where the weight is number of LP tokens held
     // by each voter
     TradingFee expectedTradingFee = TradingFee.ofPercent(
-      issuerLpTokenBalance.multiply(amm.amm().tradingFee().bigDecimalValue()).add(
-          traderLpTokenBalance.multiply(newTradingFee.bigDecimalValue())
-        ).divide(issuerLpTokenBalance.add(traderLpTokenBalance), RoundingMode.HALF_UP)
-        .setScale(3, RoundingMode.HALF_UP)
+        issuerLpTokenBalance.multiply(amm.amm().tradingFee().bigDecimalValue()).add(
+                traderLpTokenBalance.multiply(newTradingFee.bigDecimalValue())
+            ).divide(issuerLpTokenBalance.add(traderLpTokenBalance), RoundingMode.HALF_UP)
+            .setScale(3, RoundingMode.HALF_UP)
     );
 
     AmmInfoResult ammAfterVote = getAmmInfo(issuerKeyPair);
@@ -166,41 +166,41 @@ public class AmmIT extends AbstractIT {
     KeyPair authAccount1 = createRandomAccountEd25519();
 
     AccountInfoResult traderAccount = scanForResult(
-      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
+        () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
 
     AccountInfoResult traderAccountAfterDeposit = depositXrp(
-      issuerKeyPair,
-      traderKeyPair,
-      traderAccount,
-      amm,
-      signatureService,
-      feeResult
+        issuerKeyPair,
+        traderKeyPair,
+        traderAccount,
+        amm,
+        signatureService,
+        feeResult
     );
 
     AmmBid bid = AmmBid.builder()
-      .account(traderAccount.accountData().account())
-      .sequence(traderAccountAfterDeposit.accountData().sequence())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
-      .signingPublicKey(traderKeyPair.publicKey())
-      .asset2(
-        Issue.builder()
-          .currency(xrpl4jCoin)
-          .issuer(issuerKeyPair.publicKey().deriveAddress())
-          .build()
-      )
-      .asset(Issue.XRP)
-      .addAuthAccounts(
-        AuthAccountWrapper.of(AuthAccount.of(authAccount1.publicKey().deriveAddress()))
-      )
-      .bidMin(
-        IssuedCurrencyAmount.builder()
-          .from(amm.amm().lpToken())
-          .value("100")
-          .build()
-      )
-      .build();
+        .account(traderAccount.accountData().account())
+        .sequence(traderAccountAfterDeposit.accountData().sequence())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+        .signingPublicKey(traderKeyPair.publicKey())
+        .asset2(
+            Issue.builder()
+                .currency(xrpl4jCoin)
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .build()
+        )
+        .asset(Issue.XRP)
+        .addAuthAccounts(
+            AuthAccountWrapper.of(AuthAccount.of(authAccount1.publicKey().deriveAddress()))
+        )
+        .bidMin(
+            IssuedCurrencyAmount.builder()
+                .from(amm.amm().lpToken())
+                .value("100")
+                .build()
+        )
+        .build();
 
     SingleSignedTransaction<AmmBid> signedBid = signatureService.sign(traderKeyPair.privateKey(), bid);
 
@@ -208,11 +208,11 @@ public class AmmIT extends AbstractIT {
     assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     scanForFinality(
-      signedBid.hash(),
-      traderAccount.ledgerIndexSafe(),
-      bid.lastLedgerSequence().get(),
-      bid.sequence(),
-      traderKeyPair.publicKey().deriveAddress()
+        signedBid.hash(),
+        traderAccount.ledgerIndexSafe(),
+        bid.lastLedgerSequence().get(),
+        bid.sequence(),
+        traderKeyPair.publicKey().deriveAddress()
     );
 
     AmmInfoResult ammAfterBid = getAmmInfo(issuerKeyPair);
@@ -221,7 +221,7 @@ public class AmmIT extends AbstractIT {
     AmmInfoAuctionSlot auctionSlot = ammAfterBid.amm().auctionSlot().get();
     assertThat(auctionSlot.account()).isEqualTo(traderAccount.accountData().account());
     assertThat(auctionSlot.authAccounts()).asList().extracting("account")
-      .containsExactly(authAccount1.publicKey().deriveAddress());
+        .containsExactly(authAccount1.publicKey().deriveAddress());
   }
 
   @Test
@@ -232,37 +232,39 @@ public class AmmIT extends AbstractIT {
     KeyPair traderKeyPair = createRandomAccountEd25519();
 
     AccountInfoResult traderAccount = scanForResult(
-      () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
+        () -> this.getValidatedAccountInfo(traderKeyPair.publicKey().deriveAddress())
     );
 
     AccountInfoResult traderAccountAfterDeposit = depositXrp(
-      issuerKeyPair,
-      traderKeyPair,
-      traderAccount,
-      amm,
-      signatureService,
-      feeResult
+        issuerKeyPair,
+        traderKeyPair,
+        traderAccount,
+        amm,
+        signatureService,
+        feeResult
     );
 
     AmmInfoResult ammInfoAfterDeposit = getAmmInfo(issuerKeyPair);
     AmmWithdraw withdraw = AmmWithdraw.builder()
-      .account(traderKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .sequence(traderAccountAfterDeposit.accountData().sequence())
-      .lastLedgerSequence(
-        traderAccountAfterDeposit.ledgerCurrentIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
-      )
-      .signingPublicKey(traderKeyPair.publicKey())
-      .asset2(
-        Issue.builder()
-          .currency(xrpl4jCoin)
-          .issuer(issuerKeyPair.publicKey().deriveAddress())
-          .build()
-      )
-      .asset(Issue.XRP)
-      .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
-      .flags(AmmWithdrawFlags.SINGLE_ASSET)
-      .build();
+        .account(traderKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(traderAccountAfterDeposit.accountData().sequence())
+        .lastLedgerSequence(
+            traderAccountAfterDeposit.ledgerCurrentIndexSafe()
+                .plus(UnsignedInteger.valueOf(4000))
+                .unsignedIntegerValue()
+        )
+        .signingPublicKey(traderKeyPair.publicKey())
+        .asset2(
+            Issue.builder()
+                .currency(xrpl4jCoin)
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .build()
+        )
+        .asset(Issue.XRP)
+        .amount(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(9)))
+        .flags(AmmWithdrawFlags.SINGLE_ASSET)
+        .build();
 
     SingleSignedTransaction<AmmWithdraw> signedWithdraw = signatureService.sign(traderKeyPair.privateKey(), withdraw);
 
@@ -270,26 +272,26 @@ public class AmmIT extends AbstractIT {
     assertThat(voteSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     scanForFinality(
-      signedWithdraw.hash(),
-      traderAccount.ledgerIndexSafe(),
-      withdraw.lastLedgerSequence().get(),
-      withdraw.sequence(),
-      traderKeyPair.publicKey().deriveAddress()
+        signedWithdraw.hash(),
+        traderAccount.ledgerIndexSafe(),
+        withdraw.lastLedgerSequence().get(),
+        withdraw.sequence(),
+        traderKeyPair.publicKey().deriveAddress()
     );
 
     AmmInfoResult ammAfterWithdraw = getAmmInfo(issuerKeyPair);
     assertThat(ammAfterWithdraw.amm().amount()).isInstanceOf(XrpCurrencyAmount.class)
-      .isEqualTo(((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount())
-        .minus((XrpCurrencyAmount) withdraw.amount().get()));
+        .isEqualTo(((XrpCurrencyAmount) ammInfoAfterDeposit.amm().amount())
+            .minus((XrpCurrencyAmount) withdraw.amount().get()));
 
     AccountInfoResult traderAccountAfterWithdraw = xrplClient.accountInfo(
-      AccountInfoRequestParams.of(traderKeyPair.publicKey().deriveAddress())
+        AccountInfoRequestParams.of(traderKeyPair.publicKey().deriveAddress())
     );
 
     assertThat(traderAccountAfterWithdraw.accountData().balance()).isEqualTo(
-      traderAccountAfterDeposit.accountData().balance()
-        .minus(withdraw.fee())
-        .plus((XrpCurrencyAmount) withdraw.amount().get())
+        traderAccountAfterDeposit.accountData().balance()
+            .minus(withdraw.fee())
+            .plus((XrpCurrencyAmount) withdraw.amount().get())
     );
   }
 
@@ -357,7 +359,7 @@ public class AmmIT extends AbstractIT {
     assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // send payment of ZFT to trader wallet from issuer
-    Payment paymentZFT = Payment.builder()
+    Payment paymentZft = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -370,13 +372,13 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentZFT =
-        signatureService.sign(issuerKeyPair.privateKey(), paymentZFT);
-    SubmitResult<Payment> paymentZFTSubmitResult = xrplClient.submit(signedPaymentZFT);
-    assertThat(paymentZFTSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentZft =
+        signatureService.sign(issuerKeyPair.privateKey(), paymentZft);
+    SubmitResult<Payment> paymentZftSubmitResult = xrplClient.submit(signedPaymentZft);
+    assertThat(paymentZftSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // send payment of TST to trader wallet from issuer
-    Payment paymentTST = Payment.builder()
+    Payment paymentTst = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -389,9 +391,9 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentTST = signatureService.sign(issuerKeyPair.privateKey(), paymentTST);
-    SubmitResult<Payment> paymentTSTSubmitResult = xrplClient.submit(signedPaymentTST);
-    assertThat(paymentTSTSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentTst = signatureService.sign(issuerKeyPair.privateKey(), paymentTst);
+    SubmitResult<Payment> paymentTstSubmitResult = xrplClient.submit(signedPaymentTst);
+    assertThat(paymentTstSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create AMM from issuer account
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
@@ -455,7 +457,8 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(traderKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<AmmDeposit> signedAmmDeposit = signatureService.sign(traderKeyPair.privateKey(), ammDeposit);
+    SingleSignedTransaction<AmmDeposit> signedAmmDeposit =
+        signatureService.sign(traderKeyPair.privateKey(), ammDeposit);
     SubmitResult<AmmDeposit> ammDepositResult = xrplClient.submit(signedAmmDeposit);
     assertThat(ammDepositResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
@@ -471,7 +474,8 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<AmmClawback> signedAmmClawback = signatureService.sign(issuerKeyPair.privateKey(), ammClawback);
+    SingleSignedTransaction<AmmClawback> signedAmmClawback =
+        signatureService.sign(issuerKeyPair.privateKey(), ammClawback);
     SubmitResult<AmmClawback> ammClawbackResult = xrplClient.submit(signedAmmClawback);
     assertThat(ammClawbackResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
   }
@@ -540,7 +544,7 @@ public class AmmIT extends AbstractIT {
     assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // send payment of ZFT to trader wallet from issuer
-    Payment paymentZFT = Payment.builder()
+    Payment paymentZft = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -553,13 +557,13 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentZFT =
-        signatureService.sign(issuerKeyPair.privateKey(), paymentZFT);
-    SubmitResult<Payment> paymentZFTSubmitResult = xrplClient.submit(signedPaymentZFT);
-    assertThat(paymentZFTSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentZft =
+        signatureService.sign(issuerKeyPair.privateKey(), paymentZft);
+    SubmitResult<Payment> paymentZftSubmitResult = xrplClient.submit(signedPaymentZft);
+    assertThat(paymentZftSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // send payment of TST to trader wallet from issuer
-    Payment paymentTST = Payment.builder()
+    Payment paymentTst = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -572,9 +576,9 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentTST = signatureService.sign(issuerKeyPair.privateKey(), paymentTST);
-    SubmitResult<Payment> paymentTSTSubmitResult = xrplClient.submit(signedPaymentTST);
-    assertThat(paymentTSTSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentTst = signatureService.sign(issuerKeyPair.privateKey(), paymentTst);
+    SubmitResult<Payment> paymentTstSubmitResult = xrplClient.submit(signedPaymentTst);
+    assertThat(paymentTstSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create AMM from issuer account
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
@@ -638,7 +642,8 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(traderKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<AmmDeposit> signedAmmDeposit = signatureService.sign(traderKeyPair.privateKey(), ammDeposit);
+    SingleSignedTransaction<AmmDeposit> signedAmmDeposit =
+        signatureService.sign(traderKeyPair.privateKey(), ammDeposit);
     SubmitResult<AmmDeposit> ammDepositResult = xrplClient.submit(signedAmmDeposit);
     assertThat(ammDepositResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
@@ -661,7 +666,8 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<AmmClawback> signedAmmClawback = signatureService.sign(issuerKeyPair.privateKey(), ammClawback);
+    SingleSignedTransaction<AmmClawback> signedAmmClawback =
+        signatureService.sign(issuerKeyPair.privateKey(), ammClawback);
     SubmitResult<AmmClawback> ammClawbackResult = xrplClient.submit(signedAmmClawback);
     assertThat(ammClawbackResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
   }
@@ -730,7 +736,7 @@ public class AmmIT extends AbstractIT {
     assertThat(trustlineSubmitResult2.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // send payment of ZFT to trader wallet from issuer
-    Payment paymentZFT = Payment.builder()
+    Payment paymentZft = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -743,13 +749,13 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentZFT =
-        signatureService.sign(issuerKeyPair.privateKey(), paymentZFT);
-    SubmitResult<Payment> paymentZFTSubmitResult = xrplClient.submit(signedPaymentZFT);
-    assertThat(paymentZFTSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentZft =
+        signatureService.sign(issuerKeyPair.privateKey(), paymentZft);
+    SubmitResult<Payment> paymentZftSubmitResult = xrplClient.submit(signedPaymentZft);
+    assertThat(paymentZftSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // send payment of TST to trader wallet from issuer
-    Payment paymentTST = Payment.builder()
+    Payment paymentTst = Payment.builder()
         .account(issuerKeyPair.publicKey().deriveAddress())
         .destination(traderKeyPair.publicKey().deriveAddress())
         .amount(IssuedCurrencyAmount.builder()
@@ -762,9 +768,9 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(issuerKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<Payment> signedPaymentTST = signatureService.sign(issuerKeyPair.privateKey(), paymentTST);
-    SubmitResult<Payment> paymentTSTSubmitResult = xrplClient.submit(signedPaymentTST);
-    assertThat(paymentTSTSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
+    SingleSignedTransaction<Payment> signedPaymentTst = signatureService.sign(issuerKeyPair.privateKey(), paymentTst);
+    SubmitResult<Payment> paymentTstSubmitResult = xrplClient.submit(signedPaymentTst);
+    assertThat(paymentTstSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     // create AMM from issuer account
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
@@ -828,7 +834,8 @@ public class AmmIT extends AbstractIT {
         .signingPublicKey(traderKeyPair.publicKey())
         .build();
 
-    SingleSignedTransaction<AmmDeposit> signedAmmDeposit = signatureService.sign(traderKeyPair.privateKey(), ammDeposit);
+    SingleSignedTransaction<AmmDeposit> signedAmmDeposit =
+        signatureService.sign(traderKeyPair.privateKey(), ammDeposit);
     SubmitResult<AmmDeposit> ammDepositResult = xrplClient.submit(signedAmmDeposit);
     assertThat(ammDepositResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
@@ -844,62 +851,63 @@ public class AmmIT extends AbstractIT {
         .flags(AmmClawbackFlags.UNSET)
         .build();
 
-    SingleSignedTransaction<AmmClawback> signedAmmClawback = signatureService.sign(issuerKeyPair.privateKey(), ammClawback);
+    SingleSignedTransaction<AmmClawback> signedAmmClawback =
+        signatureService.sign(issuerKeyPair.privateKey(), ammClawback);
     SubmitResult<AmmClawback> ammClawbackResult = xrplClient.submit(signedAmmClawback);
     assertThat(ammClawbackResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
   }
 
   private AccountInfoResult depositXrp(
-    KeyPair issuerKeyPair,
-    KeyPair traderKeyPair,
-    AccountInfoResult traderAccount,
-    AmmInfoResult amm,
-    SignatureService<PrivateKey> signatureService,
-    FeeResult feeResult
+      KeyPair issuerKeyPair,
+      KeyPair traderKeyPair,
+      AccountInfoResult traderAccount,
+      AmmInfoResult amm,
+      SignatureService<PrivateKey> signatureService,
+      FeeResult feeResult
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     XrpCurrencyAmount depositAmount = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10));
     AmmDeposit deposit = AmmDeposit.builder()
-      .account(traderAccount.accountData().account())
-      .asset2(
-        Issue.builder()
-          .currency(xrpl4jCoin)
-          .issuer(issuerKeyPair.publicKey().deriveAddress())
-          .build()
-      )
-      .asset(Issue.XRP)
-      .flags(AmmDepositFlags.SINGLE_ASSET)
-      .amount(depositAmount)
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .sequence(traderAccount.accountData().sequence())
-      .signingPublicKey(traderKeyPair.publicKey())
-      .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
-      .build();
+        .account(traderAccount.accountData().account())
+        .asset2(
+            Issue.builder()
+                .currency(xrpl4jCoin)
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .build()
+        )
+        .asset(Issue.XRP)
+        .flags(AmmDepositFlags.SINGLE_ASSET)
+        .amount(depositAmount)
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .sequence(traderAccount.accountData().sequence())
+        .signingPublicKey(traderKeyPair.publicKey())
+        .lastLedgerSequence(traderAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+        .build();
 
     SingleSignedTransaction<AmmDeposit> signedDeposit = signatureService.sign(traderKeyPair.privateKey(), deposit);
     SubmitResult<AmmDeposit> submitResult = xrplClient.submit(signedDeposit);
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     scanForFinality(
-      signedDeposit.hash(),
-      traderAccount.ledgerIndexSafe(),
-      deposit.lastLedgerSequence().get(),
-      deposit.sequence(),
-      traderKeyPair.publicKey().deriveAddress()
+        signedDeposit.hash(),
+        traderAccount.ledgerIndexSafe(),
+        deposit.lastLedgerSequence().get(),
+        deposit.sequence(),
+        traderKeyPair.publicKey().deriveAddress()
     );
 
     AccountInfoResult traderAccountAfterDeposit = xrplClient.accountInfo(
-      AccountInfoRequestParams.of(traderAccount.accountData().account())
+        AccountInfoRequestParams.of(traderAccount.accountData().account())
     );
 
     assertThat(traderAccountAfterDeposit.accountData().balance())
-      .isEqualTo(traderAccount.accountData().balance().minus(deposit.fee()).minus(depositAmount));
+        .isEqualTo(traderAccount.accountData().balance().minus(deposit.fee()).minus(depositAmount));
 
     AccountLinesResult traderLines = xrplClient.accountLines(
-      AccountLinesRequestParams.builder()
-        .account(traderAccount.accountData().account())
-        .peer(amm.amm().account())
-        .ledgerSpecifier(LedgerSpecifier.CURRENT)
-        .build()
+        AccountLinesRequestParams.builder()
+            .account(traderAccount.accountData().account())
+            .peer(amm.amm().account())
+            .ledgerSpecifier(LedgerSpecifier.CURRENT)
+            .build()
     );
 
     assertThat(traderLines.lines()).asList().hasSize(1);
@@ -911,48 +919,48 @@ public class AmmIT extends AbstractIT {
   }
 
   private AmmInfoResult createAmm(
-    KeyPair issuerKeyPair,
-    FeeResult feeResult
+      KeyPair issuerKeyPair,
+      FeeResult feeResult
   ) throws JsonRpcClientErrorException, JsonProcessingException {
     AccountInfoResult issuerAccount = scanForResult(
-      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+        () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
     enableFlag(issuerKeyPair, issuerAccount.accountData().sequence(), feeResult, AccountSetFlag.DEFAULT_RIPPLE);
 
     XrpCurrencyAmount reserveAmount = xrplClient.serverInformation().info()
-      .map(
-        rippled -> rippled.closedLedger().orElse(rippled.validatedLedger().get()).reserveIncXrp(),
-        clio -> clio.validatedLedger().get().reserveIncXrp(),
-        reporting -> reporting.closedLedger().orElse(reporting.validatedLedger().get()).reserveIncXrp()
-      );
+        .map(
+            rippled -> rippled.closedLedger().orElse(rippled.validatedLedger().get()).reserveIncXrp(),
+            clio -> clio.validatedLedger().get().reserveIncXrp(),
+            reporting -> reporting.closedLedger().orElse(reporting.validatedLedger().get()).reserveIncXrp()
+        );
     AmmCreate ammCreate = AmmCreate.builder()
-      .account(issuerKeyPair.publicKey().deriveAddress())
-      .sequence(issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE))
-      .fee(reserveAmount)
-      .amount(
-        IssuedCurrencyAmount.builder()
-          .issuer(issuerKeyPair.publicKey().deriveAddress())
-          .currency(xrpl4jCoin)
-          .value("2.5")
-          .build()
-      )
-      .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
-      .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
-      .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
-      .signingPublicKey(issuerKeyPair.publicKey())
-      .build();
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .sequence(issuerAccount.accountData().sequence().plus(UnsignedInteger.ONE))
+        .fee(reserveAmount)
+        .amount(
+            IssuedCurrencyAmount.builder()
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .currency(xrpl4jCoin)
+                .value("2.5")
+                .build()
+        )
+        .amount2(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(10)))
+        .tradingFee(TradingFee.ofPercent(BigDecimal.ONE))
+        .lastLedgerSequence(issuerAccount.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .build();
 
     SingleSignedTransaction<AmmCreate> signedCreate = signatureService.sign(issuerKeyPair.privateKey(), ammCreate);
     SubmitResult<AmmCreate> submitResult = xrplClient.submit(signedCreate);
     assertThat(submitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
 
     scanForFinality(
-      signedCreate.hash(),
-      issuerAccount.ledgerIndexSafe(),
-      ammCreate.lastLedgerSequence().get(),
-      ammCreate.sequence(),
-      issuerKeyPair.publicKey().deriveAddress()
+        signedCreate.hash(),
+        issuerAccount.ledgerIndexSafe(),
+        ammCreate.lastLedgerSequence().get(),
+        ammCreate.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
     );
 
     return getAmmInfo(issuerKeyPair);
@@ -960,62 +968,62 @@ public class AmmIT extends AbstractIT {
 
   private AmmInfoResult getAmmInfo(KeyPair issuerKeyPair) throws JsonRpcClientErrorException {
     AmmInfoResult ammInfoResult = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(
-        Issue.XRP,
-        Issue.builder()
-          .issuer(issuerKeyPair.publicKey().deriveAddress())
-          .currency(xrpl4jCoin)
-          .build()
-      ));
+        AmmInfoRequestParams.from(
+            Issue.XRP,
+            Issue.builder()
+                .issuer(issuerKeyPair.publicKey().deriveAddress())
+                .currency(xrpl4jCoin)
+                .build()
+        ));
 
     AccountInfoResult ammAccountInfo = xrplClient.accountInfo(
-      AccountInfoRequestParams.of(ammInfoResult.amm().account())
+        AccountInfoRequestParams.of(ammInfoResult.amm().account())
     );
 
     assertThat(ammAccountInfo.accountData().ammId()).isNotEmpty();
 
     AmmInfoResult ammInfoByAccount = xrplClient.ammInfo(
-      AmmInfoRequestParams.from(ammAccountInfo.accountData().account())
+        AmmInfoRequestParams.from(ammAccountInfo.accountData().account())
     );
 
     assertThat(ammInfoByAccount.amm()).isEqualTo(ammInfoResult.amm());
 
     LedgerEntryResult<AmmObject> ammObject = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.amm(
-        AmmLedgerEntryParams.builder()
-          .asset(Issue.XRP)
-          .asset2(
-            Issue.builder()
-              .issuer(issuerKeyPair.publicKey().deriveAddress())
-              .currency(xrpl4jCoin)
-              .build()
-          )
-          .build(),
-        LedgerSpecifier.VALIDATED
-      )
+        LedgerEntryRequestParams.amm(
+            AmmLedgerEntryParams.builder()
+                .asset(Issue.XRP)
+                .asset2(
+                    Issue.builder()
+                        .issuer(issuerKeyPair.publicKey().deriveAddress())
+                        .currency(xrpl4jCoin)
+                        .build()
+                )
+                .build(),
+            LedgerSpecifier.VALIDATED
+        )
     );
 
     assertThat(ammObject.node().account()).isEqualTo(ammInfoByAccount.amm().account());
     assertThat(ammObject.node().asset()).isEqualTo(Issue.XRP);
     assertThat(ammObject.node().asset2()).isEqualTo(
-      Issue.builder()
-        .issuer(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).issuer())
-        .currency(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).currency())
-        .build()
+        Issue.builder()
+            .issuer(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).issuer())
+            .currency(((IssuedCurrencyAmount) ammInfoByAccount.amm().amount2()).currency())
+            .build()
     );
     assertThat(
-      (ammObject.node().auctionSlot().isPresent() && ammInfoByAccount.amm().auctionSlot().isPresent()) ||
-        (!ammObject.node().auctionSlot().isPresent() && !ammInfoByAccount.amm().auctionSlot().isPresent())
+        (ammObject.node().auctionSlot().isPresent() && ammInfoByAccount.amm().auctionSlot().isPresent()) ||
+            (!ammObject.node().auctionSlot().isPresent() && !ammInfoByAccount.amm().auctionSlot().isPresent())
     ).isTrue();
     if (ammObject.node().auctionSlot().isPresent()) {
       AuctionSlot entryAuctionSlot = ammObject.node().auctionSlot().get();
       AmmInfoAuctionSlot infoAuctionSlot = ammInfoByAccount.amm().auctionSlot().get();
       assertThat(entryAuctionSlot.account()).isEqualTo(infoAuctionSlot.account());
       assertThat(entryAuctionSlot.authAccountsAddresses()).isEqualTo(infoAuctionSlot.authAccounts().stream().map(
-        AmmInfoAuthAccount::account).collect(Collectors.toList()));
+          AmmInfoAuthAccount::account).collect(Collectors.toList()));
       assertThat(entryAuctionSlot.price()).isEqualTo(infoAuctionSlot.price());
       assertThat(TimeUtils.xrplTimeToZonedDateTime(UnsignedLong.valueOf(entryAuctionSlot.expiration().longValue())))
-        .isEqualTo(infoAuctionSlot.expiration());
+          .isEqualTo(infoAuctionSlot.expiration());
       assertThat(entryAuctionSlot.discountedFee()).isEqualTo(infoAuctionSlot.discountedFee());
     }
 
@@ -1025,13 +1033,13 @@ public class AmmIT extends AbstractIT {
     assertThat(ammObject.node().voteSlots().size()).isEqualTo(ammInfoByAccount.amm().voteSlots().size());
 
     LedgerEntryResult<AmmObject> entryByIndex = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(ammObject.index(), AmmObject.class, LedgerSpecifier.VALIDATED)
+        LedgerEntryRequestParams.index(ammObject.index(), AmmObject.class, LedgerSpecifier.VALIDATED)
     );
 
     assertThat(entryByIndex.node()).isEqualTo(ammObject.node());
 
     LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.index(ammObject.index(), LedgerSpecifier.VALIDATED)
+        LedgerEntryRequestParams.index(ammObject.index(), LedgerSpecifier.VALIDATED)
     );
 
     assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
@@ -1041,26 +1049,26 @@ public class AmmIT extends AbstractIT {
 
   private void enableFlag(KeyPair issuerKeyPair, UnsignedInteger sequence, FeeResult feeResult,
                           AccountSetFlag accountSetFlag)
-    throws JsonRpcClientErrorException, JsonProcessingException {
+      throws JsonRpcClientErrorException, JsonProcessingException {
     AccountSet accountSet = AccountSet.builder()
-      .account(issuerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .signingPublicKey(issuerKeyPair.publicKey())
-      .sequence(sequence)
-      .setFlag(accountSetFlag)
-      .build();
+        .account(issuerKeyPair.publicKey().deriveAddress())
+        .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+        .signingPublicKey(issuerKeyPair.publicKey())
+        .sequence(sequence)
+        .setFlag(accountSetFlag)
+        .build();
 
     SingleSignedTransaction<AccountSet> signed = signatureService.sign(issuerKeyPair.privateKey(), accountSet);
     SubmitResult<AccountSet> setResult = xrplClient.submit(signed);
     assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
     logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().hash()
+        "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+        setResult.transactionResult().hash()
     );
 
     scanForResult(
-      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
-      info -> info.accountData().flags().lsfDefaultRipple()
+        () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+        info -> info.accountData().flags().lsfDefaultRipple()
     );
   }
 }

@@ -8,6 +8,7 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.AmmClawbackFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Optional;
 
@@ -62,7 +63,7 @@ public interface AmmClawback extends Transaction {
   Optional<CurrencyAmount> amount();
 
   /**
-   * Set of {@link TransactionFlags} for {@link AmmClawback}, with the only option being tfClawTwoAssets.
+   * Transaction Flags for {@link AmmClawback}, with the only option being tfClawTwoAssets.
    *
    * @return {@link AmmClawbackFlags#UNSET} if field was not set, otherwise returns with the set flag.
    */

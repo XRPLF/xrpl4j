@@ -39,6 +39,18 @@ public class AmmClawbackFlags extends TransactionFlags {
   private AmmClawbackFlags(long value) {
     super(value);
   }
+  private AmmClawbackFlags() {
+  }
+
+  /**
+   * Construct an empty instance of {@link AmmClawbackFlags}. Transactions with empty flags will
+   * not be serialized with a {@code Flags} field.
+   *
+   * @return An empty {@link AmmClawbackFlags}.
+   */
+  public static AmmClawbackFlags empty() {
+    return new AmmClawbackFlags();
+  }
 
   /**
    * Whether the {@code tfClawTwoAssets} flag is set.

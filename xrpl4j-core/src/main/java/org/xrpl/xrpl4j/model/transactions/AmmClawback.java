@@ -69,6 +69,6 @@ public interface AmmClawback extends Transaction {
   @JsonProperty("Flags")
   @Value.Default
   default AmmClawbackFlags flags() {
-    return AmmClawbackFlags.UNSET;
+    return AmmClawbackFlags.empty();
   }
 }

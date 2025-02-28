@@ -39,6 +39,7 @@ public class AmmClawbackFlags extends TransactionFlags {
   private AmmClawbackFlags(long value) {
     super(value);
   }
+
   private AmmClawbackFlags() {
   }
 

@@ -82,7 +82,7 @@ public class RippledContainer {
    * No-args constructor.
    */
   public RippledContainer() {
-    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:2.3.0")) {
+    try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:2.3.1")) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
           cmd.withEntrypoint("/opt/ripple/bin/rippled"))
         .withCommand("-a --start --conf /config/rippled.cfg")

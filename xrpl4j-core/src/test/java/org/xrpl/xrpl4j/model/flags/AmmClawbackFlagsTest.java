@@ -37,6 +37,7 @@ class AmmClawbackFlagsTest extends AbstractFlagsTest {
 
     assertCanSerializeAndDeserialize(wrapper, json);
   }
+
   @Test
   void testEmptyJson() throws JSONException, JsonProcessingException {
     AmmClawbackFlags flags = AmmClawbackFlags.empty();

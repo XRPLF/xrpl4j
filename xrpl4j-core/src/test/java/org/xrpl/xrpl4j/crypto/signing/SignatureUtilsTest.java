@@ -872,6 +872,32 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addMultiSignaturesToAmmClawback() {
+    AmmClawback ammClawback = AmmClawback.builder()
+        .account(sourcePublicKey.deriveAddress())
+        .holder(sourcePublicKey.deriveAddress())
+        .amount(
+            IssuedCurrencyAmount.builder()
+                .currency("TST")
+                .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+                .value("25")
+                .build()
+        )
+        .asset(Issue.XRP)
+        .asset2(
+            Issue.builder()
+                .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+                .currency("TST")
+                .build()
+        )
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .sequence(UnsignedInteger.valueOf(6))
+        .build();
+
+    addMultiSignatureToTransactionHelper(ammClawback);
+  }
+
+  @Test
   void addSignatureToAmmDeposit() {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(sourcePublicKey.deriveAddress())

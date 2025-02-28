@@ -54,7 +54,6 @@ public class AmmClawbackTest extends AbstractJsonTest {
         "        \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
         "    },\n" +
         "    \"Holder\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
-        "    \"Flags\" : 0,\n" +
         "    \"Fee\" : \"10\",\n" +
         "    \"Sequence\" : 6,\n" +
         "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +

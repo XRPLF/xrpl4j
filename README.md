@@ -15,7 +15,7 @@ and address generation, transaction serialization and signing, provides useful J
 - Example usage can be found in the `xrpl4j-integration-tests`
   module [here](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-integration-tests/src/test/java/org/xrpl/xrpl4j/tests).
 
-## Usage
+## Usage 
 
 ### Requirements
 
@@ -33,7 +33,7 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
         <dependency>
             <groupId>org.xrpl</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>4.0.2</version>
+            <version>4.0.5</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

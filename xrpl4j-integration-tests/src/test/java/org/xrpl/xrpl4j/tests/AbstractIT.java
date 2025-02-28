@@ -85,6 +85,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -98,10 +99,10 @@ import java.util.stream.Collectors;
 public abstract class AbstractIT {
 
   public static final Duration POLL_INTERVAL = Durations.ONE_HUNDRED_MILLISECONDS;
-
+  public static final Duration AT_MOST_INTERVAL = Duration.of(30, ChronoUnit.SECONDS);
   public static final String SUCCESS_STATUS = TransactionResultCodes.TES_SUCCESS;
 
-  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getConfiguredEnvironment();
+  protected static XrplEnvironment xrplEnvironment = XrplEnvironment.getNewConfiguredEnvironment();
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -245,7 +246,7 @@ public abstract class AbstractIT {
   ) {
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(AT_MOST_INTERVAL)
       .ignoreException(RuntimeException.class)
       .await()
       .until(
@@ -268,7 +269,7 @@ public abstract class AbstractIT {
 
   protected <T> T scanForResult(Supplier<T> resultSupplier, Predicate<T> condition) {
     return given()
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(AT_MOST_INTERVAL)
       .pollInterval(POLL_INTERVAL)
       .await()
       .until(() -> {
@@ -284,7 +285,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(resultSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(AT_MOST_INTERVAL)
       .ignoreException(RuntimeException.class)
       .await()
       .until(resultSupplier::get, is(notNullValue()));
@@ -294,7 +295,7 @@ public abstract class AbstractIT {
     Objects.requireNonNull(ledgerObjectSupplier);
     return given()
       .pollInterval(POLL_INTERVAL)
-      .atMost(Durations.ONE_MINUTE.dividedBy(2))
+      .atMost(AT_MOST_INTERVAL)
       .ignoreException(RuntimeException.class)
       .await()
       .until(ledgerObjectSupplier::get, is(notNullValue()));
@@ -701,6 +702,26 @@ public abstract class AbstractIT {
     final String jksFileName = "crypto/crypto.p12";
     final char[] jksPassword = "password".toCharArray();
     return JavaKeystoreLoader.loadFromClasspath(jksFileName, jksPassword);
+  }
+
+  /**
+   * Returns the minimum time that can be used for escrow expirations. The ledger will not accept an expiration time
+   * that is earlier than the last ledger close time, so we must use the latter of current time or ledger close time
+   * (which for unexplained reasons can sometimes be later than now).
+   *
+   * @return An {@link Instant}.
+   */
+  protected Instant getMinExpirationTime() {
+    LedgerResult result = getValidatedLedger();
+    Instant closeTime = xrpTimestampToInstant(
+        result.ledger().closeTime()
+            .orElseThrow(() ->
+                new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
+            )
+    );
+
+    Instant now = Instant.now();
+    return closeTime.isBefore(now) ? now : closeTime;
   }
 
   private void logAccountCreation(Address address) {

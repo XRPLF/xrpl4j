@@ -111,7 +111,9 @@ public class XChainIT extends AbstractIT {
       .account(sender.publicKey().deriveAddress())
       .sequence(senderAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(senderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        senderAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
       .signingPublicKey(sender.publicKey())
       .xChainBridge(testBridge.bridge())
       .amount(amount)
@@ -169,7 +171,9 @@ public class XChainIT extends AbstractIT {
       .attestationSignerAccount(testBridge.witnessKeyPair().publicKey().deriveAddress())
       .sequence(sourceAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(source.publicKey())
       .build();
 
@@ -267,7 +271,9 @@ public class XChainIT extends AbstractIT {
       .attestationSignerAccount(testBridge.witnessKeyPair2().publicKey().deriveAddress())
       .sequence(sourceAccountInfo2.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(sourceAccountInfo2.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        sourceAccountInfo2.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(source.publicKey())
       .build();
 
@@ -562,7 +568,7 @@ public class XChainIT extends AbstractIT {
       .sequence(destinationAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .fee(fee)
       .lastLedgerSequence(
-        destinationAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(10))
+        destinationAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
       )
       .signingPublicKey(destination.publicKey())
       .xChainBridge(testBridge.bridge())
@@ -601,7 +607,8 @@ public class XChainIT extends AbstractIT {
       .account(source.publicKey().deriveAddress())
       .sequence(sourceAccountInfo.accountData().sequence())
       .fee(fee)
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000)))
       .signingPublicKey(source.publicKey())
       .xChainBridge(testBridge.bridge())
       .xChainClaimId(XChainClaimId.of(UnsignedLong.ONE))
@@ -641,7 +648,8 @@ public class XChainIT extends AbstractIT {
       .account(sourceAccountInfo.accountData().account())
       .sequence(sourceAccountInfo.accountData().sequence())
       .fee(fee)
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000)))
       .signingPublicKey(source.publicKey())
       .xChainBridge(
         XChainBridge.builder()
@@ -678,7 +686,9 @@ public class XChainIT extends AbstractIT {
       .account(sourceAccountInfo.accountData().account())
       .sequence(sourceAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .fee(fee)
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(10)))
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(source.publicKey())
       .xChainBridge(bridgeObject.xChainBridge())
       .signatureReward(XrpCurrencyAmount.ofDrops(300))
@@ -706,7 +716,9 @@ public class XChainIT extends AbstractIT {
       .account(sourceAccountInfo.accountData().account())
       .sequence(sourceAccountInfo.accountData().sequence().plus(UnsignedInteger.valueOf(2)))
       .fee(fee)
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(14)))
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(source.publicKey())
       .xChainBridge(bridgeObject.xChainBridge())
       .flags(XChainModifyBridgeFlags.CLEAR_ACCOUNT_CREATE_AMOUNT)
@@ -742,7 +754,9 @@ public class XChainIT extends AbstractIT {
       .sequence(sourceAccountInfo.accountData().sequence())
       .fee(fee)
       .signingPublicKey(source.publicKey())
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
       .xChainBridge(bridge.bridge())
       .signatureReward(bridge.signatureReward())
       .otherChainSource(otherChainSource.publicKey().deriveAddress())
@@ -782,7 +796,9 @@ public class XChainIT extends AbstractIT {
       .account(sourceAccountInfo.accountData().account())
       .sequence(sourceAccountInfo.accountData().sequence())
       .fee(fee)
-      .lastLedgerSequence(sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        sourceAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(source.publicKey())
       .setFlag(AccountSetFlag.DEFAULT_RIPPLE)
       .build();
@@ -818,7 +834,9 @@ public class XChainIT extends AbstractIT {
       .account(witnessAccountInfo.accountData().account())
       .sequence(witnessAccountInfo.accountData().sequence())
       .fee(fee)
-      .lastLedgerSequence(witnessAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        witnessAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(witnessKeyPair.publicKey())
       .xChainBridge(bridge)
       .otherChainSource(otherChainSource.publicKey().deriveAddress())
@@ -863,7 +881,9 @@ public class XChainIT extends AbstractIT {
       .account(witnessAccountInfo.accountData().account())
       .sequence(witnessAccountInfo.accountData().sequence())
       .fee(fee)
-      .lastLedgerSequence(witnessAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4)))
+      .lastLedgerSequence(
+        witnessAccountInfo.ledgerIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
       .signingPublicKey(witnessKeyPair.publicKey())
       .xChainBridge(bridge)
       .otherChainSource(otherChainSource.publicKey().deriveAddress())
@@ -900,7 +920,7 @@ public class XChainIT extends AbstractIT {
       .sequence(doorAccountInfo.accountData().sequence())
       .fee(XrpCurrencyAmount.ofDrops(100))
       .signingPublicKey(doorKeyPair.publicKey())
-      .lastLedgerSequence(doorAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(doorAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue())
       .build();
 
     signSubmitAndWait(createBridge, doorKeyPair, XChainCreateBridge.class);
@@ -960,7 +980,9 @@ public class XChainIT extends AbstractIT {
             .build()
         )
       )
-      .lastLedgerSequence(witnessAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        witnessAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4000)).unsignedIntegerValue()
+      )
       .build();
 
     this.signSubmitAndWait(signerListSet, doorKeyPair, SignerListSet.class);

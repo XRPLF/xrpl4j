@@ -709,22 +709,52 @@ public abstract class AbstractIT {
     logger.info("Generated wallet with ClassicAddress={})", address);
   }
 
+  /**
+   * Logs a {@link SubmitResult}, accounting for the current test environment.
+   *
+   * @param submitResult An instance of {@link SubmitResult}.
+   */
   protected void logSubmitResult(final SubmitResult<? extends Transaction> submitResult) {
+    this.logSubmitResult(submitResult, "");
+  }
+
+  /**
+   * Logs a {@link SubmitResult}, accounting for the current test environment.
+   *
+   * @param submitResult An instance of {@link SubmitResult}.
+   * @param extraMessage Extra messaging that the test author supplies.
+   */
+  protected void logSubmitResult(final SubmitResult<? extends Transaction> submitResult, final String extraMessage) {
     final Class<? extends Transaction> transactionClass = submitResult.transactionResult().transaction().getClass();
     final String hash = submitResult.transactionResult().hash().value();
-    this.logSubmitResult(transactionClass, submitResult.status().orElse("n/a"), hash);
+    this.logSubmitResult(transactionClass, submitResult.status().orElse("n/a"), hash, extraMessage);
   }
 
-  protected void logSubmitResult(final SubmitMultiSignedResult<? extends Transaction> submitResult) {
-    final Class<? extends Transaction> transactionClass = submitResult.transaction().transaction().getClass();
-    final String hash = submitResult.transaction().hash().value();
-    this.logSubmitResult(transactionClass, submitResult.status().orElse("n/a"), hash);
+  /**
+   * Logs a {@link SubmitResult}, accounting for the current test environment.
+   *
+   * @param submitMultiSignedResult An instance of {@link SubmitMultiSignedResult}.
+   */
+  protected void logSubmitResult(final SubmitMultiSignedResult<? extends Transaction> submitMultiSignedResult) {
+    final Class<? extends Transaction> transactionClass
+      = submitMultiSignedResult.transaction().transaction().getClass();
+    final String hash = submitMultiSignedResult.transaction().hash().value();
+    this.logSubmitResult(transactionClass, submitMultiSignedResult.status().orElse("n/a"), hash, "");
   }
 
+  /**
+   * Helper function to properly log a {@link SubmitResult}, accounting for the current test environment.
+   *
+   * @param transactionClass The {@link Class} of the transaction being logged.
+   * @param status           A {@link String} representing the status of the transaction.
+   * @param hash             A {@link String} representing the hash of the transaction.
+   * @param extraMessage     A {@link String} representing an extra message passed by a test author.
+   */
   private void logSubmitResult(
     final Class<? extends Transaction> transactionClass,
     final String status,
-    final String hash
+    final String hash,
+    final String extraMessage
   ) {
     Objects.requireNonNull(transactionClass);
     Objects.requireNonNull(hash);
@@ -735,10 +765,18 @@ public abstract class AbstractIT {
     final String loggingOutput = xrplEnvironment.explorerUrl()
       .map(explorerUrl -> {
         final String transactionExplorerUrl = String.format("%s/transactions/%s", explorerUrl, hash);
-        return String.format("%s transaction(status=%s): %s", transactionClassSimpleName, status,
+        return String.format("%s transaction(status=%s):%s %s",
+          transactionClassSimpleName,
+          status,
+          extraMessage.isEmpty() ? "" : " " + extraMessage,
           transactionExplorerUrl);
       })
-      .orElseGet(() -> String.format("%s transaction(status=%s): hash=%s", transactionClassSimpleName, status, hash));
+      .orElseGet(() -> String.format("%s transaction(status=%s):%s hash=%s",
+        transactionClassSimpleName,
+        status,
+        extraMessage.isEmpty() ? "" : " " + extraMessage,
+        hash
+      ));
 
     logger.info(loggingOutput);
   }

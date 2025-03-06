@@ -65,6 +65,7 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitMultiSignedResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
@@ -118,18 +119,6 @@ public abstract class AbstractIT {
     this.xrplClient = xrplEnvironment.getXrplClient();
     this.signatureService = this.constructSignatureService();
     this.derivedKeySignatureService = this.constructDerivedKeySignatureService();
-  }
-
-  /**
-   * Helper function to print log statements for Integration Tests which is network specific.
-   *
-   * @param transactionType {@link TransactionType} to be logged for the executed transaction.
-   * @param hash            {@link Hash256} to be logged for the executed transaction.
-   */
-  protected void logInfo(TransactionType transactionType, Hash256 hash) {
-    String url = System.getProperty("useTestnet") != null ? "https://testnet.xrpl.org/transactions/" :
-      (System.getProperty("useDevnet") != null ? "https://devnet.xrpl.org/transactions/" : "");
-    logger.info("{} transaction successful: {}{}", transactionType.value(), url, hash);
   }
 
   protected KeyPair createRandomAccountEd25519() {
@@ -483,11 +472,7 @@ public abstract class AbstractIT {
     );
     SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
     assertThat(trustSetSubmitResult.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-
-    logInfo(
-      trustSetSubmitResult.transactionResult().transaction().transactionType(),
-      trustSetSubmitResult.transactionResult().hash()
-    );
+    logSubmitResult(trustSetSubmitResult);
 
     return scanForResult(
       () -> getValidatedAccountLines(trustlineLimitAmount.issuer(), counterpartyAddress),
@@ -575,6 +560,7 @@ public abstract class AbstractIT {
       );
       SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
       assertThat(paymentResult.transactionResult().hash()).isEqualTo(signedPayment.hash());
+      logSubmitResult(paymentResult);
 
       paymentEngineResult = paymentResult.engineResult();
       if (!paymentResult.engineResult().equals(expectedEngineResult)) {
@@ -591,11 +577,6 @@ public abstract class AbstractIT {
         );
         continue; // <-- Try again, up to the loop guard above.
       }
-
-      logInfo(
-        paymentResult.transactionResult().transaction().transactionType(),
-        paymentResult.transactionResult().hash()
-      );
 
       this.scanForResult(
         () -> getValidatedTransaction(
@@ -714,10 +695,10 @@ public abstract class AbstractIT {
   protected Instant getMinExpirationTime() {
     LedgerResult result = getValidatedLedger();
     Instant closeTime = xrpTimestampToInstant(
-        result.ledger().closeTime()
-            .orElseThrow(() ->
-                new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
-            )
+      result.ledger().closeTime()
+        .orElseThrow(() ->
+          new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
+        )
     );
 
     Instant now = Instant.now();
@@ -726,5 +707,34 @@ public abstract class AbstractIT {
 
   private void logAccountCreation(Address address) {
     logger.info("Generated wallet with ClassicAddress={})", address);
+  }
+
+  protected void logSubmitResult(final SubmitResult<? extends Transaction> submitResult) {
+    final Class<? extends Transaction> transactionClass = submitResult.transactionResult().transaction().getClass();
+    final String hash = submitResult.transactionResult().hash().value();
+    this.logSubmitResult(transactionClass, submitResult.status().orElse("n/a"), hash);
+  }
+
+  protected void logSubmitResult(final SubmitMultiSignedResult<? extends Transaction> submitResult) {
+    final Class<? extends Transaction> transactionClass = submitResult.transaction().transaction().getClass();
+    final String hash = submitResult.transaction().hash().value();
+    this.logSubmitResult(transactionClass, submitResult.status().orElse("n/a"), hash);
+  }
+
+  private void logSubmitResult(
+    final Class<? extends Transaction> transactionClass,
+    final String status,
+    final String hash
+  ) {
+    Objects.requireNonNull(transactionClass);
+    Objects.requireNonNull(hash);
+
+    final String loggingOutput = xrplEnvironment.explorerUrl()
+      .map(explorerUrl -> String.format("%s/transactions/%s", explorerUrl, hash))
+      .orElseGet(() -> "Hash=" + hash);
+
+    logger.info("{} transaction {}: {}",
+      transactionClass.getSimpleName(), status, loggingOutput
+    );
   }
 }

@@ -96,6 +96,17 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<EscrowCreate> result = this.scanForResult(
+      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
+    );
+
+    //////////////////////
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
@@ -106,11 +117,6 @@ public class EscrowIT extends AbstractIT {
               .map(finishAfter -> finishAfter.plus(UnsignedLong.valueOf(5)))
               .orElse(UnsignedLong.MAX_VALUE)
           )
-    );
-
-    assertEntryEqualsObjectFromAccountObjects(
-      senderKeyPair.publicKey().deriveAddress(),
-      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -196,6 +202,17 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
+    );
+
+    //////////////////////
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
@@ -206,11 +223,6 @@ public class EscrowIT extends AbstractIT {
               .map(finishAfter -> finishAfter.plus(UnsignedLong.valueOf(5)))
               .orElse(UnsignedLong.MAX_VALUE)
           )
-    );
-
-    assertEntryEqualsObjectFromAccountObjects(
-      senderKeyPair.publicKey().deriveAddress(),
-      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -439,6 +451,17 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<EscrowCreate> result = this.scanForResult(
+      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
+    );
+
+    //////////////////////
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
@@ -449,11 +472,6 @@ public class EscrowIT extends AbstractIT {
               .map(finishAfter -> finishAfter.plus(UnsignedLong.valueOf(5)))
               .orElse(UnsignedLong.MAX_VALUE)
           )
-    );
-
-    assertEntryEqualsObjectFromAccountObjects(
-      senderKeyPair.publicKey().deriveAddress(),
-      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -540,6 +558,17 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
+    );
+
+    //////////////////////
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
@@ -550,11 +579,6 @@ public class EscrowIT extends AbstractIT {
               .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
               .orElse(UnsignedLong.MAX_VALUE)
           )
-    );
-
-    assertEntryEqualsObjectFromAccountObjects(
-      senderKeyPair.publicKey().deriveAddress(),
-      escrowCreate.sequence()
     );
 
     //////////////////////

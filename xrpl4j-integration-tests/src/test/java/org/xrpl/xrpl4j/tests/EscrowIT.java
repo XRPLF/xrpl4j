@@ -27,7 +27,6 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.github.dockerjava.core.dockerfile.DockerfileStatement.Add;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -39,7 +38,6 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.EscrowLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
-import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
@@ -52,7 +50,6 @@ import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.time.Duration;
-import java.time.Instant;
 
 /**
  * Integration test to validate creation, cancellation, and execution of escrow transactions.
@@ -90,14 +87,11 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
     );
 
@@ -138,10 +132,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/{}",
-      finishResult.transactionResult().hash()
-    );
+    logSubmitResult(finishResult);
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
@@ -196,10 +187,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -244,10 +232,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
     assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/{}",
-      finishResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
@@ -297,10 +282,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tecUNFUNDED");
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
   }
 
   @Test
@@ -336,10 +318,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
@@ -390,10 +369,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
     assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowCancel transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cancelResult.transactionResult().hash()
-    );
+    logSubmitResult(cancelResult);
 
     //////////////////////
     // Wait until the transaction enters a validated ledger
@@ -445,14 +421,11 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
+    this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
     );
 
@@ -493,10 +466,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCancel> cancelResult = xrplClient.submit(signedEscrowCancel);
     assertThat(cancelResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowFinish transaction successful: https://testnet.xrpl.org/transactions/{}",
-      cancelResult.transactionResult().hash()
-    );
+    logSubmitResult(cancelResult);
 
     //////////////////////
     // Wait for the EscrowFinish to get applied to a validated ledger
@@ -552,10 +522,7 @@ public class EscrowIT extends AbstractIT {
     );
     SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
     assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
-      createResult.transactionResult().hash()
-    );
+    logSubmitResult(createResult);
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger

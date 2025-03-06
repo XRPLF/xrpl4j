@@ -729,12 +729,17 @@ public abstract class AbstractIT {
     Objects.requireNonNull(transactionClass);
     Objects.requireNonNull(hash);
 
-    final String loggingOutput = xrplEnvironment.explorerUrl()
-      .map(explorerUrl -> String.format("%s/transactions/%s", explorerUrl, hash))
-      .orElseGet(() -> "Hash=" + hash);
+    final String transactionClassSimpleName = transactionClass.getSimpleName().startsWith("Immutable") ?
+      transactionClass.getSimpleName().substring("Immutable".length()) : transactionClass.getSimpleName();
 
-    logger.info("{} transaction {}: {}",
-      transactionClass.getSimpleName(), status, loggingOutput
-    );
+    final String loggingOutput = xrplEnvironment.explorerUrl()
+      .map(explorerUrl -> {
+        final String transactionExplorerUrl = String.format("%s/transactions/%s", explorerUrl, hash);
+        return String.format("%s transaction(status=%s): %s", transactionClassSimpleName, status,
+          transactionExplorerUrl);
+      })
+      .orElseGet(() -> String.format("%s transaction(status=%s): hash=%s", transactionClassSimpleName, status, hash));
+
+    logger.info(loggingOutput);
   }
 }

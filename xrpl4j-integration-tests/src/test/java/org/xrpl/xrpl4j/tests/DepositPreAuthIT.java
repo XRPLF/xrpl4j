@@ -263,10 +263,8 @@ public class DepositPreAuthIT extends AbstractIT {
     );
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
     assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
-      accountSetResult.transactionResult().hash()
-    );
+    logSubmitResult(accountSetResult, "Enable Deposit Preauth");
+
     return this.scanForResult(
       () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
       accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()

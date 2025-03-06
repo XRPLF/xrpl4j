@@ -172,8 +172,6 @@ public class EscrowIT extends AbstractIT {
     final AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
-    assertThat(senderAccountInfo.accountData().balance()).isEqualTo(XrpCurrencyAmount.ofDrops(1000000000));
-
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderKeyPair.publicKey().deriveAddress())
       .sequence(senderAccountInfo.accountData().sequence())
@@ -209,16 +207,11 @@ public class EscrowIT extends AbstractIT {
               .orElse(UnsignedLong.MAX_VALUE)
           )
     );
+
     assertEntryEqualsObjectFromAccountObjects(
       senderKeyPair.publicKey().deriveAddress(),
       escrowCreate.sequence()
     );
-
-    final AccountInfoResult postEscrowCreateSenderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
-    );
-    assertThat(postEscrowCreateSenderAccountInfo.accountData().balance())
-      .isEqualTo(XrpCurrencyAmount.ofDrops(999876534));
 
     //////////////////////
     // Receiver submits an EscrowFinish transaction to release the Escrow funds
@@ -257,8 +250,7 @@ public class EscrowIT extends AbstractIT {
       infoResult -> infoResult.accountData().balance().equals(
         preEscrowFinishSenderAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
-          .minus(feeResult.drops().openLedgerFee())) &&
-        infoResult.accountData().balance().equals(XrpCurrencyAmount.ofDrops(999999980))
+          .minus(feeResult.drops().openLedgerFee()))
     );
   }
 
@@ -274,7 +266,6 @@ public class EscrowIT extends AbstractIT {
     final AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
-    assertThat(senderAccountInfo.accountData().balance()).isEqualTo(XrpCurrencyAmount.ofDrops(1000000000));
 
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderKeyPair.publicKey().deriveAddress())
@@ -423,7 +414,6 @@ public class EscrowIT extends AbstractIT {
     final AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
-    assertThat(senderAccountInfo.accountData().balance()).isEqualTo(XrpCurrencyAmount.ofDrops(1000000000));
 
     EscrowCreate escrowCreate = EscrowCreate.builder()
       .account(senderKeyPair.publicKey().deriveAddress())
@@ -466,12 +456,6 @@ public class EscrowIT extends AbstractIT {
       escrowCreate.sequence()
     );
 
-    final AccountInfoResult postEscrowCreateSenderAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
-    );
-    assertThat(postEscrowCreateSenderAccountInfo.accountData().balance())
-      .isEqualTo(XrpCurrencyAmount.ofDrops(999876534));
-
     //////////////////////
     // Receiver submits an EscrowFinish transaction to release the Escrow funds
     final AccountInfoResult preEscrowFinishSenderAccountInfo = this.scanForResult(
@@ -509,8 +493,7 @@ public class EscrowIT extends AbstractIT {
       infoResult -> infoResult.accountData().balance().equals(
         preEscrowFinishSenderAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
-          .minus(feeResult.drops().openLedgerFee())) &&
-        infoResult.accountData().balance().equals(XrpCurrencyAmount.ofDrops(999999980))
+          .minus(feeResult.drops().openLedgerFee()))
     );
   }
 

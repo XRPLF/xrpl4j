@@ -96,17 +96,6 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
-    // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
-      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
-    );
-
-    assertEntryEqualsObjectFromAccountObjects(
-      senderKeyPair.publicKey().deriveAddress(),
-      escrowCreate.sequence()
-    );
-
-    //////////////////////
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
@@ -119,6 +108,12 @@ public class EscrowIT extends AbstractIT {
           )
     );
 
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
+    );
+
+
     //////////////////////
     // Receiver submits an EscrowFinish transaction to release the Escrow funds
     AccountInfoResult receiverAccountInfo = this.scanForResult(
@@ -129,7 +124,7 @@ public class EscrowIT extends AbstractIT {
       .fee(feeResult.drops().openLedgerFee())
       .sequence(receiverAccountInfo.accountData().sequence())
       .owner(senderKeyPair.publicKey().deriveAddress())
-      .offerSequence(result.transaction().sequence())
+      .offerSequence(createResult.transactionResult().transaction().sequence())
       .signingPublicKey(receiverKeyPair.publicKey())
       .build();
 
@@ -270,8 +265,46 @@ public class EscrowIT extends AbstractIT {
       infoResult -> infoResult.accountData().balance().equals(
         preEscrowFinishSenderAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
-          .minus(feeResult.drops().openLedgerFee()))
-        && infoResult.accountData().balance().equals(XrpCurrencyAmount.ofDrops(999999980))
+          .minus(feeResult.drops().openLedgerFee())) &&
+        infoResult.accountData().balance().equals(XrpCurrencyAmount.ofDrops(999999980))
+    );
+  }
+
+  @Test
+  public void createEscrowWithInsufficientFunds() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////
+    // Create random sender accounts
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+
+    //////////////////////
+    // Sender account creates an Escrow with the receiver account
+    FeeResult feeResult = xrplClient.fee();
+    final AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+    assertThat(senderAccountInfo.accountData().balance()).isEqualTo(XrpCurrencyAmount.ofDrops(1000000000));
+
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .fee(feeResult.drops().openLedgerFee())
+      .amount(XrpCurrencyAmount.ofDrops(1000000001))
+      .destination(senderKeyPair.publicKey().deriveAddress())
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))
+      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
+      .signingPublicKey(senderKeyPair.publicKey())
+      .build();
+
+    //////////////////////
+    // Submit the EscrowCreate transaction and validate that it was successful
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
+    );
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
+    assertThat(createResult.engineResult()).isEqualTo("tecUNFUNDED");
+    logger.info(
+      "EscrowCreate transaction successful: https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
     );
   }
 
@@ -490,8 +523,8 @@ public class EscrowIT extends AbstractIT {
       infoResult -> infoResult.accountData().balance().equals(
         preEscrowFinishSenderAccountInfo.accountData().balance()
           .plus(escrowCreate.amount())
-          .minus(feeResult.drops().openLedgerFee()))
-        && infoResult.accountData().balance().equals(XrpCurrencyAmount.ofDrops(999999980))
+          .minus(feeResult.drops().openLedgerFee())) &&
+        infoResult.accountData().balance().equals(XrpCurrencyAmount.ofDrops(999999980))
     );
   }
 
@@ -538,17 +571,6 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
-    // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
-      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
-    );
-
-    assertEntryEqualsObjectFromAccountObjects(
-      senderKeyPair.publicKey().deriveAddress(),
-      escrowCreate.sequence()
-    );
-
-    //////////////////////
     // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
     this.scanForResult(
       this::getValidatedLedger,
@@ -559,6 +581,11 @@ public class EscrowIT extends AbstractIT {
               .map(cancelAfter -> cancelAfter.plus(UnsignedLong.valueOf(5)))
               .orElse(UnsignedLong.MAX_VALUE)
           )
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -575,7 +602,7 @@ public class EscrowIT extends AbstractIT {
       .fee(EscrowFinish.computeFee(feeResult.drops().openLedgerFee(), executeEscrowFulfillment))
       .sequence(receiverAccountInfo.accountData().sequence())
       .owner(senderKeyPair.publicKey().deriveAddress())
-      .offerSequence(result.transaction().sequence())
+      .offerSequence(createResult.transactionResult().transaction().sequence())
       .signingPublicKey(receiverKeyPair.publicKey())
       .condition(executeEscrowFulfillment.getDerivedCondition()) // <-- condition and fulfillment are required.
       .fulfillment(executeEscrowFulfillment) // <-- condition and fulfillment are required to finish an escrow

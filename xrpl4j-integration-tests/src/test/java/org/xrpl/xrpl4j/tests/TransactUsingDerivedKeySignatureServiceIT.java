@@ -96,7 +96,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       payment);
     SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
     assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/{}", result.transactionResult().hash());
+    logSubmitResult(result);
 
     this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }
@@ -138,7 +138,7 @@ public class TransactUsingDerivedKeySignatureServiceIT extends AbstractIT {
       = derivedKeySignatureService.sign(sourceKeyMetadata, payment);
     SubmitResult<Payment> result = xrplClient.submit(transactionWithSignature);
     assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info("Payment successful: https://testnet.xrpl.org/transactions/" + result.transactionResult().hash());
+    logSubmitResult(result);
 
     this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
   }

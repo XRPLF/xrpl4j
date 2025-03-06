@@ -77,7 +77,6 @@ import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
-import org.xrpl.xrpl4j.model.transactions.TransactionType;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
@@ -727,7 +726,7 @@ public abstract class AbstractIT {
   protected void logSubmitResult(final SubmitResult<? extends Transaction> submitResult, final String extraMessage) {
     final Class<? extends Transaction> transactionClass = submitResult.transactionResult().transaction().getClass();
     final String hash = submitResult.transactionResult().hash().value();
-    this.logSubmitResult(transactionClass, submitResult.status().orElse("n/a"), hash, extraMessage);
+    this.logSubmitResultHelper(transactionClass, submitResult.status().orElse("n/a"), hash, extraMessage);
   }
 
   /**
@@ -739,7 +738,7 @@ public abstract class AbstractIT {
     final Class<? extends Transaction> transactionClass
       = submitMultiSignedResult.transaction().transaction().getClass();
     final String hash = submitMultiSignedResult.transaction().hash().value();
-    this.logSubmitResult(transactionClass, submitMultiSignedResult.status().orElse("n/a"), hash, "");
+    this.logSubmitResultHelper(transactionClass, submitMultiSignedResult.status().orElse("n/a"), hash, "");
   }
 
   /**
@@ -750,7 +749,7 @@ public abstract class AbstractIT {
    * @param hash             A {@link String} representing the hash of the transaction.
    * @param extraMessage     A {@link String} representing an extra message passed by a test author.
    */
-  private void logSubmitResult(
+  private void logSubmitResultHelper(
     final Class<? extends Transaction> transactionClass,
     final String status,
     final String hash,

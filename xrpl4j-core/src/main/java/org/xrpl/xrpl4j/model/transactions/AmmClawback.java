@@ -7,7 +7,6 @@ import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.AmmClawbackFlags;
 import org.xrpl.xrpl4j.model.ledger.Issue;
-import org.xrpl.xrpl4j.model.transactions.Address;
 
 import java.util.Optional;
 

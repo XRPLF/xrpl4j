@@ -20,7 +20,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -31,6 +33,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -95,6 +98,7 @@ public interface Transaction {
       .put(ImmutableMpTokenIssuanceCreate.class, TransactionType.MPT_ISSUANCE_CREATE)
       .put(ImmutableMpTokenIssuanceDestroy.class, TransactionType.MPT_ISSUANCE_DESTROY)
       .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
+      .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .build();
 
   /**
@@ -111,6 +115,7 @@ public interface Transaction {
    * @return A {@link TransactionType}.
    */
   @JsonProperty("TransactionType")
+  @Value.Default // must be Default rather than Derived, otherwise Jackson treats "TransactionType" as an unknownField
   default TransactionType transactionType() {
     return typeMap.get(this.getClass());
   }
@@ -224,5 +229,9 @@ public interface Transaction {
 
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
+
+  @JsonAnyGetter
+  @JsonInclude(Include.NON_ABSENT)
+  Map<String, Object> unknownFields();
 
 }

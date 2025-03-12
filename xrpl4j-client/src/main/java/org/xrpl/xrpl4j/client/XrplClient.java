@@ -287,21 +287,29 @@ public class XrplClient {
    * Check if there missing ledgers in rippled in the given range.
    *
    * @param submittedLedgerSequence {@link LedgerIndex} at which the {@link Transaction} was submitted on.
-   * @param lastLedgerSequence      he ledger index/sequence of type {@link UnsignedInteger} after which the transaction
-   *                                will expire and won't be applied to the ledger.
+   * @param lastLedgerSequence      The ledger index/sequence of type {@link UnsignedInteger} after which the
+   *                                transaction will expire and won't be applied to the ledger.
    *
    * @return {@link Boolean} to indicate if there are gaps in the ledger range.
    */
   protected boolean ledgerGapsExistBetween(
     final UnsignedLong submittedLedgerSequence,
-    final UnsignedLong lastLedgerSequence
+    UnsignedLong lastLedgerSequence
   ) {
+    Objects.requireNonNull(submittedLedgerSequence);
+    Objects.requireNonNull(lastLedgerSequence);
+
     final ServerInfoResult serverInfo;
     try {
       serverInfo = this.serverInformation();
     } catch (JsonRpcClientErrorException e) {
       LOGGER.error(e.getMessage(), e);
       return true; // Assume ledger gaps exist so this can be retried.
+    }
+
+    // Ensure the lastLedgerSequence is (at least) as large as submittedLedgerSequence
+    if (FluentCompareTo.is(lastLedgerSequence).lessThan(submittedLedgerSequence)) {
+      lastLedgerSequence = submittedLedgerSequence;
     }
 
     Range<UnsignedLong> submittedToLast = Range.closed(submittedLedgerSequence, lastLedgerSequence);
@@ -369,8 +377,10 @@ public class XrplClient {
             LOGGER.debug("Transaction with hash: {} has not expired yet, check again", transactionHash);
             return Finality.builder().finalityStatus(FinalityStatus.NOT_FINAL).build();
           } else {
-            boolean isMissingLedgers = ledgerGapsExistBetween(UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
-              UnsignedLong.valueOf(lastLedgerSequence.toString()));
+            boolean isMissingLedgers = ledgerGapsExistBetween(
+              UnsignedLong.valueOf(submittedOnLedgerIndex.toString()),
+              UnsignedLong.valueOf(lastLedgerSequence.toString())
+            );
             if (isMissingLedgers) {
               LOGGER.debug("Transaction with hash: {} has expired and rippled is missing some to confirm if it" +
                 " was validated", transactionHash);

@@ -52,6 +52,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenObjectAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenObjectAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
@@ -822,6 +824,24 @@ public class Wrappers {
   abstract static class _MpTokenIssuanceId extends Wrapper<String> implements Serializable {
 
     // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * Wrapped String representing MPT metadata. This wrapper class may prove useful in the future if we ever
+   * want to encapsulate various MPTokenMetadata standard formats.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = MpTokenMetadata.class, using = MpTokenMetadataSerializer.class)
+  @JsonDeserialize(as = MpTokenMetadata.class, using = MpTokenMetadataDeserializer.class)
+  @Beta
+  abstract static class _MpTokenMetadata extends Wrapper<String> implements Serializable {
 
     @Override
     public String toString() {

@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
@@ -53,10 +54,16 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   UnsignedInteger sequence();
 
   @JsonProperty("TransferFee")
-  TransferFee transferFee();
+  @Value.Default
+  default TransferFee transferFee() {
+    return TransferFee.of(UnsignedInteger.ZERO);
+  }
 
   @JsonProperty("AssetScale")
-  AssetScale assetScale();
+  @Value.Default
+  default AssetScale assetScale() {
+    return AssetScale.of(UnsignedInteger.ZERO);
+  }
 
   @JsonProperty("MaximumAmount")
   Optional<MpTokenObjectAmount> maximumAmount();
@@ -65,7 +72,7 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   MpTokenObjectAmount outstandingAmount();
 
   @JsonProperty("MPTokenMetadata")
-  Optional<String> mpTokenMetadata();
+  Optional<MpTokenMetadata> mpTokenMetadata();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.

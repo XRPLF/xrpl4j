@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -16,20 +17,22 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
-import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.MpTokenLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
+import org.xrpl.xrpl4j.model.flags.MpTokenAuthorizeFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
-import org.xrpl.xrpl4j.model.transactions.ImmutableMpTokenAmount;
-import org.xrpl.xrpl4j.model.transactions.ImmutableMpTokenAuthorize;
+import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
@@ -39,10 +42,8 @@ import java.math.BigDecimal;
 public class MpTokenIT extends AbstractIT {
 
   @Test
-  void createIssuanceAndPay() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createIssuanceThenPayThenLockThenClawbackThenDestroy() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair holder1KeyPair = createRandomAccountEd25519();
-    KeyPair holder2KeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
     AccountInfoResult issuerAccountInfo = this.scanForResult(
@@ -60,7 +61,7 @@ public class MpTokenIT extends AbstractIT {
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
       .signingPublicKey(issuerKeyPair.publicKey())
       .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
       .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
@@ -81,7 +82,7 @@ public class MpTokenIT extends AbstractIT {
     this.scanForResult(
       () -> xrplClient.isFinal(
         signedIssuanceCreate.hash(),
-        issuerAccountInfo.ledgerIndexSafe(),
+        issuanceCreateSubmitResult.validatedLedgerIndex(),
         issuanceCreate.lastLedgerSequence().orElseThrow(RuntimeException::new),
         issuanceCreate.sequence(),
         issuerKeyPair.publicKey().deriveAddress()
@@ -128,6 +129,7 @@ public class MpTokenIT extends AbstractIT {
         .build()
     ).accountObjects()).containsExactly(issuanceFromLedgerEntry);
 
+    KeyPair holder1KeyPair = createRandomAccountEd25519();
     AccountInfoResult holder1AccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(holder1KeyPair.publicKey().deriveAddress())
     );
@@ -136,7 +138,7 @@ public class MpTokenIT extends AbstractIT {
       .sequence(holder1AccountInfo.accountData().sequence())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .signingPublicKey(holder1KeyPair.publicKey())
-      .lastLedgerSequence(holder1AccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue())
+      .lastLedgerSequence(holder1AccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .build();
     SingleSignedTransaction<MpTokenAuthorize> signedAuthorize = signatureService.sign(holder1KeyPair.privateKey(),
@@ -147,7 +149,7 @@ public class MpTokenIT extends AbstractIT {
     this.scanForResult(
       () -> xrplClient.isFinal(
         signedAuthorize.hash(),
-        issuerAccountInfo.ledgerIndexSafe(),
+        authorizeSubmitResult.validatedLedgerIndex(),
         authorize.lastLedgerSequence().orElseThrow(RuntimeException::new),
         authorize.sequence(),
         holder1KeyPair.publicKey().deriveAddress()
@@ -164,11 +166,9 @@ public class MpTokenIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(issuerAccountInfo.accountData().sequence().plus(UnsignedInteger.ONE))
       .destination(holder1KeyPair.publicKey().deriveAddress())
-      .amount(
-        mintAmount
-      )
+      .amount(mintAmount)
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(10)).unsignedIntegerValue())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(1000)).unsignedIntegerValue())
       .build();
 
     SingleSignedTransaction<Payment> signedMint = signatureService.sign(issuerKeyPair.privateKey(), mint);
@@ -178,7 +178,7 @@ public class MpTokenIT extends AbstractIT {
     this.scanForResult(
       () -> xrplClient.isFinal(
         signedMint.hash(),
-        issuerAccountInfo.ledgerIndexSafe(),
+        mintSubmitResult.validatedLedgerIndex(),
         mint.lastLedgerSequence().orElseThrow(RuntimeException::new),
         mint.sequence(),
         issuerKeyPair.publicKey().deriveAddress()
@@ -224,9 +224,146 @@ public class MpTokenIT extends AbstractIT {
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build()
     ).accountObjects()).containsExactly(holderMpToken);
-  }
 
-  // TODO: IT for issuance set and destroy
-  //       IT for escrow
-  //       IT for clawback
+    issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceSet lock = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(mint.sequence().plus(UnsignedInteger.ONE))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedLock = signatureService.sign(issuerKeyPair.privateKey(), lock);
+    SubmitResult<MpTokenIssuanceSet> lockSubmitResult = xrplClient.submit(signedLock);
+    assertThat(lockSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedLock.hash(),
+        lockSubmitResult.validatedLedgerIndex(),
+        lock.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        lock.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    assertThat(xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node().flags().lsfMptLocked()).isTrue();
+
+    Clawback clawback = Clawback.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(lock.fee())
+      .sequence(lock.sequence().plus(UnsignedInteger.ONE))
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(lockSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .amount(mintAmount)
+      .holder(holder1KeyPair.publicKey().deriveAddress())
+      .build();
+
+    SingleSignedTransaction<Clawback> signedClawback = signatureService.sign(issuerKeyPair.privateKey(), clawback);
+    SubmitResult<Clawback> clawbackSubmitResult = xrplClient.submit(signedClawback);
+    assertThat(clawbackSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedClawback.hash(),
+        clawbackSubmitResult.validatedLedgerIndex(),
+        clawback.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        clawback.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    assertThat(xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
+    ).node().outstandingAmount()).isEqualTo(MpTokenObjectAmount.of(0));
+    assertThat(xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(MpTokenLedgerEntryParams.builder()
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .account(holder1KeyPair.publicKey().deriveAddress())
+        .build(), LedgerSpecifier.VALIDATED)
+    ).node().mptAmount()).isEqualTo(MpTokenObjectAmount.of(0));
+
+    MpTokenAuthorize unauthorize = MpTokenAuthorize.builder()
+      .account(holder1KeyPair.publicKey().deriveAddress())
+      .sequence(authorize.sequence().plus(UnsignedInteger.ONE))
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(holder1KeyPair.publicKey())
+      .lastLedgerSequence(clawbackSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(100)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .flags(MpTokenAuthorizeFlags.UNAUTHORIZE)
+      .build();
+    SingleSignedTransaction<MpTokenAuthorize> signedUnauthorize = signatureService.sign(holder1KeyPair.privateKey(),
+      unauthorize);
+    SubmitResult<MpTokenAuthorize> unAuthorizeSubmitResult = xrplClient.submit(signedUnauthorize);
+    assertThat(unAuthorizeSubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedUnauthorize.hash(),
+        unAuthorizeSubmitResult.validatedLedgerIndex(),
+        unauthorize.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        unauthorize.sequence(),
+        holder1KeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    assertThatThrownBy(
+      () -> xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.mpToken(
+          MpTokenLedgerEntryParams.builder()
+            .account(holder1KeyPair.publicKey().deriveAddress())
+            .mpTokenIssuanceId(mpTokenIssuanceId)
+            .build(),
+          LedgerSpecifier.VALIDATED
+        )
+      ).node()
+    ).isInstanceOf(JsonRpcClientErrorException.class)
+      .hasMessageContaining("entryNotFound");
+
+    MpTokenIssuanceDestroy issuanceDestroy = MpTokenIssuanceDestroy.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(lock.fee())
+      .sequence(clawback.sequence().plus(UnsignedInteger.ONE))
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(unAuthorizeSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceDestroy> signedDestroy = signatureService.sign(issuerKeyPair.privateKey(),
+      issuanceDestroy);
+    SubmitResult<MpTokenIssuanceDestroy> destroySubmitResult = xrplClient.submit(signedDestroy);
+    assertThat(destroySubmitResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedDestroy.hash(),
+        destroySubmitResult.validatedLedgerIndex(),
+        issuanceDestroy.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceDestroy.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    assertThatThrownBy(
+      () -> xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.mpTokenIssuance(
+          mpTokenIssuanceId,
+          LedgerSpecifier.VALIDATED
+        )
+      ).node()
+    ).isInstanceOf(JsonRpcClientErrorException.class)
+      .hasMessageContaining("entryNotFound");
+  }
 }

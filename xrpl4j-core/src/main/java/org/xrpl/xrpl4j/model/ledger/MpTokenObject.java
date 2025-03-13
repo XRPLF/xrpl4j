@@ -47,7 +47,10 @@ public interface MpTokenObject extends LedgerObject {
   MpTokenIssuanceId mpTokenIssuanceId();
 
   @JsonProperty("MPTAmount")
-  MpTokenObjectAmount mptAmount();
+  @Value.Default
+  default MpTokenObjectAmount mptAmount() {
+    return MpTokenObjectAmount.of(0);
+  }
 
   /**
    * The identifying hash of the transaction that most recently modified this object.

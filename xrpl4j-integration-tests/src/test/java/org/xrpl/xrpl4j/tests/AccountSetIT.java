@@ -25,17 +25,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
-import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
@@ -49,13 +44,7 @@ import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.ImmutableTrustSet;
-import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -65,60 +54,6 @@ import java.util.Objects;
  * @see "https://xrpl.org/accountset.html"
  */
 public class AccountSetIT extends AbstractIT {
-
-  @Test
-  void name2() throws JsonRpcClientErrorException, JsonProcessingException {
-    KeyPair keyPair1 = constructRandomAccount();
-    KeyPair keyPair2 = constructRandomAccount();
-
-    AccountInfoResult accountInfo1 = this.scanForResult(
-      () -> this.getValidatedAccountInfo(keyPair1.publicKey().deriveAddress())
-    );
-    AccountInfoResult accountInfo2 = this.scanForResult(
-      () -> this.getValidatedAccountInfo(keyPair2.publicKey().deriveAddress())
-    );
-
-    ImmutableTrustSet trustSet1 = TrustSet.builder()
-      .account(keyPair1.publicKey().deriveAddress())
-      .sequence(accountInfo1.accountData().sequence())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.ONE))
-      .lastLedgerSequence(
-        accountInfo1.ledgerIndexSafe().plus(LedgerIndex.of(UnsignedInteger.valueOf(10))).unsignedIntegerValue())
-      .limitAmount(
-        IssuedCurrencyAmount.builder()
-          .currency("USD")
-          .value("100000")
-          .issuer(Address.of("rne3bStAJifMTBg7WzsmwzaMMY5XhAAuRe"))
-          .build()
-      )
-      .signingPublicKey(keyPair1.publicKey())
-      .build();
-
-    ImmutableTrustSet trustSet2 = TrustSet.builder()
-      .account(keyPair2.publicKey().deriveAddress())
-      .sequence(accountInfo2.accountData().sequence())
-      .fee(XrpCurrencyAmount.ofXrp(BigDecimal.ONE))
-      .lastLedgerSequence(
-        accountInfo2.ledgerIndexSafe().plus(LedgerIndex.of(UnsignedInteger.valueOf(10))).unsignedIntegerValue())
-      .limitAmount(
-        IssuedCurrencyAmount.builder()
-          .currency("USD")
-          .value("100000")
-          .issuer(Address.of("rne3bStAJifMTBg7WzsmwzaMMY5XhAAuRe"))
-          .build()
-      )
-      .signingPublicKey(keyPair2.publicKey())
-      .build();
-
-    SingleSignedTransaction<ImmutableTrustSet> signed1 = signatureService.sign(keyPair1.privateKey(), trustSet1);
-    SingleSignedTransaction<ImmutableTrustSet> signed2 = signatureService.sign(keyPair2.privateKey(), trustSet2);
-    SubmitResult<ImmutableTrustSet> submitResult1 = xrplClient.submit(signed1);
-    SubmitResult<ImmutableTrustSet> submitResult2 = xrplClient.submit(signed2);
-    assertThat(submitResult1.engineResult()).isEqualTo("tesSUCCESS");
-    assertThat(submitResult2.engineResult()).isEqualTo("tesSUCCESS");
-    System.out.printf("Account: %s. TrustSet hash: %s%n", keyPair1.publicKey().deriveAddress(), signed1.hash());
-    System.out.printf("Account: %s. TrustSet hash: %s%n", keyPair2.publicKey().deriveAddress(), signed2.hash());
-  }
 
   @Test
   public void enableAllAndDisableOne() throws JsonRpcClientErrorException, JsonProcessingException {

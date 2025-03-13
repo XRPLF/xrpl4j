@@ -35,7 +35,9 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
       .isEqualTo("XChainOwnedCreateAccountClaimID");
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
     assertThat(MetaLedgerEntryType.DID.value()).isEqualTo("DID");
-    assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("Oracle");
+    assertThat(MetaLedgerEntryType.ORACLE.value()).isEqualTo("Oracle");
+    assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("MPToken");
+    assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.value()).isEqualTo("MPTokenIssuance");
   }
 
   @Test
@@ -64,7 +66,9 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
       MetaXChainOwnedClaimIdObject.class
     );
     assertThat(MetaLedgerEntryType.DID.ledgerObjectType()).isEqualTo(MetaDidObject.class);
-    assertThat(MetaLedgerEntryType.MP_TOKEN.ledgerObjectType()).isEqualTo(MetaOracleObject.class);
+    assertThat(MetaLedgerEntryType.ORACLE.ledgerObjectType()).isEqualTo(MetaOracleObject.class);
+    assertThat(MetaLedgerEntryType.MP_TOKEN.ledgerObjectType()).isEqualTo(MetaMpTokenObject.class);
+    assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.ledgerObjectType()).isEqualTo(MetaMpTokenIssuanceObject.class);
   }
 
   @Test

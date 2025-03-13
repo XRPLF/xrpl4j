@@ -42,7 +42,8 @@ import java.math.BigDecimal;
 public class MpTokenIT extends AbstractIT {
 
   @Test
-  void createIssuanceThenPayThenLockThenClawbackThenDestroy() throws JsonRpcClientErrorException, JsonProcessingException {
+  void createIssuanceThenPayThenLockThenClawbackThenDestroy()
+    throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
@@ -168,7 +169,9 @@ public class MpTokenIT extends AbstractIT {
       .destination(holder1KeyPair.publicKey().deriveAddress())
       .amount(mintAmount)
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(1000)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        issuerAccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(1000)).unsignedIntegerValue()
+      )
       .build();
 
     SingleSignedTransaction<Payment> signedMint = signatureService.sign(issuerKeyPair.privateKey(), mint);
@@ -263,7 +266,9 @@ public class MpTokenIT extends AbstractIT {
       .fee(lock.fee())
       .sequence(lock.sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(lockSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        lockSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .amount(mintAmount)
       .holder(holder1KeyPair.publicKey().deriveAddress())
       .build();
@@ -298,7 +303,9 @@ public class MpTokenIT extends AbstractIT {
       .sequence(authorize.sequence().plus(UnsignedInteger.ONE))
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .signingPublicKey(holder1KeyPair.publicKey())
-      .lastLedgerSequence(clawbackSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(100)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        clawbackSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(100)).unsignedIntegerValue()
+      )
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .flags(MpTokenAuthorizeFlags.UNAUTHORIZE)
       .build();
@@ -336,7 +343,9 @@ public class MpTokenIT extends AbstractIT {
       .fee(lock.fee())
       .sequence(clawback.sequence().plus(UnsignedInteger.ONE))
       .signingPublicKey(issuerKeyPair.publicKey())
-      .lastLedgerSequence(unAuthorizeSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .lastLedgerSequence(
+        unAuthorizeSubmitResult.validatedLedgerIndex().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .build();
 

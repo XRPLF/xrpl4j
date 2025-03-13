@@ -28,7 +28,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import java.io.IOException;
 
 /**
- * Custom Jackson serializer for {@link MpTokenIssuanceId}s.
+ * Custom Jackson serializer for {@link MpTokenMetadata}s.
  */
 public class MpTokenMetadataSerializer extends StdScalarSerializer<MpTokenMetadata> {
 

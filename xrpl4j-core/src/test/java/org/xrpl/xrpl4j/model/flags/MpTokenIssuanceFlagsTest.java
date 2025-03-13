@@ -11,12 +11,13 @@ import java.util.stream.Stream;
 class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(6);
+    return getBooleanCombinations(7);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
+    boolean lsfMptLocked,
     boolean lsfMptCanLock,
     boolean lsfMptRequireAuth,
     boolean lsfMptCanEscrow,
@@ -24,7 +25,8 @@ class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
     boolean lsfMptCanTransfer,
     boolean lsfMptCanClawback
   ) {
-    long expectedFlags = (lsfMptCanLock ? MpTokenIssuanceFlags.CAN_LOCK.getValue() : 0L) |
+    long expectedFlags = (lsfMptLocked ? MpTokenIssuanceFlags.LOCKED.getValue() : 0L) |
+                         (lsfMptCanLock ? MpTokenIssuanceFlags.CAN_LOCK.getValue() : 0L) |
                          (lsfMptRequireAuth ? MpTokenIssuanceFlags.REQUIRE_AUTH.getValue() : 0L) |
                          (lsfMptCanEscrow ? MpTokenIssuanceFlags.CAN_ESCROW.getValue() : 0L) |
                          (lsfMptCanTrade ? MpTokenIssuanceFlags.CAN_TRADE.getValue() : 0L) |
@@ -35,6 +37,7 @@ class MpTokenIssuanceFlagsTest extends AbstractFlagsTest {
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
+    assertThat(flags.lsfMptLocked()).isEqualTo(lsfMptLocked);
     assertThat(flags.lsfMptCanLock()).isEqualTo(lsfMptCanLock);
     assertThat(flags.lsfMptRequireAuth()).isEqualTo(lsfMptRequireAuth);
     assertThat(flags.lsfMptCanEscrow()).isEqualTo(lsfMptCanEscrow);

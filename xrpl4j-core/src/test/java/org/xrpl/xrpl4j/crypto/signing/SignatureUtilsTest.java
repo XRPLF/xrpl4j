@@ -1847,7 +1847,7 @@ public class SignatureUtilsTest {
       .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
       .build();
 
-    addSignatureToTransactionHelper(transaction);
+    addMultiSignatureToTransactionHelper(transaction);
   }
 
   @Test
@@ -1858,7 +1858,7 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.valueOf(391))
       .build();
 
-    addSignatureToTransactionHelper(transaction);
+    addMultiSignatureToTransactionHelper(transaction);
   }
 
   @Test
@@ -1870,7 +1870,7 @@ public class SignatureUtilsTest {
       .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
       .build();
 
-    addSignatureToTransactionHelper(transaction);
+    addMultiSignatureToTransactionHelper(transaction);
   }
 
   @Test
@@ -1883,7 +1883,7 @@ public class SignatureUtilsTest {
       .flags(MpTokenIssuanceSetFlags.LOCK)
       .build();
 
-    addSignatureToTransactionHelper(transaction);
+    addMultiSignatureToTransactionHelper(transaction);
   }
 
   @Test

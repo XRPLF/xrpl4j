@@ -36,7 +36,7 @@ public class MpTokenFlags extends Flags {
    */
   public static final MpTokenFlags LOCKED = new MpTokenFlags(0x00000001);
   /**
-   * Constant {@link MpTokenFlags} for the {@code lsfMPTCanLock} account flag.
+   * Constant {@link MpTokenFlags} for the {@code lsfMPTAuthorized} account flag.
    */
   public static final MpTokenFlags AUTHORIZED = new MpTokenFlags(0x00000002);
 
@@ -47,6 +47,17 @@ public class MpTokenFlags extends Flags {
    */
   private MpTokenFlags(final long value) {
     super(value);
+  }
+
+  /**
+   * Construct {@link MpTokenFlags} with a given value.
+   *
+   * @param value The long-number encoded flags value of this {@link MpTokenFlags}.
+   *
+   * @return New {@link MpTokenFlags}.
+   */
+  public static MpTokenFlags of(long value) {
+    return new MpTokenFlags(value);
   }
 
   /**

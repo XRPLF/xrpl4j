@@ -28,6 +28,7 @@ import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 
 import java.util.Optional;
@@ -598,6 +599,14 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (oracle().isPresent()) {
       return (Class<T>) OracleObject.class;
+    }
+
+    if (mptIssuance().isPresent()) {
+      return (Class<T>) MpTokenIssuanceObject.class;
+    }
+
+    if (mpToken().isPresent()) {
+      return (Class<T>) MpTokenObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

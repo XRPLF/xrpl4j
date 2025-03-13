@@ -37,7 +37,7 @@ public interface MpTokenAmount extends CurrencyAmount {
    *
    * @return An {@link UnsignedLong}.
    */
-  @Value.Derived
+  @Value.Auxiliary
   @JsonIgnore
   default UnsignedLong unsignedLongValue() {
     return isNegative() ?

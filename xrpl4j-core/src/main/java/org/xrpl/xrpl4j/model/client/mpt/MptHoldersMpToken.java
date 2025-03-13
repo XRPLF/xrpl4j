@@ -34,7 +34,7 @@ public interface MptHoldersMpToken {
   MpTokenObjectAmount mptAmount();
 
   @JsonProperty("locked_amount")
-  Optional<MpTokenAmount> lockedAmount();
+  Optional<MpTokenObjectAmount> lockedAmount();
 
   @JsonProperty("mptoken_index")
   Hash256 mpTokenIndex();

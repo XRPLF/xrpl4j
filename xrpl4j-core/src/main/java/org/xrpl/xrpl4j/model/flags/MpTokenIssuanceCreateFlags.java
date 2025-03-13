@@ -162,12 +162,12 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
    */
   public static class Builder {
 
-    boolean tfMptCanLock = false;
-    boolean tfMptRequireAuth = false;
-    boolean tfMptCanEscrow = false;
-    boolean tfMptCanTrade = false;
-    boolean tfMptCanTransfer = false;
-    boolean tfMptCanClawback = false;
+    private boolean tfMptCanLock = false;
+    private boolean tfMptRequireAuth = false;
+    private boolean tfMptCanEscrow = false;
+    private boolean tfMptCanTrade = false;
+    private boolean tfMptCanTransfer = false;
+    private boolean tfMptCanClawback = false;
 
     /**
      * Set {@code tfMptCanLock} to the given value.

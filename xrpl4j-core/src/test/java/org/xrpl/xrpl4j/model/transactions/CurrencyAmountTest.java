@@ -117,6 +117,20 @@ public class CurrencyAmountTest {
   }
 
   @Test
+  public void handleMptAmount() {
+    final MpTokenAmount amount = MpTokenAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("100")
+      .build();
+
+    amount.handle(
+      ($) -> fail(),
+      ($) -> fail(),
+      ($) -> assertThat($.value()).isEqualTo("100")
+    );
+  }
+
+  @Test
   public void mapXrp() {
     XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(0L);
 
@@ -140,6 +154,21 @@ public class CurrencyAmountTest {
       ($) -> "fail",
       ($) -> "success",
       ($) -> "fail"
+    );
+    assertThat(actual).isEqualTo("success");
+  }
+
+  @Test
+  public void mapMptAmount() {
+    final MpTokenAmount amount = MpTokenAmount.builder()
+      .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+      .value("100")
+      .build();
+
+    String actual = amount.map(
+      ($) -> "fail",
+      ($) -> "fail",
+      ($) -> "success"
     );
     assertThat(actual).isEqualTo("success");
   }

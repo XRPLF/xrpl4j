@@ -42,8 +42,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.xrpl.xrpl4j.client.faucet.FaucetClient;
-import org.xrpl.xrpl4j.client.faucet.FundAccountRequest;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
@@ -83,6 +81,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersRequestParams;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersResponse;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
 import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
@@ -116,7 +116,6 @@ import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.Signer;
@@ -147,48 +146,6 @@ public class XrplClientTest {
   void setUp() {
     openMocks(this);
     xrplClient = new XrplClient(jsonRpcClientMock);
-  }
-
-  @Test
-  void name() throws JsonRpcClientErrorException {
-    xrplClient = new XrplClient(HttpUrl.get("https://stylish-powerful-glade.xrp-mainnet.quiknode.pro/33a542bf497c0d2b6c504387690bf8eafec57202/"));
-
-    int count = 0;
-    AccountLinesResult lines = xrplClient.accountLines(
-      AccountLinesRequestParams.builder()
-        .account(Address.of("rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"))
-        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-        .limit(UnsignedInteger.valueOf(500))
-        .build()
-    );
-    count += lines.lines().size();
-
-    lines.lines()
-      .forEach(line -> {
-        if (line.currency().length() == 1) {
-          System.out.println("FOUND: " + line);
-        }
-      });
-    while (lines.marker().isPresent()) {
-      lines = xrplClient.accountLines(
-        AccountLinesRequestParams.builder()
-          .account(Address.of("rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"))
-          .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-          .limit(UnsignedInteger.valueOf(500))
-          .marker(lines.marker())
-          .build()
-      );
-      lines.lines()
-        .forEach(line -> {
-          if (line.currency().length() == 1) {
-            System.out.println("FOUND: " + line);
-          }
-        });
-      count += lines.lines().size();
-    }
-
-    System.out.println("Found trustlines: " + count);
-
   }
 
   @Test
@@ -1163,6 +1120,24 @@ public class XrplClientTest {
     )).thenReturn(expectedResult);
 
     GetAggregatePriceResult result = xrplClient.getAggregatePrice(params);
+
+    assertThat(result).isEqualTo(expectedResult);
+  }
+
+  @Test
+  void mptHolders() throws JsonRpcClientErrorException {
+    MptHoldersRequestParams params = mock(MptHoldersRequestParams.class);
+    MptHoldersResponse expectedResult = mock(MptHoldersResponse.class);
+
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.MPT_HOLDERS)
+        .addParams(params)
+        .build(),
+      MptHoldersResponse.class
+    )).thenReturn(expectedResult);
+
+    MptHoldersResponse result = xrplClient.mptHolders(params);
 
     assertThat(result).isEqualTo(expectedResult);
   }

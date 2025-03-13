@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Marker;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Immutable
 @JsonSerialize(as = ImmutableMptHoldersResponse.class)
 @JsonDeserialize(as = ImmutableMptHoldersResponse.class)
-public interface MptHoldersResponse {
+public interface MptHoldersResponse extends XrplResult {
 
   /**
    * Construct a {@code MptHoldersResponse} builder.
@@ -36,7 +37,6 @@ public interface MptHoldersResponse {
 
   Optional<UnsignedInteger> limit();
 
-  // FIXME: Is this always the field, or does clio also return `ledger_hash` and potentially `ledger_current_index`?
   @JsonProperty("ledger_index")
   LedgerIndex ledgerIndex();
 }

@@ -11,6 +11,9 @@ import org.xrpl.xrpl4j.model.transactions.ImmutableMpTokenIssuanceDestroy.Builde
 
 import java.util.Optional;
 
+/**
+ * Representation of the {@code MPTokenIssuanceDestroy} transaction.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMpTokenIssuanceDestroy.class)
 @JsonDeserialize(as = ImmutableMpTokenIssuanceDestroy.class)
@@ -40,6 +43,11 @@ public interface MpTokenIssuanceDestroy extends Transaction {
     return TransactionFlags.EMPTY;
   }
 
+  /**
+   * The {@link MpTokenIssuanceId} of the issuance to destroy.
+   *
+   * @return An {@link MpTokenIssuanceId}.
+   */
   @JsonProperty("MPTokenIssuanceID")
   MpTokenIssuanceId mpTokenIssuanceId();
 

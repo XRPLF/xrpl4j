@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
+import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
@@ -67,7 +68,7 @@ public class MpTokenIT extends AbstractIT {
       .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
       .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
       .maximumAmount(MpTokenObjectAmount.of(Long.MAX_VALUE))
-      .mpTokenMetadata("ABCD")
+      .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
       .flags(
         flags
       )

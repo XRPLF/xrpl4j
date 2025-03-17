@@ -13,6 +13,9 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
 import java.util.Optional;
 
+/**
+ * Request parameters for the {@code mpt_holders} RPC.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMptHoldersRequestParams.class)
 @JsonDeserialize(as = ImmutableMptHoldersRequestParams.class)
@@ -27,9 +30,19 @@ public interface MptHoldersRequestParams extends XrplRequestParams {
     return ImmutableMptHoldersRequestParams.builder();
   }
 
+  /**
+   * The {@link MpTokenIssuanceId} of the issuance.
+   *
+   * @return An {@link MpTokenIssuanceId}.
+   */
   @JsonProperty("mpt_issuance_id")
   MpTokenIssuanceId mpTokenIssuanceId();
 
+  /**
+   * A {@link LedgerSpecifier}.
+   *
+   * @return A {@link LedgerSpecifier}.
+   */
   @JsonUnwrapped
   LedgerSpecifier ledgerSpecifier();
 

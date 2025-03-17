@@ -17,6 +17,9 @@ import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.util.Optional;
 
+/**
+ * Represents an {@code MPToken} ledger object.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMpTokenObject.class)
 @JsonDeserialize(as = ImmutableMpTokenObject.class)
@@ -37,15 +40,35 @@ public interface MpTokenObject extends LedgerObject {
     return LedgerEntryType.MP_TOKEN;
   }
 
+  /**
+   * The {@link MpTokenFlags} for this token.
+   *
+   * @return An {@link MpTokenFlags}.
+   */
   @JsonProperty("Flags")
   MpTokenFlags flags();
 
+  /**
+   * The {@link Address} of the owner of this MPToken.
+   *
+   * @return An {@link Address}.
+   */
   @JsonProperty("Account")
   Address account();
 
+  /**
+   * The {@link MpTokenIssuanceId} of the MPTokenIssuance that this token corresponds to.
+   *
+   * @return An {@link MpTokenIssuanceId}.
+   */
   @JsonProperty("MPTokenIssuanceID")
   MpTokenIssuanceId mpTokenIssuanceId();
 
+  /**
+   * The balance of this MPToken. Defaults to 0.
+   *
+   * @return An {@link MpTokenObjectAmount}.
+   */
   @JsonProperty("MPTAmount")
   @Value.Default
   default MpTokenObjectAmount mptAmount() {

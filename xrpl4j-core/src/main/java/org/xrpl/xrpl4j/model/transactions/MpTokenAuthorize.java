@@ -9,6 +9,9 @@ import org.xrpl.xrpl4j.model.flags.MpTokenAuthorizeFlags;
 
 import java.util.Optional;
 
+/**
+ * Representation of the {@code MPTokenAuthorize} transaction.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMpTokenAuthorize.class)
 @JsonDeserialize(as = ImmutableMpTokenAuthorize.class)
@@ -29,9 +32,20 @@ public interface MpTokenAuthorize extends Transaction {
     return MpTokenAuthorizeFlags.empty();
   }
 
+  /**
+   * The {@link MpTokenIssuanceId} of the issuance to authorize.
+   *
+   * @return An {@link MpTokenIssuanceId}.
+   */
   @JsonProperty("MPTokenIssuanceID")
   MpTokenIssuanceId mpTokenIssuanceId();
 
+  /**
+   * Specifies the holder's address that the issuer wants to authorize. Only used for authorization/allow-listing;
+   * should not be present if submitted by the holder.
+   *
+   * @return An optionally-present {@link Address}.
+   */
   @JsonProperty("Holder")
   Optional<Address> holder();
 

@@ -9,6 +9,9 @@ import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 
 import java.util.Optional;
 
+/**
+ * Representation of the {@code MPTokenIssuanceSet} transaction.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMpTokenIssuanceSet.class)
 @JsonDeserialize(as = ImmutableMpTokenIssuanceSet.class)
@@ -23,15 +26,31 @@ public interface MpTokenIssuanceSet extends Transaction {
     return ImmutableMpTokenIssuanceSet.builder();
   }
 
+  /**
+   * A set of {@link MpTokenIssuanceSetFlags}.
+   *
+   * @return An {@link MpTokenIssuanceSetFlags}.
+   */
   @JsonProperty("Flags")
   @Value.Default
   default MpTokenIssuanceSetFlags flags() {
     return MpTokenIssuanceSetFlags.empty();
   }
 
+  /**
+   * The {@link MpTokenIssuanceId} of the issuance to update.
+   *
+   * @return An {@link MpTokenIssuanceId}.
+   */
   @JsonProperty("MPTokenIssuanceID")
   MpTokenIssuanceId mpTokenIssuanceId();
 
+  /**
+   * An optional XRPL Address of an individual token holder balance to lock/unlock. If omitted, this transaction will
+   * apply to all accounts holding MPTs.
+   *
+   * @return An optionally-present {@link Address}.
+   */
   @JsonProperty("Holder")
   Optional<Address> holder();
 

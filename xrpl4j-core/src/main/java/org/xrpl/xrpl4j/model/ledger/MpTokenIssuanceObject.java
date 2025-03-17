@@ -17,6 +17,9 @@ import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.util.Optional;
 
+/**
+ * Represents an {@code MPTokenIssuance}.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMpTokenIssuanceObject.class)
 @JsonDeserialize(as = ImmutableMpTokenIssuanceObject.class)
@@ -37,9 +40,19 @@ public interface MpTokenIssuanceObject extends LedgerObject {
     return LedgerEntryType.MP_TOKEN_ISSUANCE;
   }
 
+  /**
+   * The {@link MpTokenIssuanceFlags} for this issuance.
+   *
+   * @return An {@link MpTokenIssuanceFlags}.
+   */
   @JsonProperty("Flags")
   MpTokenIssuanceFlags flags();
 
+  /**
+   * The {@link Address} of the issuer of this token.
+   *
+   * @return An {@link Address}.
+   */
   @JsonProperty("Issuer")
   Address issuer();
 
@@ -53,24 +66,49 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   @JsonProperty("Sequence")
   UnsignedInteger sequence();
 
+  /**
+   * The fee that this issuance charges for secondary sales of the token.
+   *
+   * @return A {@link TransferFee}.
+   */
   @JsonProperty("TransferFee")
   @Value.Default
   default TransferFee transferFee() {
     return TransferFee.of(UnsignedInteger.ZERO);
   }
 
+  /**
+   * The {@link AssetScale} of the issuance.
+   *
+   * @return An {@link AssetScale}.
+   */
   @JsonProperty("AssetScale")
   @Value.Default
   default AssetScale assetScale() {
     return AssetScale.of(UnsignedInteger.ZERO);
   }
 
+  /**
+   * The maximum number of this issuance that can be distributed to non-issuing accounts.
+   *
+   * @return An optionally present {@link MpTokenObjectAmount}.
+   */
   @JsonProperty("MaximumAmount")
   Optional<MpTokenObjectAmount> maximumAmount();
 
+  /**
+   * The sum of all token amounts that have been minted to all token holders.
+   *
+   * @return An {@link MpTokenObjectAmount}.
+   */
   @JsonProperty("OutstandingAmount")
   MpTokenObjectAmount outstandingAmount();
 
+  /**
+   * Arbitrary hex-encoded metadata about this issuance.
+   *
+   * @return An optionally-present {@link MpTokenMetadata}.
+   */
   @JsonProperty("MPTokenMetadata")
   Optional<MpTokenMetadata> mpTokenMetadata();
 
@@ -116,5 +154,6 @@ public interface MpTokenIssuanceObject extends LedgerObject {
    *
    * @return An {@link Optional} {@link MpTokenIssuanceId}.
    */
+  @JsonProperty("mpt_issuance_id")
   Optional<MpTokenIssuanceId> mpTokenIssuanceId();
 }

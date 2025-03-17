@@ -534,9 +534,19 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    */
   Optional<OracleLedgerEntryParams> oracle();
 
+  /**
+   * Look up an {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} by {@link MpTokenIssuanceId}.
+   *
+   * @return An {@link Optional} {@link MpTokenIssuanceId}.
+   */
   @JsonProperty("mpt_issuance")
   Optional<MpTokenIssuanceId> mptIssuance();
 
+  /**
+   * Look up an {@link org.xrpl.xrpl4j.model.ledger.MpTokenObject} by {@link MpTokenLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link MpTokenLedgerEntryParams}.
+   */
   @JsonProperty("mptoken")
   Optional<MpTokenLedgerEntryParams> mpToken();
 

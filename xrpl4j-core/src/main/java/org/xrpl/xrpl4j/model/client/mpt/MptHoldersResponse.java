@@ -13,6 +13,9 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Response object for {@code mpt_holders} RPCs.
+ */
 @Immutable
 @JsonSerialize(as = ImmutableMptHoldersResponse.class)
 @JsonDeserialize(as = ImmutableMptHoldersResponse.class)

@@ -37,21 +37,21 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-    "  \"AssetScale\" : 2,\n" +
-    "  \"Flags\" : 122,\n" +
-    "  \"Issuer\" : \"rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c\",\n" +
-    "  \"LedgerEntryType\" : \"MPTokenIssuance\",\n" +
-    "  \"MPTokenMetadata\" : \"ABCD\",\n" +
-    "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
-    "  \"OutstandingAmount\" : \"0\",\n" +
-    "  \"OwnerNode\" : \"0\",\n" +
-    "  \"PreviousTxnID\" : \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
-    "  \"PreviousTxnLgrSeq\" : 420,\n" +
-    "  \"Sequence\" : 377,\n" +
-    "  \"TransferFee\" : 10,\n" +
-    "  \"index\" : \"9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301\",\n" +
-    "  \"mpt_issuance_id\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\"\n" +
-    "}";
+                  "  \"AssetScale\" : 2,\n" +
+                  "  \"Flags\" : 122,\n" +
+                  "  \"Issuer\" : \"rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c\",\n" +
+                  "  \"LedgerEntryType\" : \"MPTokenIssuance\",\n" +
+                  "  \"MPTokenMetadata\" : \"ABCD\",\n" +
+                  "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
+                  "  \"OutstandingAmount\" : \"0\",\n" +
+                  "  \"OwnerNode\" : \"0\",\n" +
+                  "  \"PreviousTxnID\" : \"8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F\",\n" +
+                  "  \"PreviousTxnLgrSeq\" : 420,\n" +
+                  "  \"Sequence\" : 377,\n" +
+                  "  \"TransferFee\" : 10,\n" +
+                  "  \"index\" : \"9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301\",\n" +
+                  "  \"mpt_issuance_id\" : \"00000179C3493FFEB0869853DDEC0705800595424710FA7A\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(object, json);
   }
@@ -71,7 +71,6 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .index(Hash256.of("9295A1CC8C9E8C7CA77C823F2D10B9C599E63707C7A222B306F603D4CF511301"))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("00000179C3493FFEB0869853DDEC0705800595424710FA7A"))
       .build();
-
 
     assertThat(object.assetScale()).isEqualTo(AssetScale.of(UnsignedInteger.ZERO));
     assertThat(object.transferFee()).isEqualTo(TransferFee.of(UnsignedInteger.ZERO));

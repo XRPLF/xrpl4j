@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
@@ -40,7 +41,13 @@ import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.math.BigDecimal;
 
+@DisabledIf(value = "shouldNotRun", disabledReason = "MpTokenIT only runs on local rippled node or devnet.")
 public class MpTokenIT extends AbstractIT {
+
+  static boolean shouldNotRun() {
+    return System.getProperty("useTestnet") != null ||
+           System.getProperty("useClioTestnet") != null;
+  }
 
   @Test
   void createIssuanceThenPayThenLockThenClawbackThenDestroy()

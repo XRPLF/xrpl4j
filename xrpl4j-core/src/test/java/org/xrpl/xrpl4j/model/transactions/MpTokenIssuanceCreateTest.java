@@ -32,18 +32,19 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       .maximumAmount(MpTokenObjectAmount.of(Long.MAX_VALUE))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
       .build();
-    String json = "{\n" +
-                  "  \"Account\" : \"rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ\",\n" +
-                  "  \"TransactionType\" : \"MPTokenIssuanceCreate\",\n" +
-                  "  \"Fee\" : \"15\",\n" +
-                  "  \"Sequence\" : 321,\n" +
-                  "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
-                  "  \"Flags\" : 2147483770,\n" +
-                  "  \"AssetScale\" : 2,\n" +
-                  "  \"TransferFee\" : 10,\n" +
-                  "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
-                  "  \"MPTokenMetadata\" : \"ABCD\"\n" +
-                  "}";
+    String json =
+      "{\n" +
+      "  \"Account\" : \"rhqFECTUUqYYQouPHojLfrtjdx1WZ5jqrZ\",\n" +
+      "  \"TransactionType\" : \"MPTokenIssuanceCreate\",\n" +
+      "  \"Fee\" : \"15\",\n" +
+      "  \"Sequence\" : 321,\n" +
+      "  \"SigningPubKey\" : \"EDFE73FB561109EDCFB27C07B1870731849B4FC7718A8DCC9F9A1FB4E974874710\",\n" +
+      "  \"Flags\" : 2147483770,\n" +
+      "  \"AssetScale\" : 2,\n" +
+      "  \"TransferFee\" : 10,\n" +
+      "  \"MaximumAmount\" : \"9223372036854775807\",\n" +
+      "  \"MPTokenMetadata\" : \"ABCD\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(issuanceCreate, json);
   }

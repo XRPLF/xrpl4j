@@ -120,7 +120,9 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
   }
 
   /**
-   * If set, indicates that tokens may be transferred to other accounts that are not the issuer.
+   * If set, indicates that tokens may be transferred by any account (issuer or non-issuer) to any account (issuer or
+   * non-issuer). If unset, indicates that tokens may only be transferred from the issuer to any single account (or back
+   * to the issuer) but that tokens may not be transferred between non-issuer accounts.
    *
    * @return {@code true} if {@code tfMPTCanTransfer} is set, otherwise {@code false}.
    */

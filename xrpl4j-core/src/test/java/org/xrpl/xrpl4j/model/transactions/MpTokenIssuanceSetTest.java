@@ -22,14 +22,15 @@ class MpTokenIssuanceSetTest extends AbstractJsonTest {
       )
       .build();
 
-    String json = "{\n" +
-                  "  \"Account\" : \"rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd\",\n" +
-                  "  \"TransactionType\" : \"MPTokenIssuanceSet\",\n" +
-                  "  \"Fee\" : \"15\",\n" +
-                  "  \"Sequence\" : 335,\n" +
-                  "  \"SigningPubKey\" : \"ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148\",\n" +
-                  "  \"MPTokenIssuanceID\" : \"0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4\"\n" +
-                  "}";
+    String json =
+      "{\n" +
+      "  \"Account\" : \"rBcfczVUsaQTGNVGQ63hGZHmLNNzJr3gMd\",\n" +
+      "  \"TransactionType\" : \"MPTokenIssuanceSet\",\n" +
+      "  \"Fee\" : \"15\",\n" +
+      "  \"Sequence\" : 335,\n" +
+      "  \"SigningPubKey\" : \"ED6EC29EF994F886D623A58B4CDB36DAFDBB7812C289E17B770EDF7E3B2F53E148\",\n" +
+      "  \"MPTokenIssuanceID\" : \"0000014D745557D1E15173E54C7A8445DA5B28C50E90C7D4\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(issuanceSet, json);
   }

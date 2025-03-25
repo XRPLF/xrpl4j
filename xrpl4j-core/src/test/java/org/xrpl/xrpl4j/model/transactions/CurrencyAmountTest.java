@@ -25,11 +25,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedLong;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.math.BigDecimal;
@@ -38,7 +43,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Unit tests for {@link CurrencyAmount}.
  */
-public class CurrencyAmountTest {
+class CurrencyAmountTest extends AbstractJsonTest {
 
   @Test
   public void isNegative() {
@@ -65,27 +70,30 @@ public class CurrencyAmountTest {
     CurrencyAmount amount = () -> false;
     // null xrpCurrencyAmountHandler
     assertThrows(NullPointerException.class, () ->
-      amount.handle(null, ($) -> new Object(), ($) -> new Object())
+      amount.handle(null, $ -> new Object(), $ -> new Object())
     );
 
     // null issuedCurrencyAmountConsumer
     assertThrows(NullPointerException.class, () ->
-      amount.handle(($) -> new Object(), null, ($) -> new Object())
+      amount.handle($ -> new Object(), null, $ -> new Object())
     );
 
     // null mpTokenAmount
     assertThrows(NullPointerException.class, () ->
-      amount.handle(($) -> new Object(), ($) -> new Object(), null)
+      amount.handle($ -> new Object(), $ -> new Object(), null)
     );
   }
 
   @Test
   void handleUnhandled() {
-    CurrencyAmount amount = () -> false;
     // Unhandled...
     CurrencyAmount currencyAmount = () -> false;
     assertThrows(IllegalStateException.class, () ->
-      currencyAmount.handle(($) -> new Object(), ($) -> new Object(), ($) -> new Object())
+      currencyAmount.handle(
+        $ -> new Object(),
+        $ -> new Object(),
+        $ -> new Object()
+      )
     );
   }
 
@@ -94,9 +102,9 @@ public class CurrencyAmountTest {
     XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(0L);
 
     xrpCurrencyAmount.handle(
-      ($) -> assertThat($.value()).isEqualTo(UnsignedLong.ZERO),
-      ($) -> fail(),
-      ($) -> fail()
+      $ -> assertThat($.value()).isEqualTo(UnsignedLong.ZERO),
+      $ -> fail(),
+      $ -> fail()
     );
   }
 
@@ -109,9 +117,9 @@ public class CurrencyAmountTest {
       .build();
 
     issuedCurrencyAmount.handle(
-      ($) -> fail(),
-      ($) -> assertThat($.value()).isEqualTo("100"),
-      ($) -> fail()
+      $ -> fail(),
+      $ -> assertThat($.value()).isEqualTo("100"),
+      $ -> fail()
     );
 
   }
@@ -124,9 +132,9 @@ public class CurrencyAmountTest {
       .build();
 
     amount.handle(
-      ($) -> fail(),
-      ($) -> fail(),
-      ($) -> assertThat($.value()).isEqualTo("100")
+      $ -> fail(),
+      $ -> fail(),
+      $ -> assertThat($.value()).isEqualTo("100")
     );
   }
 
@@ -135,9 +143,9 @@ public class CurrencyAmountTest {
     XrpCurrencyAmount xrpCurrencyAmount = XrpCurrencyAmount.ofDrops(0L);
 
     String actual = xrpCurrencyAmount.map(
-      ($) -> "success",
-      ($) -> "fail",
-      ($) -> "fail"
+      $ -> "success",
+      $ -> "fail",
+      $ -> "fail"
     );
     assertThat(actual).isEqualTo("success");
   }
@@ -151,9 +159,9 @@ public class CurrencyAmountTest {
       .build();
 
     String actual = issuedCurrencyAmount.map(
-      ($) -> "fail",
-      ($) -> "success",
-      ($) -> "fail"
+      $ -> "fail",
+      $ -> "success",
+      $ -> "fail"
     );
     assertThat(actual).isEqualTo("success");
   }
@@ -166,9 +174,9 @@ public class CurrencyAmountTest {
       .build();
 
     String actual = amount.map(
-      ($) -> "fail",
-      ($) -> "fail",
-      ($) -> "success"
+      $ -> "fail",
+      $ -> "fail",
+      $ -> "success"
     );
     assertThat(actual).isEqualTo("success");
   }
@@ -254,5 +262,68 @@ public class CurrencyAmountTest {
     assertThat(CurrencyAmount.MAX_XRP).isEqualTo(100_000_000_000L);
     assertThat(CurrencyAmount.MAX_XRP_IN_DROPS).isEqualTo(100_000_000_000_000_000L);
     assertThat(CurrencyAmount.MAX_XRP_BD).isEqualTo(new BigDecimal(100_000_000_000L));
+  }
+
+  @Test
+  void testJson() throws JSONException, JsonProcessingException {
+    // update this test to use the CurrencyAmountWrapper
+    CurrencyAmountWrapper currencyAmountWrapper = CurrencyAmountWrapper.builder()
+      .amount(XrpCurrencyAmount.ofDrops(15))
+      .build();
+    String json = "{\n" +
+                  "  \"amount\" : \"15\"\n" +
+                  "}";
+    assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
+
+    currencyAmountWrapper = CurrencyAmountWrapper.builder()
+      .amount(IssuedCurrencyAmount.builder()
+        .currency("USD")
+        .issuer(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"))
+        .value("15")
+        .build())
+      .build();
+    json =
+      "{\"amount\": " +
+      "   {\n" +
+      "     \"currency\" : \"USD\",\n" +
+      "     \"issuer\" : \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\",\n" +
+      "     \"value\" : \"15\"\n" +
+      "   }" +
+      "}";
+    assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
+
+    currencyAmountWrapper = CurrencyAmountWrapper.builder()
+      .amount(MpTokenAmount.builder()
+        .mptIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
+        .value("15")
+        .build())
+      .build();
+
+    json =
+      "{\"amount\": {\n" +
+      "  \"mpt_issuance_id\" : \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\",\n" +
+      "  \"value\" : \"15\"\n" +
+      " }\n" +
+      "}";
+    assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
+  }
+
+  // write a wrapper interface that wraps a CurrencyAmount using Value.Immutable
+  // write a wrapper class that implements CurrencyAmount using Value.Immutable
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableCurrencyAmountWrapper.class)
+  @JsonDeserialize(as = ImmutableCurrencyAmountWrapper.class)
+  interface CurrencyAmountWrapper {
+
+    /**
+     * Construct a {@code CurrencyAmountWrapper} builder.
+     *
+     * @return An {@link ImmutableCurrencyAmountWrapper.Builder}.
+     */
+    static ImmutableCurrencyAmountWrapper.Builder builder() {
+      return ImmutableCurrencyAmountWrapper.builder();
+    }
+
+    CurrencyAmount amount();
   }
 }

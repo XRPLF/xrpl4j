@@ -84,14 +84,14 @@ public class RippledContainer {
   public RippledContainer() {
     try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:2.3.0")) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-          cmd.withEntrypoint("/opt/ripple/bin/rippled"))
-        .withCommand("-a --start --conf /config/rippled.cfg")
-        .withExposedPorts(5005)
-        .withImagePullPolicy(PullPolicy.alwaysPull())
-        .withClasspathResourceMapping("rippled",
-          "/config",
-          BindMode.READ_ONLY)
-        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
+              cmd.withEntrypoint("/opt/ripple/bin/rippled"))
+          .withCommand("-a --start --conf /config/rippled.cfg")
+          .withExposedPorts(5005)
+          .withImagePullPolicy(PullPolicy.alwaysPull())
+          .withClasspathResourceMapping("rippled",
+              "/config",
+              BindMode.READ_ONLY)
+          .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }
 
     ledgerAcceptor = Executors.newScheduledThreadPool(1);
@@ -117,7 +117,6 @@ public class RippledContainer {
    * Start contain with given interval for closing ledgers.
    *
    * @param acceptIntervalMillis The number of milliseconds before each accept call to close the ledger.
-   *
    * @return A {@link RippledContainer}.
    */
   public RippledContainer start(final Duration acceptIntervalMillis) {
@@ -142,19 +141,19 @@ public class RippledContainer {
    */
   private void waitForLedgerTimeToSync() {
     Awaitility.await()
-      .pollDelay(1, TimeUnit.SECONDS)
-      .atMost(10, TimeUnit.SECONDS)
-      .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
+        .pollDelay(1, TimeUnit.SECONDS)
+        .atMost(10, TimeUnit.SECONDS)
+        .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
   }
 
   private ZonedDateTime getLedgerTime() {
     try {
       return getXrplClient().serverInformation().info()
-        .map(
-          RippledServerInfo::time,
-          clioServerInfo -> ZonedDateTime.now(),
-          ReportingModeServerInfo::time
-        );
+          .map(
+              RippledServerInfo::time,
+              clioServerInfo -> ZonedDateTime.now(),
+              ReportingModeServerInfo::time
+          );
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e);
     }
@@ -216,7 +215,6 @@ public class RippledContainer {
    *
    * @param acceptIntervalMillis The interval, in milliseconds, between regular calls to the `ledger_accept` method.
    *                             This method is responsible for accepting new transactions into the ledger.
-   *
    * @see "https://xrpl.org/docs/references/http-websocket-apis/admin-api-methods/server-control-methods/ledger_accept"
    */
   public void startLedgerAcceptor(final Duration acceptIntervalMillis) {
@@ -228,9 +226,9 @@ public class RippledContainer {
     // rippled, run a scheduled task to trigger the "ledger_accept" method.
     ledgerAcceptor = Executors.newScheduledThreadPool(1);
     ledgerAcceptor.scheduleAtFixedRate(() -> LEDGER_ACCEPTOR.accept(this),
-      acceptIntervalMillis.toMillis(),
-      acceptIntervalMillis.toMillis(),
-      TimeUnit.MILLISECONDS
+        acceptIntervalMillis.toMillis(),
+        acceptIntervalMillis.toMillis(),
+        TimeUnit.MILLISECONDS
     );
 
     waitForLedgerTimeToSync();
@@ -239,7 +237,7 @@ public class RippledContainer {
   /**
    * Stops the automated Ledger Acceptor, for example to control an integration test more finely.
    */
-  @SuppressWarnings({"all"})
+  @SuppressWarnings( {"all"})
   public void stopLedgerAcceptor() {
     try {
       ledgerAcceptor.shutdown();

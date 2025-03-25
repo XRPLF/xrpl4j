@@ -60,10 +60,12 @@ abstract class BaseSerializerTypeTest {
         AmountType amountType = (AmountType) serialized;
         // Special-case for zero-value IOU amounts.
         if (
-          !amountType.toJson().has("mpt_issuance_id") &&// <-- Not MPT
+          !amountType.toJson().has("mpt_issuance_id") && // <-- Not MPT
           amountType.toJson().has("value") && // <-- Is IOU
-          (amountType.toJson().get("value").asText().equals("0") ||
-           amountType.toJson().get("value").asText().equals("0.0"))
+            (
+              amountType.toJson().get("value").asText().equals("0") ||
+              amountType.toJson().get("value").asText().equals("0.0")
+            )
         ) {
           // An apparent bug in AmountType always sets the negative/positive boolean to `negative` when the amount
           // values are `0` or `0.0`, so this special case must exist in order for tests to pass. Once

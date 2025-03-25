@@ -65,10 +65,10 @@ public interface MpTokenIssuanceCreate extends Transaction {
    * implementation will set this to an empty default field value, which will be interpreted at runtime as the current
    * maximum allowed value (currently 0x7FFF'FFFF'FFFF'FFFF).
    *
-   * @return An optionally present {@link MpTokenObjectAmount}.
+   * @return An optionally present {@link MpTokenNumericAmount}.
    */
   @JsonProperty("MaximumAmount")
-  Optional<MpTokenObjectAmount> maximumAmount();
+  Optional<MpTokenNumericAmount> maximumAmount();
 
   /**
    * Arbitrary metadata about this issuance, in hex format. The limit for this field is 1024 bytes.

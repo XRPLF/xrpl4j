@@ -35,7 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
@@ -74,7 +74,7 @@ public class MpTokenIT extends AbstractIT {
       .signingPublicKey(issuerKeyPair.publicKey())
       .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
       .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(0.01)))
-      .maximumAmount(MpTokenObjectAmount.of(Long.MAX_VALUE))
+      .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
       .flags(
         flags
@@ -128,7 +128,7 @@ public class MpTokenIT extends AbstractIT {
       issuanceCreate.assetScale().orElseThrow(RuntimeException::new));
     assertThat(issuanceFromLedgerEntry.maximumAmount()).isNotEmpty().get()
       .isEqualTo(issuanceCreate.maximumAmount().orElseThrow(RuntimeException::new));
-    assertThat(issuanceFromLedgerEntry.outstandingAmount()).isEqualTo(MpTokenObjectAmount.of(0));
+    assertThat(issuanceFromLedgerEntry.outstandingAmount()).isEqualTo(MpTokenNumericAmount.of(0));
 
     assertThat(xrplClient.accountObjects(
       AccountObjectsRequestParams.builder()
@@ -211,7 +211,7 @@ public class MpTokenIT extends AbstractIT {
       )
       .isEqualTo(issuanceFromLedgerEntry);
     assertThat(issuanceAfterPayment.outstandingAmount()).isEqualTo(
-      MpTokenObjectAmount.of(mintAmount.unsignedLongValue()));
+      MpTokenNumericAmount.of(mintAmount.unsignedLongValue()));
 
     MpTokenObject holderMpToken = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(
@@ -226,7 +226,7 @@ public class MpTokenIT extends AbstractIT {
     assertThat(holderMpToken.flags().lsfMptAuthorized()).isFalse();
     assertThat(holderMpToken.flags().lsfMptLocked()).isFalse();
     assertThat(holderMpToken.mpTokenIssuanceId()).isEqualTo(mpTokenIssuanceId);
-    assertThat(holderMpToken.mptAmount()).isEqualTo(MpTokenObjectAmount.of(mintAmount.unsignedLongValue()));
+    assertThat(holderMpToken.mptAmount()).isEqualTo(MpTokenNumericAmount.of(mintAmount.unsignedLongValue()));
 
     assertThat(xrplClient.accountObjects(
       AccountObjectsRequestParams.builder()
@@ -298,13 +298,13 @@ public class MpTokenIT extends AbstractIT {
 
     assertThat(xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpTokenIssuance(mpTokenIssuanceId, LedgerSpecifier.VALIDATED)
-    ).node().outstandingAmount()).isEqualTo(MpTokenObjectAmount.of(0));
+    ).node().outstandingAmount()).isEqualTo(MpTokenNumericAmount.of(0));
     assertThat(xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(MpTokenLedgerEntryParams.builder()
           .mpTokenIssuanceId(mpTokenIssuanceId)
           .account(holder1KeyPair.publicKey().deriveAddress())
         .build(), LedgerSpecifier.VALIDATED)
-    ).node().mptAmount()).isEqualTo(MpTokenObjectAmount.of(0));
+    ).node().mptAmount()).isEqualTo(MpTokenNumericAmount.of(0));
 
     MpTokenAuthorize unauthorize = MpTokenAuthorize.builder()
       .account(holder1KeyPair.publicKey().deriveAddress())

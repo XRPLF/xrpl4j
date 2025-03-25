@@ -29,7 +29,7 @@ class MpTokenIssuanceCreateTest extends AbstractJsonTest {
       )
       .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
       .transferFee(TransferFee.of(UnsignedInteger.valueOf(10)))
-      .maximumAmount(MpTokenObjectAmount.of(Long.MAX_VALUE))
+      .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
       .build();
     String json =

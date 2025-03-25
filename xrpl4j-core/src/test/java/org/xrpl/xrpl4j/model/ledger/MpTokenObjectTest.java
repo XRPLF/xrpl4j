@@ -11,7 +11,7 @@ import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 
 class MpTokenObjectTest extends AbstractJsonTest {
 
@@ -20,7 +20,7 @@ class MpTokenObjectTest extends AbstractJsonTest {
     MpTokenObject mpTokenObject = MpTokenObject.builder()
       .account(Address.of("rUKufYPXYm5SRyfAQyn49j7fkMi4A8iwZ6"))
       .flags(MpTokenFlags.UNSET)
-      .mptAmount(MpTokenObjectAmount.of(100000))
+      .mptAmount(MpTokenNumericAmount.of(100000))
       .mpTokenIssuanceId(MpTokenIssuanceId.of("0000014A338173F978C65EB486DF107E9662F2E847A70F8A"))
       .ownerNode("0")
       .previousTransactionId(Hash256.of("F74BB6C80570839BBD4B9DE198BD1A3E7C633659250BA2BE5763A58068DF3C11"))
@@ -54,7 +54,7 @@ class MpTokenObjectTest extends AbstractJsonTest {
       .index(Hash256.of("0B5F0A170BA45CB6BCF4B92319D63287429F4B7E7024C82AFB4D4275C43F5A6C"))
       .build();
 
-    assertThat(mpTokenObject.mptAmount()).isEqualTo(MpTokenObjectAmount.of(0));
+    assertThat(mpTokenObject.mptAmount()).isEqualTo(MpTokenNumericAmount.of(0));
     assertThat(mpTokenObject.ledgerEntryType()).isEqualTo(LedgerObject.LedgerEntryType.MP_TOKEN);
   }
 }

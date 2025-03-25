@@ -28,7 +28,6 @@ import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 
 import java.util.Optional;

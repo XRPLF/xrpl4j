@@ -12,7 +12,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.util.Optional;
@@ -91,18 +91,18 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   /**
    * The maximum number of this issuance that can be distributed to non-issuing accounts.
    *
-   * @return An optionally present {@link MpTokenObjectAmount}.
+   * @return An optionally present {@link MpTokenNumericAmount}.
    */
   @JsonProperty("MaximumAmount")
-  Optional<MpTokenObjectAmount> maximumAmount();
+  Optional<MpTokenNumericAmount> maximumAmount();
 
   /**
    * The sum of all token amounts that have been minted to all token holders.
    *
-   * @return An {@link MpTokenObjectAmount}.
+   * @return An {@link MpTokenNumericAmount}.
    */
   @JsonProperty("OutstandingAmount")
-  MpTokenObjectAmount outstandingAmount();
+  MpTokenNumericAmount outstandingAmount();
 
   /**
    * Arbitrary hex-encoded metadata about this issuance.

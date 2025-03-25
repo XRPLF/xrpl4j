@@ -11,9 +11,8 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.MpTokenAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 
 class MptHoldersResponseTest extends AbstractJsonTest {
 
@@ -26,8 +25,8 @@ class MptHoldersResponseTest extends AbstractJsonTest {
         MptHoldersMpToken.builder()
           .account(ED_ADDRESS)
           .flags(MpTokenFlags.UNSET)
-          .mptAmount(MpTokenObjectAmount.of(20))
-          .lockedAmount(MpTokenObjectAmount.of(1))
+          .mptAmount(MpTokenNumericAmount.of(20))
+          .lockedAmount(MpTokenNumericAmount.of(1))
           .mpTokenIndex(Hash256.of("36D91DEE5EFE4A93119A8B84C944A528F2B444329F3846E49FE921040DE17E65"))
           .build()
       )

@@ -7,13 +7,10 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
-import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
-import org.xrpl.xrpl4j.model.transactions.TransferFee;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 
 import java.util.Optional;
 
@@ -67,12 +64,12 @@ public interface MpTokenObject extends LedgerObject {
   /**
    * The balance of this MPToken. Defaults to 0.
    *
-   * @return An {@link MpTokenObjectAmount}.
+   * @return An {@link MpTokenNumericAmount}.
    */
   @JsonProperty("MPTAmount")
   @Value.Default
-  default MpTokenObjectAmount mptAmount() {
-    return MpTokenObjectAmount.of(0);
+  default MpTokenNumericAmount mptAmount() {
+    return MpTokenNumericAmount.of(0);
   }
 
   /**

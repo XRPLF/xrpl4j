@@ -54,8 +54,8 @@ import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenObjectAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenObjectAmountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
@@ -800,13 +800,13 @@ public class Wrappers {
 
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = MpTokenObjectAmount.class, using = MpTokenObjectAmountSerializer.class)
-  @JsonDeserialize(as = MpTokenObjectAmount.class, using = MpTokenObjectAmountDeserializer.class)
+  @JsonSerialize(as = MpTokenNumericAmount.class, using = MpTokenNumericAmountSerializer.class)
+  @JsonDeserialize(as = MpTokenNumericAmount.class, using = MpTokenNumericAmountDeserializer.class)
   @Beta
-  abstract static class _MpTokenObjectAmount extends Wrapper<UnsignedLong> implements Serializable {
+  abstract static class _MpTokenNumericAmount extends Wrapper<UnsignedLong> implements Serializable {
 
-    public static MpTokenObjectAmount of(long amount) {
-      return MpTokenObjectAmount.of(UnsignedLong.valueOf(amount));
+    public static MpTokenNumericAmount of(long amount) {
+      return MpTokenNumericAmount.of(UnsignedLong.valueOf(amount));
     }
 
     @Override

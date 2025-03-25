@@ -13,7 +13,7 @@ import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 class MpTokenIssuanceObjectTest extends AbstractJsonTest {
@@ -25,8 +25,8 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .flags(MpTokenIssuanceFlags.of(122))
       .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
-      .maximumAmount(MpTokenObjectAmount.of(9223372036854775807L))
-      .outstandingAmount(MpTokenObjectAmount.of(0))
+      .maximumAmount(MpTokenNumericAmount.of(9223372036854775807L))
+      .outstandingAmount(MpTokenNumericAmount.of(0))
       .ownerNode("0")
       .previousTransactionId(Hash256.of("8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))
@@ -62,8 +62,8 @@ class MpTokenIssuanceObjectTest extends AbstractJsonTest {
       .flags(MpTokenIssuanceFlags.of(122))
       .issuer(Address.of("rJo2Wu7dymuFaL3QgYaEwgAEN3VcgN8e8c"))
       .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
-      .maximumAmount(MpTokenObjectAmount.of(9223372036854775807L))
-      .outstandingAmount(MpTokenObjectAmount.of(0))
+      .maximumAmount(MpTokenNumericAmount.of(9223372036854775807L))
+      .outstandingAmount(MpTokenNumericAmount.of(0))
       .ownerNode("0")
       .previousTransactionId(Hash256.of("8C20A85CE9EA44CEF32C8B06209890154D8810A8409D8582884566CD24DE694F"))
       .previousTransactionLedgerSequence(UnsignedInteger.valueOf(420))

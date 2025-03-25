@@ -89,4 +89,18 @@ class MpTokenAmountTest {
         .unsignedLongValue()
     ).isEqualTo(UnsignedLong.ONE);
   }
+
+  @Test
+  void builderWithUnsignedLong() {
+    assertThat(
+      MpTokenAmount.builder(UnsignedLong.ONE)
+        .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+        .build()
+    ).isEqualTo(
+      MpTokenAmount.builder()
+        .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
+        .value("1")
+        .build()
+    );
+  }
 }

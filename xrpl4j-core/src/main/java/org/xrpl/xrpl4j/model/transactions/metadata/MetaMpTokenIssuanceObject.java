@@ -4,15 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceFlags;
-import org.xrpl.xrpl4j.model.ledger.ImmutableMpTokenIssuanceObject;
-import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.MpTokenObjectAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
 import java.util.Optional;
@@ -32,10 +29,10 @@ public interface MetaMpTokenIssuanceObject extends MetaLedgerObject {
   Optional<AssetScale> assetScale();
 
   @JsonProperty("MaximumAmount")
-  Optional<MpTokenObjectAmount> maximumAmount();
+  Optional<MpTokenNumericAmount> maximumAmount();
 
   @JsonProperty("OutstandingAmount")
-  Optional<MpTokenObjectAmount> outstandingAmount();
+  Optional<MpTokenNumericAmount> outstandingAmount();
 
   @JsonProperty("TransferFee")
   Optional<TransferFee> transferFee();

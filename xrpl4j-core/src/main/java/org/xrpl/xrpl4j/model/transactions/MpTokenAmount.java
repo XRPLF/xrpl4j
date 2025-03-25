@@ -27,6 +27,17 @@ public interface MpTokenAmount extends CurrencyAmount {
     return ImmutableMpTokenAmount.builder();
   }
 
+  /**
+   * Construct a {@code MpTokenAmount} builder, setting {@link #value()} to the string representation of the
+   * supplied {@link UnsignedLong}.
+   *
+   * @return An {@link ImmutableMpTokenAmount.Builder}.
+   */
+  static ImmutableMpTokenAmount.Builder builder(UnsignedLong value) {
+    return ImmutableMpTokenAmount.builder()
+      .value(value.toString());
+  }
+
   @JsonProperty("mpt_issuance_id")
   MpTokenIssuanceId mptIssuanceId();
 

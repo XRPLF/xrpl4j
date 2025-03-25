@@ -145,15 +145,20 @@ class AmountType extends SerializedType<AmountType> {
   @Override
   public AmountType fromParser(BinaryParser parser) {
     UnsignedByte nextByte = parser.peek();
+    // The first bit is 0 for XRP or MPT, and 1 for IOU.
+    boolean isIssuedCurrency = nextByte.isNthBitSet(1);
+
     int numBytes;
-    if (nextByte.isNthBitSet(1)) {
+    if (isIssuedCurrency) {
       numBytes = CURRENCY_AMOUNT_BYTE_LENGTH;
     } else {
+      // The third bit is 1 for MPT, and 0 for XRP
       boolean isMpt = nextByte.isNthBitSet(3);
 
       numBytes = isMpt ? MPT_AMOUNT_BYTE_LENGTH : NATIVE_AMOUNT_BYTE_LENGTH;
     }
 
+    // parse all bytes, including the token-type bytes peeked above.
     return new AmountType(parser.read(numBytes));
   }
 
@@ -209,7 +214,7 @@ class AmountType extends SerializedType<AmountType> {
       );
       UnsignedByteArray issuanceIdBytes = new UInt192Type().fromJson(new TextNode(amount.mptIssuanceId())).value();
 
-      // MPT Amounts always have 0110000 as its first byte.
+      // MPT Amounts always have 0110_000 (0x60) as the first byte when positive or 0010_0000 (0x20) when negative.
       int leadingByte = amount.isNegative() ? 0x20 : 0x60;
       UnsignedByteArray result = UnsignedByteArray.of(UnsignedByte.of(leadingByte));
       result.append(amountBytes);

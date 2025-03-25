@@ -37,7 +37,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
         )
         .build();
 
-    String json = "{\n" +
+    String json =
+        "{\n" +
         "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
         "    \"Amount\" : {\n" +
         "        \"currency\" : \"USD\",\n" +
@@ -84,7 +85,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
         .flags(AmmClawbackFlags.UNSET)
         .build();
 
-    String json = "{\n" +
+    String json =
+        "{\n" +
         "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
         "    \"Amount\" : {\n" +
         "        \"currency\" : \"USD\",\n" +
@@ -132,7 +134,8 @@ public class AmmClawbackTest extends AbstractJsonTest {
         .flags(AmmClawbackFlags.CLAW_TWO_ASSETS)
         .build();
 
-    String json = "{\n" +
+    String json =
+        "{\n" +
         "    \"Account\" : \"rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm\",\n" +
         "    \"Amount\" : {\n" +
         "        \"currency\" : \"USD\",\n" +

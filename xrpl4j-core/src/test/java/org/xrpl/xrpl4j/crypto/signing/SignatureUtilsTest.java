@@ -1224,7 +1224,7 @@ public class SignatureUtilsTest {
     when(transactionMock.signingPublicKey())
         .thenReturn(
             PublicKey.fromBase16EncodedPublicKey("ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A")
-        );
+      );
     assertThatThrownBy(
         () -> signatureUtils.addMultiSignaturesToTransaction(transactionMock, Lists.newArrayList(signer1))
     ).isInstanceOf(IllegalArgumentException.class)

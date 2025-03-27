@@ -126,7 +126,7 @@ class CurrencyAmountTest extends AbstractJsonTest {
 
   @Test
   public void handleMptAmount() {
-    final MpTokenAmount amount = MpTokenAmount.builder()
+    final MptCurrencyAmount amount = MptCurrencyAmount.builder()
       .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
       .value("100")
       .build();
@@ -168,7 +168,7 @@ class CurrencyAmountTest extends AbstractJsonTest {
 
   @Test
   public void mapMptAmount() {
-    final MpTokenAmount amount = MpTokenAmount.builder()
+    final MptCurrencyAmount amount = MptCurrencyAmount.builder()
       .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
       .value("100")
       .build();
@@ -293,7 +293,7 @@ class CurrencyAmountTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
 
     currencyAmountWrapper = CurrencyAmountWrapper.builder()
-      .amount(MpTokenAmount.builder()
+      .amount(MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
         .value("15")
         .build())

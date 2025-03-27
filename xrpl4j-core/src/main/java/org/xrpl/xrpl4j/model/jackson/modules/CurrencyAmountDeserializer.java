@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.MpTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -56,7 +56,7 @@ public class CurrencyAmountDeserializer extends StdDeserializer<CurrencyAmount> 
       if (node.has("mpt_issuance_id")) {
         String mptIssuanceId = node.get("mpt_issuance_id").asText();
         String value = node.get("value").asText();
-        return MpTokenAmount.builder()
+        return MptCurrencyAmount.builder()
           .mptIssuanceId(MpTokenIssuanceId.of(mptIssuanceId))
           .value(value)
           .build();

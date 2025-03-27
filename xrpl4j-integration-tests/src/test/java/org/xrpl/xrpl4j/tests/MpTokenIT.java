@@ -28,7 +28,7 @@ import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
-import org.xrpl.xrpl4j.model.transactions.MpTokenAmount;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
@@ -166,7 +166,7 @@ public class MpTokenIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    MpTokenAmount mintAmount = MpTokenAmount.builder()
+    MptCurrencyAmount mintAmount = MptCurrencyAmount.builder()
       .mptIssuanceId(mpTokenIssuanceId)
       .value("100000")
       .build();

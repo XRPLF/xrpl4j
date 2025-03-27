@@ -52,12 +52,12 @@ public interface CurrencyAmount {
    * @param issuedCurrencyAmountConsumer A {@link Consumer} that is called if this instance is of type
    *                                     {@link IssuedCurrencyAmount}.
    * @param mpTokenAmountConsumer A {@link Consumer} that is called if this instance is of type
-   *                                     {@link MpTokenAmount}.
+   *                                     {@link MptCurrencyAmount}.
    */
   default void handle(
     final Consumer<XrpCurrencyAmount> xrpCurrencyAmountHandler,
     final Consumer<IssuedCurrencyAmount> issuedCurrencyAmountConsumer,
-    final Consumer<MpTokenAmount> mpTokenAmountConsumer
+    final Consumer<MptCurrencyAmount> mpTokenAmountConsumer
   ) {
     Objects.requireNonNull(xrpCurrencyAmountHandler);
     Objects.requireNonNull(issuedCurrencyAmountConsumer);
@@ -67,8 +67,8 @@ public interface CurrencyAmount {
       xrpCurrencyAmountHandler.accept((XrpCurrencyAmount) this);
     } else if (IssuedCurrencyAmount.class.isAssignableFrom(this.getClass())) {
       issuedCurrencyAmountConsumer.accept((IssuedCurrencyAmount) this);
-    } else if (MpTokenAmount.class.isAssignableFrom(this.getClass())) {
-      mpTokenAmountConsumer.accept((MpTokenAmount) this);
+    } else if (MptCurrencyAmount.class.isAssignableFrom(this.getClass())) {
+      mpTokenAmountConsumer.accept((MptCurrencyAmount) this);
     } else {
       throw new IllegalStateException(String.format("Unsupported CurrencyAmount Type: %s", this.getClass()));
     }
@@ -88,7 +88,7 @@ public interface CurrencyAmount {
   default <R> R map(
     final Function<XrpCurrencyAmount, R> xrpCurrencyAmountMapper,
     final Function<IssuedCurrencyAmount, R> issuedCurrencyAmountMapper,
-    final Function<MpTokenAmount, R> mpTokenAmountMapper
+    final Function<MptCurrencyAmount, R> mpTokenAmountMapper
   ) {
     Objects.requireNonNull(xrpCurrencyAmountMapper);
     Objects.requireNonNull(issuedCurrencyAmountMapper);
@@ -98,8 +98,8 @@ public interface CurrencyAmount {
       return xrpCurrencyAmountMapper.apply((XrpCurrencyAmount) this);
     } else if (IssuedCurrencyAmount.class.isAssignableFrom(this.getClass())) {
       return issuedCurrencyAmountMapper.apply((IssuedCurrencyAmount) this);
-    } else if (MpTokenAmount.class.isAssignableFrom(this.getClass())) {
-      return mpTokenAmountMapper.apply((MpTokenAmount) this);
+    } else if (MptCurrencyAmount.class.isAssignableFrom(this.getClass())) {
+      return mpTokenAmountMapper.apply((MptCurrencyAmount) this);
     } else {
       throw new IllegalStateException(String.format("Unsupported CurrencyAmount Type: %s", this.getClass()));
     }

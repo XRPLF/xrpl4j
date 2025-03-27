@@ -6,19 +6,19 @@ import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link MpTokenAmount}.
+ * Unit tests for {@link MptCurrencyAmount}.
  */
-class MpTokenAmountTest {
+class MptCurrencyAmountTest {
 
   @Test
   void toStringIssuedCurrentAmount() {
     // Negative values.
-    MpTokenAmount amount = MpTokenAmount.builder()
+    MptCurrencyAmount amount = MptCurrencyAmount.builder()
       .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
       .value("-1")
       .build();
     assertThat(amount.toString()).isEqualTo(
-      "MpTokenAmount{" +
+      "MptCurrencyAmount{" +
       "mptIssuanceId=ABCD, " +
       "value=-1" +
       "}"
@@ -26,12 +26,12 @@ class MpTokenAmountTest {
     assertThat(amount.isNegative()).isTrue();
 
     // Positive values
-    amount = MpTokenAmount.builder()
+    amount = MptCurrencyAmount.builder()
       .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
       .value("1")
       .build();
     assertThat(amount.toString()).isEqualTo(
-      "MpTokenAmount{" +
+      "MptCurrencyAmount{" +
       "mptIssuanceId=ABCD, " +
       "value=1" +
       "}"
@@ -44,7 +44,7 @@ class MpTokenAmountTest {
   void isNegative() {
     // Negative
     {
-      final MpTokenAmount issuedCurrency = MpTokenAmount.builder()
+      final MptCurrencyAmount issuedCurrency = MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .value("-1")
         .build();
@@ -53,7 +53,7 @@ class MpTokenAmountTest {
 
     // Positive
     {
-      final MpTokenAmount issuedCurrency = MpTokenAmount.builder()
+      final MptCurrencyAmount issuedCurrency = MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .value("1")
         .build();
@@ -62,7 +62,7 @@ class MpTokenAmountTest {
 
     // Zero
     {
-      final MpTokenAmount amount = MpTokenAmount.builder()
+      final MptCurrencyAmount amount = MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .value("0")
         .build();
@@ -74,7 +74,7 @@ class MpTokenAmountTest {
   void unsignedLongValue() {
     // Negative
     assertThat(
-      MpTokenAmount.builder()
+      MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .value("-1")
         .build()
@@ -82,7 +82,7 @@ class MpTokenAmountTest {
     ).isEqualTo(UnsignedLong.ONE);
     // Positive
     assertThat(
-      MpTokenAmount.builder()
+      MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .value("1")
         .build()
@@ -93,11 +93,11 @@ class MpTokenAmountTest {
   @Test
   void builderWithUnsignedLong() {
     assertThat(
-      MpTokenAmount.builder(UnsignedLong.ONE)
+      MptCurrencyAmount.builder(UnsignedLong.ONE)
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .build()
     ).isEqualTo(
-      MpTokenAmount.builder()
+      MptCurrencyAmount.builder()
         .mptIssuanceId(MpTokenIssuanceId.of("ABCD"))
         .value("1")
         .build()

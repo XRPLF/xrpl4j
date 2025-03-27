@@ -14,27 +14,27 @@ import org.immutables.value.Value.Immutable;
  * {@link CurrencyAmount} type for MPT amounts.
  */
 @Immutable
-@JsonSerialize(as = ImmutableMpTokenAmount.class)
-@JsonDeserialize(as = ImmutableMpTokenAmount.class)
-public interface MpTokenAmount extends CurrencyAmount {
+@JsonSerialize(as = ImmutableMptCurrencyAmount.class)
+@JsonDeserialize(as = ImmutableMptCurrencyAmount.class)
+public interface MptCurrencyAmount extends CurrencyAmount {
 
   /**
-   * Construct a {@code MpTokenAmount} builder.
+   * Construct a {@code MptCurrencyAmount} builder.
    *
-   * @return An {@link ImmutableMpTokenAmount.Builder}.
+   * @return An {@link ImmutableMptCurrencyAmount.Builder}.
    */
-  static ImmutableMpTokenAmount.Builder builder() {
-    return ImmutableMpTokenAmount.builder();
+  static ImmutableMptCurrencyAmount.Builder builder() {
+    return ImmutableMptCurrencyAmount.builder();
   }
 
   /**
-   * Construct a {@code MpTokenAmount} builder, setting {@link #value()} to the string representation of the
+   * Construct a {@code MptCurrencyAmount} builder, setting {@link #value()} to the string representation of the
    * supplied {@link UnsignedLong}.
    *
-   * @return An {@link ImmutableMpTokenAmount.Builder}.
+   * @return An {@link ImmutableMptCurrencyAmount.Builder}.
    */
-  static ImmutableMpTokenAmount.Builder builder(UnsignedLong value) {
-    return ImmutableMpTokenAmount.builder()
+  static ImmutableMptCurrencyAmount.Builder builder(UnsignedLong value) {
+    return ImmutableMptCurrencyAmount.builder()
       .value(value.toString());
   }
 

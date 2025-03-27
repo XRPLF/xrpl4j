@@ -24,7 +24,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
@@ -200,7 +199,7 @@ class AmountType extends SerializedType<AmountType> {
       return new AmountType(result);
     } else {
       // MPT Amount
-      MptAmount amount = objectMapper.treeToValue(value, MptAmount.class);
+      MptCurrencyAmount amount = objectMapper.treeToValue(value, MptCurrencyAmount.class);
 
       if (FluentCompareTo.is(amount.unsignedLongValue()).greaterThan(UnsignedLong.valueOf(Long.MAX_VALUE))) {
         throw new IllegalArgumentException("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
@@ -262,7 +261,7 @@ class AmountType extends SerializedType<AmountType> {
       UnsignedByteArray issuanceId = new UInt192Type().fromParser(parser).value();
 
       String amountBase10 = amount.toString(10);
-      MptAmount mptAmount = MptAmount.builder()
+      MptCurrencyAmount mptAmount = MptCurrencyAmount.builder()
         .value(isNegative ? "-" + amountBase10 : amountBase10)
         .mptIssuanceId(issuanceId.hexValue())
         .build();

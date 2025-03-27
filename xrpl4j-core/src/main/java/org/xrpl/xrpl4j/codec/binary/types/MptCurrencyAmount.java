@@ -29,20 +29,20 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 
 /**
- * Model for XRPL MPT Amount JSON.
+ * Model for MPT Amount JSON.
  */
 @Immutable
-@JsonSerialize(as = ImmutableMptAmount.class)
-@JsonDeserialize(as = ImmutableMptAmount.class)
-interface MptAmount {
+@JsonSerialize(as = ImmutableMptCurrencyAmount.class)
+@JsonDeserialize(as = ImmutableMptCurrencyAmount.class)
+interface MptCurrencyAmount {
 
   /**
-   * Construct a {@code MptAmount} builder.
+   * Construct a {@code MptCurrencyAmount} builder.
    *
-   * @return An {@link ImmutableMptAmount.Builder}.
+   * @return An {@link ImmutableMptCurrencyAmount.Builder}.
    */
-  static ImmutableMptAmount.Builder builder() {
-    return ImmutableMptAmount.builder();
+  static ImmutableMptCurrencyAmount.Builder builder() {
+    return ImmutableMptCurrencyAmount.builder();
   }
 
   String value();

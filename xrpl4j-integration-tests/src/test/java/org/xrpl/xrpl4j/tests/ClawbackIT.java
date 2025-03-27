@@ -22,7 +22,6 @@ import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
-import org.xrpl.xrpl4j.tests.environment.XrplEnvironment;
 
 @DisabledIf(value = "shouldNotRun", disabledReason = "ClawbackIT only runs on local rippled node or devnet.")
 public class ClawbackIT extends AbstractIT {

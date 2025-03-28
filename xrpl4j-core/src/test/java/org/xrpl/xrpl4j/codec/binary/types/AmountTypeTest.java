@@ -222,7 +222,10 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   @Test
   void encodeDecodeMptAmount() {
-    String json = "{\"value\":\"100\",\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"100\"" +
+      "}";
     AmountType fromJson = codec.fromJson(json);
     assertThat(fromJson.toHex())
       .isEqualTo("60000000000000006400002403C84A0A28E0190E208E982C352BBD5006600555CF");
@@ -231,7 +234,10 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   @Test
   void encodeDecodeMptAmountNegative() {
-    String json = "{\"value\":\"-100\",\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"-100\"" +
+      "}";
     AmountType fromJson = codec.fromJson(json);
     assertThat(fromJson.toHex())
       .isEqualTo("20000000000000006400002403C84A0A28E0190E208E982C352BBD5006600555CF");
@@ -240,8 +246,10 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   @Test
   void encodeDecodeLargestAmount() {
-    String json = "{\"value\":\"9223372036854775807\"," +
-      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"9223372036854775807\"" +
+      "}";
     AmountType fromJson = codec.fromJson(json);
     assertThat(fromJson.toHex())
       .isEqualTo("607FFFFFFFFFFFFFFF00002403C84A0A28E0190E208E982C352BBD5006600555CF");
@@ -250,8 +258,10 @@ class AmountTypeTest extends BaseSerializerTypeTest {
 
   @Test
   void encodeDecodeLargestAmountNegative() {
-    String json = "{\"value\":\"-9223372036854775807\"," +
-      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"-9223372036854775807\"" +
+      "}";
     AmountType fromJson = codec.fromJson(json);
     assertThat(fromJson.toHex())
       .isEqualTo("207FFFFFFFFFFFFFFF00002403C84A0A28E0190E208E982C352BBD5006600555CF");
@@ -261,18 +271,22 @@ class AmountTypeTest extends BaseSerializerTypeTest {
   @Test
   void encodeMptAmountWithMoreThan63BitAmountThrows() {
     UnsignedLong maxLongPlusOne = UnsignedLong.valueOf(Long.MAX_VALUE).plus(UnsignedLong.ONE);
-    String json = "{\"value\":\"" + maxLongPlusOne + "\"," +
-      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"" + maxLongPlusOne + "\"" +
+      "}";
     assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
+      .hasMessage("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
   }
 
   @Test
   void encodeMptAmountWithMoreThan63BitAmountThrowsNegative() {
     UnsignedLong maxLongPlusOne = UnsignedLong.valueOf(Long.MAX_VALUE).plus(UnsignedLong.ONE);
-    String json = "{\"value\":\"-" + maxLongPlusOne + "\"," +
-      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"}";
+    String json = "{" +
+      "\"mpt_issuance_id\":\"00002403C84A0A28E0190E208E982C352BBD5006600555CF\"," +
+      "\"value\":\"-" + maxLongPlusOne + "\"" +
+      "}";
     assertThatThrownBy(() -> codec.fromJson(json)).isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
+      .hasMessage("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
   }
 }

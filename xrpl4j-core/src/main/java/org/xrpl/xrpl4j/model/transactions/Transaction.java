@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
@@ -46,7 +47,7 @@ public interface Transaction {
    * <p>This is useful for polymorphic Jackson deserialization.
    */
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
-    new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
+    new Builder<Class<? extends Transaction>, TransactionType>()
       .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
       .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
       .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
@@ -93,6 +94,10 @@ public interface Transaction {
       .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
       .put(ImmutableOracleSet.class, TransactionType.ORACLE_SET)
       .put(ImmutableOracleDelete.class, TransactionType.ORACLE_DELETE)
+      .put(ImmutableMpTokenAuthorize.class, TransactionType.MPT_AUTHORIZE)
+      .put(ImmutableMpTokenIssuanceCreate.class, TransactionType.MPT_ISSUANCE_CREATE)
+      .put(ImmutableMpTokenIssuanceDestroy.class, TransactionType.MPT_ISSUANCE_DESTROY)
+      .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .build();
 

@@ -338,6 +338,15 @@ public enum TransactionType {
   @Beta
   ORACLE_DELETE("OracleDelete"),
 
+  @Beta
+  MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
+  @Beta
+  MPT_ISSUANCE_DESTROY("MPTokenIssuanceDestroy"),
+  @Beta
+  MPT_ISSUANCE_SET("MPTokenIssuanceSet"),
+  @Beta
+  MPT_AUTHORIZE("MPTokenAuthorize"),
+
   /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */

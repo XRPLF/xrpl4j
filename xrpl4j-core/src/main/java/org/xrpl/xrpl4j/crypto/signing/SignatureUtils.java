@@ -49,6 +49,10 @@ import org.xrpl.xrpl4j.model.transactions.DidSet;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
@@ -391,6 +395,22 @@ public class SignatureUtils {
       transactionWithSignature = OracleDelete.builder().from((OracleDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = MpTokenAuthorize.builder().from((MpTokenAuthorize) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (MpTokenIssuanceCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = MpTokenIssuanceCreate.builder().from((MpTokenIssuanceCreate) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (MpTokenIssuanceDestroy.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = MpTokenIssuanceDestroy.builder().from((MpTokenIssuanceDestroy) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (MpTokenIssuanceSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -600,6 +620,22 @@ public class SignatureUtils {
         .build();
     } else if (OracleDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = OracleDelete.builder().from((OracleDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = MpTokenAuthorize.builder().from((MpTokenAuthorize) transaction)
+        .signers(signers)
+        .build();
+    } else if (MpTokenIssuanceCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = MpTokenIssuanceCreate.builder().from((MpTokenIssuanceCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (MpTokenIssuanceDestroy.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = MpTokenIssuanceDestroy.builder().from((MpTokenIssuanceDestroy) transaction)
+        .signers(signers)
+        .build();
+    } else if (MpTokenIssuanceSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
         .signers(signers)
         .build();
     } else {

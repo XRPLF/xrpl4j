@@ -81,6 +81,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersRequestParams;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersResponse;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
 import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
@@ -1118,6 +1120,24 @@ public class XrplClientTest {
     )).thenReturn(expectedResult);
 
     GetAggregatePriceResult result = xrplClient.getAggregatePrice(params);
+
+    assertThat(result).isEqualTo(expectedResult);
+  }
+
+  @Test
+  void mptHolders() throws JsonRpcClientErrorException {
+    MptHoldersRequestParams params = mock(MptHoldersRequestParams.class);
+    MptHoldersResponse expectedResult = mock(MptHoldersResponse.class);
+
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.MPT_HOLDERS)
+        .addParams(params)
+        .build(),
+      MptHoldersResponse.class
+    )).thenReturn(expectedResult);
+
+    MptHoldersResponse result = xrplClient.mptHolders(params);
 
     assertThat(result).isEqualTo(expectedResult);
   }

@@ -32,6 +32,8 @@ import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.math.MathUtils;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -199,22 +201,24 @@ class AmountType extends SerializedType<AmountType> {
       return new AmountType(result);
     } else {
       // MPT Amount
-      MptCurrencyAmount amount = objectMapper.treeToValue(value, MptCurrencyAmount.class);
+      MptCurrencyAmount mptCurrencyAmount = objectMapper.treeToValue(value, MptCurrencyAmount.class);
 
-      if (FluentCompareTo.is(amount.unsignedLongValue()).greaterThan(UnsignedLong.valueOf(Long.MAX_VALUE))) {
-        throw new IllegalArgumentException("Invalid MPT amount. Maximum MPT value is (2^63 - 1)");
+      if (FluentCompareTo.is(mptCurrencyAmount.unsignedLongValue()).greaterThan(UnsignedLong.valueOf(Long.MAX_VALUE))) {
+        throw new IllegalArgumentException("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
       }
 
-      UnsignedByteArray amountBytes =  UnsignedByteArray.fromHex(
+      UnsignedByteArray amountBytes = UnsignedByteArray.fromHex(
         ByteUtils.padded(
-          amount.unsignedLongValue().toString(16),
+          mptCurrencyAmount.unsignedLongValue().toString(16),
           16 // <-- 64 / 4
         )
       );
-      UnsignedByteArray issuanceIdBytes = new UInt192Type().fromJson(new TextNode(amount.mptIssuanceId())).value();
+      UnsignedByteArray issuanceIdBytes = new UInt192Type()
+        .fromJson(new TextNode(mptCurrencyAmount.mptIssuanceId().value()))
+        .value();
 
       // MPT Amounts always have 0110_000 (0x60) as the first byte when positive or 0010_0000 (0x20) when negative.
-      int leadingByte = amount.isNegative() ? 0x20 : 0x60;
+      int leadingByte = mptCurrencyAmount.isNegative() ? 0x20 : 0x60;
       UnsignedByteArray result = UnsignedByteArray.of(UnsignedByte.of(leadingByte));
       result.append(amountBytes);
       result.append(issuanceIdBytes);
@@ -263,7 +267,7 @@ class AmountType extends SerializedType<AmountType> {
       String amountBase10 = amount.toString(10);
       MptCurrencyAmount mptAmount = MptCurrencyAmount.builder()
         .value(isNegative ? "-" + amountBase10 : amountBase10)
-        .mptIssuanceId(issuanceId.hexValue())
+        .mptIssuanceId(MpTokenIssuanceId.of(issuanceId.hexValue()))
         .build();
 
       return objectMapper.valueToTree(mptAmount);

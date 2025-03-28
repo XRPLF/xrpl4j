@@ -28,7 +28,6 @@ import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.AssetScale;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
-import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
@@ -36,6 +35,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenMetadata;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
 
@@ -46,7 +46,7 @@ public class MpTokenIT extends AbstractIT {
 
   static boolean shouldNotRun() {
     return System.getProperty("useTestnet") != null ||
-           System.getProperty("useClioTestnet") != null;
+      System.getProperty("useClioTestnet") != null;
   }
 
   @Test
@@ -301,8 +301,8 @@ public class MpTokenIT extends AbstractIT {
     ).node().outstandingAmount()).isEqualTo(MpTokenNumericAmount.of(0));
     assertThat(xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(MpTokenLedgerEntryParams.builder()
-          .mpTokenIssuanceId(mpTokenIssuanceId)
-          .account(holder1KeyPair.publicKey().deriveAddress())
+        .mpTokenIssuanceId(mpTokenIssuanceId)
+        .account(holder1KeyPair.publicKey().deriveAddress())
         .build(), LedgerSpecifier.VALIDATED)
     ).node().mptAmount()).isEqualTo(MpTokenNumericAmount.of(0));
 

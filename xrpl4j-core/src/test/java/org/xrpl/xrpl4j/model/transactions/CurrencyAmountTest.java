@@ -270,9 +270,10 @@ class CurrencyAmountTest extends AbstractJsonTest {
     CurrencyAmountWrapper currencyAmountWrapper = CurrencyAmountWrapper.builder()
       .amount(XrpCurrencyAmount.ofDrops(15))
       .build();
-    String json = "{\n" +
-                  "  \"amount\" : \"15\"\n" +
-                  "}";
+    String json =
+      "{\n" +
+      "  \"amount\" : \"15\"\n" +
+      "}";
     assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
 
     currencyAmountWrapper = CurrencyAmountWrapper.builder()
@@ -283,12 +284,13 @@ class CurrencyAmountTest extends AbstractJsonTest {
         .build())
       .build();
     json =
-      "{\"amount\": " +
-      "   {\n" +
-      "     \"currency\" : \"USD\",\n" +
-      "     \"issuer\" : \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\",\n" +
-      "     \"value\" : \"15\"\n" +
-      "   }" +
+      "{" +
+      "  \"amount\": " +
+      "  {\n" +
+      "    \"currency\" : \"USD\",\n" +
+      "    \"issuer\" : \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\",\n" +
+      "    \"value\" : \"15\"\n" +
+      "  }" +
       "}";
     assertCanSerializeAndDeserialize(currencyAmountWrapper, json, CurrencyAmountWrapper.class);
 

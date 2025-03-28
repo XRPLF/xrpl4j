@@ -32,7 +32,6 @@ import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
@@ -63,11 +62,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "            \"index\": \"%s\",\n" +
-      "            \"binary\": false,\n" +
-      "            \"ledger_index\": \"validated\"\n" +
-      "        }", HASH_256);
+    String json =
+      "{\n" +
+      "  \"index\": \"" + HASH_256 + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     String serialized = objectMapper.writeValueAsString(params);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
@@ -102,11 +102,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "            \"index\": \"%s\",\n" +
-      "            \"binary\": false,\n" +
-      "            \"ledger_index\": \"validated\"\n" +
-      "        }", HASH_256);
+    String json =
+      "{\n" +
+      "  \"index\": \"" + HASH_256 + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -136,11 +137,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "            \"account_root\": \"%s\",\n" +
-      "            \"binary\": false,\n" +
-      "            \"ledger_index\": \"validated\"\n" +
-      "        }", ED_ADDRESS);
+    String json =
+      "{\n" +
+      "  \"account_root\":  \"" + ED_ADDRESS + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -178,19 +180,20 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = "{\n" +
-      "          \"amm\": {\n" +
-      "            \"asset\": {\n" +
-      "              \"currency\": \"XRP\"\n" +
-      "            },\n" +
-      "            \"asset2\": {\n" +
-      "              \"currency\" : \"TST\",\n" +
-      "              \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
-      "            }\n" +
-      "          },\n" +
-      "          \"binary\": false,\n" +
-      "          \"ledger_index\": \"validated\"\n" +
-      "        }";
+    String json =
+      "{\n" +
+      "  \"amm\": {\n" +
+      "    \"asset\": {\n" +
+      "      \"currency\": \"XRP\"\n" +
+      "    },\n" +
+      "    \"asset2\": {\n" +
+      "      \"currency\" : \"TST\",\n" +
+      "      \"issuer\" : \"rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd\"\n" +
+      "    }\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -225,14 +228,15 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = "{\n" +
-      "      \"offer\": {\n" +
-      "        \"account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "        \"seq\": 359\n" +
-      "      },\n" +
-      "      \"binary\": false,\n" +
-      "      \"ledger_index\": \"validated\"\n" +
-      "    }";
+    String json =
+      "{\n" +
+      "  \"offer\": {\n" +
+      "    \"account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"seq\": 359\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -270,17 +274,18 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = "{\n" +
-      "    \"ripple_state\": {\n" +
-      "      \"accounts\": [\n" +
-      "        \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "        \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"\n" +
-      "      ],\n" +
-      "      \"currency\": \"USD\"\n" +
-      "    },\n" +
-      "          \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }";
+    String json =
+      "{\n" +
+      "  \"ripple_state\": {\n" +
+      "    \"accounts\": [\n" +
+      "      \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "      \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"\n" +
+      "    ],\n" +
+      "    \"currency\": \"USD\"\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -308,11 +313,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "    \"check\": \"%s\",\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }", HASH_256);
+    String json =
+      "{\n" +
+      "  \"check\": \"" + HASH_256 + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -346,14 +352,15 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = "{\n" +
-      "    \"escrow\": {\n" +
-      "      \"owner\": \"rL4fPHi2FWGwRGRQSH7gBcxkuo2b9NTjKK\",\n" +
-      "      \"seq\": 126\n" +
-      "    },\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }";
+    String json =
+      "{\n" +
+      "  \"escrow\": {\n" +
+      "    \"owner\": \"rL4fPHi2FWGwRGRQSH7gBcxkuo2b9NTjKK\",\n" +
+      "    \"seq\": 126\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -383,11 +390,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "    \"payment_channel\": \"%s\",\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }", HASH_256);
+    String json =
+      "{\n" +
+      "  \"payment_channel\": \"" + HASH_256 + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -422,14 +430,15 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = "{\n" +
-      "    \"deposit_preauth\": {\n" +
-      "      \"owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "      \"authorized\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\"\n" +
-      "    },\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }";
+    String json =
+      "{\n" +
+      "  \"deposit_preauth\": {\n" +
+      "    \"owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"authorized\": \"ra5nK24KXen9AHvsdFTKHSANinZseWnPcX\"\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -464,14 +473,15 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = "{\n" +
-      "    \"ticket\": {\n" +
-      "      \"account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "      \"ticket_seq\": 389\n" +
-      "    },\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }";
+    String json =
+      "{\n" +
+      "  \"ticket\": {\n" +
+      "    \"account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"ticket_seq\": 389\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -502,11 +512,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "    \"nft_page\": \"%s\",\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }", HASH_256);
+    String json =
+      "{\n" +
+      "  \"nft_page\": \"" + HASH_256 + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -537,11 +548,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "    \"did\": \"%s\",\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }", ED_ADDRESS);
+    String json =
+      "{\n" +
+      "  \"did\": \"" + ED_ADDRESS + "\",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -579,12 +591,13 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "    \"bridge_account\": \"%s\",\n" +
-      "    \"bridge\": %s,\n" +
-      "    \"binary\": false,\n" +
-      "    \"ledger_index\": \"validated\"\n" +
-      "  }", ED_ADDRESS, objectMapper.writeValueAsString(bridge));
+    String json =
+      "{\n" +
+      "  \"bridge_account\": \"" + ED_ADDRESS + "\",\n" +
+      "  \"bridge\": " + objectMapper.writeValueAsString(bridge) + ",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -618,11 +631,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-      "      \"oracle\" : %s,\n" +
-      "    \"binary\": false,\n" +
-      "      \"ledger_index\": \"validated\"\n" +
-      "    }", objectMapper.writeValueAsString(oracleParams), ED_ADDRESS);
+    String json =
+      "{\n" +
+      "  \"oracle\" : " + objectMapper.writeValueAsString(oracleParams) + ",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -653,11 +667,11 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isNotEmpty().get().isEqualTo(issuanceId);
     assertThat(params.mpToken()).isEmpty();
 
-    String json = String.format("{\n" +
-                                "      \"mpt_issuance\" : %s,\n" +
-                                "    \"binary\": false,\n" +
-                                "      \"ledger_index\": \"validated\"\n" +
-                                "    }", issuanceId, ED_ADDRESS);
+    String json = "{\n" +
+      "  \"mpt_issuance\" : " + issuanceId + ",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -691,11 +705,12 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isNotEmpty().get().isEqualTo(mpTokenParams);
 
-    String json = String.format("{\n" +
-                                "      \"mptoken\" : %s,\n" +
-                                "    \"binary\": false,\n" +
-                                "      \"ledger_index\": \"validated\"\n" +
-                                "    }", objectMapper.writeValueAsString(mpTokenParams));
+    String json =
+      "{\n" +
+      "  \"mptoken\" : " + objectMapper.writeValueAsString(mpTokenParams) + ",\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }

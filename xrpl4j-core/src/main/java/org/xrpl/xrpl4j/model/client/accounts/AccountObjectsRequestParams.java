@@ -152,7 +152,15 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
     /**
      * State account object type.
      */
-    STATE("state");
+    STATE("state"),
+    /**
+     * MPToken Issuance object type.
+     */
+    MPT_ISSUANCE("mpt_issuance"),
+    /**
+     * MPToken object type.
+     */
+    MP_TOKEN("mptoken");
 
     private final String value;
 

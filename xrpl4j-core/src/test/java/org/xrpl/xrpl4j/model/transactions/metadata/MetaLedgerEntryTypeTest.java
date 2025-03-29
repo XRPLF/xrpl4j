@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
-import org.xrpl.xrpl4j.model.ledger.OracleObject;
 
 class MetaLedgerEntryTypeTest extends AbstractJsonTest {
 
@@ -38,6 +36,8 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
     assertThat(MetaLedgerEntryType.DID.value()).isEqualTo("DID");
     assertThat(MetaLedgerEntryType.ORACLE.value()).isEqualTo("Oracle");
+    assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("MPToken");
+    assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.value()).isEqualTo("MPTokenIssuance");
   }
 
   @Test
@@ -67,6 +67,8 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     );
     assertThat(MetaLedgerEntryType.DID.ledgerObjectType()).isEqualTo(MetaDidObject.class);
     assertThat(MetaLedgerEntryType.ORACLE.ledgerObjectType()).isEqualTo(MetaOracleObject.class);
+    assertThat(MetaLedgerEntryType.MP_TOKEN.ledgerObjectType()).isEqualTo(MetaMpTokenObject.class);
+    assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.ledgerObjectType()).isEqualTo(MetaMpTokenIssuanceObject.class);
   }
 
   @Test

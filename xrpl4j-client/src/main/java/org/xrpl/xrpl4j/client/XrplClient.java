@@ -68,6 +68,8 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersRequestParams;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersResponse;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
 import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
@@ -871,6 +873,24 @@ public class XrplClient {
       .build();
 
     return jsonRpcClient.send(request, GetAggregatePriceResult.class);
+  }
+
+  /**
+   * Get all holders of an MPT and their balance. The mpt_holders method is only available on Clio nodes.
+   *
+   * @param params An {@link MptHoldersRequestParams}.
+   *
+   * @return An {@link MptHoldersResponse}.
+   *
+   * @throws JsonRpcClientErrorException if {@code js nRpcClient} throws an error.
+   */
+  public MptHoldersResponse mptHolders(MptHoldersRequestParams params) throws JsonRpcClientErrorException {
+    JsonRpcRequest request = JsonRpcRequest.builder()
+      .method(XrplMethods.MPT_HOLDERS)
+      .addParams(params)
+      .build();
+
+    return jsonRpcClient.send(request, MptHoldersResponse.class);
   }
 
   public JsonRpcClient getJsonRpcClient() {

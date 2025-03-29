@@ -128,7 +128,9 @@ Which produces the following output:
 Most operations using this library require some sort of private key material. Broadly speaking, the library supports
 two mechanisms: (1) in-memory private keys, and (2) in-memory _references_ to private keys where the actual private key 
 material lives in an external system (e.g., keys in a Hardware Security Module, or HSM). In Java, this is modeled 
-using the `PrivateKeyable` interface, which has two subclasses: `PrivateKey` and `PrivateKeyReference`.
+using the [`PrivateKeyable`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/keys/PrivateKeyable.java) interface,
+which has two subclasses: [`PrivateKey`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/keys/PrivateKey.java)
+and [`PrivateKeyReference`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/keys/PrivateKeyReference.java).
 
 #### In-Memory Private Keys (`PrivateKey`)
 
@@ -163,7 +165,7 @@ without exposing key material to the outside world (e.g., an HSM or cloud servic
 
 This library does not provide an implementation that interacts with any particular external signing service or HSM.
 However, developers wishing to support such interactions should extend `PrivateKeyReference` for the particular external service, and implement
-[SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java) for their `PrivateKeyReference` type.
+[SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/SignatureService.java) for their `PrivateKeyReference` type.
 interface. In
 addition, [FauxGcpKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxGcpKmsSignatureServiceTest.java)
 and [FauxAwsKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxAwsKmsSignatureServiceTest.java)
@@ -172,9 +174,10 @@ illustrate faux variants of a simulated external key provider that can also be u
 ### Signing and Verifying Transactions
 
 The main interface used to sign and verify transactions
-is [SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java),
-which has two concrete implementations: `BcSignatureService` and `BcDerivedKeySignatureService`. The first uses
-in-memory private key material to perform signing and validation operations, while the latter can be used to derive
+is [SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/SignatureService.java), which has two concrete
+implementations: [`BcSignatureService`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/bc/BcSignatureService.java) and
+[`BcDerivedKeySignatureService`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/bc/BcDerivedKeySignatureService.java).
+The first uses in-memory private key material to perform signing and validation operations, while the latter can be used to derive
 multiple private keys using a single entropy source combined with differing unique key identifiers (e.g., User Ids).
 
 #### Construct and Sign an XRP Payment:

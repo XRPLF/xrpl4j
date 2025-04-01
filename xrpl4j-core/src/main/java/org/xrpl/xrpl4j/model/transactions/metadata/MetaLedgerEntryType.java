@@ -47,6 +47,10 @@ public interface MetaLedgerEntryType {
   @Beta
   MetaLedgerEntryType ORACLE = MetaLedgerEntryType.of("Oracle");
 
+  MetaLedgerEntryType MP_TOKEN_ISSUANCE = MetaLedgerEntryType.of("MPTokenIssuance");
+  MetaLedgerEntryType MP_TOKEN = MetaLedgerEntryType.of("MPToken");
+
+
   /**
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *
@@ -103,6 +107,10 @@ public interface MetaLedgerEntryType {
         return MetaDidObject.class;
       case "Oracle":
         return MetaOracleObject.class;
+      case "MPTokenIssuance":
+        return MetaMpTokenIssuanceObject.class;
+      case "MPToken":
+        return MetaMpTokenObject.class;
       default:
         return MetaUnknownObject.class;
     }

@@ -17,6 +17,8 @@ import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
+import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.OracleObject;
@@ -25,6 +27,7 @@ import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
 
 import java.util.Optional;
@@ -362,6 +365,42 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link MpTokenIssuanceObject} ledger entry.
+   *
+   * @param issuanceId      The {@link MpTokenIssuanceId} of the token.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
+   */
+  static LedgerEntryRequestParams<MpTokenIssuanceObject> mpTokenIssuance(
+    MpTokenIssuanceId issuanceId,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<MpTokenIssuanceObject>builder()
+      .mptIssuance(issuanceId)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link MpTokenObject} ledger entry.
+   *
+   * @param mpToken         The {@link MpTokenLedgerEntryParams} specifying the MPToken.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
+   */
+  static LedgerEntryRequestParams<MpTokenObject> mpToken(
+    MpTokenLedgerEntryParams mpToken,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<MpTokenObject>builder()
+      .mpToken(mpToken)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -495,6 +534,22 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<OracleLedgerEntryParams> oracle();
 
   /**
+   * Look up an {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} by {@link MpTokenIssuanceId}.
+   *
+   * @return An {@link Optional} {@link MpTokenIssuanceId}.
+   */
+  @JsonProperty("mpt_issuance")
+  Optional<MpTokenIssuanceId> mptIssuance();
+
+  /**
+   * Look up an {@link org.xrpl.xrpl4j.model.ledger.MpTokenObject} by {@link MpTokenLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link MpTokenLedgerEntryParams}.
+   */
+  @JsonProperty("mptoken")
+  Optional<MpTokenLedgerEntryParams> mpToken();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -553,6 +608,14 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (oracle().isPresent()) {
       return (Class<T>) OracleObject.class;
+    }
+
+    if (mptIssuance().isPresent()) {
+      return (Class<T>) MpTokenIssuanceObject.class;
+    }
+
+    if (mpToken().isPresent()) {
+      return (Class<T>) MpTokenObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

@@ -1,12 +1,15 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+
+import java.util.Optional;
 
 /**
  * Clawback an issued currency that exists on a Trustline.
@@ -49,7 +52,9 @@ public interface Clawback extends Transaction {
    * @return An {@link IssuedCurrencyAmount} indicating the amount to clawback.
    */
   @JsonProperty("Amount")
-  IssuedCurrencyAmount amount();
+  CurrencyAmount amount();
 
+  @JsonProperty("Holder")
+  Optional<Address> holder();
 
 }

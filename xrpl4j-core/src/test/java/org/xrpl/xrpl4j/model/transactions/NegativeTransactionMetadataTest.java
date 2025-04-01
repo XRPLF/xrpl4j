@@ -320,6 +320,13 @@ class NegativeTransactionMetadataTest {
           } else {
             assertThat(issuedCurrencyAmount.isNegative()).isFalse();
           }
+        },
+        mpTokenAmount -> {
+          if (mpTokenAmount.value().startsWith("-")) {
+            assertThat(mpTokenAmount.isNegative()).isTrue();
+          } else {
+            assertThat(mpTokenAmount.isNegative()).isFalse();
+          }
         }
       );
     });
@@ -333,7 +340,9 @@ class NegativeTransactionMetadataTest {
         xrpCurrencyAmount -> assertThat(xrpCurrencyAmount.isNegative()).isEqualTo(
           xrpCurrencyAmount.toXrp().signum() < 0),
         issuedCurrencyAmount -> assertThat(issuedCurrencyAmount.isNegative()).isEqualTo(
-          issuedCurrencyAmount.value().startsWith("-"))
+          issuedCurrencyAmount.value().startsWith("-")),
+        mpTokenAmount -> assertThat(mpTokenAmount.isNegative()).isEqualTo(
+          mpTokenAmount.value().startsWith("-"))
       ));
   }
 }

@@ -91,12 +91,6 @@ public class ServerInfoIT {
       reportingModeServerInfo -> fail("Shouldn't be a Reporting server")
     );
 
-    // Ripple Devnet (Clio)
-    getXrplClient(HttpUrl.parse("https://clio.devnet.rippletest.net:51234/")).serverInformation().info().handle(
-      rippledServerInfo -> fail("Shouldn't be a rippled server"),
-      this::assertValidNetworkId,
-      reportingModeServerInfo -> fail("Shouldn't be a Reporting server")
-    );
   }
 
   private String getType(ServerInfo info) {

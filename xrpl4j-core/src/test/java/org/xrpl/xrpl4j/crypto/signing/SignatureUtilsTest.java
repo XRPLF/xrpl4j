@@ -38,6 +38,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -51,6 +52,7 @@ import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
@@ -86,6 +88,11 @@ import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
@@ -1194,6 +1201,58 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToMpTokenAuthorize() {
+    MpTokenAuthorize transaction = MpTokenAuthorize.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenIssuanceCreate() {
+    MpTokenIssuanceCreate transaction = MpTokenIssuanceCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenIssuanceDestroy() {
+    MpTokenIssuanceDestroy transaction = MpTokenIssuanceDestroy.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenIssuanceSet() {
+    MpTokenIssuanceSet transaction = MpTokenIssuanceSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -1829,6 +1888,54 @@ public class SignatureUtilsTest {
         .sequence(UnsignedInteger.valueOf(391))
         .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
         .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenAuthorize() {
+    MpTokenAuthorize transaction = MpTokenAuthorize.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenIssuanceCreate() {
+    MpTokenIssuanceCreate transaction = MpTokenIssuanceCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenIssuanceDestroy() {
+    MpTokenIssuanceDestroy transaction = MpTokenIssuanceDestroy.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenIssuanceSet() {
+    MpTokenIssuanceSet transaction = MpTokenIssuanceSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .build();
 
     addMultiSignatureToTransactionHelper(transaction);
   }

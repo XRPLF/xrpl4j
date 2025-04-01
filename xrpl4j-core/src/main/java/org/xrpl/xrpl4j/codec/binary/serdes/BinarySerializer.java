@@ -107,12 +107,8 @@ public class BinarySerializer {
   public void writeFieldAndValue(final FieldInstance field, final JsonNode value) throws JsonProcessingException {
     Objects.requireNonNull(field);
     Objects.requireNonNull(value);
-    SerializedType typedValue;
-    if (field.name().equals("BaseFee")) {
-      typedValue = SerializedType.getTypeByName(field.type()).fromHex(value.asText());
-    } else {
-      typedValue = SerializedType.getTypeByName(field.type()).fromJson(value);
-    }
+    SerializedType<?> typedValue = SerializedType.getTypeByName(field.type()).fromJson(value, field);
+
     writeFieldAndValue(field, typedValue);
   }
 
@@ -121,7 +117,7 @@ public class BinarySerializer {
    *
    * @param value length encoded value to write to BytesList.
    */
-  public void writeLengthEncoded(final SerializedType value) {
+  public void writeLengthEncoded(final SerializedType<?> value) {
     Objects.requireNonNull(value);
     UnsignedByteArray bytes = UnsignedByteArray.empty();
     value.toBytesSink(bytes);

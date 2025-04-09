@@ -84,14 +84,14 @@ public class RippledContainer {
   public RippledContainer() {
     try (GenericContainer<?> container = new GenericContainer<>("rippleci/rippled:latest")) {
       this.rippledContainer = container.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) (cmd) ->
-              cmd.withEntrypoint("/opt/ripple/bin/rippled"))
-          .withCommand("-a --start --conf /config/rippled.cfg")
-          .withExposedPorts(5005)
-          .withImagePullPolicy(PullPolicy.alwaysPull())
-          .withClasspathResourceMapping("rippled",
-              "/config",
-              BindMode.READ_ONLY)
-          .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
+          cmd.withEntrypoint("/opt/ripple/bin/rippled"))
+        .withCommand("-a --start --conf /config/rippled.cfg")
+        .withExposedPorts(5005)
+        .withImagePullPolicy(PullPolicy.alwaysPull())
+        .withClasspathResourceMapping("rippled",
+          "/config",
+          BindMode.READ_ONLY)
+        .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Application starting.*"));
     }
 
     ledgerAcceptor = Executors.newScheduledThreadPool(1);
@@ -141,19 +141,19 @@ public class RippledContainer {
    */
   private void waitForLedgerTimeToSync() {
     Awaitility.await()
-        .pollDelay(1, TimeUnit.SECONDS)
-        .atMost(10, TimeUnit.SECONDS)
-        .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
+      .pollDelay(1, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
+      .until(() -> Duration.between(getLedgerTime().toInstant(), Instant.now()).abs().getSeconds() < 1);
   }
 
   private ZonedDateTime getLedgerTime() {
     try {
       return getXrplClient().serverInformation().info()
-          .map(
-              RippledServerInfo::time,
-              clioServerInfo -> ZonedDateTime.now(),
-              ReportingModeServerInfo::time
-          );
+        .map(
+          RippledServerInfo::time,
+          clioServerInfo -> ZonedDateTime.now(),
+          ReportingModeServerInfo::time
+        );
     } catch (JsonRpcClientErrorException e) {
       throw new RuntimeException(e);
     }
@@ -226,9 +226,9 @@ public class RippledContainer {
     // rippled, run a scheduled task to trigger the "ledger_accept" method.
     ledgerAcceptor = Executors.newScheduledThreadPool(1);
     ledgerAcceptor.scheduleAtFixedRate(() -> LEDGER_ACCEPTOR.accept(this),
-        acceptIntervalMillis.toMillis(),
-        acceptIntervalMillis.toMillis(),
-        TimeUnit.MILLISECONDS
+      acceptIntervalMillis.toMillis(),
+      acceptIntervalMillis.toMillis(),
+      TimeUnit.MILLISECONDS
     );
 
     waitForLedgerTimeToSync();

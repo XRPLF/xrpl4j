@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.PullPolicy;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplAdminClient;
@@ -48,6 +49,7 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -117,6 +119,7 @@ public class RippledContainer {
    * Start contain with given interval for closing ledgers.
    *
    * @param acceptIntervalMillis The number of milliseconds before each accept call to close the ledger.
+   *
    * @return A {@link RippledContainer}.
    */
   public RippledContainer start(final Duration acceptIntervalMillis) {
@@ -215,6 +218,7 @@ public class RippledContainer {
    *
    * @param acceptIntervalMillis The interval, in milliseconds, between regular calls to the `ledger_accept` method.
    *                             This method is responsible for accepting new transactions into the ledger.
+   *
    * @see "https://xrpl.org/docs/references/http-websocket-apis/admin-api-methods/server-control-methods/ledger_accept"
    */
   public void startLedgerAcceptor(final Duration acceptIntervalMillis) {
@@ -237,7 +241,7 @@ public class RippledContainer {
   /**
    * Stops the automated Ledger Acceptor, for example to control an integration test more finely.
    */
-  @SuppressWarnings( {"all"})
+  @SuppressWarnings({"all"})
   public void stopLedgerAcceptor() {
     try {
       ledgerAcceptor.shutdown();

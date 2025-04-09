@@ -397,20 +397,20 @@ public class SignatureUtils {
           .build();
     } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = MpTokenAuthorize.builder().from((MpTokenAuthorize) transaction)
-        .transactionSignature(signature)
-        .build();
+          .transactionSignature(signature)
+          .build();
     } else if (MpTokenIssuanceCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = MpTokenIssuanceCreate.builder().from((MpTokenIssuanceCreate) transaction)
-        .transactionSignature(signature)
-        .build();
+          .transactionSignature(signature)
+          .build();
     } else if (MpTokenIssuanceDestroy.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = MpTokenIssuanceDestroy.builder().from((MpTokenIssuanceDestroy) transaction)
-        .transactionSignature(signature)
-        .build();
+          .transactionSignature(signature)
+          .build();
     } else if (MpTokenIssuanceSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
-        .transactionSignature(signature)
-        .build();
+          .transactionSignature(signature)
+          .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -623,23 +623,23 @@ public class SignatureUtils {
           .build();
     } else if (AmmClawback.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = AmmClawback.builder().from((AmmClawback) transaction)
-        .signers(signers)
-        .build();
+          .signers(signers)
+          .build();
     } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenAuthorize.builder().from((MpTokenAuthorize) transaction)
-        .build();
+          .build();
     } else if (MpTokenIssuanceCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenIssuanceCreate.builder().from((MpTokenIssuanceCreate) transaction)
-        .signers(signers)
-        .build();
+          .signers(signers)
+          .build();
     } else if (MpTokenIssuanceDestroy.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenIssuanceDestroy.builder().from((MpTokenIssuanceDestroy) transaction)
-        .signers(signers)
-        .build();
+          .signers(signers)
+          .build();
     } else if (MpTokenIssuanceSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
-        .signers(signers)
-        .build();
+          .signers(signers)
+          .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");

@@ -16,7 +16,6 @@ import java.util.Optional;
 @Value.Immutable
 @JsonSerialize(as = ImmutableAmmClawback.class)
 @JsonDeserialize(as = ImmutableAmmClawback.class)
-@Beta
 public interface AmmClawback extends Transaction {
 
   /**

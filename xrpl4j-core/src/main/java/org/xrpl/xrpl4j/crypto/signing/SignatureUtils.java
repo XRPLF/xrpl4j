@@ -139,6 +139,7 @@ public class SignatureUtils {
    * Helper method to convert an {@link UnsignedClaim} into bytes that can be used directly for signing.
    *
    * @param unsignedClaim An {@link UnsignedClaim} to be signed.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toSignableBytes(final UnsignedClaim unsignedClaim) {
@@ -159,6 +160,7 @@ public class SignatureUtils {
    * is subject to change.</p>
    *
    * @param attestation An {@link Attestation} to be signed.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   @Beta
@@ -204,6 +206,7 @@ public class SignatureUtils {
    *                    {@link Transaction#signingPublicKey()} must be provided.
    * @param signature   A {@link Signature} containing the transaction signature.
    * @param <T>         extends {@link Transaction}.
+   *
    * @return A copy of {@code transaction} with the {@link Transaction#transactionSignature()} field added.
    */
   public <T extends Transaction> SingleSignedTransaction<T> addSignatureToTransaction(
@@ -432,6 +435,7 @@ public class SignatureUtils {
    *                    {@link Transaction#signingPublicKey()} must be an empty string.
    * @param signers     A {@link List} of {@link SignerWrapper}s containing the transaction signatures.
    * @param <T>         extends {@link Transaction}.
+   *
    * @return A copy of {@code transaction} with the {@link Transaction#signers()}} field added.
    */
   public <T extends Transaction> T addMultiSignaturesToTransaction(T transaction, List<SignerWrapper> signers) {
@@ -627,6 +631,7 @@ public class SignatureUtils {
         .build();
     } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenAuthorize.builder().from((MpTokenAuthorize) transaction)
+        .signers(signers)
         .build();
     } else if (MpTokenIssuanceCreate.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenIssuanceCreate.builder().from((MpTokenIssuanceCreate) transaction)
@@ -644,6 +649,7 @@ public class SignatureUtils {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
     }
+
     return (T) transactionWithSignatures;
   }
 }

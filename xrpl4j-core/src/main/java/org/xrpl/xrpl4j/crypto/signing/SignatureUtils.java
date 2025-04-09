@@ -122,6 +122,7 @@ public class SignatureUtils {
    * Helper method to convert a {@link Transaction} into bytes that can be used directly for signing.
    *
    * @param transaction A {@link Transaction} to be signed.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toSignableBytes(final Transaction transaction) {
@@ -181,6 +182,7 @@ public class SignatureUtils {
    *
    * @param transaction   A {@link Transaction} to be signed.
    * @param signerAddress The {@link Address} of the signer of the transaction.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, final Address signerAddress) {

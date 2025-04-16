@@ -340,7 +340,6 @@ public enum TransactionType {
 
   /**
    * The {@link TransactionType} for the {@link AmmClawback} transaction.
-   * is subject to change.</p>
    */
   AMM_CLAWBACK("AMMClawback"),
   @Beta

@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmClawback;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
 import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
@@ -395,6 +396,10 @@ public class SignatureUtils {
       transactionWithSignature = OracleDelete.builder().from((OracleDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (AmmClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = AmmClawback.builder().from((AmmClawback) transaction)
+        .transactionSignature(signature)
+        .build();
     } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = MpTokenAuthorize.builder().from((MpTokenAuthorize) transaction)
         .transactionSignature(signature)
@@ -620,6 +625,10 @@ public class SignatureUtils {
         .build();
     } else if (OracleDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = OracleDelete.builder().from((OracleDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (AmmClawback.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = AmmClawback.builder().from((AmmClawback) transaction)
         .signers(signers)
         .build();
     } else if (MpTokenAuthorize.class.isAssignableFrom(transaction.getClass())) {

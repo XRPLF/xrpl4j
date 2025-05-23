@@ -25,9 +25,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -80,5 +80,14 @@ public interface AccountDelete extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
+
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction.
+   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   *
+   * @return An {@link Optional} of type {@link CredentialID}.
+   */
+  @JsonProperty("CredentialIDs")
+  Optional<List<CredentialID>> credentialIDs();
 
 }

@@ -859,4 +859,20 @@ public class Wrappers {
     }
 
   }
+
+  /**
+   * A wrapped {@link String} containing a CredentialID.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialID.class, using = CredentialIDSerializer.class)
+  @JsonDeserialize(as = CredentialID.class, using = CredentialIDDeserializer.class)
+  @Beta
+  abstract static class _CredentialID extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+  }
 }

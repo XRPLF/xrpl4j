@@ -25,9 +25,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -84,13 +85,77 @@ public interface DepositPreAuth extends Transaction {
   Optional<Address> unauthorize();
 
   /**
-   * Validate that either {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()} is present,
-   * but not both.
+   * The {@link CredentialWrapper}'s to preauthorize.
+   *
+   * @return An {@link Optional} list of type {@link CredentialWrapper} to preauthorize.
+   */
+  @JsonProperty("AuthorizeCredentials")
+  Optional<List<CredentialWrapper>> authorizeCredentials();
+
+  /**
+   * The {@link CredentialWrapper}'s whose preauthorization should be revoked.
+   *
+   * @return An {@link Optional} list of type {@link CredentialWrapper} to unauthorize.
+   */
+  @JsonProperty("UnauthorizeCredentials")
+  Optional<List<CredentialWrapper>> unauthorizeCredentials();
+
+  /**
+   * Validate that exactly one of {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()}
+   * or {@link DepositPreAuth#authorizeCredentials()} or {@link DepositPreAuth#unauthorizeCredentials()}
+   * is present.
    */
   @Value.Check
-  default void validateFieldPresence() {
-    Preconditions.checkArgument((authorize().isPresent() || unauthorize().isPresent()) &&
-        !(authorize().isPresent() && unauthorize().isPresent()),
-      "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both.");
+  default void validateExactOneFieldPresence() {
+    int fieldsPresent = 0;
+    if (authorize().isPresent()) fieldsPresent++;
+    if (unauthorize().isPresent()) fieldsPresent++;
+    if (authorizeCredentials().isPresent()) fieldsPresent++;
+    if (unauthorizeCredentials().isPresent()) fieldsPresent++;
+
+    Preconditions.checkArgument(fieldsPresent == 1,
+            "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");
+  }
+
+  /**
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()}
+   * has less than or equal to 8 credentials.
+   */
+  @Value.Check
+  default void validateCredentialList() {
+    authorizeCredentials().ifPresent(creds ->
+            Preconditions.checkArgument(
+                    !creds.isEmpty() && creds.size() <= 8,
+                    "AuthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
+            )
+    );
+
+    unauthorizeCredentials().ifPresent(creds ->
+            Preconditions.checkArgument(
+                    !creds.isEmpty() && creds.size() <= 8,
+                    "UnauthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
+            )
+    );
+  }
+
+  /**
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()}
+   * has unique credentials each.
+   */
+  @Value.Check
+  default void validateForUniqueValues() {
+    authorizeCredentials().ifPresent(creds -> {
+      Preconditions.checkArgument(
+              new HashSet<>(creds).size() == creds.size(),
+              "AuthorizeCredentials should have unique credentials."
+      );
+    });
+
+    unauthorizeCredentials().ifPresent(creds -> {
+      Preconditions.checkArgument(
+              new HashSet<>(creds).size() == creds.size(),
+              "UnauthorizeCredentials should have unique credentials."
+      );
+    });
   }
 }

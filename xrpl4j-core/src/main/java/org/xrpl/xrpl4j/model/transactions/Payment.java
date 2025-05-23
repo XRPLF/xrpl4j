@@ -135,4 +135,13 @@ public interface Payment extends Transaction {
   @JsonProperty("DeliverMin")
   Optional<CurrencyAmount> deliverMin();
 
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction.
+   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   *
+   * @return An {@link Optional} of type {@link CredentialID}.
+   */
+  @JsonProperty("CredentialIDs")
+  Optional<List<CredentialID>> credentialIDs();
+
 }

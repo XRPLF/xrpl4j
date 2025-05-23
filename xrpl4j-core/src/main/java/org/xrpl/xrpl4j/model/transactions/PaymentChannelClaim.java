@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.PaymentChannelClaimFlags;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -129,5 +130,14 @@ public interface PaymentChannelClaim extends Transaction {
    */
   @JsonProperty("PublicKey")
   Optional<String> publicKey();
+
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction.
+   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   *
+   * @return An {@link Optional} of type {@link CredentialID}.
+   */
+  @JsonProperty("CredentialIDs")
+  Optional<List<CredentialID>> credentialIDs();
 
 }

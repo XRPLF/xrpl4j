@@ -42,6 +42,7 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Locale;
@@ -198,6 +199,15 @@ public interface EscrowFinish extends Transaction {
    */
   @JsonProperty("Fulfillment")
   Optional<String> fulfillmentRawValue();
+
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction.
+   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   *
+   * @return An {@link Optional} of type {@link CredentialID}.
+   */
+  @JsonProperty("CredentialIDs")
+  Optional<List<CredentialID>> credentialIDs();
 
   /**
    * Normalization method to try to get {@link #condition()} and {@link #conditionRawValue()} to match.

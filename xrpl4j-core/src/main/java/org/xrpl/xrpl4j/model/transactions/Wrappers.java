@@ -34,49 +34,7 @@ import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
-import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.OracleProviderDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.OracleUriDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.XChainCountSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -842,6 +800,58 @@ public class Wrappers {
   @JsonDeserialize(as = MpTokenMetadata.class, using = MpTokenMetadataDeserializer.class)
   @Beta
   abstract static class _MpTokenMetadata extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a Credential Type.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialType.class, using = CredentialTypeSerializer.class)
+  @JsonDeserialize(as = CredentialType.class, using = CredentialTypeDeserializer.class)
+  @Beta
+  abstract static class _CredentialType extends Wrapper<String> implements Serializable {
+
+    /**
+     * Validates that a {@link CredentialType}'s value's length is capped at 128 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "CredentialType must not be empty.");
+      Preconditions.checkArgument(this.value().length() <= 128, "CredentialType must be <= 128 characters.");
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a Credential URI.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialUri.class, using = CredentialUriSerializer.class)
+  @JsonDeserialize(as = CredentialUri.class, using = CredentialUriDeserializer.class)
+  @Beta
+  abstract static class _CredentialUri extends Wrapper<String> implements Serializable {
+
+    /**
+     * Validates that a {@link CredentialUri}'s value's length is capped at 512 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "CredentialUri must not be empty.");
+      Preconditions.checkArgument(this.value().length() <= 512, "CredentialUri must be <= 512 characters.");
+    }
 
     @Override
     public String toString() {

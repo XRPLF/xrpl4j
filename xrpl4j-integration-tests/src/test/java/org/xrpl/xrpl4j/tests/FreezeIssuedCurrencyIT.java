@@ -875,8 +875,8 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
    * @param issuerKeyPair       The {@link KeyPair} of the trustline issuer.
    * @param counterpartyKeyPair The {@link KeyPair} of the trustline counterparty.
    * @param fee                 The fee to spend to get the transaction into the ledger.
-   * @param freeze              A boolean to toggle the trustline operation (i.e., {@code false} to clear both freezes and
-   *                            {@code true} to set both freezes).
+   * @param freeze              A boolean to toggle the trustline operation (i.e., {@code false} to clear both freezes
+   *                            and {@code true} to set both freezes).
    *
    * @return The {@link TrustLine} that was frozen/deep-frozen or unfrozen.
    *

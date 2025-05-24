@@ -278,9 +278,14 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Create a Trust Line between issuer and the bad actor.
     TrustLine badActorTrustLine = this.createTrustLine(
-      issuerKeyPair,
       badActorKeyPair,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .value(FreezeIssuedCurrencyIT.TEN_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.builder().tfSetNoRipple().build()
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
     assertThat(badActorTrustLine.freezePeer()).isFalse();
@@ -292,9 +297,14 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Create a Trust Line between issuer and the good actor.
     TrustLine goodActorTrustLine = this.createTrustLine(
-      issuerKeyPair,
       goodActorKeyPair,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .value(FreezeIssuedCurrencyIT.TEN_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.builder().tfSetNoRipple().build()
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
     assertThat(goodActorTrustLine.freezePeer()).isFalse();
@@ -308,8 +318,15 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     /////////////
 
     // Send funds from issuer to the badActor.
-    sendFunds(
-      TEN_THOUSAND, issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    sendIssuedCurrency(
+      issuerKeyPair,
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -322,8 +339,15 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     );
 
     // Send funds from badActor to the goodActor.
-    sendFunds(
-      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    sendIssuedCurrency(
+      badActorKeyPair,
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -367,25 +391,53 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     // 2) Payments can still occur directly between the issuer and the deep-frozen counterparty
 
     // Try to send funds from badActor to goodActor should not work because the badActor is deep-frozen.
-    sendFunds(
-      "1000", badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+    sendIssuedCurrency(
+      badActorKeyPair,
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       "tecPATH_DRY"
     );
 
     // Try to send funds from goodActor to badActor should not work because the badActor is deep-frozen.
-    sendFunds(
-      "1000", goodActorKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+    sendIssuedCurrency(
+      goodActorKeyPair,
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
       "tecPATH_DRY"
     );
 
     // Sending from the badActor to the issuer should still work
-    sendFunds(
-      "2000", badActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    sendIssuedCurrency(
+      badActorKeyPair,
+      issuerKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("2000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Sending from the issuer to the badActor should still work
-    sendFunds(
-      "1000", issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    sendIssuedCurrency(
+      issuerKeyPair,
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     // Clear the deep freeze and regular freeze on the bad actor.
@@ -413,8 +465,15 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     assertThat(badActorPerspectiveTrustLine.deepFreezePeer()).isFalse();
 
     // After clearing deep freeze, badActor should be able to send funds to goodActor again
-    sendFunds(
-      "500", badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    sendIssuedCurrency(
+      badActorKeyPair,
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("500")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
   }
 

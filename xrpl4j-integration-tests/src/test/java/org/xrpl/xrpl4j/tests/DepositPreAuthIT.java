@@ -33,10 +33,16 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.DepositPreAuthLedgerEntryParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
+import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
+import org.xrpl.xrpl4j.model.ledger.EscrowObject;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -85,14 +91,20 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Validate that the DepositPreAuthObject was added to the receiver's account objects
-    this.scanForResult(
+    DepositPreAuthObject preAuthObject = (DepositPreAuthObject) this.scanForResult(
       () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
       accountObjects ->
         accountObjects.accountObjects().stream().anyMatch(object ->
           DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
             ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress())
         )
-    );
+      ).accountObjects().stream()
+      .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+        ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress()))
+      .findFirst()
+      .get();
+
+    assertEntryEqualsObjectFromAccountObjects(depositPreAuth, preAuthObject);
 
     /////////////////////////
     // Validate that the `deposit_authorized` client call is implemented properly by ensuring it aligns with the
@@ -265,5 +277,35 @@ public class DepositPreAuthIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
       accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
     );
+  }
+
+  private void assertEntryEqualsObjectFromAccountObjects(
+    DepositPreAuth depositPreAuth,
+    DepositPreAuthObject preAuthObject
+  )
+    throws JsonRpcClientErrorException {
+    LedgerEntryResult<DepositPreAuthObject> preAuthEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.depositPreAuth(
+        DepositPreAuthLedgerEntryParams.builder()
+          .owner(depositPreAuth.account())
+          .authorized(depositPreAuth.authorize().get())
+          .build(),
+        LedgerSpecifier.CURRENT
+      )
+    );
+
+    assertThat(preAuthEntry.node()).isEqualTo(preAuthObject);
+
+    LedgerEntryResult<DepositPreAuthObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(preAuthObject.index(), DepositPreAuthObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(preAuthEntry.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(preAuthObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
   }
 }

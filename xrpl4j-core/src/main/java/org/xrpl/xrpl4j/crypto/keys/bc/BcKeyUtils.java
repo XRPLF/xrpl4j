@@ -37,6 +37,7 @@ import org.xrpl.xrpl4j.codec.addresses.KeyType;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.signing.bc.Secp256k1;
 
 import java.math.BigInteger;
 import java.security.Security;
@@ -84,10 +85,11 @@ public final class BcKeyUtils {
     Objects.requireNonNull(ed25519PrivateKeyParameters);
 
     // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of sekp256k1 keys.
-    // Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
-    UnsignedByteArray prefixedPrivateKey = UnsignedByteArray.of(PrivateKey.PREFIX)
-      .append(UnsignedByteArray.of(ed25519PrivateKeyParameters.getEncoded()));
-    return PrivateKey.of(prefixedPrivateKey);
+    // Bouncy Castle only deals with 32 byte keys, but in XRPL these often include a one byte prefix (i.e., `0xED`) to
+    // indicate this is an ed25519 private key. However, this is taken care of by the `PrivateKey.fromNaturalBytes`.
+    return PrivateKey.fromNaturalBytes(
+      UnsignedByteArray.of(ed25519PrivateKeyParameters.getEncoded()), KeyType.ED25519
+    );
   }
 
   /**
@@ -98,10 +100,10 @@ public final class BcKeyUtils {
    * @return A {@link PrivateKey}.
    */
   public static PrivateKey toPrivateKey(final ECPrivateKeyParameters ecPrivateKeyParameters) {
-    // Convert the HEX representation of the BigInteger into bytes.
-    byte[] privateKeyBytes = BaseEncoding.base16().decode(ecPrivateKeyParameters.getD().toString(16).toUpperCase());
-    final UnsignedByteArray privateKeyUba = UnsignedByteArray.of(privateKeyBytes);
-    return PrivateKey.of(privateKeyUba);
+    return PrivateKey.fromPrefixedBytes(
+      // Call `UnsignedByteArray.from` to properly prefix-pad the BigInteger's bytes.
+      Secp256k1.toUnsignedByteArray(ecPrivateKeyParameters.getD(), 33)
+    );
   }
 
   /**
@@ -134,7 +136,7 @@ public final class BcKeyUtils {
     Objects.requireNonNull(ed25519PublicKeyParameters);
     // XRPL ED25519 keys are prefixed with 0xED so that the keys are 33 bytes and match the length of sekp256k1 keys.
     // Bouncy Castle only deals with 32 byte keys, so we need to manually add the prefix
-    UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PrivateKey.PREFIX)
+    UnsignedByteArray prefixedPublicKey = UnsignedByteArray.of(PublicKey.ED2559_PREFIX)
       .append(UnsignedByteArray.of(ed25519PublicKeyParameters.getEncoded()));
 
     return PublicKey.builder()
@@ -203,7 +205,8 @@ public final class BcKeyUtils {
   public static Ed25519PrivateKeyParameters toEd25519PrivateKeyParams(PrivateKey privateKey) {
     Objects.requireNonNull(privateKey);
     Preconditions.checkArgument(privateKey.keyType() == ED25519);
-    return new Ed25519PrivateKeyParameters(privateKey.value().toByteArray(), 1); // <-- Strip leading prefix byte.
+    // Use offset 0 with no prefix
+    return new Ed25519PrivateKeyParameters(privateKey.naturalBytes().toByteArray(), 0);
   }
 
   /**
@@ -233,9 +236,9 @@ public final class BcKeyUtils {
     Objects.requireNonNull(privateKey);
     Preconditions.checkArgument(privateKey.keyType() == KeyType.SECP256K1, "KeyType must be SECP256K1");
 
-    final BigInteger privateKeyInt = new BigInteger(
-      BaseEncoding.base16().encode(privateKey.value().toByteArray()), 16
-    );
-    return new ECPrivateKeyParameters(privateKeyInt, BcKeyUtils.PARAMS);
+    // From http://www.secg.org/sec1-v2.pdf: A PrivateKey consists of an elliptic curve secret key `d` which is an
+    // integer in the interval [1, n − 1]. Therefore, it is safe to assume that the signum below should always be 1.
+    final BigInteger secretKeyD = new BigInteger(1, privateKey.naturalBytes().toByteArray());
+    return new ECPrivateKeyParameters(secretKeyD, BcKeyUtils.PARAMS);
   }
 }

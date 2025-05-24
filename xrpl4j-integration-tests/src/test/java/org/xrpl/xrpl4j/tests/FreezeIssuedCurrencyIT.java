@@ -21,6 +21,8 @@ package org.xrpl.xrpl4j.tests;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.xrpl.xrpl4j.model.transactions.TransactionResultCodes.TEC_PATH_DRY;
+import static org.xrpl.xrpl4j.model.transactions.TransactionResultCodes.TES_SUCCESS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -41,14 +43,12 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 import org.xrpl.xrpl4j.model.transactions.ImmutableAccountSet;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
-import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 /**
  * An Integration Test to validate that an amount of issued currency held by a bad actor can be "frozen."
  */
-@SuppressWarnings("deprecation")
 public class FreezeIssuedCurrencyIT extends AbstractIT {
 
   private static final String TEN_THOUSAND = "10000";
@@ -85,9 +85,13 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     FeeResult feeResult = xrplClient.fee();
 
     // Create a Trust Line between issuer and the bad actor.
-    TrustLine badActorTrustLine = this.createTrustLine(
-      issuerKeyPair,
+    TrustLine badActorTrustLine = createTrustLine(
       badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
@@ -98,8 +102,12 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Create a Trust Line between issuer and the good actor.
     TrustLine goodActorTrustLine = this.createTrustLine(
-      issuerKeyPair,
       goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
@@ -111,9 +119,23 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     // Send Funds
     /////////////
 
-    // Send funds from issuer to the badActor.
-    sendFunds(
-      TEN_THOUSAND, issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from issuer ({}) to the badActor ({}) and expect {}",
+      TEN_THOUSAND,
+      issuerKeyPair.publicKey().deriveAddress(),
+      goodActorKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+
+    sendIssuedCurrency(
+      issuerKeyPair, // <-- From
+      badActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
     );
 
     ///////////////////////////
@@ -125,9 +147,22 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
         .anyMatch(line -> line.balance().equals("-" + TEN_THOUSAND))
     );
 
-    // Send funds from badActor to the goodActor.
-    sendFunds(
-      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from badActor ({}) to the goodActor ({}) and expect {}",
+      FIVE_THOUSAND,
+      badActorKeyPair.publicKey().deriveAddress(),
+      goodActorKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+
+    sendIssuedCurrency(
+      badActorKeyPair, // <-- From
+      goodActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
@@ -159,20 +194,62 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     // 2) The counterparty can only send the frozen currencies directly to the issuer (no where else)
     // 3) The counterparty can still receive payments from others on the frozen trust line.
 
-    // Try to send funds from badActor to goodActor should not work because the badActor is frozen.
-    sendFunds(
-      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
-      "tecPATH_DRY"
+    logger.info("Send ${} from badActor ({}) to the goodActor ({}) and expect {}",
+      FIVE_THOUSAND,
+      badActorKeyPair.publicKey().deriveAddress(),
+      goodActorKeyPair.publicKey().deriveAddress(),
+      TEC_PATH_DRY
+    );
+
+    sendIssuedCurrency(
+      badActorKeyPair, // <-- From
+      goodActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TEC_PATH_DRY
     );
 
     // Sending from the badActor to the issuer should still work
-    sendFunds(
-      FIVE_THOUSAND, badActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from badActor ({}) to the issuer ({}) and expect {}",
+      FIVE_THOUSAND,
+      badActorKeyPair.publicKey().deriveAddress(),
+      issuerKeyPair.publicKey().deriveAddress(),
+      TEC_PATH_DRY
+    );
+
+    sendIssuedCurrency(
+      badActorKeyPair, // <-- From
+      issuerKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TEC_PATH_DRY
     );
 
     // Sending from the goodActor to the badActor should still work
-    sendFunds(
-      FIVE_THOUSAND, goodActorKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from goodActor ({}) to the badActor ({}) and expect {}",
+      FIVE_THOUSAND,
+      goodActorKeyPair.publicKey().deriveAddress(),
+      badActorKeyPair.publicKey().deriveAddress(),
+      TEC_PATH_DRY
+    );
+    sendIssuedCurrency(
+      goodActorKeyPair, // <-- From
+      badActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TEC_PATH_DRY
     );
 
     // Unfreeze the bad actor.
@@ -354,8 +431,12 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
 
     // Create a Trust Line between issuer and the bad actor.
     TrustLine badActorTrustLine = this.createTrustLine(
-      issuerKeyPair,
       badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(badActorTrustLine.freeze()).isFalse();
@@ -366,8 +447,12 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Create a Trust Line between issuer and the good actor.
     TrustLine goodActorTrustLine = this.createTrustLine(
-      issuerKeyPair,
       goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
     assertThat(goodActorTrustLine.freeze()).isFalse();
@@ -379,9 +464,22 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     // Send Funds
     /////////////
 
-    // Send funds from issuer to the badActor.
-    sendFunds(
-      TEN_THOUSAND, issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from issuer ({}) to the badActor ({}) and expect {}",
+      TEN_THOUSAND,
+      issuerKeyPair.publicKey().deriveAddress(),
+      badActorKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+    sendIssuedCurrency(
+      issuerKeyPair, // <-- From
+      badActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
     );
 
     ///////////////////////////
@@ -393,19 +491,35 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
         .anyMatch(line -> line.balance().equals("-" + TEN_THOUSAND))
     );
 
-    // Send funds from badActor to the goodActor.
-    sendFunds(
-      FIVE_THOUSAND, badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from badActor ({}) to the goodActor ({}) and expect {}",
+      FIVE_THOUSAND,
+      badActorKeyPair.publicKey().deriveAddress(),
+      goodActorKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+    sendIssuedCurrency(
+      badActorKeyPair, // <-- From
+      goodActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
     );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
     // The trust line returned is from the perspective of the issuer, so the balance should be negative.
-    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
-        goodActorKeyPair.publicKey().deriveAddress()),
+    this.scanForResult(() -> getValidatedAccountLines(
+        issuerKeyPair.publicKey().deriveAddress(), goodActorKeyPair.publicKey().deriveAddress()
+      ),
       linesResult -> linesResult.lines().stream()
         .anyMatch(line -> line.balance().equals("-" + FIVE_THOUSAND))
     );
+
+    logger.info("Globally freeze trustline for issuer ({})", issuerKeyPair.publicKey().deriveAddress());
 
     // Global-Freeze the trustline for the issuer.
     AccountInfoResult issuerAccountInfo = this.adjustGlobalTrustlineFreeze(
@@ -422,39 +536,116 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
     // 1) The counterparty can only send the frozen currencies directly to the issuer (no where else)
     // 2) The counterparty can still receive payments from others on the frozen trust line.
 
-    // Try to send funds from badActor to goodActor should not work because the badActor is frozen.
-    sendFunds(
-      "500", badActorKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
-      "tecPATH_DRY"
+    logger.info("Send ${} from badActor ({}) to the goodActor ({}) and expect {}",
+      "500",
+      badActorKeyPair.publicKey().deriveAddress(),
+      goodActorKeyPair.publicKey().deriveAddress(),
+      TEC_PATH_DRY
     );
-    // Sending from the goodActor to the badActor should not work
-    sendFunds(
-      "500", goodActorKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
-      "tecPATH_DRY"
-    );
-
-    // Try to send funds from issuer to goodActor should work per
-    // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
-    sendFunds(
-      "100", issuerKeyPair, goodActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
-    );
-
-    // Try to send funds from issuer to badActor should work per
-    // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
-    sendFunds(
-      "100", issuerKeyPair, badActorKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    sendIssuedCurrency(
+      badActorKeyPair, // <-- From
+      goodActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("500")
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TEC_PATH_DRY
     );
 
-    // Try to send funds from issuer to goodActor should work per
-    // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
-    sendFunds(
-      FIVE_THOUSAND, badActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    logger.info("Send ${} from goodActor ({}) to the badActor ({}) and expect {}",
+      "500",
+      goodActorKeyPair.publicKey().deriveAddress(),
+      badActorKeyPair.publicKey().deriveAddress(),
+      TEC_PATH_DRY
+    );
+    sendIssuedCurrency(
+      goodActorKeyPair, // <-- From
+      badActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("500")
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TEC_PATH_DRY
     );
 
-    // Try to send funds from issuer to goodActor should work per
-    // https://xrpl.org/enact-global-freeze.html#intermission-while-frozen
-    sendFunds(
-      FIVE_THOUSAND, goodActorKeyPair, issuerKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    // Note: The following should work per https://xrpl.org/enact-global-freeze.html#intermission-while-frozen).
+    logger.info("Send ${} from issuer ({}) to the goodActor ({}) and expect {}",
+      "100",
+      issuerKeyPair.publicKey().deriveAddress(),
+      goodActorKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+    sendIssuedCurrency(
+      issuerKeyPair, // <-- From
+      goodActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("100")
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
+    );
+
+    // Note: The following should work per https://xrpl.org/enact-global-freeze.html#intermission-while-frozen).
+    logger.info("Send ${} from issuer ({}) to the badActor ({}) and expect {}",
+      "100",
+      issuerKeyPair.publicKey().deriveAddress(),
+      badActorKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+    sendIssuedCurrency(
+      issuerKeyPair, // <-- From
+      badActorKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("100")
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
+    );
+
+    // Note: The following should work per https://xrpl.org/enact-global-freeze.html#intermission-while-frozen).
+    logger.info("Send ${} from issuer ({}) to the badActor ({}) and expect {}",
+      FIVE_THOUSAND,
+      badActorKeyPair.publicKey().deriveAddress(),
+      issuerKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+    sendIssuedCurrency(
+      badActorKeyPair, // <-- From
+      issuerKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
+    );
+
+    // Note: The following should work per https://xrpl.org/enact-global-freeze.html#intermission-while-frozen).
+    logger.info("Send ${} from issuer ({}) to the goodActor ({}) and expect {}",
+      "FIVE_THOUSAND",
+      goodActorKeyPair.publicKey().deriveAddress(),
+      issuerKeyPair.publicKey().deriveAddress(),
+      TES_SUCCESS
+    );
+    sendIssuedCurrency(
+      goodActorKeyPair, // <-- From
+      issuerKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TES_SUCCESS
     );
 
     // Unfreeze the bad actor.
@@ -464,128 +655,6 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       UN_FREEZE
     );
     assertThat(issuerAccountInfo.accountData().flags().lsfGlobalFreeze()).isFalse();
-  }
-
-  /**
-   * Send issued currency funds from an issuer to a badActor.
-   *
-   * @param value     The amount of currency to send.
-   * @param sender    The {@link KeyPair} of the sender.
-   * @param recipient The {@link KeyPair} of the recipient.
-   * @param fee       The current network fee, as an {@link XrpCurrencyAmount}.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   * @throws JsonProcessingException     If there are any problems parsing JSON.
-   */
-  private void sendFunds(
-    String value,
-    KeyPair sender,
-    KeyPair recipient,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    this.sendFunds(value, sender, recipient, fee, "tesSUCCESS");
-  }
-
-  /**
-   * Send issued currency funds from an issuer to a badActor.
-   *
-   * @param valueToSend        The amount of currency to send.
-   * @param sender             The {@link KeyPair} of the sender.
-   * @param recipient          The {@link KeyPair} of the recipient.
-   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
-   * @param expectedResultCode The expected result code after submitting a payment transaction.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   * @throws JsonProcessingException     If there are any problems parsing JSON.
-   */
-  private void sendFunds(
-    String valueToSend,
-    KeyPair sender,
-    KeyPair recipient,
-    XrpCurrencyAmount fee,
-    String expectedResultCode
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult senderAccountInfo = this.scanForResult(
-      () -> getValidatedAccountInfo(sender.publicKey().deriveAddress())
-    );
-
-    Payment payment = Payment.builder()
-      .account(sender.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(senderAccountInfo.accountData().sequence())
-      .destination(recipient.publicKey().deriveAddress())
-      .amount(IssuedCurrencyAmount.builder()
-        .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
-        .value(valueToSend)
-        .build())
-      .signingPublicKey(sender.publicKey())
-      .build();
-
-    SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sender.privateKey(), payment);
-    SubmitResult<Payment> paymentResult = xrplClient.submit(signedPayment);
-    assertThat(paymentResult.engineResult()).isEqualTo(expectedResultCode);
-
-    if (expectedResultCode.equals("tesSUCCESS")) {
-      logger.info(
-        "Payment transaction: https://testnet.xrpl.org/transactions/{}", paymentResult.transactionResult().hash()
-      );
-    }
-    this.scanForResult(() -> getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class));
-  }
-
-  /**
-   * Create a trustline between the given issuer and badActor accounts for the given currency code and with the given
-   * limit.
-   *
-   * @param issuerKeyPair      The {@link KeyPair} of the issuer account.
-   * @param counterpartKeyPair The {@link KeyPair} of the badActor account.
-   * @param fee                The current network fee, as an {@link XrpCurrencyAmount}.
-   *
-   * @return The {@link TrustLine} that gets created.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   * @throws JsonProcessingException     If there are any problems parsing JSON.
-   */
-  private TrustLine createTrustLine(
-    KeyPair issuerKeyPair,
-    KeyPair counterpartKeyPair,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult badActorAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(counterpartKeyPair.publicKey().deriveAddress())
-    );
-
-    TrustSet trustSet = TrustSet.builder()
-      .account(counterpartKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(badActorAccountInfo.accountData().sequence())
-      .limitAmount(IssuedCurrencyAmount.builder()
-        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
-        .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .value(FreezeIssuedCurrencyIT.TEN_THOUSAND)
-        .build())
-      .flags(TrustSetFlags.builder()
-        .tfSetNoRipple()
-        .build())
-      .signingPublicKey(counterpartKeyPair.publicKey())
-      .build();
-
-    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartKeyPair.privateKey(), trustSet);
-    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
-    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      trustSetSubmitResult.transactionResult().hash()
-    );
-
-    return scanForResult(
-      () ->
-        getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
-          counterpartKeyPair.publicKey().deriveAddress()),
-      linesResult -> !linesResult.lines().isEmpty()
-    )
-      .lines().get(0);
   }
 
   /**

@@ -21,15 +21,27 @@ package org.xrpl.xrpl4j.codec.addresses;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Null;
 
 import java.math.BigInteger;
 
+/**
+ * Unit tests for {@link UnsignedByte}.
+ */
 public class UnsignedByteTest {
 
   @Test
-  public void hexValue() {
+  void constructorTests() {
+    assertThrows(IllegalArgumentException.class, () -> UnsignedByte.of(-1));
+    assertThrows(NullPointerException.class, () -> UnsignedByte.of((UnsignedByte) null));
+    assertThat(UnsignedByte.of(UnsignedByte.of(0))).isEqualTo(UnsignedByte.of(0));
+  }
+
+  @Test
+  void hexValue() {
     assertThat(UnsignedByte.of(0).hexValue()).isEqualTo("00");
     assertThat(UnsignedByte.of(127).hexValue()).isEqualTo("7F");
     assertThat(UnsignedByte.of(128).hexValue()).isEqualTo("80");
@@ -38,7 +50,7 @@ public class UnsignedByteTest {
   }
 
   @Test
-  public void isNthBitSetAllZero() {
+  void isNthBitSetAllZero() {
     UnsignedByte value = UnsignedByte.of(0);
     for (int i = 1; i <= 8; i++) {
       assertThat(value.isNthBitSet(i)).isFalse();
@@ -46,7 +58,7 @@ public class UnsignedByteTest {
   }
 
   @Test
-  public void isNthBitSetAllSet() {
+  void isNthBitSetAllSet() {
     UnsignedByte value = UnsignedByte.of(new BigInteger("11111111", 2).intValue());
     for (int i = 1; i <= 8; i++) {
       assertThat(value.isNthBitSet(i)).isTrue();
@@ -54,7 +66,7 @@ public class UnsignedByteTest {
   }
 
   @Test
-  public void isNthBitSetEveryOther() {
+  void isNthBitSetEveryOther() {
     UnsignedByte value = UnsignedByte.of(new BigInteger("10101010", 2).intValue());
     assertThat(value.isNthBitSet(1)).isTrue();
     assertThat(value.isNthBitSet(2)).isFalse();
@@ -67,7 +79,7 @@ public class UnsignedByteTest {
   }
 
   @Test
-  public void intValue() {
+  void intValue() {
     assertThat(UnsignedByte.of(0x00).asInt()).isEqualTo(0);
     assertThat(UnsignedByte.of(0x0F).asInt()).isEqualTo(15);
     assertThat(UnsignedByte.of(0xFF).asInt()).isEqualTo(255);

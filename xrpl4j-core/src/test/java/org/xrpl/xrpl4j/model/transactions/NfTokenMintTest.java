@@ -117,16 +117,14 @@ public class NfTokenMintTest {
       .flags(NfTokenMintFlags.builder()
         .tfTransferable(true)
         .build())
-      .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(99.99)))
+      .transferFee(TransferFee.ofPercent(BigDecimal.valueOf(49.99)))
       .build();
 
-    assertThat(nfTokenMint.transferFee().equals(Optional.of(9999)));
+    assertThat(nfTokenMint.transferFee().equals(Optional.of(49_990)));
   }
 
   @Test
   public void txWithUri() {
-
-
     UnsignedLong taxon = UnsignedLong.valueOf(146999694L);
     String uri = "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi";
     NfTokenMint nfTokenMint = NfTokenMint.builder()

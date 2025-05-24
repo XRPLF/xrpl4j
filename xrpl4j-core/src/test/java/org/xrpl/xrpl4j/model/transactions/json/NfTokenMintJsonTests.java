@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.NfTokenMintFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.TransferFee;
@@ -50,6 +51,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -59,6 +61,7 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       "    \"Flags\": 2147483656,\n" +
       "    \"Sequence\": 12,\n" +
       "    \"TransferFee\": 1000,\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"NFTokenTaxon\": 146999694\n" +
       "}";
@@ -118,6 +121,40 @@ public class NfTokenMintJsonTests extends AbstractJsonTest {
       "    \"TransferFee\": 1000,\n" +
       "    \"URI\": \"697066733A2F2F62616679626569676479727A74357366703775646D3768753736756837" +
       "7932366E6634646675796C71616266336F636C67747179353566627A6469\",\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"NFTokenTaxon\": 146999694\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(nfTokenMint, json);
+  }
+
+  @Test
+  public void testJsonWithUnknownFields() throws JsonProcessingException, JSONException {
+    NfTokenMint nfTokenMint = NfTokenMint.builder()
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .tokenTaxon(UnsignedLong.valueOf(146999694L))
+      .sequence(UnsignedInteger.valueOf(12))
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(1000)))
+      .flags(NfTokenMintFlags.builder()
+        .tfTransferable(true)
+        .build())
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .networkId(NetworkId.of(1024))
+      .putUnknownFields("Foo", "Bar")
+      .build();
+
+    String json = "{\n" +
+      "    \"Foo\" : \"Bar\",\n" +
+      "    \"TransactionType\": \"NFTokenMint\",\n" +
+      "    \"Account\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"Flags\": 2147483656,\n" +
+      "    \"Sequence\": 12,\n" +
+      "    \"TransferFee\": 1000,\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"NFTokenTaxon\": 146999694\n" +
       "}";

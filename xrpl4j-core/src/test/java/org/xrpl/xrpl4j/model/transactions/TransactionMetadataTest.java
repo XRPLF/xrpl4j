@@ -18,11 +18,10 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.CreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.DeletedNode;
-import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableCreatedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableDeletedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableMetaNfTokenOfferObject;
-import org.xrpl.xrpl4j.model.transactions.metadata.ImmutableModifiedNode;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaAccountRootObject;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaAmmObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaCheckObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaDepositPreAuthObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.MetaEscrowObject;
@@ -39,8 +38,6 @@ import org.xrpl.xrpl4j.model.transactions.metadata.MetaUnknownObject;
 import org.xrpl.xrpl4j.model.transactions.metadata.ModifiedNode;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -708,7 +705,7 @@ class TransactionMetadataTest {
             assertThat(CreatedNode.class).isAssignableFrom(transactionMetadata.affectedNodes().get(i).getClass());
             if (node.getValue().get("NewFields") != null) {
               MetaLedgerObject newFields = ((CreatedNode<?>) transactionMetadata.affectedNodes().get(i)).newFields();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(newFields.getClass());
             }
           } else if (node.getKey().equals("ModifiedNode")) {
@@ -717,14 +714,14 @@ class TransactionMetadataTest {
               Optional<?> previousFields = ((ModifiedNode<?>) transactionMetadata.affectedNodes().get(i))
                 .previousFields();
               assertThat(previousFields).isPresent();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(previousFields.get().getClass());
             }
 
             if (node.getValue().get("FinalFields") != null) {
               Optional<?> finalFields = ((ModifiedNode<?>) transactionMetadata.affectedNodes().get(i)).finalFields();
               assertThat(finalFields).isPresent();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(finalFields.get().getClass());
             }
           } else if (node.getKey().equals("DeletedNode")) {
@@ -732,7 +729,7 @@ class TransactionMetadataTest {
             if (node.getValue().get("FinalFields") != null) {
               MetaLedgerObject finalFields = ((DeletedNode<?>) transactionMetadata.affectedNodes().get(i))
                 .finalFields();
-              assertThat(determineLedgerObjectType(node.getValue().get("LedgerEntryType").asText()))
+              assertThat(MetaLedgerEntryType.of(node.getValue().get("LedgerEntryType").asText()).ledgerObjectType())
                 .isAssignableFrom(finalFields.getClass());
             }
           }
@@ -782,34 +779,5 @@ class TransactionMetadataTest {
     }
 
     return destFile;
-  }
-
-  private Class<? extends MetaLedgerObject> determineLedgerObjectType(String ledgerEntryType) {
-    switch (ledgerEntryType) {
-      case "AccountRoot":
-        return MetaAccountRootObject.class;
-      case "Check":
-        return MetaCheckObject.class;
-      case "DepositPreauth":
-        return MetaDepositPreAuthObject.class;
-      case "Escrow":
-        return MetaEscrowObject.class;
-      case "NFTokenOffer":
-        return MetaNfTokenOfferObject.class;
-      case "Offer":
-        return MetaOfferObject.class;
-      case "PayChannel":
-        return MetaPayChannelObject.class;
-      case "RippleState":
-        return MetaRippleStateObject.class;
-      case "SignerList":
-        return MetaSignerListObject.class;
-      case "Ticket":
-        return MetaTicketObject.class;
-      case "NFTokenPage":
-        return MetaNfTokenPageObject.class;
-      default:
-        return MetaUnknownObject.class;
-    }
   }
 }

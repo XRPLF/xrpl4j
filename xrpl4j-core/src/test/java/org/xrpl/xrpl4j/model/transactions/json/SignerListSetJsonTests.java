@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.SignerEntry;
 import org.xrpl.xrpl4j.model.ledger.SignerEntryWrapper;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -65,6 +66,7 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -73,6 +75,7 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
       "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
       "    \"Fee\": \"12\",\n" +
       "    \"SignerQuorum\": 3,\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"SignerEntries\": [\n" +
       "        {\n" +
@@ -174,4 +177,34 @@ public class SignerListSetJsonTests extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(signerListSet, json);
   }
+
+  @Test
+  public void testSignerListSetJsonWithNonZeroFlagstestJsonWithUnknownFields()
+    throws JsonProcessingException, JSONException {
+    SignerListSet signerListSet = SignerListSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .signerQuorum(UnsignedInteger.ZERO)
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .putUnknownFields("Foo", "Bar")
+      .build();
+
+    String json = String.format("{\n" +
+      "    \"Foo\" : \"Bar\",\n" +
+      "    \"Sequence\": 1,\n" +
+      "    \"TransactionType\": \"SignerListSet\",\n" +
+      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"Fee\": \"12\",\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"SignerQuorum\": 0\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+
+    assertCanSerializeAndDeserialize(signerListSet, json);
+  }
+
 }

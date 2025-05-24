@@ -15,7 +15,7 @@ and address generation, transaction serialization and signing, provides useful J
 - Example usage can be found in the `xrpl4j-integration-tests`
   module [here](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-integration-tests/src/test/java/org/xrpl/xrpl4j/tests).
 
-## Usage
+## Usage 
 
 ### Requirements
 
@@ -33,7 +33,7 @@ current [BOM](https://howtodoinjava.com/maven/maven-bom-bill-of-materials-depend
         <dependency>
             <groupId>org.xrpl</groupId>
             <artifactId>xrpl4j-bom</artifactId>
-            <version>3.0.1</version>
+            <version>4.1.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -128,7 +128,9 @@ Which produces the following output:
 Most operations using this library require some sort of private key material. Broadly speaking, the library supports
 two mechanisms: (1) in-memory private keys, and (2) in-memory _references_ to private keys where the actual private key 
 material lives in an external system (e.g., keys in a Hardware Security Module, or HSM). In Java, this is modeled 
-using the `PrivateKeyable` interface, which has two subclasses: `PrivateKey` and `PrivateKeyReference`.
+using the [`PrivateKeyable`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/keys/PrivateKeyable.java) interface,
+which has two subclasses: [`PrivateKey`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/keys/PrivateKey.java)
+and [`PrivateKeyReference`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/keys/PrivateKeyReference.java).
 
 #### In-Memory Private Keys (`PrivateKey`)
 
@@ -141,17 +143,17 @@ For use-cases that require private keys to exist inside the running JVM, the fol
 generate a keypair, and also how to derive an XRPL address from there:
 
 ```java
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.transactions.Address;
-  
-...
 
-Seed seed = Seed.ed255519Seed(); // <-- Generates a random seed.
-PrivateKey privateKey = seed.derivePrivateKey(); // <-- Derive a private key from the seed.
-PublicKey publicKey = privateKey.derivePublicKey(); // <-- Derive a public key from the private key.
-Address address = publicKey.deriveAddress(); // <-- Derive an address from the public key.
+Seed seed = Seed.ed25519Seed(); // <-- Generates a random seed.
+KeyPair keyPair = seed.deriveKeyPair(); // <-- Derive a KeyPair from the seed.
+PrivateKey privateKey = keyPair.privateKey(); // <-- Derive a privateKey from the KeyPair.
+PublicKey publicKey = keyPair.publicKey(); // <-- Derive a publicKey from the KeyPair.
+Address address = publicKey.deriveAddress(); // <-- Derive an address from the publicKey
 ```
 
 #### Private Key References (`PrivateKeyReference`)
@@ -163,7 +165,7 @@ without exposing key material to the outside world (e.g., an HSM or cloud servic
 
 This library does not provide an implementation that interacts with any particular external signing service or HSM.
 However, developers wishing to support such interactions should extend `PrivateKeyReference` for the particular external service, and implement
-[SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java) for their `PrivateKeyReference` type.
+[SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/SignatureService.java) for their `PrivateKeyReference` type.
 interface. In
 addition, [FauxGcpKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxGcpKmsSignatureServiceTest.java)
 and [FauxAwsKmsSignatureServiceTest](./xrpl4j-core/src/test/java/org/xrpl/xrpl4j/crypto/signing/faux/FauxAwsKmsSignatureServiceTest.java)
@@ -172,9 +174,10 @@ illustrate faux variants of a simulated external key provider that can also be u
 ### Signing and Verifying Transactions
 
 The main interface used to sign and verify transactions
-is [SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/crypto/signing/SignatureService.java),
-which has two concrete implementations: `BcSignatureService` and `BcDerivedKeySignatureService`. The first uses
-in-memory private key material to perform signing and validation operations, while the latter can be used to derive
+is [SignatureService](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/SignatureService.java), which has two concrete
+implementations: [`BcSignatureService`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/bc/BcSignatureService.java) and
+[`BcDerivedKeySignatureService`](./xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/bc/BcDerivedKeySignatureService.java).
+The first uses in-memory private key material to perform signing and validation operations, while the latter can be used to derive
 multiple private keys using a single entropy source combined with differing unique key identifiers (e.g., User Ids).
 
 #### Construct and Sign an XRP Payment:
@@ -183,23 +186,24 @@ The following example illustrates how to construct a payment transaction, sign i
 then submit that transaction to the XRP Ledger for processing and validation:
 
 ```java
-import org.xrpl.xrpl4j.crypto.core.keys.Seed;
-import org.xrpl.xrpl4j.crypto.core.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.core.keys.PrivateKey;
-import org.xrpl.xrpl4j.crypto.core.keys.PublicKey;
+import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.signing.SignatureService;
+import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.crypto.core.signing.SignatureService;
+
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 
 // Construct a SignatureService that uses in-memory Keys (see SignatureService.java for alternatives).
 SignatureService signatureService = new BcSignatureService();
 
 // Sender (using ed25519 key)
-Seed senderSeed = Seed.ed255519Seed();
-PrivateKey senderPrivateKey = senderSeed.derivePrivateKey();
-PublicKey senderPublicKey = senderPrivateKey.derivePublicKey();
-Address senderAddress = senderPublicKey.deriveAddress();
-
+Seed seed = Seed.ed25519Seed(); // <-- Generates a random seed.
+PrivateKey senderPrivateKey = seed.deriveKeyPair().privateKey();
+  
 // Receiver (using secp256k1 key)
 Address receiverAddress = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
 
@@ -208,7 +212,7 @@ Payment payment = ...; // See V3 ITs for examples.
 
 SingleSignedTransaction<Payment> signedTransaction = signatureService.sign(sourcePrivateKey,payment);
 SubmitResult<Payment> result = xrplClient.submit(signedTransaction);
-assertThat(result.result()).isEqualTo("tesSUCCESS");
+assert result.engineResult().equals("tesSUCCESS");
 ```
 
 ### Codecs
@@ -216,7 +220,7 @@ This library relies upon two important sub-modules called Codecs (One for the XR
 canonical JSON encoding). Read more about each here:
 
 - [Binary Codec](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/binary/README.md)
-- [Address Coded](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/addresses/README.md)
+- [Address Codec](https://github.com/XRPLF/xrpl4j/tree/main/xrpl4j-core/src/main/java/org/xrpl/xrpl4j/codec/addresses/README.md)
 
 ## Development
 
@@ -224,7 +228,7 @@ canonical JSON encoding). Read more about each here:
 
 Xrpl4j is structured as a Maven multi-module project, with the following modules:
 
-- **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-binary-codec/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-binary-codec)
+- **xrpl4j-core**: [![javadoc](https://javadoc.io/badge2/org.xrpl/xrpl4j-core/javadoc.svg?color=blue)](https://javadoc.io/doc/org.xrpl/xrpl4j-core)
     - Provides core primitives like seeds, public/private keys definitions (supports secp256k1 and ed25519 key types 
       and signing algorithms), signature interfaces, address and binary codecs etc. Also provides Java objects which model XRP Ledger objects, 
       as well as request parameters and response results for the `rippled` websocket and JSON RPC APIs.

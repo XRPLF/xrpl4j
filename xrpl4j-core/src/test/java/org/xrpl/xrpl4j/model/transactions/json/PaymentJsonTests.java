@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
@@ -51,6 +52,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
@@ -60,6 +62,7 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                \"Amount\": \"25000000\",\n" +
       "                \"Fee\": \"10\",\n" +
       "                \"Flags\": 0,\n" +
+      "    \"NetworkID\": 1024,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"Sequence\": 2\n" +
       "            }";
@@ -150,6 +153,38 @@ public class PaymentJsonTests extends AbstractJsonTest {
       "                }]],\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "                \"DestinationTag\": 736049272\n" +
+      "            }";
+
+    assertCanSerializeAndDeserialize(payment, json);
+  }
+
+  @Test
+  public void testJsonWithUnknownFields() throws JsonProcessingException, JSONException {
+    Payment payment = Payment.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .destination(Address.of("r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C"))
+      .amount(XrpCurrencyAmount.ofDrops(25000000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .flags(PaymentFlags.UNSET)
+      .sequence(UnsignedInteger.valueOf(2))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .networkId(NetworkId.of(1024))
+      .putUnknownFields("Foo", "Bar")
+      .build();
+
+    String json = "{\n" +
+      "    \"Foo\" : \"Bar\",\n" +
+      "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
+      "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
+      "                \"TransactionType\": \"Payment\",\n" +
+      "                \"Amount\": \"25000000\",\n" +
+      "                \"Fee\": \"10\",\n" +
+      "                \"Flags\": 0,\n" +
+      "    \"NetworkID\": 1024,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "                \"Sequence\": 2\n" +
       "            }";
 
     assertCanSerializeAndDeserialize(payment, json);

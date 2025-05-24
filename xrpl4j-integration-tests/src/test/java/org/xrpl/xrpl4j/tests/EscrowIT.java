@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,16 +27,25 @@ import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.github.dockerjava.core.dockerfile.DockerfileStatement.Add;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.EscrowLedgerEntryParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
@@ -90,6 +99,11 @@ public class EscrowIT extends AbstractIT {
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -188,7 +202,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
+    final TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
     );
 
@@ -199,6 +213,11 @@ public class EscrowIT extends AbstractIT {
           EscrowObject.class.isAssignableFrom(object.getClass()) &&
             ((EscrowObject) object).destination().equals(receiverKeyPair.publicKey().deriveAddress())
         )
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -296,6 +315,11 @@ public class EscrowIT extends AbstractIT {
     // Then wait until the transaction gets committed to a validated ledger
     TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
     );
 
     //////////////////////
@@ -405,6 +429,11 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
     );
 
+    assertEntryEqualsObjectFromAccountObjects(
+      senderKeyPair.publicKey().deriveAddress(),
+      escrowCreate.sequence()
+    );
+
     //////////////////////
     // Wait until the close time on the current validated ledger is after the cancelAfter time on the Escrow
     this.scanForResult(
@@ -455,24 +484,48 @@ public class EscrowIT extends AbstractIT {
 
   }
 
-  /**
-   * Returns the minimum time that can be used for escrow expirations. The ledger will not accept an expiration time
-   * that is earlier than the last ledger close time, so we must use the latter of current time or ledger close time
-   * (which for unexplained reasons can sometimes be later than now).
-   *
-   * @return An {@link Instant}.
-   */
-  private Instant getMinExpirationTime() {
-    LedgerResult result = getValidatedLedger();
-    Instant closeTime = xrpTimestampToInstant(
-      result.ledger().closeTime()
-        .orElseThrow(() ->
-          new RuntimeException("Ledger close time must be present to calculate a minimum expiration time.")
-        )
+  private void assertEntryEqualsObjectFromAccountObjects(
+    Address escrowOwner,
+    UnsignedInteger createSequence
+  ) throws JsonRpcClientErrorException {
+    EscrowObject escrowObject = (EscrowObject) this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountObjects(AccountObjectsRequestParams.builder()
+            .type(AccountObjectType.ESCROW)
+            .account(escrowOwner)
+            .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+            .build()
+          ).accountObjects();
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.size() == 1
+    ).get(0);
+
+    LedgerEntryResult<EscrowObject> escrowEntry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.escrow(
+        EscrowLedgerEntryParams.builder()
+          .owner(escrowOwner)
+          .seq(createSequence)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
     );
 
-    Instant now = Instant.now();
-    return closeTime.isBefore(now) ? now : closeTime;
-  }
+    assertThat(escrowEntry.node()).isEqualTo(escrowObject);
 
+    LedgerEntryResult<EscrowObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(escrowObject.index(), EscrowObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(escrowEntry.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(escrowObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
+  }
 }

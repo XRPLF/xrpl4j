@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Transaction metadata is a section of data that gets added to a transaction after it is processed.
- * Any transaction that gets included in a ledger has metadata, regardless of whether it is successful.
- * The transaction metadata describes the outcome of the transaction in detail.
+ * Transaction metadata is a section of data that gets added to a transaction after it is processed. Any transaction
+ * that gets included in a ledger has metadata, regardless of whether it is successful. The transaction metadata
+ * describes the outcome of the transaction in detail.
  *
  * @see "https://xrpl.org/transaction-metadata.html"
  */
@@ -52,8 +52,8 @@ public interface TransactionMetadata {
   }
 
   /**
-   * The transaction's position within the ledger that included it. This is zero-indexed.
-   * For example, the value 2 means it was the 3rd transaction in that ledger.
+   * The transaction's position within the ledger that included it. This is zero-indexed. For example, the value 2 means
+   * it was the 3rd transaction in that ledger.
    *
    * @return index of transaction within ledger.
    */
@@ -69,14 +69,49 @@ public interface TransactionMetadata {
   String transactionResult();
 
   /**
-   * The Currency Amount actually received by the Destination account.
-   * Use this field to determine how much was delivered, regardless of whether the transaction is a partial payment.
-   * Omitted for non-Payment transactions.
+   * The Currency Amount actually received by the Destination account. Use this field to determine how much was
+   * delivered, regardless of whether the transaction is a partial payment. Omitted for non-Payment transactions.
    *
    * @return delivered amount for payments, otherwise empty for non-payments.
    */
   @JsonProperty("delivered_amount")
   Optional<CurrencyAmount> deliveredAmount();
+
+  /**
+   * The {@link NfTokenId} of the {@link org.xrpl.xrpl4j.model.ledger.NfToken} that was changed as a result of this
+   * transaction. Only present in metadata for {@link NfTokenMint} and {@link NfTokenAcceptOffer} transactions.
+   *
+   * @return An optionally-present {@link NfTokenId}.
+   */
+  @JsonProperty("nftoken_id")
+  Optional<NfTokenId> nfTokenId();
+
+  /**
+   * The {@link NfTokenId}s of the {@link org.xrpl.xrpl4j.model.ledger.NfToken}s changed by a {@link NfTokenCancelOffer}
+   * transaction. Only present in metadata for {@link NfTokenCancelOffer} transactions.
+   *
+   * @return A {@link List} of {@link NfTokenId}s.
+   */
+  @JsonProperty("nftoken_ids")
+  List<NfTokenId> nfTokenIds();
+
+  /**
+   * The {@link MpTokenIssuanceId} of the {@link org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject} created
+   * via an {@link MpTokenIssuanceCreate} transaction.
+   *
+   * @return An {@link Optional} {@link MpTokenIssuanceId}.
+   */
+  @JsonProperty("mpt_issuance_id")
+  Optional<MpTokenIssuanceId> mpTokenIssuanceId();
+
+  /**
+   * The ID of the offer created by {@link NfTokenCreateOffer} transactions. Only present in metadata for
+   * {@link NfTokenCreateOffer} transactions.
+   *
+   * @return An optionally-present {@link Hash256} denoting the offer ID.
+   */
+  @JsonProperty("offer_id")
+  Optional<Hash256> offerId();
 
   @JsonProperty("AffectedNodes")
   List<AffectedNode> affectedNodes();

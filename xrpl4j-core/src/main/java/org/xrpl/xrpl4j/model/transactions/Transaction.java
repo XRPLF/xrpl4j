@@ -20,16 +20,20 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -43,7 +47,7 @@ public interface Transaction {
    * <p>This is useful for polymorphic Jackson deserialization.
    */
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
-    new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
+    new Builder<Class<? extends Transaction>, TransactionType>()
       .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
       .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
       .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
@@ -71,6 +75,31 @@ public interface Transaction {
       .put(ImmutableTrustSet.class, TransactionType.TRUST_SET)
       .put(ImmutableTicketCreate.class, TransactionType.TICKET_CREATE)
       .put(ImmutableUnlModify.class, TransactionType.UNL_MODIFY)
+      .put(ImmutableAmmBid.class, TransactionType.AMM_BID)
+      .put(ImmutableAmmCreate.class, TransactionType.AMM_CREATE)
+      .put(ImmutableAmmDeposit.class, TransactionType.AMM_DEPOSIT)
+      .put(ImmutableAmmVote.class, TransactionType.AMM_VOTE)
+      .put(ImmutableAmmWithdraw.class, TransactionType.AMM_WITHDRAW)
+      .put(ImmutableAmmDelete.class, TransactionType.AMM_DELETE)
+      .put(ImmutableClawback.class, TransactionType.CLAWBACK)
+      .put(ImmutableXChainAccountCreateCommit.class, TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT)
+      .put(ImmutableXChainAddAccountCreateAttestation.class, TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION)
+      .put(ImmutableXChainAddClaimAttestation.class, TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION)
+      .put(ImmutableXChainClaim.class, TransactionType.XCHAIN_CLAIM)
+      .put(ImmutableXChainCommit.class, TransactionType.XCHAIN_COMMIT)
+      .put(ImmutableXChainCreateBridge.class, TransactionType.XCHAIN_CREATE_BRIDGE)
+      .put(ImmutableXChainCreateClaimId.class, TransactionType.XCHAIN_CREATE_CLAIM_ID)
+      .put(ImmutableXChainModifyBridge.class, TransactionType.XCHAIN_MODIFY_BRIDGE)
+      .put(ImmutableDidSet.class, TransactionType.DID_SET)
+      .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
+      .put(ImmutableOracleSet.class, TransactionType.ORACLE_SET)
+      .put(ImmutableOracleDelete.class, TransactionType.ORACLE_DELETE)
+      .put(ImmutableMpTokenAuthorize.class, TransactionType.MPT_AUTHORIZE)
+      .put(ImmutableMpTokenIssuanceCreate.class, TransactionType.MPT_ISSUANCE_CREATE)
+      .put(ImmutableMpTokenIssuanceDestroy.class, TransactionType.MPT_ISSUANCE_DESTROY)
+      .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
+      .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
+      .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .build();
 
   /**
@@ -87,6 +116,7 @@ public interface Transaction {
    * @return A {@link TransactionType}.
    */
   @JsonProperty("TransactionType")
+  @Value.Default // must be Default rather than Derived, otherwise Jackson treats "TransactionType" as an unknownField
   default TransactionType transactionType() {
     return typeMap.get(this.getClass());
   }
@@ -197,5 +227,12 @@ public interface Transaction {
    */
   @JsonProperty("TxnSignature")
   Optional<Signature> transactionSignature();
+
+  @JsonProperty("NetworkID")
+  Optional<NetworkId> networkId();
+
+  @JsonAnyGetter
+  @JsonInclude(Include.NON_ABSENT)
+  Map<String, Object> unknownFields();
 
 }

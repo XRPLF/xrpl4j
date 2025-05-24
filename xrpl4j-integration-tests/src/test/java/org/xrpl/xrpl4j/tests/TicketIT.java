@@ -29,14 +29,23 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.SignerListObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
+import org.xrpl.xrpl4j.model.transactions.metadata.AffectedNode;
+import org.xrpl.xrpl4j.model.transactions.metadata.MetaLedgerEntryType;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TicketIT extends AbstractIT {
 
@@ -71,14 +80,23 @@ public class TicketIT extends AbstractIT {
       submitResult.transactionResult().hash()
     );
 
-    this.scanForResult(
+    Hash256 ticketId = this.scanForResult(
       () -> this.getValidatedTransaction(
         submitResult.transactionResult().hash(),
         TicketCreate.class)
-    );
+      ).metadata().get()
+      .affectedNodes()
+      .stream()
+      .filter(affectedNode -> affectedNode.ledgerEntryType().equals(MetaLedgerEntryType.TICKET))
+      .findFirst()
+      .map(AffectedNode::ledgerIndex)
+      .get();
 
-    AccountInfoResult accountInfoAfterTicketCreate = getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress());
-    assertThat(accountInfoAfterTicketCreate.accountData().ticketCount()).isNotEmpty().get()
+    Optional<UnsignedInteger> ticketCount = this.scanForResult(
+      () -> getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress()),
+      result -> result.accountData().ticketCount().isPresent()
+    ).accountData().ticketCount();
+    assertThat(ticketCount).isNotEmpty().get()
       .isEqualTo(ticketCreate.ticketCount());
 
     List<TicketObject> tickets = getValidatedAccountObjects(
@@ -86,6 +104,18 @@ public class TicketIT extends AbstractIT {
       TicketObject.class
     );
     assertThat(tickets).asList().hasSize(1);
+
+    LedgerEntryResult<TicketObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(ticketId, TicketObject.class, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(tickets.get(0));
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(ticketId, LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
 
     AccountSet accountSet = AccountSet.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())

@@ -23,25 +23,58 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleProviderDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainCountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
 
@@ -51,6 +84,7 @@ import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Wrapped immutable classes for providing type-safe objects.
@@ -153,14 +187,22 @@ public class Wrappers {
     static final DecimalFormat FORMATTER = new DecimalFormat("###,###");
 
     /**
-     * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     * Constructs an {@link XrpCurrencyAmount} using a number of drops. Because XRP is capped to 100B units (1e17
+     * drops), this value will never overflow Java's signed long number.
      *
      * @param drops A long representing the number of drops of XRP of this amount.
      *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
-    public static XrpCurrencyAmount ofDrops(long drops) {
-      return ofDrops(UnsignedLong.valueOf(drops));
+    public static XrpCurrencyAmount ofDrops(final long drops) {
+      if (drops < 0) {
+        // Normalize the drops value to be a positive number; indicate negativity via property.
+        return ofDrops(UnsignedLong.valueOf(Math.abs(drops)), true);
+      } else {
+        // Default to positive number and negativity indicator of `false`. No need for Math.abs(drops) because negative
+        // values cannot enter this else-condition per the above if-check.
+        return ofDrops(UnsignedLong.valueOf(drops), false);
+      }
     }
 
     /**
@@ -170,8 +212,28 @@ public class Wrappers {
      *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
-    public static XrpCurrencyAmount ofDrops(UnsignedLong drops) {
-      return XrpCurrencyAmount.of(drops);
+    public static XrpCurrencyAmount ofDrops(final UnsignedLong drops) {
+      Objects.requireNonNull(drops);
+
+      // Note: ofDrops() throws an exception if too big.
+      return _XrpCurrencyAmount.ofDrops(drops, false);
+    }
+
+    /**
+     * Constructs an {@link XrpCurrencyAmount} using a number of drops.
+     *
+     * @param drops      An {@link UnsignedLong} representing the number of drops of XRP of this amount.
+     * @param isNegative Indicates whether this amount is positive or negative.
+     *
+     * @return An {@link XrpCurrencyAmount} of {@code drops}.
+     */
+    public static XrpCurrencyAmount ofDrops(final UnsignedLong drops, final boolean isNegative) {
+      Objects.requireNonNull(drops);
+
+      return XrpCurrencyAmount.builder()
+        .value(drops)
+        .isNegative(isNegative)
+        .build();
     }
 
     /**
@@ -181,11 +243,52 @@ public class Wrappers {
      *
      * @return An {@link XrpCurrencyAmount} of the amount of drops in {@code amount}.
      */
-    public static XrpCurrencyAmount ofXrp(BigDecimal amount) {
-      if (FluentCompareTo.is(amount).notEqualTo(BigDecimal.ZERO)) {
-        Preconditions.checkArgument(FluentCompareTo.is(amount).greaterThanEqualTo(SMALLEST_XRP));
+    public static XrpCurrencyAmount ofXrp(final BigDecimal amount) {
+      Objects.requireNonNull(amount);
+
+      if (FluentCompareTo.is(amount).equalTo(BigDecimal.ZERO)) {
+        return ofDrops(UnsignedLong.ZERO);
       }
-      return ofDrops(UnsignedLong.valueOf(amount.scaleByPowerOfTen(6).toBigIntegerExact()));
+
+      final BigDecimal absAmount = amount.abs();
+      // Whether positive or negative, ensure the amount is not too small and not too big.
+      Preconditions.checkArgument(
+        FluentCompareTo.is(absAmount).greaterThanEqualTo(SMALLEST_XRP),
+        String.format("Amount must be greater-than-or-equal-to %s", SMALLEST_XRP)
+      );
+      Preconditions.checkArgument(
+        FluentCompareTo.is(absAmount).lessThanOrEqualTo(MAX_XRP_BD),
+        String.format("Amount must be less-than-or-equal-to %s", MAX_XRP_BD)
+      );
+
+      if (amount.signum() == 0) { // zero
+        return ofDrops(UnsignedLong.ZERO); // <-- Should never happen per the first check above, but just in case.
+      } else { // positive or negative
+        final boolean isNegative = amount.signum() < 0;
+        return ofDrops(UnsignedLong.valueOf(absAmount.scaleByPowerOfTen(6).toBigIntegerExact()), isNegative);
+      }
+    }
+
+    /**
+     * Indicates whether this amount is positive or negative.
+     *
+     * <p>Note that the use of the `@Default` annotation and the default implementation are suitable for a few
+     * reasons. First, deserialization will parse the payload properly, setting this value correctly (despite this
+     * default settings). Second, using a default value here will not break legacy code that is using a builder to
+     * construct an {@link XrpCurrencyAmount} correctly (i.e., we assume that no developer is constructing a negative
+     * XRP amount because the {@link UnsignedLong} precondition in any legacy code would not allow them to do such a
+     * thing without throwing an exception). Finally, due to the way this class merely adds new static builders to
+     * augment existing code, legacy code should continue to work normally.
+     *
+     * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
+     */
+    @Default
+    @Override
+    // No `@JsonIgnore` because isNegative isn't a "serializable field" in the definitions.json file, so this won't
+    // get serialized even if it's included in the JSON. Rationale for including in the generated JSON is so that
+    // any software using the JSON variant of an XrpCurrencyAmount will have this information available.
+    public boolean isNegative() {
+      return false;
     }
 
     /**
@@ -195,8 +298,13 @@ public class Wrappers {
      * @return A {@link BigDecimal} representing this value denominated in whole XRP units.
      */
     public BigDecimal toXrp() {
-      return new BigDecimal(this.value().bigIntegerValue())
+      final BigDecimal amount = new BigDecimal(this.value().bigIntegerValue())
         .divide(BigDecimal.valueOf(ONE_XRP_IN_DROPS), MathContext.DECIMAL128);
+      if (this.isNegative()) {
+        return amount.negate();
+      } else {
+        return amount;
+      }
     }
 
     /**
@@ -207,7 +315,11 @@ public class Wrappers {
      * @return The sum of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.of(this.value().plus(other.value()));
+      // Convert each value to a long (positive or negative works)
+      long result =
+        (this.value().longValue() * (this.isNegative() ? -1 : 1)) +
+          (other.value().longValue() * (other.isNegative() ? -1 : 1));
+      return XrpCurrencyAmount.ofDrops(result);
     }
 
     /**
@@ -218,7 +330,11 @@ public class Wrappers {
      * @return The difference of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.of(this.value().minus(other.value()));
+      // Convert each value to a long (positive or negative works)
+      long result =
+        (this.value().longValue() * (this.isNegative() ? -1 : 1)) -
+          (other.value().longValue() * (other.isNegative() ? -1 : 1));
+      return XrpCurrencyAmount.ofDrops(result);
     }
 
     /**
@@ -229,12 +345,15 @@ public class Wrappers {
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {
-      return XrpCurrencyAmount.of(this.value().times(other.value()));
+      return XrpCurrencyAmount.ofDrops(
+        this.value().times(other.value()),
+        this.isNegative() || other.isNegative()
+      );
     }
 
     @Override
     public String toString() {
-      return this.value().toString();
+      return String.format("%s%s", isNegative() ? "-" : "", this.value().toString());
     }
 
     /**
@@ -334,6 +453,10 @@ public class Wrappers {
 
   /**
    * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   *
+   * <p>Valid values for this field are between 0 and 50000 inclusive, allowing transfer rates of between 0.00% and
+   * 50.00% in increments of 0.001. If this field is provided in a {@link NfTokenMint} transaction, the transaction MUST
+   * have the {@code tfTransferable} flag enabled.
    */
   @Value.Immutable
   @Wrapped
@@ -349,15 +472,20 @@ public class Wrappers {
     /**
      * Construct {@link TransferFee} as a percentage value.
      *
+     * <p>The given percentage value must have at most 3 decimal places of precision, and must be
+     * between {@code 0} and {@code 50.000}.</p>
+     *
      * @param percent of type {@link BigDecimal}
+     *
      * @return {@link TransferFee}
      */
-    static TransferFee ofPercent(BigDecimal percent) {
+    public static TransferFee ofPercent(BigDecimal percent) {
+      Objects.requireNonNull(percent);
       Preconditions.checkArgument(
-        Math.max(0, percent.stripTrailingZeros().scale()) <= 2,
-        "Percent value should have a maximum of 2 decimal places."
+        Math.max(0, percent.stripTrailingZeros().scale()) <= 3,
+        "Percent value should have a maximum of 3 decimal places."
       );
-      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(2).toBigIntegerExact()));
+      return TransferFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
     }
 
 
@@ -374,4 +502,351 @@ public class Wrappers {
 
   }
 
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing a Network ID.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = NetworkId.class, using = NetworkIdSerializer.class)
+  @JsonDeserialize(as = NetworkId.class, using = NetworkIdDeserializer.class)
+  abstract static class _NetworkId extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Construct a {@link NetworkId} from a {@code long}. The supplied value must be less than or equal to
+     * 4,294,967,295, the largest unsigned 32-bit integer.
+     *
+     * @param networkId A {@code long}.
+     *
+     * @return A {@link NetworkId}.
+     */
+    public static NetworkId of(long networkId) {
+      return NetworkId.of(UnsignedInteger.valueOf(networkId));
+    }
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the TransferFee.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = TradingFee.class, using = TradingFeeSerializer.class)
+  @JsonDeserialize(as = TradingFee.class, using = TradingFeeDeserializer.class)
+  @Beta
+  abstract static class _TradingFee extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Construct {@link TradingFee} as a percentage value.
+     *
+     * @param percent The trading fee, as a {@link BigDecimal}.
+     *
+     * @return A {@link TradingFee}.
+     */
+    public static TradingFee ofPercent(BigDecimal percent) {
+      Preconditions.checkArgument(
+        Math.max(0, percent.stripTrailingZeros().scale()) <= 3,
+        "Percent value should have a maximum of 3 decimal places."
+      );
+      return TradingFee.of(UnsignedInteger.valueOf(percent.scaleByPowerOfTen(3).toBigIntegerExact()));
+    }
+
+    /**
+     * Get the {@link TradingFee} as a {@link BigDecimal}.
+     *
+     * @return A {@link BigDecimal}.
+     */
+    public BigDecimal bigDecimalValue() {
+      return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedInteger} containing the VoteWeight.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the AMM amendment is enabled on
+   * mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = VoteWeight.class, using = VoteWeightSerializer.class)
+  @JsonDeserialize(as = VoteWeight.class, using = VoteWeightDeserializer.class)
+  @Beta
+  abstract static class _VoteWeight extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+    /**
+     * Get the {@link VoteWeight} as a {@link BigDecimal}.
+     *
+     * @return A {@link BigDecimal}.
+     */
+    public BigDecimal bigDecimalValue() {
+      return BigDecimal.valueOf(value().longValue(), 3);
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedLong} containing an XChainClaimID.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = XChainClaimId.class, using = XChainClaimIdSerializer.class)
+  @JsonDeserialize(as = XChainClaimId.class, using = XChainClaimIdDeserializer.class)
+  @Beta
+  abstract static class _XChainClaimId extends Wrapper<UnsignedLong> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link com.google.common.primitives.UnsignedLong} representing a counter for XLS-38 sidechains. This
+   * wrapper mostly exists to ensure we serialize fields of this type as a hex String in JSON, as these fields are
+   * STUInt64s in rippled, which are hex encoded in JSON.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureXChainBridge amendment
+   * is enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = XChainCount.class, using = XChainCountSerializer.class)
+  @JsonDeserialize(as = XChainCount.class, using = XChainCountDeserializer.class)
+  @Beta
+  abstract static class _XChainCount extends Wrapper<UnsignedLong> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a DID Document.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureDID amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = DidDocument.class, using = DidDocumentSerializer.class)
+  @JsonDeserialize(as = DidDocument.class, using = DidDocumentDeserializer.class)
+  @Beta
+  abstract static class _DidDocument extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a DID URI.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureDID amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = DidUri.class, using = DidUriSerializer.class)
+  @JsonDeserialize(as = DidUri.class, using = DidUriDeserializer.class)
+  @Beta
+  abstract static class _DidUri extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing DID Data.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featureDID amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = DidData.class, using = DidDataSerializer.class)
+  @JsonDeserialize(as = DidData.class, using = DidDataDeserializer.class)
+  @Beta
+  abstract static class _DidData extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link UnsignedInteger} containing an Oracle document ID.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = OracleDocumentId.class, using = OracleDocumentIdSerializer.class)
+  @JsonDeserialize(as = OracleDocumentId.class, using = OracleDocumentIdDeserializer.class)
+  @Beta
+  abstract static class _OracleDocumentId extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an Oracle provider.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = OracleProvider.class, using = ToStringSerializer.class)
+  @JsonDeserialize(as = OracleProvider.class, using = OracleProviderDeserializer.class)
+  @Beta
+  abstract static class _OracleProvider extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an Oracle URI.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = OracleUri.class, using = ToStringSerializer.class)
+  @JsonDeserialize(as = OracleUri.class, using = OracleUriDeserializer.class)
+  @Beta
+  abstract static class _OracleUri extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an Oracle asset price.
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the featurePriceOracle amendment is
+   * enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = AssetPrice.class, using = AssetPriceSerializer.class)
+  @JsonDeserialize(as = AssetPrice.class, using = AssetPriceDeserializer.class)
+  @Beta
+  abstract static class _AssetPrice extends Wrapper<UnsignedLong> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = AssetScale.class, using = AssetScaleSerializer.class)
+  @JsonDeserialize(as = AssetScale.class, using = AssetScaleDeserializer.class)
+  @Beta
+  abstract static class _AssetScale extends Wrapper<UnsignedInteger> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = MpTokenNumericAmount.class, using = MpTokenNumericAmountSerializer.class)
+  @JsonDeserialize(as = MpTokenNumericAmount.class, using = MpTokenNumericAmountDeserializer.class)
+  @Beta
+  abstract static class _MpTokenNumericAmount extends Wrapper<UnsignedLong> implements Serializable {
+
+    public static MpTokenNumericAmount of(long amount) {
+      return MpTokenNumericAmount.of(UnsignedLong.valueOf(amount));
+    }
+
+    @Override
+    public String toString() {
+      return this.value().toString();
+    }
+
+  }
+
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = MpTokenIssuanceId.class, using = MpTokenIssuanceIdSerializer.class)
+  @JsonDeserialize(as = MpTokenIssuanceId.class, using = MpTokenIssuanceIdDeserializer.class)
+  @Beta
+  abstract static class _MpTokenIssuanceId extends Wrapper<String> implements Serializable {
+
+    // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * Wrapped String representing MPT metadata. This wrapper class may prove useful in the future if we ever
+   * want to encapsulate various MPTokenMetadata standard formats.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = MpTokenMetadata.class, using = MpTokenMetadataSerializer.class)
+  @JsonDeserialize(as = MpTokenMetadata.class, using = MpTokenMetadataDeserializer.class)
+  @Beta
+  abstract static class _MpTokenMetadata extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
 }

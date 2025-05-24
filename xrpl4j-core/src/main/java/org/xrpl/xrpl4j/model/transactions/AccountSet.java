@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,16 +21,21 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.AccountSetTransactionFlags;
-import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -65,24 +70,188 @@ public interface AccountSet extends Transaction {
   /**
    * Unique identifier of a flag to disable for this account.
    *
+   * <p>If this field is empty, developers should check if {@link #clearFlagRawValue()} is also empty. If
+   * {@link #clearFlagRawValue()} is present, it means that the {@code ClearFlag} field of the transaction was not a
+   * valid {@link AccountSetFlag} but was still present in a validated transaction on ledger.</p>
+   *
    * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should
    * not be set in conjunction with the {@link AccountSet#flags()} field.
    *
    * @return An {@link Optional} of type {@link AccountSetFlag} representing the flag to disable on this account.
    */
-  @JsonProperty("ClearFlag")
+  @JsonIgnore
   Optional<AccountSetFlag> clearFlag();
+
+  /**
+   * A flag to disable for this account, as an {@link UnsignedInteger}.
+   *
+   * <p>Developers should prefer setting {@link #clearFlag()} and leaving this field empty when constructing
+   * a new {@link AccountSet}.  This field is used to serialize and deserialize the {@code "ClearFlag"} field in JSON,
+   * as some {@link AccountSet} transactions on the XRPL set the "ClearFlag" field to a number that is not recognized as
+   * an asf flag by rippled. Without this field, xrpl4j would fail to deserialize those transactions, as
+   * {@link AccountSetFlag} does not support arbitrary integer values.</p>
+   *
+   * <p>Additionally, using this field as the source of truth for JSON serialization/deserialization rather than
+   * {@link #clearFlag()} allows developers to recompute the hash of a transaction that was deserialized from a rippled
+   * RPC/WS result accurately. An alternative to this field would be to add an enum variant to {@link AccountSetFlag}
+   * for unknown values, but binary serializing an {@link AccountSet} that was constructed by deserializing JSON would
+   * result in a different binary blob than what exists on ledger.</p>
+   *
+   * @return An {@link Optional} {@link UnsignedInteger}.
+   */
+  @JsonProperty("ClearFlag")
+  Optional<UnsignedInteger> clearFlagRawValue();
+
+  /**
+   * Normalization method to try to get {@link #clearFlag()}and {@link #clearFlagRawValue()} to match.
+   *
+   * <p>If neither field is present, there is nothing to do.</p>
+   * <p>If both fields are present, there is nothing to do, but we will check that {@link #clearFlag()}'s
+   * underlying value equals {@link #clearFlagRawValue()}.</p>
+   * <p>If {@link #clearFlag()} is present but {@link #clearFlagRawValue()} is empty, we set
+   * {@link #clearFlagRawValue()} to the underlying value of {@link #clearFlag()}.</p>
+   * <p>If {@link #clearFlag()} is empty and {@link #clearFlagRawValue()} is present, we will set
+   * {@link #clearFlag()} to the {@link AccountSetFlag} variant associated with {@link #clearFlagRawValue()}, or leave
+   * {@link #clearFlag()} empty if {@link #clearFlagRawValue()} does not map to an {@link AccountSetFlag}.</p>
+   *
+   * @return A normalized {@link AccountSet}.
+   */
+  @Value.Check
+  default AccountSet normalizeClearFlag() {
+    if (!clearFlag().isPresent() && !clearFlagRawValue().isPresent()) {
+      // If both are empty, nothing to do.
+      return this;
+    } else if (clearFlag().isPresent() && clearFlagRawValue().isPresent()) {
+      // Both will be present if:
+      //  1. A developer set them both manually (in the builder)
+      //  2. This normalize method has already been called.
+
+      // We should still check that the clearFlagRawValue matches the inner value of AccountSetFlag.
+      Preconditions.checkState(
+        clearFlag().get().getValue() == clearFlagRawValue().get().longValue(),
+        String.format("clearFlag and clearFlagRawValue should be equivalent, but clearFlag's underlying " +
+            "value was %s and clearFlagRawValue was %s",
+          clearFlag().get().getValue(),
+          clearFlagRawValue().get().longValue()
+        )
+      );
+      return this;
+    } else if (clearFlag().isPresent() && !clearFlagRawValue().isPresent()) {
+      // This can only happen if the developer only set clearFlag(). In this case, we need to set clearFlagRawValue to
+      // match clearFlag.
+      return AccountSet.builder().from(this)
+        .clearFlagRawValue(UnsignedInteger.valueOf(clearFlag().get().getValue()))
+        .build();
+    } else { // clearFlag not present and clearFlagRawValue is present
+      // This can happen if:
+      //   1. A developer sets clearFlagRawValue manually in the builder
+      //   2. JSON has ClearFlag and jackson sets clearFlagRawValue.
+      // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
+      // so no lower bound check is required.
+      if (clearFlagRawValue().get().longValue() <= AccountSetFlag.MAX_VALUE) {
+        // Set clearFlag to clearFlagRawValue if clearFlagRawValue matches a valid AccountSetFlag variant.
+        return AccountSet.builder().from(this)
+          .clearFlag(AccountSetFlag.forValue(clearFlagRawValue().get().intValue()))
+          .build();
+      } else {
+        // Otherwise, leave clearFlag empty.
+        return this;
+      }
+    }
+  }
 
   /**
    * Unique identifier of a flag to enable for this account.
    *
-   * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be set
-   * in conjunction with the {@link AccountSet#flags()} field.
+   * <p>If this field is empty, developers should check if {@link #setFlagRawValue()} is also empty. If
+   * {@link #setFlagRawValue()} is present, it means that the {@code ClearFlag} field of the transaction was not a
+   * valid {@link AccountSetFlag} but was still present in a validated transaction on ledger.</p>
+   *
+   * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be
+   * set in conjunction with the {@link AccountSet#flags()} field.
    *
    * @return An {@link Optional} of type {@link AccountSetFlag} representing the flag to enable on this account.
    */
-  @JsonProperty("SetFlag")
+  @JsonIgnore
   Optional<AccountSetFlag> setFlag();
+
+  /**
+   * A flag to disable for this account, as an {@link UnsignedInteger}.
+   *
+   * <p>Developers should prefer setting {@link #setFlag()} and leaving this field empty when constructing
+   * a new {@link AccountSet}.  This field is used to serialize and deserialize the {@code "ClearFlag"} field in JSON,
+   * as some {@link AccountSet} transactions on the XRPL set the "ClearFlag" field to a number that is not recognized as
+   * an asf flag by rippled. Without this field, xrpl4j would fail to deserialize those transactions, as
+   * {@link AccountSetFlag} does not support arbitrary integer values.</p>
+   *
+   * <p>Additionally, using this field as the source of truth for JSON serialization/deserialization rather than
+   * {@link #setFlag()} allows developers to recompute the hash of a transaction that was deserialized from a rippled
+   * RPC/WS result accurately. An alternative to this field would be to add an enum variant to {@link AccountSetFlag}
+   * for unknown values, but binary serializing an {@link AccountSet} that was constructed by deserializing JSON would
+   * result in a different binary blob than what exists on ledger.</p>
+   *
+   * @return An {@link Optional} {@link UnsignedInteger}
+   */
+  @JsonProperty("SetFlag")
+  Optional<UnsignedInteger> setFlagRawValue();
+
+  /**
+   * Normalization method to try to get {@link #setFlag()}and {@link #setFlagRawValue()} to match.
+   *
+   * <p>If neither field is present, there is nothing to do.</p>
+   * <p>If both fields are present, there is nothing to do, but we will check that {@link #setFlag()}'s
+   * underlying value equals {@link #setFlagRawValue()}.</p>
+   * <p>If {@link #setFlag()} is present but {@link #setFlagRawValue()} is empty, we set
+   * {@link #setFlagRawValue()} to the underlying value of {@link #setFlag()}.</p>
+   * <p>If {@link #setFlag()} is empty and {@link #setFlagRawValue()} is present, we will set
+   * {@link #setFlag()} to the {@link AccountSetFlag} variant associated with {@link #setFlagRawValue()}, or leave
+   * {@link #setFlag()} empty if {@link #setFlagRawValue()} does not map to an {@link AccountSetFlag}.</p>
+   *
+   * @return A normalized {@link AccountSet}.
+   */
+  @Value.Check
+  default AccountSet normalizeSetFlag() {
+    if (!setFlag().isPresent() && !setFlagRawValue().isPresent()) {
+      // If both are empty, nothing to do.
+      return this;
+    } else if (setFlag().isPresent() && setFlagRawValue().isPresent()) {
+      // Both will be present if:
+      //  1. A developer set them both manually (in the builder)
+      //  2. This normalize method has already been called.
+
+      // We should still check that the setFlagRawValue matches the inner value of AccountSetFlag.
+      Preconditions.checkState(
+        setFlag().get().getValue() == setFlagRawValue().get().longValue(),
+        String.format("setFlag and setFlagRawValue should be equivalent, but setFlag's underlying " +
+            "value was %s and setFlagRawValue was %s",
+          setFlag().get().getValue(),
+          setFlagRawValue().get().longValue()
+        )
+      );
+      return this;
+    } else if (setFlag().isPresent() && !setFlagRawValue().isPresent()) {
+      // This can only happen if the developer only set setFlag(). In this case, we need to set setFlagRawValue to
+      // match setFlag.
+      return AccountSet.builder().from(this)
+        .setFlagRawValue(UnsignedInteger.valueOf(setFlag().get().getValue()))
+        .build();
+    } else { // setFlag is empty and setFlagRawValue is present
+      // This can happen if:
+      //   1. A developer sets setFlagRawValue manually in the builder
+      //   2. JSON has ClearFlag and jackson sets setFlagRawValue.
+      // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
+      // so no lower bound check is required.
+      if (setFlagRawValue().get().longValue() <= AccountSetFlag.MAX_VALUE) {
+        // Set setFlag to setFlagRawValue if setFlagRawValue matches a valid AccountSetFlag variant.
+        return AccountSet.builder().from(this)
+          .setFlag(AccountSetFlag.forValue(setFlagRawValue().get().intValue()))
+          .build();
+      } else {
+        // Otherwise, leave setFlag empty.
+        return this;
+      }
+    }
+  }
 
   /**
    * The hex string of the lowercase ASCII of the domain for the account. For example, the domain example.com would be
@@ -94,6 +263,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the domain.
    */
   @JsonProperty("Domain")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> domain();
 
   /**
@@ -111,6 +281,7 @@ public interface AccountSet extends Transaction {
    * @return An {@link Optional} of type {@link String} containing the messaging public key.
    */
   @JsonProperty("MessageKey")
+  @JsonInclude(Include.NON_ABSENT)
   Optional<String> messageKey();
 
   /**
@@ -132,13 +303,30 @@ public interface AccountSet extends Transaction {
   Optional<UnsignedInteger> tickSize();
 
   /**
-   * Sets an alternate account that is allowed to mint NFTokens on this
-   * account's behalf using NFTokenMint's `Issuer` field.
+   * Sets an alternate account that is allowed to mint NFTokens on this account's behalf using NFTokenMint's `Issuer`
+   * field.
    *
    * @return An {@link Optional} field of type {@link Address}.
    */
   @JsonProperty("NFTokenMinter")
   Optional<Address> mintAccount();
+
+  /**
+   * An arbitrary 256-bit value. If specified, the value is stored as part of the account but has no inherent meaning
+   * or requirements.
+   *
+   * @return The 256-bit value as a hex encoded {@link String}.
+   */
+  @JsonProperty("WalletLocator")
+  Optional<String> walletLocator();
+
+  /**
+   * Not used. This field is valid in AccountSet transactions but does nothing.
+   *
+   * @return An optionally present {@link UnsignedInteger}.
+   */
+  @JsonProperty("WalletSize")
+  Optional<UnsignedInteger> walletSize();
 
   /**
    * Check email hash length.
@@ -206,8 +394,8 @@ public interface AccountSet extends Transaction {
    */
   enum AccountSetFlag {
     /**
-     * This flag will do nothing but exists to accurately deserialize AccountSet transactions whose {@code SetFlag}
-     * or {@code ClearFlag} fields are zero.
+     * This flag will do nothing but exists to accurately deserialize AccountSet transactions whose {@code SetFlag} or
+     * {@code ClearFlag} fields are zero.
      */
     NONE(0),
     /**
@@ -276,7 +464,15 @@ public interface AccountSet extends Transaction {
     /**
      * Block incoming Trustlines.
      */
-    DISALLOW_INCOMING_TRUSTLINE(15);
+    DISALLOW_INCOMING_TRUSTLINE(15),
+    /**
+     * Enable clawback on the account's trustlines.
+     *
+     * <p>This value will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is subject
+     * to change.</p>
+     */
+    @Beta
+    ALLOW_TRUSTLINE_CLAWBACK(16);
 
     final int value;
 
@@ -285,12 +481,19 @@ public interface AccountSet extends Transaction {
     }
 
     /**
+     * The maximum underlying value of AccountSetFlags. This is useful for the normalization methods of AccountSet
+     * so that adding a new AccountSetFlag does not require a change to those normalization functions.
+     */
+    static final int MAX_VALUE = Collections.max(Arrays.asList(AccountSetFlag.values())).getValue();
+
+    /**
      * To deserialize enums with integer values, you need to specify this factory method with the {@link JsonCreator}
      * annotation, otherwise Jackson treats the JSON integer value as an ordinal.
      *
      * @param value The int value of the flag.
      *
      * @return The {@link AccountSetFlag} for the given integer value.
+     *
      * @see "https://github.com/FasterXML/jackson-databind/issues/1850"
      */
     @JsonCreator

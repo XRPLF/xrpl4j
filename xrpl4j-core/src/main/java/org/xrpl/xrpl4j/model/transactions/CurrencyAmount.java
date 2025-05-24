@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -34,33 +35,47 @@ public interface CurrencyAmount {
   long ONE_XRP_IN_DROPS = 1_000_000L;
   long MAX_XRP = 100_000_000_000L; // <-- per https://xrpl.org/rippleapi-reference.html#value
   long MAX_XRP_IN_DROPS = MAX_XRP * ONE_XRP_IN_DROPS;
+  BigDecimal MAX_XRP_BD = BigDecimal.valueOf(MAX_XRP);
 
   /**
-   * Handle this {@link CurrencyAmount} depending on its actual polymorphic sub-type.
+   * Indicates whether this amount is positive or negative.
+   *
+   * @return {@code true} if this amount is negative; {@code false} otherwise (i.e., if the value is 0 or positive).
+   */
+  boolean isNegative();
+
+  /**
+   * Handle this {@link CurrencyAmount} depending on its actual polymorphic subtype.
    *
    * @param xrpCurrencyAmountHandler     A {@link Consumer} that is called if this instance is of type
    *                                     {@link XrpCurrencyAmount}.
    * @param issuedCurrencyAmountConsumer A {@link Consumer} that is called if this instance is of type
    *                                     {@link IssuedCurrencyAmount}.
+   * @param mptCurrencyAmountConsumer    A {@link Consumer} that is called if this instance is of type
+   *                                     {@link MptCurrencyAmount}.
    */
   default void handle(
     final Consumer<XrpCurrencyAmount> xrpCurrencyAmountHandler,
-    final Consumer<IssuedCurrencyAmount> issuedCurrencyAmountConsumer
+    final Consumer<IssuedCurrencyAmount> issuedCurrencyAmountConsumer,
+    final Consumer<MptCurrencyAmount> mptCurrencyAmountConsumer
   ) {
     Objects.requireNonNull(xrpCurrencyAmountHandler);
     Objects.requireNonNull(issuedCurrencyAmountConsumer);
+    Objects.requireNonNull(mptCurrencyAmountConsumer);
 
     if (XrpCurrencyAmount.class.isAssignableFrom(this.getClass())) {
       xrpCurrencyAmountHandler.accept((XrpCurrencyAmount) this);
     } else if (IssuedCurrencyAmount.class.isAssignableFrom(this.getClass())) {
       issuedCurrencyAmountConsumer.accept((IssuedCurrencyAmount) this);
+    } else if (MptCurrencyAmount.class.isAssignableFrom(this.getClass())) {
+      mptCurrencyAmountConsumer.accept((MptCurrencyAmount) this);
     } else {
       throw new IllegalStateException(String.format("Unsupported CurrencyAmount Type: %s", this.getClass()));
     }
   }
 
   /**
-   * Map this {@link CurrencyAmount} to an instance of {@link R}, depending on its actualy polymorphic sub-type.
+   * Map this {@link CurrencyAmount} to an instance of {@link R}, depending on its actual polymorphic subtype.
    *
    * @param xrpCurrencyAmountMapper    A {@link Function} that is called if this instance is of type
    *                                   {@link XrpCurrencyAmount}.
@@ -72,15 +87,19 @@ public interface CurrencyAmount {
    */
   default <R> R map(
     final Function<XrpCurrencyAmount, R> xrpCurrencyAmountMapper,
-    final Function<IssuedCurrencyAmount, R> issuedCurrencyAmountMapper
+    final Function<IssuedCurrencyAmount, R> issuedCurrencyAmountMapper,
+    final Function<MptCurrencyAmount, R> mptCurrencyAmountMapper
   ) {
     Objects.requireNonNull(xrpCurrencyAmountMapper);
     Objects.requireNonNull(issuedCurrencyAmountMapper);
+    Objects.requireNonNull(mptCurrencyAmountMapper);
 
     if (XrpCurrencyAmount.class.isAssignableFrom(this.getClass())) {
       return xrpCurrencyAmountMapper.apply((XrpCurrencyAmount) this);
     } else if (IssuedCurrencyAmount.class.isAssignableFrom(this.getClass())) {
       return issuedCurrencyAmountMapper.apply((IssuedCurrencyAmount) this);
+    } else if (MptCurrencyAmount.class.isAssignableFrom(this.getClass())) {
+      return mptCurrencyAmountMapper.apply((MptCurrencyAmount) this);
     } else {
       throw new IllegalStateException(String.format("Unsupported CurrencyAmount Type: %s", this.getClass()));
     }

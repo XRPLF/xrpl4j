@@ -20,9 +20,11 @@ package org.xrpl.xrpl4j.crypto.signing;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -65,6 +67,20 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @return A {@link Signature}.
    */
   Signature sign(P privateKeyable, UnsignedClaim unsignedClaim);
+
+  /**
+   * Sign attestations for cross-chain account creation or transfers.
+   *
+   * <p>This method will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
+   * is subject to change.</p>
+   *
+   * @param privateKeyable The {@link P} used to sign {@code attestation}.
+   * @param attestation    An {@link Attestation} to sign.
+   *
+   * @return A {@link Signature}.
+   */
+  @Beta
+  Signature sign(P privateKeyable, Attestation attestation);
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}. The primary reason this

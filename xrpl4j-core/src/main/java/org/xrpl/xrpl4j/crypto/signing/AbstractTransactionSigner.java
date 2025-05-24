@@ -25,13 +25,16 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
 
 /**
- * An abstract implementation of {@link SignatureService} with common functionality that sub-classes can utilize.
+ * An abstract implementation of {@link SignatureService} with common functionality that subclasses can utilize.
+ *
+ * @param <P> A type that extends {@link PrivateKeyable}.
  */
 public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implements TransactionSigner<P> {
 
@@ -62,6 +65,15 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(unsignedClaim);
 
     final UnsignedByteArray signableBytes = signatureUtils.toSignableBytes(unsignedClaim);
+    return this.signingHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
+  public Signature sign(P privateKeyable, Attestation attestation) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(attestation);
+
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableBytes(attestation);
     return this.signingHelper(privateKeyable, signableBytes);
   }
 

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.binary.types;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,12 +24,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.primitives.UnsignedLong;
 import org.xrpl.xrpl4j.codec.addresses.ByteUtils;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByte;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.BinaryCodecObjectMapperFactory;
 import org.xrpl.xrpl4j.codec.binary.math.MathUtils;
 import org.xrpl.xrpl4j.codec.binary.serdes.BinaryParser;
+import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -40,27 +44,30 @@ import java.math.BigInteger;
 class AmountType extends SerializedType<AmountType> {
 
   public static final BigDecimal MAX_DROPS = new BigDecimal("1e17");
+  public static final BigDecimal MIN_DROPS = new BigDecimal("-1e17");
   public static final BigDecimal MIN_XRP = new BigDecimal("1e-6");
+  public static final BigDecimal MAX_NEGATIVE_XRP = new BigDecimal("-1e-6");
 
   public static final String DEFAULT_AMOUNT_HEX = "4000000000000000";
   public static final String ZERO_CURRENCY_AMOUNT_HEX = "8000000000000000";
   public static final int NATIVE_AMOUNT_BYTE_LENGTH = 8;
   public static final int CURRENCY_AMOUNT_BYTE_LENGTH = 48;
+  public static final int MPT_AMOUNT_BYTE_LENGTH = 33;
   private static final int MAX_IOU_PRECISION = 16;
 
   /**
-   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>,
-   * the minimum token value exponent is -96. However, because the value field is converted from a {@link String}
-   * to a {@link BigDecimal} when encoding/decoding, and because {@link BigDecimal} defaults to using single
-   * digit number, the minimum exponent in this context is -96 + 15, as XRPL amounts have a precision of 15 digits.
+   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>, the minimum token value
+   * exponent is -96. However, because the value field is converted from a {@link String} to a {@link BigDecimal} when
+   * encoding/decoding, and because {@link BigDecimal} defaults to using single digit number, the minimum exponent in
+   * this context is -96 + 15, as XRPL amounts have a precision of 15 digits.
    */
   private static final int MIN_IOU_EXPONENT = -81;
 
   /**
-   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>,
-   * the maximum token value exponent is 80. However, because the value field is converted from a {@link String}
-   * to a {@link BigDecimal} when encoding/decoding, and because {@link BigDecimal} defaults to using single
-   * digit number, the maximum exponent in this context is 80 + 15, as XRPL amounts have a precision of 15 digits.
+   * According to <a href=https://xrpl.org/currency-formats.html#currency-formats>xrpl.org</a>, the maximum token value
+   * exponent is 80. However, because the value field is converted from a {@link String} to a {@link BigDecimal} when
+   * encoding/decoding, and because {@link BigDecimal} defaults to using single digit number, the maximum exponent in
+   * this context is 80 + 15, as XRPL amounts have a precision of 15 digits.
    */
   private static final int MAX_IOU_EXPONENT = 95;
 
@@ -87,8 +94,15 @@ class AmountType extends SerializedType<AmountType> {
     }
     BigDecimal value = new BigDecimal(amount);
     if (!value.equals(BigDecimal.ZERO)) {
-      if (value.compareTo(MIN_XRP) < 0 || value.compareTo(MAX_DROPS) > 0) {
-        throw new IllegalArgumentException(amount + " is an illegal amount");
+      final FluentCompareTo<BigDecimal> fluentValue = FluentCompareTo.is(value);
+      if (value.signum() < 0) { // `value` is negative
+        if (fluentValue.greaterThan(MAX_NEGATIVE_XRP) || fluentValue.lessThan(MIN_DROPS)) {
+          throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
+        }
+      } else { // `value` is positive
+        if (fluentValue.lessThan(MIN_XRP) || fluentValue.greaterThan(MAX_DROPS)) {
+          throw new IllegalArgumentException(String.format("%s is an illegal amount", amount));
+        }
       }
     }
   }
@@ -131,41 +145,92 @@ class AmountType extends SerializedType<AmountType> {
 
   @Override
   public AmountType fromParser(BinaryParser parser) {
-    boolean isXrp = !parser.peek().isNthBitSet(1);
-    int numBytes = isXrp ? NATIVE_AMOUNT_BYTE_LENGTH : CURRENCY_AMOUNT_BYTE_LENGTH;
+    UnsignedByte nextByte = parser.peek();
+    // The first bit is 0 for XRP or MPT, and 1 for IOU.
+    boolean isIssuedCurrency = nextByte.isNthBitSet(1);
+
+    int numBytes;
+    if (isIssuedCurrency) {
+      numBytes = CURRENCY_AMOUNT_BYTE_LENGTH;
+    } else {
+      // The third bit is 1 for MPT, and 0 for XRP
+      boolean isMpt = nextByte.isNthBitSet(3);
+
+      numBytes = isMpt ? MPT_AMOUNT_BYTE_LENGTH : NATIVE_AMOUNT_BYTE_LENGTH;
+    }
+
+    // parse all bytes, including the token-type bytes peeked above.
     return new AmountType(parser.read(numBytes));
   }
 
   @Override
   public AmountType fromJson(JsonNode value) throws JsonProcessingException {
     if (value.isValueNode()) {
+      // XRP Amount
       assertXrpIsValid(value.asText());
-      UInt64Type number = new UInt64Type().fromJson(value.asText());
-      byte[] rawBytes = number.toBytes();
-      rawBytes[0] |= 0x40;
+
+      final boolean isValueNegative = value.asText().startsWith("-");
+      final UnsignedByteArray number = UnsignedByteArray.fromHex(
+        ByteUtils.padded(
+          UnsignedLong
+            .valueOf(isValueNegative ? value.asText().substring(1) : value.asText())
+            .toString(16),
+          16 // <-- 64 / 4
+        )
+      );
+      final byte[] rawBytes = number.toByteArray();
+      if (!isValueNegative) {
+        rawBytes[0] |= 0x40;
+      }
       return new AmountType(UnsignedByteArray.of(rawBytes));
+    } else if (!value.has("mpt_issuance_id")) {
+      // IOU Amount
+      Amount amount = objectMapper.treeToValue(value, Amount.class);
+      BigDecimal number = new BigDecimal(amount.value());
+
+      UnsignedByteArray result = number.unscaledValue().equals(BigInteger.ZERO) ?
+        UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
+        getAmountBytes(number);
+
+      UnsignedByteArray currency = new CurrencyType().fromJson(value.get("currency")).value();
+      UnsignedByteArray issuer = new AccountIdType().fromJson(value.get("issuer")).value();
+
+      result.append(currency);
+      result.append(issuer);
+
+      return new AmountType(result);
+    } else {
+      // MPT Amount
+      MptCurrencyAmount mptCurrencyAmount = objectMapper.treeToValue(value, MptCurrencyAmount.class);
+
+      if (FluentCompareTo.is(mptCurrencyAmount.unsignedLongValue()).greaterThan(UnsignedLong.valueOf(Long.MAX_VALUE))) {
+        throw new IllegalArgumentException("Invalid MPT mptCurrencyAmount. Maximum MPT value is (2^63 - 1)");
+      }
+
+      UnsignedByteArray amountBytes = UnsignedByteArray.fromHex(
+        ByteUtils.padded(
+          mptCurrencyAmount.unsignedLongValue().toString(16),
+          16 // <-- 64 / 4
+        )
+      );
+      UnsignedByteArray issuanceIdBytes = new UInt192Type()
+        .fromJson(new TextNode(mptCurrencyAmount.mptIssuanceId().value()))
+        .value();
+
+      // MPT Amounts always have 0110_000 (0x60) as the first byte when positive or 0010_0000 (0x20) when negative.
+      int leadingByte = mptCurrencyAmount.isNegative() ? 0x20 : 0x60;
+      UnsignedByteArray result = UnsignedByteArray.of(UnsignedByte.of(leadingByte));
+      result.append(amountBytes);
+      result.append(issuanceIdBytes);
+
+      return new AmountType(result);
     }
-
-    Amount amount = objectMapper.treeToValue(value, Amount.class);
-    BigDecimal number = new BigDecimal(amount.value());
-
-    UnsignedByteArray result = number.unscaledValue().equals(BigInteger.ZERO) ?
-      UnsignedByteArray.fromHex(ZERO_CURRENCY_AMOUNT_HEX) :
-      getAmountBytes(number);
-
-    UnsignedByteArray currency = new CurrencyType().fromJson(value.get("currency")).value();
-    UnsignedByteArray issuer = new AccountIdType().fromJson(value.get("issuer")).value();
-
-    result.append(currency);
-    result.append(issuer);
-
-    return new AmountType(result);
   }
 
   private UnsignedByteArray getAmountBytes(BigDecimal number) {
     BigInteger paddedNumber = MathUtils.toPaddedBigInteger(number, 16);
     byte[] amountBytes = ByteUtils.toByteArray(paddedNumber, 8);
-    amountBytes[0] |= 0x80;
+    amountBytes[0] |= (byte) 0x80;
     if (number.compareTo(BigDecimal.ZERO) > 0) {
       amountBytes[0] |= 0x40;
     }
@@ -175,8 +240,8 @@ class AmountType extends SerializedType<AmountType> {
       throw new IllegalArgumentException("exponent out of range");
     }
     UnsignedByte exponentByte = UnsignedByte.of(97 + exponent - 15);
-    amountBytes[0] |= exponentByte.asInt() >>> 2;
-    amountBytes[1] |= (exponentByte.asInt() & 0x03) << 6;
+    amountBytes[0] |= (byte) (exponentByte.asInt() >>> 2);
+    amountBytes[1] |= (byte) ((exponentByte.asInt() & 0x03) << 6);
 
     return UnsignedByteArray.of(amountBytes);
   }
@@ -191,7 +256,23 @@ class AmountType extends SerializedType<AmountType> {
         value = value.negate();
       }
       return new TextNode(value.toString());
+    } else if (this.isMpt()) {
+      BinaryParser parser = new BinaryParser(this.toHex());
+      // We know the first byte already based on this.isMpt()
+      UnsignedByte leadingByte = parser.read(1).get(0);
+      boolean isNegative = !leadingByte.isNthBitSet(2);
+      UnsignedLong amount = parser.readUInt64();
+      UnsignedByteArray issuanceId = new UInt192Type().fromParser(parser).value();
+
+      String amountBase10 = amount.toString(10);
+      MptCurrencyAmount mptAmount = MptCurrencyAmount.builder()
+        .value(isNegative ? "-" + amountBase10 : amountBase10)
+        .mptIssuanceId(MpTokenIssuanceId.of(issuanceId.hexValue()))
+        .build();
+
+      return objectMapper.valueToTree(mptAmount);
     } else {
+      // Must be IOU if it's not XRP or MPT
       BinaryParser parser = new BinaryParser(this.toHex());
       UnsignedByteArray mantissa = parser.read(8);
       final SerializedType<?> currency = new CurrencyType().fromParser(parser);
@@ -228,9 +309,16 @@ class AmountType extends SerializedType<AmountType> {
    *
    * @return {@code true} if this AmountType is native; {@code false} otherwise.
    */
-  private boolean isNative() {
-    // 1st bit in 1st byte is set to 0 for native XRP
-    return (toBytes()[0] & 0x80) == 0;
+  public boolean isNative() {
+    // 1st bit in 1st byte is set to 0 for native XRP, 3rd bit is also 0.
+    byte leadingByte = toBytes()[0];
+    return (leadingByte & 0x80) == 0 && (leadingByte & 0x20) == 0;
+  }
+
+  public boolean isMpt() {
+    // 1st bit in 1st byte is 0, and 3rd bit is 1
+    byte leadingByte = toBytes()[0];
+    return (leadingByte & 0x80) == 0 && (leadingByte & 0x20) != 0;
   }
 
   /**
@@ -238,7 +326,7 @@ class AmountType extends SerializedType<AmountType> {
    *
    * @return {@code true} if this AmountType is positive; {@code false} otherwise.
    */
-  private boolean isPositive() {
+  public boolean isPositive() {
     // 2nd bit in 1st byte is set to 1 for positive amounts
     return (toBytes()[0] & 0x40) > 0;
   }

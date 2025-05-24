@@ -32,17 +32,24 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountCurrenciesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
+import org.xrpl.xrpl4j.model.client.ledger.RippleStateLedgerEntryParams;
+import org.xrpl.xrpl4j.model.client.ledger.RippleStateLedgerEntryParams.RippleStateAccounts;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
-import org.xrpl.xrpl4j.model.transactions.TrustSet;
-import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import org.xrpl.xrpl4j.tests.environment.DevnetEnvironment;
 import org.xrpl.xrpl4j.tests.environment.TestnetEnvironment;
 
@@ -70,11 +77,19 @@ public class IssuedCurrencyIT extends AbstractIT {
     String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
     TrustLine trustLine = createTrustLine(
-      xrpl4jCoin,
-      IssuedCurrencyAmount.MAX_VALUE,
-      issuerKeyPair,
       counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(IssuedCurrencyAmount.MAX_VALUE)
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    assertThatEntryEqualsObjectFromAccountObjects(
+      trustLine,
+      issuerKeyPair.publicKey().deriveAddress(),
+      xrpl4jCoin
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e80");
@@ -95,11 +110,19 @@ public class IssuedCurrencyIT extends AbstractIT {
     String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
     TrustLine trustLine = createTrustLine(
-      xrpl4jCoin,
-      new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toEngineeringString(),
-      issuerKeyPair,
       counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(new BigDecimal(IssuedCurrencyAmount.MAX_VALUE).scaleByPowerOfTen(-1).toEngineeringString())
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    assertThatEntryEqualsObjectFromAccountObjects(
+      trustLine,
+      issuerKeyPair.publicKey().deriveAddress(),
+      xrpl4jCoin
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("9999999999999999e79");
@@ -120,11 +143,19 @@ public class IssuedCurrencyIT extends AbstractIT {
     String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
     TrustLine trustLine = createTrustLine(
-      xrpl4jCoin,
-      IssuedCurrencyAmount.MIN_POSITIVE_VALUE,
-      issuerKeyPair,
       counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(IssuedCurrencyAmount.MIN_POSITIVE_VALUE)
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    assertThatEntryEqualsObjectFromAccountObjects(
+      trustLine,
+      issuerKeyPair.publicKey().deriveAddress(),
+      xrpl4jCoin
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("1000000000000000e-96");
@@ -147,11 +178,19 @@ public class IssuedCurrencyIT extends AbstractIT {
     BigDecimal limitValue = new BigDecimal(IssuedCurrencyAmount.MIN_POSITIVE_VALUE)
       .add(new BigDecimal(IssuedCurrencyAmount.MIN_POSITIVE_VALUE).scaleByPowerOfTen(-1));
     TrustLine trustLine = createTrustLine(
-      xrpl4jCoin,
-      limitValue.toString(),
-      issuerKeyPair,
       counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(limitValue.toString())
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    assertThatEntryEqualsObjectFromAccountObjects(
+      trustLine,
+      issuerKeyPair.publicKey().deriveAddress(),
+      xrpl4jCoin
     );
 
     assertThat(trustLine.limitPeer()).isEqualTo("1100000000000000e-96");
@@ -172,26 +211,53 @@ public class IssuedCurrencyIT extends AbstractIT {
     String xrpl4jCoin = Strings.padEnd(BaseEncoding.base16().encode("xrpl4jCoin".getBytes()), 40, '0');
 
     TrustLine trustLine = createTrustLine(
-      xrpl4jCoin,
-      "10000",
-      issuerKeyPair,
       counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value("10000")
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    assertThatEntryEqualsObjectFromAccountObjects(
+      trustLine,
+      issuerKeyPair.publicKey().deriveAddress(),
+      xrpl4jCoin
     );
 
     ///////////////////////////
     // Send some xrpl4jCoin to the counterparty account.
-    issueBalance(
-      xrpl4jCoin, trustLine.limitPeer(), issuerKeyPair, counterpartyKeyPair,
+    sendIssuedCurrency(
+      issuerKeyPair, counterpartyKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(xrpl4jCoin)
+        .value(trustLine.limitPeer())
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Validate that the TrustLine balance was updated as a result of the Payment.
     // The trust line returned is from the perspective of the issuer, so the balance should be negative.
-    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
-        counterpartyKeyPair.publicKey().deriveAddress()),
-      linesResult -> linesResult.lines().stream().anyMatch(line -> line.balance().equals("-" + trustLine.limitPeer()))
+    TrustLine trustLineAfterPayment = this.scanForResult(
+        () -> getValidatedAccountLines(
+          issuerKeyPair.publicKey().deriveAddress(),
+          counterpartyKeyPair.publicKey().deriveAddress()
+        ),
+        linesResult -> linesResult.lines().stream().anyMatch(line -> line.balance().equals("-" + trustLine.limitPeer()))
+      ).lines().stream()
+      .filter(line -> line.balance().equals("-" + trustLine.limitPeer()))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException(
+        String.format("Expected a RippleStateObject for account %s, but none existed.", trustLine.account().value())
+      ));
+
+    assertThatEntryEqualsObjectFromAccountObjects(
+      trustLineAfterPayment,
+      issuerKeyPair.publicKey().deriveAddress(),
+      xrpl4jCoin
     );
 
     ///////////////////////////
@@ -205,8 +271,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
 
     assertThat(counterpartyCurrencies.sendCurrencies()).asList().containsOnly(xrpl4jCoin);
-    assertThat(counterpartyCurrencies.ledgerCurrentIndex()).isNotEmpty().get()
-      .isEqualTo(counterpartyCurrencies.ledgerCurrentIndexSafe());
+    assertThat(counterpartyCurrencies.ledgerCurrentIndex()).isNotEmpty();
   }
 
   @Test
@@ -226,30 +291,50 @@ public class IssuedCurrencyIT extends AbstractIT {
     ///////////////////////////
     // Create a TrustLine between alice and the issuer
     createTrustLine(
-      "USD",
-      "10000",
-      issuerKeyPair,
       aliceKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Create a TrustLine between bob and the issuer
     TrustLine bobTrustLine = createTrustLine(
-      "USD",
-      "10000",
-      issuerKeyPair,
       bobKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
       FeeUtils.computeNetworkFees(feeResult).recommendedFee()
     );
 
     ///////////////////////////
     // Issuer issues 50 USD to alice
-    issueBalance("USD", "50", issuerKeyPair, aliceKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    sendIssuedCurrency(
+      issuerKeyPair, aliceKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("50")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issuer issues 50 USD to bob
-    issueBalance("USD", "50", issuerKeyPair, bobKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    sendIssuedCurrency(
+      issuerKeyPair, bobKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("50")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Try to find a path for this Payment.
@@ -264,7 +349,7 @@ public class IssuedCurrencyIT extends AbstractIT {
     // Note that because this path consists of all implied paths, rippled will not return any path steps
     scanForResult(
       () -> getValidatedRipplePath(aliceKeyPair, bobKeyPair, pathDestinationAmount),
-      path -> path.alternatives().size() > 0 // rippled will return a PathAlternative without any path steps
+      path -> !path.alternatives().isEmpty() // rippled will return a PathAlternative without any path steps
     );
 
     ///////////////////////////
@@ -320,7 +405,7 @@ public class IssuedCurrencyIT extends AbstractIT {
    */
   @Test
   public void sendMultiHopSameCurrencyPayment() throws JsonRpcClientErrorException, JsonProcessingException {
-    // NOTE: Only run this on non-testnet and non-devnet evironmens.
+    // NOTE: Only run this on non-testnet and non-devnet environments.
     if (TestnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass()) ||
       DevnetEnvironment.class.isAssignableFrom(xrplEnvironment.getClass())) {
       return;
@@ -331,8 +416,8 @@ public class IssuedCurrencyIT extends AbstractIT {
     final KeyPair issuerAKeyPair = createRandomAccountEd25519();
     final KeyPair issuerBKeyPair = createRandomAccountEd25519();
     final KeyPair charlieKeyPair = createRandomAccountEd25519();
-    final KeyPair danielKeyPair = createRandomAccountEd25519();
     final KeyPair emilyKeyPair = createRandomAccountEd25519();
+    final KeyPair danielKeyPair = createRandomAccountEd25519();
 
     ///////////////////////////
     // Set the lsfDefaultRipple AccountRoot flag so that all trustlines in this topography allow rippling
@@ -340,78 +425,127 @@ public class IssuedCurrencyIT extends AbstractIT {
     setDefaultRipple(issuerAKeyPair, feeResult);
     setDefaultRipple(issuerBKeyPair, feeResult);
     setDefaultRipple(charlieKeyPair, feeResult);
-    setDefaultRipple(danielKeyPair, feeResult);
     setDefaultRipple(emilyKeyPair, feeResult);
+    setDefaultRipple(danielKeyPair, feeResult);
 
     ///////////////////////////
     // Create a Trustline between charlie and issuerA
     final TrustLine charlieTrustLineWithIssuerA = createTrustLine(
-      "USD",
-      "10000",
-      issuerAKeyPair,
       charlieKeyPair,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerAKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
     // Create a Trustline between emily and issuerA
     createTrustLine(
-      "USD",
-      "10000",
-      issuerAKeyPair,
       emilyKeyPair,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerAKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
     // Create a Trustline between emily and issuerB
     createTrustLine(
-      "USD",
-      "10000",
-      issuerBKeyPair,
       emilyKeyPair,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerBKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
     // Create a Trustline between daniel and issuerB
     final TrustLine danielTrustLineWithIssuerB = createTrustLine(
-      "USD",
-      "10000",
-      issuerBKeyPair,
       danielKeyPair,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerBKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty()
     );
 
     ///////////////////////////
     // Issue 10 USD from issuerA to charlie.
     // IssuerA now owes Charlie 10 USD.
-    issueBalance("USD", "10", issuerAKeyPair, charlieKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    sendIssuedCurrency(
+      issuerAKeyPair, // <-- From
+      charlieKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerAKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issue 1 USD from issuerA to emily.
     // IssuerA now owes Emily 1 USD
-    issueBalance("USD", "1", issuerAKeyPair, emilyKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    sendIssuedCurrency(
+      issuerAKeyPair, // <-- From
+      emilyKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerAKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("1")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issue 100 USD from issuerB to emily.
     // IssuerB now owes Emily 100 USD
-    issueBalance("USD", "100", issuerBKeyPair, emilyKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    sendIssuedCurrency(
+      issuerBKeyPair, // <-- From
+      emilyKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerBKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("100")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Issue 2 USD from issuerB to daniel.
     // IssuerB now owes Daniel 2 USD
-    issueBalance("USD", "2", issuerBKeyPair, danielKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    sendIssuedCurrency(
+      issuerBKeyPair, // <-- From
+      danielKeyPair, // <-- To
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerBKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("2")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
 
     ///////////////////////////
     // Look for a payment path from charlie to daniel.
     List<List<PathStep>> pathSteps = scanForResult(
-      () -> getValidatedRipplePath(charlieKeyPair, danielKeyPair, IssuedCurrencyAmount.builder()
-        .issuer(issuerBKeyPair.publicKey().deriveAddress())
-        .currency(charlieTrustLineWithIssuerA.currency())
-        .value("10")
-        .build()),
-      path -> path.alternatives().size() > 0
+      () -> getValidatedRipplePath(charlieKeyPair, danielKeyPair,
+        IssuedCurrencyAmount.builder()
+          .issuer(issuerBKeyPair.publicKey().deriveAddress())
+          .currency(charlieTrustLineWithIssuerA.currency())
+          .value("10")
+          .build()),
+      path -> !path.alternatives().isEmpty()
     )
       .alternatives().stream()
       .filter(alt ->
@@ -491,6 +625,7 @@ public class IssuedCurrencyIT extends AbstractIT {
    *
    * @param issuerKeyPair The {@link KeyPair} containing the address of the issuer account.
    * @param feeResult     The current {@link FeeResult}.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public void setDefaultRipple(KeyPair issuerKeyPair, FeeResult feeResult)
@@ -523,106 +658,43 @@ public class IssuedCurrencyIT extends AbstractIT {
     );
   }
 
-  /**
-   * Send issued currency funds from an issuer to a counterparty.
-   *
-   * @param currency            The currency code to send.
-   * @param value               The amount of currency to send.
-   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
-   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
-   * @param fee                 The current network fee, as an {@link XrpCurrencyAmount}.
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  public void issueBalance(
-    String currency,
-    String value,
-    KeyPair issuerKeyPair,
-    KeyPair counterpartyKeyPair,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    ///////////////////////////
-    // Issuer sends a payment with the issued currency to the counterparty
-    AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+
+  private void assertThatEntryEqualsObjectFromAccountObjects(
+    TrustLine trustLine,
+    Address peerAddress,
+    String currency
+  ) throws JsonRpcClientErrorException {
+    RippleStateObject rippleStateObject = (RippleStateObject) xrplClient.accountObjects(
+        AccountObjectsRequestParams.of(trustLine.account())
+      ).accountObjects().stream()
+      .filter(object -> RippleStateObject.class.isAssignableFrom(object.getClass()))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException(
+        String.format("Expected a RippleStateObject for account %s, but none existed.", trustLine.account().value())
+      ));
+
+    LedgerEntryResult<RippleStateObject> entry = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.rippleState(
+        RippleStateLedgerEntryParams.builder()
+          .accounts(RippleStateAccounts.of(trustLine.account(), peerAddress))
+          .currency(currency)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
     );
 
-    Payment fundCounterparty = Payment.builder()
-      .account(issuerKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(issuerAccountInfo.accountData().sequence())
-      .destination(counterpartyKeyPair.publicKey().deriveAddress())
-      .amount(IssuedCurrencyAmount.builder()
-        .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .currency(currency)
-        .value(value)
-        .build())
-      .signingPublicKey(issuerKeyPair.publicKey())
-      .build();
+    assertThat(entry.node()).isEqualTo(rippleStateObject);
 
-    SingleSignedTransaction<Payment> signedFundCounterparty = signatureService.sign(
-      issuerKeyPair.privateKey(), fundCounterparty
-    );
-    SubmitResult<Payment> paymentResult = xrplClient.submit(signedFundCounterparty);
-    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "Payment transaction successful: https://testnet.xrpl.org/transactions/{}",
-      paymentResult.transactionResult().hash()
+    LedgerEntryResult<RippleStateObject> entryByIndex = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(rippleStateObject.index(), RippleStateObject.class, LedgerSpecifier.VALIDATED)
     );
 
-    this.scanForResult(() -> getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class));
+    assertThat(entryByIndex.node()).isEqualTo(entry.node());
+
+    LedgerEntryResult<LedgerObject> entryByIndexUnTyped = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.index(rippleStateObject.index(), LedgerSpecifier.VALIDATED)
+    );
+
+    assertThat(entryByIndex.node()).isEqualTo(entryByIndexUnTyped.node());
   }
-
-  /**
-   * Create a trustline between the given issuer and counterparty accounts for the given currency code and with the
-   * given limit.
-   *
-   * @param currency            The currency code of the trustline to create.
-   * @param value               The trustline limit of the trustline to create.
-   * @param issuerKeyPair       The {@link KeyPair} of the issuer account.
-   * @param counterpartyKeyPair The {@link KeyPair} of the counterparty account.
-   * @param fee                 The current network fee, as an {@link XrpCurrencyAmount}.
-   * @return The {@link TrustLine} that gets created.
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  public TrustLine createTrustLine(
-    String currency,
-    String value,
-    KeyPair issuerKeyPair,
-    KeyPair counterpartyKeyPair,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult counterpartyAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(counterpartyKeyPair.publicKey().deriveAddress())
-    );
-
-    TrustSet trustSet = TrustSet.builder()
-      .account(counterpartyKeyPair.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(counterpartyAccountInfo.accountData().sequence())
-      .limitAmount(IssuedCurrencyAmount.builder()
-        .currency(currency)
-        .issuer(issuerKeyPair.publicKey().deriveAddress())
-        .value(value)
-        .build())
-      .signingPublicKey(counterpartyKeyPair.publicKey())
-      .build();
-
-    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(counterpartyKeyPair.privateKey(),
-      trustSet);
-    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
-    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "TrustSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      trustSetSubmitResult.transactionResult().hash()
-    );
-
-    return scanForResult(
-      () ->
-        getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
-          counterpartyKeyPair.publicKey().deriveAddress()),
-      linesResult -> !linesResult.lines().isEmpty()
-    )
-      .lines().get(0);
-  }
-
 }

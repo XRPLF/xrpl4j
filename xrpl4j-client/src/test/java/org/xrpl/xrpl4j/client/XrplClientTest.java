@@ -70,17 +70,27 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountTransactionsResult;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.GatewayBalancesResult;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.amm.AmmInfoResult;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyRequestParams;
 import org.xrpl.xrpl4j.model.client.channels.ChannelVerifyResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersRequestParams;
+import org.xrpl.xrpl4j.model.client.mpt.MptHoldersResponse;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftBuyOffersResult;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoResult;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.nft.NftSellOffersResult;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceRequestParams;
+import org.xrpl.xrpl4j.model.client.oracle.GetAggregatePriceResult;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
@@ -100,8 +110,10 @@ import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.AccountRootFlags;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.Issue;
+import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NfTokenId;
@@ -112,9 +124,11 @@ import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -590,6 +604,18 @@ public class XrplClientTest {
   }
 
   @Test
+  void createXrplClientWithDurationTimeouts() {
+    HttpUrl rippledUrl = HttpUrl.parse("https://s.altnet.rippletest.net:51234");
+    XrplClient client = new XrplClient(
+      rippledUrl,
+      Duration.ofSeconds(1),
+      Duration.ofMinutes(2)
+    );
+
+    assertThat(client).isInstanceOf(XrplClient.class);
+  }
+
+  @Test
   public void submitSingleSignedTransaction() {
     BcSignatureService bcSignatureService = new BcSignatureService();
     jsonRpcClientMock = new JsonRpcClient() {
@@ -1023,4 +1049,96 @@ public class XrplClientTest {
     assertThat(jsonRpcRequestArgumentCaptor.getValue().params().get(0)).isEqualTo(nftSellOffersRequestParams);
   }
 
+  @Test
+  void ammInfo() throws JsonRpcClientErrorException {
+    AmmInfoRequestParams params = mock(AmmInfoRequestParams.class);
+    JsonRpcRequest expectedRequest = JsonRpcRequest.builder()
+      .method(XrplMethods.AMM_INFO)
+      .addParams(params)
+      .build();
+    AmmInfoResult mockResult = mock(AmmInfoResult.class);
+    when(jsonRpcClientMock.send(expectedRequest, AmmInfoResult.class)).thenReturn(mockResult);
+    AmmInfoResult result = xrplClient.ammInfo(params);
+
+    assertThat(result).isEqualTo(mockResult);
+  }
+
+  @Test
+  void ledgerEntry() throws JsonRpcClientErrorException {
+    LedgerEntryRequestParams<LedgerObject> params = LedgerEntryRequestParams.index(
+      Hash256.of("6B1011EF3BC3ED619B15979EF75C1C60D9181F3DDE641AD3019318D3900CEE2E"),
+      LedgerSpecifier.VALIDATED
+    );
+
+    LedgerEntryResult<?> mockResult = mock(LedgerEntryResult.class);
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.LEDGER_ENTRY)
+        .addParams(params)
+        .build(),
+        ObjectMapperFactory.create().getTypeFactory().constructParametricType(
+          LedgerEntryResult.class, LedgerObject.class
+        )
+    )).thenReturn(mockResult);
+
+    LedgerEntryResult<LedgerObject> result = xrplClient.ledgerEntry(params);
+    assertThat(result).isEqualTo(mockResult);
+  }
+
+  @Test
+  void nftInfo() throws JsonRpcClientErrorException {
+    NftInfoRequestParams params = NftInfoRequestParams.builder()
+      .nfTokenId(NfTokenId.of("000100001E962F495F07A990F4ED55ACCFEEF365DBAA76B6A048C0A200000007"))
+      .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+      .build();
+
+    NftInfoResult mockResult = mock(NftInfoResult.class);
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.NFT_INFO)
+        .addParams(params)
+        .build(),
+      NftInfoResult.class
+    )).thenReturn(mockResult);
+
+    NftInfoResult result = xrplClient.nftInfo(params);
+
+    assertThat(result).isEqualTo(mockResult);
+  }
+
+  @Test
+  void getAggregatePrice() throws JsonRpcClientErrorException {
+    GetAggregatePriceRequestParams params = mock(GetAggregatePriceRequestParams.class);
+    GetAggregatePriceResult expectedResult = mock(GetAggregatePriceResult.class);
+
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.GET_AGGREGATE_PRICE)
+        .addParams(params)
+        .build(),
+      GetAggregatePriceResult.class
+    )).thenReturn(expectedResult);
+
+    GetAggregatePriceResult result = xrplClient.getAggregatePrice(params);
+
+    assertThat(result).isEqualTo(expectedResult);
+  }
+
+  @Test
+  void mptHolders() throws JsonRpcClientErrorException {
+    MptHoldersRequestParams params = mock(MptHoldersRequestParams.class);
+    MptHoldersResponse expectedResult = mock(MptHoldersResponse.class);
+
+    when(jsonRpcClientMock.send(
+      JsonRpcRequest.builder()
+        .method(XrplMethods.MPT_HOLDERS)
+        .addParams(params)
+        .build(),
+      MptHoldersResponse.class
+    )).thenReturn(expectedResult);
+
+    MptHoldersResponse result = xrplClient.mptHolders(params);
+
+    assertThat(result).isEqualTo(expectedResult);
+  }
 }

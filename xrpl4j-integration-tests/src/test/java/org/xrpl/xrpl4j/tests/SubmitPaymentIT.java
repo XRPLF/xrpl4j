@@ -85,12 +85,8 @@ public class SubmitPaymentIT extends AbstractIT {
 
   @Test
   public void sendPaymentFromSecp256k1KeyPair() throws JsonRpcClientErrorException, JsonProcessingException {
-    KeyPair senderKeyPair = Seed.fromBase58EncodedSecret(
-      Base58EncodedSecret.of("sp5fghtJtpUorTwvof1NpDXAzNwf5")
-    ).deriveKeyPair();
+    KeyPair senderKeyPair = this.createRandomAccountSecp256k1();
     logger.info("Generated source testnet wallet with address " + senderKeyPair.publicKey().deriveAddress());
-
-    fundAccount(senderKeyPair.publicKey().deriveAddress());
 
     KeyPair destinationKeyPair = createRandomAccountEd25519();
 
@@ -118,10 +114,19 @@ public class SubmitPaymentIT extends AbstractIT {
 
   private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
     throws JsonRpcClientErrorException {
-    LedgerResult ledger = xrplClient.ledger(
-      LedgerRequestParams.builder()
-        .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
-        .build()
+
+    LedgerResult ledger = this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.ledger(
+            LedgerRequestParams.builder()
+              .ledgerSpecifier(LedgerSpecifier.of(validatedPayment.ledgerIndex().get()))
+              .build()
+          );
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      }
     );
 
     assertThat(validatedPayment.closeDateHuman()).isNotEmpty();

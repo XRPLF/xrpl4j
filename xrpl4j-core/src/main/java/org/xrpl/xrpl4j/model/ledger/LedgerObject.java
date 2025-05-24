@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.Beta;
 
 /**
  * Market interface for XRP Ledger Objects.
@@ -52,7 +53,17 @@ import com.fasterxml.jackson.annotation.JsonValue;
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
   @JsonSubTypes.Type(value = ImmutableSignerListObject.class, name = "SignerList"),
   @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
+  @JsonSubTypes.Type(value = ImmutableAmmObject.class, name = "AMM"),
   @JsonSubTypes.Type(value = ImmutableNfTokenPageObject.class, name = "NFTokenPage"),
+  @JsonSubTypes.Type(value = ImmutableBridgeObject.class, name = "Bridge"),
+  @JsonSubTypes.Type(
+    value = ImmutableXChainOwnedCreateAccountClaimIdObject.class,
+    name = "XChainOwnedCreateAccountClaimID"),
+  @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
+  @JsonSubTypes.Type(value = ImmutableDidObject.class, name = "DID"),
+  @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
+  @JsonSubTypes.Type(value = ImmutableMpTokenIssuanceObject.class, name = "MPTokenIssuance"),
+  @JsonSubTypes.Type(value = ImmutableMpTokenObject.class, name = "MPToken"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -139,7 +150,67 @@ public interface LedgerObject {
     /**
      * The {@link LedgerEntryType} for {@code NfTokenPageObject} ledger objects.
      */
-    NFTOKEN_PAGE("NFTokenPage");
+    NFTOKEN_PAGE("NFTokenPage"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code AmmObject} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the AMM amendment is enabled on mainnet. Its API is subject
+     * to change.</p>
+     */
+    @Beta
+    AMM("AMM"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Bridge} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    BRIDGE("Bridge"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code XChainOwnedCreateAccountClaimID} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    XCHAIN_OWNED_CREATE_ACCOUNT_CLAIM_ID("XChainOwnedCreateAccountClaimID"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code XChainOwnedClaimID} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    XCHAIN_OWNED_CLAIM_ID("XChainOwnedClaimID"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code DID} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featureDID amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    DID("DID"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Oracle} ledger objects.
+     *
+     * <p>This constant will be marked {@link Beta} until the featurePriceOracle amendment is enabled on mainnet.
+     * Its API is subject to change.</p>
+     */
+    @Beta
+    ORACLE("Oracle"),
+
+    @Beta
+    MP_TOKEN_ISSUANCE("MPTokenIssuance"),
+
+    @Beta
+    MP_TOKEN("MPToken");
 
     private final String value;
 
@@ -154,6 +225,7 @@ public interface LedgerObject {
      * <p>Mostly used by Jackson for deserialization.
      *
      * @param value The {@link String} value of a {@link LedgerEntryType}.
+     *
      * @return A {@link LedgerEntryType}.
      */
     @JsonCreator

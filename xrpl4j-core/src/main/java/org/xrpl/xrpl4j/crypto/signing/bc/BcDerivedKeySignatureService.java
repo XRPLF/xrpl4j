@@ -46,6 +46,7 @@ import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
+import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -125,6 +126,11 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   @Override
   public Signature sign(final PrivateKeyReference privateKeyReference, final UnsignedClaim unsignedClaim) {
     return getTransactionSigner(privateKeyReference).sign(unsignedClaim);
+  }
+
+  @Override
+  public Signature sign(final PrivateKeyReference privateKeyReference, final Attestation attestation) {
+    return getTransactionSigner(privateKeyReference).sign(attestation);
   }
 
   @Override
@@ -292,6 +298,11 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
     public Signature sign(final UnsignedClaim unsignedClaim) {
       Objects.requireNonNull(unsignedClaim);
       return bcSignatureService.sign(this.privateKey, unsignedClaim);
+    }
+
+    public Signature sign(final Attestation attestation) {
+      Objects.requireNonNull(attestation);
+      return bcSignatureService.sign(this.privateKey, attestation);
     }
 
     public <T extends Transaction> Signature multiSign(final T transaction) {

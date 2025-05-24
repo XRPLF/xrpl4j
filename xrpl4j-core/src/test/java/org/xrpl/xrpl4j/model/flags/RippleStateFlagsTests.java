@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 public class RippleStateFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(8);
+    return getBooleanCombinations(10);
   }
 
   @ParameterizedTest
@@ -46,7 +46,9 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     boolean lsfLowNoRipple,
     boolean lsfHighNoRipple,
     boolean lsfLowFreeze,
-    boolean lsfHighFreeze
+    boolean lsfHighFreeze,
+    boolean lsfLowDeepFreeze,
+    boolean lsfHighDeepFreeze
   ) {
     long expectedFlags = getExpectedFlags(
       lsfLowReserve,
@@ -56,7 +58,9 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
       lsfLowNoRipple,
       lsfHighNoRipple,
       lsfLowFreeze,
-      lsfHighFreeze
+      lsfHighFreeze,
+      lsfLowDeepFreeze,
+      lsfHighDeepFreeze
     );
     RippleStateFlags flags = RippleStateFlags.of(expectedFlags);
 
@@ -69,6 +73,8 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     assertThat(flags.lsfHighNoRipple()).isEqualTo(lsfHighNoRipple);
     assertThat(flags.lsfLowFreeze()).isEqualTo(lsfLowFreeze);
     assertThat(flags.lsfHighFreeze()).isEqualTo(lsfHighFreeze);
+    assertThat(flags.lsfLowDeepFreeze()).isEqualTo(lsfLowDeepFreeze);
+    assertThat(flags.lsfHighDeepFreeze()).isEqualTo(lsfHighDeepFreeze);
   }
 
   @ParameterizedTest
@@ -81,7 +87,9 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     boolean lsfLowNoRipple,
     boolean lsfHighNoRipple,
     boolean lsfLowFreeze,
-    boolean lsfHighFreeze
+    boolean lsfHighFreeze,
+    boolean lsfLowDeepFreeze,
+    boolean lsfHighDeepFreeze
   ) throws JSONException, JsonProcessingException {
     long expectedFlags = getExpectedFlags(
       lsfLowReserve,
@@ -91,7 +99,9 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
       lsfLowNoRipple,
       lsfHighNoRipple,
       lsfLowFreeze,
-      lsfHighFreeze
+      lsfHighFreeze,
+      lsfLowDeepFreeze,
+      lsfHighDeepFreeze
     );
 
     RippleStateFlags flags = RippleStateFlags.of(expectedFlags);
@@ -113,7 +123,9 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
     boolean lsfLowNoRipple,
     boolean lsfHighNoRipple,
     boolean lsfLowFreeze,
-    boolean lsfHighFreeze
+    boolean lsfHighFreeze,
+    boolean lsfLowDeepFreeze,
+    boolean lsfHighDeepFreeze
   ) {
     return (lsfLowReserve ? RippleStateFlags.LOW_RESERVE.getValue() : 0L) |
       (lsfHighReserve ? RippleStateFlags.HIGH_RESERVE.getValue() : 0L) |
@@ -122,6 +134,8 @@ public class RippleStateFlagsTests extends AbstractFlagsTest {
       (lsfLowNoRipple ? RippleStateFlags.LOW_NO_RIPPLE.getValue() : 0L) |
       (lsfHighNoRipple ? RippleStateFlags.HIGH_NO_RIPPLE.getValue() : 0L) |
       (lsfLowFreeze ? RippleStateFlags.LOW_FREEZE.getValue() : 0L) |
-      (lsfHighFreeze ? RippleStateFlags.HIGH_FREEZE.getValue() : 0L);
+      (lsfHighFreeze ? RippleStateFlags.HIGH_FREEZE.getValue() : 0L) |
+      (lsfLowDeepFreeze ? RippleStateFlags.LOW_DEEP_FREEZE.getValue() : 0L) |
+      (lsfHighDeepFreeze ? RippleStateFlags.HIGH_DEEP_FREEZE.getValue() : 0L);
   }
 }

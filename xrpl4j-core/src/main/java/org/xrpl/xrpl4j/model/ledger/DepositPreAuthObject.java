@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.Transaction;
+import org.xrpl.xrpl4j.model.transactions.*;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Tracks a preauthorization from one account to another. {@link DepositPreAuth} transactions create these objects.
@@ -78,7 +78,15 @@ public interface DepositPreAuthObject extends LedgerObject {
    * @return The {@link Address} of the account to authorize.
    */
   @JsonProperty("Authorize")
-  Address authorize();
+  Optional<Address> authorize();
+
+  /**
+   * The credential(s) that received the preauthorization. (Any account with these credentials can send preauthorized payments).
+   *
+   * @return The list of {@link CredentialWrapper}.
+   */
+  @JsonProperty("AuthorizeCredentials")
+  Optional<List<CredentialWrapper>> authorizeCredentials();
 
   /**
    * A bit-map of boolean flags. No flags are defined for {@link DepositPreAuthObject}s, so this value is always 0.

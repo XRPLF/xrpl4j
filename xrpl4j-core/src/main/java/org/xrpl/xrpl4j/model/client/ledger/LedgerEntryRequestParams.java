@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
+import org.xrpl.xrpl4j.model.ledger.CredentialObject;
 
 import java.util.Optional;
 
@@ -197,6 +198,30 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
       .check(id)
       .ledgerSpecifier(ledgerSpecifier)
       .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link CredentialObject} ledger entry.
+   *
+   * <p>Note that although the rippled API allows you to specify either the Credential's ID or the [subject, issuer and credential_type]
+   * of the transaction that created the Credential, this class does not allow developers to request an
+   * {@link CredentialObject} by ID via this method. Instead, developers should use {@link LedgerEntryRequestParams#index()}
+   * and specify {@link CredentialObject} as the {@code ledgerObjectClass} parameter.</p>
+   *
+   * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject} on
+   *                        ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link CredentialObject}.
+   */
+  static LedgerEntryRequestParams<CredentialObject> credential(
+          CredentialLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<CredentialObject>builder()
+            .credential(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -465,6 +490,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<Hash256> check();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.CredentialObject} by {@link CredentialLedgerEntryParams}.
+   *
+   * @return An optionally-present {@link CredentialLedgerEntryParams}.
+   */
+  Optional<CredentialLedgerEntryParams> credential();
+
+  /**
    * Look up an {@link org.xrpl.xrpl4j.model.ledger.EscrowObject} by {@link EscrowLedgerEntryParams}.
    *
    * @return An optionally-present {@link EscrowLedgerEntryParams}.
@@ -576,6 +608,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (check().isPresent()) {
       return (Class<T>) CheckObject.class;
+    }
+
+    if (credential().isPresent()) {
+      return (Class<T>) CredentialObject.class;
     }
 
     if (escrow().isPresent()) {

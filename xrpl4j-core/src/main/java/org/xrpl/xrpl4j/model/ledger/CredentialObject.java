@@ -25,8 +25,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
+import org.xrpl.xrpl4j.model.flags.CredentialFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.CredentialUri;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
@@ -95,16 +97,15 @@ public interface CredentialObject extends LedgerObject {
     @JsonProperty("IssuerNode")
     String issuerNode();
 
+
     /**
-     * A bit-map of boolean flags. No flags are defined for {@link CredentialObject}, so this value is always 0.
+     * A set of boolean {@link CredentialFlags} containing options
+     * enabled for this object.
      *
-     * @return Always {@link Flags#UNSET}.
+     * @return The {@link CredentialFlags} for this object.
      */
     @JsonProperty("Flags")
-    @Value.Derived
-    default Flags flags() {
-        return Flags.UNSET;
-    }
+    CredentialFlags flags();
 
     /**
      * The identifying hash of the transaction that most recently modified this object.
@@ -121,6 +122,24 @@ public interface CredentialObject extends LedgerObject {
      */
     @JsonProperty("PreviousTxnLgrSeq")
     UnsignedInteger previousTransactionLedgerSequence();
+
+    /**
+     * A (hex-encoded) value to identify the type of credential from the issuer.
+     * This field is limited to a maximum length of 64 bytes.
+     *
+     * @return {@link CredentialType}.
+     */
+    @JsonProperty("CredentialType")
+    CredentialType credentialType();
+
+    /**
+     * Optional additional data about the credential (such as a link to the VC document).
+     * This field isn't checked for validity and is limited to a maximum length of 256 bytes.
+     *
+     * @return An {@link Optional} of type {@link CredentialUri}.
+     */
+    @JsonProperty("URI")
+    Optional<CredentialUri> uri();
 
     /**
      * Time after which the credential is expired, in

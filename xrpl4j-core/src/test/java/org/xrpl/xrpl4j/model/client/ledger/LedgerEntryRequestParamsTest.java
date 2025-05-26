@@ -2,6 +2,7 @@ package org.xrpl.xrpl4j.model.client.ledger;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_ADDRESS;
+import static org.xrpl.xrpl4j.crypto.TestConstants.EC_ADDRESS;
 import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,10 +32,11 @@ import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
-import org.xrpl.xrpl4j.model.transactions.OracleDocumentId;
-import org.xrpl.xrpl4j.model.transactions.XChainBridge;
+import org.xrpl.xrpl4j.model.ledger.CredentialObject;
+import org.xrpl.xrpl4j.model.transactions.*;
+
+import java.util.Collections;
+import java.util.List;
 
 class LedgerEntryRequestParamsTest extends AbstractJsonTest {
 
@@ -444,6 +446,59 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
   }
 
   @Test
+  void testDepositPreAuthParamsWithAuthorizedCredentials() throws JSONException, JsonProcessingException {
+    List<Credential> credentials = Collections.singletonList(
+      Credential
+          .builder()
+          .credentialType(CredentialType.of("6D795F63726564656E7469616C"))
+          .issuer(Address.of("rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os"))
+          .build()
+    );
+    DepositPreAuthLedgerEntryParams depositPreAuthParams = DepositPreAuthLedgerEntryParams.builder()
+            .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+            .authorizedCredentials(credentials)
+            .build();
+    LedgerEntryRequestParams<DepositPreAuthObject> params = LedgerEntryRequestParams.depositPreAuth(
+            depositPreAuthParams,
+            LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.depositPreAuth()).isNotEmpty().get().isEqualTo(depositPreAuthParams);
+    assertThat(params.ledgerObjectClass()).isEqualTo(DepositPreAuthObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.bridge()).isEmpty();
+    assertThat(params.oracle()).isEmpty();
+    assertThat(params.mptIssuance()).isEmpty();
+    assertThat(params.mpToken()).isEmpty();
+
+    String json =
+            "{\n" +
+                    "  \"deposit_preauth\": {\n" +
+                    "    \"owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                    "\"authorized_credentials\": [{    \n" +
+                    "            \"issuer\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\",\n" +
+                    "            \"credential_type\": \"6D795F63726564656E7469616C\"\n" +
+                    "      }]" +
+                    "  },\n" +
+                    "  \"binary\": false,\n" +
+                    "  \"ledger_index\": \"validated\"\n" +
+                    "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
   void testTicketParams() throws JSONException, JsonProcessingException {
     TicketLedgerEntryParams ticketParams = TicketLedgerEntryParams.builder()
       .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
@@ -711,6 +766,45 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
       "  \"binary\": false,\n" +
       "  \"ledger_index\": \"validated\"\n" +
       "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testCredentialParams() throws JSONException, JsonProcessingException {
+    CredentialLedgerEntryParams credentialParams = CredentialLedgerEntryParams.builder()
+            .credentialType(CredentialType.of("ABC"))
+            .issuer(ED_ADDRESS)
+            .subject(EC_ADDRESS)
+            .build();
+    LedgerEntryRequestParams<CredentialObject> params = LedgerEntryRequestParams.credential(
+            credentialParams,
+            LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(CredentialObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.mptIssuance()).isEmpty();
+    assertThat(params.credential()).isNotEmpty().get().isEqualTo(credentialParams);
+
+    String json =
+            "{\n" +
+            " \"credential\" : " + objectMapper.writeValueAsString(credentialParams) + ",\n" +
+            " \"binary\": false,\n" +
+            " \"ledger_index\": \"validated\"\n" +
+            "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }

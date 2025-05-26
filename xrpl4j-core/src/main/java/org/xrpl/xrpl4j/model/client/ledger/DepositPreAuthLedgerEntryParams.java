@@ -1,9 +1,14 @@
 package org.xrpl.xrpl4j.model.client.ledger;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Parameters that uniquely identify a {@link org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject} on ledger that can be
@@ -35,6 +40,14 @@ public interface DepositPreAuthLedgerEntryParams {
    *
    * @return An {@link Address}.
    */
-  Address authorized();
+  Optional<Address> authorized();
+
+  /**
+   * A list of {@link Credential} that received the preauthorization.
+   *
+   * @return An {@link Credential}.
+   */
+  @JsonProperty("authorized_credentials")
+  Optional<List<Credential>> authorizedCredentials();
 
 }

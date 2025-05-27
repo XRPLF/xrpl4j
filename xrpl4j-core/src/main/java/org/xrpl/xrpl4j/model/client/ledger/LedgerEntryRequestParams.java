@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
+import org.xrpl.xrpl4j.model.ledger.CredentialObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -29,7 +30,6 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.XChainBridge;
-import org.xrpl.xrpl4j.model.ledger.CredentialObject;
 
 import java.util.Optional;
 
@@ -63,19 +63,18 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param ledgerObjectClass The class of {@link LedgerObject} that should be returned by rippled as a {@link Class} of
    *                          {@link T}.
    * @param <T>               The actual type of {@link LedgerObject} that should be returned by rippled.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link T}.
    */
   static <T extends LedgerObject> LedgerEntryRequestParams<T> index(
-    Hash256 id,
-    Class<T> ledgerObjectClass,
-    LedgerSpecifier ledgerSpecifier
+          Hash256 id,
+          Class<T> ledgerObjectClass,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<T>builder()
-      .index(id)
-      .ledgerObjectClass(ledgerObjectClass)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .index(id)
+            .ledgerObjectClass(ledgerObjectClass)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -85,17 +84,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param id              The index or ID of the ledger entry as a {@link Hash256}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link LedgerObject}.
    */
   static LedgerEntryRequestParams<LedgerObject> index(
-    Hash256 id,
-    LedgerSpecifier ledgerSpecifier
+          Hash256 id,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.builder()
-      .index(id)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .index(id)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -103,17 +101,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param address         The {@link Address} of the account who owns the {@link AccountRootObject}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link AccountRootObject}.
    */
   static LedgerEntryRequestParams<AccountRootObject> accountRoot(
-    Address address,
-    LedgerSpecifier ledgerSpecifier
+          Address address,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<AccountRootObject>builder()
-      .accountRoot(address)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .accountRoot(address)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -126,17 +123,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param params          The {@link AmmLedgerEntryParams} that uniquely identify the {@link AmmObject} on ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link AmmObject}.
    */
   static LedgerEntryRequestParams<AmmObject> amm(
-    AmmLedgerEntryParams params,
-    LedgerSpecifier ledgerSpecifier
+          AmmLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<AmmObject>builder()
-      .amm(params)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .amm(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -150,17 +146,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param params          The {@link OfferLedgerEntryParams} that uniquely identify the {@link OfferObject} on
    *                        ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link OfferObject}.
    */
   static LedgerEntryRequestParams<OfferObject> offer(
-    OfferLedgerEntryParams params,
-    LedgerSpecifier ledgerSpecifier
+          OfferLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<OfferObject>builder()
-      .offer(params)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .offer(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -169,17 +164,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param params          The {@link RippleStateLedgerEntryParams} that uniquely identify the
    *                        {@link RippleStateObject} on ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link RippleStateObject}.
    */
   static LedgerEntryRequestParams<RippleStateObject> rippleState(
-    RippleStateLedgerEntryParams params,
-    LedgerSpecifier ledgerSpecifier
+          RippleStateLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<RippleStateObject>builder()
-      .rippleState(params)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .rippleState(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -187,31 +181,31 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param id              The index or ID of the {@link CheckObject}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link RippleStateObject}.
    */
   static LedgerEntryRequestParams<CheckObject> check(
-    Hash256 id,
-    LedgerSpecifier ledgerSpecifier
+          Hash256 id,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<CheckObject>builder()
-      .check(id)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .check(id)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link CredentialObject} ledger entry.
    *
-   * <p>Note that although the rippled API allows you to specify either the Credential's ID or the [subject, issuer and credential_type]
-   * of the transaction that created the Credential, this class does not allow developers to request an
-   * {@link CredentialObject} by ID via this method. Instead, developers should use {@link LedgerEntryRequestParams#index()}
+   * <p>Note that although the rippled API allows you to specify either the Credential's ID
+   * or the [subject, issuer and credential_type] of the transaction that created the Credential,
+   * this class does not allow developers to request an
+   * {@link CredentialObject} by ID via this method.
+   * Instead, developers should use {@link LedgerEntryRequestParams#index()}
    * and specify {@link CredentialObject} as the {@code ledgerObjectClass} parameter.</p>
    *
-   * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject} on
-   *                        ledger.
+   * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject}
+   *                        on ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link CredentialObject}.
    */
   static LedgerEntryRequestParams<CredentialObject> credential(
@@ -235,17 +229,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param params          The {@link EscrowLedgerEntryParams} that uniquely identify the {@link EscrowObject} on
    *                        ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link EscrowObject}.
    */
   static LedgerEntryRequestParams<EscrowObject> escrow(
-    EscrowLedgerEntryParams params,
-    LedgerSpecifier ledgerSpecifier
+          EscrowLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<EscrowObject>builder()
-      .escrow(params)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .escrow(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -253,17 +246,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param id              The index or ID of the {@link PayChannelObject}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link PayChannelObject}.
    */
   static LedgerEntryRequestParams<PayChannelObject> paymentChannel(
-    Hash256 id,
-    LedgerSpecifier ledgerSpecifier
+          Hash256 id,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<PayChannelObject>builder()
-      .paymentChannel(id)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .paymentChannel(id)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -277,17 +269,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param params          The {@link DepositPreAuthLedgerEntryParams} that uniquely identify the
    *                        {@link DepositPreAuthObject} on ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link DepositPreAuthObject}.
    */
   static LedgerEntryRequestParams<DepositPreAuthObject> depositPreAuth(
-    DepositPreAuthLedgerEntryParams params,
-    LedgerSpecifier ledgerSpecifier
+          DepositPreAuthLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<DepositPreAuthObject>builder()
-      .depositPreAuth(params)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .depositPreAuth(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -301,17 +292,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param params          The {@link TicketLedgerEntryParams} that uniquely identify the {@link TicketObject} on
    *                        ledger.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link TicketObject}.
    */
   static LedgerEntryRequestParams<TicketObject> ticket(
-    TicketLedgerEntryParams params,
-    LedgerSpecifier ledgerSpecifier
+          TicketLedgerEntryParams params,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<TicketObject>builder()
-      .ticket(params)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .ticket(params)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -319,17 +309,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param id              The index or ID of the {@link NfTokenPageObject}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link NfTokenPageObject}.
    */
   static LedgerEntryRequestParams<NfTokenPageObject> nftPage(
-    Hash256 id,
-    LedgerSpecifier ledgerSpecifier
+          Hash256 id,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<NfTokenPageObject>builder()
-      .nftPage(id)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .nftPage(id)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -338,19 +327,18 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @param bridgeAccount   The address of the account that owned the {@link BridgeObject}.
    * @param bridge          The bridge spec, as an {@link XChainBridge}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link NfTokenPageObject}.
    */
   static LedgerEntryRequestParams<BridgeObject> bridge(
-    Address bridgeAccount,
-    XChainBridge bridge,
-    LedgerSpecifier ledgerSpecifier
+          Address bridgeAccount,
+          XChainBridge bridge,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<BridgeObject>builder()
-      .bridgeAccount(bridgeAccount)
-      .bridge(bridge)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .bridgeAccount(bridgeAccount)
+            .bridge(bridge)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -358,17 +346,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param address         The address of the owner of the {@link DidObject}.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link DidObject}.
    */
   static LedgerEntryRequestParams<DidObject> did(
-    Address address,
-    LedgerSpecifier ledgerSpecifier
+          Address address,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<DidObject>builder()
-      .did(address)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .did(address)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -376,17 +363,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param oracle          The {@link OracleLedgerEntryParams} specifying the oracle.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
    */
   static LedgerEntryRequestParams<OracleObject> oracle(
-    OracleLedgerEntryParams oracle,
-    LedgerSpecifier ledgerSpecifier
+          OracleLedgerEntryParams oracle,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<OracleObject>builder()
-      .oracle(oracle)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .oracle(oracle)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -394,17 +380,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param issuanceId      The {@link MpTokenIssuanceId} of the token.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
    */
   static LedgerEntryRequestParams<MpTokenIssuanceObject> mpTokenIssuance(
-    MpTokenIssuanceId issuanceId,
-    LedgerSpecifier ledgerSpecifier
+          MpTokenIssuanceId issuanceId,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<MpTokenIssuanceObject>builder()
-      .mptIssuance(issuanceId)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .mptIssuance(issuanceId)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**
@@ -412,17 +397,16 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    *
    * @param mpToken         The {@link MpTokenLedgerEntryParams} specifying the MPToken.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
-   *
    * @return A {@link LedgerEntryRequestParams} for {@link OracleObject}.
    */
   static LedgerEntryRequestParams<MpTokenObject> mpToken(
-    MpTokenLedgerEntryParams mpToken,
-    LedgerSpecifier ledgerSpecifier
+          MpTokenLedgerEntryParams mpToken,
+          LedgerSpecifier ledgerSpecifier
   ) {
     return ImmutableLedgerEntryRequestParams.<MpTokenObject>builder()
-      .mpToken(mpToken)
-      .ledgerSpecifier(ledgerSpecifier)
-      .build();
+            .mpToken(mpToken)
+            .ledgerSpecifier(ledgerSpecifier)
+            .build();
   }
 
   /**

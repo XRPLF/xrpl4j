@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -108,10 +108,18 @@ public interface DepositPreAuth extends Transaction {
   @Value.Check
   default void validateExactOneFieldPresence() {
     int fieldsPresent = 0;
-    if (authorize().isPresent()) fieldsPresent++;
-    if (unauthorize().isPresent()) fieldsPresent++;
-    if (authorizeCredentials().isPresent()) fieldsPresent++;
-    if (unauthorizeCredentials().isPresent()) fieldsPresent++;
+    if (authorize().isPresent()) {
+      fieldsPresent++;
+    }
+    if (unauthorize().isPresent()) {
+      fieldsPresent++;
+    }
+    if (authorizeCredentials().isPresent()) {
+      fieldsPresent++;
+    }
+    if (unauthorizeCredentials().isPresent()) {
+      fieldsPresent++;
+    }
 
     Preconditions.checkArgument(fieldsPresent == 1,
             "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");

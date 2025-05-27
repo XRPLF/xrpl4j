@@ -20,27 +20,27 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * =========================LICENSE_END==================================
  */
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.xrpl.xrpl4j.model.transactions.CredentialID;
 
 import java.io.IOException;
 
 /**
- * Custom Jackson serializer for {@link CredentialID}s.
+ * Custom Jackson deserializer for {@link CredentialID}'s.
  */
-public class CredentialIDSerializer extends StdScalarSerializer<CredentialID> {
+public class CredentialIdDeserializer extends StdDeserializer<CredentialID> {
 
   /**
    * No-args constructor.
    */
-  public CredentialIDSerializer() {
-    super(CredentialID.class, false);
+  public CredentialIdDeserializer() {
+    super(CredentialID.class);
   }
 
   @Override
-  public void serialize(CredentialID credentialID, JsonGenerator gen, SerializerProvider provider) throws IOException {
-    gen.writeString(credentialID.value());
+  public CredentialID deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+    return CredentialID.of(jsonParser.getText());
   }
 }

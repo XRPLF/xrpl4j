@@ -35,28 +35,28 @@ import org.xrpl.xrpl4j.model.transactions.CredentialType;
 @JsonDeserialize(as = ImmutableCredential.class)
 public interface Credential {
 
-    /**
-     * Construct a builder for this class.
-     *
-     * @return An {@link ImmutableCredential.Builder}.
-     */
-    static ImmutableCredential.Builder builder() {
-        return ImmutableCredential.builder();
-    }
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCredential.Builder}.
+   */
+  static ImmutableCredential.Builder builder() {
+    return ImmutableCredential.builder();
+  }
 
-    /**
-     * The issuer of the credential.
-     *
-     * @return The {@link Address} of the issuer this credential.
-     */
-    @JsonProperty("issuer")
-    Address issuer();
+  /**
+   * The issuer of the credential.
+   *
+   * @return The {@link Address} of the issuer this credential.
+   */
+  @JsonProperty("issuer")
+  Address issuer();
 
-    /**
-     * A (hex-encoded) value to identify the type of credential from the issuer.
-     *
-     * @return The {@link CredentialType} denoting the CredentialType
-     */
-    @JsonProperty("credential_type")
-    CredentialType credentialType();
+  /**
+   * A (hex-encoded) value to identify the type of credential from the issuer.
+   *
+   * @return The {@link CredentialType} denoting the CredentialType
+   */
+  @JsonProperty("credential_type")
+  CredentialType credentialType();
 }

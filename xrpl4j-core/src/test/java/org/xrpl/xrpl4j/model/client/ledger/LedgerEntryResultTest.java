@@ -34,8 +34,17 @@ import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
 import org.xrpl.xrpl4j.model.ledger.VoteEntryWrapper;
-import org.xrpl.xrpl4j.model.transactions.*;
+import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Credential;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
+import org.xrpl.xrpl4j.model.transactions.TradingFee;
+import org.xrpl.xrpl4j.model.transactions.VoteWeight;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Collections;
 import java.util.List;
@@ -452,45 +461,45 @@ class LedgerEntryResultTest extends AbstractJsonTest {
   @Test
   void testCredentialResult() throws JSONException, JsonProcessingException {
     LedgerEntryResult<CredentialObject> result = LedgerEntryResult.<CredentialObject>builder()
-            .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3110416)))
-            .ledgerHash(Hash256.of("74B644AB7D1E043836A70FAFDEAFA6EF8791FE01F129351A9DA231B4E5A91FBF"))
-            .validated(true)
-            .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
-            .node(
-                    CredentialObject.builder()
-                            .credentialType(CredentialType.of("4472697665722773206C6963656E7365"))
-                            .issuer(Address.of("rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz"))
-                            .subject(Address.of("r9EKPUSDehySNoxqBNuezALVgynRBMNpYi"))
-                            .issuerNode("0")
-                            .previousTxnId(Hash256.of("FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF"))
-                            .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3105995))
-                            .subjectNode("0")
-                            .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
-                            .flags(CredentialFlags.ACCEPTED)
-                            .build()
-            )
-            .status("success")
-            .build();
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3110416)))
+      .ledgerHash(Hash256.of("74B644AB7D1E043836A70FAFDEAFA6EF8791FE01F129351A9DA231B4E5A91FBF"))
+      .validated(true)
+      .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
+      .node(
+        CredentialObject.builder()
+          .credentialType(CredentialType.of("4472697665722773206C6963656E7365"))
+          .issuer(Address.of("rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz"))
+          .subject(Address.of("r9EKPUSDehySNoxqBNuezALVgynRBMNpYi"))
+          .issuerNode("0")
+          .previousTxnId(Hash256.of("FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF"))
+          .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3105995))
+          .subjectNode("0")
+          .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
+          .flags(CredentialFlags.ACCEPTED)
+          .build()
+      )
+      .status("success")
+      .build();
 
-    String json =  "{\n" +
-            "        \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\",\n" +
-            "        \"ledger_hash\": \"74B644AB7D1E043836A70FAFDEAFA6EF8791FE01F129351A9DA231B4E5A91FBF\",\n" +
-            "        \"ledger_index\": 3110416,\n" +
-            "        \"node\": {\n" +
-            "            \"CredentialType\": \"4472697665722773206C6963656E7365\",\n" +
-            "            \"Flags\": 65536,\n" +
-            "            \"Issuer\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\",\n" +
-            "            \"IssuerNode\": \"0\",\n" +
-            "            \"LedgerEntryType\": \"Credential\",\n" +
-            "            \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\",\n" +
-            "            \"PreviousTxnLgrSeq\": 3105995,\n" +
-            "            \"Subject\": \"r9EKPUSDehySNoxqBNuezALVgynRBMNpYi\",\n" +
-            "            \"SubjectNode\": \"0\",\n" +
-            "            \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"\n" +
-            "        },\n" +
-            "        \"status\": \"success\",\n" +
-            "        \"validated\": true\n" +
-            " }";
+    String json = "{\n" +
+      "        \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\",\n" +
+      "        \"ledger_hash\": \"74B644AB7D1E043836A70FAFDEAFA6EF8791FE01F129351A9DA231B4E5A91FBF\",\n" +
+      "        \"ledger_index\": 3110416,\n" +
+      "        \"node\": {\n" +
+      "            \"CredentialType\": \"4472697665722773206C6963656E7365\",\n" +
+      "            \"Flags\": 65536,\n" +
+      "            \"Issuer\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\",\n" +
+      "            \"IssuerNode\": \"0\",\n" +
+      "            \"LedgerEntryType\": \"Credential\",\n" +
+      "            \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\",\n" +
+      "            \"PreviousTxnLgrSeq\": 3105995,\n" +
+      "            \"Subject\": \"r9EKPUSDehySNoxqBNuezALVgynRBMNpYi\",\n" +
+      "            \"SubjectNode\": \"0\",\n" +
+      "            \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"\n" +
+      "        },\n" +
+      "        \"status\": \"success\",\n" +
+      "        \"validated\": true\n" +
+      " }";
 
     assertCanSerializeAndDeserialize(result, json);
   }
@@ -590,56 +599,56 @@ class LedgerEntryResultTest extends AbstractJsonTest {
   @Test
   void testDepositPreAuthWithAuthorizedCredResult() throws JSONException, JsonProcessingException {
     List<CredentialWrapper> credentials = Collections.singletonList(
-            CredentialWrapper.builder().credential(
-            Credential
-                    .builder()
-                    .credentialType(CredentialType.of("6D795F63726564656E7469616C"))
-                    .issuer(Address.of("rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os"))
-                    .build()).build()
+      CredentialWrapper.builder().credential(
+        Credential
+          .builder()
+          .credentialType(CredentialType.of("6D795F63726564656E7469616C"))
+          .issuer(Address.of("rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os"))
+          .build()).build()
     );
 
     LedgerEntryResult<DepositPreAuthObject> result = LedgerEntryResult.<DepositPreAuthObject>builder()
-            .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3113386)))
-            .ledgerHash(Hash256.of("F51471F3AD6080FDDCD5F5E048873B3F3E208FDF16A1C5015DB9EEEEF18A64A9"))
-            .validated(true)
-            .index(Hash256.of("7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A"))
-            .node(
-                DepositPreAuthObject.builder()
-                  .account(Address.of("rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os"))
-                  .authorizeCredentials(credentials)
-                  .ownerNode("0")
-                  .previousTransactionId(Hash256.of("3D4665AE6874D7E4E34B45E906FF970CD820EB42B1DBD238588E845466D1CE61"))
-                  .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3113101))
-                  .index(Hash256.of("7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A"))
-                  .build()
-            )
-            .status("success")
-            .build();
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3113386)))
+      .ledgerHash(Hash256.of("F51471F3AD6080FDDCD5F5E048873B3F3E208FDF16A1C5015DB9EEEEF18A64A9"))
+      .validated(true)
+      .index(Hash256.of("7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A"))
+      .node(
+        DepositPreAuthObject.builder()
+          .account(Address.of("rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os"))
+          .authorizeCredentials(credentials)
+          .ownerNode("0")
+          .previousTransactionId(Hash256.of("3D4665AE6874D7E4E34B45E906FF970CD820EB42B1DBD238588E845466D1CE61"))
+          .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3113101))
+          .index(Hash256.of("7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A"))
+          .build()
+      )
+      .status("success")
+      .build();
 
     String json = "{\n" +
-            "        \"index\": \"7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A\",\n" +
-            "        \"ledger_hash\": \"F51471F3AD6080FDDCD5F5E048873B3F3E208FDF16A1C5015DB9EEEEF18A64A9\",\n" +
-            "        \"ledger_index\": 3113386,\n" +
-            "        \"node\": {\n" +
-            "            \"Account\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\",\n" +
-            "            \"AuthorizeCredentials\": [\n" +
-            "                {\n" +
-            "                    \"Credential\": {\n" +
-            "                        \"CredentialType\": \"6D795F63726564656E7469616C\",\n" +
-            "                        \"Issuer\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\"\n" +
-            "                    }\n" +
-            "                }\n" +
-            "            ],\n" +
-            "            \"Flags\": 0,\n" +
-            "            \"LedgerEntryType\": \"DepositPreauth\",\n" +
-            "            \"OwnerNode\": \"0\",\n" +
-            "            \"PreviousTxnID\": \"3D4665AE6874D7E4E34B45E906FF970CD820EB42B1DBD238588E845466D1CE61\",\n" +
-            "            \"PreviousTxnLgrSeq\": 3113101,\n" +
-            "            \"index\": \"7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A\"\n" +
-            "        },\n" +
-            "        \"status\": \"success\",\n" +
-            "        \"validated\": true\n" +
-            "    }";
+      "        \"index\": \"7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A\",\n" +
+      "        \"ledger_hash\": \"F51471F3AD6080FDDCD5F5E048873B3F3E208FDF16A1C5015DB9EEEEF18A64A9\",\n" +
+      "        \"ledger_index\": 3113386,\n" +
+      "        \"node\": {\n" +
+      "            \"Account\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\",\n" +
+      "            \"AuthorizeCredentials\": [\n" +
+      "                {\n" +
+      "                    \"Credential\": {\n" +
+      "                        \"CredentialType\": \"6D795F63726564656E7469616C\",\n" +
+      "                        \"Issuer\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\"\n" +
+      "                    }\n" +
+      "                }\n" +
+      "            ],\n" +
+      "            \"Flags\": 0,\n" +
+      "            \"LedgerEntryType\": \"DepositPreauth\",\n" +
+      "            \"OwnerNode\": \"0\",\n" +
+      "            \"PreviousTxnID\": \"3D4665AE6874D7E4E34B45E906FF970CD820EB42B1DBD238588E845466D1CE61\",\n" +
+      "            \"PreviousTxnLgrSeq\": 3113101,\n" +
+      "            \"index\": \"7587E9C2F7CFCD74D924614C2FFBAD6D590590052B69CCA2BA25DAEBB678067A\"\n" +
+      "        },\n" +
+      "        \"status\": \"success\",\n" +
+      "        \"validated\": true\n" +
+      "    }";
 
     assertCanSerializeAndDeserialize(result, json);
   }

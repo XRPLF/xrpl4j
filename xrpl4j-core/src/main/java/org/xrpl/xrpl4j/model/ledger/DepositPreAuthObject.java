@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.ledger;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
-import org.xrpl.xrpl4j.model.transactions.*;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
+import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
+import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,7 +85,7 @@ public interface DepositPreAuthObject extends LedgerObject {
   Optional<Address> authorize();
 
   /**
-   * The credential(s) that received the preauthorization. (Any account with these credentials can send preauthorized payments).
+   * The credential(s) that received the preauthorization.
    *
    * @return The list of {@link CredentialWrapper}.
    */

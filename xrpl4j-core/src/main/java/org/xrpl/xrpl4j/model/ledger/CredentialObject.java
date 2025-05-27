@@ -43,117 +43,117 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableCredentialObject.class)
 public interface CredentialObject extends LedgerObject {
 
-    /**
-     * Construct a builder for this class.
-     *
-     * @return An {@link ImmutableCredentialObject.Builder}.
-     */
-    static ImmutableCredentialObject.Builder builder() {
-        return ImmutableCredentialObject.builder();
-    }
+  /**
+   * Construct a builder for this class.
+   *
+   * @return An {@link ImmutableCredentialObject.Builder}.
+   */
+  static ImmutableCredentialObject.Builder builder() {
+    return ImmutableCredentialObject.builder();
+  }
 
-    /**
-     * Indicates that this object is a {@link CredentialObject} object.
-     *
-     * @return Always {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#CREDENTIAL}.
-     */
-    @JsonProperty("LedgerEntryType")
-    @Value.Derived
-    default LedgerEntryType ledgerEntryType() {
-        return LedgerEntryType.CREDENTIAL;
-    }
+  /**
+   * Indicates that this object is a {@link CredentialObject} object.
+   *
+   * @return Always {@link org.xrpl.xrpl4j.model.ledger.LedgerObject.LedgerEntryType#CREDENTIAL}.
+   */
+  @JsonProperty("LedgerEntryType")
+  @Value.Derived
+  default LedgerEntryType ledgerEntryType() {
+    return LedgerEntryType.CREDENTIAL;
+  }
 
-    /**
-     * The account that this credential is for.
-     *
-     * @return The {@link Address} of the credential recipient.
-     */
-    @JsonProperty("Subject")
-    Address subject();
+  /**
+   * The account that this credential is for.
+   *
+   * @return The {@link Address} of the credential recipient.
+   */
+  @JsonProperty("Subject")
+  Address subject();
 
-    /**
-     * A hint indicating which page of the subject's owner directory links to this entry,
-     * in case the directory consists of multiple pages.
-     *
-     * @return A {@link String} containing the subject node hint.
-     */
-    @JsonProperty("SubjectNode")
-    String subjectNode();
+  /**
+   * A hint indicating which page of the subject's owner directory links to this entry,
+   * in case the directory consists of multiple pages.
+   *
+   * @return A {@link String} containing the subject node hint.
+   */
+  @JsonProperty("SubjectNode")
+  String subjectNode();
 
-    /**
-     * The account that issued this credential.
-     *
-     * @return The {@link Address} of the credential issuer.
-     */
-    @JsonProperty("Issuer")
-    Address issuer();
+  /**
+   * The account that issued this credential.
+   *
+   * @return The {@link Address} of the credential issuer.
+   */
+  @JsonProperty("Issuer")
+  Address issuer();
 
-    /**
-     * A hint indicating which page of the issuer's directory links to this entry,
-     * in case the directory consists of multiple pages.
-     *
-     * @return A {@link String} containing the issuer node hint.
-     */
-    @JsonProperty("IssuerNode")
-    String issuerNode();
+  /**
+   * A hint indicating which page of the issuer's directory links to this entry,
+   * in case the directory consists of multiple pages.
+   *
+   * @return A {@link String} containing the issuer node hint.
+   */
+  @JsonProperty("IssuerNode")
+  String issuerNode();
 
 
-    /**
-     * A set of boolean {@link CredentialFlags} containing options
-     * enabled for this object.
-     *
-     * @return The {@link CredentialFlags} for this object.
-     */
-    @JsonProperty("Flags")
-    CredentialFlags flags();
+  /**
+   * A set of boolean {@link CredentialFlags} containing options
+   * enabled for this object.
+   *
+   * @return The {@link CredentialFlags} for this object.
+   */
+  @JsonProperty("Flags")
+  CredentialFlags flags();
 
-    /**
-     * The identifying hash of the transaction that most recently modified this object.
-     *
-     * @return A {@link Hash256} containing the previous transaction hash.
-     */
-    @JsonProperty("PreviousTxnID")
-    Hash256 previousTxnId();
+  /**
+   * The identifying hash of the transaction that most recently modified this object.
+   *
+   * @return A {@link Hash256} containing the previous transaction hash.
+   */
+  @JsonProperty("PreviousTxnID")
+  Hash256 previousTxnId();
 
-    /**
-     * The index of the ledger that contains the transaction that most recently modified this object.
-     *
-     * @return A {@link UnsignedInteger} representing the previous transaction sequence.
-     */
-    @JsonProperty("PreviousTxnLgrSeq")
-    UnsignedInteger previousTransactionLedgerSequence();
+  /**
+   * The index of the ledger that contains the transaction that most recently modified this object.
+   *
+   * @return A {@link UnsignedInteger} representing the previous transaction sequence.
+   */
+  @JsonProperty("PreviousTxnLgrSeq")
+  UnsignedInteger previousTransactionLedgerSequence();
 
-    /**
-     * A (hex-encoded) value to identify the type of credential from the issuer.
-     * This field is limited to a maximum length of 64 bytes.
-     *
-     * @return {@link CredentialType}.
-     */
-    @JsonProperty("CredentialType")
-    CredentialType credentialType();
+  /**
+   * A (hex-encoded) value to identify the type of credential from the issuer.
+   * This field is limited to a maximum length of 64 bytes.
+   *
+   * @return {@link CredentialType}.
+   */
+  @JsonProperty("CredentialType")
+  CredentialType credentialType();
 
-    /**
-     * Optional additional data about the credential (such as a link to the VC document).
-     * This field isn't checked for validity and is limited to a maximum length of 256 bytes.
-     *
-     * @return An {@link Optional} of type {@link CredentialUri}.
-     */
-    @JsonProperty("URI")
-    Optional<CredentialUri> uri();
+  /**
+   * Optional additional data about the credential (such as a link to the VC document).
+   * This field isn't checked for validity and is limited to a maximum length of 256 bytes.
+   *
+   * @return An {@link Optional} of type {@link CredentialUri}.
+   */
+  @JsonProperty("URI")
+  Optional<CredentialUri> uri();
 
-    /**
-     * Time after which the credential is expired, in
-     * <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>.
-     *
-     * @return An {@link Optional} of type {@link UnsignedInteger}.
-     */
-    @JsonProperty("Expiration")
-    Optional<UnsignedInteger> expiration();
+  /**
+   * Time after which the credential is expired, in
+   * <a href="https://xrpl.org/basic-data-types.html#specifying-time">seconds since the Ripple Epoch</a>.
+   *
+   * @return An {@link Optional} of type {@link UnsignedInteger}.
+   */
+  @JsonProperty("Expiration")
+  Optional<UnsignedInteger> expiration();
 
-    /**
-     * The unique ID of the {@link CredentialObject}.
-     *
-     * @return A {@link Hash256}.
-     */
-    Hash256 index();
+  /**
+   * The unique ID of the {@link CredentialObject}.
+   *
+   * @return A {@link Hash256}.
+   */
+  Hash256 index();
 }

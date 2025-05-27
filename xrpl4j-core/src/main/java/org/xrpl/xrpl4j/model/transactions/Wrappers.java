@@ -34,7 +34,55 @@ import org.immutables.value.Value.Default;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
 import org.xrpl.xrpl4j.model.immutables.Wrapped;
 import org.xrpl.xrpl4j.model.immutables.Wrapper;
-import org.xrpl.xrpl4j.model.jackson.modules.*;
+import org.xrpl.xrpl4j.model.jackson.modules.AddressDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AddressSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.DidUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.Hash256Deserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.Hash256Serializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MarkerDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MarkerSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenIssuanceIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenMetadataSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.MpTokenNumericAmountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NetworkIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NfTokenIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.NfTokenUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleProviderDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.OracleUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.VoteWeightSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainClaimIdSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XChainCountSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -149,7 +197,6 @@ public class Wrappers {
      * drops), this value will never overflow Java's signed long number.
      *
      * @param drops A long representing the number of drops of XRP of this amount.
-     *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
     public static XrpCurrencyAmount ofDrops(final long drops) {
@@ -167,7 +214,6 @@ public class Wrappers {
      * Constructs an {@link XrpCurrencyAmount} using a number of drops.
      *
      * @param drops An {@link UnsignedLong} representing the number of drops of XRP of this amount.
-     *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
     public static XrpCurrencyAmount ofDrops(final UnsignedLong drops) {
@@ -182,7 +228,6 @@ public class Wrappers {
      *
      * @param drops      An {@link UnsignedLong} representing the number of drops of XRP of this amount.
      * @param isNegative Indicates whether this amount is positive or negative.
-     *
      * @return An {@link XrpCurrencyAmount} of {@code drops}.
      */
     public static XrpCurrencyAmount ofDrops(final UnsignedLong drops, final boolean isNegative) {
@@ -198,7 +243,6 @@ public class Wrappers {
      * Constructs an {@link XrpCurrencyAmount} using decimal amount of XRP.
      *
      * @param amount A {@link BigDecimal} amount of XRP.
-     *
      * @return An {@link XrpCurrencyAmount} of the amount of drops in {@code amount}.
      */
     public static XrpCurrencyAmount ofXrp(final BigDecimal amount) {
@@ -269,7 +313,6 @@ public class Wrappers {
      * Adds another {@link XrpCurrencyAmount} to this amount.
      *
      * @param other An {@link XrpCurrencyAmount} to add to this.
-     *
      * @return The sum of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
@@ -284,7 +327,6 @@ public class Wrappers {
      * Subtract another {@link XrpCurrencyAmount} from this amount.
      *
      * @param other An {@link XrpCurrencyAmount} to subtract from this.
-     *
      * @return The difference of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
@@ -299,7 +341,6 @@ public class Wrappers {
      * Multiplies this amount by another {@link XrpCurrencyAmount}.
      *
      * @param other An {@link XrpCurrencyAmount} to multiply to this by.
-     *
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount times(XrpCurrencyAmount other) {
@@ -390,7 +431,6 @@ public class Wrappers {
      * Constructs an {@link NfTokenUri} using a String value.
      *
      * @param plaintext A string value representing the Uri in plaintext.
-     *
      * @return An {@link NfTokenUri} of plaintext.
      */
     public static NfTokenUri ofPlainText(String plaintext) {
@@ -434,7 +474,6 @@ public class Wrappers {
      * between {@code 0} and {@code 50.000}.</p>
      *
      * @param percent of type {@link BigDecimal}
-     *
      * @return {@link TransferFee}
      */
     public static TransferFee ofPercent(BigDecimal percent) {
@@ -479,7 +518,6 @@ public class Wrappers {
      * 4,294,967,295, the largest unsigned 32-bit integer.
      *
      * @param networkId A {@code long}.
-     *
      * @return A {@link NetworkId}.
      */
     public static NetworkId of(long networkId) {
@@ -509,7 +547,6 @@ public class Wrappers {
      * Construct {@link TradingFee} as a percentage value.
      *
      * @param percent The trading fee, as a {@link BigDecimal}.
-     *
      * @return A {@link TradingFee}.
      */
     public static TradingFee ofPercent(BigDecimal percent) {
@@ -865,8 +902,8 @@ public class Wrappers {
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = CredentialID.class, using = CredentialIDSerializer.class)
-  @JsonDeserialize(as = CredentialID.class, using = CredentialIDDeserializer.class)
+  @JsonSerialize(as = CredentialID.class, using = CredentialIdSerializer.class)
+  @JsonDeserialize(as = CredentialID.class, using = CredentialIdDeserializer.class)
   @Beta
   abstract static class _CredentialID extends Wrapper<String> implements Serializable {
 

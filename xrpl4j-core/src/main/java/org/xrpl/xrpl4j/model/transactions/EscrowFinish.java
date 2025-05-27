@@ -33,18 +33,15 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
-import com.ripple.cryptoconditions.PreimageSha256Fulfillment.AbstractPreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
-import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
-import java.util.List;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,9 +73,7 @@ public interface EscrowFinish extends Transaction {
    * @param currentLedgerBaseFeeDrops The number of drops that the ledger demands at present.
    * @param fulfillment               The {@link Fulfillment} that is being presented to the ledger for computation
    *                                  purposes.
-   *
    * @return An {@link XrpCurrencyAmount} representing the computed fee.
-   *
    * @see "https://xrpl.org/escrowfinish.html"
    */
   static XrpCurrencyAmount computeFee(

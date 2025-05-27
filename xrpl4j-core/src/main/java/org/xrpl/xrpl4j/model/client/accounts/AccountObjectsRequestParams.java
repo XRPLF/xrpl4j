@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,7 +55,6 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * Construct an {@link AccountObjectsRequestParams} for a given account and otherwise default parameters.
    *
    * @param classicAddress The classic {@link Address} of the account to request objects for.
-   *
    * @return An {@link AccountObjectsRequestParams} for the given {@link Address}.
    */
   static AccountObjectsRequestParams of(Address classicAddress) {
@@ -84,7 +83,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * account from being deleted. The default is false.
    *
    * @return {@code true} if requesting only ledger objects that would block this account from being deleted, otherwise
-   *   {@code false}.
+   * {@code false}.
    */
   @JsonProperty("deletion_blockers_only")
   @Value.Default
@@ -125,6 +124,10 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      * Check account object type.
      */
     CHECK("check"),
+    /**
+     * Check account object type.
+     */
+    CREDENTIAL("credential"),
     /**
      * Desposit pre auth account object type.
      */

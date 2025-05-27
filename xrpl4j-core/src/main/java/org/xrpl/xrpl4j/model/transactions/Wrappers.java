@@ -856,12 +856,34 @@ public class Wrappers {
   abstract static class _CredentialType extends Wrapper<String> implements Serializable {
 
     /**
+     * Constructs an {@link CredentialType} using a String value.
+     *
+     * @param plaintext A string value representing the Uri in plaintext.
+     * @return An {@link CredentialType} of plaintext.
+     */
+    public static CredentialType ofPlainText(String plaintext) {
+      return CredentialType.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
      * Validates that a {@link CredentialType}'s value's length is capped at 128 characters.
      */
     @Value.Check
     public void validateLength() {
       Preconditions.checkArgument(!this.value().isEmpty(), "CredentialType must not be empty.");
       Preconditions.checkArgument(this.value().length() <= 128, "CredentialType must be <= 128 characters.");
+    }
+
+    /**
+     * Validates that a {@link CredentialType}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("CredentialType must be encoded in hexadecimal", e);
+      }
     }
 
     @Override
@@ -872,7 +894,7 @@ public class Wrappers {
   }
 
   /**
-   * A wrapped {@link String} containing a Credential URI.
+   * A wrapped {@link String} containing a Credential Uri.
    */
   @Value.Immutable
   @Wrapped
@@ -882,12 +904,34 @@ public class Wrappers {
   abstract static class _CredentialUri extends Wrapper<String> implements Serializable {
 
     /**
+     * Constructs an {@link CredentialUri} using a String value.
+     *
+     * @param plaintext A string value representing the Uri in plaintext.
+     * @return An {@link CredentialUri} of plaintext.
+     */
+    public static CredentialUri ofPlainText(String plaintext) {
+      return CredentialUri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
      * Validates that a {@link CredentialUri}'s value's length is capped at 512 characters.
      */
     @Value.Check
     public void validateLength() {
       Preconditions.checkArgument(!this.value().isEmpty(), "CredentialUri must not be empty.");
       Preconditions.checkArgument(this.value().length() <= 512, "CredentialUri must be <= 512 characters.");
+    }
+
+    /**
+     * Validates that a {@link CredentialUri}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("CredentialUri must be encoded in hexadecimal", e);
+      }
     }
 
     @Override

@@ -44,6 +44,9 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
+import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
+import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
+import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
@@ -122,7 +125,6 @@ public class SignatureUtils {
    * Helper method to convert a {@link Transaction} into bytes that can be used directly for signing.
    *
    * @param transaction A {@link Transaction} to be signed.
-   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toSignableBytes(final Transaction transaction) {
@@ -140,7 +142,6 @@ public class SignatureUtils {
    * Helper method to convert an {@link UnsignedClaim} into bytes that can be used directly for signing.
    *
    * @param unsignedClaim An {@link UnsignedClaim} to be signed.
-   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toSignableBytes(final UnsignedClaim unsignedClaim) {
@@ -161,7 +162,6 @@ public class SignatureUtils {
    * is subject to change.</p>
    *
    * @param attestation An {@link Attestation} to be signed.
-   *
    * @return An {@link UnsignedByteArray}.
    */
   @Beta
@@ -182,7 +182,6 @@ public class SignatureUtils {
    *
    * @param transaction   A {@link Transaction} to be signed.
    * @param signerAddress The {@link Address} of the signer of the transaction.
-   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, final Address signerAddress) {
@@ -208,7 +207,6 @@ public class SignatureUtils {
    *                    {@link Transaction#signingPublicKey()} must be provided.
    * @param signature   A {@link Signature} containing the transaction signature.
    * @param <T>         extends {@link Transaction}.
-   *
    * @return A copy of {@code transaction} with the {@link Transaction#transactionSignature()} field added.
    */
   public <T extends Transaction> SingleSignedTransaction<T> addSignatureToTransaction(
@@ -416,6 +414,18 @@ public class SignatureUtils {
       transactionWithSignature = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (CredentialCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = CredentialCreate.builder().from((CredentialCreate) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (CredentialAccept.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = CredentialAccept.builder().from((CredentialAccept) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (CredentialDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = CredentialDelete.builder().from((CredentialDelete) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -437,7 +447,6 @@ public class SignatureUtils {
    *                    {@link Transaction#signingPublicKey()} must be an empty string.
    * @param signers     A {@link List} of {@link SignerWrapper}s containing the transaction signatures.
    * @param <T>         extends {@link Transaction}.
-   *
    * @return A copy of {@code transaction} with the {@link Transaction#signers()}} field added.
    */
   public <T extends Transaction> T addMultiSignaturesToTransaction(T transaction, List<SignerWrapper> signers) {

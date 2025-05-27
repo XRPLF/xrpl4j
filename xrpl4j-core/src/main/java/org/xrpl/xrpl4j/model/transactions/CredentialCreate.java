@@ -44,6 +44,7 @@ public interface CredentialCreate extends Transaction {
    *
    * @return An {@link Optional} of type {@link UnsignedLong} representing the credential's expiration time.
    */
+  @JsonProperty("Expiration")
   Optional<UnsignedLong> expiration();
 
   /**

@@ -6,6 +6,7 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.ED_ADDRESS;
 import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -777,7 +778,7 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
   @Test
   void testCredentialParams() throws JSONException, JsonProcessingException {
     CredentialLedgerEntryParams credentialParams = CredentialLedgerEntryParams.builder()
-      .credentialType(CredentialType.of("ABC"))
+      .credentialType(CredentialType.ofPlainText("ABC"))
       .issuer(ED_ADDRESS)
       .subject(EC_ADDRESS)
       .build();

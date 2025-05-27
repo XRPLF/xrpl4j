@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -92,12 +92,12 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Validate that the DepositPreAuthObject was added to the receiver's account objects
     DepositPreAuthObject preAuthObject = (DepositPreAuthObject) this.scanForResult(
-      () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
-      accountObjects ->
-        accountObjects.accountObjects().stream().anyMatch(object ->
-          DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-            ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress())
-        )
+        () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
+        accountObjects ->
+          accountObjects.accountObjects().stream().anyMatch(object ->
+            DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+              ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress())
+          )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
         ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress()))
@@ -244,9 +244,7 @@ public class DepositPreAuthIT extends AbstractIT {
    *
    * @param wallet The {@link KeyPair} of the account to enable Deposit Preauthorization on.
    * @param fee    The {@link XrpCurrencyAmount} of the ledger fee for the AccountSet transaction.
-   *
    * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
-   *
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */
   private AccountInfoResult enableDepositPreauth(

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.jackson.modules;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,24 +23,24 @@ package org.xrpl.xrpl4j.model.jackson.modules;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.xrpl.xrpl4j.model.transactions.CredentialID;
+import org.xrpl.xrpl4j.model.transactions.CredentialId;
 
 import java.io.IOException;
 
 /**
- * Custom Jackson deserializer for {@link CredentialID}'s.
+ * Custom Jackson deserializer for {@link CredentialId}'s.
  */
-public class CredentialIdDeserializer extends StdDeserializer<CredentialID> {
+public class CredentialIdDeserializer extends StdDeserializer<CredentialId> {
 
   /**
    * No-args constructor.
    */
   public CredentialIdDeserializer() {
-    super(CredentialID.class);
+    super(CredentialId.class);
   }
 
   @Override
-  public CredentialID deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
-    return CredentialID.of(jsonParser.getText());
+  public CredentialId deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+    return CredentialId.of(jsonParser.getText());
   }
 }

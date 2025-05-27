@@ -199,10 +199,10 @@ public interface EscrowFinish extends Transaction {
    * Set of Credentials to authorize a deposit made by this transaction.
    * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
    *
-   * @return An {@link Optional} of type {@link CredentialID}.
+   * @return An {@link Optional} of type {@link CredentialId}.
    */
   @JsonProperty("CredentialIDs")
-  Optional<List<CredentialID>> credentialIDs();
+  Optional<List<CredentialId>> credentialIds();
 
   /**
    * Normalization method to try to get {@link #condition()} and {@link #conditionRawValue()} to match.

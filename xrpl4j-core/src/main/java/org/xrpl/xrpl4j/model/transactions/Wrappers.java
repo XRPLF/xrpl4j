@@ -942,14 +942,14 @@ public class Wrappers {
   }
 
   /**
-   * A wrapped {@link String} containing a CredentialID.
+   * A wrapped {@link String} containing a CredentialId.
    */
   @Value.Immutable
   @Wrapped
-  @JsonSerialize(as = CredentialID.class, using = CredentialIdSerializer.class)
-  @JsonDeserialize(as = CredentialID.class, using = CredentialIdDeserializer.class)
+  @JsonSerialize(as = CredentialId.class, using = CredentialIdSerializer.class)
+  @JsonDeserialize(as = CredentialId.class, using = CredentialIdDeserializer.class)
   @Beta
-  abstract static class _CredentialID extends Wrapper<String> implements Serializable {
+  abstract static class _CredentialId extends Wrapper<String> implements Serializable {
 
     @Override
     public String toString() {

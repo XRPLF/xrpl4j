@@ -76,6 +76,8 @@ public interface DepositPreAuthObject extends LedgerObject {
   @JsonProperty("Account")
   Address account();
 
+  // TODO: Discuss with David how to handle this breaking change.
+
   /**
    * The account that received the preauthorization. (The sender of the preauthorized payments.)
    *

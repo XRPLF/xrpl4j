@@ -338,6 +338,10 @@ public enum TransactionType {
   @Beta
   ORACLE_DELETE("OracleDelete"),
 
+  /**
+   * The {@link TransactionType} for the {@link AmmClawback} transaction.
+   */
+  AMM_CLAWBACK("AMMClawback"),
   @Beta
   MPT_ISSUANCE_CREATE("MPTokenIssuanceCreate"),
   @Beta

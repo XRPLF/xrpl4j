@@ -69,8 +69,8 @@ public class PaymentTest {
   /// ///////////////
 
   private Payment xrpPayment() {
-    List<CredentialId> credentialIds = Collections.singletonList(
-      CredentialId.of("EA85602C1B41F6F1F5E83C0E6B87142FB8957BD209469E4CC347BA2D0C26F662")
+    List<Hash256> credentialIds = Collections.singletonList(
+      Hash256.of("EA85602C1B41F6F1F5E83C0E6B87142FB8957BD209469E4CC347BA2D0C26F662")
     );
     return Payment.builder()
       .sequence(UnsignedInteger.ONE)

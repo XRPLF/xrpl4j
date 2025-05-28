@@ -122,7 +122,7 @@ public interface DepositPreAuth extends Transaction {
     }
 
     Preconditions.checkArgument(fieldsPresent == 1,
-            "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");
+      "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");
   }
 
   /**
@@ -132,17 +132,17 @@ public interface DepositPreAuth extends Transaction {
   @Value.Check
   default void validateCredentialList() {
     authorizeCredentials().ifPresent(creds ->
-            Preconditions.checkArgument(
-                    !creds.isEmpty() && creds.size() <= 8,
-                    "AuthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
-            )
+      Preconditions.checkArgument(
+        !creds.isEmpty() && creds.size() <= 8,
+        "AuthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
+      )
     );
 
     unauthorizeCredentials().ifPresent(creds ->
-            Preconditions.checkArgument(
-                    !creds.isEmpty() && creds.size() <= 8,
-                    "UnauthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
-            )
+      Preconditions.checkArgument(
+        !creds.isEmpty() && creds.size() <= 8,
+        "UnauthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
+      )
     );
   }
 
@@ -154,15 +154,15 @@ public interface DepositPreAuth extends Transaction {
   default void validateForUniqueValues() {
     authorizeCredentials().ifPresent(creds -> {
       Preconditions.checkArgument(
-              new HashSet<>(creds).size() == creds.size(),
-              "AuthorizeCredentials should have unique credentials."
+        new HashSet<>(creds).size() == creds.size(),
+        "AuthorizeCredentials should have unique credentials."
       );
     });
 
     unauthorizeCredentials().ifPresent(creds -> {
       Preconditions.checkArgument(
-              new HashSet<>(creds).size() == creds.size(),
-              "UnauthorizeCredentials should have unique credentials."
+        new HashSet<>(creds).size() == creds.size(),
+        "UnauthorizeCredentials should have unique credentials."
       );
     });
   }

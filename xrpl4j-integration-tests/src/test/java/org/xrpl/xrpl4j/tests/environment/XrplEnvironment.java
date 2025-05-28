@@ -65,7 +65,7 @@ public interface XrplEnvironment {
       return new DevnetEnvironment();
     } else {
       logger.info("Neither 'useTestNet', 'useClioTestNet', nor 'useDevnet' System properties detected." +
-        " Using local rippled for integration testing.");
+                  " Using local rippled for integration testing.");
       return new LocalRippledEnvironment();
     }
   }
@@ -84,12 +84,12 @@ public interface XrplEnvironment {
     if (isClioEnabled) {
       logger.info(
         "System property 'useClioMainnet' detected; Using Clio mainnet node for integration tests that are run " +
-          "against mainnet.");
+        "against mainnet.");
       return new ClioMainnetEnvironment();
     } else {
       logger.info(
         "System property 'useClioMainnet' was not detected; Using Reporting Mode mainnet node for integration tests " +
-          "that are run against mainnet.");
+        "that are run against mainnet.");
       return new ReportingMainnetEnvironment();
     }
   }
@@ -108,7 +108,6 @@ public interface XrplEnvironment {
    *
    * @param acceptIntervalMillis The interval, in milliseconds, between regular calls to the `ledger_accept` method.
    *                             This method is responsible for accepting new transactions into the ledger.
-   *
    * @see "https://xrpl.org/docs/references/http-websocket-apis/admin-api-methods/server-control-methods/ledger_accept"
    */
   void startLedgerAcceptor(final Duration acceptIntervalMillis);

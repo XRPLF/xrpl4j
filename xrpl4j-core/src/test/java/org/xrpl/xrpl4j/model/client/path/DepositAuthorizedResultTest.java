@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,9 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Unit tests for {@link DepositAuthorizedResult}.
  */
@@ -41,6 +44,9 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   private static final Address DESTINATION_ACCOUNT = Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59");
   public static final Hash256 LEDGER_HASH = Hash256
     .of("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd");
+  private static final List<Hash256> CREDENTIALS =
+    Collections.singletonList(Hash256.of("A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B"));
+
 
   @Test
   public void testJsonWithIndexAndNoCurrentIndex() throws JsonProcessingException, JSONException {
@@ -91,6 +97,30 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
   }
 
   @Test
+  public void testJsonWithNoIndexAndCurrentIndexIncludingCredentials() throws JsonProcessingException, JSONException {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(DESTINATION_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .ledgerCurrentIndex(LedgerIndex.of(UnsignedInteger.valueOf(9)))
+      .status("success")
+      .depositAuthorized(true)
+      .validated(true)
+      .credentials(CREDENTIALS)
+      .build();
+
+    String json = "{\n" +
+      "  \"deposit_authorized\": true,\n" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\",\n" +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\",\n" +
+      "  \"ledger_current_index\": 9,\n" +
+      "  \"status\": \"success\",\n" +
+      "  \"validated\": true,\n" +
+      "  \"credentials\": " + objectMapper.writeValueAsString(CREDENTIALS) +
+      "}";
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
   public void testDefaultValues() {
     DepositAuthorizedResult result = DepositAuthorizedResult.builder()
       .sourceAccount(SOURCE_ACCOUNT)
@@ -103,6 +133,23 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
     assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.ONE));
     assertThat(result.ledgerHash()).isEmpty();
     assertThat(result.depositAuthorized()).isTrue();
+  }
+
+  @Test
+  public void testDefaultValuesIncludingCredentials() {
+    DepositAuthorizedResult result = DepositAuthorizedResult.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .credentials(CREDENTIALS)
+      .depositAuthorized(true)
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.ONE))
+      .build();
+    assertThat(result.sourceAccount()).isEqualTo(DESTINATION_ACCOUNT);
+    assertThat(result.destinationAccount()).isEqualTo(DESTINATION_ACCOUNT);
+    assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.ONE));
+    assertThat(result.ledgerHash()).isEmpty();
+    assertThat(result.depositAuthorized()).isTrue();
+    assertThat(result.credentials()).isNotEmpty().get().isEqualTo(CREDENTIALS);
   }
 
   @Test

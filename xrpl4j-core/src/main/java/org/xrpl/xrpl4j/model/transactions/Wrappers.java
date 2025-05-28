@@ -40,8 +40,6 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
-import org.xrpl.xrpl4j.model.jackson.modules.CredentialIdDeserializer;
-import org.xrpl.xrpl4j.model.jackson.modules.CredentialIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
@@ -319,7 +317,7 @@ public class Wrappers {
       // Convert each value to a long (positive or negative works)
       long result =
         (this.value().longValue() * (this.isNegative() ? -1 : 1)) +
-          (other.value().longValue() * (other.isNegative() ? -1 : 1));
+        (other.value().longValue() * (other.isNegative() ? -1 : 1));
       return XrpCurrencyAmount.ofDrops(result);
     }
 
@@ -333,7 +331,7 @@ public class Wrappers {
       // Convert each value to a long (positive or negative works)
       long result =
         (this.value().longValue() * (this.isNegative() ? -1 : 1)) -
-          (other.value().longValue() * (other.isNegative() ? -1 : 1));
+        (other.value().longValue() * (other.isNegative() ? -1 : 1));
       return XrpCurrencyAmount.ofDrops(result);
     }
 
@@ -493,7 +491,7 @@ public class Wrappers {
     public void validateBounds() {
       Preconditions.checkArgument(
         FluentCompareTo.is(value()).lessThanOrEqualTo(UnsignedInteger.valueOf(50000)) &&
-          FluentCompareTo.is(value()).greaterThanEqualTo(UnsignedInteger.valueOf(0)),
+        FluentCompareTo.is(value()).greaterThanEqualTo(UnsignedInteger.valueOf(0)),
         "TransferFee should be in the range 0 to 50000.");
     }
 
@@ -939,21 +937,5 @@ public class Wrappers {
       return this.value();
     }
 
-  }
-
-  /**
-   * A wrapped {@link String} containing a CredentialId.
-   */
-  @Value.Immutable
-  @Wrapped
-  @JsonSerialize(as = CredentialId.class, using = CredentialIdSerializer.class)
-  @JsonDeserialize(as = CredentialId.class, using = CredentialIdDeserializer.class)
-  @Beta
-  abstract static class _CredentialId extends Wrapper<String> implements Serializable {
-
-    @Override
-    public String toString() {
-      return this.value();
-    }
   }
 }

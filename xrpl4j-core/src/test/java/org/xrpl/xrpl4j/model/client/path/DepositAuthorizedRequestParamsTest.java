@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.client.path;
  */
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -31,6 +32,9 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Unit tests for {@link DepositAuthorizedRequestParams}.
@@ -132,6 +136,45 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       "        }";
 
     assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testToFromJsonWithCredentialIds() throws JSONException, JsonProcessingException {
+    List<Hash256> credentials =
+      Collections.singletonList(Hash256.of("A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B"));
+
+    DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .credentials(credentials)
+      .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+      .build();
+
+    String json = "{\n" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\",\n" +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\",\n" +
+      "  \"credentials\": [\n" +
+      "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"\n" +
+      "  ],\n" +
+      "  \"ledger_index\": 1\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  public void testForEmptyCredentials() {
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> {
+        DepositAuthorizedRequestParams.builder()
+          .sourceAccount(SOURCE_ACCOUNT)
+          .destinationAccount(DESTINATION_ACCOUNT)
+          .credentials(Collections.emptyList())
+          .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+          .build();
+      }
+    );
   }
 
   @Test

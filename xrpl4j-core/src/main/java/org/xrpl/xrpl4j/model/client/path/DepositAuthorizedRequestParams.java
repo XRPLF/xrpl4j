@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,10 +24,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Request parameters for a "deposit_authorized" rippled API method call.
@@ -65,6 +70,15 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
   Address destinationAccount();
 
   /**
+   * If this field is included, then the credential will be taken into account
+   * when analyzing whether the sender can send funds to the destination.
+   *
+   * @return A list of {@link Hash256} representing unique IDs of Credential entry in the ledger.
+   */
+  @JsonProperty("credentials")
+  Optional<List<Hash256>> credentials();
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -74,5 +88,16 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
   @JsonUnwrapped
   default LedgerSpecifier ledgerSpecifier() {
     return LedgerSpecifier.CURRENT;
+  }
+
+  /**
+   * Ensure that once credential id is specified if {@link DepositAuthorizedRequestParams#credentials} is present.
+   */
+  @Value.Check
+  default void validateAtLestOneCredentialPresent() {
+    if (credentials().isPresent()) {
+      Preconditions.checkArgument(!credentials().get().isEmpty(),
+        "At least one credential id must be specified when credentials field is included.");
+    }
   }
 }

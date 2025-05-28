@@ -487,18 +487,19 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.mptIssuance()).isEmpty();
     assertThat(params.mpToken()).isEmpty();
 
-    String json =
-      "{\n" +
-        "  \"deposit_preauth\": {\n" +
-        "    \"owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-        "\"authorized_credentials\": [{    \n" +
-        "            \"issuer\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\",\n" +
-        "            \"credential_type\": \"6D795F63726564656E7469616C\"\n" +
-        "      }]" +
-        "  },\n" +
-        "  \"binary\": false,\n" +
-        "  \"ledger_index\": \"validated\"\n" +
-        "}";
+    String json = "{\n" +
+      "  \"deposit_preauth\": {\n" +
+      "    \"owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+      "    \"authorized_credentials\": [\n" +
+      "      {\n" +
+      "        \"issuer\": \"rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os\",\n" +
+      "        \"credential_type\": \"6D795F63726564656E7469616C\"\n" +
+      "      }\n" +
+      "    ]\n" +
+      "  },\n" +
+      "  \"binary\": false,\n" +
+      "  \"ledger_index\": \"validated\"\n" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }

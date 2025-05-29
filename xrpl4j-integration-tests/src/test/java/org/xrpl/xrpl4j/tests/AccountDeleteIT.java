@@ -65,8 +65,8 @@ class AccountDeleteIT extends AbstractIT {
    */
   private static boolean shouldRun() {
     return System.getProperty("useTestnet") == null &&
-      System.getProperty("useDevnet") == null &&
-      System.getProperty("useClioTestnet") == null;
+           System.getProperty("useDevnet") == null &&
+           System.getProperty("useClioTestnet") == null;
   }
 
   /**
@@ -429,6 +429,79 @@ class AccountDeleteIT extends AbstractIT {
 
     // get tesSUCCESS because we wait for sequence # + 256 is less than ledger index
     assertThat(response.engineResult()).isEqualTo("tesSUCCESS");
+    assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
+  }
+
+  @Test
+  void testAccountDeleteItWithDepositAuth() throws JsonRpcClientErrorException, JsonProcessingException {
+    // create two accounts, one will be the destination in the tx
+    KeyPair senderAccount = constructRandomAccount();
+    KeyPair receiverAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
+
+    AccountInfoResult receiverAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
+    );
+    AccountSet accountSet = AccountSet.builder()
+      .account(receiverAccount.publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .signingPublicKey(receiverAccount.publicKey())
+      .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      receiverAccount.privateKey(), accountSet
+    );
+    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
+    assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
+    xrplEnvironment.acceptLedger();
+
+    logger.info(
+      "AccountSet to enable Deposit Authorization successful. https://testnet.xrpl.org/transactions/{}",
+      accountSetResult.transactionResult().hash()
+    );
+
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress()),
+      accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
+    );
+
+    // get account info for the sequence number
+    AccountInfoResult accountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
+    );
+
+    // accept next 256 ledgers to avoid tec_TOOSOON error case and get current ledger index
+    for (int i = 0; i < 256; i++) {
+      LocalRippledEnvironment localRippledEnvironment = (LocalRippledEnvironment) xrplEnvironment;
+      localRippledEnvironment.acceptLedger();
+    }
+
+    LedgerResult lastLedgerResult = xrplClient.ledger(LedgerRequestParams.builder()
+      .ledgerSpecifier(LedgerSpecifier.CURRENT).build());
+
+    // create, sign & submit AccountDelete tx
+    AccountDelete accountDelete = AccountDelete.builder()
+      .account(senderAccount.publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
+      .sequence(accountInfo.accountData().sequence())
+      .destination(receiverAccount.publicKey().deriveAddress())
+      .lastLedgerSequence(
+        lastLedgerResult.ledgerCurrentIndexSafe().unsignedIntegerValue().plus(UnsignedInteger.valueOf(4000))
+      )
+      .signingPublicKey(senderAccount.publicKey())
+      .build();
+
+    SingleSignedTransaction<AccountDelete> signedAccountDelete = signatureService.sign(
+      senderAccount.privateKey(), accountDelete
+    );
+
+    // after 256 other txs are submitted, then submit AccountDelete
+    SubmitResult<AccountDelete> response = xrplClient.submit(signedAccountDelete);
+
+    // get tecNO_PERMISSION since senderAccount is not pre-authorized to send funds to receiverAccount.
+    assertThat(response.engineResult()).isEqualTo("tecNO_PERMISSION");
     assertThat(signedAccountDelete.hash()).isEqualTo(response.transactionResult().hash());
   }
 }

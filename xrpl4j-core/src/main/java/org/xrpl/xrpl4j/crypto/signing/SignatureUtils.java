@@ -656,6 +656,18 @@ public class SignatureUtils {
       transactionWithSignatures = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
         .signers(signers)
         .build();
+    } else if (CredentialCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CredentialCreate.builder().from((CredentialCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (CredentialAccept.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CredentialAccept.builder().from((CredentialAccept) transaction)
+        .signers(signers)
+        .build();
+    } else if (CredentialDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CredentialDelete.builder().from((CredentialDelete) transaction)
+        .signers(signers)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");

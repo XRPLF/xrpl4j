@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+/**
+ * A CredentialAccept transaction accepts a credential, which makes the credential valid.
+ * Only the subject of the credential can do this.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCredentialAccept.class)
 @JsonDeserialize(as = ImmutableCredentialAccept.class)
@@ -23,7 +27,7 @@ public interface CredentialAccept extends Transaction {
   /**
    * The issuer of the credential.
    *
-   * @return The {@link Address} of the issuer this credential.
+   * @return The unique {@link Address} of the issuer this credential.
    */
   @JsonProperty("Issuer")
   Address issuer();
@@ -31,7 +35,7 @@ public interface CredentialAccept extends Transaction {
   /**
    * A (hex-encoded) value to identify the type of credential from the issuer.
    *
-   * @return The {@link CredentialType} denoting the CredentialType
+   * @return A {@link CredentialType} defining the type of credential.
    */
   @JsonProperty("CredentialType")
   CredentialType credentialType();

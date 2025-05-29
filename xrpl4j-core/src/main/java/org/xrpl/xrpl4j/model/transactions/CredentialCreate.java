@@ -9,6 +9,9 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
+/**
+ * Create a Credential object in the ledger. The sender of this transaction is the issuer of the credential.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCredentialCreate.class)
 @JsonDeserialize(as = ImmutableCredentialCreate.class)
@@ -26,7 +29,7 @@ public interface CredentialCreate extends Transaction {
   /**
    * The subject of the credential.
    *
-   * @return The {@link Address} of the subject this credential.
+   * @return The unique {@link Address} of the subject this credential.
    */
   @JsonProperty("Subject")
   Address subject();
@@ -34,13 +37,13 @@ public interface CredentialCreate extends Transaction {
   /**
    * A (hex-encoded) value to identify the type of credential from the issuer.
    *
-   * @return The {@link CredentialType} denoting the CredentialType
+   * @return A {@link CredentialType} defining the type of credential.
    */
   @JsonProperty("CredentialType")
   CredentialType credentialType();
 
   /**
-   * Optional credential expiration.
+   * Time after which this credential expires.
    *
    * @return An {@link Optional} of type {@link UnsignedLong} representing the credential's expiration time.
    */

@@ -9,6 +9,9 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.Optional;
 
+/**
+ * A CredentialDelete transaction removes a credential from the ledger, effectively revoking it.
+ */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCredentialDelete.class)
 @JsonDeserialize(as = ImmutableCredentialDelete.class)
@@ -26,7 +29,7 @@ public interface CredentialDelete extends Transaction {
   /**
    * The issuer of the credential.
    *
-   * @return The {@link Address} of the issuer this credential.
+   * @return The unique {@link Address} of the issuer this credential.
    */
   @JsonProperty("Issuer")
   Optional<Address> issuer();
@@ -34,7 +37,7 @@ public interface CredentialDelete extends Transaction {
   /**
    * The subject of the credential.
    *
-   * @return The {@link Address} of the subject this credential.
+   * @return The unique {@link Address} of the subject this credential.
    */
   @JsonProperty("Subject")
   Optional<Address> subject();
@@ -42,7 +45,7 @@ public interface CredentialDelete extends Transaction {
   /**
    * A (hex-encoded) value to identify the type of credential from the issuer.
    *
-   * @return The {@link CredentialType} denoting the CredentialType
+   * @return A {@link CredentialType} defining the type of credential.
    */
   @JsonProperty("CredentialType")
   CredentialType credentialType();
@@ -64,9 +67,8 @@ public interface CredentialDelete extends Transaction {
    */
   @Value.Check
   default void check() {
-    Preconditions.checkState(
-            subject().isPresent() || issuer().isPresent(),
-            "Either Subject or Issuer must be present."
+    Preconditions.checkState(subject().isPresent() || issuer().isPresent(),
+      "Either Subject or Issuer must be present."
     );
   }
 

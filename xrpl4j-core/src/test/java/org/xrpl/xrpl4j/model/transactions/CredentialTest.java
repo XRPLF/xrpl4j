@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CredentialCreate}, {@link CredentialDelete}.
  */
-public class CredentialTests {
+public class CredentialTest {
 
   @Test
   public void testTooLongCredentialType() {
@@ -41,9 +41,9 @@ public class CredentialTests {
         .fee(XrpCurrencyAmount.ofDrops(10))
         .credentialType(
           CredentialType.of("A1B2C3D4E5F60718293A4B5C6D7E8F90123456789ABCDEF012" +
-            "3456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0FF"))
+                            "3456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0FF"))
         .build(),
-      "CredentialType must be <= 128 hex characters.");
+      "CredentialType must be <= 128 characters.");
   }
 
   @Test

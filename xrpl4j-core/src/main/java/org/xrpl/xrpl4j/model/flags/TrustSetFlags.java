@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,6 +59,16 @@ public class TrustSetFlags extends TransactionFlags {
    */
   protected static final TrustSetFlags CLEAR_FREEZE = new TrustSetFlags(0x00200000);
 
+  /**
+   * Constant {@link TrustSetFlags} for the {@code tfSetDeepFreeze} flag.
+   */
+  protected static final TrustSetFlags SET_DEEP_FREEZE = new TrustSetFlags(0x00400000);
+
+  /**
+   * Constant {@link TrustSetFlags} for the {@code tfClearDeepFreeze} flag.
+   */
+  protected static final TrustSetFlags CLEAR_DEEP_FREEZE = new TrustSetFlags(0x00800000);
+
   private TrustSetFlags(long value) {
     super(value);
   }
@@ -81,7 +91,9 @@ public class TrustSetFlags extends TransactionFlags {
     boolean tfSetNoRipple,
     boolean tfClearNoRipple,
     boolean tfSetFreeze,
-    boolean tfClearFreeze
+    boolean tfClearFreeze,
+    boolean tfSetDeepFreeze,
+    boolean tfClearDeepFreeze
   ) {
     return new TrustSetFlags(
       Flags.of(
@@ -90,7 +102,9 @@ public class TrustSetFlags extends TransactionFlags {
         tfSetNoRipple ? SET_NO_RIPPLE : UNSET,
         tfClearNoRipple ? CLEAR_NO_RIPPLE : UNSET,
         tfSetFreeze ? SET_FREEZE : UNSET,
-        tfClearFreeze ? CLEAR_FREEZE : UNSET).getValue()
+        tfClearFreeze ? CLEAR_FREEZE : UNSET,
+        tfSetDeepFreeze ? SET_DEEP_FREEZE : UNSET,
+        tfClearDeepFreeze ? CLEAR_DEEP_FREEZE : UNSET).getValue()
     );
   }
 
@@ -172,6 +186,24 @@ public class TrustSetFlags extends TransactionFlags {
   }
 
   /**
+   * <a href="https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0077-deep-freeze">Deep freeze</a> the trust line.
+   *
+   * @return {@code true} if {@code tfSetDeepFreeze} is set, otherwise {@code false}.
+   */
+  public boolean tfSetDeepFreeze() {
+    return this.isSet(SET_DEEP_FREEZE);
+  }
+
+  /**
+   * <a href="https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0077-deep-freeze">Clear deep freeze</a> on the trust line.
+   *
+   * @return {@code true} if {@code tfClearDeepFreeze} is set, otherwise {@code false}.
+   */
+  public boolean tfClearDeepFreeze() {
+    return this.isSet(CLEAR_DEEP_FREEZE);
+  }
+
+  /**
    * A builder class for {@link TrustSetFlags}.
    */
   public static class Builder {
@@ -180,6 +212,8 @@ public class TrustSetFlags extends TransactionFlags {
     private boolean tfClearNoRipple = false;
     private boolean tfSetFreeze = false;
     private boolean tfClearFreeze = false;
+    private boolean tfSetDeepFreeze = false;
+    private boolean tfClearDeepFreeze = false;
 
     /**
      * Set {@code tfSetfAuth} to the given value.
@@ -234,6 +268,26 @@ public class TrustSetFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfSetDeepFreeze} to {@code true}.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfSetDeepFreeze() {
+      this.tfSetDeepFreeze = true;
+      return this;
+    }
+
+    /**
+     * Set {@code tfClearDeepFreeze} to {@code true}.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfClearDeepFreeze() {
+      this.tfClearDeepFreeze = true;
+      return this;
+    }
+
+    /**
      * Build a new {@link TrustSetFlags} from the current boolean values.
      *
      * @return A new {@link TrustSetFlags}.
@@ -245,7 +299,9 @@ public class TrustSetFlags extends TransactionFlags {
         tfSetNoRipple,
         tfClearNoRipple,
         tfSetFreeze,
-        tfClearFreeze
+        tfClearFreeze,
+        tfSetDeepFreeze,
+        tfClearDeepFreeze
       );
     }
   }

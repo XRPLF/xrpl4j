@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.accounts;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -167,6 +167,28 @@ public interface TrustLine {
   @JsonProperty("freeze_peer")
   @Value.Default
   default boolean freezePeer() {
+    return false;
+  }
+
+  /**
+   * Whether or not this account has deep-frozen this trust line.
+   *
+   * @return {@code true} if this account has deep-frozen this trust line, otherwise {@code false}.
+   */
+  @JsonProperty("deep_freeze")
+  @Value.Default
+  default boolean deepFreeze() {
+    return false;
+  }
+
+  /**
+   * Whether or not the peer account has deep-frozen this trust line.
+   *
+   * @return {@code true} if the peer account has deep-frozen this trust line, otherwise {@code false}.
+   */
+  @JsonProperty("deep_freeze_peer")
+  @Value.Default
+  default boolean deepFreezePeer() {
     return false;
   }
 

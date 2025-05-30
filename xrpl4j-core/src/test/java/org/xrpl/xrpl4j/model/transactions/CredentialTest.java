@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.base.Strings;
 import org.junit.jupiter.api.Test;
 
 
@@ -32,22 +33,31 @@ import org.junit.jupiter.api.Test;
 public class CredentialTest {
 
   @Test
-  public void testTooLongCredentialType() {
+  public void testTooLongCredentialTypeUri() {
     assertThrows(
       IllegalArgumentException.class,
       () -> CredentialCreate.builder()
         .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
         .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .fee(XrpCurrencyAmount.ofDrops(10))
-        .credentialType(
-          CredentialType.of("A1B2C3D4E5F60718293A4B5C6D7E8F90123456789ABCDEF012" +
-                            "3456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0FF"))
+        .credentialType(CredentialType.ofPlainText(Strings.repeat("A", 130)))
         .build(),
       "CredentialType must be <= 128 characters.");
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> CredentialCreate.builder()
+        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .credentialType(CredentialType.of("A1"))
+        .uri(CredentialUri.ofPlainText(Strings.repeat("a", 513)))
+        .build(),
+      "CredentialUri must be <= 512 characters.");
   }
 
   @Test
-  public void testEmptyCredentialType() {
+  public void testEmptyCredentialTypeUri() {
     assertThrows(
       IllegalArgumentException.class,
       () -> CredentialCreate.builder()
@@ -58,6 +68,17 @@ public class CredentialTest {
         .uri(CredentialUri.of("ABCD"))
         .build(),
       "CredentialType must not be empty.");
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> CredentialCreate.builder()
+        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+        .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+        .fee(XrpCurrencyAmount.ofDrops(10))
+        .credentialType(CredentialType.of("AB"))
+        .uri(CredentialUri.of(""))
+        .build(),
+      "CredentialUri must not be empty.");
   }
 
   @Test
@@ -90,8 +111,7 @@ public class CredentialTest {
         .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
         .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .fee(XrpCurrencyAmount.ofDrops(10))
-        .credentialType(
-          CredentialType.of("ZZ"))
+        .credentialType(CredentialType.of("ZZ"))
         .build(),
       "CredentialType must be encoded in hexadecimal.");
 
@@ -102,8 +122,7 @@ public class CredentialTest {
         .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
         .fee(XrpCurrencyAmount.ofDrops(10))
         .credentialType(CredentialType.ofPlainText("driver license"))
-        .uri(
-          CredentialUri.of("ZZ"))
+        .uri(CredentialUri.of("ZZ"))
         .build(),
       "CredentialUri must be encoded in hexadecimal.");
   }

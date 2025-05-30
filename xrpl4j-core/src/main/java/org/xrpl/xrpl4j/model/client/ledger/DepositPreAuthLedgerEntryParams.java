@@ -44,7 +44,7 @@ public interface DepositPreAuthLedgerEntryParams {
   /**
    * A list of {@link Credential} that received the preauthorization.
    *
-   * @return An {@link Credential}.
+   * @return A list of type {@link Credential}.
    */
   @JsonProperty("authorized_credentials")
   Optional<List<Credential>> authorizedCredentials();

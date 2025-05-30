@@ -83,7 +83,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * account from being deleted. The default is false.
    *
    * @return {@code true} if requesting only ledger objects that would block this account from being deleted, otherwise
-   * {@code false}.
+   *   {@code false}.
    */
   @JsonProperty("deletion_blockers_only")
   @Value.Default
@@ -125,7 +125,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     CHECK("check"),
     /**
-     * Check account object type.
+     * Credential account object type.
      */
     CREDENTIAL("credential"),
     /**

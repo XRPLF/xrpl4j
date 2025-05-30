@@ -47,7 +47,7 @@ public interface Credential {
   /**
    * The issuer of the credential.
    *
-   * @return The {@link Address} of the issuer this credential.
+   * @return The unique {@link Address} of the issuer this credential.
    */
   @JsonProperty("issuer")
   Address issuer();
@@ -55,7 +55,7 @@ public interface Credential {
   /**
    * A (hex-encoded) value to identify the type of credential from the issuer.
    *
-   * @return The {@link CredentialType} denoting the CredentialType
+   * @return A {@link CredentialType} defining the type of credential.
    */
   @JsonProperty("credential_type")
   CredentialType credentialType();

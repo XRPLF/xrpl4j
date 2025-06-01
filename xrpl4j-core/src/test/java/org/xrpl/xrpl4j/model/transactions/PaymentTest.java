@@ -68,7 +68,7 @@ public class PaymentTest {
   }
 
   @Test
-  public void moreThanEightCredentialIds() {
+  public void testMoreThanEightCredentialIds() {
     List<Hash256> moreThanEight = IntStream.range(0, 9)
       .mapToObj(i ->
         Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
@@ -90,7 +90,7 @@ public class PaymentTest {
   }
 
   @Test
-  public void emptyCredentialIds() {
+  public void testEmptyCredentialIds() {
     assertThrows(
       IllegalArgumentException.class,
       () -> Payment.builder()
@@ -106,7 +106,7 @@ public class PaymentTest {
   }
 
   @Test
-  public void duplicateCredentialIds() {
+  public void testDuplicateCredentialIds() {
     List<Hash256> randomIds = IntStream.range(0, 8)
       .mapToObj(i ->
         Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))

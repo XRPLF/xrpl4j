@@ -35,6 +35,8 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Unit tests for {@link DepositAuthorizedRequestParams}.
@@ -57,10 +59,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.VALIDATED));
 
     String json = "{\n" +
-      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_index\": \"validated\"" +
-      "        }";
+                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+                  "            \"ledger_index\": \"validated\"" +
+                  "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -75,10 +77,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
     String json = "{\n" +
-      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_index\": \"current\"" +
-      "        }";
+                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+                  "            \"ledger_index\": \"current\"" +
+                  "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -94,10 +96,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CLOSED));
 
     String json = "{\n" +
-      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_index\": \"closed\"" +
-      "        }";
+                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+                  "            \"ledger_index\": \"closed\"" +
+                  "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -112,10 +114,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
     String json = "{\n" +
-      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"" +
-      "        }";
+                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+                  "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"" +
+                  "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -130,10 +132,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
     String json = "{\n" +
-      "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-      "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-      "            \"ledger_index\": 1" +
-      "        }";
+                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+                  "            \"ledger_index\": 1" +
+                  "        }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -151,13 +153,13 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\",\n" +
-      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\",\n" +
-      "  \"credentials\": [\n" +
-      "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"\n" +
-      "  ],\n" +
-      "  \"ledger_index\": 1\n" +
-      "}";
+                  "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\",\n" +
+                  "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\",\n" +
+                  "  \"credentials\": [\n" +
+                  "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"\n" +
+                  "  ],\n" +
+                  "  \"ledger_index\": 1\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -166,14 +168,53 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
   public void testForEmptyCredentials() {
     assertThrows(
       IllegalArgumentException.class,
-      () -> {
-        DepositAuthorizedRequestParams.builder()
-          .sourceAccount(SOURCE_ACCOUNT)
-          .destinationAccount(DESTINATION_ACCOUNT)
-          .credentials(Collections.emptyList())
-          .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
-          .build();
-      }
+      () -> DepositAuthorizedRequestParams.builder()
+        .sourceAccount(SOURCE_ACCOUNT)
+        .destinationAccount(DESTINATION_ACCOUNT)
+        .credentials(Collections.emptyList())
+        .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+        .build(),
+      "credentials shouldn't be empty and must have less than or equal to 8 items."
+    );
+  }
+
+  @Test
+  public void testMoreThanEightCredentials() {
+    List<Hash256> moreThanEight = IntStream.range(0, 9)
+      .mapToObj(i ->
+        Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
+      .collect(Collectors.toList());
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> DepositAuthorizedRequestParams.builder()
+        .sourceAccount(SOURCE_ACCOUNT)
+        .destinationAccount(DESTINATION_ACCOUNT)
+        .credentials(moreThanEight)
+        .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+        .build(),
+      "credentials shouldn't be empty and must have less than or equal to 8 items."
+    );
+  }
+
+  @Test
+  public void testDuplicateCredentials() {
+    List<Hash256> randomIds = IntStream.range(0, 8)
+      .mapToObj(i ->
+        Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
+      .collect(Collectors.toList());
+
+    randomIds.set(0, randomIds.get(1));
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> DepositAuthorizedRequestParams.builder()
+        .sourceAccount(SOURCE_ACCOUNT)
+        .destinationAccount(DESTINATION_ACCOUNT)
+        .credentials(randomIds)
+        .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+        .build(),
+      "credentials should have unique values."
     );
   }
 

@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -91,13 +92,24 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
   }
 
   /**
-   * Ensure that once credential id is specified if {@link DepositAuthorizedRequestParams#credentials} is present.
+   * Validate {@link DepositAuthorizedRequestParams#credentials} has less than or equal to 8 credentials.
    */
   @Value.Check
-  default void validateAtLestOneCredentialPresent() {
-    if (credentials().isPresent()) {
-      Preconditions.checkArgument(!credentials().get().isEmpty(),
-        "At least one credential id must be specified when credentials field is included.");
-    }
+  default void validateCredentialsLength() {
+    credentials().ifPresent(credentials -> Preconditions.checkArgument(
+      !credentials.isEmpty() && credentials.size() <= 8,
+      "credentials shouldn't be empty and must have less than or equal to 8 items."
+    ));
+  }
+
+  /**
+   * Validate {@link DepositAuthorizedRequestParams#credentials} are unique.
+   */
+  @Value.Check
+  default void validateUniqueCredentials() {
+    credentials().ifPresent(credentials -> Preconditions.checkArgument(
+      new HashSet<>(credentials).size() == credentials.size(),
+      "credentials should have unique values."
+    ));
   }
 }

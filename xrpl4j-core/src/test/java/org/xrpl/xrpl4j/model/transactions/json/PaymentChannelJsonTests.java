@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,6 +37,8 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.util.Collections;
+
 public class PaymentChannelJsonTests extends AbstractJsonTest {
 
   @Test
@@ -59,20 +61,20 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"SettleDelay\": 86400,\n" +
-      "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
-      "    \"CancelAfter\": 533171558,\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SourceTag\": 11747\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"Fee\": \"10\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
+                  "    \"Amount\": \"10000\",\n" +
+                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "    \"SettleDelay\": 86400,\n" +
+                  "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
+                  "    \"CancelAfter\": 533171558,\n" +
+                  "    \"DestinationTag\": 23480,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SourceTag\": 11747\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(create, json);
   }
@@ -97,20 +99,20 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"SettleDelay\": 86400,\n" +
-      "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
-      "    \"CancelAfter\": 533171558,\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"Flags\": 0,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"SourceTag\": 11747\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"Fee\": \"10\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
+                  "    \"Amount\": \"10000\",\n" +
+                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "    \"SettleDelay\": 86400,\n" +
+                  "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
+                  "    \"CancelAfter\": 533171558,\n" +
+                  "    \"DestinationTag\": 23480,\n" +
+                  "    \"Flags\": 0,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"SourceTag\": 11747\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(create, json);
   }
@@ -135,20 +137,20 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"SettleDelay\": 86400,\n" +
-      "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
-      "    \"CancelAfter\": 533171558,\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"SourceTag\": 11747\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"Fee\": \"10\",\n" +
+                                "    \"Sequence\": 1,\n" +
+                                "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
+                                "    \"Amount\": \"10000\",\n" +
+                                "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                                "    \"SettleDelay\": 86400,\n" +
+                                "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
+                                "    \"CancelAfter\": 533171558,\n" +
+                                "    \"DestinationTag\": 23480,\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                                "    \"SourceTag\": 11747\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(create, json);
   }
@@ -174,21 +176,21 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"SettleDelay\": 86400,\n" +
-      "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
-      "    \"CancelAfter\": 533171558,\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SourceTag\": 11747\n" +
-      "}";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"Fee\": \"10\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"TransactionType\": \"PaymentChannelCreate\",\n" +
+                  "    \"Amount\": \"10000\",\n" +
+                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "    \"SettleDelay\": 86400,\n" +
+                  "    \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\",\n" +
+                  "    \"CancelAfter\": 533171558,\n" +
+                  "    \"DestinationTag\": 23480,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SourceTag\": 11747\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(create, json);
   }
@@ -203,28 +205,32 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .balance(XrpCurrencyAmount.ofDrops(1000000))
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
-        "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
+                 "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .credentialIds(
+        Collections.singletonList(
+          Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37")))
       .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
-      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "  \"Fee\": \"10\",\n" +
-      "  \"Sequence\": 1,\n" +
-      "  \"TransactionType\": \"PaymentChannelClaim\",\n" +
-      "  \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "  \"Balance\": \"1000000\",\n" +
-      "  \"Amount\": \"1000000\",\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
-      "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
-      "}";
+                  "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "  \"Fee\": \"10\",\n" +
+                  "  \"Sequence\": 1,\n" +
+                  "  \"TransactionType\": \"PaymentChannelClaim\",\n" +
+                  "  \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                  "  \"Balance\": \"1000000\",\n" +
+                  "  \"Amount\": \"1000000\",\n" +
+                  "  \"NetworkID\": 1024,\n" +
+                  "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
+                  "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"CredentialIDs\": [02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37],\n" +
+                  "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
+                  "}";
     assertCanSerializeAndDeserialize(claim, json);
   }
 
@@ -239,7 +245,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .balance(XrpCurrencyAmount.ofDrops(1000000))
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
-        "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
+                 "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -247,19 +253,19 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "  \"Fee\": \"10\",\n" +
-      "  \"Sequence\": 1,\n" +
-      "  \"Flags\": 2147614720,\n" +
-      "  \"TransactionType\": \"PaymentChannelClaim\",\n" +
-      "  \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "  \"Balance\": \"1000000\",\n" +
-      "  \"Amount\": \"1000000\",\n" +
-      "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
-      "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
-      "}";
+                  "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "  \"Fee\": \"10\",\n" +
+                  "  \"Sequence\": 1,\n" +
+                  "  \"Flags\": 2147614720,\n" +
+                  "  \"TransactionType\": \"PaymentChannelClaim\",\n" +
+                  "  \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                  "  \"Balance\": \"1000000\",\n" +
+                  "  \"Amount\": \"1000000\",\n" +
+                  "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
+                  "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
+                  "}";
     assertCanSerializeAndDeserialize(claim, json);
   }
 
@@ -273,7 +279,7 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .balance(XrpCurrencyAmount.ofDrops(1000000))
       .amount(XrpCurrencyAmount.ofDrops(1000000))
       .signature("30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779E" +
-        "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
+                 "F4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B")
       .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
@@ -283,20 +289,20 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "  \"Foo\" : \"Bar\",\n" +
-      "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "  \"Fee\": \"10\",\n" +
-      "  \"Sequence\": 1,\n" +
-      "  \"TransactionType\": \"PaymentChannelClaim\",\n" +
-      "  \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "  \"Balance\": \"1000000\",\n" +
-      "  \"Amount\": \"1000000\",\n" +
-      "  \"NetworkID\": 1024,\n" +
-      "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
-      "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
-      "}";
+                  "  \"Foo\" : \"Bar\",\n" +
+                  "  \"Account\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "  \"Fee\": \"10\",\n" +
+                  "  \"Sequence\": 1,\n" +
+                  "  \"TransactionType\": \"PaymentChannelClaim\",\n" +
+                  "  \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                  "  \"Balance\": \"1000000\",\n" +
+                  "  \"Amount\": \"1000000\",\n" +
+                  "  \"NetworkID\": 1024,\n" +
+                  "  \"Signature\": \"30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4" +
+                  "779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B\",\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "  \"PublicKey\": \"32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A\"\n" +
+                  "}";
     assertCanSerializeAndDeserialize(claim, json);
   }
 
@@ -316,16 +322,16 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelFund\",\n" +
-      "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "    \"Amount\": \"200000\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Expiration\": 543171558\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"Fee\": \"10\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"TransactionType\": \"PaymentChannelFund\",\n" +
+                  "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                  "    \"Amount\": \"200000\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"Expiration\": 543171558\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(fund, json);
   }
@@ -346,16 +352,16 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelFund\",\n" +
-      "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "    \"Amount\": \"200000\",\n" +
-      "    \"Flags\": 0,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Expiration\": 543171558\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"Fee\": \"10\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"TransactionType\": \"PaymentChannelFund\",\n" +
+                  "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                  "    \"Amount\": \"200000\",\n" +
+                  "    \"Flags\": 0,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"Expiration\": 543171558\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(fund, json);
   }
@@ -376,16 +382,16 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelFund\",\n" +
-      "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "    \"Amount\": \"200000\",\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Expiration\": 543171558\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"Fee\": \"10\",\n" +
+                                "    \"Sequence\": 1,\n" +
+                                "    \"TransactionType\": \"PaymentChannelFund\",\n" +
+                                "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                                "    \"Amount\": \"200000\",\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                                "    \"Expiration\": 543171558\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(fund, json);
   }
@@ -407,17 +413,17 @@ public class PaymentChannelJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"Fee\": \"10\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"TransactionType\": \"PaymentChannelFund\",\n" +
-      "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
-      "    \"Amount\": \"200000\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Expiration\": 543171558\n" +
-      "}";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"Fee\": \"10\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"TransactionType\": \"PaymentChannelFund\",\n" +
+                  "    \"Channel\": \"C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198\",\n" +
+                  "    \"Amount\": \"200000\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"Expiration\": 543171558\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(fund, json);
   }

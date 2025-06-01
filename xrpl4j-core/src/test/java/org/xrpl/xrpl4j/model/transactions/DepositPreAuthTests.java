@@ -92,12 +92,13 @@ public class DepositPreAuthTests {
 
   @Test
   public void moreThanEightUnauthorizeCredentialsOrAuthorizeCredentials() {
-    List<CredentialWrapper> moreThanEight = IntStream.range(0, 9).mapToObj(i -> CredentialWrapper.builder()
-      .credential(Credential.builder()
-        .issuer(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt" + i))
-        .credentialType(CredentialType.of("A" + i))
-        .build()).build()
-    ).collect(Collectors.toList());
+    List<CredentialWrapper> moreThanEight = IntStream.range(0, 9)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt" + i))
+          .credentialType(CredentialType.of("A" + i))
+          .build()).build()
+      ).collect(Collectors.toList());
 
     assertThrows(
       IllegalArgumentException.class,
@@ -151,12 +152,13 @@ public class DepositPreAuthTests {
 
   @Test
   public void duplicateUnauthorizeCredentialsOrAuthorizeCredentials() {
-    List<CredentialWrapper> duplicateCreds = IntStream.range(0, 8).mapToObj(i -> CredentialWrapper.builder()
-      .credential(Credential.builder()
-        .issuer(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt"))
-        .credentialType(CredentialType.of(BaseEncoding.base16().encode("A".getBytes())))
-        .build()).build()
-    ).collect(Collectors.toList());
+    List<CredentialWrapper> duplicateCreds = IntStream.range(0, 8)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt"))
+          .credentialType(CredentialType.of(BaseEncoding.base16().encode("A".getBytes())))
+          .build()).build()
+      ).collect(Collectors.toList());
 
     assertThrows(
       IllegalArgumentException.class,

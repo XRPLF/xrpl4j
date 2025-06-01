@@ -89,7 +89,7 @@ public interface DepositPreAuthObject extends LedgerObject {
   /**
    * The credential(s) that received the preauthorization.
    *
-   * @return The list of {@link CredentialWrapper}.
+   * @return A list of {@link CredentialWrapper}.
    */
   @JsonProperty("AuthorizeCredentials")
   Optional<List<CredentialWrapper>> authorizeCredentials();

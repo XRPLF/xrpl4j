@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,8 +37,11 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.Collections;
 
 public class EscrowJsonTests extends AbstractJsonTest {
 
@@ -65,20 +68,20 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"CancelAfter\": 533257958,\n" +
-      "    \"FinishAfter\": 533171558,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SourceTag\": 11747,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowCreate\",\n" +
+                  "    \"Amount\": \"10000\",\n" +
+                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "    \"CancelAfter\": 533257958,\n" +
+                  "    \"FinishAfter\": 533171558,\n" +
+                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                  "    \"DestinationTag\": 23480,\n" +
+                  "    \"SourceTag\": 11747,\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"Fee\": \"12\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -106,20 +109,20 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"CancelAfter\": 533257958,\n" +
-      "    \"FinishAfter\": 533171558,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SourceTag\": 11747,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 0,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowCreate\",\n" +
+                  "    \"Amount\": \"10000\",\n" +
+                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "    \"CancelAfter\": 533257958,\n" +
+                  "    \"FinishAfter\": 533171558,\n" +
+                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                  "    \"DestinationTag\": 23480,\n" +
+                  "    \"SourceTag\": 11747,\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"Flags\": 0,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"Fee\": \"12\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -148,20 +151,20 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"CancelAfter\": 533257958,\n" +
-      "    \"FinishAfter\": 533171558,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SourceTag\": 11747,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"TransactionType\": \"EscrowCreate\",\n" +
+                                "    \"Amount\": \"10000\",\n" +
+                                "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                                "    \"CancelAfter\": 533257958,\n" +
+                                "    \"FinishAfter\": 533171558,\n" +
+                                "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                                "    \"DestinationTag\": 23480,\n" +
+                                "    \"SourceTag\": 11747,\n" +
+                                "    \"Sequence\": 1,\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                                "    \"Fee\": \"12\"\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -191,21 +194,21 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCreate\",\n" +
-      "    \"Amount\": \"10000\",\n" +
-      "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
-      "    \"CancelAfter\": 533257958,\n" +
-      "    \"FinishAfter\": 533171558,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"DestinationTag\": 23480,\n" +
-      "    \"SourceTag\": 11747,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowCreate\",\n" +
+                  "    \"Amount\": \"10000\",\n" +
+                  "    \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\",\n" +
+                  "    \"CancelAfter\": 533257958,\n" +
+                  "    \"FinishAfter\": 533171558,\n" +
+                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                  "    \"DestinationTag\": 23480,\n" +
+                  "    \"SourceTag\": 11747,\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"Fee\": \"12\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(escrowCreate, json);
   }
@@ -225,15 +228,15 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCancel\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowCancel\",\n" +
+                  "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"OfferSequence\": 7,\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"Fee\": \"12\"\n" +
+                  "}";
     assertCanSerializeAndDeserialize(escrowCancel, json);
   }
 
@@ -252,15 +255,15 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCancel\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 0,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowCancel\",\n" +
+                  "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"OfferSequence\": 7,\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"Flags\": 0,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"Fee\": \"12\"\n" +
+                  "}";
     assertCanSerializeAndDeserialize(escrowCancel, json);
   }
 
@@ -279,15 +282,15 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCancel\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"TransactionType\": \"EscrowCancel\",\n" +
+                                "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"OfferSequence\": 7,\n" +
+                                "    \"Sequence\": 1,\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                                "    \"Fee\": \"12\"\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
     assertCanSerializeAndDeserialize(escrowCancel, json);
   }
 
@@ -307,16 +310,16 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowCancel\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"Fee\": \"12\"\n" +
-      "}";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowCancel\",\n" +
+                  "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"OfferSequence\": 7,\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"Fee\": \"12\"\n" +
+                  "}";
     assertCanSerializeAndDeserialize(escrowCancel, json);
   }
 
@@ -335,21 +338,25 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .credentialIds(
+        Collections.singletonList(
+          Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37")))
       .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowFinish\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"Fulfillment\": \"A0028000\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"Fee\": \"330\"\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowFinish\",\n" +
+                  "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"OfferSequence\": 7,\n" +
+                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                  "    \"Fulfillment\": \"A0028000\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"CredentialIDs\": [02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37],\n" +
+                  "    \"Fee\": \"330\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(escrowFinish, json);
   }
@@ -373,17 +380,17 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowFinish\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"Fulfillment\": \"A0028000\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": 0,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"330\"\n" +
-      "}";
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowFinish\",\n" +
+                  "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"OfferSequence\": 7,\n" +
+                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                  "    \"Fulfillment\": \"A0028000\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"Flags\": 0,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"Fee\": \"330\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(escrowFinish, json);
   }
@@ -408,17 +415,17 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowFinish\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"Fulfillment\": \"A0028000\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"330\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"TransactionType\": \"EscrowFinish\",\n" +
+                                "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"OfferSequence\": 7,\n" +
+                                "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                                "    \"Fulfillment\": \"A0028000\",\n" +
+                                "    \"Sequence\": 1,\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                                "    \"Fee\": \"330\"\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(escrowFinish, json);
   }
@@ -426,19 +433,19 @@ public class EscrowJsonTests extends AbstractJsonTest {
   @Test
   void testEscrowFinishJsonWithMalformedCondition() throws JsonProcessingException {
     String json = "{\n" +
-      "  \"Account\": \"rKWZ2fDqE5B9XorAcEQZD46H6HEdJQVNdb\",\n" +
-      "  \"Condition\": \"A02580209423ED2EF4CACA8CA4AFC08D3F5EC60A545FD7A97E66E16EA0E2E2\",\n" +
-      "  \"Fee\": \"563\",\n" +
-      "  \"Fulfillment\": \"A02280203377850F1B3A4322F1562DF6F75D584596ABE5B9C76EEA8301F56CB942ACC69B\",\n" +
-      "  \"LastLedgerSequence\": 40562057,\n" +
-      "  \"OfferSequence\": 40403748,\n" +
-      "  \"Owner\": \"r3iocgQwoGNCYyvvt8xuWv2XYXx7Z2gQqd\",\n" +
-      "  \"Sequence\": 39899485,\n" +
-      "  \"SigningPubKey\": \"ED09285829A011D520A1873A0E2F1014F5D6B66A6DDE6953FC02C8185EAFA6A1B0\",\n" +
-      "  \"TransactionType\": \"EscrowFinish\",\n" +
-      "  \"TxnSignature\": \"A3E64F6B8D1D7C4FBC9663FCD217F86C3529EC2E2F16442DD48D1B66EEE30EAC2CE960A76080F74BC749" +
-      "8CA7BBFB822BEE9E8F767114D7B54F7403A7CB672501\"\n" +
-      "}";
+                  "  \"Account\": \"rKWZ2fDqE5B9XorAcEQZD46H6HEdJQVNdb\",\n" +
+                  "  \"Condition\": \"A02580209423ED2EF4CACA8CA4AFC08D3F5EC60A545FD7A97E66E16EA0E2E2\",\n" +
+                  "  \"Fee\": \"563\",\n" +
+                  "  \"Fulfillment\": \"A02280203377850F1B3A4322F1562DF6F75D584596ABE5B9C76EEA8301F56CB942ACC69B\",\n" +
+                  "  \"LastLedgerSequence\": 40562057,\n" +
+                  "  \"OfferSequence\": 40403748,\n" +
+                  "  \"Owner\": \"r3iocgQwoGNCYyvvt8xuWv2XYXx7Z2gQqd\",\n" +
+                  "  \"Sequence\": 39899485,\n" +
+                  "  \"SigningPubKey\": \"ED09285829A011D520A1873A0E2F1014F5D6B66A6DDE6953FC02C8185EAFA6A1B0\",\n" +
+                  "  \"TransactionType\": \"EscrowFinish\",\n" +
+                  "  \"TxnSignature\": \"A3E64F6B8D1D7C4FBC9663FCD217F86C3529EC2E2F16442DD48D1B66EEE30EAC2CE960A76080F74BC749" +
+                  "8CA7BBFB822BEE9E8F767114D7B54F7403A7CB672501\"\n" +
+                  "}";
 
     EscrowFinish escrowFinish = objectMapper.readValue(json, EscrowFinish.class);
     assertThat(escrowFinish.condition()).isEmpty();
@@ -449,17 +456,17 @@ public class EscrowJsonTests extends AbstractJsonTest {
   @Test
   void testEscrowFinishJsonWithMalformedFulfillment() throws JsonProcessingException {
     String json = String.format("{\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowFinish\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"Fulfillment\": \"123\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"Fee\": \"330\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"TransactionType\": \"EscrowFinish\",\n" +
+                                "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                                "    \"OfferSequence\": 7,\n" +
+                                "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                                "    \"Fulfillment\": \"123\",\n" +
+                                "    \"Sequence\": 1,\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                                "    \"Fee\": \"330\"\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     EscrowFinish escrowFinish = objectMapper.readValue(json, EscrowFinish.class);
     assertThat(escrowFinish.fulfillment()).isEmpty();
@@ -488,18 +495,18 @@ public class EscrowJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"TransactionType\": \"EscrowFinish\",\n" +
-      "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
-      "    \"OfferSequence\": 7,\n" +
-      "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
-      "    \"Fulfillment\": \"A0028000\",\n" +
-      "    \"Sequence\": 1,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"Fee\": \"330\"\n" +
-      "}";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "    \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"TransactionType\": \"EscrowFinish\",\n" +
+                  "    \"Owner\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\",\n" +
+                  "    \"OfferSequence\": 7,\n" +
+                  "    \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\",\n" +
+                  "    \"Fulfillment\": \"A0028000\",\n" +
+                  "    \"Sequence\": 1,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"Fee\": \"330\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(escrowFinish, json);
   }

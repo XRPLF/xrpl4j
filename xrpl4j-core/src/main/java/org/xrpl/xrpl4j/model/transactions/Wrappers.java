@@ -878,7 +878,7 @@ public class Wrappers {
     @Value.Check
     public void validateHexEncoding() {
       try {
-        BaseEncoding.base16().decode(this.value().toUpperCase());
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("CredentialType must be encoded in hexadecimal", e);
       }
@@ -887,6 +887,22 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && obj instanceof CredentialType) {
+        String otherValue = ((CredentialType) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
   }
@@ -926,7 +942,7 @@ public class Wrappers {
     @Value.Check
     public void validateHexEncoding() {
       try {
-        BaseEncoding.base16().decode(this.value().toUpperCase());
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("CredentialUri must be encoded in hexadecimal", e);
       }
@@ -935,6 +951,22 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && obj instanceof CredentialUri) {
+        String otherValue = ((CredentialUri) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
   }

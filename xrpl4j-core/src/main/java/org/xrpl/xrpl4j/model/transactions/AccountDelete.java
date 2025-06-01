@@ -28,6 +28,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,12 +97,21 @@ public interface AccountDelete extends Transaction {
    */
   @Value.Check
   default void validateCredentialIdsLength() {
-    if (credentialIds().isPresent()) {
-      Preconditions.checkArgument(
-        !credentialIds().get().isEmpty() && credentialIds().get().size() <= 8,
-        "credentialIds shouldn't be empty and must have less than or equal to 8 items."
-      );
-    }
+    credentialIds().ifPresent(credentialIds -> Preconditions.checkArgument(
+      !credentialIds.isEmpty() && credentialIds.size() <= 8,
+      "credentialIds shouldn't be empty and must have less than or equal to 8 items."
+    ));
+  }
+
+  /**
+   * Validate {@link AccountDelete#credentialIds} are unique.
+   */
+  @Value.Check
+  default void validateUniqueCredentialIds() {
+    credentialIds().ifPresent(credentialIds -> Preconditions.checkArgument(
+      new HashSet<>(credentialIds).size() == credentialIds.size(),
+      "credentialIds should have unique values."
+    ));
   }
 
 }

@@ -34,7 +34,7 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import java.util.Optional;
 
 /**
- * A Credential entry represents a credential,
+ * A Credential object represents a credential,
  * which contains an attestation about a subject account from a credential issuer account.
  * The meaning of the attestation is defined by the issuer.
  */
@@ -127,7 +127,7 @@ public interface CredentialObject extends LedgerObject {
    * A (hex-encoded) value to identify the type of credential from the issuer.
    * This field is limited to a maximum length of 64 bytes.
    *
-   * @return {@link CredentialType}.
+   * @return A {@link CredentialType} defining the type of credential.
    */
   @JsonProperty("CredentialType")
   CredentialType credentialType();

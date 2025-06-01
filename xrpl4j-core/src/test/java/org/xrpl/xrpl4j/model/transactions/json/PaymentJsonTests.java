@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,11 +30,14 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.PathStep;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.Collections;
 
 // FIXME: These tests should probably be replaced with a parameterized test that loads in payment json examples from
 //  a file.  Will do this after merging with Neil's initial codec pass.
@@ -56,16 +59,16 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
-      "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
-      "                \"TransactionType\": \"Payment\",\n" +
-      "                \"Amount\": \"25000000\",\n" +
-      "                \"Fee\": \"10\",\n" +
-      "                \"Flags\": 0,\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "                \"Sequence\": 2\n" +
-      "            }";
+                  "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
+                  "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
+                  "                \"TransactionType\": \"Payment\",\n" +
+                  "                \"Amount\": \"25000000\",\n" +
+                  "                \"Fee\": \"10\",\n" +
+                  "                \"Flags\": 0,\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "                \"Sequence\": 2\n" +
+                  "            }";
 
     assertCanSerializeAndDeserialize(payment, json);
   }
@@ -86,15 +89,15 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
-      "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
-      "                \"TransactionType\": \"Payment\",\n" +
-      "                \"Amount\": \"25000000\",\n" +
-      "                \"Fee\": \"10\",\n" +
-      "                \"Flags\": 2147483648,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "                \"Sequence\": 2\n" +
-      "            }";
+                  "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
+                  "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
+                  "                \"TransactionType\": \"Payment\",\n" +
+                  "                \"Amount\": \"25000000\",\n" +
+                  "                \"Fee\": \"10\",\n" +
+                  "                \"Flags\": 2147483648,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "                \"Sequence\": 2\n" +
+                  "            }";
 
 
     assertCanSerializeAndDeserialize(payment, json);
@@ -129,31 +132,35 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .credentialIds(
+        Collections.singletonList(
+          Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37")))
       .build();
 
     String json = "{\n" +
-      "                \"Account\": \"rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn\",\n" +
-      "                \"Destination\": \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\",\n" +
-      "                \"TransactionType\": \"Payment\",\n" +
-      "                \"Amount\": {\n" +
-      "                    \"currency\": \"CNY\",\n" +
-      "                    \"value\": \"5000\",\n" +
-      "                    \"issuer\": \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\"\n" +
-      "                },\n" +
-      "                \"Fee\": \"12\",\n" +
-      "                \"SendMax\": {\n" +
-      "                    \"currency\": \"CNY\",\n" +
-      "                    \"value\": \"5050\",\n" +
-      "                    \"issuer\": \"rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn\"\n" +
-      "                },\n" +
-      "                \"Flags\": 2147483648,\n" +
-      "                \"Sequence\": 6,\n" +
-      "                \"Paths\": [[{\n" +
-      "                    \"account\": \"razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA\"\n" +
-      "                }]],\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "                \"DestinationTag\": 736049272\n" +
-      "            }";
+                  "                \"Account\": \"rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn\",\n" +
+                  "                \"Destination\": \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\",\n" +
+                  "                \"TransactionType\": \"Payment\",\n" +
+                  "                \"Amount\": {\n" +
+                  "                    \"currency\": \"CNY\",\n" +
+                  "                    \"value\": \"5000\",\n" +
+                  "                    \"issuer\": \"r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK\"\n" +
+                  "                },\n" +
+                  "                \"Fee\": \"12\",\n" +
+                  "                \"SendMax\": {\n" +
+                  "                    \"currency\": \"CNY\",\n" +
+                  "                    \"value\": \"5050\",\n" +
+                  "                    \"issuer\": \"rHXUjUtk5eiPFYpg27izxHeZ1t4x835Ecn\"\n" +
+                  "                },\n" +
+                  "                \"Flags\": 2147483648,\n" +
+                  "                \"Sequence\": 6,\n" +
+                  "                \"Paths\": [[{\n" +
+                  "                    \"account\": \"razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA\"\n" +
+                  "                }]],\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "    \"CredentialIDs\": [02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37],\n" +
+                  "                \"DestinationTag\": 736049272\n" +
+                  "            }";
 
     assertCanSerializeAndDeserialize(payment, json);
   }
@@ -175,17 +182,17 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
-      "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
-      "                \"TransactionType\": \"Payment\",\n" +
-      "                \"Amount\": \"25000000\",\n" +
-      "                \"Fee\": \"10\",\n" +
-      "                \"Flags\": 0,\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
-      "                \"Sequence\": 2\n" +
-      "            }";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "                \"Account\": \"r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb\",\n" +
+                  "                \"Destination\": \"r4BPgS7DHebQiU31xWELvZawwSG2fSPJ7C\",\n" +
+                  "                \"TransactionType\": \"Payment\",\n" +
+                  "                \"Amount\": \"25000000\",\n" +
+                  "                \"Fee\": \"10\",\n" +
+                  "                \"Flags\": 0,\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+                  "                \"Sequence\": 2\n" +
+                  "            }";
 
     assertCanSerializeAndDeserialize(payment, json);
   }

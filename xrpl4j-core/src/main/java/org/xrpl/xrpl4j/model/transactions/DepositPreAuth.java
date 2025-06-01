@@ -152,18 +152,14 @@ public interface DepositPreAuth extends Transaction {
    */
   @Value.Check
   default void validateForUniqueValues() {
-    authorizeCredentials().ifPresent(creds -> {
-      Preconditions.checkArgument(
-        new HashSet<>(creds).size() == creds.size(),
-        "AuthorizeCredentials should have unique credentials."
-      );
-    });
+    authorizeCredentials().ifPresent(creds -> Preconditions.checkArgument(
+      new HashSet<>(creds).size() == creds.size(),
+      "AuthorizeCredentials should have unique credentials."
+    ));
 
-    unauthorizeCredentials().ifPresent(creds -> {
-      Preconditions.checkArgument(
-        new HashSet<>(creds).size() == creds.size(),
-        "UnauthorizeCredentials should have unique credentials."
-      );
-    });
+    unauthorizeCredentials().ifPresent(creds -> Preconditions.checkArgument(
+      new HashSet<>(creds).size() == creds.size(),
+      "UnauthorizeCredentials should have unique credentials."
+    ));
   }
 }

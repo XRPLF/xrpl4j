@@ -20,7 +20,7 @@ public class CredentialUriTests {
 
     assertThat(CredentialUri.ofPlainText("AA"))
       .isNotEqualTo(CredentialUri.ofPlainText("aa"));
-    
+
     assertThat(CredentialUri.of("0000000000000000000000000000000000000000000000000000000000000000"))
       .isNotEqualTo(null);
 

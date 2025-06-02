@@ -55,6 +55,7 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
    * Construct an {@link AccountObjectsRequestParams} for a given account and otherwise default parameters.
    *
    * @param classicAddress The classic {@link Address} of the account to request objects for.
+   *
    * @return An {@link AccountObjectsRequestParams} for the given {@link Address}.
    */
   static AccountObjectsRequestParams of(Address classicAddress) {

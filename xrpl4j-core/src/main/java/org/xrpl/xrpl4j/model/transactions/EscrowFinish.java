@@ -74,7 +74,9 @@ public interface EscrowFinish extends Transaction {
    * @param currentLedgerBaseFeeDrops The number of drops that the ledger demands at present.
    * @param fulfillment               The {@link Fulfillment} that is being presented to the ledger for computation
    *                                  purposes.
+   *
    * @return An {@link XrpCurrencyAmount} representing the computed fee.
+   *
    * @see "https://xrpl.org/escrowfinish.html"
    */
   static XrpCurrencyAmount computeFee(

@@ -103,6 +103,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    * Get {@link #ledgerHash()}, or throw an {@link IllegalStateException} if {@link #ledgerHash()} is empty.
    *
    * @return The value of {@link #ledgerHash()}.
+   *
    * @throws IllegalStateException If {@link #ledgerHash()} is empty.
    */
   @JsonIgnore
@@ -125,6 +126,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
    *
    * @return The value of {@link #ledgerIndex()}.
+   *
    * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
    */
   @JsonIgnore
@@ -148,6 +150,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    * empty.
    *
    * @return The value of {@link #ledgerCurrentIndex()}.
+   *
    * @throws IllegalStateException If {@link #ledgerCurrentIndex()} is empty.
    */
   @JsonIgnore

@@ -46,6 +46,7 @@ public class CredentialFlags extends Flags {
    * Construct {@link CredentialFlags} with a given value.
    *
    * @param value The long-number encoded flags value of this {@link CredentialFlags}.
+   *
    * @return New {@link CredentialFlags}.
    */
   public static CredentialFlags of(long value) {

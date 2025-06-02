@@ -108,6 +108,7 @@ public interface Payment extends Transaction {
    * <p>This field is auto-fillable
    *
    * @return A {@link List} of {@link List}s of {@link PathStep}s.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Paths")
@@ -120,6 +121,7 @@ public interface Payment extends Transaction {
    * <p>Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
+   *
    * @see "https://xrpl.org/transfer-fees.html"
    * @see "https://en.wikipedia.org/wiki/Slippage_%28finance%29"
    */

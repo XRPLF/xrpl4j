@@ -56,6 +56,7 @@ public interface MetaLedgerEntryType {
    * Construct a new {@link MetaLedgerEntryType} from a {@link String}.
    *
    * @param value The {@link String} value.
+   *
    * @return A {@link MetaLedgerEntryType} wrapping the supplied value.
    */
   static MetaLedgerEntryType of(String value) {

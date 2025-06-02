@@ -7,7 +7,6 @@ import static org.xrpl.xrpl4j.crypto.TestConstants.ED_ADDRESS;
 import static org.xrpl.xrpl4j.crypto.TestConstants.HASH_256;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;

@@ -108,6 +108,7 @@ public interface XrplEnvironment {
    *
    * @param acceptIntervalMillis The interval, in milliseconds, between regular calls to the `ledger_accept` method.
    *                             This method is responsible for accepting new transactions into the ledger.
+   *
    * @see "https://xrpl.org/docs/references/http-websocket-apis/admin-api-methods/server-control-methods/ledger_accept"
    */
   void startLedgerAcceptor(final Duration acceptIntervalMillis);

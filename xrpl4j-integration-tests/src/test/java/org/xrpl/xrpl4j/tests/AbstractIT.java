@@ -442,7 +442,9 @@ public abstract class AbstractIT {
    * @param counterpartyKeyPair  The {@link KeyPair} of the counterparty account.
    * @param trustlineLimitAmount A {@link IssuedCurrencyAmount} representing the trust limit for the counterparty.
    * @param fee                  The current network fee, as an {@link XrpCurrencyAmount}.
+   *
    * @return The {@link TrustLine} that gets created.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(
@@ -463,7 +465,9 @@ public abstract class AbstractIT {
    * @param trustlineLimitAmount A {@link IssuedCurrencyAmount} representing the trust limit for the counterparty.
    * @param fee                  The current network fee, as an {@link XrpCurrencyAmount}.
    * @param trustSetFlags        A {@link TrustSetFlags} to use when creating the trustline.
+   *
    * @return The {@link TrustLine} that gets created.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public TrustLine createTrustLine(
@@ -512,6 +516,7 @@ public abstract class AbstractIT {
    * @param receiverKeyPair The {@link KeyPair} of the payment receiver.
    * @param amount          An {@link IssuedCurrencyAmount} to send.
    * @param fee             The current network fee, as an {@link XrpCurrencyAmount}.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public void sendIssuedCurrency(
@@ -531,6 +536,7 @@ public abstract class AbstractIT {
    * @param amount               An {@link IssuedCurrencyAmount} to send.
    * @param fee                  The current network fee, as an {@link XrpCurrencyAmount}.
    * @param expectedEngineResult The expected engine result.
+   *
    * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
    */
   public void sendIssuedCurrency(
@@ -819,7 +825,9 @@ public abstract class AbstractIT {
    * Enable the lsfDepositAuth flag on a given account by submitting an {@link AccountSet} transaction.
    *
    * @param wallet The {@link KeyPair} of the account to enable Deposit Authorization on.
+   *
    * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
+   *
    * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
    */
   protected AccountInfoResult enableDepositAuthorization(KeyPair wallet)

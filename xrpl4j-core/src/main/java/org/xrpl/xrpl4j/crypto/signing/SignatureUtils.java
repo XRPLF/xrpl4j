@@ -125,6 +125,7 @@ public class SignatureUtils {
    * Helper method to convert a {@link Transaction} into bytes that can be used directly for signing.
    *
    * @param transaction A {@link Transaction} to be signed.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toSignableBytes(final Transaction transaction) {
@@ -142,6 +143,7 @@ public class SignatureUtils {
    * Helper method to convert an {@link UnsignedClaim} into bytes that can be used directly for signing.
    *
    * @param unsignedClaim An {@link UnsignedClaim} to be signed.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toSignableBytes(final UnsignedClaim unsignedClaim) {
@@ -162,6 +164,7 @@ public class SignatureUtils {
    * is subject to change.</p>
    *
    * @param attestation An {@link Attestation} to be signed.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   @Beta
@@ -182,6 +185,7 @@ public class SignatureUtils {
    *
    * @param transaction   A {@link Transaction} to be signed.
    * @param signerAddress The {@link Address} of the signer of the transaction.
+   *
    * @return An {@link UnsignedByteArray}.
    */
   public UnsignedByteArray toMultiSignableBytes(final Transaction transaction, final Address signerAddress) {
@@ -207,6 +211,7 @@ public class SignatureUtils {
    *                    {@link Transaction#signingPublicKey()} must be provided.
    * @param signature   A {@link Signature} containing the transaction signature.
    * @param <T>         extends {@link Transaction}.
+   *
    * @return A copy of {@code transaction} with the {@link Transaction#transactionSignature()} field added.
    */
   public <T extends Transaction> SingleSignedTransaction<T> addSignatureToTransaction(
@@ -447,6 +452,7 @@ public class SignatureUtils {
    *                    {@link Transaction#signingPublicKey()} must be an empty string.
    * @param signers     A {@link List} of {@link SignerWrapper}s containing the transaction signatures.
    * @param <T>         extends {@link Transaction}.
+   *
    * @return A copy of {@code transaction} with the {@link Transaction#signers()}} field added.
    */
   public <T extends Transaction> T addMultiSignaturesToTransaction(T transaction, List<SignerWrapper> signers) {

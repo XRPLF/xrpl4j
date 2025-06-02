@@ -62,9 +62,6 @@ public class DepositPreAuthIT extends AbstractIT {
   private static final CredentialType[] GOOD_CREDENTIALS_TYPES =
     {CredentialType.ofPlainText("driver licence"), CredentialType.ofPlainText("voting card")};
 
-  private static final CredentialType[] BAD_CREDENTIALS_TYPES =
-    {CredentialType.ofPlainText("driver licence1"), CredentialType.ofPlainText("voting card1")};
-
   @Test
   public void preauthorizeAccountAndReceivePayment() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
@@ -506,8 +503,8 @@ public class DepositPreAuthIT extends AbstractIT {
   private void assertEntryEqualsObjectFromAccountObjects(
     DepositPreAuth depositPreAuth,
     DepositPreAuthObject preAuthObject
-  )
-    throws JsonRpcClientErrorException {
+  ) throws JsonRpcClientErrorException {
+
     LedgerEntryResult<DepositPreAuthObject> preAuthEntry;
 
     if (depositPreAuth.authorize().isPresent()) {
@@ -525,7 +522,9 @@ public class DepositPreAuthIT extends AbstractIT {
         depositPreAuth.authorizeCredentials().get().stream()
           .map(cw -> org.xrpl.xrpl4j.model.client.ledger.Credential.builder()
             .credentialType(cw.credential().credentialType())
-            .issuer(cw.credential().issuer()).build()).collect(Collectors.toList());
+            .issuer(cw.credential().issuer())
+            .build())
+          .collect(Collectors.toList());
 
       preAuthEntry = xrplClient.ledgerEntry(
         LedgerEntryRequestParams.depositPreAuth(

@@ -60,7 +60,7 @@ public class CredentialIT extends AbstractIT {
   private static final CredentialUri DRIVER_LICENCE_URI = CredentialUri.ofPlainText("https://link-to-vc-document.pdf");
 
   @Test
-  public void createAcceptDeleteCredential() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void testCreateAcceptDeleteCredential() throws JsonRpcClientErrorException, JsonProcessingException {
     KeyPair issuerKeyPair = createRandomAccountSecp256k1();
     KeyPair subjectKeyPair = createRandomAccountEd25519();
 
@@ -177,7 +177,7 @@ public class CredentialIT extends AbstractIT {
   }
 
   @Test
-  public void acceptCredentialAfterExpiration()
+  public void testAcceptCredentialAfterExpiration()
     throws JsonRpcClientErrorException, JsonProcessingException, InterruptedException {
 
     KeyPair issuerKeyPair = createRandomAccountSecp256k1();
@@ -339,7 +339,7 @@ public class CredentialIT extends AbstractIT {
 
   private Predicate<LedgerObject> findMatch(Address issuer, Address subject, CredentialType credentialType) {
     return ledgerObject -> ((CredentialObject) ledgerObject).issuer().equals(issuer) &&
-      ((CredentialObject) ledgerObject).credentialType().equals(credentialType) &&
-      ((CredentialObject) ledgerObject).subject().equals(subject);
+                           ((CredentialObject) ledgerObject).credentialType().equals(credentialType) &&
+                           ((CredentialObject) ledgerObject).subject().equals(subject);
   }
 }

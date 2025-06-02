@@ -439,9 +439,11 @@ class AccountDeleteIT extends AbstractIT {
     KeyPair receiverAccount = constructRandomAccount();
     xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
+    // Enable deposit authorization.
     AccountInfoResult receiverAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(receiverAccount.publicKey().deriveAddress())
     );
+
     AccountSet accountSet = AccountSet.builder()
       .account(receiverAccount.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())
@@ -453,6 +455,7 @@ class AccountDeleteIT extends AbstractIT {
     SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
       receiverAccount.privateKey(), accountSet
     );
+
     SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
     assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
     xrplEnvironment.acceptLedger();

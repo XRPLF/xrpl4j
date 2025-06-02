@@ -72,6 +72,8 @@ public interface Transaction {
       .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+      .put(ImmutablePermissionedDomainSet.class, TransactionType.PERMISSIONED_DOMAIN_SET)
+      .put(ImmutablePermissionedDomainDelete.class, TransactionType.PERMISSIONED_DOMAIN_DELETE)
       .put(ImmutableSetFee.class, TransactionType.SET_FEE)
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)

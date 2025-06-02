@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,11 +23,13 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -80,5 +82,36 @@ public interface AccountDelete extends Transaction {
    */
   @JsonProperty("DestinationTag")
   Optional<UnsignedInteger> destinationTag();
+
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction.
+   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   *
+   * @return An {@link Optional} of type {@link Hash256}.
+   */
+  @JsonProperty("CredentialIDs")
+  Optional<List<Hash256>> credentialIds();
+
+  /**
+   * Validate {@link AccountDelete#credentialIds} has less than or equal to 8 credentials.
+   */
+  @Value.Check
+  default void validateCredentialIdsLength() {
+    credentialIds().ifPresent(credentialIds -> Preconditions.checkArgument(
+      !credentialIds.isEmpty() && credentialIds.size() <= 8,
+      "credentialIds shouldn't be empty and must have less than or equal to 8 items."
+    ));
+  }
+
+  /**
+   * Validate {@link AccountDelete#credentialIds} are unique.
+   */
+  @Value.Check
+  default void validateUniqueCredentialIds() {
+    credentialIds().ifPresent(credentialIds -> Preconditions.checkArgument(
+      new HashSet<>(credentialIds).size() == credentialIds.size(),
+      "credentialIds should have unique values."
+    ));
+  }
 
 }

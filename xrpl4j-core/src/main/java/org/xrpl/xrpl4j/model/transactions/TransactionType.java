@@ -54,6 +54,21 @@ public enum TransactionType {
   CHECK_CREATE("CheckCreate"),
 
   /**
+   * The {@link TransactionType} for the {@link CredentialAccept} transaction.
+   */
+  CREDENTIAL_ACCEPT("CredentialAccept"),
+
+  /**
+   * The {@link TransactionType} for the {@link CredentialCreate} transaction.
+   */
+  CREDENTIAL_CREATE("CredentialCreate"),
+
+  /**
+   * The {@link TransactionType} for the {@link CredentialDelete} transaction.
+   */
+  CREDENTIAL_DELETE("CredentialDelete"),
+
+  /**
    * The {@link TransactionType} for the {@link DepositPreAuth} transaction.
    */
   DEPOSIT_PRE_AUTH("DepositPreauth"),

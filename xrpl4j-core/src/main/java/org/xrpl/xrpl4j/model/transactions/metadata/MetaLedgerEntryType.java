@@ -15,6 +15,7 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType ACCOUNT_ROOT = MetaLedgerEntryType.of("AccountRoot");
   MetaLedgerEntryType AMENDMENTS = MetaLedgerEntryType.of("Amendments");
   MetaLedgerEntryType CHECK = MetaLedgerEntryType.of("Check");
+  MetaLedgerEntryType CREDENTIAL = MetaLedgerEntryType.of("Credential");
   MetaLedgerEntryType DEPOSIT_PRE_AUTH = MetaLedgerEntryType.of("DepositPreauth");
   MetaLedgerEntryType DIRECTORY_NODE = MetaLedgerEntryType.of("DirectoryNode");
   MetaLedgerEntryType ESCROW = MetaLedgerEntryType.of("Escrow");
@@ -77,6 +78,8 @@ public interface MetaLedgerEntryType {
         return MetaAccountRootObject.class;
       case "Check":
         return MetaCheckObject.class;
+      case "Credential":
+        return MetaCredentialObject.class;
       case "DepositPreauth":
         return MetaDepositPreAuthObject.class;
       case "Escrow":

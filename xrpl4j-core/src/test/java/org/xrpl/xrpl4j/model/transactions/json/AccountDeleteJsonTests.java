@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,11 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
+
+import java.util.Collections;
 
 public class AccountDeleteJsonTests extends AbstractJsonTest {
 
@@ -45,19 +48,23 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .credentialIds(
+        Collections.singletonList(
+          Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37")))
       .networkId(NetworkId.of(1024))
       .build();
 
     String json = "{\n" +
-      "    \"TransactionType\": \"AccountDelete\",\n" +
-      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "    \"DestinationTag\": 13,\n" +
-      "    \"Fee\": \"5000000\",\n" +
-      "    \"Sequence\": 2470665,\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+                  "    \"TransactionType\": \"AccountDelete\",\n" +
+                  "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+                  "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+                  "    \"DestinationTag\": 13,\n" +
+                  "    \"Fee\": \"5000000\",\n" +
+                  "    \"Sequence\": 2470665,\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"CredentialIDs\": [02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37],\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }
@@ -77,15 +84,15 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"TransactionType\": \"AccountDelete\",\n" +
-      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "    \"DestinationTag\": 13,\n" +
-      "    \"Fee\": \"5000000\",\n" +
-      "    \"Flags\": 0,\n" +
-      "    \"Sequence\": 2470665,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+                  "    \"TransactionType\": \"AccountDelete\",\n" +
+                  "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+                  "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+                  "    \"DestinationTag\": 13,\n" +
+                  "    \"Fee\": \"5000000\",\n" +
+                  "    \"Flags\": 0,\n" +
+                  "    \"Sequence\": 2470665,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }
@@ -105,15 +112,15 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .build();
 
     String json = String.format("{\n" +
-      "    \"TransactionType\": \"AccountDelete\",\n" +
-      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "    \"DestinationTag\": 13,\n" +
-      "    \"Fee\": \"5000000\",\n" +
-      "    \"Flags\": %s,\n" +
-      "    \"Sequence\": 2470665,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+                                "    \"TransactionType\": \"AccountDelete\",\n" +
+                                "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+                                "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+                                "    \"DestinationTag\": 13,\n" +
+                                "    \"Fee\": \"5000000\",\n" +
+                                "    \"Flags\": %s,\n" +
+                                "    \"Sequence\": 2470665,\n" +
+                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }
@@ -134,16 +141,16 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .build();
 
     String json = "{\n" +
-      "    \"Foo\" : \"Bar\",\n" +
-      "    \"TransactionType\": \"AccountDelete\",\n" +
-      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-      "    \"DestinationTag\": 13,\n" +
-      "    \"Fee\": \"5000000\",\n" +
-      "    \"Sequence\": 2470665,\n" +
-      "    \"NetworkID\": 1024,\n" +
-      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-      "}";
+                  "    \"Foo\" : \"Bar\",\n" +
+                  "    \"TransactionType\": \"AccountDelete\",\n" +
+                  "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+                  "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+                  "    \"DestinationTag\": 13,\n" +
+                  "    \"Fee\": \"5000000\",\n" +
+                  "    \"Sequence\": 2470665,\n" +
+                  "    \"NetworkID\": 1024,\n" +
+                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+                  "}";
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }

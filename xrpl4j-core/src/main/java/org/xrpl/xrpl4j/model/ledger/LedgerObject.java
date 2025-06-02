@@ -41,6 +41,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableAccountRootObject.class, name = "AccountRoot"),
   //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
   @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
+  @JsonSubTypes.Type(value = ImmutableCredentialObject.class, name = "Credential"),
   @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
   //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
   @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
@@ -86,6 +87,11 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code Check} ledger objects.
      */
     CHECK("Check"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Credential} ledger objects.
+     */
+    CREDENTIAL("Credential"),
 
     /**
      * The {@link LedgerEntryType} for {@code DepositPreauth} ledger objects.

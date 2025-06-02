@@ -25,8 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -44,18 +42,18 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
-import org.xrpl.xrpl4j.model.client.ledger.OfferLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
-import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * An Integration Test to validate submission of PaymentChannel transactions.
@@ -261,6 +259,268 @@ public class PaymentChannelIT extends AbstractIT {
   }
 
   @Test
+  void createAndClaimPaymentChannelWithPreAuthorization() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////////
+    // Create source, destination and issuer accounts on ledger
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    //////////////////////
+    // Create and accept credentials.
+    CredentialType[] goodCredentials =
+      {CredentialType.ofPlainText("driver licence"), CredentialType.ofPlainText("voting card")};
+
+    createAndAcceptCredentials(issuerKeyPair, sourceKeyPair, goodCredentials);
+
+    // Receiver enables Deposit Authorization account setting.
+    enableDepositAuthorization(destinationKeyPair);
+
+    // Receiver pre-authorizes goodCredentials from the issuer.
+    preAuthorizeCredentials(issuerKeyPair, destinationKeyPair, goodCredentials);
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////////
+    // Submit a PaymentChannelCreate transaction to create a payment channel between the source and destination accounts
+    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .destination(destinationKeyPair.publicKey().deriveAddress())
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
+      sourceKeyPair.privateKey(), paymentChannelCreate
+    );
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
+    );
+
+    //////////////////////////
+    // Wait for the payment channel to exist in a validated ledger
+    // and validate its fields
+    PaymentChannelResultObject paymentChannel = scanForResult(
+      () -> getValidatedAccountChannels(sourceKeyPair.publicKey().deriveAddress()),
+      channels -> channels.channels().stream()
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationKeyPair.publicKey().deriveAddress()))
+    )
+      .channels().stream()
+      .filter(channel -> channel.destinationAccount().equals(destinationKeyPair.publicKey().deriveAddress()))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("Could not find payment channel for destination address."));
+
+    assertThat(paymentChannel.amount()).isEqualTo(paymentChannelCreate.amount());
+    assertThat(paymentChannel.settleDelay()).isEqualTo(paymentChannelCreate.settleDelay());
+    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(paymentChannelCreate.publicKey());
+    assertThat(paymentChannel.cancelAfter()).isEmpty();
+
+    PayChannelObject payChannelObject = scanForPayChannelObject(sourceKeyPair, destinationKeyPair);
+    assertThatEntryEqualsObjectFromAccountObjects(payChannelObject);
+
+    senderAccountInfo = scanForResult(
+      () -> getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////////
+    // Source account signs a claim
+    UnsignedClaim unsignedClaim = UnsignedClaim.builder()
+      .channel(paymentChannel.channelId())
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .build();
+
+    Signature signedClaimSignature = signatureService.sign(sourceKeyPair.privateKey(), unsignedClaim);
+
+    //////////////////////////
+    // Destination account verifies the claim signature
+    ChannelVerifyResult channelVerifyResult = xrplClient.channelVerify(
+      ChannelVerifyRequestParams.builder()
+        .channelId(paymentChannel.channelId())
+        .amount(unsignedClaim.amount())
+        .signature(signedClaimSignature.base16Value())
+        .publicKey(sourceKeyPair.publicKey().base16Value())
+        .build()
+    );
+    assertThat(channelVerifyResult.signatureVerified()).isTrue();
+
+    List<Hash256> credentialObjectIds = getCredentialObjectIds(issuerKeyPair, sourceKeyPair, goodCredentials);
+
+    AccountInfoResult destinationAccountInfo = scanForResult(
+      () -> getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////////
+    // Source account submits the signed claim to the ledger to get their XRP
+    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .channel(paymentChannel.channelId())
+      .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
+      .amount(unsignedClaim.amount())
+      .signature(signedClaimSignature.base16Value())
+      .publicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .credentialIds(credentialObjectIds)
+      .build();
+
+    SingleSignedTransaction<PaymentChannelClaim> signedPaymentChannelClaim = signatureService.sign(
+      sourceKeyPair.privateKey(), paymentChannelClaim
+    );
+    SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
+    assertThat(claimResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "PaymentChannelClaim transaction successful. https://testnet.xrpl.org/transactions/{}",
+      claimResult.transactionResult().hash()
+    );
+
+    //////////////////////////
+    // Validate that the destination account balance has gone up by the claim amount
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(destinationKeyPair.publicKey().deriveAddress()),
+      infoResult -> infoResult.accountData().balance().equals(
+        destinationAccountInfo.accountData().balance()
+          .plus(paymentChannelClaim.balance().get())
+      )
+    );
+
+    PayChannelObject payChannelObjectAfterClaim = scanForPayChannelObject(sourceKeyPair, destinationKeyPair);
+    assertThatEntryEqualsObjectFromAccountObjects(payChannelObjectAfterClaim);
+  }
+
+  @Test
+  void createAndClaimPaymentChannelWithPreAuthorizationFailure()
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    //////////////////////////
+    // Create source, destination and issuer accounts on ledger
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+
+    //////////////////////
+    // Create and accept credentials.
+    CredentialType[] goodCredentials =
+      {CredentialType.ofPlainText("driver licence"), CredentialType.ofPlainText("voting card")};
+
+    createAndAcceptCredentials(issuerKeyPair, sourceKeyPair, goodCredentials);
+
+    // Receiver enables Deposit Authorization account setting.
+    enableDepositAuthorization(destinationKeyPair);
+
+    // Receiver pre-authorizes goodCredentials from the issuer.
+    preAuthorizeCredentials(issuerKeyPair, destinationKeyPair, goodCredentials);
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////////
+    // Submit a PaymentChannelCreate transaction to create a payment channel between the source and destination accounts
+    PaymentChannelCreate paymentChannelCreate = PaymentChannelCreate.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(XrpCurrencyAmount.ofDrops(10000000))
+      .destination(destinationKeyPair.publicKey().deriveAddress())
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .build();
+
+    //////////////////////////
+    // Validate that the transaction was submitted successfully
+    SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
+      sourceKeyPair.privateKey(), paymentChannelCreate
+    );
+    SubmitResult<PaymentChannelCreate> createResult = xrplClient.submit(signedPaymentChannelCreate);
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "PaymentChannelCreate transaction successful. https://testnet.xrpl.org/transactions/{}",
+      createResult.transactionResult().hash()
+    );
+
+    //////////////////////////
+    // Wait for the payment channel to exist in a validated ledger
+    // and validate its fields
+    PaymentChannelResultObject paymentChannel = scanForResult(
+      () -> getValidatedAccountChannels(sourceKeyPair.publicKey().deriveAddress()),
+      channels -> channels.channels().stream()
+        .anyMatch(channel -> channel.destinationAccount().equals(destinationKeyPair.publicKey().deriveAddress()))
+    )
+      .channels().stream()
+      .filter(channel -> channel.destinationAccount().equals(destinationKeyPair.publicKey().deriveAddress()))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("Could not find payment channel for destination address."));
+
+    assertThat(paymentChannel.amount()).isEqualTo(paymentChannelCreate.amount());
+    assertThat(paymentChannel.settleDelay()).isEqualTo(paymentChannelCreate.settleDelay());
+    assertThat(paymentChannel.publicKeyHex()).isNotEmpty().get().isEqualTo(paymentChannelCreate.publicKey());
+    assertThat(paymentChannel.cancelAfter()).isEmpty();
+
+    PayChannelObject payChannelObject = scanForPayChannelObject(sourceKeyPair, destinationKeyPair);
+    assertThatEntryEqualsObjectFromAccountObjects(payChannelObject);
+
+    senderAccountInfo = scanForResult(
+      () -> getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////////
+    // Source account signs a claim
+    UnsignedClaim unsignedClaim = UnsignedClaim.builder()
+      .channel(paymentChannel.channelId())
+      .amount(XrpCurrencyAmount.ofDrops(1000000))
+      .build();
+
+    Signature signedClaimSignature = signatureService.sign(sourceKeyPair.privateKey(), unsignedClaim);
+
+    //////////////////////////
+    // Destination account verifies the claim signature
+    ChannelVerifyResult channelVerifyResult = xrplClient.channelVerify(
+      ChannelVerifyRequestParams.builder()
+        .channelId(paymentChannel.channelId())
+        .amount(unsignedClaim.amount())
+        .signature(signedClaimSignature.base16Value())
+        .publicKey(sourceKeyPair.publicKey().base16Value())
+        .build()
+    );
+    assertThat(channelVerifyResult.signatureVerified()).isTrue();
+
+    //////////////////////////
+    // Source account submits the signed claim to the ledger to get their XRP
+    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
+      .account(sourceKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .channel(paymentChannel.channelId())
+      .balance(paymentChannel.balance().plus(unsignedClaim.amount()))
+      .amount(unsignedClaim.amount())
+      .signature(signedClaimSignature.base16Value())
+      .publicKey(sourceKeyPair.publicKey().base16Value())
+      .signingPublicKey(sourceKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<PaymentChannelClaim> signedPaymentChannelClaim = signatureService.sign(
+      sourceKeyPair.privateKey(), paymentChannelClaim
+    );
+    SubmitResult<PaymentChannelClaim> claimResult = xrplClient.submit(signedPaymentChannelClaim);
+    assertThat(claimResult.engineResult()).isEqualTo("tecNO_PERMISSION");
+  }
+
+  @Test
   void createAddFundsAndSetExpirationToPaymentChannel() throws JsonRpcClientErrorException, JsonProcessingException {
     //////////////////////////
     // Create source and destination accounts on ledger
@@ -348,7 +608,7 @@ public class PaymentChannelIT extends AbstractIT {
             logger.warn("PAYCHAN: channel={} paymentChannel={}", channel, paymentChannel);
 
             return channel.channelId().equals(paymentChannel.channelId()) &&
-              channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
+                   channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
           }
         )
     );
@@ -393,8 +653,8 @@ public class PaymentChannelIT extends AbstractIT {
         .anyMatch(
           channel ->
             channel.channelId().equals(paymentChannel.channelId()) &&
-              channel.expiration().isPresent() &&
-              channel.expiration().get().equals(newExpiry)
+            channel.expiration().isPresent() &&
+            channel.expiration().get().equals(newExpiry)
         )
     );
 
@@ -470,11 +730,11 @@ public class PaymentChannelIT extends AbstractIT {
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-            ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress())
+          ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress())
         )
     ).accountObjects().stream()
       .filter(object -> PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-        ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress()))
+                        ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress()))
       .findFirst()
       .get();
   }

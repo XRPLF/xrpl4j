@@ -60,6 +60,9 @@ public class TransactionTypeTests {
     assertThat(TransactionType.CHECK_CANCEL.value()).isEqualTo("CheckCancel");
     assertThat(TransactionType.CHECK_CASH.value()).isEqualTo("CheckCash");
     assertThat(TransactionType.CHECK_CREATE.value()).isEqualTo("CheckCreate");
+    assertThat(TransactionType.CREDENTIAL_CREATE.value()).isEqualTo("CredentialCreate");
+    assertThat(TransactionType.CREDENTIAL_ACCEPT.value()).isEqualTo("CredentialAccept");
+    assertThat(TransactionType.CREDENTIAL_DELETE.value()).isEqualTo("CredentialDelete");
     assertThat(TransactionType.DEPOSIT_PRE_AUTH.value()).isEqualTo("DepositPreauth");
     assertThat(TransactionType.ENABLE_AMENDMENT.value()).isEqualTo("EnableAmendment");
     assertThat(TransactionType.ESCROW_CANCEL.value()).isEqualTo("EscrowCancel");

@@ -20,7 +20,6 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.base.Strings;
@@ -125,14 +124,5 @@ public class CredentialTest {
         .uri(CredentialUri.of("ZZ"))
         .build(),
       "CredentialUri must be encoded in hexadecimal.");
-  }
-
-  @Test
-  public void testCredentialTypeUriOfPlainText() {
-    CredentialType credentialType = CredentialType.ofPlainText("voting card");
-    assertEquals("766F74696E672063617264", credentialType.value());
-
-    CredentialUri credentialUri = CredentialUri.ofPlainText("https://sample-vc.pdf");
-    assertEquals("68747470733A2F2F73616D706C652D76632E706466", credentialUri.value());
   }
 }

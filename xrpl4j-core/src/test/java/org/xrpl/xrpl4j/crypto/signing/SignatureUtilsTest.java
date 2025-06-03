@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -73,25 +72,21 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
+import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
 import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
 import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.CredentialUri;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.DidData;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
-import org.xrpl.xrpl4j.model.transactions.DidDocument;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
-import org.xrpl.xrpl4j.model.transactions.DidUri;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
@@ -113,6 +108,8 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
@@ -137,6 +134,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Unit tests for {@link SignatureUtils}.
@@ -1307,6 +1306,42 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToPermissionedDoaminSet() {
+    List<CredentialWrapper> credentials = IntStream.range(0, 10)
+      .mapToObj(i ->
+        CredentialWrapper.builder()
+          .credential(Credential.builder()
+            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+            .build())
+          .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet transaction = PermissionedDomainSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .acceptedCredentials(credentials)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToPermissionedDoaminDelete() {
+    PermissionedDomainDelete transaction = PermissionedDomainDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .domainId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -2035,6 +2070,40 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addMultiSignatureToPermissionedDomainSet() {
+    List<CredentialWrapper> credentials = IntStream.range(0, 10)
+      .mapToObj(i ->
+        CredentialWrapper.builder()
+          .credential(Credential.builder()
+            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+            .build())
+          .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet transaction = PermissionedDomainSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .acceptedCredentials(credentials)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToPermissionedDomainDelete() {
+    PermissionedDomainDelete transaction = PermissionedDomainDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .domainId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addMultiSignaturesToTransactionUnsupported() {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
     when(transactionMock.signingPublicKey()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY);
@@ -2044,7 +2113,6 @@ public class SignatureUtilsTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Signing fields could not be added to the transaction.");
   }
-
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
   private void addSignatureToTransactionHelper(final Transaction transaction) {

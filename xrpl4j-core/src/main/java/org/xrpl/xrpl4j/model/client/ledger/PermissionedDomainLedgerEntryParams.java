@@ -30,13 +30,13 @@ public interface PermissionedDomainLedgerEntryParams {
    *
    * @return The unique {@link Address} of the owner of this PermissionedDomain object.
    */
-  Address owner();
+  Address account();
 
   /**
    * The Sequence Number of the transaction that created the PermissionedDomain object.
    *
    * @return An {@link UnsignedInteger}.
    */
-  UnsignedInteger sequence();
+  UnsignedInteger seq();
 
 }

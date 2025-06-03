@@ -877,8 +877,8 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
   void testPermissionedDomainParams() throws JSONException, JsonProcessingException {
     PermissionedDomainLedgerEntryParams permissionedDomainLedgerEntryParams =
       PermissionedDomainLedgerEntryParams.builder()
-        .owner(ED_ADDRESS)
-        .sequence(UnsignedInteger.valueOf(10))
+        .account(ED_ADDRESS)
+        .seq(UnsignedInteger.valueOf(10))
         .build();
     LedgerEntryRequestParams<PermissionedDomainObject> params = LedgerEntryRequestParams.permissionedDomain(
       permissionedDomainLedgerEntryParams,

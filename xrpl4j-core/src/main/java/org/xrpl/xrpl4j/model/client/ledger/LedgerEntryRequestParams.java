@@ -24,6 +24,7 @@ import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -428,6 +429,25 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests
+   * a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} ledger entry.
+   *
+   * @param params          The {@link PermissionedDomainLedgerEntryParams} specifying the Permissioned domain.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link PermissionedDomainObject}.
+   */
+  static LedgerEntryRequestParams<PermissionedDomainObject> permissionedDomain(
+    PermissionedDomainLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<PermissionedDomainObject>builder()
+      .permissionedDomain(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -584,6 +604,15 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<MpTokenLedgerEntryParams> mpToken();
 
   /**
+   * Look up an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}
+   * by {@link PermissionedDomainLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link PermissionedDomainLedgerEntryParams}.
+   */
+  @JsonProperty("permissioned_domain")
+  Optional<PermissionedDomainLedgerEntryParams> permissionedDomain();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -654,6 +683,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (mpToken().isPresent()) {
       return (Class<T>) MpTokenObject.class;
+    }
+
+    if (permissionedDomain().isPresent()) {
+      return (Class<T>) PermissionedDomainObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

@@ -42,7 +42,7 @@ public interface PermissionedDomainSet extends Transaction {
    * Ownership of one of these credentials automatically makes you a member of the domain.
    * When modifying an existing domain, this list replaces the existing list.
    *
-   * @return A {@link CredentialType} defining the type of credential.
+   * @return A list of {@link CredentialWrapper}.
    */
   @JsonProperty("AcceptedCredentials")
   List<CredentialWrapper> acceptedCredentials();

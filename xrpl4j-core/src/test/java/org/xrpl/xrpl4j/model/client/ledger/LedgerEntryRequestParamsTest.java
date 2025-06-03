@@ -32,6 +32,7 @@ import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -865,6 +866,46 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     String json =
       "{\n" +
       " \"credential\" : " + objectMapper.writeValueAsString(credentialParams) + ",\n" +
+      " \"binary\": false,\n" +
+      " \"ledger_index\": \"validated\"\n" +
+      "}";
+
+    assertCanSerializeAndDeserialize(params, json);
+  }
+
+  @Test
+  void testPermissionedDomainParams() throws JSONException, JsonProcessingException {
+    PermissionedDomainLedgerEntryParams permissionedDomainLedgerEntryParams =
+      PermissionedDomainLedgerEntryParams.builder()
+        .owner(ED_ADDRESS)
+        .sequence(UnsignedInteger.valueOf(10))
+        .build();
+    LedgerEntryRequestParams<PermissionedDomainObject> params = LedgerEntryRequestParams.permissionedDomain(
+      permissionedDomainLedgerEntryParams,
+      LedgerSpecifier.VALIDATED
+    );
+    assertThat(params.ledgerObjectClass()).isEqualTo(PermissionedDomainObject.class);
+
+    assertThat(params.index()).isEmpty();
+    assertThat(params.accountRoot()).isEmpty();
+    assertThat(params.amm()).isEmpty();
+    assertThat(params.offer()).isEmpty();
+    assertThat(params.rippleState()).isEmpty();
+    assertThat(params.check()).isEmpty();
+    assertThat(params.escrow()).isEmpty();
+    assertThat(params.paymentChannel()).isEmpty();
+    assertThat(params.depositPreAuth()).isEmpty();
+    assertThat(params.ticket()).isEmpty();
+    assertThat(params.nftPage()).isEmpty();
+    assertThat(params.did()).isEmpty();
+    assertThat(params.bridgeAccount()).isEmpty();
+    assertThat(params.mptIssuance()).isEmpty();
+    assertThat(params.credential()).isEmpty();
+    assertThat(params.permissionedDomain()).isNotEmpty().get().isEqualTo(permissionedDomainLedgerEntryParams);
+
+    String json =
+      "{\n" +
+      " \"permissioned_domain\" : " + objectMapper.writeValueAsString(permissionedDomainLedgerEntryParams) + ",\n" +
       " \"binary\": false,\n" +
       " \"ledger_index\": \"validated\"\n" +
       "}";

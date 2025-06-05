@@ -52,12 +52,12 @@ to load data from rippled.
 ### [IsFinalIT](./src/test/java/org/xrpl/xrpl4j/tests/IsFinalIT.java)
 
 - Check if a transaction is "final" on the ledger or not,
-  using [`XrplClient#isFinal`](../xrpl4j-client/src/main/java/org/xrpl/xrpl4j/client/XrplClient.java).
+  using [`XrplClient#isFinal`](../xrpl4j-client/src/main/java/org/xrpl/xrpl4j/client/XrplClient.java#L323).
 
 ### [IssuedCurrencyIT](./src/test/java/org/xrpl/xrpl4j/tests/IssuedCurrencyIT.java)
 
 - Issues a currency on the Testnet
-  using [Trustlines](https://xrpl.org/trust-lines-and-issuing.html#trust-lines-and-issuing) and shows how to send
+  using [Trustlines](https://xrpl.org/trust-lines-and-issuing.html#trust-lines) and shows how to send
   that issued currency across multiple hops using [rippling](https://xrpl.org/rippling.html)
 
 ### [LedgerResultIT](./src/test/java/org/xrpl/xrpl4j/tests/LedgerResultIT.java)
@@ -83,7 +83,7 @@ to load data from rippled.
 ### [SetRegularKeyIT](./src/test/java/org/xrpl/xrpl4j/tests/SetRegularKeyIT.java)
 
 - Sets the regular key using a newly-generated keypair using
-  the [`SetRegularKey`](../xrpl4j-core/src/main/java/model/transactions/SetRegularKey.java)
+  the [`SetRegularKey`](../xrpl4j-core/src/main/java/org/xrpl/xrpl4j/model/transactions/SetRegularKey.java)
   transaction
 
 ### [SignerListSet](./src/test/java/org/xrpl/xrpl4j/tests/SignerListSetIT.java)
@@ -116,7 +116,7 @@ to load data from rippled.
   that can derive private key information from an in-memory secret combined with a supplied unique identifier for key
   derivation.
 
-### [TransactUsingDerivedKeySignatureServiceIT](./src/test/java/org/xrpl/xrpl4j/tests/TransactUsingDerivedKeySignatureServiceIT.java)
+### [TransactUsingSignatureServiceIT](./src/test/java/org/xrpl/xrpl4j/tests/TransactUsingSignatureServiceIT.java)
 
 - Validates that the library can sign and validate transactions using
   a [`SignatureService`](../xrpl4j-core/src/main/java/org/xrpl/xrpl4j/crypto/signing/SignatureService.java)

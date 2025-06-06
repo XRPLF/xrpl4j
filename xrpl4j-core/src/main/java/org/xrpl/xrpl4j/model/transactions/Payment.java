@@ -147,6 +147,14 @@ public interface Payment extends Transaction {
   Optional<List<Hash256>> credentialIds();
 
   /**
+   * The domain the sender intends to use. Both the sender and destination must be part of this domain.
+   *
+   * @return A {@link Hash256} representing DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
    * Validate {@link Payment#credentialIds} has less than or equal to 8 credentials.
    */
   @Value.Check

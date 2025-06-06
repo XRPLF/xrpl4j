@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,11 @@ public class OfferCreateFlags extends TransactionFlags {
    */
   protected static final OfferCreateFlags SELL = new OfferCreateFlags(0x00080000L);
 
+  /**
+   * Constant {@link OfferCreateFlags} for the {@code tfHybrid} flag.
+   */
+  protected static final OfferCreateFlags HYBRID = new OfferCreateFlags(0x00100000L);
+
   private OfferCreateFlags(long value) {
     super(value);
   }
@@ -79,14 +84,16 @@ public class OfferCreateFlags extends TransactionFlags {
     boolean tfPassive,
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
-    boolean tfSell
+    boolean tfSell,
+    boolean tfHybrid
   ) {
     long value = Flags.of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
       tfPassive ? PASSIVE : UNSET,
       tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
       tfFillOrKill ? FILL_OR_KILL : UNSET,
-      tfSell ? SELL : UNSET
+      tfSell ? SELL : UNSET,
+      tfHybrid ? HYBRID : UNSET
     ).getValue();
     return new OfferCreateFlags(value);
   }
@@ -144,6 +151,15 @@ public class OfferCreateFlags extends TransactionFlags {
     return this.isSet(OfferCreateFlags.SELL);
   }
 
+  /**
+   * Indicates the offer is hybrid.
+   *
+   * @return {@code true} if {@code tfHybrid} is set, otherwise {@code false}.
+   */
+  public boolean tfHybrid() {
+    return this.isSet(OfferCreateFlags.HYBRID);
+  }
+
 
   /**
    * A builder class for {@link OfferCreateFlags} flags.
@@ -154,6 +170,7 @@ public class OfferCreateFlags extends TransactionFlags {
     private boolean tfImmediateOrCancel = false;
     private boolean tfFillOrKill = false;
     private boolean tfSell = false;
+    private boolean tfHybrid = false;
 
     /**
      * Set {@code tfPassive} to the given value.
@@ -204,6 +221,18 @@ public class OfferCreateFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfHybrid} to the given value.
+     *
+     * @param tfHybrid A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfHybrid(boolean tfHybrid) {
+      this.tfHybrid = tfHybrid;
+      return this;
+    }
+
+    /**
      * Build a new {@link OfferCreateFlags} from the current boolean values.
      *
      * @return A new {@link OfferCreateFlags}.
@@ -214,7 +243,8 @@ public class OfferCreateFlags extends TransactionFlags {
         tfPassive,
         tfImmediateOrCancel,
         tfFillOrKill,
-        tfSell
+        tfSell,
+        tfHybrid
       );
     }
   }

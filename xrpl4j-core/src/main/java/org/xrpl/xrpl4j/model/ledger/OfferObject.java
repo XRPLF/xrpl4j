@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.ledger;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,6 +31,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -158,6 +159,23 @@ public interface OfferObject extends LedgerObject {
    */
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
+
+  /**
+   * The domain that the offer must be a part of.
+   *
+   * @return A {@link Hash256} representing DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
+   * An additional list of order book directories that this offer belongs to.
+   * Currently, this field only applicable to hybrid offers.
+   *
+   * @return A list of {@link AdditionalBook} representing order book directories.
+   */
+  @JsonProperty("AdditionalBooks")
+  Optional<List<AdditionalBook>> additionalBooks();
 
   /**
    * The unique ID of the {@link OfferObject}.

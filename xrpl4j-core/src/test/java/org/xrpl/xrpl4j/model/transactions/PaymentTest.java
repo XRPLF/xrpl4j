@@ -144,6 +144,7 @@ public class PaymentTest {
       .fee(XrpCurrencyAmount.ofDrops(1000L))
       .amount(XrpCurrencyAmount.ofDrops(2000L))
       .credentialIds(credentialIds)
+      .domainId(Hash256.of("A2356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B3F"))
       .build();
   }
 

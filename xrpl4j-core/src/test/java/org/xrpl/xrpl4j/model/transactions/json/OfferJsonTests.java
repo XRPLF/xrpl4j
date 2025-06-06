@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -49,7 +50,8 @@ public class OfferJsonTests extends AbstractJsonTest {
       .networkId(NetworkId.of(1024))
       .build();
 
-    String json = "{\n" +
+    String json =
+      "{\n" +
       "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
       "    \"TransactionType\": \"OfferCancel\",\n" +
       "    \"Sequence\": 12,\n" +
@@ -75,7 +77,8 @@ public class OfferJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
+    String json =
+      "{\n" +
       "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
       "    \"TransactionType\": \"OfferCancel\",\n" +
       "    \"Sequence\": 12,\n" +
@@ -101,7 +104,8 @@ public class OfferJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = String.format("{\n" +
+    String json = String.format(
+      "{\n" +
       "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
       "    \"TransactionType\": \"OfferCancel\",\n" +
       "    \"Sequence\": 12,\n" +
@@ -128,7 +132,8 @@ public class OfferJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
+    String json =
+      "{\n" +
       "    \"Foo\" : \"Bar\",\n" +
       "    \"Account\": \"rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo\",\n" +
       "    \"TransactionType\": \"OfferCancel\",\n" +
@@ -155,10 +160,12 @@ public class OfferJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
       .networkId(NetworkId.of(1024))
       .build();
 
-    String json = "{\n" +
+    String json =
+      "{\n" +
       "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
       "    \"TransactionType\": \"OfferCreate\",\n" +
       "    \"Sequence\": 1,\n" +
@@ -168,6 +175,7 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"Fee\": \"12\",\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
       "    \"NetworkID\": 1024,\n" +
+      "    \"DomainID\": \"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
       "    \"Expiration\": 16\n" +
       "}";
 
@@ -184,13 +192,15 @@ public class OfferJsonTests extends AbstractJsonTest {
       .takerPays(XrpCurrencyAmount.ofDrops(14))
       .takerGets(XrpCurrencyAmount.ofDrops(15))
       .expiration(UnsignedInteger.valueOf(16))
-      .flags(OfferCreateFlags.builder().tfSell(true).build())
+      .flags(OfferCreateFlags.builder().tfSell(true).tfHybrid(true).build())
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
+      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
       .build();
 
-    String json = String.format("{\n" +
+    String json = String.format(
+      "{\n" +
       "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
       "    \"TransactionType\": \"OfferCreate\",\n" +
       "    \"Sequence\": 1,\n" +
@@ -200,8 +210,9 @@ public class OfferJsonTests extends AbstractJsonTest {
       "    \"Fee\": \"12\",\n" +
       "    \"Flags\": %s,\n" +
       "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\",\n" +
+      "    \"DomainID\": \"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
       "    \"Expiration\": 16\n" +
-      "}", offerCreate.flags());
+      "}", 2149056512L);
 
     assertCanSerializeAndDeserialize(offerCreate, json);
   }
@@ -223,7 +234,8 @@ public class OfferJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
+    String json =
+      "{\n" +
       "    \"Foo\" : \"Bar\",\n" +
       "    \"Account\": \"rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy\",\n" +
       "    \"TransactionType\": \"OfferCreate\",\n" +

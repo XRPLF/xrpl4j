@@ -10,6 +10,7 @@ import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Optional;
 
@@ -56,6 +57,15 @@ public interface BookOffersRequestParams extends XrplRequestParams {
    */
   @JsonProperty("taker")
   Optional<Address> taker();
+
+  /**
+   * The object ID of a PermissionedDomain object.
+   * If this field is included, then the offers will be filtered to only show the valid domain offers for that domain.
+   *
+   * @return An optionally-present {@link Hash256}.
+   */
+  @JsonProperty("domain")
+  Optional<Hash256> domain();
 
   /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,

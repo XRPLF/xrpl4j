@@ -52,6 +52,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -84,7 +85,7 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofDays(1))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
     SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
@@ -685,7 +686,7 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofDays(1))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 

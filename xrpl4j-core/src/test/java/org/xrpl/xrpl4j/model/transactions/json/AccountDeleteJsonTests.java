@@ -111,16 +111,17 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = String.format("{\n" +
-                                "    \"TransactionType\": \"AccountDelete\",\n" +
-                                "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-                                "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-                                "    \"DestinationTag\": 13,\n" +
-                                "    \"Fee\": \"5000000\",\n" +
-                                "    \"Flags\": %s,\n" +
-                                "    \"Sequence\": 2470665,\n" +
-                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+    String json = String.format(
+      "{\n" +
+      "    \"TransactionType\": \"AccountDelete\",\n" +
+      "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
+      "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
+      "    \"DestinationTag\": 13,\n" +
+      "    \"Fee\": \"5000000\",\n" +
+      "    \"Flags\": %s,\n" +
+      "    \"Sequence\": 2470665,\n" +
+      "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }

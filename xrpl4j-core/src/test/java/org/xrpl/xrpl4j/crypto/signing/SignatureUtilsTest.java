@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -79,19 +78,13 @@ import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.CredentialUri;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.DidData;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
-import org.xrpl.xrpl4j.model.transactions.DidDocument;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
-import org.xrpl.xrpl4j.model.transactions.DidUri;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
@@ -457,10 +450,12 @@ public class SignatureUtilsTest {
       .build();
 
     assertThat(SignatureUtils.getInstance().toSignableBytes(unsignedAttestation).hexValue())
-      .isEqualTo("3015000000000000000161400000000000000A601D40000000000000C88314B5F762798A53D543A014C" +
-                 "AF8B297CFF8F2F937E8801214B5F762798A53D543A014CAF8B297CFF8F2F937E8801514B5F762798A53D543A014CAF8B297CF" +
-                 "F8F2F937E800101301011914B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000" +
-                 "00014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000");
+      .isEqualTo(
+        "3015000000000000000161400000000000000A601D40000000000000C88314B5F762798A53D543A014C" +
+        "AF8B297CFF8F2F937E8801214B5F762798A53D543A014CAF8B297CFF8F2F937E8801514B5F762798A53D543A014CAF8B297CF" +
+        "F8F2F937E800101301011914B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000" +
+        "00014B5F762798A53D543A014CAF8B297CFF8F2F937E80000000000000000000000000000000000000000"
+      );
   }
 
   //////////////////

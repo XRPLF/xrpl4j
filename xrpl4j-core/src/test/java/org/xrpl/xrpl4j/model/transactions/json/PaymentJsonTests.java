@@ -131,9 +131,9 @@ public class PaymentJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
-      .credentialIds(
-        Collections.singletonList(
-          Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37")))
+      .credentialIds(Collections.singletonList(
+        Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37"))
+      )
       .build();
 
     String json = "{" +

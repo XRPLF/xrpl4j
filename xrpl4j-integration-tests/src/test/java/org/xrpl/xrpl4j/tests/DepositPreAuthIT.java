@@ -520,7 +520,7 @@ public class DepositPreAuthIT extends AbstractIT {
       );
     } else {
       List<DepositPreAuthCredential> authorizedCredentials =
-        depositPreAuth.authorizeCredentials().get().stream()
+        depositPreAuth.authorizeCredentials().stream()
           .map(cw -> DepositPreAuthCredential.builder()
             .credentialType(cw.credential().credentialType())
             .issuer(cw.credential().issuer())

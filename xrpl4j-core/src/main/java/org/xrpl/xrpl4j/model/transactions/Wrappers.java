@@ -867,9 +867,9 @@ public class Wrappers {
     /**
      * Constructs an {@link CredentialType} using a String value.
      *
-     * @param plaintext A string value representing the Uri in plaintext.
+     * @param plaintext A string value representing the Credential Type in plaintext.
      *
-     * @return An {@link CredentialType} of plaintext.
+     * @return A {@link CredentialType} of plaintext.
      */
     public static CredentialType ofPlainText(String plaintext) {
       return CredentialType.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
@@ -881,7 +881,9 @@ public class Wrappers {
     @Value.Check
     public void validateLength() {
       Preconditions.checkArgument(!this.value().isEmpty(), "CredentialType must not be empty.");
-      Preconditions.checkArgument(this.value().length() <= 128, "CredentialType must be <= 128 characters.");
+      Preconditions.checkArgument(
+        this.value().length() <= 128,
+        "CredentialType must be <= 64 characters or <= 128 hex characters.");
     }
 
     /**
@@ -892,7 +894,7 @@ public class Wrappers {
       try {
         BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("CredentialType must be encoded in hexadecimal", e);
+        throw new IllegalArgumentException("CredentialType must be encoded in hexadecimal.", e);
       }
     }
 
@@ -946,7 +948,9 @@ public class Wrappers {
     @Value.Check
     public void validateLength() {
       Preconditions.checkArgument(!this.value().isEmpty(), "CredentialUri must not be empty.");
-      Preconditions.checkArgument(this.value().length() <= 512, "CredentialUri must be <= 512 characters.");
+      Preconditions.checkArgument(this.value().length() <= 512,
+        "CredentialUri must be <= 256 characters or <= 512 hex characters." +
+          "hex characters.");
     }
 
     /**
@@ -957,7 +961,7 @@ public class Wrappers {
       try {
         BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("CredentialUri must be encoded in hexadecimal", e);
+        throw new IllegalArgumentException("CredentialUri must be encoded in hexadecimal.", e);
       }
     }
 

@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.io.BaseEncoding;
@@ -32,6 +33,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Unit tests for {@link DepositPreAuth}.
+ */
 public class DepositPreAuthTests {
 
   @Test
@@ -100,54 +104,48 @@ public class DepositPreAuthTests {
           .build()).build()
       ).collect(Collectors.toList());
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositPreAuth.builder()
-        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.valueOf(2))
-        .unauthorizeCredentials(moreThanEight)
-        .build(),
-      "UnauthorizeCredentials should not have more than 8 credentials."
-    );
+    assertThatThrownBy(() -> DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorizeCredentials(moreThanEight)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("AuthorizeCredentials should have less than or equal to 8 credentials.");
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositPreAuth.builder()
-        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.valueOf(2))
-        .authorizeCredentials(moreThanEight)
-        .build(),
-      "AuthorizeCredentials should not have more than 8 credentials."
-    );
+    assertThatThrownBy(() -> DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .unauthorizeCredentials(moreThanEight)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("UnauthorizeCredentials should have less than or equal to 8 credentials.");
   }
 
   @Test
   public void emptyUnauthorizeCredentialsOrAuthorizeCredentials() {
     List<CredentialWrapper> empty = new ArrayList<>();
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositPreAuth.builder()
-        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.valueOf(2))
-        .unauthorizeCredentials(empty)
-        .build(),
-      "UnauthorizeCredentials list should not be empty."
-    );
+    assertThatThrownBy(() -> DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorizeCredentials(empty)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage(
+        "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositPreAuth.builder()
-        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.valueOf(2))
-        .authorizeCredentials(empty)
-        .build(),
-      "AuthorizeCredentials list should not be empty."
-    );
+    assertThatThrownBy(() -> DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .unauthorizeCredentials(empty)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage(
+        "Exactly one of Authorize, Unauthorize, AuthorizeCredentials, or UnauthorizeCredentials must be present.");
   }
 
   @Test
@@ -160,26 +158,22 @@ public class DepositPreAuthTests {
           .build()).build()
       ).collect(Collectors.toList());
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositPreAuth.builder()
-        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.valueOf(2))
-        .unauthorizeCredentials(duplicateCreds)
-        .build(),
-      "UnauthorizeCredentials list should not be empty."
-    );
+    assertThatThrownBy(() -> DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorizeCredentials(duplicateCreds)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("AuthorizeCredentials should have unique credentials.");
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositPreAuth.builder()
-        .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
-        .fee(XrpCurrencyAmount.ofDrops(10))
-        .sequence(UnsignedInteger.valueOf(2))
-        .authorizeCredentials(duplicateCreds)
-        .build(),
-      "AuthorizeCredentials list should not be empty."
-    );
+    assertThatThrownBy(() -> DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .unauthorizeCredentials(duplicateCreds)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("UnauthorizeCredentials should have unique credentials.");
   }
 }

@@ -50,17 +50,19 @@ public interface DepositPreAuthLedgerEntryParams {
    * @return A list of type {@link DepositPreAuthCredential}.
    */
   @JsonProperty("authorized_credentials")
-  Optional<List<DepositPreAuthCredential>> authorizedCredentials();
+  List<DepositPreAuthCredential> authorizedCredentials();
 
   /**
    * Validate {@link DepositPreAuthLedgerEntryParams#authorizedCredentials} has less than or equal to 8 credentials.
    */
   @Value.Check
   default void validateCredentialsLength() {
-    authorizedCredentials().ifPresent(authorizedCredentials -> Preconditions.checkArgument(
-      !authorizedCredentials.isEmpty() && authorizedCredentials.size() <= 8,
-      "authorizedCredentials shouldn't be empty and must have less than or equal to 8 items."
-    ));
+    if (!authorizedCredentials().isEmpty()) {
+      Preconditions.checkArgument(
+        authorizedCredentials().size() <= 8,
+        "authorizedCredentials should have less than or equal to 8 items."
+      );
+    }
   }
 
   /**
@@ -68,9 +70,11 @@ public interface DepositPreAuthLedgerEntryParams {
    */
   @Value.Check
   default void validateUniqueCredentials() {
-    authorizedCredentials().ifPresent(authorizedCredentials -> Preconditions.checkArgument(
-      new HashSet<>(authorizedCredentials).size() == authorizedCredentials.size(),
-      "authorizedCredentials should have unique values."
-    ));
+    if (!authorizedCredentials().isEmpty()) {
+      Preconditions.checkArgument(
+        new HashSet<>(authorizedCredentials()).size() == authorizedCredentials().size(),
+        "authorizedCredentials should have unique values."
+      );
+    }
   }
 }

@@ -21,7 +21,7 @@ package org.xrpl.xrpl4j.model.client.path;
  */
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -33,7 +33,7 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -142,8 +142,10 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
 
   @Test
   public void testToFromJsonWithCredentialIds() throws JSONException, JsonProcessingException {
-    List<Hash256> credentials =
-      Collections.singletonList(Hash256.of("A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B"));
+    List<Hash256> credentials = Arrays.asList(
+      Hash256.of("A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B"),
+      Hash256.of("B9D3E1F5A72C1D58B6305290C3D8A1EE4F8D6F12ABCD1234567890ABCDEF1234")
+    );
 
     DepositAuthorizedRequestParams params = DepositAuthorizedRequestParams.builder()
       .sourceAccount(SOURCE_ACCOUNT)
@@ -152,30 +154,19 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
       .build();
 
+    assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE))));
+
     String json = "{" +
       "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
       "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
       "  \"credentials\": [" +
-      "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"" +
+      "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"," +
+      "    \"B9D3E1F5A72C1D58B6305290C3D8A1EE4F8D6F12ABCD1234567890ABCDEF1234\"" +
       "  ]," +
       "  \"ledger_index\": 1" +
       "}";
 
     assertCanSerializeAndDeserialize(params, json);
-  }
-
-  @Test
-  public void testForEmptyCredentials() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositAuthorizedRequestParams.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .credentials(Collections.emptyList())
-        .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
-        .build(),
-      "credentials shouldn't be empty and must have less than or equal to 8 items."
-    );
   }
 
   @Test
@@ -185,37 +176,32 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
         Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
       .collect(Collectors.toList());
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositAuthorizedRequestParams.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .credentials(moreThanEight)
-        .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
-        .build(),
-      "credentials shouldn't be empty and must have less than or equal to 8 items."
-    );
+    assertThatThrownBy(() -> DepositAuthorizedRequestParams.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .credentials(moreThanEight)
+      .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("credentials should have less than or equal to 8 items.");
   }
 
   @Test
   public void testDuplicateCredentials() {
     List<Hash256> randomIds = IntStream.range(0, 8)
-      .mapToObj(i ->
-        Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
+      .mapToObj(i -> Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
       .collect(Collectors.toList());
 
     randomIds.set(0, randomIds.get(1));
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> DepositAuthorizedRequestParams.builder()
-        .sourceAccount(SOURCE_ACCOUNT)
-        .destinationAccount(DESTINATION_ACCOUNT)
-        .credentials(randomIds)
-        .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
-        .build(),
-      "credentials should have unique values."
-    );
+    assertThatThrownBy(() -> DepositAuthorizedRequestParams.builder()
+      .sourceAccount(SOURCE_ACCOUNT)
+      .destinationAccount(DESTINATION_ACCOUNT)
+      .credentials(randomIds)
+      .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("credentials should have unique values.");
   }
 
   @Test

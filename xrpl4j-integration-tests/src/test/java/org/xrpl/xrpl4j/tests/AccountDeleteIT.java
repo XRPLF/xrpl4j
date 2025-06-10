@@ -471,6 +471,7 @@ class AccountDeleteIT extends AbstractIT {
 
     // get account info for the sequence number
     KeyPair senderAccount = constructRandomAccount();
+    xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );

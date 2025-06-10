@@ -33,7 +33,6 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Request parameters for a "deposit_authorized" rippled API method call.
@@ -77,7 +76,7 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    * @return A list of {@link Hash256} representing unique IDs of Credential entry in the ledger.
    */
   @JsonProperty("credentials")
-  Optional<List<Hash256>> credentials();
+  List<Hash256> credentials();
 
   /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
@@ -96,10 +95,12 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    */
   @Value.Check
   default void validateCredentialsLength() {
-    credentials().ifPresent(credentials -> Preconditions.checkArgument(
-      !credentials.isEmpty() && credentials.size() <= 8,
-      "credentials shouldn't be empty and must have less than or equal to 8 items."
-    ));
+    if (!credentials().isEmpty()) {
+      Preconditions.checkArgument(
+        credentials().size() <= 8,
+        "credentials should have less than or equal to 8 items."
+      );
+    }
   }
 
   /**
@@ -107,9 +108,11 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
    */
   @Value.Check
   default void validateUniqueCredentials() {
-    credentials().ifPresent(credentials -> Preconditions.checkArgument(
-      new HashSet<>(credentials).size() == credentials.size(),
-      "credentials should have unique values."
-    ));
+    if (!credentials().isEmpty()) {
+      Preconditions.checkArgument(
+        new HashSet<>(credentials()).size() == credentials().size(),
+        "credentials should have unique values."
+      );
+    }
   }
 }

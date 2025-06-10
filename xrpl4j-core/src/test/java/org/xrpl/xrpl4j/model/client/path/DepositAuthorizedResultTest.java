@@ -133,6 +133,7 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
     assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.ONE));
     assertThat(result.ledgerHash()).isEmpty();
     assertThat(result.depositAuthorized()).isTrue();
+    assertThat(result.credentials().isEmpty()).isTrue();
   }
 
   @Test
@@ -149,7 +150,8 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
     assertThat(result.ledgerIndex()).isNotEmpty().get().isEqualTo(LedgerIndex.of(UnsignedInteger.ONE));
     assertThat(result.ledgerHash()).isEmpty();
     assertThat(result.depositAuthorized()).isTrue();
-    assertThat(result.credentials()).isNotEmpty().get().isEqualTo(CREDENTIALS);
+    assertThat(result.credentials()).isEqualTo(CREDENTIALS);
+    assertThat(result.credentials().isEmpty()).isFalse();
   }
 
   @Test

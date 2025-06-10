@@ -217,11 +217,11 @@ public class DepositPreAuthIT extends AbstractIT {
         accountObjects ->
           accountObjects.accountObjects().stream().anyMatch(object ->
             DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-              ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize)
+              ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize)
           )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-        ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize))
+        ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize))
       .findFirst()
       .get();
 
@@ -353,11 +353,11 @@ public class DepositPreAuthIT extends AbstractIT {
         accountObjects ->
           accountObjects.accountObjects().stream().anyMatch(object ->
             DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-              ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize)
+              ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize)
           )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-        ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize))
+        ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize))
       .findFirst()
       .get();
 

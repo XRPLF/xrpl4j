@@ -90,7 +90,7 @@ public interface DepositPreAuthObject extends LedgerObject {
    * @return A list of {@link CredentialWrapper}.
    */
   @JsonProperty("AuthorizeCredentials")
-  Optional<List<CredentialWrapper>> authorizeCredentials();
+  List<CredentialWrapper> authorizeCredentials();
 
   /**
    * A bit-map of boolean flags. No flags are defined for {@link DepositPreAuthObject}s, so this value is always 0.

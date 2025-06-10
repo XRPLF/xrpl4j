@@ -28,20 +28,20 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 
 /**
- * {@link Credential} inner object with Issuer and CredentialType details.
+ * {@link DepositPreAuthCredential} inner object with Issuer and CredentialType details.
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableCredential.class)
-@JsonDeserialize(as = ImmutableCredential.class)
-public interface Credential {
+@JsonSerialize(as = ImmutableDepositPreAuthCredential.class)
+@JsonDeserialize(as = ImmutableDepositPreAuthCredential.class)
+public interface DepositPreAuthCredential {
 
   /**
    * Construct a builder for this class.
    *
-   * @return An {@link ImmutableCredential.Builder}.
+   * @return An {@link ImmutableDepositPreAuthCredential.Builder}.
    */
-  static ImmutableCredential.Builder builder() {
-    return ImmutableCredential.builder();
+  static ImmutableDepositPreAuthCredential.Builder builder() {
+    return ImmutableDepositPreAuthCredential.builder();
   }
 
   /**

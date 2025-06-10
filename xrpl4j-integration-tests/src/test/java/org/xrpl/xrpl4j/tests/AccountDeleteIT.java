@@ -65,8 +65,8 @@ class AccountDeleteIT extends AbstractIT {
    */
   private static boolean shouldRun() {
     return System.getProperty("useTestnet") == null &&
-           System.getProperty("useDevnet") == null &&
-           System.getProperty("useClioTestnet") == null;
+      System.getProperty("useDevnet") == null &&
+      System.getProperty("useClioTestnet") == null;
   }
 
   /**
@@ -434,8 +434,7 @@ class AccountDeleteIT extends AbstractIT {
 
   @Test
   void testAccountDeleteItWithDepositAuth() throws JsonRpcClientErrorException, JsonProcessingException {
-    // create two accounts, one will be the destination in the tx
-    KeyPair senderAccount = constructRandomAccount();
+    // create destination of the transaction.
     KeyPair receiverAccount = constructRandomAccount();
     xrplEnvironment.acceptLedger(); // <-- Progress the ledger to ensure the above tx becomes Validated.
 
@@ -471,6 +470,7 @@ class AccountDeleteIT extends AbstractIT {
     );
 
     // get account info for the sequence number
+    KeyPair senderAccount = constructRandomAccount();
     AccountInfoResult accountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderAccount.publicKey().deriveAddress())
     );

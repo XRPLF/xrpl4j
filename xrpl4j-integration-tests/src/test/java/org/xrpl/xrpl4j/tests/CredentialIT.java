@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.tests;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
@@ -47,11 +49,9 @@ import org.xrpl.xrpl4j.model.transactions.CredentialUri;
 import java.time.Duration;
 import java.util.function.Predicate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * Integration test to validate creation, acceptance, and deletion of credentials using CredentialCreate,
- * CredentialAccept and CredentialDelete transactions respectively.
+ * Integration test to validate creation, acceptance, and deletion of credentials using `CredentialCreate`,
+ * `CredentialAccept` and `CredentialDelete` transactions respectively.
  */
 public class CredentialIT extends AbstractIT {
 
@@ -69,7 +69,7 @@ public class CredentialIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
-    // Create a Credential representing driver licence.
+    // Create a Credential representing driver license.
     CredentialCreate credCreateTx = CredentialCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
@@ -339,7 +339,7 @@ public class CredentialIT extends AbstractIT {
 
   private Predicate<LedgerObject> findMatch(Address issuer, Address subject, CredentialType credentialType) {
     return ledgerObject -> ((CredentialObject) ledgerObject).issuer().equals(issuer) &&
-                           ((CredentialObject) ledgerObject).credentialType().equals(credentialType) &&
-                           ((CredentialObject) ledgerObject).subject().equals(subject);
+      ((CredentialObject) ledgerObject).credentialType().equals(credentialType) &&
+      ((CredentialObject) ledgerObject).subject().equals(subject);
   }
 }

@@ -59,15 +59,15 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .validated(true)
       .build();
 
-    String json = "{\n" +
-                  " \"deposit_authorized\":true," +
-                  " \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  " \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  " \"ledger_index\": 1," +
-                  " \"status\":\"success\"," +
-                  " \"deposit_authorized\": true," +
-                  " \"validated\":true" +
-                  "}";
+    String json = "{" +
+      "  \"deposit_authorized\":true," +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_index\": 1," +
+      "  \"status\":\"success\"," +
+      "  \"deposit_authorized\": true," +
+      "  \"validated\":true" +
+      "}";
 
     assertCanSerializeAndDeserialize(result, json);
   }
@@ -83,15 +83,15 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .validated(true)
       .build();
 
-    String json = "{\n" +
-                  " \"deposit_authorized\":true," +
-                  " \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  " \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  " \"ledger_current_index\":9," +
-                  " \"status\":\"success\"," +
-                  " \"deposit_authorized\": true," +
-                  " \"validated\":true" +
-                  "}";
+    String json = "{" +
+      "  \"deposit_authorized\":true," +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_current_index\":9," +
+      "  \"status\":\"success\"," +
+      "  \"deposit_authorized\": true," +
+      "  \"validated\":true" +
+      "}";
 
     assertCanSerializeAndDeserialize(result, json);
   }
@@ -108,15 +108,15 @@ public class DepositAuthorizedResultTest extends AbstractJsonTest {
       .credentials(CREDENTIALS)
       .build();
 
-    String json = "{\n" +
-                  "  \"deposit_authorized\": true,\n" +
-                  "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\",\n" +
-                  "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\",\n" +
-                  "  \"ledger_current_index\": 9,\n" +
-                  "  \"status\": \"success\",\n" +
-                  "  \"validated\": true,\n" +
-                  "  \"credentials\": " + objectMapper.writeValueAsString(CREDENTIALS) +
-                  "}";
+    String json = "{" +
+      "  \"deposit_authorized\": true," +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_current_index\": 9," +
+      "  \"status\": \"success\"," +
+      "  \"validated\": true," +
+      "  \"credentials\": " + objectMapper.writeValueAsString(CREDENTIALS) +
+      "}";
     assertCanSerializeAndDeserialize(result, json);
   }
 

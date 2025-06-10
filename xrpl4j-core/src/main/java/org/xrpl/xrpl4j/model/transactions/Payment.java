@@ -53,8 +53,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
-   * PaymentFlags} object containing the {@link Long} representation of the set bits.
+   * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a
+   * {@link PaymentFlags} object containing the {@link Long} representation of the set bits.
    *
    * <p>The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
    *
@@ -67,8 +67,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * The amount of currency to deliver. If the {@link PaymentFlags#tfPartialPayment()} flag is set, deliver up to
-   * this amount instead.
+   * The amount of currency to deliver. If the {@link PaymentFlags#tfPartialPayment()} flag is set, deliver up to this
+   * amount instead.
    *
    * @return A {@link CurrencyAmount} representing the amount of a specified currency to deliver.
    */
@@ -129,8 +129,8 @@ public interface Payment extends Transaction {
   Optional<CurrencyAmount> sendMax();
 
   /**
-   * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the {@link
-   * PaymentFlags#tfPartialPayment()}* flag is set.
+   * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the
+   * {@link PaymentFlags#tfPartialPayment()}* flag is set.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
    */
@@ -138,8 +138,8 @@ public interface Payment extends Transaction {
   Optional<CurrencyAmount> deliverMin();
 
   /**
-   * Set of Credentials to authorize a deposit made by this transaction.
-   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger.
    *
    * @return An {@link Optional} of type {@link Hash256}.
    */

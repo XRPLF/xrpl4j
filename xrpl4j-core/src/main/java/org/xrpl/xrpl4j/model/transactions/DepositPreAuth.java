@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of
- * this transaction. This is only useful if the sender of this transaction is using (or plans to use)
+ * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of this
+ * transaction. This is only useful if the sender of this transaction is using (or plans to use)
  * <a href="https://xrpl.org/depositauth.html">Deposit Authorization</a>.
  *
  * <p>You can use this transaction to preauthorize certain counterparties before you enable Deposit Authorization.
@@ -54,8 +54,8 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link DepositPreAuth}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link DepositPreAuth}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -101,9 +101,8 @@ public interface DepositPreAuth extends Transaction {
   Optional<List<CredentialWrapper>> unauthorizeCredentials();
 
   /**
-   * Validate that exactly one of {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()}
-   * or {@link DepositPreAuth#authorizeCredentials()} or {@link DepositPreAuth#unauthorizeCredentials()}
-   * is present.
+   * Validate that exactly one of {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()} or
+   * {@link DepositPreAuth#authorizeCredentials()} or {@link DepositPreAuth#unauthorizeCredentials()} is present.
    */
   @Value.Check
   default void validateExactOneFieldPresence() {
@@ -126,8 +125,8 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()}
-   * has less than or equal to 8 credentials.
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()} has less
+   * than or equal to 8 credentials.
    */
   @Value.Check
   default void validateCredentialList() {
@@ -147,8 +146,8 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()}
-   * has unique credentials each.
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()} has
+   * unique credentials each.
    */
   @Value.Check
   default void validateForUniqueValues() {

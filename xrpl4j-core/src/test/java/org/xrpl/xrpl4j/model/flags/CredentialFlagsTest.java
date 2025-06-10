@@ -20,9 +20,9 @@ public class CredentialFlagsTest extends AbstractFlagsTest {
   @Test
   void testJson() throws JSONException, JsonProcessingException {
     FlagsWrapper wrapper = FlagsWrapper.of(CredentialFlags.ACCEPTED);
-    String json = String.format("{\n" +
-                                "               \"flags\": %s\n" +
-                                "}", CredentialFlags.ACCEPTED.getValue());
+    String json = String.format("{" +
+      "  \"flags\": %s" +
+      "}", CredentialFlags.ACCEPTED.getValue());
 
     assertCanSerializeAndDeserialize(wrapper, json);
   }
@@ -30,9 +30,9 @@ public class CredentialFlagsTest extends AbstractFlagsTest {
   @Test
   void testUnsetJson() throws JSONException, JsonProcessingException {
     FlagsWrapper wrapper = FlagsWrapper.of(CredentialFlags.UNSET);
-    String json = String.format("{\n" +
-                                "               \"flags\": %s\n" +
-                                "}", CredentialFlags.UNSET.getValue());
+    String json = String.format("{" +
+      "  \"flags\": %s" +
+      "}", CredentialFlags.UNSET.getValue());
 
     assertCanSerializeAndDeserialize(wrapper, json);
   }

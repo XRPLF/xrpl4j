@@ -10,7 +10,8 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import java.util.Optional;
 
 /**
- * Create a Credential object in the ledger. The sender of this transaction is the issuer of the credential.
+ * A {@link CredentialCreate} transaction creates a `Credential` object in the ledger. The sender of this transaction is
+ * the issuer of the credential.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCredentialCreate.class)
@@ -51,8 +52,8 @@ public interface CredentialCreate extends Transaction {
   Optional<UnsignedLong> expiration();
 
   /**
-   * Arbitrary additional data about the credential,
-   * such as the URL where users can look up an associated Verifiable Credential document.
+   * Arbitrary additional data about the credential, such as the URL where users can look up an associated Verifiable
+   * Credential document.
    *
    * @return An optionally-present {@link CredentialUri}.
    */

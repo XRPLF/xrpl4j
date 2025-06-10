@@ -9,8 +9,8 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 
 /**
- * Parameters that uniquely identifies an {@link CredentialObject} on ledger that can be used
- * in a {@link LedgerEntryRequestParams} to request an {@link CredentialObject}.
+ * Parameters that uniquely identify an {@link CredentialObject} on ledger. Can be used in a
+ * {@link LedgerEntryRequestParams} to request an {@link CredentialObject}.
  */
 @Immutable
 @JsonSerialize(as = ImmutableCredentialLedgerEntryParams.class)
@@ -47,5 +47,4 @@ public interface CredentialLedgerEntryParams {
    */
   @JsonProperty("credential_type")
   CredentialType credentialType();
-
 }

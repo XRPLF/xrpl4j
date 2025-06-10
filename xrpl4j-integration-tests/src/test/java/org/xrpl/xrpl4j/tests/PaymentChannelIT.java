@@ -609,7 +609,7 @@ public class PaymentChannelIT extends AbstractIT {
             logger.warn("PAYCHAN: channel={} paymentChannel={}", channel, paymentChannel);
 
             return channel.channelId().equals(paymentChannel.channelId()) &&
-                   channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
+              channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
           }
         )
     );
@@ -654,8 +654,8 @@ public class PaymentChannelIT extends AbstractIT {
         .anyMatch(
           channel ->
             channel.channelId().equals(paymentChannel.channelId()) &&
-            channel.expiration().isPresent() &&
-            channel.expiration().get().equals(newExpiry)
+              channel.expiration().isPresent() &&
+              channel.expiration().get().equals(newExpiry)
         )
     );
 
@@ -731,11 +731,11 @@ public class PaymentChannelIT extends AbstractIT {
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-          ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress())
+            ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress())
         )
     ).accountObjects().stream()
       .filter(object -> PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-                        ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress()))
+        ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress()))
       .findFirst()
       .get();
   }

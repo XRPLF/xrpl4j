@@ -26,18 +26,18 @@ public class CredentialObjectJsonTest extends AbstractJsonTest {
       .flags(CredentialFlags.ACCEPTED)
       .build();
 
-    String json = " {\n" +
-                  " \"CredentialType\": \"4472697665722773206C6963656E7365\",\n" +
-                  " \"Flags\": 65536,\n" +
-                  " \"Issuer\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\",\n" +
-                  " \"IssuerNode\": \"0\",\n" +
-                  " \"LedgerEntryType\": \"Credential\",\n" +
-                  " \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\",\n" +
-                  " \"PreviousTxnLgrSeq\": 3105995,\n" +
-                  " \"Subject\": \"r9EKPUSDehySNoxqBNuezALVgynRBMNpYi\",\n" +
-                  " \"SubjectNode\": \"0\",\n" +
-                  " \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"\n" +
-                  "}";
+    String json = " {" +
+      "  \"CredentialType\": \"4472697665722773206C6963656E7365\"," +
+      "  \"Flags\": 65536," +
+      "  \"Issuer\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\"," +
+      "  \"IssuerNode\": \"0\"," +
+      "  \"LedgerEntryType\": \"Credential\"," +
+      "  \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\"," +
+      "  \"PreviousTxnLgrSeq\": 3105995," +
+      "  \"Subject\": \"r9EKPUSDehySNoxqBNuezALVgynRBMNpYi\"," +
+      "  \"SubjectNode\": \"0\"," +
+      "  \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialObject, json);
   }

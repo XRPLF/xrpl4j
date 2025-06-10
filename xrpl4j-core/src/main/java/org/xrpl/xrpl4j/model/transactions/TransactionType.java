@@ -182,8 +182,7 @@ public enum TransactionType {
    * The {@link TransactionType} for the {@link Clawback} transaction.
    *
    * <p>This constant will be marked {@link Beta} until the Clawback amendment is enabled on mainnet. Its API is
-   * subject
-   * to change.</p>
+   * subject to change.</p>
    */
   @Beta
   CLAWBACK("Clawback"),
@@ -245,9 +244,8 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainAccountCreateCommit} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to
-   * change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_ACCOUNT_CREATE_COMMIT("XChainAccountCreateCommit"),
@@ -255,8 +253,8 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainAddAccountCreateAttestation} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION("XChainAddAccountCreateAttestation"),
@@ -264,28 +262,26 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainAddClaimAttestation} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_ADD_CLAIM_ATTESTATION("XChainAddClaimAttestation"),
 
-
   /**
    * The {@link TransactionType} for the {@link XChainClaim} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_CLAIM("XChainClaim"),
 
-
   /**
    * The {@link TransactionType} for the {@link XChainCommit} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_COMMIT("XChainCommit"),
@@ -293,8 +289,8 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainCreateBridge} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_CREATE_BRIDGE("XChainCreateBridge"),
@@ -302,8 +298,8 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainCreateClaimId} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_CREATE_CLAIM_ID("XChainCreateClaimID"),
@@ -311,8 +307,8 @@ public enum TransactionType {
   /**
    * The {@link TransactionType} for the {@link XChainModifyBridge} transaction.
    *
-   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its API
-   * is subject to change.</p>
+   * <p>This constant will be marked {@link Beta} until the featureXChainBridge amendment is enabled on mainnet. Its
+   * API is subject to change.</p>
    */
   @Beta
   XCHAIN_MODIFY_BRIDGE("XChainModifyBridge"),

@@ -45,12 +45,12 @@ public interface DepositPreAuthLedgerEntryParams {
   Optional<Address> authorized();
 
   /**
-   * A list of {@link Credential} that received the preauthorization.
+   * A list of {@link DepositPreAuthCredential} that received the preauthorization.
    *
-   * @return A list of type {@link Credential}.
+   * @return A list of type {@link DepositPreAuthCredential}.
    */
   @JsonProperty("authorized_credentials")
-  Optional<List<Credential>> authorizedCredentials();
+  Optional<List<DepositPreAuthCredential>> authorizedCredentials();
 
   /**
    * Validate {@link DepositPreAuthLedgerEntryParams#authorizedCredentials} has less than or equal to 8 credentials.
@@ -73,5 +73,4 @@ public interface DepositPreAuthLedgerEntryParams {
       "authorizedCredentials should have unique values."
     ));
   }
-
 }

@@ -71,8 +71,8 @@ public interface DepositAuthorizedRequestParams extends XrplRequestParams {
   Address destinationAccount();
 
   /**
-   * If this field is included, then the credential will be taken into account
-   * when analyzing whether the sender can send funds to the destination.
+   * If this field is included, then the credential will be taken into account when analyzing whether the sender can
+   * send funds to the destination.
    *
    * @return A list of {@link Hash256} representing unique IDs of Credential entry in the ledger.
    */

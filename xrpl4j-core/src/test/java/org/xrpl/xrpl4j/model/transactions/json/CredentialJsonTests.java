@@ -52,16 +52,16 @@ public class CredentialJsonTests extends AbstractJsonTest {
       )
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"TransactionType\":\"CredentialCreate\",\n" +
-                  "   \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"TransactionType\":\"CredentialCreate\"," +
+      "  \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialCreate, json);
   }
@@ -81,17 +81,17 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"TransactionType\":\"CredentialCreate\",\n" +
-                  "   \"Flags\": 0,\n" +
-                  "   \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"TransactionType\":\"CredentialCreate\"," +
+      "  \"Flags\": 0," +
+      "  \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialCreate, json);
   }
@@ -111,17 +111,17 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"TransactionType\":\"CredentialCreate\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"TransactionType\":\"CredentialCreate\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialCreate, json);
   }
@@ -142,18 +142,18 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"TransactionType\":\"CredentialCreate\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"Foo\" : \"Bar\",\n" +
-                  "   \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Subject\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"TransactionType\":\"CredentialCreate\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"Foo\" : \"Bar\"," +
+      "  \"URI\":\"68747470733A2F2F73616D706C652D76632E706466\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialCreate, json);
   }
@@ -172,15 +172,15 @@ public class CredentialJsonTests extends AbstractJsonTest {
       )
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"TransactionType\":\"CredentialAccept\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"TransactionType\":\"CredentialAccept\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialAccept, json);
   }
@@ -199,16 +199,16 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Flags\": 0,\n" +
-                  "   \"TransactionType\":\"CredentialAccept\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Flags\": 0," +
+      "  \"TransactionType\":\"CredentialAccept\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialAccept, json);
   }
@@ -227,16 +227,16 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"TransactionType\":\"CredentialAccept\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"TransactionType\":\"CredentialAccept\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialAccept, json);
   }
@@ -256,17 +256,17 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"Foo\" : \"Bar\",\n" +
-                  "   \"TransactionType\":\"CredentialAccept\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"Foo\" : \"Bar\"," +
+      "  \"TransactionType\":\"CredentialAccept\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialAccept, json);
   }
@@ -285,15 +285,15 @@ public class CredentialJsonTests extends AbstractJsonTest {
       )
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"TransactionType\":\"CredentialDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"TransactionType\":\"CredentialDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialDelete, json);
   }
@@ -312,16 +312,16 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Flags\": 0,\n" +
-                  "   \"TransactionType\":\"CredentialDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Flags\": 0," +
+      "  \"TransactionType\":\"CredentialDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialDelete, json);
   }
@@ -340,16 +340,16 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"TransactionType\":\"CredentialDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"TransactionType\":\"CredentialDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialDelete, json);
   }
@@ -369,17 +369,17 @@ public class CredentialJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\",\n" +
-                  "   \"CredentialType\":\"647269766572206C6963656E6365\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"Foo\" : \"Bar\",\n" +
-                  "   \"TransactionType\":\"CredentialDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Issuer\":\"rffipZrgdn3ZYo4o2JN4Cymf3sP9m4rKuU\"," +
+      "  \"CredentialType\":\"647269766572206C6963656E6365\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"Foo\" : \"Bar\"," +
+      "  \"TransactionType\":\"CredentialDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(credentialDelete, json);
   }

@@ -58,11 +58,11 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
 
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.VALIDATED));
 
-    String json = "{\n" +
-                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  "            \"ledger_index\": \"validated\"" +
-                  "        }";
+    String json = "{" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_index\": \"validated\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -76,11 +76,11 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .build();
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
-    String json = "{\n" +
-                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  "            \"ledger_index\": \"current\"" +
-                  "        }";
+    String json = "{" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_index\": \"current\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -95,11 +95,11 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
 
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CLOSED));
 
-    String json = "{\n" +
-                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  "            \"ledger_index\": \"closed\"" +
-                  "        }";
+    String json = "{" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_index\": \"closed\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -113,11 +113,11 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .build();
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
-    String json = "{\n" +
-                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  "            \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"" +
-                  "        }";
+    String json = "{" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_hash\": \"" + LEDGER_HASH.value() + "\"" +
+      "  }";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -131,11 +131,11 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .build();
     assertThat(params.ledgerSpecifier().equals(LedgerSpecifier.CURRENT));
 
-    String json = "{\n" +
-                  "            \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
-                  "            \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
-                  "            \"ledger_index\": 1" +
-                  "        }";
+    String json = "{" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"ledger_index\": 1" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }
@@ -152,14 +152,14 @@ public class DepositAuthorizedRequestParamsTest extends AbstractJsonTest {
       .ledgerSpecifier(LedgerSpecifier.of(LedgerIndex.of(UnsignedInteger.ONE)))
       .build();
 
-    String json = "{\n" +
-                  "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\",\n" +
-                  "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\",\n" +
-                  "  \"credentials\": [\n" +
-                  "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"\n" +
-                  "  ],\n" +
-                  "  \"ledger_index\": 1\n" +
-                  "}";
+    String json = "{" +
+      "  \"source_account\": \"" + SOURCE_ACCOUNT.value() + "\"," +
+      "  \"destination_account\": \"" + DESTINATION_ACCOUNT.value() + "\"," +
+      "  \"credentials\": [" +
+      "    \"A182EFBD154C9E80195082F86C1C8952FC0760A654B886F61BB0A59803B4387B\"" +
+      "  ]," +
+      "  \"ledger_index\": 1" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }

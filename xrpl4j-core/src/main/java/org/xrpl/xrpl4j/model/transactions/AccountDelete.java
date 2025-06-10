@@ -51,8 +51,8 @@ public interface AccountDelete extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link AccountDelete}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -84,8 +84,8 @@ public interface AccountDelete extends Transaction {
   Optional<UnsignedInteger> destinationTag();
 
   /**
-   * Set of Credentials to authorize a deposit made by this transaction.
-   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger.
    *
    * @return An {@link Optional} of type {@link Hash256}.
    */

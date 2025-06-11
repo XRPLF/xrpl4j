@@ -40,6 +40,10 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
@@ -833,8 +837,8 @@ public class Wrappers {
   }
 
   /**
-   * Wrapped String representing MPT metadata. This wrapper class may prove useful in the future if we ever
-   * want to encapsulate various MPTokenMetadata standard formats.
+   * Wrapped String representing MPT metadata. This wrapper class may prove useful in the future if we ever want to
+   * encapsulate various MPTokenMetadata standard formats.
    */
   @Value.Immutable
   @Wrapped
@@ -846,6 +850,140 @@ public class Wrappers {
     @Override
     public String toString() {
       return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a Credential Type.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialType.class, using = CredentialTypeSerializer.class)
+  @JsonDeserialize(as = CredentialType.class, using = CredentialTypeDeserializer.class)
+  @Beta
+  abstract static class _CredentialType extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs an {@link CredentialType} using a String value.
+     *
+     * @param plaintext A string value representing the Credential Type in plaintext.
+     *
+     * @return A {@link CredentialType} of plaintext.
+     */
+    public static CredentialType ofPlainText(String plaintext) {
+      return CredentialType.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link CredentialType}'s value's length is capped at 128 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "CredentialType must not be empty.");
+      Preconditions.checkArgument(
+        this.value().length() <= 128,
+        "CredentialType must be <= 64 characters or <= 128 hex characters.");
+    }
+
+    /**
+     * Validates that a {@link CredentialType}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("CredentialType must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && obj instanceof CredentialType) {
+        String otherValue = ((CredentialType) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a Credential Uri.
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = CredentialUri.class, using = CredentialUriSerializer.class)
+  @JsonDeserialize(as = CredentialUri.class, using = CredentialUriDeserializer.class)
+  @Beta
+  abstract static class _CredentialUri extends Wrapper<String> implements Serializable {
+
+    /**
+     * Constructs an {@link CredentialUri} using a String value.
+     *
+     * @param plaintext A string value representing the Uri in plaintext.
+     *
+     * @return An {@link CredentialUri} of plaintext.
+     */
+    public static CredentialUri ofPlainText(String plaintext) {
+      return CredentialUri.of(BaseEncoding.base16().encode(plaintext.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Validates that a {@link CredentialUri}'s value's length is capped at 512 characters.
+     */
+    @Value.Check
+    public void validateLength() {
+      Preconditions.checkArgument(!this.value().isEmpty(), "CredentialUri must not be empty.");
+      Preconditions.checkArgument(this.value().length() <= 512,
+        "CredentialUri must be <= 256 characters or <= 512 hex characters." +
+          "hex characters.");
+    }
+
+    /**
+     * Validates that a {@link CredentialUri}'s value is encoded in hexadecimal characters.
+     */
+    @Value.Check
+    public void validateHexEncoding() {
+      try {
+        BaseEncoding.base16().decode(this.value().toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("CredentialUri must be encoded in hexadecimal.", e);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj != null && obj instanceof CredentialUri) {
+        String otherValue = ((CredentialUri) obj).value();
+        if (otherValue != null) {
+          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
 
   }

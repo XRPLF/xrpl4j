@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,26 +33,35 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.DepositPreAuthCredential;
 import org.xrpl.xrpl4j.model.client.ledger.DepositPreAuthLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
-import org.xrpl.xrpl4j.model.ledger.CheckObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
-import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
-import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Credential;
+import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * An Integration Test to validate submission of DepositPreAuth transactions.
  */
 public class DepositPreAuthIT extends AbstractIT {
+
+  private static final CredentialType[] GOOD_CREDENTIALS_TYPES =
+    {CredentialType.ofPlainText("driver licence"), CredentialType.ofPlainText("voting card")};
 
   @Test
   public void preauthorizeAccountAndReceivePayment() throws JsonRpcClientErrorException, JsonProcessingException {
@@ -62,13 +71,12 @@ public class DepositPreAuthIT extends AbstractIT {
     KeyPair senderKeyPair = createRandomAccountEd25519();
 
     /////////////////////////
-    // Enable Deposit Preauthorization on the receiver account
-    FeeResult feeResult = xrplClient.fee();
-    AccountInfoResult receiverAccountInfo =
-      enableDepositPreauth(receiverKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    // Enable Deposit Authorization on the receiver account
+    AccountInfoResult receiverAccountInfo = enableDepositAuthorization(receiverKeyPair);
 
     /////////////////////////
     // Give Preauthorization for the sender to send a funds to the receiver
+    FeeResult feeResult = xrplClient.fee();
     DepositPreAuth depositPreAuth = DepositPreAuth.builder()
       .account(receiverKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -92,15 +100,15 @@ public class DepositPreAuthIT extends AbstractIT {
     /////////////////////////
     // Validate that the DepositPreAuthObject was added to the receiver's account objects
     DepositPreAuthObject preAuthObject = (DepositPreAuthObject) this.scanForResult(
-      () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
-      accountObjects ->
-        accountObjects.accountObjects().stream().anyMatch(object ->
-          DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-            ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress())
-        )
+        () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
+        accountObjects ->
+          accountObjects.accountObjects().stream().anyMatch(object ->
+            DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+              ((DepositPreAuthObject) object).authorize().get().equals(senderKeyPair.publicKey().deriveAddress())
+          )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-        ((DepositPreAuthObject) object).authorize().equals(senderKeyPair.publicKey().deriveAddress()))
+        ((DepositPreAuthObject) object).authorize().get().equals(senderKeyPair.publicKey().deriveAddress()))
       .findFirst()
       .get();
 
@@ -159,6 +167,260 @@ public class DepositPreAuthIT extends AbstractIT {
   }
 
   @Test
+  public void preauthorizeCredentialsAndReceivePayment() throws JsonRpcClientErrorException, JsonProcessingException {
+    /////////////////////////
+    // Create random issuer/receiver accounts
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    /////////////////////////
+    // Enable Deposit Authorization on the receiver account
+    AccountInfoResult receiverAccountInfo = enableDepositAuthorization(receiverKeyPair);
+
+    /////////////////////////
+    // Submit a DepositPreAuth transaction with authorizeCredentials set.
+    List<CredentialWrapper> credsToAuthorize = Arrays.stream(GOOD_CREDENTIALS_TYPES).map(
+      credentialType -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .credentialType(credentialType)
+          .issuer(issuerKeyPair.publicKey().deriveAddress())
+          .build()
+        ).build()).collect(Collectors.toList());
+
+    FeeResult feeResult = xrplClient.fee();
+
+    DepositPreAuth depositPreAuthTx = DepositPreAuth.builder()
+      .account(receiverKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .signingPublicKey(receiverKeyPair.publicKey())
+      .authorizeCredentials(credsToAuthorize)
+      .build();
+
+    SingleSignedTransaction<DepositPreAuth> singedDepositPreAuth = this.signatureService.sign(
+      receiverKeyPair.privateKey(), depositPreAuthTx
+    );
+
+    SubmitResult<DepositPreAuth> depositPreAuthSubmitResult = xrplClient.submit(singedDepositPreAuth);
+
+    assertThat(depositPreAuthSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(depositPreAuthSubmitResult.transactionResult().hash(), CredentialAccept.class)
+    );
+
+    /////////////////////////
+    // Validate that the DepositPreAuthObject was added to the receiver's account objects
+    DepositPreAuthObject preAuthObject = (DepositPreAuthObject) this.scanForResult(
+        () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
+        accountObjects ->
+          accountObjects.accountObjects().stream().anyMatch(object ->
+            DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+              ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize)
+          )
+      ).accountObjects().stream()
+      .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+        ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize))
+      .findFirst()
+      .get();
+
+    assertEntryEqualsObjectFromAccountObjects(depositPreAuthTx, preAuthObject);
+
+    /////////////////////////
+    // Create credential from issuer to sender account.
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    createCredentials(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
+
+    List<Hash256> credObjectIds = getCredentialObjectIds(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
+
+    /////////////////////////
+    // Validate badCredentials (credentials aren't accepted) is thrown since credentials are not yet accepted.
+    assertThrows(JsonRpcClientErrorException.class,
+      () -> xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+        .sourceAccount(senderKeyPair.publicKey().deriveAddress())
+        .destinationAccount(receiverKeyPair.publicKey().deriveAddress())
+        .credentials(credObjectIds)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build()),
+      "badCredentials (credentials aren't accepted)"
+    );
+
+    /////////////////////////
+    // Accept credential from the issuer.
+    acceptCredentials(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
+
+    /////////////////////////
+    // Validate that the `deposit_authorized` client call is implemented properly by ensuring it aligns with the
+    // result found in the account object.
+    final boolean depositAuthorizedAfterAccepting =
+      xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+        .sourceAccount(senderKeyPair.publicKey().deriveAddress())
+        .destinationAccount(receiverKeyPair.publicKey().deriveAddress())
+        .credentials(credObjectIds)
+        .build()).depositAuthorized();
+
+    assertThat(depositAuthorizedAfterAccepting).isTrue();
+
+    /////////////////////////
+    // Send a Payment from the sender wallet to the receiver wallet with credentialIds included.
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+    Payment payment = Payment.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .signingPublicKey(senderKeyPair.publicKey())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .credentialIds(credObjectIds)
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .build();
+
+    SingleSignedTransaction<Payment> singedPayment = signatureService.sign(
+      senderKeyPair.privateKey(), payment
+    );
+
+    SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
+    assertThat(paymentResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    /////////////////////////
+    // Validate that the Payment was included in a validated ledger
+    TransactionResult<Payment> validatedPayment = this.scanForResult(
+      () -> this.getValidatedTransaction(paymentResult.transactionResult().hash(), Payment.class)
+    );
+
+    /////////////////////////
+    // And validate that the receiver's balance was updated correctly
+    this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()),
+      info -> {
+        XrpCurrencyAmount expectedBalance = receiverAccountInfo.accountData().balance()
+          .minus(payment.fee())
+          .plus(((XrpCurrencyAmount) validatedPayment.transaction().amount()));
+        return info.accountData().balance().equals(expectedBalance);
+      });
+  }
+
+  @Test
+  public void unableToReceivePaymentWithoutCredentials() throws JsonRpcClientErrorException, JsonProcessingException {
+    /////////////////////////
+    // Create random issuer/receiver accounts
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    /////////////////////////
+    // Enable Deposit Authorization on the receiver account
+    AccountInfoResult receiverAccountInfo = enableDepositAuthorization(receiverKeyPair);
+
+    /////////////////////////
+    // Submit a DepositPreAuth transaction with authorizeCredentials set.
+    List<CredentialWrapper> credsToAuthorize = Arrays.stream(GOOD_CREDENTIALS_TYPES).map(
+      credentialType -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .credentialType(credentialType)
+          .issuer(issuerKeyPair.publicKey().deriveAddress())
+          .build()
+        ).build()).collect(Collectors.toList());
+
+    FeeResult feeResult = xrplClient.fee();
+
+    DepositPreAuth depositPreAuthTx = DepositPreAuth.builder()
+      .account(receiverKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .signingPublicKey(receiverKeyPair.publicKey())
+      .authorizeCredentials(credsToAuthorize)
+      .build();
+
+    SingleSignedTransaction<DepositPreAuth> singedDepositPreAuth = this.signatureService.sign(
+      receiverKeyPair.privateKey(), depositPreAuthTx
+    );
+
+    SubmitResult<DepositPreAuth> depositPreAuthSubmitResult = xrplClient.submit(singedDepositPreAuth);
+
+    assertThat(depositPreAuthSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(depositPreAuthSubmitResult.transactionResult().hash(), CredentialAccept.class)
+    );
+
+    /////////////////////////
+    // Validate that the DepositPreAuthObject was added to the receiver's account objects
+    DepositPreAuthObject preAuthObject = (DepositPreAuthObject) this.scanForResult(
+        () -> this.getValidatedAccountObjects(receiverKeyPair.publicKey().deriveAddress()),
+        accountObjects ->
+          accountObjects.accountObjects().stream().anyMatch(object ->
+            DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+              ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize)
+          )
+      ).accountObjects().stream()
+      .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
+        ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize))
+      .findFirst()
+      .get();
+
+    assertEntryEqualsObjectFromAccountObjects(depositPreAuthTx, preAuthObject);
+
+    /////////////////////////
+    // Create credential from issuer to sender account.
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    createCredentials(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
+
+    List<Hash256> credObjectIds = getCredentialObjectIds(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
+
+    /////////////////////////
+    // Validate badCredentials (credentials aren't accepted) is thrown since credentials are not yet accepted.
+    assertThrows(JsonRpcClientErrorException.class,
+      () -> xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+        .sourceAccount(senderKeyPair.publicKey().deriveAddress())
+        .destinationAccount(receiverKeyPair.publicKey().deriveAddress())
+        .credentials(credObjectIds)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build()),
+      "badCredentials (credentials aren't accepted)"
+    );
+
+    /////////////////////////
+    // Accept credential from the issuer.
+    acceptCredentials(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
+
+    /////////////////////////
+    // Validate that the `deposit_authorized` client call is implemented properly by ensuring it aligns with the
+    // result found in the account object.
+    final boolean depositAuthorizedAfterAccepting =
+      xrplClient.depositAuthorized(DepositAuthorizedRequestParams.builder()
+        .sourceAccount(senderKeyPair.publicKey().deriveAddress())
+        .destinationAccount(receiverKeyPair.publicKey().deriveAddress())
+        .credentials(credObjectIds)
+        .build()).depositAuthorized();
+
+    assertThat(depositAuthorizedAfterAccepting).isTrue();
+
+    /////////////////////////
+    // Send a Payment from the sender wallet to the receiver wallet without credentialIds.
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+    Payment payment = Payment.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .signingPublicKey(senderKeyPair.publicKey())
+      .amount(XrpCurrencyAmount.ofDrops(12345))
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .build();
+
+    SingleSignedTransaction<Payment> singedPayment = signatureService.sign(
+      senderKeyPair.privateKey(), payment
+    );
+
+    SubmitResult<Payment> paymentResult = xrplClient.submit(singedPayment);
+    assertThat(paymentResult.engineResult()).isEqualTo("tecNO_PERMISSION");
+  }
+
+  @Test
   public void accountUnableToReceivePaymentsWithoutPreauthorization()
     throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
@@ -168,8 +430,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Enable Deposit Preauthorization on the receiver account
-    FeeResult feeResult = xrplClient.fee();
-    enableDepositPreauth(receiverKeyPair, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    enableDepositAuthorization(receiverKeyPair);
 
     /////////////////////////
     // Validate that the receiver has not given authorization to anyone to send them Payments
@@ -186,6 +447,7 @@ public class DepositPreAuthIT extends AbstractIT {
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
+    FeeResult feeResult = xrplClient.fee();
     Payment payment = Payment.builder()
       .account(senderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -239,60 +501,40 @@ public class DepositPreAuthIT extends AbstractIT {
     );
   }
 
-  /**
-   * Enable the lsfDepositPreauth flag on a given account by submitting an {@link AccountSet} transaction.
-   *
-   * @param wallet The {@link KeyPair} of the account to enable Deposit Preauthorization on.
-   * @param fee    The {@link XrpCurrencyAmount} of the ledger fee for the AccountSet transaction.
-   *
-   * @return The {@link AccountInfoResult} of the wallet once the {@link AccountSet} transaction has been applied.
-   *
-   * @throws JsonRpcClientErrorException If {@code xrplClient} throws an error.
-   */
-  private AccountInfoResult enableDepositPreauth(
-    KeyPair wallet,
-    XrpCurrencyAmount fee
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult accountInfoResult = this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress())
-    );
-    AccountSet accountSet = AccountSet.builder()
-      .account(wallet.publicKey().deriveAddress())
-      .fee(fee)
-      .sequence(accountInfoResult.accountData().sequence())
-      .signingPublicKey(wallet.publicKey())
-      .setFlag(AccountSet.AccountSetFlag.DEPOSIT_AUTH)
-      .build();
+  private void assertEntryEqualsObjectFromAccountObjects(DepositPreAuth depositPreAuth,
+    DepositPreAuthObject preAuthObject) throws JsonRpcClientErrorException {
 
-    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
-      wallet.privateKey(), accountSet
-    );
-    SubmitResult<AccountSet> accountSetResult = xrplClient.submit(signedAccountSet);
-    assertThat(accountSetResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "AccountSet to enable Deposit Preauth successful. https://testnet.xrpl.org/transactions/{}",
-      accountSetResult.transactionResult().hash()
-    );
-    return this.scanForResult(
-      () -> this.getValidatedAccountInfo(wallet.publicKey().deriveAddress()),
-      accountInfo -> accountInfo.accountData().flags().lsfDepositAuth()
-    );
-  }
+    LedgerEntryResult<DepositPreAuthObject> preAuthEntry;
 
-  private void assertEntryEqualsObjectFromAccountObjects(
-    DepositPreAuth depositPreAuth,
-    DepositPreAuthObject preAuthObject
-  )
-    throws JsonRpcClientErrorException {
-    LedgerEntryResult<DepositPreAuthObject> preAuthEntry = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.depositPreAuth(
-        DepositPreAuthLedgerEntryParams.builder()
-          .owner(depositPreAuth.account())
-          .authorized(depositPreAuth.authorize().get())
-          .build(),
-        LedgerSpecifier.CURRENT
-      )
-    );
+    if (depositPreAuth.authorize().isPresent()) {
+      preAuthEntry = xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.depositPreAuth(
+          DepositPreAuthLedgerEntryParams.builder()
+            .owner(depositPreAuth.account())
+            .authorized(depositPreAuth.authorize().get())
+            .build(),
+          LedgerSpecifier.CURRENT
+        )
+      );
+    } else {
+      List<DepositPreAuthCredential> authorizedCredentials =
+        depositPreAuth.authorizeCredentials().stream()
+          .map(cw -> DepositPreAuthCredential.builder()
+            .credentialType(cw.credential().credentialType())
+            .issuer(cw.credential().issuer())
+            .build())
+          .collect(Collectors.toList());
+
+      preAuthEntry = xrplClient.ledgerEntry(
+        LedgerEntryRequestParams.depositPreAuth(
+          DepositPreAuthLedgerEntryParams.builder()
+            .owner(depositPreAuth.account())
+            .authorizedCredentials(authorizedCredentials)
+            .build(),
+          LedgerSpecifier.CURRENT
+        )
+      );
+    }
 
     assertThat(preAuthEntry.node()).isEqualTo(preAuthObject);
 

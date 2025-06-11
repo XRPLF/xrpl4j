@@ -33,17 +33,16 @@ import com.ripple.cryptoconditions.CryptoConditionReader;
 import com.ripple.cryptoconditions.CryptoConditionWriter;
 import com.ripple.cryptoconditions.Fulfillment;
 import com.ripple.cryptoconditions.PreimageSha256Fulfillment;
-import com.ripple.cryptoconditions.PreimageSha256Fulfillment.AbstractPreimageSha256Fulfillment;
 import com.ripple.cryptoconditions.der.DerEncodingException;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
-import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
-import org.xrpl.xrpl4j.model.transactions.AccountSet.AccountSetFlag;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -198,6 +197,41 @@ public interface EscrowFinish extends Transaction {
    */
   @JsonProperty("Fulfillment")
   Optional<String> fulfillmentRawValue();
+
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger.
+   *
+   * @return A list of type {@link Hash256}.
+   */
+  @JsonProperty("CredentialIDs")
+  List<Hash256> credentialIds();
+
+  /**
+   * Validate {@link EscrowFinish#credentialIds} has less than or equal to 8 credentials.
+   */
+  @Value.Check
+  default void validateCredentialIdsLength() {
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        credentialIds().size() <= 8,
+        "CredentialIDs should have less than or equal to 8 items."
+      );
+    }
+  }
+
+  /**
+   * Validate {@link EscrowFinish#credentialIds} are unique.
+   */
+  @Value.Check
+  default void validateUniqueCredentialIds() {
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        new HashSet<>(credentialIds()).size() == credentialIds().size(),
+        "CredentialIDs should have unique values."
+      );
+    }
+  }
 
   /**
    * Normalization method to try to get {@link #condition()} and {@link #conditionRawValue()} to match.

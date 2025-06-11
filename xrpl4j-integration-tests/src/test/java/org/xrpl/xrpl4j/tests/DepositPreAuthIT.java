@@ -263,7 +263,7 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(depositAuthorizedAfterAccepting).isTrue();
 
     /////////////////////////
-    // Send a Payment from the sender wallet to the receiver wallet
+    // Send a Payment from the sender wallet to the receiver wallet with credentialIds included.
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
@@ -303,7 +303,7 @@ public class DepositPreAuthIT extends AbstractIT {
   }
 
   @Test
-  public void unableToReceivePaymentWithWithoutCreds() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void unableToReceivePaymentWithoutCredentials() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
     // Create random issuer/receiver accounts
     KeyPair issuerKeyPair = createRandomAccountEd25519();
@@ -399,7 +399,7 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(depositAuthorizedAfterAccepting).isTrue();
 
     /////////////////////////
-    // Send a Payment from the sender wallet to the receiver wallet
+    // Send a Payment from the sender wallet to the receiver wallet without credentialIds.
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
@@ -501,10 +501,8 @@ public class DepositPreAuthIT extends AbstractIT {
     );
   }
 
-  private void assertEntryEqualsObjectFromAccountObjects(
-    DepositPreAuth depositPreAuth,
-    DepositPreAuthObject preAuthObject
-  ) throws JsonRpcClientErrorException {
+  private void assertEntryEqualsObjectFromAccountObjects(DepositPreAuth depositPreAuth,
+    DepositPreAuthObject preAuthObject) throws JsonRpcClientErrorException {
 
     LedgerEntryResult<DepositPreAuthObject> preAuthEntry;
 

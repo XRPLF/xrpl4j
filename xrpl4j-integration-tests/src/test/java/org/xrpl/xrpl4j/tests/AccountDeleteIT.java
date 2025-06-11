@@ -485,7 +485,7 @@ class AccountDeleteIT extends AbstractIT {
     LedgerResult lastLedgerResult = xrplClient.ledger(LedgerRequestParams.builder()
       .ledgerSpecifier(LedgerSpecifier.CURRENT).build());
 
-    // create, sign & submit AccountDelete tx
+    // create, sign & submit AccountDelete tx without senderAccount being pre-authorized.
     AccountDelete accountDelete = AccountDelete.builder()
       .account(senderAccount.publicKey().deriveAddress())
       .fee(XrpCurrencyAmount.builder().value(UnsignedLong.valueOf(2000000)).build())

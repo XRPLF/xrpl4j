@@ -212,6 +212,7 @@ public class CredentialIT extends AbstractIT {
       () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class)
     );
 
+    // Wait for 5 seconds to let credential expire.
     Thread.sleep(5 * 1000);
 
     AccountInfoResult subjectAccountInfo = this.scanForResult(

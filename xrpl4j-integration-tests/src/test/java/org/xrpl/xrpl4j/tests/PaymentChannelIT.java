@@ -363,7 +363,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
 
     //////////////////////////
-    // Source account submits the signed claim to the ledger to get their XRP
+    // Source account submits the signed claim to the ledger.
     PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -501,7 +501,7 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(channelVerifyResult.signatureVerified()).isTrue();
 
     //////////////////////////
-    // Source account submits the signed claim to the ledger to get their XRP
+    // Source account submits the signed claim without credentialIds.
     PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())

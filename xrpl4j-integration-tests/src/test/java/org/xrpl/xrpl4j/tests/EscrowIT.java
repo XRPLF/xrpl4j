@@ -691,6 +691,7 @@ public class EscrowIT extends AbstractIT {
     );
     List<Hash256> credentialObjectIds = getCredentialObjectIds(issuerKeyPair, senderKeyPair, goodCredentials);
 
+    // Not passing all the credentialIds.
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(senderKeyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())

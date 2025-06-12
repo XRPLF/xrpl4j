@@ -53,7 +53,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Integration tests to validate create, update, and delete of permissioned domains.
+ * Integration tests to validate creation, update, and deletion of permissioned domain using `PermissionedDomainSet` and
+ * `PermissionedDomainDelete` transactions.
  */
 public class PermissionedDomainIT extends AbstractIT {
 
@@ -79,13 +80,12 @@ public class PermissionedDomainIT extends AbstractIT {
 
     // Create a PermissionedDomain object.
     List<CredentialWrapper> credentials = Arrays.stream(GOOD_CREDENTIALS_TYPES)
-      .map(credentialType ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(issuerKeyPair.publicKey().deriveAddress())
-            .credentialType(credentialType)
-            .build())
+      .map(credentialType -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(issuerKeyPair.publicKey().deriveAddress())
+          .credentialType(credentialType)
           .build())
+        .build())
       .collect(Collectors.toList());
 
     PermissionedDomainSet permissionedDomainSetTx = PermissionedDomainSet.builder()
@@ -110,9 +110,7 @@ public class PermissionedDomainIT extends AbstractIT {
         domainSetTxIntermediateResult.transactionResult().hash(), PermissionedDomainSet.class)
     );
 
-    assertEntryEqualsObjectFromAccountObjects(
-      ownerKeyPair.publicKey().deriveAddress(), createSequence
-    );
+    assertEntryEqualsObjectFromAccountObjects(ownerKeyPair.publicKey().deriveAddress(), createSequence);
 
     // Update PermissionedDomain object.
     ownerAccountInfo = this.scanForResult(
@@ -196,13 +194,12 @@ public class PermissionedDomainIT extends AbstractIT {
 
     // Create a PermissionedDomain object.
     List<CredentialWrapper> credentials = Arrays.stream(GOOD_CREDENTIALS_TYPES)
-      .map(credentialType ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(issuerKeyPair.publicKey().deriveAddress())
-            .credentialType(credentialType)
-            .build())
+      .map(credentialType -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(issuerKeyPair.publicKey().deriveAddress())
+          .credentialType(credentialType)
           .build())
+        .build())
       .collect(Collectors.toList());
 
     PermissionedDomainSet permissionedDomainSetTx = PermissionedDomainSet.builder()

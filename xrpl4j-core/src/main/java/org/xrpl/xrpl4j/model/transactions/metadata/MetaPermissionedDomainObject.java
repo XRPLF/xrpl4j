@@ -31,10 +31,10 @@ import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * This object represents a permissioned domain controlled by the
- * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject#owner}.
+ * This object represents a permissioned domain controlled by the {@link MetaPermissionedDomainObject#owner}.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableMetaPermissionedDomainObject.class)
@@ -59,7 +59,7 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return The {@link Address} of the domain owner.
    */
   @JsonProperty("Owner")
-  Address owner();
+  Optional<Address> owner();
 
   /**
    * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
@@ -68,7 +68,7 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return A {@link String} containing the owner node hint.
    */
   @JsonProperty("OwnerNode")
-  String ownerNode();
+  Optional<String> ownerNode();
 
   /**
    * The Sequence value of the {@link org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet} transaction that created
@@ -78,7 +78,7 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("Sequence")
-  UnsignedInteger sequence();
+  Optional<UnsignedInteger> sequence();
 
   /**
    * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
@@ -95,7 +95,7 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return A {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
-  Hash256 previousTxnId();
+  Optional<Hash256> previousTxnId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
@@ -103,5 +103,5 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return A {@link UnsignedInteger} representing the previous transaction sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
-  UnsignedInteger previousTransactionLedgerSequence();
+  Optional<UnsignedInteger> previousTransactionLedgerSequence();
 }

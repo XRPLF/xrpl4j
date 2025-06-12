@@ -32,7 +32,6 @@ import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
 import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -40,9 +39,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class PermissionedDomainJsonTests extends AbstractJsonTest {
+public class PermissionedDomainSetJsonTest extends AbstractJsonTest {
 
-  // PermissionedDomainSet
   @Test
   public void testPermissionedDomainSetJson() throws JsonProcessingException, JSONException {
     List<CredentialWrapper> acceptedCredentials = getCredentials(10);
@@ -163,122 +161,18 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(permissionedDomainSet, json);
   }
 
-  // PermissionedDomainDelete
-  @Test
-  public void testPermissionedDomainDeleteJson() throws JsonProcessingException, JSONException {
-    PermissionedDomainDelete permissionedDomainDelete = PermissionedDomainDelete.builder()
-      .account(Address.of("rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c"))
-      .sequence(UnsignedInteger.valueOf(3195631))
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
-      )
-      .build();
-
-    String json = "{" +
-      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
-      "  \"Fee\":\"1\"," +
-      "  \"Sequence\":3195631," +
-      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
-      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
-      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
-      "}";
-
-    assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
-  }
-
-  @Test
-  public void testPermissionedDomainDeleteJsonWithUnsetFlags() throws JsonProcessingException, JSONException {
-    PermissionedDomainDelete permissionedDomainDelete = PermissionedDomainDelete.builder()
-      .account(Address.of("rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c"))
-      .sequence(UnsignedInteger.valueOf(3195631))
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
-      )
-      .flags(TransactionFlags.UNSET)
-      .build();
-
-    String json = "{" +
-      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
-      "  \"Fee\":\"1\"," +
-      "  \"Sequence\":3195631," +
-      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
-      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
-      "  \"Flags\": 0," +
-      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
-      "}";
-
-    assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
-  }
-
-  @Test
-  public void testPermissionedDomainDeleteJsonWithNonZeroFlags() throws JsonProcessingException, JSONException {
-    PermissionedDomainDelete permissionedDomainDelete = PermissionedDomainDelete.builder()
-      .account(Address.of("rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c"))
-      .sequence(UnsignedInteger.valueOf(3195631))
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
-      )
-      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
-      .build();
-
-    String json = "{" +
-      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
-      "  \"Fee\":\"1\"," +
-      "  \"Sequence\":3195631," +
-      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
-      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
-      "  \"Flags\": 2147483648," +
-      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
-      "}";
-
-    assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
-  }
-
-  @Test
-  public void testPermissionedDomainDeleteJsonWithUnknownFields() throws JsonProcessingException, JSONException {
-    PermissionedDomainDelete permissionedDomainDelete = PermissionedDomainDelete.builder()
-      .account(Address.of("rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c"))
-      .sequence(UnsignedInteger.valueOf(3195631))
-      .fee(XrpCurrencyAmount.ofDrops(1))
-      .domainId(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
-      .signingPublicKey(
-        PublicKey.fromBase16EncodedPublicKey("ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84")
-      )
-      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
-      .putUnknownFields("Foo", "Bar")
-      .build();
-
-    String json = "{" +
-      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
-      "  \"Fee\":\"1\"," +
-      "  \"Sequence\":3195631," +
-      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
-      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
-      "  \"Flags\": 2147483648," +
-      "  \"Foo\" : \"Bar\"," +
-      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
-      "}";
-
-    assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
-  }
-
-  /// // Private helpers
+  //Private helpers
 
   private List<CredentialWrapper> getCredentials(int size) {
     return IntStream.range(0, size)
-      .mapToObj(i ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
-            .build())
-          .build())
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+          .build()
+        )
+        .build()
+      )
       .collect(Collectors.toList());
   }
 }

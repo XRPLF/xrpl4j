@@ -28,15 +28,16 @@ public interface PermissionedDomainLedgerEntryParams {
   /**
    * The owner of the permissioned domain.
    *
-   * @return The unique {@link Address} of the owner of this PermissionedDomain object.
+   * @return The unique {@link Address} of the owner of this
+   *   {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}.
    */
   Address account();
 
   /**
-   * The Sequence Number of the transaction that created the PermissionedDomain object.
+   * The Sequence Number of the transaction that created the
+   * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}.
    *
-   * @return An {@link UnsignedInteger}.
+   * @return A {@link UnsignedInteger} representing transaction sequence.
    */
   UnsignedInteger seq();
-
 }

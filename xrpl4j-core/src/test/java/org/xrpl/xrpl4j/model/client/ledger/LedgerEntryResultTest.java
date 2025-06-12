@@ -765,38 +765,38 @@ class LedgerEntryResultTest extends AbstractJsonTest {
       .collect(Collectors.toList());
 
     LedgerEntryResult<PermissionedDomainObject> result = LedgerEntryResult.<PermissionedDomainObject>builder()
-      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3110416)))
-      .ledgerHash(Hash256.of("74B644AB7D1E043836A70FAFDEAFA6EF8791FE01F129351A9DA231B4E5A91FBF"))
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3581898)))
+      .ledgerHash(Hash256.of("E28A994738F9CEA73C7483CD337560E500F0AADE27900BF97FD5B0FC6A26B228"))
       .validated(true)
-      .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
+      .index(Hash256.of("D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74"))
       .node(
         PermissionedDomainObject.builder()
-          .owner(Address.of("rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz"))
+          .owner(Address.of("rhjmfJwtW5bKAbFkZuxVQdCTDVVC4mcfwB"))
           .ownerNode("0")
-          .sequence(UnsignedInteger.valueOf(10))
+          .sequence(UnsignedInteger.valueOf(3581881))
           .acceptedCredentials(acceptedCredentials)
-          .previousTxnId(Hash256.of("FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF"))
-          .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3105995))
-          .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
+          .previousTxnId(Hash256.of("C012929FA346E9E5624A7AA23F8EAE6B9909BD616087AF99F2BF2F55B6140686"))
+          .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3581884))
+          .index(Hash256.of("D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74"))
           .build()
       )
       .status("success")
       .build();
 
     String json = "{" +
-      "  \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"," +
-      "  \"ledger_hash\": \"74B644AB7D1E043836A70FAFDEAFA6EF8791FE01F129351A9DA231B4E5A91FBF\"," +
-      "  \"ledger_index\": 3110416," +
+      "  \"index\": \"D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74\"," +
+      "  \"ledger_hash\": \"E28A994738F9CEA73C7483CD337560E500F0AADE27900BF97FD5B0FC6A26B228\"," +
+      "  \"ledger_index\": 3581898," +
       "  \"node\": {" +
-      "    \"LedgerEntryType\": \"PermissionedDomain\"," +
-      "    \"Owner\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\"," +
-      "    \"OwnerNode\": \"0\"," +
-      "    \"Sequence\": 10," +
+      "  \"AcceptedCredentials\": " + objectMapper.writeValueAsString(acceptedCredentials) + "," +
       "    \"Flags\": 0," +
-      "    \"AcceptedCredentials\": " + objectMapper.writeValueAsString(acceptedCredentials) + "," +
-      "    \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\"," +
-      "    \"PreviousTxnLgrSeq\": 3105995," +
-      "    \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"" +
+      "    \"LedgerEntryType\": \"PermissionedDomain\"," +
+      "    \"Owner\": \"rhjmfJwtW5bKAbFkZuxVQdCTDVVC4mcfwB\"," +
+      "    \"OwnerNode\": \"0\"," +
+      "    \"PreviousTxnID\": \"C012929FA346E9E5624A7AA23F8EAE6B9909BD616087AF99F2BF2F55B6140686\"," +
+      "    \"PreviousTxnLgrSeq\": 3581884," +
+      "    \"Sequence\": 3581881," +
+      "    \"index\": \"D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74\"" +
       "  }," +
       "  \"status\": \"success\"," +
       "  \"validated\": true" +

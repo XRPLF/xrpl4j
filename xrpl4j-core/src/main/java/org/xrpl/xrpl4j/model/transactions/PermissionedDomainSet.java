@@ -6,13 +6,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Create a PermissionedDomain object in the ledger. The sender of this transaction is the issuer of the credential.
+ * Creates a {@link PermissionedDomainObject} in the ledger. The sender of this transaction is the owner of the domain.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePermissionedDomainSet.class)

@@ -39,9 +39,9 @@ import java.util.Optional;
  * Tracks a preauthorization from one account to another. {@link DepositPreAuth} transactions create these objects.
  *
  * <p>This has no effect on processing of {@link Transaction}s unless the account that provided the preauthorization
- * requires Deposit Authorization. In that case, the account that was preauthorized can send payments and
- * other transactions directly to the account that provided the preauthorization.
- * Preauthorizations are uni-directional, and have no effect on payments going the opposite direction.</p>
+ * requires Deposit Authorization. In that case, the account that was preauthorized can send payments and other
+ * transactions directly to the account that provided the preauthorization. Preauthorizations are uni-directional, and
+ * have no effect on payments going the opposite direction.</p>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableDepositPreAuthObject.class)
@@ -76,8 +76,6 @@ public interface DepositPreAuthObject extends LedgerObject {
   @JsonProperty("Account")
   Address account();
 
-  // TODO: Discuss with David how to handle this breaking change.
-
   /**
    * The account that received the preauthorization. (The sender of the preauthorized payments.)
    *
@@ -92,7 +90,7 @@ public interface DepositPreAuthObject extends LedgerObject {
    * @return A list of {@link CredentialWrapper}.
    */
   @JsonProperty("AuthorizeCredentials")
-  Optional<List<CredentialWrapper>> authorizeCredentials();
+  List<CredentialWrapper> authorizeCredentials();
 
   /**
    * A bit-map of boolean flags. No flags are defined for {@link DepositPreAuthObject}s, so this value is always 0.
@@ -106,8 +104,8 @@ public interface DepositPreAuthObject extends LedgerObject {
   }
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object, in case the directory
-   * consists of multiple pages.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages.
    *
    * <p>Note: The object does not contain a direct link to the owner directory containing it, since that value can be
    * derived from the Account.

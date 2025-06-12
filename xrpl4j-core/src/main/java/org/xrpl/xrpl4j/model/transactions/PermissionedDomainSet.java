@@ -6,13 +6,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Create a PermissionedDomain object in the ledger. The sender of this transaction is the issuer of the credential.
+ * Creates a {@link PermissionedDomainObject} in the ledger. The sender of this transaction is the owner of the domain.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutablePermissionedDomainSet.class)
@@ -29,8 +30,7 @@ public interface PermissionedDomainSet extends Transaction {
   }
 
   /**
-   * The ledger entry ID of an existing permissioned domain to modify.
-   * If omitted, creates a new permissioned domain.
+   * The ledger entry ID of an existing permissioned domain to modify. If omitted, creates a new permissioned domain.
    *
    * @return A {@link Hash256} representing DomainID.
    */
@@ -38,9 +38,8 @@ public interface PermissionedDomainSet extends Transaction {
   Optional<Hash256> domainId();
 
   /**
-   * The credentials that are accepted by the domain.
-   * Ownership of one of these credentials automatically makes you a member of the domain.
-   * When modifying an existing domain, this list replaces the existing list.
+   * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
+   * member of the domain. When modifying an existing domain, this list replaces the existing list.
    *
    * @return A list of {@link CredentialWrapper}.
    */

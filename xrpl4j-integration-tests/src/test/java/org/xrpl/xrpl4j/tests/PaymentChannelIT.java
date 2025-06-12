@@ -52,6 +52,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -84,7 +85,7 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofDays(1))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
     SingleSignedTransaction<PaymentChannelCreate> signedPaymentChannelCreate = signatureService.sign(
@@ -362,7 +363,7 @@ public class PaymentChannelIT extends AbstractIT {
     );
 
     //////////////////////////
-    // Source account submits the signed claim to the ledger to get their XRP
+    // Source account submits the signed claim to the ledger.
     PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -500,7 +501,7 @@ public class PaymentChannelIT extends AbstractIT {
     assertThat(channelVerifyResult.signatureVerified()).isTrue();
 
     //////////////////////////
-    // Source account submits the signed claim to the ledger to get their XRP
+    // Source account submits the signed claim without credentialIds.
     PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
       .account(sourceKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -608,7 +609,7 @@ public class PaymentChannelIT extends AbstractIT {
             logger.warn("PAYCHAN: channel={} paymentChannel={}", channel, paymentChannel);
 
             return channel.channelId().equals(paymentChannel.channelId()) &&
-                   channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
+              channel.amount().equals(paymentChannel.amount().plus(paymentChannelFund.amount()));
           }
         )
     );
@@ -653,8 +654,8 @@ public class PaymentChannelIT extends AbstractIT {
         .anyMatch(
           channel ->
             channel.channelId().equals(paymentChannel.channelId()) &&
-            channel.expiration().isPresent() &&
-            channel.expiration().get().equals(newExpiry)
+              channel.expiration().isPresent() &&
+              channel.expiration().get().equals(newExpiry)
         )
     );
 
@@ -685,7 +686,7 @@ public class PaymentChannelIT extends AbstractIT {
       .destination(destinationKeyPair.publicKey().deriveAddress())
       .settleDelay(UnsignedInteger.ONE)
       .publicKey(sourceKeyPair.publicKey().base16Value())
-      .cancelAfter(UnsignedLong.valueOf(533171558))
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofDays(1))))
       .signingPublicKey(sourceKeyPair.publicKey())
       .build();
 
@@ -730,11 +731,11 @@ public class PaymentChannelIT extends AbstractIT {
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-          ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress())
+            ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress())
         )
     ).accountObjects().stream()
       .filter(object -> PayChannelObject.class.isAssignableFrom(object.getClass()) &&
-                        ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress()))
+        ((PayChannelObject) object).destination().equals(destinationKeyPair.publicKey().deriveAddress()))
       .findFirst()
       .get();
   }

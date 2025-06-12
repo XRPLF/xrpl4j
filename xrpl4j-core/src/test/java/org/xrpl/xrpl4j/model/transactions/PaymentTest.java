@@ -21,12 +21,11 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,62 +69,39 @@ public class PaymentTest {
   @Test
   public void testMoreThanEightCredentialIds() {
     List<Hash256> moreThanEight = IntStream.range(0, 9)
-      .mapToObj(i ->
-        Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
+      .mapToObj(i -> Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
       .collect(Collectors.toList());
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> Payment.builder()
-        .sequence(UnsignedInteger.ONE)
-        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-        .fee(XrpCurrencyAmount.ofDrops(1000L))
-        .amount(XrpCurrencyAmount.ofDrops(2000L))
-        .credentialIds(moreThanEight)
-        .build(),
-      "credentialIds shouldn't be empty and must have less than or equal to 8 items."
-    );
-
-  }
-
-  @Test
-  public void testEmptyCredentialIds() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> Payment.builder()
-        .sequence(UnsignedInteger.ONE)
-        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-        .fee(XrpCurrencyAmount.ofDrops(1000L))
-        .amount(XrpCurrencyAmount.ofDrops(2000L))
-        .credentialIds(new ArrayList<>())
-        .build(),
-      "credentialIds shouldn't be empty and must have less than or equal to 8 items."
-    );
+    assertThatThrownBy(() -> Payment.builder()
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .credentialIds(moreThanEight)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("CredentialIDs should have less than or equal to 8 items.");
   }
 
   @Test
   public void testDuplicateCredentialIds() {
     List<Hash256> randomIds = IntStream.range(0, 8)
-      .mapToObj(i ->
-        Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
+      .mapToObj(i -> Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF" + i))
       .collect(Collectors.toList());
 
     randomIds.set(1, randomIds.get(0));
 
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> Payment.builder()
-        .sequence(UnsignedInteger.ONE)
-        .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
-        .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
-        .fee(XrpCurrencyAmount.ofDrops(1000L))
-        .amount(XrpCurrencyAmount.ofDrops(2000L))
-        .credentialIds(randomIds)
-        .build(),
-      "credentialIds should have unique values."
-    );
+    assertThatThrownBy(() -> Payment.builder()
+      .sequence(UnsignedInteger.ONE)
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(1000L))
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .credentialIds(randomIds)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("CredentialIDs should have unique values.");
   }
 
   //////////////////

@@ -205,11 +205,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link CredentialObject} ledger entry.
    *
    * <p>Note that although the rippled API allows you to specify either the Credential's ID
-   * or the [subject, issuer and credential_type] of the transaction that created the Credential,
-   * this class does not allow developers to request a
-   * {@link CredentialObject} by ID via this method.
-   * Instead, developers should use {@link LedgerEntryRequestParams#index()}
-   * and specify {@link CredentialObject} as the {@code ledgerObjectClass} parameter.</p>
+   * or the [subject, issuer and credential_type] of the transaction that created the Credential, this class does not
+   * allow developers to request a {@link CredentialObject} by ID via this method. Instead, developers should use
+   * {@link LedgerEntryRequestParams#index()} and specify {@link CredentialObject} as the {@code ledgerObjectClass}
+   * parameter.</p>
    *
    * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject}
    *                        on ledger.
@@ -429,8 +428,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
-   * Construct a {@link LedgerEntryRequestParams} that requests
-   * a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} ledger entry.
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link PermissionedDomainObject} ledger entry.
    *
    * @param params          The {@link PermissionedDomainLedgerEntryParams} specifying the Permissioned domain.
    * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
@@ -604,8 +602,8 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<MpTokenLedgerEntryParams> mpToken();
 
   /**
-   * Look up an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}
-   * by {@link PermissionedDomainLedgerEntryParams}.
+   * Look up an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} by
+   * {@link PermissionedDomainLedgerEntryParams}.
    *
    * @return An {@link Optional} {@link PermissionedDomainLedgerEntryParams}.
    */

@@ -75,7 +75,7 @@ public interface DepositAuthorizedResult extends XrplResult {
    * @return A list of {@link Hash256} representing unique IDs of Credential entry in the ledger.
    */
   @JsonProperty("credentials")
-  Optional<List<Hash256>> credentials();
+  List<Hash256> credentials();
 
   /**
    * <p>Whether the specified source account is authorized to send payments directly to the destination account. If

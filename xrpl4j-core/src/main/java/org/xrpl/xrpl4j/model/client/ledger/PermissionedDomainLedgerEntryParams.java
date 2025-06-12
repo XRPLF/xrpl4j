@@ -7,8 +7,8 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
- * Parameters that uniquely identifies an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}
- * on ledger that can be used in a {@link LedgerEntryRequestParams} to request
+ * Parameters that uniquely identifies an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} on ledger that
+ * can be used in a {@link LedgerEntryRequestParams} to request
  * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}.
  */
 @Immutable
@@ -28,15 +28,16 @@ public interface PermissionedDomainLedgerEntryParams {
   /**
    * The owner of the permissioned domain.
    *
-   * @return The unique {@link Address} of the owner of this PermissionedDomain object.
+   * @return The unique {@link Address} of the owner of this
+   *   {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}.
    */
   Address account();
 
   /**
-   * The Sequence Number of the transaction that created the PermissionedDomain object.
+   * The Sequence Number of the transaction that created the
+   * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}.
    *
-   * @return An {@link UnsignedInteger}.
+   * @return A {@link UnsignedInteger} representing transaction sequence.
    */
   UnsignedInteger seq();
-
 }

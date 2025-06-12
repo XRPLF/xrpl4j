@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of
- * this transaction. This is only useful if the sender of this transaction is using (or plans to use)
+ * A {@link DepositPreAuth} transaction gives another account pre-approval to deliver payments to the sender of this
+ * transaction. This is only useful if the sender of this transaction is using (or plans to use)
  * <a href="https://xrpl.org/depositauth.html">Deposit Authorization</a>.
  *
  * <p>You can use this transaction to preauthorize certain counterparties before you enable Deposit Authorization.
@@ -54,8 +54,8 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link DepositPreAuth}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link DepositPreAuth}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -87,23 +87,22 @@ public interface DepositPreAuth extends Transaction {
   /**
    * The {@link CredentialWrapper}'s to preauthorize.
    *
-   * @return An {@link Optional} list of type {@link CredentialWrapper} to preauthorize.
+   * @return A list of type {@link CredentialWrapper} to preauthorize.
    */
   @JsonProperty("AuthorizeCredentials")
-  Optional<List<CredentialWrapper>> authorizeCredentials();
+  List<CredentialWrapper> authorizeCredentials();
 
   /**
    * The {@link CredentialWrapper}'s whose preauthorization should be revoked.
    *
-   * @return An {@link Optional} list of type {@link CredentialWrapper} to unauthorize.
+   * @return A list of type {@link CredentialWrapper} to unauthorize.
    */
   @JsonProperty("UnauthorizeCredentials")
-  Optional<List<CredentialWrapper>> unauthorizeCredentials();
+  List<CredentialWrapper> unauthorizeCredentials();
 
   /**
-   * Validate that exactly one of {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()}
-   * or {@link DepositPreAuth#authorizeCredentials()} or {@link DepositPreAuth#unauthorizeCredentials()}
-   * is present.
+   * Validate that exactly one of {@link DepositPreAuth#authorize()} or {@link DepositPreAuth#unauthorize()} or
+   * {@link DepositPreAuth#authorizeCredentials()} or {@link DepositPreAuth#unauthorizeCredentials()} is present.
    */
   @Value.Check
   default void validateExactOneFieldPresence() {
@@ -114,10 +113,10 @@ public interface DepositPreAuth extends Transaction {
     if (unauthorize().isPresent()) {
       fieldsPresent++;
     }
-    if (authorizeCredentials().isPresent()) {
+    if (!authorizeCredentials().isEmpty()) {
       fieldsPresent++;
     }
-    if (unauthorizeCredentials().isPresent()) {
+    if (!unauthorizeCredentials().isEmpty()) {
       fieldsPresent++;
     }
 
@@ -126,40 +125,46 @@ public interface DepositPreAuth extends Transaction {
   }
 
   /**
-   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()}
-   * has less than or equal to 8 credentials.
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()} has less
+   * than or equal to 8 credentials.
    */
   @Value.Check
   default void validateCredentialList() {
-    authorizeCredentials().ifPresent(creds ->
+    if (!authorizeCredentials().isEmpty()) {
       Preconditions.checkArgument(
-        !creds.isEmpty() && creds.size() <= 8,
-        "AuthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
-      )
-    );
+        authorizeCredentials().size() <= 8,
+        "AuthorizeCredentials should have less than or equal to 8 credentials."
+      );
+    }
 
-    unauthorizeCredentials().ifPresent(creds ->
+    if (!unauthorizeCredentials().isEmpty()) {
       Preconditions.checkArgument(
-        !creds.isEmpty() && creds.size() <= 8,
-        "UnauthorizeCredentials shouldn't be empty and must have less than or equal to 8 credentials."
-      )
-    );
+        unauthorizeCredentials().size() <= 8,
+        "UnauthorizeCredentials should have less than or equal to 8 credentials."
+      );
+    }
   }
 
   /**
-   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()}
-   * has unique credentials each.
+   * Validate {@link DepositPreAuth#authorizeCredentials()} and {@link DepositPreAuth#unauthorizeCredentials()} has
+   * unique credentials each.
    */
   @Value.Check
   default void validateForUniqueValues() {
-    authorizeCredentials().ifPresent(creds -> Preconditions.checkArgument(
-      new HashSet<>(creds).size() == creds.size(),
-      "AuthorizeCredentials should have unique credentials."
-    ));
+    if (!authorizeCredentials().isEmpty()) {
+      final List<CredentialWrapper> credentials = authorizeCredentials();
+      Preconditions.checkArgument(
+        new HashSet<>(credentials).size() == credentials.size(),
+        "AuthorizeCredentials should have unique credentials."
+      );
+    }
 
-    unauthorizeCredentials().ifPresent(creds -> Preconditions.checkArgument(
-      new HashSet<>(creds).size() == creds.size(),
-      "UnauthorizeCredentials should have unique credentials."
-    ));
+    if (!unauthorizeCredentials().isEmpty()) {
+      final List<CredentialWrapper> credentials = unauthorizeCredentials();
+      Preconditions.checkArgument(
+        new HashSet<>(credentials).size() == credentials.size(),
+        "UnauthorizeCredentials should have unique credentials."
+      );
+    }
   }
 }

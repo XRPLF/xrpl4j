@@ -10,7 +10,7 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import java.util.Optional;
 
 /**
- * A CredentialDelete transaction removes a credential from the ledger, effectively revoking it.
+ * A {@link CredentialDelete} transaction removes a `Credential` object from the ledger, effectively revoking it.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCredentialDelete.class)

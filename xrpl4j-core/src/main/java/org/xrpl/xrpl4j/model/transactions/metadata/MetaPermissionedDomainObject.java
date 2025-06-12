@@ -31,10 +31,10 @@ import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * This object represents a permissioned domain controlled by the
- * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject#owner}.
+ * This object represents a permissioned domain controlled by the {@link MetaPermissionedDomainObject#owner}.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableMetaPermissionedDomainObject.class)
@@ -42,8 +42,8 @@ import java.util.List;
 public interface MetaPermissionedDomainObject extends MetaLedgerObject {
 
   /**
-   * A bit-map of boolean flags. No flags are defined
-   * for {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}, so this value is always 0.
+   * A bit-map of boolean flags. No flags are defined for {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject},
+   * so this value is always 0.
    *
    * @return Always {@link Flags#UNSET}.
    */
@@ -59,30 +59,30 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return The {@link Address} of the domain owner.
    */
   @JsonProperty("Owner")
-  Address owner();
+  Optional<Address> owner();
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object,
-   * in case the directory consists of multiple pages.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages.
    *
    * @return A {@link String} containing the owner node hint.
    */
   @JsonProperty("OwnerNode")
-  String ownerNode();
+  Optional<String> ownerNode();
 
   /**
    * The Sequence value of the {@link org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet} transaction that created
-   * this domain. Used in combination with the {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject#owner}
-   * to identify this domain.
+   * this domain. Used in combination with the {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject#owner} to
+   * identify this domain.
    *
    * @return An {@link UnsignedInteger}.
    */
   @JsonProperty("Sequence")
-  UnsignedInteger sequence();
+  Optional<UnsignedInteger> sequence();
 
   /**
-   * The credentials that are accepted by the domain.
-   * Ownership of one of these credentials automatically makes you a member of the domain.
+   * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
+   * member of the domain.
    *
    * @return A list of {@link CredentialWrapper}.
    */
@@ -95,7 +95,7 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return A {@link Hash256} containing the previous transaction hash.
    */
   @JsonProperty("PreviousTxnID")
-  Hash256 previousTxnId();
+  Optional<Hash256> previousTxnId();
 
   /**
    * The index of the ledger that contains the transaction that most recently modified this object.
@@ -103,5 +103,5 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * @return A {@link UnsignedInteger} representing the previous transaction sequence.
    */
   @JsonProperty("PreviousTxnLgrSeq")
-  UnsignedInteger previousTransactionLedgerSequence();
+  Optional<UnsignedInteger> previousTransactionLedgerSequence();
 }

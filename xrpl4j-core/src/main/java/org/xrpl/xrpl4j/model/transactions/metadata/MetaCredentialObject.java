@@ -34,9 +34,8 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import java.util.Optional;
 
 /**
- * A Credential object represents a credential,
- * which contains an attestation about a subject account from a credential issuer account.
- * The meaning of the attestation is defined by the issuer.
+ * A Credential object represents a credential, which contains an attestation about a subject account from a credential
+ * issuer account. The meaning of the attestation is defined by the issuer.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableMetaCredentialObject.class)
@@ -52,8 +51,8 @@ public interface MetaCredentialObject extends MetaLedgerObject {
   Optional<Address> subject();
 
   /**
-   * A hint indicating which page of the subject's owner directory links to this entry,
-   * in case the directory consists of multiple pages.
+   * A hint indicating which page of the subject's owner directory links to this entry, in case the directory consists
+   * of multiple pages.
    *
    * @return A {@link String} containing the subject node hint.
    */
@@ -69,8 +68,8 @@ public interface MetaCredentialObject extends MetaLedgerObject {
   Optional<Address> issuer();
 
   /**
-   * A hint indicating which page of the issuer's directory links to this entry,
-   * in case the directory consists of multiple pages.
+   * A hint indicating which page of the issuer's directory links to this entry, in case the directory consists of
+   * multiple pages.
    *
    * @return A {@link String} containing the issuer node hint.
    */
@@ -79,8 +78,7 @@ public interface MetaCredentialObject extends MetaLedgerObject {
 
 
   /**
-   * A set of boolean {@link CredentialFlags} containing options
-   * enabled for this object.
+   * A set of boolean {@link CredentialFlags} containing options enabled for this object.
    *
    * @return The {@link CredentialFlags} for this object.
    */
@@ -104,8 +102,8 @@ public interface MetaCredentialObject extends MetaLedgerObject {
   Optional<UnsignedInteger> previousTransactionLedgerSequence();
 
   /**
-   * A (hex-encoded) value to identify the type of credential from the issuer.
-   * This field is limited to a maximum length of 64 bytes.
+   * A (hex-encoded) value to identify the type of credential from the issuer. This field is limited to a maximum length
+   * of 64 bytes.
    *
    * @return A {@link CredentialType} defining the type of credential.
    */
@@ -113,8 +111,8 @@ public interface MetaCredentialObject extends MetaLedgerObject {
   Optional<CredentialType> credentialType();
 
   /**
-   * Optional additional data about the credential (such as a link to the VC document).
-   * This field isn't checked for validity and is limited to a maximum length of 256 bytes.
+   * Optional additional data about the credential (such as a link to the VC document). This field isn't checked for
+   * validity and is limited to a maximum length of 256 bytes.
    *
    * @return An {@link Optional} of type {@link CredentialUri}.
    */

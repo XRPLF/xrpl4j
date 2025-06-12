@@ -211,7 +211,7 @@ public class EscrowIT extends AbstractIT {
       objectsResult -> objectsResult.accountObjects().stream()
         .anyMatch(object ->
           EscrowObject.class.isAssignableFrom(object.getClass()) &&
-          ((EscrowObject) object).destination().equals(receiverKeyPair.publicKey().deriveAddress())
+            ((EscrowObject) object).destination().equals(receiverKeyPair.publicKey().deriveAddress())
         )
     );
 
@@ -538,7 +538,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
+    final TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
     );
 
@@ -565,7 +565,7 @@ public class EscrowIT extends AbstractIT {
     senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
-    AccountInfoResult receiverAccountInfo = this.scanForResult(
+    final AccountInfoResult receiverAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress())
     );
 
@@ -662,7 +662,7 @@ public class EscrowIT extends AbstractIT {
 
     //////////////////////
     // Then wait until the transaction gets committed to a validated ledger
-    TransactionResult<EscrowCreate> result = this.scanForResult(
+    final TransactionResult<EscrowCreate> result = this.scanForResult(
       () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
     );
 
@@ -691,6 +691,7 @@ public class EscrowIT extends AbstractIT {
     );
     List<Hash256> credentialObjectIds = getCredentialObjectIds(issuerKeyPair, senderKeyPair, goodCredentials);
 
+    // Not passing all the credentialIds.
     EscrowFinish escrowFinish = EscrowFinish.builder()
       .account(senderKeyPair.publicKey().deriveAddress())
       .fee(feeResult.drops().openLedgerFee())

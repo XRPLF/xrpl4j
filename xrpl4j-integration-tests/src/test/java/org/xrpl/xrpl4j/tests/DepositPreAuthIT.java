@@ -33,6 +33,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
+import org.xrpl.xrpl4j.model.client.ledger.DepositPreAuthCredential;
 import org.xrpl.xrpl4j.model.client.ledger.DepositPreAuthLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
@@ -103,11 +104,11 @@ public class DepositPreAuthIT extends AbstractIT {
         accountObjects ->
           accountObjects.accountObjects().stream().anyMatch(object ->
             DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-            ((DepositPreAuthObject) object).authorize().get().equals(senderKeyPair.publicKey().deriveAddress())
+              ((DepositPreAuthObject) object).authorize().get().equals(senderKeyPair.publicKey().deriveAddress())
           )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-                        ((DepositPreAuthObject) object).authorize().get().equals(senderKeyPair.publicKey().deriveAddress()))
+        ((DepositPreAuthObject) object).authorize().get().equals(senderKeyPair.publicKey().deriveAddress()))
       .findFirst()
       .get();
 
@@ -168,9 +169,8 @@ public class DepositPreAuthIT extends AbstractIT {
   @Test
   public void preauthorizeCredentialsAndReceivePayment() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
-    // Create random issuer/sender/receiver accounts
+    // Create random issuer/receiver accounts
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair senderKeyPair = createRandomAccountEd25519();
     KeyPair receiverKeyPair = createRandomAccountEd25519();
 
     /////////////////////////
@@ -217,11 +217,11 @@ public class DepositPreAuthIT extends AbstractIT {
         accountObjects ->
           accountObjects.accountObjects().stream().anyMatch(object ->
             DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-            ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize)
+              ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize)
           )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-                        ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize))
+        ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize))
       .findFirst()
       .get();
 
@@ -229,6 +229,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Create credential from issuer to sender account.
+    KeyPair senderKeyPair = createRandomAccountEd25519();
     createCredentials(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
 
     List<Hash256> credObjectIds = getCredentialObjectIds(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
@@ -262,7 +263,7 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(depositAuthorizedAfterAccepting).isTrue();
 
     /////////////////////////
-    // Send a Payment from the sender wallet to the receiver wallet
+    // Send a Payment from the sender wallet to the receiver wallet with credentialIds included.
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
@@ -302,11 +303,10 @@ public class DepositPreAuthIT extends AbstractIT {
   }
 
   @Test
-  public void unableToReceivePaymentWithWithoutCreds() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void unableToReceivePaymentWithoutCredentials() throws JsonRpcClientErrorException, JsonProcessingException {
     /////////////////////////
-    // Create random issuer/sender/receiver accounts
+    // Create random issuer/receiver accounts
     KeyPair issuerKeyPair = createRandomAccountEd25519();
-    KeyPair senderKeyPair = createRandomAccountEd25519();
     KeyPair receiverKeyPair = createRandomAccountEd25519();
 
     /////////////////////////
@@ -353,11 +353,11 @@ public class DepositPreAuthIT extends AbstractIT {
         accountObjects ->
           accountObjects.accountObjects().stream().anyMatch(object ->
             DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-            ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize)
+              ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize)
           )
       ).accountObjects().stream()
       .filter(object -> DepositPreAuthObject.class.isAssignableFrom(object.getClass()) &&
-                        ((DepositPreAuthObject) object).authorizeCredentials().get().equals(credsToAuthorize))
+        ((DepositPreAuthObject) object).authorizeCredentials().equals(credsToAuthorize))
       .findFirst()
       .get();
 
@@ -365,6 +365,7 @@ public class DepositPreAuthIT extends AbstractIT {
 
     /////////////////////////
     // Create credential from issuer to sender account.
+    KeyPair senderKeyPair = createRandomAccountEd25519();
     createCredentials(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
 
     List<Hash256> credObjectIds = getCredentialObjectIds(issuerKeyPair, senderKeyPair, GOOD_CREDENTIALS_TYPES);
@@ -398,7 +399,7 @@ public class DepositPreAuthIT extends AbstractIT {
     assertThat(depositAuthorizedAfterAccepting).isTrue();
 
     /////////////////////////
-    // Send a Payment from the sender wallet to the receiver wallet
+    // Send a Payment from the sender wallet to the receiver wallet without credentialIds.
     AccountInfoResult senderAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
     );
@@ -500,10 +501,8 @@ public class DepositPreAuthIT extends AbstractIT {
     );
   }
 
-  private void assertEntryEqualsObjectFromAccountObjects(
-    DepositPreAuth depositPreAuth,
-    DepositPreAuthObject preAuthObject
-  ) throws JsonRpcClientErrorException {
+  private void assertEntryEqualsObjectFromAccountObjects(DepositPreAuth depositPreAuth,
+    DepositPreAuthObject preAuthObject) throws JsonRpcClientErrorException {
 
     LedgerEntryResult<DepositPreAuthObject> preAuthEntry;
 
@@ -518,9 +517,9 @@ public class DepositPreAuthIT extends AbstractIT {
         )
       );
     } else {
-      List<org.xrpl.xrpl4j.model.client.ledger.Credential> authorizedCredentials =
-        depositPreAuth.authorizeCredentials().get().stream()
-          .map(cw -> org.xrpl.xrpl4j.model.client.ledger.Credential.builder()
+      List<DepositPreAuthCredential> authorizedCredentials =
+        depositPreAuth.authorizeCredentials().stream()
+          .map(cw -> DepositPreAuthCredential.builder()
             .credentialType(cw.credential().credentialType())
             .issuer(cw.credential().issuer())
             .build())

@@ -93,8 +93,8 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
   }
 
   /**
-   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
-   * numerical ledger index, or a shortcut value.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */

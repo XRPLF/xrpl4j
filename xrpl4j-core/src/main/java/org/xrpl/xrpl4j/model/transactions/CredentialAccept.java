@@ -7,8 +7,8 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
- * A CredentialAccept transaction accepts a credential, which makes the credential valid.
- * Only the subject of the credential can do this.
+ * A {@link CredentialAccept} transaction accepts a credential, which makes the credential valid. Only the subject of
+ * the credential can do this.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableCredentialAccept.class)

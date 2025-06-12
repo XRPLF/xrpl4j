@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Claim XRP from a payment channel, adjust the payment channel's expiration, or both. This transaction can be
- * used differently depending on the transaction sender's role in the specified channel:
+ * Claim XRP from a payment channel, adjust the payment channel's expiration, or both. This transaction can be used
+ * differently depending on the transaction sender's role in the specified channel:
  *
  * <p>The source address of a channel can:
  * <ul>
@@ -93,9 +93,9 @@ public interface PaymentChannelClaim extends Transaction {
   Hash256 channel();
 
   /**
-   * Total amount of XRP, in drops, delivered by this channel after processing this claim. Required to deliver XRP.
-   * Must be more than the total amount delivered by the channel so far, but not greater than the {@link #amount()}
-   * of the signed claim. Must be provided except when closing the channel.
+   * Total amount of XRP, in drops, delivered by this channel after processing this claim. Required to deliver XRP. Must
+   * be more than the total amount delivered by the channel so far, but not greater than the {@link #amount()} of the
+   * signed claim. Must be provided except when closing the channel.
    *
    * @return An {@link Optional} of type {@link XrpCurrencyAmount} representing the payment channel balance.
    */
@@ -103,9 +103,9 @@ public interface PaymentChannelClaim extends Transaction {
   Optional<XrpCurrencyAmount> balance();
 
   /**
-   * The amount of XRP, in drops, authorized by the {@link #signature()}. This must match the amount in
-   * the signed message. This is the cumulative amount of XRP that can be dispensed by the channel,
-   * including XRP previously redeemed.
+   * The amount of XRP, in drops, authorized by the {@link #signature()}. This must match the amount in the signed
+   * message. This is the cumulative amount of XRP that can be dispensed by the channel, including XRP previously
+   * redeemed.
    *
    * @return An {@link Optional} of type {@link XrpCurrencyAmount} representing the payment channel amount.
    */
@@ -113,8 +113,8 @@ public interface PaymentChannelClaim extends Transaction {
   Optional<XrpCurrencyAmount> amount();
 
   /**
-   * The signature of this claim, in hexadecimal form. The signed message contains the channel ID and the amount
-   * of the claim. Required unless the sender of the transaction is the source address of the channel.
+   * The signature of this claim, in hexadecimal form. The signed message contains the channel ID and the amount of the
+   * claim. Required unless the sender of the transaction is the source address of the channel.
    *
    * @return An {@link Optional} of type {@link String} containing the payment channel signature.
    */
@@ -122,11 +122,10 @@ public interface PaymentChannelClaim extends Transaction {
   Optional<String> signature();
 
   /**
-   * The public key used for the {@link #signature()}, as hexadecimal. This must match the PublicKey stored
-   * in the ledger for the channel. Required unless the sender of the transaction is the source
-   * address of the channel and the {@link #signature()} field is omitted.
-   * (The transaction includes the public key so that rippled can check the validity of the signature
-   * before trying to apply the transaction to the ledger.)
+   * The public key used for the {@link #signature()}, as hexadecimal. This must match the PublicKey stored in the
+   * ledger for the channel. Required unless the sender of the transaction is the source address of the channel and the
+   * {@link #signature()} field is omitted. (The transaction includes the public key so that rippled can check the
+   * validity of the signature before trying to apply the transaction to the ledger.)
    *
    * @return An {@link Optional} of type {@link String} containing the public key used to sign this payment channel.
    */
@@ -134,23 +133,25 @@ public interface PaymentChannelClaim extends Transaction {
   Optional<String> publicKey();
 
   /**
-   * Set of Credentials to authorize a deposit made by this transaction.
-   * Each member of the array must be the ledger entry ID of a Credential entry in the ledger.
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger.
    *
-   * @return An {@link Optional} of type {@link Hash256}.
+   * @return A list of type {@link Hash256}.
    */
   @JsonProperty("CredentialIDs")
-  Optional<List<Hash256>> credentialIds();
+  List<Hash256> credentialIds();
 
   /**
    * Validate {@link PaymentChannelClaim#credentialIds} has less than or equal to 8 credentials.
    */
   @Value.Check
   default void validateCredentialIdsLength() {
-    credentialIds().ifPresent(credentialIds -> Preconditions.checkArgument(
-      !credentialIds.isEmpty() && credentialIds.size() <= 8,
-      "credentialIds shouldn't be empty and must have less than or equal to 8 items."
-    ));
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        credentialIds().size() <= 8,
+        "CredentialIDs should have less than or equal to 8 items."
+      );
+    }
   }
 
   /**
@@ -158,9 +159,11 @@ public interface PaymentChannelClaim extends Transaction {
    */
   @Value.Check
   default void validateUniqueCredentialIds() {
-    credentialIds().ifPresent(credentialIds -> Preconditions.checkArgument(
-      new HashSet<>(credentialIds).size() == credentialIds.size(),
-      "credentialIds should have unique values."
-    ));
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        new HashSet<>(credentialIds()).size() == credentialIds().size(),
+        "CredentialIDs should have unique values."
+      );
+    }
   }
 }

@@ -65,7 +65,7 @@ public interface XrplEnvironment {
       return new DevnetEnvironment();
     } else {
       logger.info("Neither 'useTestNet', 'useClioTestNet', nor 'useDevnet' System properties detected." +
-                  " Using local rippled for integration testing.");
+        " Using local rippled for integration testing.");
       return new LocalRippledEnvironment();
     }
   }
@@ -84,12 +84,12 @@ public interface XrplEnvironment {
     if (isClioEnabled) {
       logger.info(
         "System property 'useClioMainnet' detected; Using Clio mainnet node for integration tests that are run " +
-        "against mainnet.");
+          "against mainnet.");
       return new ClioMainnetEnvironment();
     } else {
       logger.info(
         "System property 'useClioMainnet' was not detected; Using Reporting Mode mainnet node for integration tests " +
-        "that are run against mainnet.");
+          "that are run against mainnet.");
       return new ReportingMainnetEnvironment();
     }
   }

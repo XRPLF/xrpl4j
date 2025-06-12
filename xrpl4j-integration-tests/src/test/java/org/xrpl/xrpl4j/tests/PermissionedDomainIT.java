@@ -61,7 +61,8 @@ public class PermissionedDomainIT extends AbstractIT {
     {CredentialType.ofPlainText("driver licence"), CredentialType.ofPlainText("voting card")};
 
   @Test
-  public void testPermissionedDomainCreateUpdateAndDelete() throws JsonRpcClientErrorException, JsonProcessingException {
+  public void testPermissionedDomainCreateUpdateAndDelete()
+    throws JsonRpcClientErrorException, JsonProcessingException {
     // Create Credential issuer, subject and domain owner keys.
     KeyPair issuerKeyPair = createRandomAccountSecp256k1();
     KeyPair subjectKeyPair = createRandomAccountSecp256k1();

@@ -205,11 +205,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * Construct a {@link LedgerEntryRequestParams} that requests a {@link CredentialObject} ledger entry.
    *
    * <p>Note that although the rippled API allows you to specify either the Credential's ID
-   * or the [subject, issuer and credential_type] of the transaction that created the Credential,
-   * this class does not allow developers to request a
-   * {@link CredentialObject} by ID via this method.
-   * Instead, developers should use {@link LedgerEntryRequestParams#index()}
-   * and specify {@link CredentialObject} as the {@code ledgerObjectClass} parameter.</p>
+   * or the [subject, issuer and credential_type] of the transaction that created the Credential, this class does not
+   * allow developers to request a {@link CredentialObject} by ID via this method. Instead, developers should use
+   * {@link LedgerEntryRequestParams#index()} and specify {@link CredentialObject} as the {@code ledgerObjectClass}
+   * parameter.</p>
    *
    * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject}
    *                        on ledger.

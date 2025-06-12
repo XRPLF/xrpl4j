@@ -48,23 +48,23 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .signingPublicKey(
         PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
       )
-      .credentialIds(
-        Collections.singletonList(
-          Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37")))
+      .credentialIds(Collections.singletonList(
+        Hash256.of("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37"))
+      )
       .networkId(NetworkId.of(1024))
       .build();
 
-    String json = "{\n" +
-                  "    \"TransactionType\": \"AccountDelete\",\n" +
-                  "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-                  "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-                  "    \"DestinationTag\": 13,\n" +
-                  "    \"Fee\": \"5000000\",\n" +
-                  "    \"Sequence\": 2470665,\n" +
-                  "    \"NetworkID\": 1024,\n" +
-                  "    \"CredentialIDs\": [02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37],\n" +
-                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"TransactionType\": \"AccountDelete\"," +
+      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\"," +
+      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\"," +
+      "  \"DestinationTag\": 13," +
+      "  \"Fee\": \"5000000\"," +
+      "  \"Sequence\": 2470665," +
+      "  \"NetworkID\": 1024," +
+      "  \"CredentialIDs\": [02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37]," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }
@@ -83,16 +83,16 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
-                  "    \"TransactionType\": \"AccountDelete\",\n" +
-                  "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-                  "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-                  "    \"DestinationTag\": 13,\n" +
-                  "    \"Fee\": \"5000000\",\n" +
-                  "    \"Flags\": 0,\n" +
-                  "    \"Sequence\": 2470665,\n" +
-                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"TransactionType\": \"AccountDelete\"," +
+      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\"," +
+      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\"," +
+      "  \"DestinationTag\": 13," +
+      "  \"Fee\": \"5000000\"," +
+      "  \"Flags\": 0," +
+      "  \"Sequence\": 2470665," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }
@@ -111,16 +111,16 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = String.format("{\n" +
-                                "    \"TransactionType\": \"AccountDelete\",\n" +
-                                "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-                                "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-                                "    \"DestinationTag\": 13,\n" +
-                                "    \"Fee\": \"5000000\",\n" +
-                                "    \"Flags\": %s,\n" +
-                                "    \"Sequence\": 2470665,\n" +
-                                "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-                                "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
+    String json = String.format("{" +
+      "  \"TransactionType\": \"AccountDelete\"," +
+      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\"," +
+      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\"," +
+      "  \"DestinationTag\": 13," +
+      "  \"Fee\": \"5000000\"," +
+      "  \"Flags\": %s," +
+      "  \"Sequence\": 2470665," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}", TransactionFlags.FULLY_CANONICAL_SIG.getValue());
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }
@@ -140,17 +140,17 @@ public class AccountDeleteJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
-                  "    \"Foo\" : \"Bar\",\n" +
-                  "    \"TransactionType\": \"AccountDelete\",\n" +
-                  "    \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\",\n" +
-                  "    \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\",\n" +
-                  "    \"DestinationTag\": 13,\n" +
-                  "    \"Fee\": \"5000000\",\n" +
-                  "    \"Sequence\": 2470665,\n" +
-                  "    \"NetworkID\": 1024,\n" +
-                  "    \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Foo\" : \"Bar\"," +
+      "  \"TransactionType\": \"AccountDelete\"," +
+      "  \"Account\": \"rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm\"," +
+      "  \"Destination\": \"rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe\"," +
+      "  \"DestinationTag\": 13," +
+      "  \"Fee\": \"5000000\"," +
+      "  \"Sequence\": 2470665," +
+      "  \"NetworkID\": 1024," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(accountDelete, json);
   }

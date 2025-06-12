@@ -860,9 +860,8 @@ public abstract class AbstractIT {
     );
   }
 
-  protected void preAuthorizeCredentials(
-    KeyPair issuerKeyPair, KeyPair receiverKeyPair, CredentialType[] credentialTypes
-  ) throws JsonRpcClientErrorException, JsonProcessingException {
+  protected void preAuthorizeCredentials(KeyPair issuerKeyPair, KeyPair receiverKeyPair,
+    CredentialType[] credentialTypes) throws JsonRpcClientErrorException, JsonProcessingException {
 
     List<CredentialWrapper> credsToAuthorize = Arrays.stream(credentialTypes).map(
       credentialType -> CredentialWrapper.builder()
@@ -900,11 +899,10 @@ public abstract class AbstractIT {
     );
   }
 
-  protected List<Hash256> getCredentialObjectIds(
-    KeyPair issuerKeyPair, KeyPair subjectKeyPair, CredentialType[] credentialTypes) {
+  protected List<Hash256> getCredentialObjectIds(KeyPair issuerKeyPair, KeyPair subjectKeyPair,
+    CredentialType[] credentialTypes) {
 
-    return Arrays.stream(credentialTypes).map(credentialType ->
-      {
+    return Arrays.stream(credentialTypes).map(credentialType -> {
         try {
           return xrplClient.ledgerEntry(
             LedgerEntryRequestParams.credential(

@@ -7,8 +7,8 @@ import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.transactions.Address;
 
 /**
- * Parameters that uniquely identifies an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}
- * on ledger that can be used in a {@link LedgerEntryRequestParams} to request
+ * Parameters that uniquely identifies an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} on ledger that
+ * can be used in a {@link LedgerEntryRequestParams} to request
  * {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}.
  */
 @Immutable

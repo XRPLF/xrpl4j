@@ -80,8 +80,8 @@ public interface PermissionedDomainObject extends LedgerObject {
   Address owner();
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object,
-   * in case the directory consists of multiple pages.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages.
    *
    * @return A {@link String} containing the owner node hint.
    */
@@ -89,9 +89,8 @@ public interface PermissionedDomainObject extends LedgerObject {
   String ownerNode();
 
   /**
-   * The Sequence value of the {@link org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet} transaction
-   * that created this domain. Used in combination with the {@link PermissionedDomainObject#owner}
-   * to identify this domain.
+   * The Sequence value of the {@link org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet} transaction that created
+   * this domain. Used in combination with the {@link PermissionedDomainObject#owner} to identify this domain.
    *
    * @return An {@link UnsignedInteger}.
    */
@@ -99,8 +98,8 @@ public interface PermissionedDomainObject extends LedgerObject {
   UnsignedInteger sequence();
 
   /**
-   * The credentials that are accepted by the domain.
-   * Ownership of one of these credentials automatically makes you a member of the domain.
+   * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
+   * member of the domain.
    *
    * @return A list of {@link CredentialWrapper}.
    */

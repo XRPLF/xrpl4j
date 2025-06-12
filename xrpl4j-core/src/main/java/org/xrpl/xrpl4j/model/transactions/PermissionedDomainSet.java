@@ -29,8 +29,7 @@ public interface PermissionedDomainSet extends Transaction {
   }
 
   /**
-   * The ledger entry ID of an existing permissioned domain to modify.
-   * If omitted, creates a new permissioned domain.
+   * The ledger entry ID of an existing permissioned domain to modify. If omitted, creates a new permissioned domain.
    *
    * @return A {@link Hash256} representing DomainID.
    */
@@ -38,9 +37,8 @@ public interface PermissionedDomainSet extends Transaction {
   Optional<Hash256> domainId();
 
   /**
-   * The credentials that are accepted by the domain.
-   * Ownership of one of these credentials automatically makes you a member of the domain.
-   * When modifying an existing domain, this list replaces the existing list.
+   * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
+   * member of the domain. When modifying an existing domain, this list replaces the existing list.
    *
    * @return A list of {@link CredentialWrapper}.
    */

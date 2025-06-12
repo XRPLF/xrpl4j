@@ -58,15 +58,15 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       )
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + ",\n" +
-                  "   \"TransactionType\":\"PermissionedDomainSet\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + "," +
+      "  \"TransactionType\":\"PermissionedDomainSet\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainSet, json);
   }
@@ -87,16 +87,16 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + ",\n" +
-                  "   \"Flags\": 0,\n" +
-                  "   \"TransactionType\":\"PermissionedDomainSet\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + "," +
+      "  \"Flags\": 0," +
+      "  \"TransactionType\":\"PermissionedDomainSet\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainSet, json);
   }
@@ -117,16 +117,16 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + ",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"TransactionType\":\"PermissionedDomainSet\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + "," +
+      "  \"Flags\": 2147483648," +
+      "  \"TransactionType\":\"PermissionedDomainSet\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainSet, json);
   }
@@ -148,17 +148,17 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + ",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"Foo\" : \"Bar\",\n" +
-                  "   \"TransactionType\":\"PermissionedDomainSet\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + "," +
+      "  \"Flags\": 2147483648," +
+      "  \"Foo\" : \"Bar\"," +
+      "  \"TransactionType\":\"PermissionedDomainSet\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainSet, json);
   }
@@ -176,14 +176,14 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       )
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"TransactionType\":\"PermissionedDomainDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
   }
@@ -201,15 +201,15 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.UNSET)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"Flags\": 0,\n" +
-                  "   \"TransactionType\":\"PermissionedDomainDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"Flags\": 0," +
+      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
   }
@@ -227,15 +227,15 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       .flags(TransactionFlags.FULLY_CANONICAL_SIG)
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"TransactionType\":\"PermissionedDomainDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
   }
@@ -254,16 +254,16 @@ public class PermissionedDomainJsonTests extends AbstractJsonTest {
       .putUnknownFields("Foo", "Bar")
       .build();
 
-    String json = "{\n" +
-                  "   \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\",\n" +
-                  "   \"Fee\":\"1\",\n" +
-                  "   \"Sequence\":3195631,\n" +
-                  "   \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\",\n" +
-                  "   \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\",\n" +
-                  "   \"Flags\": 2147483648,\n" +
-                  "   \"Foo\" : \"Bar\",\n" +
-                  "   \"TransactionType\":\"PermissionedDomainDelete\"\n" +
-                  "}";
+    String json = "{" +
+      "  \"Account\":\"rNGBsV3xEfGyc4JXoZSFT7DYfgGCjLyh3c\"," +
+      "  \"Fee\":\"1\"," +
+      "  \"Sequence\":3195631," +
+      "  \"SigningPubKey\":\"ED87987410480E90474F7A02E0DA0CE4E6ABC8A1377864026A1FEE2718688B0B84\"," +
+      "  \"DomainID\":\"7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0\"," +
+      "  \"Flags\": 2147483648," +
+      "  \"Foo\" : \"Bar\"," +
+      "  \"TransactionType\":\"PermissionedDomainDelete\"" +
+      "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainDelete, json);
   }

@@ -39,17 +39,16 @@ public class PermissionedDomainObjectJsonTest extends AbstractJsonTest {
       .index(Hash256.of("5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E"))
       .build();
 
-    String json =
-      " {\n" +
-      " \"Owner\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\",\n" +
-      " \"Flags\": 0,\n" +
-      " \"OwnerNode\": \"0\",\n" +
-      " \"LedgerEntryType\": \"PermissionedDomain\",\n" +
-      " \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\",\n" +
-      " \"PreviousTxnLgrSeq\": 3105995,\n" +
-      " \"Sequence\": 10,\n" +
-      " \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + ",\n" +
-      " \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"\n" +
+    String json = "{" +
+      "  \"Owner\": \"rPLmuwXJUEtGJ6b4wtqpjYRtxSv5tDVLUz\"," +
+      "  \"Flags\": 0," +
+      "  \"OwnerNode\": \"0\"," +
+      "  \"LedgerEntryType\": \"PermissionedDomain\"," +
+      "  \"PreviousTxnID\": \"FC7C6F49B7264CD1984C58E68B2F30B6580AE5EC94D215737E266C1404E3DEFF\"," +
+      "  \"PreviousTxnLgrSeq\": 3105995," +
+      "  \"Sequence\": 10," +
+      "  \"AcceptedCredentials\":" + objectMapper.writeValueAsString(acceptedCredentials) + "," +
+      "  \"index\": \"5A47EEAD6C185E66C20D4A61BDE8F38181B43250FA37F22EBB604C1F97C8166E\"" +
       "}";
 
     assertCanSerializeAndDeserialize(permissionedDomainObject, json);

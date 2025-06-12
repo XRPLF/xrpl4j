@@ -42,8 +42,8 @@ import java.util.List;
 public interface MetaPermissionedDomainObject extends MetaLedgerObject {
 
   /**
-   * A bit-map of boolean flags. No flags are defined
-   * for {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject}, so this value is always 0.
+   * A bit-map of boolean flags. No flags are defined for {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject},
+   * so this value is always 0.
    *
    * @return Always {@link Flags#UNSET}.
    */
@@ -62,8 +62,8 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
   Address owner();
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object,
-   * in case the directory consists of multiple pages.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages.
    *
    * @return A {@link String} containing the owner node hint.
    */
@@ -72,8 +72,8 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
 
   /**
    * The Sequence value of the {@link org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet} transaction that created
-   * this domain. Used in combination with the {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject#owner}
-   * to identify this domain.
+   * this domain. Used in combination with the {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject#owner} to
+   * identify this domain.
    *
    * @return An {@link UnsignedInteger}.
    */
@@ -81,8 +81,8 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
   UnsignedInteger sequence();
 
   /**
-   * The credentials that are accepted by the domain.
-   * Ownership of one of these credentials automatically makes you a member of the domain.
+   * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
+   * member of the domain.
    *
    * @return A list of {@link CredentialWrapper}.
    */

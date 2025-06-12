@@ -828,11 +828,10 @@ class LedgerEntryRequestParamsTest extends AbstractJsonTest {
     assertThat(params.credential()).isEmpty();
     assertThat(params.permissionedDomain()).isNotEmpty().get().isEqualTo(permissionedDomainLedgerEntryParams);
 
-    String json =
-      "{\n" +
-      " \"permissioned_domain\" : " + objectMapper.writeValueAsString(permissionedDomainLedgerEntryParams) + ",\n" +
-      " \"binary\": false,\n" +
-      " \"ledger_index\": \"validated\"\n" +
+    String json = "{" +
+      "  \"permissioned_domain\" : " + objectMapper.writeValueAsString(permissionedDomainLedgerEntryParams) + "," +
+      "  \"binary\": false," +
+      "  \"ledger_index\": \"validated\"" +
       "}";
 
     assertCanSerializeAndDeserialize(params, json);

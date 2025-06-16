@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,6 +66,16 @@ public class RippleStateFlags extends Flags {
    * Constant {@link RippleStateFlags} for the {@code lsfHighFreeze} flag.
    */
   public static final RippleStateFlags HIGH_FREEZE = new RippleStateFlags(0x00800000);
+
+  /**
+   * Constant {@link RippleStateFlags} for the {@code lsfLowDeepFreeze} flag.
+   */
+  public static final RippleStateFlags LOW_DEEP_FREEZE = new RippleStateFlags(0x02000000);
+
+  /**
+   * Constant {@link RippleStateFlags} for the {@code lsfHighDeepFreeze} flag.
+   */
+  public static final RippleStateFlags HIGH_DEEP_FREEZE = new RippleStateFlags(0x04000000);
 
   private RippleStateFlags(long value) {
     super(value);
@@ -156,5 +166,23 @@ public class RippleStateFlags extends Flags {
    */
   public boolean lsfHighFreeze() {
     return this.isSet(HIGH_FREEZE);
+  }
+
+  /**
+   * The low account has deep-frozen the trust line, preventing the high account from sending and receiving the asset.
+   *
+   * @return {@code true} if {@code lsfLowDeepFreeze} is set, otherwise {@code false}.
+   */
+  public boolean lsfLowDeepFreeze() {
+    return this.isSet(LOW_DEEP_FREEZE);
+  }
+
+  /**
+   * The high account has deep-frozen the trust line, preventing the low account from sending and receiving the asset.
+   *
+   * @return {@code true} if {@code lsfHighDeepFreeze} is set, otherwise {@code false}.
+   */
+  public boolean lsfHighDeepFreeze() {
+    return this.isSet(HIGH_DEEP_FREEZE);
   }
 }

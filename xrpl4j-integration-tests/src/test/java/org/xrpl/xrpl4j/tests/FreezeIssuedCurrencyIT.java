@@ -266,6 +266,218 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
   }
 
   /**
+   * This test creates a Trustline between an issuer and a badActor, issues funds to the badActor, then deep freezes the
+   * funds and validates that the badActor is unable to send or receive those funds (except to/from the issuer).
+   * It also verifies that the deep_freeze and deep_freeze_peer fields are correctly set in account_lines responses.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0077-deep-freeze"
+   */
+  @Test
+  public void issueAndDeepFreezeFunds() throws JsonRpcClientErrorException, JsonProcessingException {
+    FeeResult feeResult = xrplClient.fee();
+
+    // Create a Trust Line between issuer and the bad actor.
+    TrustLine badActorTrustLine = this.createTrustLine(
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .value(FreezeIssuedCurrencyIT.TEN_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.builder().tfSetNoRipple().build()
+    );
+    assertThat(badActorTrustLine.freeze()).isFalse();
+    assertThat(badActorTrustLine.freezePeer()).isFalse();
+    assertThat(badActorTrustLine.deepFreeze()).isFalse();
+    assertThat(badActorTrustLine.deepFreezePeer()).isFalse();
+    assertThat(badActorTrustLine.noRipple()).isFalse();
+    assertThat(badActorTrustLine.noRipplePeer()).isTrue();
+
+    ///////////////////////////
+    // Create a Trust Line between issuer and the good actor.
+    TrustLine goodActorTrustLine = this.createTrustLine(
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .value(FreezeIssuedCurrencyIT.TEN_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.builder().tfSetNoRipple().build()
+    );
+    assertThat(goodActorTrustLine.freeze()).isFalse();
+    assertThat(goodActorTrustLine.freezePeer()).isFalse();
+    assertThat(goodActorTrustLine.deepFreeze()).isFalse();
+    assertThat(goodActorTrustLine.deepFreezePeer()).isFalse();
+    assertThat(goodActorTrustLine.noRipple()).isFalse();
+    assertThat(goodActorTrustLine.noRipplePeer()).isTrue();
+
+    /////////////
+    // Send Funds
+    /////////////
+
+    // Send funds from issuer to the badActor.
+    sendIssuedCurrency(
+      issuerKeyPair,
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(TEN_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    ///////////////////////////
+    // Validate that the TrustLine balance was updated as a result of the Payment.
+    // The trust line returned is from the perspective of the issuer, so the balance should be negative.
+    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        badActorKeyPair.publicKey().deriveAddress()),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("-" + TEN_THOUSAND))
+    );
+
+    // Send funds from badActor to the goodActor.
+    sendIssuedCurrency(
+      badActorKeyPair,
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value(FIVE_THOUSAND)
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    ///////////////////////////
+    // Validate that the TrustLine balance was updated as a result of the Payment.
+    // The trust line returned is from the perspective of the issuer, so the balance should be negative.
+    this.scanForResult(() -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        goodActorKeyPair.publicKey().deriveAddress()),
+      linesResult -> linesResult.lines().stream()
+        .anyMatch(line -> line.balance().equals("-" + FIVE_THOUSAND))
+    );
+
+    // Deep-Freeze the trustline between the issuer and bad actor.
+    // According to XLS-77d, deep freeze requires regular freeze to be set first or in the same transaction.
+    badActorTrustLine = this.adjustTrustlineFreezeAndDeepFreeze(
+      issuerKeyPair,
+      badActorKeyPair,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      FREEZE
+    );
+    assertThat(badActorTrustLine.freeze()).isTrue();
+    assertThat(badActorTrustLine.freezePeer()).isFalse();
+    assertThat(badActorTrustLine.deepFreeze()).isTrue();
+    assertThat(badActorTrustLine.deepFreezePeer()).isFalse();
+    assertThat(badActorTrustLine.noRipple()).isFalse();
+    assertThat(badActorTrustLine.noRipplePeer()).isTrue();
+
+    // Verify deep freeze fields from the badActor's perspective
+    TrustLine badActorPerspectiveTrustLine = this.scanForResult(
+      () -> getValidatedAccountLines(badActorKeyPair.publicKey().deriveAddress(),
+        issuerKeyPair.publicKey().deriveAddress()),
+      linesResult -> !linesResult.lines().isEmpty()
+    ).lines().get(0);
+    assertThat(badActorPerspectiveTrustLine.deepFreeze()).isFalse();
+    assertThat(badActorPerspectiveTrustLine.deepFreezePeer()).isTrue();
+
+    /////////////
+    // Assertions
+    /////////////
+
+    // 1) The counterparty cannot send or receive the deep-frozen currencies (except to/from the issuer)
+    // 2) Payments can still occur directly between the issuer and the deep-frozen counterparty
+
+    // Try to send funds from badActor to goodActor should not work because the badActor is deep-frozen.
+    sendIssuedCurrency(
+      badActorKeyPair,
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      "tecPATH_DRY"
+    );
+
+    // Try to send funds from goodActor to badActor should not work because the badActor is deep-frozen.
+    sendIssuedCurrency(
+      goodActorKeyPair,
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      "tecPATH_DRY"
+    );
+
+    // Sending from the badActor to the issuer should still work
+    sendIssuedCurrency(
+      badActorKeyPair,
+      issuerKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("2000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    // Sending from the issuer to the badActor should still work
+    sendIssuedCurrency(
+      issuerKeyPair,
+      badActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    // Clear the deep freeze and regular freeze on the bad actor.
+    // According to XLS-77d, cannot clear regular freeze without also clearing deep freeze.
+    badActorTrustLine = this.adjustTrustlineFreezeAndDeepFreeze(
+      issuerKeyPair,
+      badActorKeyPair,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      UN_FREEZE
+    );
+    assertThat(badActorTrustLine.freeze()).isFalse();
+    assertThat(badActorTrustLine.freezePeer()).isFalse();
+    assertThat(badActorTrustLine.deepFreeze()).isFalse();
+    assertThat(badActorTrustLine.deepFreezePeer()).isFalse();
+    assertThat(badActorTrustLine.noRipple()).isFalse();
+    assertThat(badActorTrustLine.noRipplePeer()).isTrue();
+
+    // Verify deep freeze fields are cleared from the badActor's perspective
+    badActorPerspectiveTrustLine = this.scanForResult(
+      () -> getValidatedAccountLines(badActorKeyPair.publicKey().deriveAddress(),
+        issuerKeyPair.publicKey().deriveAddress()),
+      linesResult -> !linesResult.lines().isEmpty()
+    ).lines().get(0);
+    assertThat(badActorPerspectiveTrustLine.deepFreeze()).isFalse();
+    assertThat(badActorPerspectiveTrustLine.deepFreezePeer()).isFalse();
+
+    // After clearing deep freeze, badActor should be able to send funds to goodActor again
+    sendIssuedCurrency(
+      badActorKeyPair,
+      goodActorKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .value("500")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+  }
+
+  /**
    * This test creates a Trustline between an issuer and a badActor, issues funds to two counterparties, then globally
    * freezes the trustlines for the issuer. The test validates that neither the good nor the bad actor is able to send
    * funds, except back to the issuer.
@@ -643,6 +855,73 @@ public class FreezeIssuedCurrencyIT extends AbstractIT {
       () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
       accountInfoResult -> accountInfoResult.accountData().flags().lsfGlobalFreeze() == freeze
     );
+
+  }
+
+  /**
+   * Freeze and deep freeze an individual trustline that exists between the specified issuer and the specified
+   * counterparty for the {@link #ISSUED_CURRENCY_CODE}. According to XLS-77d, deep freeze requires regular freeze
+   * to be set first or in the same transaction, and regular freeze cannot be cleared without also clearing deep freeze.
+   *
+   * @param issuerKeyPair       The {@link KeyPair} of the trustline issuer.
+   * @param counterpartyKeyPair The {@link KeyPair} of the trustline counterparty.
+   * @param fee                 The fee to spend to get the transaction into the ledger.
+   * @param freeze              A boolean to toggle the trustline operation (i.e., {@code false} to clear both freezes
+   *                            and {@code true} to set both freezes).
+   *
+   * @return The {@link TrustLine} that was frozen/deep-frozen or unfrozen.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   * @throws JsonProcessingException     If there are any problems parsing JSON.
+   */
+  private TrustLine adjustTrustlineFreezeAndDeepFreeze(
+    KeyPair issuerKeyPair,
+    KeyPair counterpartyKeyPair,
+    XrpCurrencyAmount fee,
+    boolean freeze
+  ) throws JsonRpcClientErrorException, JsonProcessingException {
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    Builder flagsBuilder = TrustSetFlags.builder();
+    if (freeze) {
+      // Set both regular freeze and deep freeze in the same transaction
+      flagsBuilder.tfSetFreeze().tfSetDeepFreeze();
+    } else {
+      // Clear both regular freeze and deep freeze in the same transaction
+      flagsBuilder.tfClearFreeze().tfClearDeepFreeze();
+    }
+
+    TrustSet trustSet = TrustSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(fee)
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .currency(FreezeIssuedCurrencyIT.ISSUED_CURRENCY_CODE)
+        .issuer(counterpartyKeyPair.publicKey().deriveAddress())
+        .value("0")
+        .build())
+      .flags(flagsBuilder.build())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<TrustSet> signedTrustSet = signatureService.sign(issuerKeyPair.privateKey(), trustSet);
+    SubmitResult<TrustSet> trustSetSubmitResult = xrplClient.submit(signedTrustSet);
+    assertThat(trustSetSubmitResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "TrustSet freeze and deep freeze transaction successful: https://testnet.xrpl.org/transactions/{}",
+      trustSetSubmitResult.transactionResult().hash()
+    );
+
+    return scanForResult(
+      () -> getValidatedAccountLines(issuerKeyPair.publicKey().deriveAddress(),
+        counterpartyKeyPair.publicKey().deriveAddress()),
+      accountLineResult -> accountLineResult.lines().stream()
+        .filter(trustLine -> trustLine.account().equals(counterpartyKeyPair.publicKey().deriveAddress()))
+        .anyMatch(trustLine -> trustLine.freeze() == freeze && trustLine.deepFreeze() == freeze)
+    )
+      .lines().get(0);
 
   }
 }

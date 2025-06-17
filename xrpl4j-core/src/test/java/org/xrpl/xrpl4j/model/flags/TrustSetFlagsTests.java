@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class TrustSetFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(5);
+    return getBooleanCombinations(7);
   }
 
   @ParameterizedTest
@@ -44,7 +44,9 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetNoRipple,
     boolean tfClearNoRipple,
     boolean tfSetFreeze,
-    boolean tfClearFreeze
+    boolean tfClearFreeze,
+    boolean tfSetDeepFreeze,
+    boolean tfClearDeepFreeze
   ) {
     TrustSetFlags.Builder builder = TrustSetFlags.builder()
       .tfSetfAuth(tfSetfAuth);
@@ -65,6 +67,14 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       builder.tfClearFreeze();
     }
 
+    if (tfSetDeepFreeze) {
+      builder.tfSetDeepFreeze();
+    }
+
+    if (tfClearDeepFreeze) {
+      builder.tfClearDeepFreeze();
+    }
+
     TrustSetFlags flags = builder.build();
 
     long expectedFlags = getExpectedFlags(
@@ -72,7 +82,9 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       tfSetNoRipple,
       tfClearNoRipple,
       tfSetFreeze,
-      tfClearFreeze
+      tfClearFreeze,
+      tfSetDeepFreeze,
+      tfClearDeepFreeze
     );
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
   }
@@ -84,14 +96,18 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetNoRipple,
     boolean tfClearNoRipple,
     boolean tfSetFreeze,
-    boolean tfClearFreeze
+    boolean tfClearFreeze,
+    boolean tfSetDeepFreeze,
+    boolean tfClearDeepFreeze
   ) {
     long expectedFlags = getExpectedFlags(
       tfSetfAuth,
       tfSetNoRipple,
       tfClearNoRipple,
       tfSetFreeze,
-      tfClearFreeze
+      tfClearFreeze,
+      tfSetDeepFreeze,
+      tfClearDeepFreeze
     );
     TrustSetFlags flags = TrustSetFlags.of(expectedFlags);
 
@@ -102,6 +118,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfClearNoRipple()).isEqualTo(tfClearNoRipple);
     assertThat(flags.tfSetFreeze()).isEqualTo(tfSetFreeze);
     assertThat(flags.tfClearFreeze()).isEqualTo(tfClearFreeze);
+    assertThat(flags.tfSetDeepFreeze()).isEqualTo(tfSetDeepFreeze);
+    assertThat(flags.tfClearDeepFreeze()).isEqualTo(tfClearDeepFreeze);
   }
 
   @Test
@@ -114,6 +132,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfClearNoRipple()).isFalse();
     assertThat(flags.tfSetFreeze()).isFalse();
     assertThat(flags.tfClearFreeze()).isFalse();
+    assertThat(flags.tfSetDeepFreeze()).isFalse();
+    assertThat(flags.tfClearDeepFreeze()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
@@ -125,14 +145,18 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetNoRipple,
     boolean tfClearNoRipple,
     boolean tfSetFreeze,
-    boolean tfClearFreeze
+    boolean tfClearFreeze,
+    boolean tfSetDeepFreeze,
+    boolean tfClearDeepFreeze
   ) throws JSONException, JsonProcessingException {
     long expectedFlags = getExpectedFlags(
       tfSetfAuth,
       tfSetNoRipple,
       tfClearNoRipple,
       tfSetFreeze,
-      tfClearFreeze
+      tfClearFreeze,
+      tfSetDeepFreeze,
+      tfClearDeepFreeze
     );
     TrustSetFlags flags = TrustSetFlags.of(expectedFlags);
 
@@ -160,13 +184,17 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetNoRipple,
     boolean tfClearNoRipple,
     boolean tfSetFreeze,
-    boolean tfClearFreeze
+    boolean tfClearFreeze,
+    boolean tfSetDeepFreeze,
+    boolean tfClearDeepFreeze
   ) {
     return (TrustSetFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfSetfAuth ? TrustSetFlags.SET_F_AUTH.getValue() : 0L) |
       (tfSetNoRipple ? TrustSetFlags.SET_NO_RIPPLE.getValue() : 0L) |
       (tfClearNoRipple ? TrustSetFlags.CLEAR_NO_RIPPLE.getValue() : 0L) |
       (tfSetFreeze ? TrustSetFlags.SET_FREEZE.getValue() : 0L) |
-      (tfClearFreeze ? TrustSetFlags.CLEAR_FREEZE.getValue() : 0L);
+      (tfClearFreeze ? TrustSetFlags.CLEAR_FREEZE.getValue() : 0L) |
+      (tfSetDeepFreeze ? TrustSetFlags.SET_DEEP_FREEZE.getValue() : 0L) |
+      (tfClearDeepFreeze ? TrustSetFlags.CLEAR_DEEP_FREEZE.getValue() : 0L);
   }
 }

@@ -39,6 +39,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.ORACLE.value()).isEqualTo("Oracle");
     assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("MPToken");
     assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.value()).isEqualTo("MPTokenIssuance");
+    assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.value()).isEqualTo("PermissionedDomain");
   }
 
   @Test
@@ -71,6 +72,8 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.ORACLE.ledgerObjectType()).isEqualTo(MetaOracleObject.class);
     assertThat(MetaLedgerEntryType.MP_TOKEN.ledgerObjectType()).isEqualTo(MetaMpTokenObject.class);
     assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.ledgerObjectType()).isEqualTo(MetaMpTokenIssuanceObject.class);
+    assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.ledgerObjectType()).isEqualTo(
+      MetaPermissionedDomainObject.class);
   }
 
   @Test

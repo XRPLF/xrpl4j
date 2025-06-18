@@ -146,6 +146,10 @@ public interface AccountObjectsRequestParams extends XrplRequestParams {
      */
     PAYMENT_CHANNEL("payment_channel"),
     /**
+     * Permissioned domain account object type.
+     */
+    PERMISSIONED_DOMAIN("permissioned_domain"),
+    /**
      * Signer list account object type.
      */
     SIGNER_LIST("signer_list"),

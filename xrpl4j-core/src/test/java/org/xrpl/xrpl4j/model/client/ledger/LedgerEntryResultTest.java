@@ -30,6 +30,7 @@ import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.NfTokenWrapper;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.ledger.VoteEntry;
@@ -48,6 +49,8 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class LedgerEntryResultTest extends AbstractJsonTest {
 
@@ -744,6 +747,58 @@ class LedgerEntryResultTest extends AbstractJsonTest {
       "    \"index\": \"4070656F661A60726DBB384E09F6E36B88071072FFFFFFFFFFFFFFFFFFFFFFFF\"" +
       "  }," +
       "  \"status\": \"success\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(result, json);
+  }
+
+  @Test
+  void testPermissionedDomainResult() throws JSONException, JsonProcessingException {
+    List<CredentialWrapper> acceptedCredentials = IntStream.range(0, 10)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    LedgerEntryResult<PermissionedDomainObject> result = LedgerEntryResult.<PermissionedDomainObject>builder()
+      .ledgerIndex(LedgerIndex.of(UnsignedInteger.valueOf(3581898)))
+      .ledgerHash(Hash256.of("E28A994738F9CEA73C7483CD337560E500F0AADE27900BF97FD5B0FC6A26B228"))
+      .validated(true)
+      .index(Hash256.of("D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74"))
+      .node(
+        PermissionedDomainObject.builder()
+          .owner(Address.of("rhjmfJwtW5bKAbFkZuxVQdCTDVVC4mcfwB"))
+          .ownerNode("0")
+          .sequence(UnsignedInteger.valueOf(3581881))
+          .acceptedCredentials(acceptedCredentials)
+          .previousTxnId(Hash256.of("C012929FA346E9E5624A7AA23F8EAE6B9909BD616087AF99F2BF2F55B6140686"))
+          .previousTransactionLedgerSequence(UnsignedInteger.valueOf(3581884))
+          .index(Hash256.of("D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74"))
+          .build()
+      )
+      .status("success")
+      .build();
+
+    String json = "{" +
+      "  \"index\": \"D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74\"," +
+      "  \"ledger_hash\": \"E28A994738F9CEA73C7483CD337560E500F0AADE27900BF97FD5B0FC6A26B228\"," +
+      "  \"ledger_index\": 3581898," +
+      "  \"node\": {" +
+      "  \"AcceptedCredentials\": " + objectMapper.writeValueAsString(acceptedCredentials) + "," +
+      "    \"Flags\": 0," +
+      "    \"LedgerEntryType\": \"PermissionedDomain\"," +
+      "    \"Owner\": \"rhjmfJwtW5bKAbFkZuxVQdCTDVVC4mcfwB\"," +
+      "    \"OwnerNode\": \"0\"," +
+      "    \"PreviousTxnID\": \"C012929FA346E9E5624A7AA23F8EAE6B9909BD616087AF99F2BF2F55B6140686\"," +
+      "    \"PreviousTxnLgrSeq\": 3581884," +
+      "    \"Sequence\": 3581881," +
+      "    \"index\": \"D4ACD9C1EBE3EEF9B3B1052CDFF40F87CA5AF37FEB1E35F842E6A72CB5911C74\"" +
+      "  }," +
+      "  \"status\": \"success\"," +
+      "  \"validated\": true" +
       "}";
 
     assertCanSerializeAndDeserialize(result, json);

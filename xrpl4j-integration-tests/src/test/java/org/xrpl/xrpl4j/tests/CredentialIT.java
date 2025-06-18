@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedLong;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -36,6 +37,8 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.CredentialLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryResult;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.ledger.CredentialObject;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
@@ -188,6 +191,8 @@ public class CredentialIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
     );
 
+    UnsignedLong expirationTime = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(3)));
+
     CredentialCreate credCreateTx = CredentialCreate.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .sequence(issuerAccountInfo.accountData().sequence())
@@ -195,7 +200,7 @@ public class CredentialIT extends AbstractIT {
       .subject(subjectKeyPair.publicKey().deriveAddress())
       .credentialType(DRIVER_LICENCE)
       .uri(DRIVER_LICENCE_URI)
-      .expiration(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(3))))
+      .expiration(expirationTime)
       .signingPublicKey(issuerKeyPair.publicKey())
       .build();
 
@@ -212,8 +217,7 @@ public class CredentialIT extends AbstractIT {
       () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class)
     );
 
-    // Wait for 5 seconds to let credential expire.
-    Thread.sleep(5 * 1000);
+    waitForCredentialToExpire(expirationTime);
 
     AccountInfoResult subjectAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(subjectKeyPair.publicKey().deriveAddress())
@@ -342,5 +346,13 @@ public class CredentialIT extends AbstractIT {
     return ledgerObject -> ((CredentialObject) ledgerObject).issuer().equals(issuer) &&
       ((CredentialObject) ledgerObject).credentialType().equals(credentialType) &&
       ((CredentialObject) ledgerObject).subject().equals(subject);
+  }
+
+  private void waitForCredentialToExpire(UnsignedLong expirationTimeRippleEpoch) throws JsonRpcClientErrorException {
+    LedgerResult ledgerResult;
+    do {
+      ledgerResult = xrplClient.ledger(
+        LedgerRequestParams.builder().ledgerSpecifier(LedgerSpecifier.VALIDATED).build());
+    } while (expirationTimeRippleEpoch.compareTo(ledgerResult.ledger().closeTime().get()) >= 0);
   }
 }

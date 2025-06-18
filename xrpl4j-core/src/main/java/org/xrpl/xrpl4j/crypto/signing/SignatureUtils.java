@@ -70,6 +70,8 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
@@ -431,6 +433,14 @@ public class SignatureUtils {
       transactionWithSignature = CredentialDelete.builder().from((CredentialDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (PermissionedDomainSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = PermissionedDomainSet.builder().from((PermissionedDomainSet) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (PermissionedDomainDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -672,6 +682,14 @@ public class SignatureUtils {
         .build();
     } else if (CredentialDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = CredentialDelete.builder().from((CredentialDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (PermissionedDomainSet.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = PermissionedDomainSet.builder().from((PermissionedDomainSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (PermissionedDomainDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
         .signers(signers)
         .build();
     } else {

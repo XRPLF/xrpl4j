@@ -149,6 +149,16 @@ public enum TransactionType {
   PAYMENT_CHANNEL_FUND("PaymentChannelFund"),
 
   /**
+   * The {@link TransactionType} for the {@link PermissionedDomainSet} transaction.
+   */
+  PERMISSIONED_DOMAIN_SET("PermissionedDomainSet"),
+
+  /**
+   * The {@link TransactionType} for the {@link PermissionedDomainDelete} transaction.
+   */
+  PERMISSIONED_DOMAIN_DELETE("PermissionedDomainDelete"),
+
+  /**
    * The {@link TransactionType} for the {@link SetFee} transaction.
    */
   SET_FEE("SetFee"),

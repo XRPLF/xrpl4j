@@ -51,6 +51,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableNfTokenOfferObject.class, name = "NFTokenOffer"),
   @JsonSubTypes.Type(value = ImmutableOfferObject.class, name = "Offer"),
   @JsonSubTypes.Type(value = ImmutablePayChannelObject.class, name = "PayChannel"),
+  @JsonSubTypes.Type(value = ImmutablePermissionedDomainObject.class, name = "PermissionedDomain"),
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
   @JsonSubTypes.Type(value = ImmutableSignerListObject.class, name = "SignerList"),
   @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
@@ -137,6 +138,11 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code PayChannel} ledger objects.
      */
     PAY_CHANNEL("PayChannel"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code PermissionedDomain} ledger objects.
+     */
+    PERMISSIONED_DOMAIN("PermissionedDomain"),
 
     /**
      * The {@link LedgerEntryType} for {@code RippleState} ledger objects.

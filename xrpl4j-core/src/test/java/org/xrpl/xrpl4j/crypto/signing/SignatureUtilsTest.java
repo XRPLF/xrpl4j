@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -73,20 +72,19 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
+import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
+import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
+import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.CredentialUri;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.DidData;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
-import org.xrpl.xrpl4j.model.transactions.DidDocument;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
-import org.xrpl.xrpl4j.model.transactions.DidUri;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
@@ -188,7 +186,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (Transaction)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   public void toSignableBytesWithNullTransaction() {
@@ -237,7 +236,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (UnsignedClaim)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   void unsignedClaimToSignableBytesWhenNull() {
@@ -282,7 +282,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (AttestationClaim)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   void attestationClaimToSignableBytesWhenNull() {
@@ -366,7 +367,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (AttestationCreateAccount)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   void attestationCreateAccountToSignableBytesWhenNull() {
@@ -456,7 +458,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toMultiSignableBytes
-  //////////////////
+
+  /// ///////////////
 
 
   @Test
@@ -482,7 +485,8 @@ public class SignatureUtilsTest {
 
   ////////////////////////////
   // addSignatureToTransaction
-  ////////////////////////////
+
+  /// /////////////////////////
 
   @Test
   public void addSignatureToTransactionWithNullTransaction() {
@@ -1253,6 +1257,49 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToCredentialCreate() {
+    CredentialCreate transaction = CredentialCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .subject(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .uri(CredentialUri.ofPlainText("http://dl-gov-verify.ca"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToCredentialAccept() {
+    CredentialAccept transaction = CredentialAccept.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToCredentialDelete() {
+    CredentialDelete transaction = CredentialDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addSignatureToTransactionUnsupported() {
     assertThrows(IllegalArgumentException.class, () -> addSignatureToTransactionHelper(transactionMock));
   }
@@ -1935,6 +1982,46 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.valueOf(391))
       .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
       .flags(MpTokenIssuanceSetFlags.LOCK)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToCredentialCreate() {
+    CredentialCreate transaction = CredentialCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .subject(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .uri(CredentialUri.ofPlainText("http://dl-gov-verify.ca"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToCredentialAccept() {
+    CredentialAccept transaction = CredentialAccept.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToCredentialDelete() {
+    CredentialDelete transaction = CredentialDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .credentialType(CredentialType.ofPlainText("driver licence"))
       .build();
 
     addMultiSignatureToTransactionHelper(transaction);

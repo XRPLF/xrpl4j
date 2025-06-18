@@ -44,6 +44,9 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
+import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
+import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
+import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
@@ -416,6 +419,18 @@ public class SignatureUtils {
       transactionWithSignature = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (CredentialCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = CredentialCreate.builder().from((CredentialCreate) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (CredentialAccept.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = CredentialAccept.builder().from((CredentialAccept) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (CredentialDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = CredentialDelete.builder().from((CredentialDelete) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -645,6 +660,18 @@ public class SignatureUtils {
         .build();
     } else if (MpTokenIssuanceSet.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = MpTokenIssuanceSet.builder().from((MpTokenIssuanceSet) transaction)
+        .signers(signers)
+        .build();
+    } else if (CredentialCreate.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CredentialCreate.builder().from((CredentialCreate) transaction)
+        .signers(signers)
+        .build();
+    } else if (CredentialAccept.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CredentialAccept.builder().from((CredentialAccept) transaction)
+        .signers(signers)
+        .build();
+    } else if (CredentialDelete.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = CredentialDelete.builder().from((CredentialDelete) transaction)
         .signers(signers)
         .build();
     } else {

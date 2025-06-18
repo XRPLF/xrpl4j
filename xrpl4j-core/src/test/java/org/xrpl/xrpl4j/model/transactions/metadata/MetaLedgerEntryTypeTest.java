@@ -16,6 +16,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.ACCOUNT_ROOT.value()).isEqualTo("AccountRoot");
     assertThat(MetaLedgerEntryType.AMENDMENTS.value()).isEqualTo("Amendments");
     assertThat(MetaLedgerEntryType.CHECK.value()).isEqualTo("Check");
+    assertThat(MetaLedgerEntryType.CREDENTIAL.value()).isEqualTo("Credential");
     assertThat(MetaLedgerEntryType.DEPOSIT_PRE_AUTH.value()).isEqualTo("DepositPreauth");
     assertThat(MetaLedgerEntryType.DIRECTORY_NODE.value()).isEqualTo("DirectoryNode");
     assertThat(MetaLedgerEntryType.ESCROW.value()).isEqualTo("Escrow");
@@ -45,6 +46,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.ACCOUNT_ROOT.ledgerObjectType()).isEqualTo(MetaAccountRootObject.class);
     assertThat(MetaLedgerEntryType.AMENDMENTS.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
     assertThat(MetaLedgerEntryType.CHECK.ledgerObjectType()).isEqualTo(MetaCheckObject.class);
+    assertThat(MetaLedgerEntryType.CREDENTIAL.ledgerObjectType()).isEqualTo(MetaCredentialObject.class);
     assertThat(MetaLedgerEntryType.DEPOSIT_PRE_AUTH.ledgerObjectType()).isEqualTo(MetaDepositPreAuthObject.class);
     assertThat(MetaLedgerEntryType.DIRECTORY_NODE.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
     assertThat(MetaLedgerEntryType.ESCROW.ledgerObjectType()).isEqualTo(MetaEscrowObject.class);

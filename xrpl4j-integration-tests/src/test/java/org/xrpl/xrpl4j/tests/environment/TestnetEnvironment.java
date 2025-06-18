@@ -32,7 +32,7 @@ import org.xrpl.xrpl4j.model.transactions.Address;
 public abstract class TestnetEnvironment extends AbstractXrplEnvironment implements XrplEnvironment {
 
   private final FaucetClient faucetClient =
-    FaucetClient.construct(HttpUrl.parse("https://faucet.altnet.rippletest.net"));
+    FaucetClient.construct(HttpUrl.parse("https://apex-faucet.altnet.rippletest.net"));
 
   @Override
   public abstract XrplClient getXrplClient();

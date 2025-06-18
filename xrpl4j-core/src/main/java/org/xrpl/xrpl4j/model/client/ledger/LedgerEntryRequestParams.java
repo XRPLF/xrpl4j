@@ -602,7 +602,7 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<MpTokenLedgerEntryParams> mpToken();
 
   /**
-   * Look up an {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} by
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} by
    * {@link PermissionedDomainLedgerEntryParams}.
    *
    * @return An {@link Optional} {@link PermissionedDomainLedgerEntryParams}.

@@ -1308,13 +1308,12 @@ public class SignatureUtilsTest {
   @Test
   void addSignatureToPermissionedDoaminSet() {
     List<CredentialWrapper> credentials = IntStream.range(0, 10)
-      .mapToObj(i ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
-            .build())
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
           .build())
+        .build())
       .collect(Collectors.toList());
 
     PermissionedDomainSet transaction = PermissionedDomainSet.builder()
@@ -2072,13 +2071,12 @@ public class SignatureUtilsTest {
   @Test
   void addMultiSignatureToPermissionedDomainSet() {
     List<CredentialWrapper> credentials = IntStream.range(0, 10)
-      .mapToObj(i ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
-            .build())
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
           .build())
+        .build())
       .collect(Collectors.toList());
 
     PermissionedDomainSet transaction = PermissionedDomainSet.builder()

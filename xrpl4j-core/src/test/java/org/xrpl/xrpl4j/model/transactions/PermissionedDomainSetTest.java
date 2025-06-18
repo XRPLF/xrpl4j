@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Unit tests for {@link PermissionedDomainSet}.
+ */
 public class PermissionedDomainSetTest {
 
   @Test

@@ -20,13 +20,12 @@ public class PermissionedDomainObjectJsonTest extends AbstractJsonTest {
   @Test
   public void testJson() throws JsonProcessingException, JSONException {
     List<CredentialWrapper> acceptedCredentials = IntStream.range(0, 10)
-      .mapToObj(i ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
-            .build())
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
           .build())
+        .build())
       .collect(Collectors.toList());
 
     PermissionedDomainObject permissionedDomainObject = PermissionedDomainObject.builder()

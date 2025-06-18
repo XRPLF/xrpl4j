@@ -18,7 +18,7 @@ jobs:
           java-version: '8'
           cache: 'maven'
       - name: Build
-        run: mvn dependency:go-offline install
+        run: mvn clean install
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
@@ -38,7 +38,7 @@ jobs:
           java-version: '8'
           cache: 'maven'
       - name: Build
-        run: mvn dependency:go-offline install
+        run: mvn clean install
 
   build_jdk_zulu_8:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
           java-version: '8'
           cache: 'maven'
       - name: Build
-        run: mvn dependency:go-offline install
+        run: mvn clean install
 
   build_jdk_temurin_other:
     runs-on: ubuntu-latest
@@ -72,7 +72,7 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: 'maven'
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true
+        run: mvn clean install -Dmaven.javadoc.skip=true
 
   build_jdk_temurin_non_us:
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
           cache: 'maven'
       # Maven install with JVM locale = de_DE
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
+        run: mvn clean install -Dmaven.javadoc.skip=true -DargLine="-Duser.language=de -Duser.country=DE"
 
   build_android:
     runs-on: ubuntu-latest
@@ -105,7 +105,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -Pandroid
+        run: mvn clean install -Dmaven.javadoc.skip=true -Pandroid
 
   build_devnet_its:
     runs-on: ubuntu-latest
@@ -120,7 +120,7 @@ jobs:
           java-version: '8'
           cache: 'maven'
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseDevnet
+        run: mvn clean install -Dmaven.javadoc.skip=true -DuseDevnet
 
   build_testnet_reporting_its:
     runs-on: ubuntu-latest
@@ -135,7 +135,7 @@ jobs:
           java-version: '8'
           cache: 'maven' # setup-java v4 includes maven caching
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseTestnet
+        run: mvn clean install -Dmaven.javadoc.skip=true -DuseTestnet
 
   build_testnet_clio_its:
     runs-on: ubuntu-latest
@@ -150,4 +150,4 @@ jobs:
           java-version: '8'
           cache: 'maven'
       - name: Build
-        run: mvn dependency:go-offline install -Dmaven.javadoc.skip=true -DuseClioTestnet -DuseClioMainnet
+        run: mvn clean install -Dmaven.javadoc.skip=true -DuseClioTestnet -DuseClioMainnet

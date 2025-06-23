@@ -30,6 +30,7 @@ public interface MetaLedgerEntryType {
   MetaLedgerEntryType TICKET = MetaLedgerEntryType.of("Ticket");
   MetaLedgerEntryType NFTOKEN_PAGE = MetaLedgerEntryType.of("NFTokenPage");
   MetaLedgerEntryType AMM = MetaLedgerEntryType.of("AMM");
+  MetaLedgerEntryType PERMISSIONED_DOMAIN = MetaLedgerEntryType.of("PermissionedDomain");
 
   @Beta
   MetaLedgerEntryType BRIDGE = MetaLedgerEntryType.of("Bridge");
@@ -114,6 +115,8 @@ public interface MetaLedgerEntryType {
         return MetaMpTokenIssuanceObject.class;
       case "MPToken":
         return MetaMpTokenObject.class;
+      case "PermissionedDomain":
+        return MetaPermissionedDomainObject.class;
       default:
         return MetaUnknownObject.class;
     }

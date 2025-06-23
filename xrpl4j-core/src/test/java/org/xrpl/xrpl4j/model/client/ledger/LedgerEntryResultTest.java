@@ -755,13 +755,12 @@ class LedgerEntryResultTest extends AbstractJsonTest {
   @Test
   void testPermissionedDomainResult() throws JSONException, JsonProcessingException {
     List<CredentialWrapper> acceptedCredentials = IntStream.range(0, 10)
-      .mapToObj(i ->
-        CredentialWrapper.builder()
-          .credential(Credential.builder()
-            .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
-            .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
-            .build())
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
           .build())
+        .build())
       .collect(Collectors.toList());
 
     LedgerEntryResult<PermissionedDomainObject> result = LedgerEntryResult.<PermissionedDomainObject>builder()

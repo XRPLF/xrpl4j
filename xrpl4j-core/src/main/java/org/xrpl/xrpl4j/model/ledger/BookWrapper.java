@@ -24,40 +24,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 /**
- * Object referencing a specific page of an offer directory.
+ * A wrapper for {@link Book} to conform to the rippled API JSON structure.
  */
 @Immutable
-@JsonSerialize(as = ImmutableAdditionalBook.class)
-@JsonDeserialize(as = ImmutableAdditionalBook.class)
-public interface AdditionalBook {
+@JsonSerialize(as = ImmutableBookWrapper.class)
+@JsonDeserialize(as = ImmutableBookWrapper.class)
+public interface BookWrapper {
 
   /**
    * Construct a builder for this class.
    *
-   * @return An {@link ImmutableAdditionalBook.Builder}.
+   * @return An {@link ImmutableBookWrapper.Builder}.
    */
-  static ImmutableAdditionalBook.Builder builder() {
-    return ImmutableAdditionalBook.builder();
+  static ImmutableBookWrapper.Builder builder() {
+    return ImmutableBookWrapper.builder();
   }
 
   /**
-   * The ID of the Offer Directory that links to this offer.
+   * A Book object.
    *
-   * @return A {@link Hash256} containing the ID.
+   * @return A {@link Book} object.
    */
-  @JsonProperty("BookDirectory")
-  Hash256 bookDirectory();
-
-  /**
-   * A hint indicating which page of the offer directory links to this object, in case the directory consists of
-   * multiple pages.
-   *
-   * @return A {@link String} containing the hint.
-   */
-  @JsonProperty("BookNode")
-  String bookNode();
+  @JsonProperty("Book")
+  Book book();
 
 }

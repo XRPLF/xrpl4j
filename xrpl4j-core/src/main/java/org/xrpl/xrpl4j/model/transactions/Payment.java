@@ -147,7 +147,7 @@ public interface Payment extends Transaction {
   List<Hash256> credentialIds();
 
   /**
-   * The domain the sender intends to use. Both the sender and destination must be part of this domain.
+   * The permissioned domain the sender intends to use. Both the sender and destination must be part of this domain.
    *
    * @return A {@link Hash256} representing DomainID.
    */

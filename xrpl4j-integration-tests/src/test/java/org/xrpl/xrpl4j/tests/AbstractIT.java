@@ -86,6 +86,7 @@ import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
@@ -784,6 +785,49 @@ public abstract class AbstractIT {
           this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), CredentialCreate.class)
       );
     }
+  }
+
+  protected void createPermissionedDomain(KeyPair domainOwnerKeyPair, KeyPair credentialIssuerKeyPair,
+    CredentialType[] credentialTypes)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult domainOwnerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(domainOwnerKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger createSequence = domainOwnerAccountInfo.accountData().sequence();
+
+    // Create a PermissionedDomain object.
+    List<CredentialWrapper> credentials = Arrays.stream(credentialTypes)
+      .map(credentialType -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(credentialIssuerKeyPair.publicKey().deriveAddress())
+          .credentialType(credentialType)
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet permissionedDomainSetTx = PermissionedDomainSet.builder()
+      .account(domainOwnerKeyPair.publicKey().deriveAddress())
+      .sequence(createSequence)
+      .fee(feeResult.drops().openLedgerFee())
+      .acceptedCredentials(credentials)
+      .signingPublicKey(domainOwnerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<PermissionedDomainSet> signedCreateTx = signatureService.sign(
+      domainOwnerKeyPair.privateKey(), permissionedDomainSetTx
+    );
+
+    SubmitResult<PermissionedDomainSet> domainSetTxIntermediateResult = xrplClient.submit(signedCreateTx);
+
+    assertThat(domainSetTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        domainSetTxIntermediateResult.transactionResult().hash(), PermissionedDomainSet.class)
+    );
   }
 
   protected void acceptCredentials(KeyPair issuerKeyPair, KeyPair subjectKeyPair, CredentialType[] credentialTypes)

@@ -96,7 +96,7 @@ public interface OfferCreate extends Transaction {
   Optional<UnsignedInteger> expiration();
 
   /**
-   * The domain that the offer must be a part of.
+   * The permissioned domain that the offer must be a part of.
    *
    * @return A {@link Hash256} representing DomainID.
    */

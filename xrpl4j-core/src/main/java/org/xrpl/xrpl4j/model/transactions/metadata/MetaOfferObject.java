@@ -140,7 +140,7 @@ public interface MetaOfferObject extends MetaLedgerObject {
   Optional<UnsignedInteger> expiration();
 
   /**
-   * The domain that the offer must be a part of.
+   * The permissioned domain that the offer is part of.
    *
    * @return A {@link Hash256} representing DomainID.
    */
@@ -151,8 +151,9 @@ public interface MetaOfferObject extends MetaLedgerObject {
    * An additional list of order book directories that this offer belongs to. Currently, this field only applicable to
    * hybrid offers.
    *
-   * @return A list of {@link MetaAdditionalBook} representing order book directories.
+   * @return A list of {@link MetaBookWrapper} representing order book directories.
    */
   @JsonProperty("AdditionalBooks")
-  List<MetaAdditionalBook> additionalBooks();
+  List<MetaBookWrapper> additionalBooks();
+
 }

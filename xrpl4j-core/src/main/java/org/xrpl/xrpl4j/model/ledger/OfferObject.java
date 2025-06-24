@@ -158,7 +158,7 @@ public interface OfferObject extends LedgerObject {
   Optional<UnsignedInteger> expiration();
 
   /**
-   * The domain that the offer must be a part of.
+   * The permissioned domain that the offer is part of.
    *
    * @return A {@link Hash256} representing DomainID.
    */
@@ -169,10 +169,10 @@ public interface OfferObject extends LedgerObject {
    * An additional list of order book directories that this offer belongs to. Currently, this field only applicable to
    * hybrid offers.
    *
-   * @return A list of {@link AdditionalBook} representing order book directories.
+   * @return A list of {@link BookWrapper} representing order book directories.
    */
   @JsonProperty("AdditionalBooks")
-  List<AdditionalBook> additionalBooks();
+  List<BookWrapper> additionalBooks();
 
   /**
    * The unique ID of the {@link OfferObject}.

@@ -31,9 +31,8 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class OfferObjectJsonTests extends AbstractJsonTest {
 
@@ -81,12 +80,14 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
 
   @Test
   public void testFullJson() throws JsonProcessingException, JSONException {
-    List<AdditionalBook> additionalBookList = IntStream.range(0, 1)
-      .mapToObj(i -> AdditionalBook.builder()
-        .bookDirectory(Hash256.of("ACC27DE91DBA86FC509069EAF4BC511D73128B780F2E54BF5E07A369E244600" + i))
-        .bookNode(String.valueOf(i))
-        .build())
-      .collect(Collectors.toList());
+    List<BookWrapper> additionalBookList = Collections.singletonList(
+      BookWrapper.builder()
+        .book(Book.builder()
+          .bookDirectory(Hash256.of("107D855B8675C299A93F5DFF1BF11D5ECF1E76AF14575F455B038D7EA4C68000"))
+          .bookNode("0")
+          .build())
+        .build()
+    );
 
     OfferObject object = OfferObject.builder()
       .account(Address.of("rBqb89MRQJnMPq8wTwEbtz4kvxrEDfcYvt"))
@@ -128,7 +129,14 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
       "  \"index\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"," +
       "  \"DomainID\": \"A6F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1798\"," +
       "  \"Expiration\": 1749214498," +
-      "  \"AdditionalBooks\": " + objectMapper.writeValueAsString(additionalBookList) +
+      "  \"AdditionalBooks\": [" +
+      "    {" +
+      "      \"Book\": {" +
+      "        \"BookDirectory\": \"107D855B8675C299A93F5DFF1BF11D5ECF1E76AF14575F455B038D7EA4C68000\"," +
+      "        \"BookNode\": \"0\"" +
+      "      }" +
+      "    }" +
+      "  ]" +
       "}";
 
     assertCanSerializeAndDeserialize(object, json);

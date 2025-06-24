@@ -24,31 +24,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
-import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 /**
  * Object referencing a specific page of an offer directory.
  */
 @Immutable
-@JsonSerialize(as = ImmutableMetaAdditionalBook.class)
-@JsonDeserialize(as = ImmutableMetaAdditionalBook.class)
-public interface MetaAdditionalBook {
+@JsonSerialize(as = ImmutableMetaBookWrapper.class)
+@JsonDeserialize(as = ImmutableMetaBookWrapper.class)
+public interface MetaBookWrapper {
 
   /**
-   * The ID of the Offer Directory that links to this offer.
+   * A Book object.
    *
-   * @return A {@link Hash256} containing the ID.
+   * @return A {@link MetaBook} object.
    */
-  @JsonProperty("BookDirectory")
-  Hash256 bookDirectory();
-
-  /**
-   * A hint indicating which page of the offer directory links to this object, in case the directory consists of
-   * multiple pages.
-   *
-   * @return A {@link String} containing the hint.
-   */
-  @JsonProperty("BookNode")
-  String bookNode();
+  @JsonProperty("Book")
+  MetaBook book();
 
 }

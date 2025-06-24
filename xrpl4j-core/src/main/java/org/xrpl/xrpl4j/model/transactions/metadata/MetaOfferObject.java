@@ -61,8 +61,8 @@ public interface MetaOfferObject extends MetaLedgerObject {
   Optional<OfferFlags> flags();
 
   /**
-   * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that
-   * created this offer.
+   * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that created this
+   * offer.
    *
    * @return An {@link UnsignedInteger} representing the sequence number.
    */
@@ -105,10 +105,9 @@ public interface MetaOfferObject extends MetaLedgerObject {
   Optional<String> bookNode();
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object, in case the directory
-   * consists of multiple pages.
-   * Note: The object does not contain a direct link to the owner directory containing it,
-   * since that value can be derived from the Account.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages. Note: The object does not contain a direct link to the owner directory containing it, since that
+   * value can be derived from the Account.
    *
    * @return A {@link String} containing the hint.
    */
@@ -149,12 +148,11 @@ public interface MetaOfferObject extends MetaLedgerObject {
   Optional<Hash256> domainId();
 
   /**
-   * An additional list of order book directories that this offer belongs to.
-   * Currently, this field only applicable to hybrid offers.
+   * An additional list of order book directories that this offer belongs to. Currently, this field only applicable to
+   * hybrid offers.
    *
    * @return A list of {@link MetaAdditionalBook} representing order book directories.
    */
   @JsonProperty("AdditionalBooks")
-  Optional<List<MetaAdditionalBook>> additionalBooks();
-
+  List<MetaAdditionalBook> additionalBooks();
 }

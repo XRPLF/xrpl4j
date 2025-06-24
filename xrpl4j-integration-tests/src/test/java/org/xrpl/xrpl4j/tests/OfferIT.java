@@ -65,6 +65,7 @@ import java.util.function.Supplier;
 /**
  * Integration tests to validate submission of Offer-related transactions.
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class OfferIT extends AbstractIT {
 
   public static final String CURRENCY = "USD";
@@ -331,6 +332,8 @@ public class OfferIT extends AbstractIT {
     // GIVEN a permissioned buy offer that has a really great exchange rate
     // THEN the OfferCreate should fully match an open permissioned sell offer and generate a balance
 
+    final String currency = "INR";
+
     KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
     KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
     KeyPair sellerKeyPair = createRandomAccountEd25519();
@@ -349,7 +352,7 @@ public class OfferIT extends AbstractIT {
     // Create a sell offer with a valid DomainID.
     IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("INR")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
@@ -392,7 +395,7 @@ public class OfferIT extends AbstractIT {
         .taker(offerCreate.account())
         .takerGets(
           Issue.builder()
-            .currency("INR")
+            .currency(currency)
             .issuer(offerCreate.account())
             .build()
         )
@@ -422,7 +425,7 @@ public class OfferIT extends AbstractIT {
     // Create a permissioned buy offer that crosses and fills the above created permissioned sell offer.
     IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("INR")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
@@ -455,7 +458,7 @@ public class OfferIT extends AbstractIT {
     );
 
     // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
-    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, "INR",
+    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, currency,
       sellerKeyPair.publicKey().deriveAddress());
 
     if (issuedCurrency.lowLimit().issuer().equals(sellerKeyPair.publicKey().deriveAddress())) {
@@ -469,6 +472,8 @@ public class OfferIT extends AbstractIT {
   public void createPermissionedSellAndOpenBuyOffer() throws JsonRpcClientErrorException, JsonProcessingException {
     // GIVEN an open buy offer that has a really great exchange rate
     // THEN the OfferCreate shouldn't match a permissioned sell offer.
+
+    final String currency = "CAD";
 
     KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
     KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
@@ -486,7 +491,7 @@ public class OfferIT extends AbstractIT {
     // Create a sell offer with a valid DomainID.
     IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("CAD")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
@@ -525,7 +530,7 @@ public class OfferIT extends AbstractIT {
 
     IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("CAD")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
@@ -566,12 +571,14 @@ public class OfferIT extends AbstractIT {
     // GIVEN a permissioned buy offer that has a really great exchange rate
     // THEN the OfferCreate shouldn't match an open sell offer.
 
+    final String currency = "MXN";
+
     // Create an open sell offer.
     KeyPair sellerKeyPair = createRandomAccountEd25519();
 
     IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("MXN")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
@@ -621,7 +628,7 @@ public class OfferIT extends AbstractIT {
 
     IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("MXN")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
@@ -663,6 +670,8 @@ public class OfferIT extends AbstractIT {
     // GIVEN an open buy offer that has a really great exchange rate
     // THEN the OfferCreate should fully match a hybrid sell offer and generate a balance.
 
+    final String currency = "KYD";
+
     KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
     KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
     KeyPair sellerKeyPair = createRandomAccountEd25519();
@@ -679,7 +688,7 @@ public class OfferIT extends AbstractIT {
     // Create a hybrid sell offer with a valid DomainID.
     IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("KYD")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
@@ -722,7 +731,7 @@ public class OfferIT extends AbstractIT {
         .taker(offerCreate.account())
         .takerGets(
           Issue.builder()
-            .currency("KYD")
+            .currency(currency)
             .issuer(offerCreate.account())
             .build()
         )
@@ -753,7 +762,7 @@ public class OfferIT extends AbstractIT {
 
     IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
       .value("2")
-      .currency("KYD")
+      .currency(currency)
       .issuer(sellerKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
@@ -785,7 +794,7 @@ public class OfferIT extends AbstractIT {
     );
 
     // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
-    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, "KYD",
+    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, currency,
       sellerKeyPair.publicKey().deriveAddress());
 
     if (issuedCurrency.lowLimit().issuer().equals(sellerKeyPair.publicKey().deriveAddress())) {
@@ -797,10 +806,12 @@ public class OfferIT extends AbstractIT {
 
   @Test
   public void domainDoesNotExist() throws JsonRpcClientErrorException, JsonProcessingException {
+    final String currency = "CNY";
+
     KeyPair offerCreaterKeyPair = createRandomAccountEd25519();
     IssuedCurrencyAmount takerGets = IssuedCurrencyAmount.builder()
       .value("10")
-      .currency("CNY")
+      .currency(currency)
       .issuer(offerCreaterKeyPair.publicKey().deriveAddress())
       .build();
     XrpCurrencyAmount takerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0));

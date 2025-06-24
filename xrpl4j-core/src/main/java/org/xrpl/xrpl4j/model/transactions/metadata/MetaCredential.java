@@ -24,21 +24,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+
+import java.util.Optional;
 
 /**
- * A wrapper for {@link MetaBook} to conform to the rippled API JSON structure.
+ * {@link MetaCredential} inner object with Issuer and CredentialType details.
  */
 @Immutable
-@JsonSerialize(as = ImmutableMetaBookWrapper.class)
-@JsonDeserialize(as = ImmutableMetaBookWrapper.class)
-public interface MetaBookWrapper {
+@JsonSerialize(as = ImmutableMetaCredential.class)
+@JsonDeserialize(as = ImmutableMetaCredential.class)
+public interface MetaCredential {
 
   /**
-   * A Book object.
+   * The issuer of the credential.
    *
-   * @return A {@link MetaBook} object.
+   * @return The {@link Address} of the issuer this credential.
    */
-  @JsonProperty("Book")
-  MetaBook book();
+  @JsonProperty("Issuer")
+  Optional<Address> issuer();
+
+  /**
+   * A (hex-encoded) value to identify the type of credential from the issuer.
+   *
+   * @return The {@link CredentialType} denoting the CredentialType.
+   */
+  @JsonProperty("CredentialType")
+  Optional<CredentialType> credentialType();
 
 }

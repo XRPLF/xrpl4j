@@ -26,19 +26,19 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
 
 /**
- * A wrapper for {@link MetaBook} to conform to the rippled API JSON structure.
+ * A wrapper for {@link MetaCredential} to conform to the rippled API JSON structure.
  */
 @Immutable
-@JsonSerialize(as = ImmutableMetaBookWrapper.class)
-@JsonDeserialize(as = ImmutableMetaBookWrapper.class)
-public interface MetaBookWrapper {
+@JsonSerialize(as = ImmutableMetaCredentialWrapper.class)
+@JsonDeserialize(as = ImmutableMetaCredentialWrapper.class)
+public interface MetaCredentialWrapper {
 
   /**
-   * A Book object.
+   * A credential.
    *
-   * @return A {@link MetaBook} object.
+   * @return A {@link MetaCredential}.
    */
-  @JsonProperty("Book")
-  MetaBook book();
+  @JsonProperty("Credential")
+  MetaCredential credential();
 
 }

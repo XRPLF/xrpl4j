@@ -56,6 +56,7 @@ import java.util.function.Predicate;
  * Integration test to validate creation, acceptance, and deletion of credentials using `CredentialCreate`,
  * `CredentialAccept` and `CredentialDelete` transactions respectively.
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class CredentialIT extends AbstractIT {
 
   private static final CredentialType DRIVER_LICENCE = CredentialType.ofPlainText("driver licence");

@@ -59,8 +59,9 @@ public interface BookOffersRequestParams extends XrplRequestParams {
   Optional<Address> taker();
 
   /**
-   * The object ID of a PermissionedDomain object. If this field is included, then the offers will be filtered to only
-   * show the valid domain offers for that domain.
+   * The object ID of a PermissionedDomain object. If this field is provided, the response will include only valid
+   * domain offers associated with that specific domain. If omitted, the response will include only hybrid and open
+   * offers for the trading pair, excluding all domain-specific offers.
    *
    * @return An optionally-present {@link Hash256}.
    */

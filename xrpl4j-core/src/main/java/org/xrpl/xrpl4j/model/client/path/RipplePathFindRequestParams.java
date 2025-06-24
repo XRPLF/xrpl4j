@@ -103,8 +103,8 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   List<PathCurrency> sourceCurrencies();
 
   /**
-   * The object ID of a PermissionedDomain object. f this field is included, then the paths will be filtered to only
-   * show the valid paths for that domain.
+   * The object ID of a PermissionedDomain object. If this field is included, then only valid paths for this domain will
+   * be returned.
    *
    * @return An optionally-present {@link Hash256}.
    */

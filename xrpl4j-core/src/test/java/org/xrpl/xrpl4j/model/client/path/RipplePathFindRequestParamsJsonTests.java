@@ -49,27 +49,25 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
-    String json =
-      "{\n" +
-      "  \"ledger_index\": \"current\",\n" +
-      "  \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-      "  \"destination_amount\": {\n" +
-      "    \"currency\": \"USD\",\n" +
-      "    \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\",\n" +
-      "    \"value\": \"0.001\"\n" +
-      "  },\n" +
-      "  \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-      "  \"domain\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\",\n" +
-      "  \"source_currencies\": [\n" +
-      "    {\n" +
-      "      \"currency\": \"XRP\"\n" +
-      "    },\n" +
-      "    {\n" +
-      "      \"currency\": \"USD\"\n" +
-      "    }\n" +
-      "  ]\n" +
+    String json = "{" +
+      "  \"ledger_index\": \"current\"," +
+      "  \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"destination_amount\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"," +
+      "    \"value\": \"0.001\"" +
+      "  }," +
+      "  \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"domain\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"," +
+      "  \"source_currencies\": [" +
+      "    {" +
+      "      \"currency\": \"XRP\"" +
+      "    }," +
+      "    {" +
+      "      \"currency\": \"USD\"" +
+      "    }" +
+      "  ]" +
       "}";
-
 
     assertCanSerializeAndDeserialize(params, json);
   }

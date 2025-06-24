@@ -6,9 +6,7 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
-import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
@@ -19,9 +17,9 @@ class MetaPermissionedDomainObjectTest extends AbstractJsonTest {
 
   @Test
   public void testMetaDepositPreAuthObjectTest() throws JsonProcessingException, JSONException {
-    List<CredentialWrapper> acceptedCredentials = IntStream.range(0, 10)
-      .mapToObj(i -> CredentialWrapper.builder()
-        .credential(Credential.builder()
+    List<MetaCredentialWrapper> acceptedCredentials = IntStream.range(0, 10)
+      .mapToObj(i -> ImmutableMetaCredentialWrapper.builder()
+        .credential(ImmutableMetaCredential.builder()
           .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
           .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
           .build())

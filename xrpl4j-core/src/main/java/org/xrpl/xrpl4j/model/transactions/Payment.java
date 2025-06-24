@@ -149,7 +149,7 @@ public interface Payment extends Transaction {
   /**
    * The permissioned domain the sender intends to use. Both the sender and destination must be part of this domain.
    *
-   * @return A {@link Hash256} representing DomainID.
+   * @return An optionally-present {@link Hash256} representing DomainID.
    */
   @JsonProperty("DomainID")
   Optional<Hash256> domainId();

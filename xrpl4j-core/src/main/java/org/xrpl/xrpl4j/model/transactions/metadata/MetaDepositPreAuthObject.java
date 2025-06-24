@@ -67,10 +67,10 @@ public interface MetaDepositPreAuthObject extends MetaLedgerObject {
   /**
    * The credential(s) that received the preauthorization.
    *
-   * @return A list of {@link CredentialWrapper}.
+   * @return A list of {@link MetaCredentialWrapper}.
    */
   @JsonProperty("AuthorizeCredentials")
-  List<CredentialWrapper> authorizeCredentials();
+  List<MetaCredentialWrapper> authorizeCredentials();
 
   /**
    * A bit-map of boolean flags. No flags are defined for {@link MetaDepositPreAuthObject}s, so this value is always 0.

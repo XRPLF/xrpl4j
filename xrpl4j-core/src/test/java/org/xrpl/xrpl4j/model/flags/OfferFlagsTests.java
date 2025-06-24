@@ -43,8 +43,7 @@ public class OfferFlagsTests extends AbstractFlagsTest {
     boolean lsfSell,
     boolean lsfHybrid
   ) {
-    long expectedFlags =
-      (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
+    long expectedFlags = (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
       (lsfSell ? OfferFlags.SELL.getValue() : 0L) |
       (lsfHybrid ? OfferFlags.HYBRID.getValue() : 0L);
 
@@ -63,8 +62,7 @@ public class OfferFlagsTests extends AbstractFlagsTest {
     boolean lsfSell,
     boolean lsfHybrid
   ) throws JSONException, JsonProcessingException {
-    long expectedFlags =
-      (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
+    long expectedFlags = (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
       (lsfSell ? OfferFlags.SELL.getValue() : 0L) |
       (lsfHybrid ? OfferFlags.HYBRID.getValue() : 0L);
 
@@ -72,9 +70,8 @@ public class OfferFlagsTests extends AbstractFlagsTest {
 
     FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
 
-    String json = String.format(
-      "{\n" +
-      "  \"flags\": %s\n" +
+    String json = String.format("{" +
+      "  \"flags\": %s" +
       "}", flags.getValue()
     );
 

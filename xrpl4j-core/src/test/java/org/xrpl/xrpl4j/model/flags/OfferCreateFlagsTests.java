@@ -111,9 +111,8 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
-    String json = String.format(
-      "{\n" +
-      "               \"flags\": %s\n" +
+    String json = String.format("{" +
+      "  \"flags\": %s" +
       "}", flags.getValue());
 
     assertCanSerializeAndDeserialize(wrapper, json);
@@ -123,8 +122,7 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
   void testEmptyJson() throws JSONException, JsonProcessingException {
     OfferCreateFlags flags = OfferCreateFlags.empty();
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
-    String json =
-      "{\n" +
+    String json = "{" +
       "}";
 
     assertCanSerializeAndDeserialize(wrapper, json);
@@ -138,10 +136,10 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     boolean tfHybrid
   ) {
     return (OfferCreateFlags.FULLY_CANONICAL_SIG.getValue()) |
-           (tfPassive ? OfferCreateFlags.PASSIVE.getValue() : 0L) |
-           (tfImmediateOrCancel ? OfferCreateFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
-           (tfFillOrKill ? OfferCreateFlags.FILL_OR_KILL.getValue() : 0L) |
-           (tfSell ? OfferCreateFlags.SELL.getValue() : 0L) |
-           (tfHybrid ? OfferCreateFlags.HYBRID.getValue() : 0L);
+      (tfPassive ? OfferCreateFlags.PASSIVE.getValue() : 0L) |
+      (tfImmediateOrCancel ? OfferCreateFlags.IMMEDIATE_OR_CANCEL.getValue() : 0L) |
+      (tfFillOrKill ? OfferCreateFlags.FILL_OR_KILL.getValue() : 0L) |
+      (tfSell ? OfferCreateFlags.SELL.getValue() : 0L) |
+      (tfHybrid ? OfferCreateFlags.HYBRID.getValue() : 0L);
   }
 }

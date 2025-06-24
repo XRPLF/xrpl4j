@@ -73,9 +73,9 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
    * {@link CurrencyAmount} that the destination account would receive in a transaction.
    *
    * <p>Special case: You can specify "-1" (for XRP) or provide "-1" as the contents of
-   * {@link org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount#value()} (for non-XRP currencies).
-   * This requests a path to deliver as much as possible, while spending no more than the amount specified in
-   * {@link #sendMax()} (if provided).
+   * {@link org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount#value()} (for non-XRP currencies). This requests a
+   * path to deliver as much as possible, while spending no more than the amount specified in {@link #sendMax()} (if
+   * provided).
    *
    * @return A {@link CurrencyAmount} denoting the destination amount.
    */
@@ -103,8 +103,8 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   List<PathCurrency> sourceCurrencies();
 
   /**
-   * The object ID of a PermissionedDomain object.
-   * f this field is included, then the paths will be filtered to only show the valid paths for that domain.
+   * The object ID of a PermissionedDomain object. f this field is included, then the paths will be filtered to only
+   * show the valid paths for that domain.
    *
    * @return An optionally-present {@link Hash256}.
    */
@@ -112,8 +112,8 @@ public interface RipplePathFindRequestParams extends XrplRequestParams {
   Optional<Hash256> domain();
 
   /**
-   * Specifies the ledger version to request. A ledger version can be specified by ledger hash,
-   * numerical ledger index, or a shortcut value.
+   * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
+   * or a shortcut value.
    *
    * @return A {@link LedgerSpecifier} specifying the ledger version to request.
    */

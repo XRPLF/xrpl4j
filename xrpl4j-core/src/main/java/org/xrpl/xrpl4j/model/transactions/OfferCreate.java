@@ -32,8 +32,8 @@ import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import java.util.Optional;
 
 /**
- * An OfferCreate transaction is effectively a limit order. It defines an intent to exchange currencies, and
- * creates an offer object if not completely fulfilled when placed. Offers can be partially fulfilled.
+ * An OfferCreate transaction is effectively a limit order. It defines an intent to exchange currencies, and creates an
+ * offer object if not completely fulfilled when placed. Offers can be partially fulfilled.
  *
  * @see "https://xrpl.org/offercreate.html"
  */
@@ -104,13 +104,13 @@ public interface OfferCreate extends Transaction {
   Optional<Hash256> domainId();
 
   /**
-   * Validates tfHybrid cannot be set if the offer doesn't have a DomainID.
+   * Validates tfHybrid flag cannot be set if the offer doesn't have a DomainID.
    */
   @Value.Check
   default void check() {
     if (!domainId().isPresent()) {
       Preconditions.checkState(!flags().tfHybrid(),
-        "tfHybrid cannot be set if the offer doesn't have a DomainID.");
+        "tfHybrid flag cannot be set if the offer doesn't have a DomainID.");
     }
   }
 }

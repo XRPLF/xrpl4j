@@ -57,24 +57,23 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
       .index(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))
       .build();
 
-    String json =
-      "{\n" +
-      "    \"Account\": \"rBqb89MRQJnMPq8wTwEbtz4kvxrEDfcYvt\",\n" +
-      "    \"BookDirectory\": \"ACC27DE91DBA86FC509069EAF4BC511D73128B780F2E54BF5E07A369E2446000\",\n" +
-      "    \"BookNode\": \"0000000000000000\",\n" +
-      "    \"Flags\": 131072,\n" +
-      "    \"LedgerEntryType\": \"Offer\",\n" +
-      "    \"OwnerNode\": \"0000000000000000\",\n" +
-      "    \"PreviousTxnID\": \"F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF\",\n" +
-      "    \"PreviousTxnLgrSeq\": 14524914,\n" +
-      "    \"Sequence\": 866,\n" +
-      "    \"TakerGets\": {\n" +
-      "        \"currency\": \"XAG\",\n" +
-      "        \"issuer\": \"r9Dr5xwkeLegBeXq6ujinjSBLQzQ1zQGjH\",\n" +
-      "        \"value\": \"37\"\n" +
-      "    },\n" +
-      "    \"TakerPays\": \"79550000000\",\n" +
-      "    \"index\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"\n" +
+    String json = "{" +
+      "  \"Account\": \"rBqb89MRQJnMPq8wTwEbtz4kvxrEDfcYvt\"," +
+      "  \"BookDirectory\": \"ACC27DE91DBA86FC509069EAF4BC511D73128B780F2E54BF5E07A369E2446000\"," +
+      "  \"BookNode\": \"0000000000000000\"," +
+      "  \"Flags\": 131072," +
+      "  \"LedgerEntryType\": \"Offer\"," +
+      "  \"OwnerNode\": \"0000000000000000\"," +
+      "  \"PreviousTxnID\": \"F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF\"," +
+      "  \"PreviousTxnLgrSeq\": 14524914," +
+      "  \"Sequence\": 866," +
+      "  \"TakerGets\": {" +
+      "    \"currency\": \"XAG\"," +
+      "    \"issuer\": \"r9Dr5xwkeLegBeXq6ujinjSBLQzQ1zQGjH\"," +
+      "    \"value\": \"37\"" +
+      "  }," +
+      "  \"TakerPays\": \"79550000000\"," +
+      "  \"index\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"" +
       "}";
 
     assertCanSerializeAndDeserialize(object, json);
@@ -110,27 +109,26 @@ public class OfferObjectJsonTests extends AbstractJsonTest {
       .additionalBooks(additionalBookList)
       .build();
 
-    String json =
-      "{\n" +
-      "    \"Account\": \"rBqb89MRQJnMPq8wTwEbtz4kvxrEDfcYvt\",\n" +
-      "    \"BookDirectory\": \"ACC27DE91DBA86FC509069EAF4BC511D73128B780F2E54BF5E07A369E2446000\",\n" +
-      "    \"BookNode\": \"0000000000000000\",\n" +
-      "    \"Flags\": 262144,\n" +
-      "    \"LedgerEntryType\": \"Offer\",\n" +
-      "    \"OwnerNode\": \"0000000000000000\",\n" +
-      "    \"PreviousTxnID\": \"F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF\",\n" +
-      "    \"PreviousTxnLgrSeq\": 14524914,\n" +
-      "    \"Sequence\": 866,\n" +
-      "    \"TakerGets\": {\n" +
-      "        \"currency\": \"XAG\",\n" +
-      "        \"issuer\": \"r9Dr5xwkeLegBeXq6ujinjSBLQzQ1zQGjH\",\n" +
-      "        \"value\": \"37\"\n" +
-      "    },\n" +
-      "    \"TakerPays\": \"79550000000\",\n" +
-      "    \"index\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\",\n" +
-      "    \"DomainID\": \"A6F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1798\",\n" +
-      "    \"Expiration\": 1749214498,\n" +
-      "    \"AdditionalBooks\": " + objectMapper.writeValueAsString(additionalBookList) + "\n" +
+    String json = "{" +
+      "  \"Account\": \"rBqb89MRQJnMPq8wTwEbtz4kvxrEDfcYvt\"," +
+      "  \"BookDirectory\": \"ACC27DE91DBA86FC509069EAF4BC511D73128B780F2E54BF5E07A369E2446000\"," +
+      "  \"BookNode\": \"0000000000000000\"," +
+      "  \"Flags\": 262144," +
+      "  \"LedgerEntryType\": \"Offer\"," +
+      "  \"OwnerNode\": \"0000000000000000\"," +
+      "  \"PreviousTxnID\": \"F0AB71E777B2DA54B86231E19B82554EF1F8211F92ECA473121C655BFC5329BF\"," +
+      "  \"PreviousTxnLgrSeq\": 14524914," +
+      "  \"Sequence\": 866," +
+      "  \"TakerGets\": {" +
+      "    \"currency\": \"XAG\"," +
+      "    \"issuer\": \"r9Dr5xwkeLegBeXq6ujinjSBLQzQ1zQGjH\"," +
+      "    \"value\": \"37\"" +
+      "  }," +
+      "  \"TakerPays\": \"79550000000\"," +
+      "  \"index\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"," +
+      "  \"DomainID\": \"A6F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1798\"," +
+      "  \"Expiration\": 1749214498," +
+      "  \"AdditionalBooks\": " + objectMapper.writeValueAsString(additionalBookList) +
       "}";
 
     assertCanSerializeAndDeserialize(object, json);

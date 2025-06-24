@@ -67,8 +67,8 @@ public class OfferFlags extends Flags {
   }
 
   /**
-   * The object was placed as a sell offer. This has no effect on the object in the ledger (because tfSell only
-   * matters if you get a better rate than you asked for, which cannot happen after the object enters the ledger).
+   * The object was placed as a sell offer. This has no effect on the object in the ledger (because tfSell only matters
+   * if you get a better rate than you asked for, which cannot happen after the object enters the ledger).
    *
    * @return {@code true} if {@code lsfSell} is set, otherwise {@code false}.
    */

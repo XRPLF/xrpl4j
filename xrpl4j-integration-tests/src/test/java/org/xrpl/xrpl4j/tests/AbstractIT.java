@@ -57,6 +57,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -75,6 +76,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Credential;
@@ -963,5 +965,23 @@ public abstract class AbstractIT {
         }
       }
     ).map(LedgerEntryResult::index).collect(Collectors.toList());
+  }
+
+  protected PermissionedDomainObject getPermissionedDomainObject(Address domainOwner) {
+    return (PermissionedDomainObject) this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountObjects(AccountObjectsRequestParams.builder()
+            .type(AccountObjectType.PERMISSIONED_DOMAIN)
+            .account(domainOwner)
+            .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+            .build()
+          ).accountObjects();
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.size() == 1
+    ).get(0);
   }
 }

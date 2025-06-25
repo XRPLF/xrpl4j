@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.tests;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.awaitility.Awaitility;
-import org.awaitility.Durations;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,15 +41,16 @@ import org.xrpl.xrpl4j.model.client.ledger.OfferLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
-import org.xrpl.xrpl4j.model.flags.OfferFlags;
-import org.xrpl.xrpl4j.model.ledger.EscrowObject;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.ImmutableIssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.OfferCancel;
 import org.xrpl.xrpl4j.model.transactions.OfferCreate;
@@ -63,6 +63,7 @@ import java.util.function.Supplier;
 /**
  * Integration tests to validate submission of Offer-related transactions.
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class OfferIT extends AbstractIT {
 
   public static final String CURRENCY = "USD";
@@ -322,6 +323,523 @@ public class OfferIT extends AbstractIT {
     UnsignedInteger nonExistentOfferSequence = UnsignedInteger.valueOf(111111111);
     // cancel offer does the assertions
     cancelOffer(purchaser, nonExistentOfferSequence, "temBAD_SEQUENCE");
+  }
+
+  @Test
+  public void createPermissionedSellAndBuyOffer() throws JsonRpcClientErrorException, JsonProcessingException {
+    // GIVEN a permissioned buy offer that has a really great exchange rate
+    // THEN the OfferCreate should fully match an open permissioned sell offer and generate a balance
+
+    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
+    KeyPair sellerKeyPair = createRandomAccountEd25519();
+    KeyPair purchaserKeyPair = createRandomAccountEd25519();
+
+    // Create and accept credentials.
+    CredentialType[] credentialTypes = {CredentialType.ofPlainText("graduate certificate")};
+    createAndAcceptCredentials(credentialIssuerKeyPair, sellerKeyPair, credentialTypes);
+    createAndAcceptCredentials(credentialIssuerKeyPair, purchaserKeyPair, credentialTypes);
+
+    // Create a permissioned domain.
+    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, credentialTypes);
+    PermissionedDomainObject permissionedDomainObject = getPermissionedDomainObject(
+      domainOwnerKeyPair.publicKey().deriveAddress());
+
+    // Create a sell offer with a valid DomainID.
+    IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult sellerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sellerKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger sellerOfferCreateSequence = sellerAccountInfo.accountData().sequence();
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(sellerKeyPair.publicKey().deriveAddress())
+      .takerGets(sellerOfferTakerGets)
+      .takerPays(sellerOfferTakerPays)
+      .signingPublicKey(sellerKeyPair.publicKey())
+      .sequence(sellerOfferCreateSequence)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .flags(OfferCreateFlags.builder().tfSell(true).build())
+      .domainId(permissionedDomainObject.index())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      sellerKeyPair.privateKey(), offerCreate
+    );
+
+    SubmitResult<OfferCreate> createTxIntermediateResult = xrplClient.submit(signedOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    OfferObject offerObject = scanForOffer(sellerKeyPair, sellerOfferCreateSequence);
+    assertThatEntryEqualsObjectFromAccountObjects(offerObject);
+
+    // Validate `book_offers` RPC with the domain filter, returns the correct Offer object.
+    BookOffersResult bookOffersResult = xrplClient.bookOffers(
+      BookOffersRequestParams.builder()
+        .taker(offerCreate.account())
+        .takerGets(
+          Issue.builder()
+            .currency(CURRENCY)
+            .issuer(offerCreate.account())
+            .build()
+        )
+        .takerPays(Issue.XRP)
+        .domain(permissionedDomainObject.index())
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
+        .build()
+    );
+
+    assertThat(bookOffersResult.offers()).asList().hasSize(1);
+    assertThat(bookOffersResult.offers().get(0).quality())
+      .isEqualTo(
+        BigDecimal.valueOf(sellerOfferTakerPays.value().longValue())
+          .divide(new BigDecimal(sellerOfferTakerGets.value())));
+    assertThat(bookOffersResult.offers().get(0).account()).isEqualTo(offerCreate.account());
+    assertThat(bookOffersResult.offers().get(0).flags().lsfSell()).isTrue();
+    assertThat(bookOffersResult.offers().get(0).flags().lsfPassive()).isFalse();
+    assertThat(bookOffersResult.offers().get(0).sequence()).isEqualTo(offerCreate.sequence());
+    assertThat(bookOffersResult.offers().get(0).takerPays()).isEqualTo(sellerOfferTakerPays);
+    assertThat(bookOffersResult.offers().get(0).takerGets()).isEqualTo(sellerOfferTakerGets);
+    assertThat(bookOffersResult.offers().get(0).ownerFunds()).isNotEmpty().get()
+      .isEqualTo(new BigDecimal(sellerOfferTakerGets.value()));
+    assertThat(bookOffersResult.offers().get(0).domainId()).isPresent().get()
+      .isEqualTo(permissionedDomainObject.index());
+    // Only Offers with tfHybrid flag set will have non-empty additionalBooks.
+    assertThat(bookOffersResult.offers().get(0).additionalBooks()).isEmpty();
+
+    // Create a permissioned buy offer that crosses and fills the above created permissioned sell offer.
+    IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
+
+    AccountInfoResult purchaserAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaserKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger purchaserOfferCreateSequence = purchaserAccountInfo.accountData().sequence();
+
+    OfferCreate purchaserOfferCreate = OfferCreate.builder()
+      .account(purchaserKeyPair.publicKey().deriveAddress())
+      .takerGets(purchaseOfferTakerGets)
+      .takerPays(purchaseOfferTakerPays)
+      .signingPublicKey(purchaserKeyPair.publicKey())
+      .sequence(purchaserOfferCreateSequence)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .domainId(permissionedDomainObject.index())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedPurchaserOfferCreate = signatureService.sign(
+      purchaserKeyPair.privateKey(), purchaserOfferCreate
+    );
+
+    SubmitResult<OfferCreate> intermediateResult = xrplClient.submit(signedPurchaserOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(intermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tesSUCCESS");
+
+    // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
+    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, CURRENCY,
+      sellerKeyPair.publicKey().deriveAddress());
+
+    if (issuedCurrency.lowLimit().issuer().equals(sellerKeyPair.publicKey().deriveAddress())) {
+      assertThat(issuedCurrency.balance().value()).isEqualTo("-" + purchaseOfferTakerPays.value());
+    } else {
+      assertThat(issuedCurrency.balance().value()).isEqualTo(purchaseOfferTakerPays.value());
+    }
+  }
+
+  @Test
+  public void createPermissionedSellAndOpenBuyOffer() throws JsonRpcClientErrorException, JsonProcessingException {
+    // GIVEN an open buy offer that has a really great exchange rate
+    // THEN the OfferCreate shouldn't match a permissioned sell offer.
+
+    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
+    KeyPair sellerKeyPair = createRandomAccountEd25519();
+
+    // Create and accept credentials.
+    CredentialType[] credentialTypes = {CredentialType.ofPlainText("graduate certificate")};
+    createAndAcceptCredentials(credentialIssuerKeyPair, sellerKeyPair, credentialTypes);
+
+    // Create a permissioned domain.
+    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, credentialTypes);
+    PermissionedDomainObject permissionedDomainObject = getPermissionedDomainObject(
+      domainOwnerKeyPair.publicKey().deriveAddress());
+
+    // Create a sell offer with a valid DomainID.
+    IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult sellerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sellerKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger sellerOfferCreateSequence = sellerAccountInfo.accountData().sequence();
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(sellerKeyPair.publicKey().deriveAddress())
+      .takerGets(sellerOfferTakerGets)
+      .takerPays(sellerOfferTakerPays)
+      .signingPublicKey(sellerKeyPair.publicKey())
+      .sequence(sellerOfferCreateSequence)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .flags(OfferCreateFlags.builder().tfSell(true).build())
+      .domainId(permissionedDomainObject.index())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      sellerKeyPair.privateKey(), offerCreate
+    );
+
+    SubmitResult<OfferCreate> createTxIntermediateResult = xrplClient.submit(signedOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    // Create an open buy offer and assert that it is not crossed and filled by the permissioned sell offer.
+    KeyPair purchaserKeyPair = createRandomAccountEd25519();
+
+    IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
+
+    AccountInfoResult purchaserAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaserKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger purchaserOfferCreateSequence = purchaserAccountInfo.accountData().sequence();
+
+    OfferCreate purchaserOfferCreate = OfferCreate.builder()
+      .account(purchaserKeyPair.publicKey().deriveAddress())
+      .takerGets(purchaseOfferTakerGets)
+      .takerPays(purchaseOfferTakerPays)
+      .signingPublicKey(purchaserKeyPair.publicKey())
+      .sequence(purchaserOfferCreateSequence)
+      .flags(OfferCreateFlags.builder().tfImmediateOrCancel(true).build())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedPurchaserOfferCreate = signatureService.sign(
+      purchaserKeyPair.privateKey(), purchaserOfferCreate
+    );
+
+    SubmitResult<OfferCreate> intermediateResult = xrplClient.submit(signedPurchaserOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(intermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tecKILLED");
+  }
+
+  @Test
+  public void createPermissionedBuyAndOpenSellOffer() throws JsonRpcClientErrorException, JsonProcessingException {
+    // GIVEN a permissioned buy offer that has a really great exchange rate
+    // THEN the OfferCreate shouldn't match an open sell offer.
+
+    // Create an open sell offer.
+    KeyPair sellerKeyPair = createRandomAccountEd25519();
+
+    IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult sellerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sellerKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger sellerOfferCreateSequence = sellerAccountInfo.accountData().sequence();
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(sellerKeyPair.publicKey().deriveAddress())
+      .takerGets(sellerOfferTakerGets)
+      .takerPays(sellerOfferTakerPays)
+      .signingPublicKey(sellerKeyPair.publicKey())
+      .sequence(sellerOfferCreateSequence)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .flags(OfferCreateFlags.builder().tfSell(true).build())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      sellerKeyPair.privateKey(), offerCreate
+    );
+
+    SubmitResult<OfferCreate> createTxIntermediateResult = xrplClient.submit(signedOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    // Create a permissioned buy offer and assert that it is not crossed and filled by an open sell offer.
+
+    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
+    KeyPair purchaserKeyPair = createRandomAccountEd25519();
+
+    // Create and accept credentials.
+    CredentialType[] credentialTypes = {CredentialType.ofPlainText("graduate certificate")};
+    createAndAcceptCredentials(credentialIssuerKeyPair, purchaserKeyPair, credentialTypes);
+
+    // Create a permissioned domain.
+    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, credentialTypes);
+    PermissionedDomainObject permissionedDomainObject = getPermissionedDomainObject(
+      domainOwnerKeyPair.publicKey().deriveAddress());
+
+    IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
+
+    AccountInfoResult purchaserAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaserKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger purchaserOfferCreateSequence = purchaserAccountInfo.accountData().sequence();
+
+    OfferCreate purchaserOfferCreate = OfferCreate.builder()
+      .account(purchaserKeyPair.publicKey().deriveAddress())
+      .takerGets(purchaseOfferTakerGets)
+      .takerPays(purchaseOfferTakerPays)
+      .signingPublicKey(purchaserKeyPair.publicKey())
+      .sequence(purchaserOfferCreateSequence)
+      .flags(OfferCreateFlags.builder().tfImmediateOrCancel(true).build())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .domainId(permissionedDomainObject.index())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedPurchaserOfferCreate = signatureService.sign(
+      purchaserKeyPair.privateKey(), purchaserOfferCreate
+    );
+
+    SubmitResult<OfferCreate> intermediateResult = xrplClient.submit(signedPurchaserOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(intermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tecKILLED");
+  }
+
+  @Test
+  public void createHybridSellAndOpenBuyOffer() throws JsonRpcClientErrorException, JsonProcessingException {
+    // GIVEN an open buy offer that has a really great exchange rate
+    // THEN the OfferCreate should fully match a hybrid sell offer and generate a balance.
+
+    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
+    KeyPair sellerKeyPair = createRandomAccountEd25519();
+
+    // Create and accept credentials.
+    CredentialType[] credentialTypes = {CredentialType.ofPlainText("graduate certificate")};
+    createAndAcceptCredentials(credentialIssuerKeyPair, sellerKeyPair, credentialTypes);
+
+    // Create a permissioned domain.
+    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, credentialTypes);
+    PermissionedDomainObject permissionedDomainObject = getPermissionedDomainObject(
+      domainOwnerKeyPair.publicKey().deriveAddress());
+
+    // Create a hybrid sell offer with a valid DomainID.
+    IssuedCurrencyAmount sellerOfferTakerGets = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount sellerOfferTakerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2));
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult sellerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(sellerKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger sellerOfferCreateSequence = sellerAccountInfo.accountData().sequence();
+
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(sellerKeyPair.publicKey().deriveAddress())
+      .takerGets(sellerOfferTakerGets)
+      .takerPays(sellerOfferTakerPays)
+      .signingPublicKey(sellerKeyPair.publicKey())
+      .sequence(sellerOfferCreateSequence)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .flags(OfferCreateFlags.builder().tfSell(true).tfHybrid(true).build())
+      .domainId(permissionedDomainObject.index())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      sellerKeyPair.privateKey(), offerCreate
+    );
+
+    SubmitResult<OfferCreate> createTxIntermediateResult = xrplClient.submit(signedOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    OfferObject offerObject = scanForOffer(sellerKeyPair, sellerOfferCreateSequence);
+    assertThatEntryEqualsObjectFromAccountObjects(offerObject);
+
+    // Validate `book_offers` RPC with the domain filter, returns the correct Offer object.
+    BookOffersResult bookOffersResult = xrplClient.bookOffers(
+      BookOffersRequestParams.builder()
+        .taker(offerCreate.account())
+        .takerGets(
+          Issue.builder()
+            .currency(CURRENCY)
+            .issuer(offerCreate.account())
+            .build()
+        )
+        .takerPays(Issue.XRP)
+        .domain(permissionedDomainObject.index())
+        .ledgerSpecifier(LedgerSpecifier.CURRENT)
+        .build()
+    );
+
+    assertThat(bookOffersResult.offers()).asList().hasSize(1);
+    assertThat(bookOffersResult.offers().get(0).quality())
+      .isEqualTo(BigDecimal.valueOf(sellerOfferTakerPays.value().longValue())
+        .divide(new BigDecimal(sellerOfferTakerGets.value())));
+    assertThat(bookOffersResult.offers().get(0).account()).isEqualTo(offerCreate.account());
+    assertThat(bookOffersResult.offers().get(0).flags().lsfSell()).isTrue();
+    assertThat(bookOffersResult.offers().get(0).flags().lsfPassive()).isFalse();
+    assertThat(bookOffersResult.offers().get(0).sequence()).isEqualTo(offerCreate.sequence());
+    assertThat(bookOffersResult.offers().get(0).takerPays()).isEqualTo(sellerOfferTakerPays);
+    assertThat(bookOffersResult.offers().get(0).takerGets()).isEqualTo(sellerOfferTakerGets);
+    assertThat(bookOffersResult.offers().get(0).ownerFunds()).isNotEmpty().get()
+      .isEqualTo(new BigDecimal(sellerOfferTakerGets.value()));
+    assertThat(bookOffersResult.offers().get(0).domainId()).isPresent().get()
+      .isEqualTo(permissionedDomainObject.index());
+    assertThat(bookOffersResult.offers().get(0).additionalBooks()).isNotEmpty();
+
+    // Create an open buy offer that crosses and fills the above created hybrid sell offer.
+    KeyPair purchaserKeyPair = createRandomAccountEd25519();
+
+    IssuedCurrencyAmount purchaseOfferTakerPays = IssuedCurrencyAmount.builder()
+      .value("2")
+      .currency(CURRENCY)
+      .issuer(sellerKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount purchaseOfferTakerGets = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5));
+
+    AccountInfoResult purchaserAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(purchaserKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger purchaserOfferCreateSequence = purchaserAccountInfo.accountData().sequence();
+
+    OfferCreate purchaserOfferCreate = OfferCreate.builder()
+      .account(purchaserKeyPair.publicKey().deriveAddress())
+      .takerGets(purchaseOfferTakerGets)
+      .takerPays(purchaseOfferTakerPays)
+      .signingPublicKey(purchaserKeyPair.publicKey())
+      .sequence(purchaserOfferCreateSequence)
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedPurchaserOfferCreate = signatureService.sign(
+      purchaserKeyPair.privateKey(), purchaserOfferCreate
+    );
+
+    SubmitResult<OfferCreate> intermediateResult = xrplClient.submit(signedPurchaserOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(intermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tesSUCCESS");
+
+    // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
+    RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, CURRENCY,
+      sellerKeyPair.publicKey().deriveAddress());
+
+    if (issuedCurrency.lowLimit().issuer().equals(sellerKeyPair.publicKey().deriveAddress())) {
+      assertThat(issuedCurrency.balance().value()).isEqualTo("-" + purchaseOfferTakerPays.value());
+    } else {
+      assertThat(issuedCurrency.balance().value()).isEqualTo(purchaseOfferTakerPays.value());
+    }
+  }
+
+  @Test
+  public void domainDoesNotExist() throws JsonRpcClientErrorException, JsonProcessingException {
+    KeyPair offerCreaterKeyPair = createRandomAccountEd25519();
+    IssuedCurrencyAmount takerGets = IssuedCurrencyAmount.builder()
+      .value("10")
+      .currency(CURRENCY)
+      .issuer(offerCreaterKeyPair.publicKey().deriveAddress())
+      .build();
+    XrpCurrencyAmount takerPays = XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(200.0));
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult accountInfoResult = this.scanForResult(
+      () -> this.getValidatedAccountInfo(offerCreaterKeyPair.publicKey().deriveAddress())
+    );
+
+    // Create an offer with DomainID that does not exist.
+    OfferCreate offerCreate = OfferCreate.builder()
+      .account(offerCreaterKeyPair.publicKey().deriveAddress())
+      .takerGets(takerGets)
+      .takerPays(takerPays)
+      .signingPublicKey(offerCreaterKeyPair.publicKey())
+      .sequence(accountInfoResult.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .domainId(Hash256.of("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
+      .build();
+
+    SingleSignedTransaction<OfferCreate> signedOfferCreate = signatureService.sign(
+      offerCreaterKeyPair.privateKey(), offerCreate
+    );
+    SubmitResult<OfferCreate> createTxIntermediateResult = xrplClient.submit(signedOfferCreate);
+    assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tecNO_PERMISSION");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(createTxIntermediateResult.transactionResult().hash(), OfferCreate.class)
+    );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tecNO_PERMISSION");
   }
 
   /**

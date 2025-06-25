@@ -33,41 +33,47 @@ import java.util.stream.Stream;
 public class OfferFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(2);
+    return getBooleanCombinations(3);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
     boolean lsfPassive,
-    boolean lsfSell
+    boolean lsfSell,
+    boolean lsfHybrid
   ) {
     long expectedFlags = (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
-      (lsfSell ? OfferFlags.SELL.getValue() : 0L);
+      (lsfSell ? OfferFlags.SELL.getValue() : 0L) |
+      (lsfHybrid ? OfferFlags.HYBRID.getValue() : 0L);
 
     OfferFlags flags = OfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.lsfPassive()).isEqualTo(lsfPassive);
     assertThat(flags.lsfSell()).isEqualTo(lsfSell);
+    assertThat(flags.lsfHybrid()).isEqualTo(lsfHybrid);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   void testJson(
     boolean lsfPassive,
-    boolean lsfSell
+    boolean lsfSell,
+    boolean lsfHybrid
   ) throws JSONException, JsonProcessingException {
     long expectedFlags = (lsfPassive ? OfferFlags.PASSIVE.getValue() : 0L) |
-      (lsfSell ? OfferFlags.SELL.getValue() : 0L);
+      (lsfSell ? OfferFlags.SELL.getValue() : 0L) |
+      (lsfHybrid ? OfferFlags.HYBRID.getValue() : 0L);
 
     OfferFlags flags = OfferFlags.of(expectedFlags);
 
     FlagsWrapper flagsWrapper = FlagsWrapper.of(flags);
 
-    String json = String.format("{\n" +
-      "               \"flags\": %s\n" +
-      "}", flags.getValue());
+    String json = String.format("{" +
+      "  \"flags\": %s" +
+      "}", flags.getValue()
+    );
 
     assertCanSerializeAndDeserialize(flagsWrapper, json);
   }

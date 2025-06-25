@@ -24,16 +24,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.flags.OfferFlags;
-import org.xrpl.xrpl4j.model.ledger.ImmutableOfferObject;
-import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -63,8 +61,8 @@ public interface MetaOfferObject extends MetaLedgerObject {
   Optional<OfferFlags> flags();
 
   /**
-   * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that
-   * created this offer.
+   * The sequence number of the {@link org.xrpl.xrpl4j.model.transactions.OfferCreate} transaction that created this
+   * offer.
    *
    * @return An {@link UnsignedInteger} representing the sequence number.
    */
@@ -107,10 +105,9 @@ public interface MetaOfferObject extends MetaLedgerObject {
   Optional<String> bookNode();
 
   /**
-   * A hint indicating which page of the sender's owner directory links to this object, in case the directory
-   * consists of multiple pages.
-   * Note: The object does not contain a direct link to the owner directory containing it,
-   * since that value can be derived from the Account.
+   * A hint indicating which page of the sender's owner directory links to this object, in case the directory consists
+   * of multiple pages. Note: The object does not contain a direct link to the owner directory containing it, since that
+   * value can be derived from the Account.
    *
    * @return A {@link String} containing the hint.
    */
@@ -141,5 +138,22 @@ public interface MetaOfferObject extends MetaLedgerObject {
    */
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
+
+  /**
+   * The permissioned domain that the offer is part of.
+   *
+   * @return A {@link Hash256} representing DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
+   * An additional list of order book directories that this offer belongs to. Currently, this field only applicable to
+   * hybrid offers.
+   *
+   * @return A list of {@link MetaBookWrapper} representing order book directories.
+   */
+  @JsonProperty("AdditionalBooks")
+  List<MetaBookWrapper> additionalBooks();
 
 }

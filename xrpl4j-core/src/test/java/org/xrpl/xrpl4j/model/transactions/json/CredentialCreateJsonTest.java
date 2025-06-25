@@ -154,5 +154,4 @@ public class CredentialCreateJsonTest extends AbstractJsonTest {
 
     assertCanSerializeAndDeserialize(credentialCreate, json);
   }
-
 }

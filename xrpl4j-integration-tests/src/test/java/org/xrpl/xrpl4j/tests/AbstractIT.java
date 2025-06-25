@@ -57,6 +57,7 @@ import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountLinesResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsResult;
 import org.xrpl.xrpl4j.model.client.accounts.TrustLine;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
@@ -75,6 +76,7 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Credential;
@@ -86,6 +88,7 @@ import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 import org.xrpl.xrpl4j.model.transactions.TransactionType;
@@ -404,6 +407,27 @@ public abstract class AbstractIT {
         .sourceAccount(sourceKeyPair.publicKey().deriveAddress())
         .destinationAccount(destinationKeyPair.publicKey().deriveAddress())
         .destinationAmount(destinationAmount)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build();
+
+      return xrplClient.ripplePathFind(pathFindParams);
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  protected RipplePathFindResult getValidatedRipplePath(
+    KeyPair sourceKeyPair,
+    KeyPair destinationKeyPair,
+    IssuedCurrencyAmount destinationAmount,
+    Hash256 domain
+  ) {
+    try {
+      RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
+        .sourceAccount(sourceKeyPair.publicKey().deriveAddress())
+        .destinationAccount(destinationKeyPair.publicKey().deriveAddress())
+        .destinationAmount(destinationAmount)
+        .domain(domain)
         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
         .build();
 
@@ -786,6 +810,49 @@ public abstract class AbstractIT {
     }
   }
 
+  protected void createPermissionedDomain(KeyPair domainOwnerKeyPair, KeyPair credentialIssuerKeyPair,
+    CredentialType[] credentialTypes)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult domainOwnerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(domainOwnerKeyPair.publicKey().deriveAddress())
+    );
+    UnsignedInteger createSequence = domainOwnerAccountInfo.accountData().sequence();
+
+    // Create a PermissionedDomain object.
+    List<CredentialWrapper> credentials = Arrays.stream(credentialTypes)
+      .map(credentialType -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(credentialIssuerKeyPair.publicKey().deriveAddress())
+          .credentialType(credentialType)
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet permissionedDomainSetTx = PermissionedDomainSet.builder()
+      .account(domainOwnerKeyPair.publicKey().deriveAddress())
+      .sequence(createSequence)
+      .fee(feeResult.drops().openLedgerFee())
+      .acceptedCredentials(credentials)
+      .signingPublicKey(domainOwnerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<PermissionedDomainSet> signedCreateTx = signatureService.sign(
+      domainOwnerKeyPair.privateKey(), permissionedDomainSetTx
+    );
+
+    SubmitResult<PermissionedDomainSet> domainSetTxIntermediateResult = xrplClient.submit(signedCreateTx);
+
+    assertThat(domainSetTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    // Then wait until the transaction gets committed to a validated ledger
+    this.scanForResult(
+      () -> this.getValidatedTransaction(
+        domainSetTxIntermediateResult.transactionResult().hash(), PermissionedDomainSet.class)
+    );
+  }
+
   protected void acceptCredentials(KeyPair issuerKeyPair, KeyPair subjectKeyPair, CredentialType[] credentialTypes)
     throws JsonRpcClientErrorException, JsonProcessingException {
 
@@ -919,5 +986,61 @@ public abstract class AbstractIT {
         }
       }
     ).map(LedgerEntryResult::index).collect(Collectors.toList());
+  }
+
+  protected PermissionedDomainObject getPermissionedDomainObject(Address domainOwner) {
+    return (PermissionedDomainObject) this.scanForResult(
+      () -> {
+        try {
+          return xrplClient.accountObjects(AccountObjectsRequestParams.builder()
+            .type(AccountObjectType.PERMISSIONED_DOMAIN)
+            .account(domainOwner)
+            .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+            .build()
+          ).accountObjects();
+        } catch (JsonRpcClientErrorException e) {
+          throw new RuntimeException(e);
+        }
+      },
+      result -> result.size() == 1
+    ).get(0);
+  }
+
+  /**
+   * Set the {@code lsfDefaultRipple} flag on an issuer account.
+   *
+   * @param issuerKeyPair The {@link KeyPair} containing the address of the issuer account.
+   * @param feeResult     The current {@link FeeResult}.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  protected void setDefaultRipple(KeyPair issuerKeyPair, FeeResult feeResult)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet setDefaultRipple = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      issuerKeyPair.privateKey(), setDefaultRipple
+    );
+    SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      setResult.transactionResult().hash()
+    );
+
+    scanForResult(
+      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().flags().lsfDefaultRipple()
+    );
   }
 }

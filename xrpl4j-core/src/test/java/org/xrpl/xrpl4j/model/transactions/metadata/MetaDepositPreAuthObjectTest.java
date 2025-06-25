@@ -7,9 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.Credential;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
-import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.Collections;
@@ -19,11 +17,11 @@ class MetaDepositPreAuthObjectTest extends AbstractJsonTest {
 
   @Test
   public void testMetaDepositPreAuthObjectTest() throws JsonProcessingException, JSONException {
-    List<CredentialWrapper> credentials = Collections.singletonList(
-      CredentialWrapper
+    List<MetaCredentialWrapper> credentials = Collections.singletonList(
+      ImmutableMetaCredentialWrapper
         .builder()
         .credential(
-          Credential.builder()
+          ImmutableMetaCredential.builder()
             .credentialType(CredentialType.of("6D795F63726564656E7469616C"))
             .issuer(Address.of("rK2vwKgQqXahHWUvi9VVTQsYe6gze5n1os"))
             .build())

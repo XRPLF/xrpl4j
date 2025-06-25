@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 /**
  * An Integration Test to validate submission of DepositPreAuth transactions.
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class DepositPreAuthIT extends AbstractIT {
 
   private static final CredentialType[] GOOD_CREDENTIALS_TYPES =

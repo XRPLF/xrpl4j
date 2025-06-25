@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,11 @@ public class OfferCreateFlags extends TransactionFlags {
    */
   protected static final OfferCreateFlags SELL = new OfferCreateFlags(0x00080000L);
 
+  /**
+   * Constant {@link OfferCreateFlags} for the {@code tfHybrid} flag.
+   */
+  protected static final OfferCreateFlags HYBRID = new OfferCreateFlags(0x00100000L);
+
   private OfferCreateFlags(long value) {
     super(value);
   }
@@ -79,21 +84,23 @@ public class OfferCreateFlags extends TransactionFlags {
     boolean tfPassive,
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
-    boolean tfSell
+    boolean tfSell,
+    boolean tfHybrid
   ) {
     long value = Flags.of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
       tfPassive ? PASSIVE : UNSET,
       tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
       tfFillOrKill ? FILL_OR_KILL : UNSET,
-      tfSell ? SELL : UNSET
+      tfSell ? SELL : UNSET,
+      tfHybrid ? HYBRID : UNSET
     ).getValue();
     return new OfferCreateFlags(value);
   }
 
   /**
-   * Construct an empty instance of {@link OfferCreateFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link OfferCreateFlags}. Transactions with empty flags will not be serialized with
+   * a {@code Flags} field.
    *
    * @return An empty {@link OfferCreateFlags}.
    */
@@ -102,8 +109,8 @@ public class OfferCreateFlags extends TransactionFlags {
   }
 
   /**
-   * If enabled, the offer does not consume offers that exactly match it, and instead becomes an
-   * Offer object in the ledger. It still consumes offers that cross it.
+   * If enabled, the offer does not consume offers that exactly match it, and instead becomes an Offer object in the
+   * ledger. It still consumes offers that cross it.
    *
    * @return {@code true} if {@code tfPassive} is set, otherwise {@code false}.
    */
@@ -112,10 +119,10 @@ public class OfferCreateFlags extends TransactionFlags {
   }
 
   /**
-   * Treat the offer as an Immediate or Cancel order . If enabled, the offer never becomes a ledger object:
-   * it only tries to match existing offers in the ledger. If the offer cannot match any offers immediately,
-   * it executes "successfully" without trading any currency. In this case, the transaction has the result code
-   * tesSUCCESS, but creates no Offer objects in the ledger.
+   * Treat the offer as an Immediate or Cancel order . If enabled, the offer never becomes a ledger object: it only
+   * tries to match existing offers in the ledger. If the offer cannot match any offers immediately, it executes
+   * "successfully" without trading any currency. In this case, the transaction has the result code tesSUCCESS, but
+   * creates no Offer objects in the ledger.
    *
    * @return {@code true} if {@code tfImmediateOrCancel} is set, otherwise {@code false}.
    */
@@ -124,10 +131,10 @@ public class OfferCreateFlags extends TransactionFlags {
   }
 
   /**
-   * Treat the offer as a Fill or Kill order . Only try to match existing offers in the ledger, and only do so if
-   * the entire TakerPays quantity can be obtained. If the fix1578 amendment is enabled and the offer cannot be
-   * executed when placed, the transaction has the result code tecKILLED; otherwise, the transaction uses the result
-   * code tesSUCCESS even when it was killed without trading any currency.
+   * Treat the offer as a Fill or Kill order . Only try to match existing offers in the ledger, and only do so if the
+   * entire TakerPays quantity can be obtained. If the fix1578 amendment is enabled and the offer cannot be executed
+   * when placed, the transaction has the result code tecKILLED; otherwise, the transaction uses the result code
+   * tesSUCCESS even when it was killed without trading any currency.
    *
    * @return {@code true} if {@code tfFillOrKill} is set, otherwise {@code false}.
    */
@@ -144,6 +151,14 @@ public class OfferCreateFlags extends TransactionFlags {
     return this.isSet(OfferCreateFlags.SELL);
   }
 
+  /**
+   * Indicates the offer is hybrid.
+   *
+   * @return {@code true} if {@code tfHybrid} is set, otherwise {@code false}.
+   */
+  public boolean tfHybrid() {
+    return this.isSet(OfferCreateFlags.HYBRID);
+  }
 
   /**
    * A builder class for {@link OfferCreateFlags} flags.
@@ -154,6 +169,7 @@ public class OfferCreateFlags extends TransactionFlags {
     private boolean tfImmediateOrCancel = false;
     private boolean tfFillOrKill = false;
     private boolean tfSell = false;
+    private boolean tfHybrid = false;
 
     /**
      * Set {@code tfPassive} to the given value.
@@ -204,6 +220,18 @@ public class OfferCreateFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfHybrid} to the given value.
+     *
+     * @param tfHybrid A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfHybrid(boolean tfHybrid) {
+      this.tfHybrid = tfHybrid;
+      return this;
+    }
+
+    /**
      * Build a new {@link OfferCreateFlags} from the current boolean values.
      *
      * @return A new {@link OfferCreateFlags}.
@@ -214,7 +242,8 @@ public class OfferCreateFlags extends TransactionFlags {
         tfPassive,
         tfImmediateOrCancel,
         tfFillOrKill,
-        tfSell
+        tfSell,
+        tfHybrid
       );
     }
   }

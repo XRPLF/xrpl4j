@@ -8,6 +8,7 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.ledger.Issue;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 class BookOffersRequestParamsTest extends AbstractJsonTest {
 
@@ -23,16 +24,16 @@ class BookOffersRequestParamsTest extends AbstractJsonTest {
       )
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
-    String json = "{\n" +
-      "            \"taker_gets\": {\n" +
-      "                \"currency\": \"XRP\"\n" +
-      "            },\n" +
-      "            \"ledger_index\": \"current\",\n" +
-      "            \"taker_pays\": {\n" +
-      "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
-      "            }\n" +
-      "        }";
+    String json = "{" +
+      "  \"taker_gets\": {" +
+      "    \"currency\": \"XRP\"" +
+      "  }," +
+      "  \"ledger_index\": \"current\"," +
+      "  \"taker_pays\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"" +
+      "  }" +
+      "}";
 
     assertCanSerializeAndDeserialize(expected, json);
   }
@@ -47,22 +48,24 @@ class BookOffersRequestParamsTest extends AbstractJsonTest {
           .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"))
           .build()
       )
+      .domain(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .taker(Address.of("r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59"))
       .limit(UnsignedInteger.ONE)
       .build();
-    String json = "{\n" +
-      "            \"taker\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-      "            \"ledger_index\": \"current\",\n" +
-      "            \"taker_gets\": {\n" +
-      "                \"currency\": \"XRP\"\n" +
-      "            },\n" +
-      "            \"taker_pays\": {\n" +
-      "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"\n" +
-      "            },\n" +
-      "            \"limit\": 1\n" +
-      "        }";
+    String json = "{" +
+      "  \"taker\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"ledger_index\": \"current\"," +
+      "  \"taker_gets\": {" +
+      "    \"currency\": \"XRP\"" +
+      "  }," +
+      "  \"taker_pays\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"" +
+      "  }," +
+      "  \"domain\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"," +
+      "  \"limit\": 1" +
+      "}";
 
     assertCanSerializeAndDeserialize(expected, json);
   }

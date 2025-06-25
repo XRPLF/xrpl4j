@@ -416,6 +416,7 @@ public class OfferIT extends AbstractIT {
       .isEqualTo(new BigDecimal(sellerOfferTakerGets.value()));
     assertThat(bookOffersResult.offers().get(0).domainId()).isPresent().get()
       .isEqualTo(permissionedDomainObject.index());
+    // Only Offers with tfHybrid flag set will have non-empty additionalBooks.
     assertThat(bookOffersResult.offers().get(0).additionalBooks()).isEmpty();
 
     // Create a permissioned buy offer that crosses and fills the above created permissioned sell offer.
@@ -449,9 +450,12 @@ public class OfferIT extends AbstractIT {
     assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
     // Then wait until the transaction gets committed to a validated ledger
-    this.scanForResult(
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
       () -> this.getValidatedTransaction(intermediateResult.transactionResult().hash(), OfferCreate.class)
     );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tesSUCCESS");
 
     // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
     RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, CURRENCY,
@@ -779,9 +783,12 @@ public class OfferIT extends AbstractIT {
     assertThat(createTxIntermediateResult.engineResult()).isEqualTo("tesSUCCESS");
 
     // Then wait until the transaction gets committed to a validated ledger
-    this.scanForResult(
+    TransactionResult<OfferCreate> offerCreateTransactionResult = this.scanForResult(
       () -> this.getValidatedTransaction(intermediateResult.transactionResult().hash(), OfferCreate.class)
     );
+
+    assertThat(offerCreateTransactionResult.metadata().get().transactionResult())
+      .isEqualTo("tesSUCCESS");
 
     // Poll the ledger for the source purchaser's balances, and validate the expected currency balance exists
     RippleStateObject issuedCurrency = scanForIssuedCurrency(purchaserKeyPair, CURRENCY,

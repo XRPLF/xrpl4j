@@ -34,9 +34,11 @@ import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerResult;
+import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
+import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.transactions.CredentialType;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -126,16 +128,14 @@ public class SubmitPaymentIT extends AbstractIT {
   @Test
   public void testPermissionedPaymentConsumesPermissionedOffer() throws JsonRpcClientErrorException,
     JsonProcessingException {
-    // Create all necessary accounts involved in the transaction flow.
+
     KeyPair tokenIssuerKeyPair = createRandomAccountEd25519();
     KeyPair domainOfferCreatorKeyPair = createRandomAccountEd25519();
     KeyPair openOfferCreatorKeyPair = createRandomAccountEd25519();
-    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
-    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
-    KeyPair sourceKeyPair = createRandomAccountEd25519();
-    KeyPair destinationKeyPair = createRandomAccountEd25519();
 
     FeeResult feeResult = xrplClient.fee();
+
+    setDefaultRipple(tokenIssuerKeyPair, feeResult);
 
     // Create issued currency and trust lines between token issuer, destination and offer creators.
     IssuedCurrencyAmount issuedCurrencyAmount = IssuedCurrencyAmount.builder()
@@ -144,63 +144,67 @@ public class SubmitPaymentIT extends AbstractIT {
       .value("1000")
       .build();
 
-    createTrustLine(
-      domainOfferCreatorKeyPair, issuedCurrencyAmount,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee(), TrustSetFlags.empty()
-    );
+    createTrustLine(domainOfferCreatorKeyPair, issuedCurrencyAmount,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(), TrustSetFlags.empty());
 
-    createTrustLine(
-      openOfferCreatorKeyPair, issuedCurrencyAmount,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee(), TrustSetFlags.empty()
-    );
+    createTrustLine(openOfferCreatorKeyPair, issuedCurrencyAmount,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee(), TrustSetFlags.empty());
 
-    createTrustLine(
-      destinationKeyPair, issuedCurrencyAmount,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee(), TrustSetFlags.empty()
-    );
+    KeyPair destinationKeyPair = createRandomAccountEd25519();
+
+    createTrustLine(destinationKeyPair, issuedCurrencyAmount, FeeUtils.computeNetworkFees(feeResult).recommendedFee(),
+      TrustSetFlags.empty());
 
     // Send some issued currency to the domain offer creator account.
-    sendIssuedCurrency(
-      tokenIssuerKeyPair, domainOfferCreatorKeyPair, issuedCurrencyAmount,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
-    );
+    sendIssuedCurrency(tokenIssuerKeyPair, domainOfferCreatorKeyPair, issuedCurrencyAmount,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     // Send some issued currency to the open offer creator account.
-    sendIssuedCurrency(
-      tokenIssuerKeyPair, openOfferCreatorKeyPair, issuedCurrencyAmount,
-      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
-    );
+    sendIssuedCurrency(tokenIssuerKeyPair, openOfferCreatorKeyPair, issuedCurrencyAmount,
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee());
 
     // Credential issuer creates the credentials. Domain offer creator, payment sender and payment receiver accepts
     // them. Note - Open offer creator does not have these credentials. So it won't be a member of permissioned domain.
+    KeyPair credentialIssuerKeyPair = createRandomAccountEd25519();
+    KeyPair sourceKeyPair = createRandomAccountEd25519();
+
     CredentialType[] credentialTypes = {CredentialType.ofPlainText("graduate certificate")};
     createAndAcceptCredentials(credentialIssuerKeyPair, domainOfferCreatorKeyPair, credentialTypes);
     createAndAcceptCredentials(credentialIssuerKeyPair, sourceKeyPair, credentialTypes);
     createAndAcceptCredentials(credentialIssuerKeyPair, destinationKeyPair, credentialTypes);
 
     // Create a permissioned domain.
-    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, credentialTypes);
-    PermissionedDomainObject permissionedDomainObject = getPermissionedDomainObject(
-      domainOwnerKeyPair.publicKey().deriveAddress());
+    KeyPair domainOwnerKeyPair = createRandomAccountEd25519();
 
-    // Create permissioned and open offer.
-    IssuedCurrencyAmount takerPays = IssuedCurrencyAmount.builder()
+    createPermissionedDomain(domainOwnerKeyPair, credentialIssuerKeyPair, credentialTypes);
+
+    // Create permissioned and open offers.
+    IssuedCurrencyAmount takerGets = IssuedCurrencyAmount.builder()
       .issuer(tokenIssuerKeyPair.publicKey().deriveAddress())
       .currency(CURRENCY)
       .value("2")
       .build();
 
-    createOffer(
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)), takerPays, domainOfferCreatorKeyPair,
-      Optional.ofNullable(permissionedDomainObject.index())
+    // Create a permissioned offer.
+    PermissionedDomainObject permissionedDomainObject = getPermissionedDomainObject(
+      domainOwnerKeyPair.publicKey().deriveAddress());
+
+    createOffer(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)), takerGets, domainOfferCreatorKeyPair,
+      Optional.ofNullable(permissionedDomainObject.index()));
+
+    // Create an open offer.
+    createOffer(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)), takerGets, openOfferCreatorKeyPair, Optional.empty());
+
+    // Validate that there exists a path such that the permissioned payment can succeed.
+    RipplePathFindResult ripplePathFindResult = scanForResult(
+      () -> getValidatedRipplePath(sourceKeyPair, destinationKeyPair, takerGets, permissionedDomainObject.index()),
+      path -> !path.alternatives().isEmpty()
     );
 
-    createOffer(
-      XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)), takerPays, openOfferCreatorKeyPair, Optional.empty()
-    );
+    assertThat(ripplePathFindResult.alternatives().get(0).pathsComputed().get(0).get(0).issuer().get()).isEqualTo(
+      tokenIssuerKeyPair.publicKey().deriveAddress());
 
     // Submit a permissioned payment transaction.
-
     AccountInfoResult sourceAccountInfo = this.scanForResult(
       () -> this.getValidatedAccountInfo(sourceKeyPair.publicKey().deriveAddress())
     );
@@ -210,16 +214,44 @@ public class SubmitPaymentIT extends AbstractIT {
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
       .sequence(sourceAccountInfo.accountData().sequence())
       .destination(destinationKeyPair.publicKey().deriveAddress())
-      .amount(takerPays)
+      .amount(takerGets)
       .sendMax(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(5)))
       .signingPublicKey(sourceKeyPair.publicKey())
+      .domainId(permissionedDomainObject.index())
       .build();
 
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = xrplClient.submit(signedPayment);
     assertThat(result.engineResult()).isEqualTo("tesSUCCESS");
 
-    this.scanForResult(() -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
+    TransactionResult<Payment> paymentTransactionResult = this.scanForResult(
+      () -> this.getValidatedTransaction(result.transactionResult().hash(), Payment.class));
+
+    assertThat(paymentTransactionResult.metadata().get().transactionResult()).isEqualTo("tesSUCCESS");
+
+    // Validate that open offer is not consumed by the payment transaction.
+    OfferObject offerObject = (OfferObject) scanForResult(
+      () -> getValidatedAccountObjects(openOfferCreatorKeyPair.publicKey().deriveAddress()),
+      accountObjects ->
+        accountObjects.accountObjects().stream().anyMatch(object ->
+          OfferObject.class.isAssignableFrom(object.getClass())
+        )
+    ).accountObjects().stream()
+      .filter(object -> OfferObject.class.isAssignableFrom(object.getClass()))
+      .findFirst()
+      .get();
+
+    assertThat(offerObject.takerGets()).isEqualTo(takerGets);
+    assertThat(offerObject.takerPays()).isEqualTo(XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(2)));
+
+    // Validate that permissioned offer is consumed by the payment transaction and no OfferObject exists.
+    scanForResult(
+      () -> getValidatedAccountObjects(domainOfferCreatorKeyPair.publicKey().deriveAddress()),
+      accountObjects ->
+        accountObjects.accountObjects().stream().noneMatch(object ->
+          OfferObject.class.isAssignableFrom(object.getClass())
+        )
+    );
   }
 
   private void createOffer(
@@ -236,12 +268,11 @@ public class SubmitPaymentIT extends AbstractIT {
 
     ImmutableOfferCreate.Builder builder = OfferCreate.builder()
       .account(offerCreatorKeyPair.publicKey().deriveAddress())
-      .takerGets(takerGets)
       .takerPays(takerPays)
+      .takerGets(takerGets)
       .signingPublicKey(offerCreatorKeyPair.publicKey())
       .sequence(offerCreateSequence)
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee());
-    //.flags(OfferCreateFlags.builder().tfSell(true).build());
 
     domain.ifPresent(builder::domainId);
 
@@ -260,8 +291,7 @@ public class SubmitPaymentIT extends AbstractIT {
     );
   }
 
-  private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment)
-    throws JsonRpcClientErrorException {
+  private void assertPaymentCloseTimeMatchesLedgerCloseTime(TransactionResult<Payment> validatedPayment) {
 
     LedgerResult ledger = this.scanForResult(
       () -> {

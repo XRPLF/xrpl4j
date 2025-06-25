@@ -416,6 +416,27 @@ public abstract class AbstractIT {
     }
   }
 
+  protected RipplePathFindResult getValidatedRipplePath(
+    KeyPair sourceKeyPair,
+    KeyPair destinationKeyPair,
+    IssuedCurrencyAmount destinationAmount,
+    Hash256 domain
+  ) {
+    try {
+      RipplePathFindRequestParams pathFindParams = RipplePathFindRequestParams.builder()
+        .sourceAccount(sourceKeyPair.publicKey().deriveAddress())
+        .destinationAccount(destinationKeyPair.publicKey().deriveAddress())
+        .destinationAmount(destinationAmount)
+        .domain(domain)
+        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+        .build();
+
+      return xrplClient.ripplePathFind(pathFindParams);
+    } catch (JsonRpcClientErrorException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
   protected AccountLinesResult getValidatedAccountLines(Address classicAddress, Address peerAddress) {
     try {
       AccountLinesRequestParams params = AccountLinesRequestParams.builder()
@@ -983,5 +1004,43 @@ public abstract class AbstractIT {
       },
       result -> result.size() == 1
     ).get(0);
+  }
+
+  /**
+   * Set the {@code lsfDefaultRipple} flag on an issuer account.
+   *
+   * @param issuerKeyPair The {@link KeyPair} containing the address of the issuer account.
+   * @param feeResult     The current {@link FeeResult}.
+   *
+   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
+   */
+  protected void setDefaultRipple(KeyPair issuerKeyPair, FeeResult feeResult)
+    throws JsonRpcClientErrorException, JsonProcessingException {
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet setDefaultRipple = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+      issuerKeyPair.privateKey(), setDefaultRipple
+    );
+    SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
+    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info(
+      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
+      setResult.transactionResult().hash()
+    );
+
+    scanForResult(
+      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
+      info -> info.accountData().flags().lsfDefaultRipple()
+    );
   }
 }

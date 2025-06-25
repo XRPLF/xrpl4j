@@ -41,8 +41,8 @@ import java.util.Optional;
 public interface MetaPermissionedDomainObject extends MetaLedgerObject {
 
   /**
-   * A bit-map of boolean flags. No flags are defined for {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject},
-   * so this value is always 0.
+   * A bit-map of boolean flags. No flags are defined for {@link MetaPermissionedDomainObject}, so this value is always
+   * 0.
    *
    * @return Always {@link Flags#UNSET}.
    */

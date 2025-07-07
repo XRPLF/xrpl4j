@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.path;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,11 +21,9 @@ package org.xrpl.xrpl4j.model.client.path;
  */
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
@@ -47,27 +45,29 @@ public class RipplePathFindRequestParamsJsonTests extends AbstractJsonTest {
         PathCurrency.of("XRP"),
         PathCurrency.of("USD")
       )
+      .domain(Hash256.of("96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797"))
       .ledgerSpecifier(LedgerSpecifier.CURRENT)
       .build();
 
-    String json = "{\n" +
-      "            \"ledger_index\": \"current\",\n" +
-      "            \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-      "            \"destination_amount\": {\n" +
-      "                \"currency\": \"USD\",\n" +
-      "                \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\",\n" +
-      "                \"value\": \"0.001\"\n" +
-      "            },\n" +
-      "            \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\n" +
-      "            \"source_currencies\": [\n" +
-      "                {\n" +
-      "                    \"currency\": \"XRP\"\n" +
-      "                },\n" +
-      "                {\n" +
-      "                    \"currency\": \"USD\"\n" +
-      "                }\n" +
-      "            ]\n" +
-      "        }";
+    String json = "{" +
+      "  \"ledger_index\": \"current\"," +
+      "  \"destination_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"destination_amount\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B\"," +
+      "    \"value\": \"0.001\"" +
+      "  }," +
+      "  \"source_account\": \"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\"," +
+      "  \"domain\": \"96F76F27D8A327FC48753167EC04A46AA0E382E6F57F32FD12274144D00F1797\"," +
+      "  \"source_currencies\": [" +
+      "    {" +
+      "      \"currency\": \"XRP\"" +
+      "    }," +
+      "    {" +
+      "      \"currency\": \"USD\"" +
+      "    }" +
+      "  ]" +
+      "}";
 
     assertCanSerializeAndDeserialize(params, json);
   }

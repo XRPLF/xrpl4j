@@ -27,7 +27,6 @@ import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 
 import java.util.List;
@@ -42,8 +41,8 @@ import java.util.Optional;
 public interface MetaPermissionedDomainObject extends MetaLedgerObject {
 
   /**
-   * A bit-map of boolean flags. No flags are defined for {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject},
-   * so this value is always 0.
+   * A bit-map of boolean flags. No flags are defined for {@link MetaPermissionedDomainObject}, so this value is always
+   * 0.
    *
    * @return Always {@link Flags#UNSET}.
    */
@@ -84,10 +83,10 @@ public interface MetaPermissionedDomainObject extends MetaLedgerObject {
    * The credentials that are accepted by the domain. Ownership of one of these credentials automatically makes you a
    * member of the domain.
    *
-   * @return A list of {@link CredentialWrapper}.
+   * @return A list of {@link MetaCredentialWrapper}.
    */
   @JsonProperty("AcceptedCredentials")
-  List<CredentialWrapper> acceptedCredentials();
+  List<MetaCredentialWrapper> acceptedCredentials();
 
   /**
    * The identifying hash of the transaction that most recently modified this object.

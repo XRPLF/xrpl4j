@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
@@ -31,8 +32,8 @@ import org.xrpl.xrpl4j.model.flags.OfferCreateFlags;
 import java.util.Optional;
 
 /**
- * An OfferCreate transaction is effectively a limit order. It defines an intent to exchange currencies, and
- * creates an offer object if not completely fulfilled when placed. Offers can be partially fulfilled.
+ * An OfferCreate transaction is effectively a limit order. It defines an intent to exchange currencies, and creates an
+ * offer object if not completely fulfilled when placed. Offers can be partially fulfilled.
  *
  * @see "https://xrpl.org/offercreate.html"
  */
@@ -94,5 +95,22 @@ public interface OfferCreate extends Transaction {
   @JsonProperty("Expiration")
   Optional<UnsignedInteger> expiration();
 
+  /**
+   * The permissioned domain that the offer must be a part of.
+   *
+   * @return A {@link Hash256} representing DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
 
+  /**
+   * Validates tfHybrid flag cannot be set if the offer doesn't have a DomainID.
+   */
+  @Value.Check
+  default void check() {
+    if (!domainId().isPresent()) {
+      Preconditions.checkState(!flags().tfHybrid(),
+        "tfHybrid flag cannot be set if the offer doesn't have a DomainID.");
+    }
+  }
 }

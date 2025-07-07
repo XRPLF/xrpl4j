@@ -13,6 +13,7 @@ import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
 import org.xrpl.xrpl4j.model.ledger.AmmObject;
 import org.xrpl.xrpl4j.model.ledger.BridgeObject;
 import org.xrpl.xrpl4j.model.ledger.CheckObject;
+import org.xrpl.xrpl4j.model.ledger.CredentialObject;
 import org.xrpl.xrpl4j.model.ledger.DepositPreAuthObject;
 import org.xrpl.xrpl4j.model.ledger.DidObject;
 import org.xrpl.xrpl4j.model.ledger.EscrowObject;
@@ -23,6 +24,7 @@ import org.xrpl.xrpl4j.model.ledger.NfTokenPageObject;
 import org.xrpl.xrpl4j.model.ledger.OfferObject;
 import org.xrpl.xrpl4j.model.ledger.OracleObject;
 import org.xrpl.xrpl4j.model.ledger.PayChannelObject;
+import org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject;
 import org.xrpl.xrpl4j.model.ledger.RippleStateObject;
 import org.xrpl.xrpl4j.model.ledger.TicketObject;
 import org.xrpl.xrpl4j.model.transactions.Address;
@@ -195,6 +197,31 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   ) {
     return ImmutableLedgerEntryRequestParams.<CheckObject>builder()
       .check(id)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link CredentialObject} ledger entry.
+   *
+   * <p>Note that although the rippled API allows you to specify either the Credential's ID
+   * or the [subject, issuer and credential_type] of the transaction that created the Credential, this class does not
+   * allow developers to request a {@link CredentialObject} by ID via this method. Instead, developers should use
+   * {@link LedgerEntryRequestParams#index()} and specify {@link CredentialObject} as the {@code ledgerObjectClass}
+   * parameter.</p>
+   *
+   * @param params          The {@link CredentialLedgerEntryParams} that uniquely identify the {@link CredentialObject}
+   *                        on ledger.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link CredentialObject}.
+   */
+  static LedgerEntryRequestParams<CredentialObject> credential(
+    CredentialLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<CredentialObject>builder()
+      .credential(params)
       .ledgerSpecifier(ledgerSpecifier)
       .build();
   }
@@ -401,6 +428,24 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   }
 
   /**
+   * Construct a {@link LedgerEntryRequestParams} that requests a {@link PermissionedDomainObject} ledger entry.
+   *
+   * @param params          The {@link PermissionedDomainLedgerEntryParams} specifying the Permissioned domain.
+   * @param ledgerSpecifier A {@link LedgerSpecifier} indicating the ledger to query data from.
+   *
+   * @return A {@link LedgerEntryRequestParams} for {@link PermissionedDomainObject}.
+   */
+  static LedgerEntryRequestParams<PermissionedDomainObject> permissionedDomain(
+    PermissionedDomainLedgerEntryParams params,
+    LedgerSpecifier ledgerSpecifier
+  ) {
+    return ImmutableLedgerEntryRequestParams.<PermissionedDomainObject>builder()
+      .permissionedDomain(params)
+      .ledgerSpecifier(ledgerSpecifier)
+      .build();
+  }
+
+  /**
    * Specifies the ledger version to request. A ledger version can be specified by ledger hash, numerical ledger index,
    * or a shortcut value.
    *
@@ -463,6 +508,13 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
    * @return An optionally-present {@link Hash256}.
    */
   Optional<Hash256> check();
+
+  /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.CredentialObject} by {@link CredentialLedgerEntryParams}.
+   *
+   * @return An optionally-present {@link CredentialLedgerEntryParams}.
+   */
+  Optional<CredentialLedgerEntryParams> credential();
 
   /**
    * Look up an {@link org.xrpl.xrpl4j.model.ledger.EscrowObject} by {@link EscrowLedgerEntryParams}.
@@ -550,6 +602,15 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
   Optional<MpTokenLedgerEntryParams> mpToken();
 
   /**
+   * Look up a {@link org.xrpl.xrpl4j.model.ledger.PermissionedDomainObject} by
+   * {@link PermissionedDomainLedgerEntryParams}.
+   *
+   * @return An {@link Optional} {@link PermissionedDomainLedgerEntryParams}.
+   */
+  @JsonProperty("permissioned_domain")
+  Optional<PermissionedDomainLedgerEntryParams> permissionedDomain();
+
+  /**
    * The {@link Class} of {@link T}. This field is helpful when telling Jackson how to deserialize rippled's response to
    * a {@link T}.
    *
@@ -576,6 +637,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (check().isPresent()) {
       return (Class<T>) CheckObject.class;
+    }
+
+    if (credential().isPresent()) {
+      return (Class<T>) CredentialObject.class;
     }
 
     if (escrow().isPresent()) {
@@ -616,6 +681,10 @@ public interface LedgerEntryRequestParams<T extends LedgerObject> extends XrplRe
 
     if (mpToken().isPresent()) {
       return (Class<T>) MpTokenObject.class;
+    }
+
+    if (permissionedDomain().isPresent()) {
+      return (Class<T>) PermissionedDomainObject.class;
     }
 
     return (Class<T>) LedgerObject.class;

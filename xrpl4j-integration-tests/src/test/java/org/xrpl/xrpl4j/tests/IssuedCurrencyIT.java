@@ -620,45 +620,6 @@ public class IssuedCurrencyIT extends AbstractIT {
 
   }
 
-  /**
-   * Set the {@code lsfDefaultRipple} flag on an issuer account.
-   *
-   * @param issuerKeyPair The {@link KeyPair} containing the address of the issuer account.
-   * @param feeResult     The current {@link FeeResult}.
-   *
-   * @throws JsonRpcClientErrorException If anything goes wrong while communicating with rippled.
-   */
-  public void setDefaultRipple(KeyPair issuerKeyPair, FeeResult feeResult)
-    throws JsonRpcClientErrorException, JsonProcessingException {
-    AccountInfoResult issuerAccountInfo = this.scanForResult(
-      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
-    );
-
-    AccountSet setDefaultRipple = AccountSet.builder()
-      .account(issuerKeyPair.publicKey().deriveAddress())
-      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
-      .sequence(issuerAccountInfo.accountData().sequence())
-      .signingPublicKey(issuerKeyPair.publicKey())
-      .setFlag(AccountSet.AccountSetFlag.DEFAULT_RIPPLE)
-      .build();
-
-    SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
-      issuerKeyPair.privateKey(), setDefaultRipple
-    );
-    SubmitResult<AccountSet> setResult = xrplClient.submit(signedAccountSet);
-    assertThat(setResult.engineResult()).isEqualTo("tesSUCCESS");
-    logger.info(
-      "AccountSet transaction successful: https://testnet.xrpl.org/transactions/{}",
-      setResult.transactionResult().hash()
-    );
-
-    scanForResult(
-      () -> getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress()),
-      info -> info.accountData().flags().lsfDefaultRipple()
-    );
-  }
-
-
   private void assertThatEntryEqualsObjectFromAccountObjects(
     TrustLine trustLine,
     Address peerAddress,

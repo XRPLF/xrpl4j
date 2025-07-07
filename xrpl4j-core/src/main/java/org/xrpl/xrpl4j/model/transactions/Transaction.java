@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
@@ -53,6 +52,9 @@ public interface Transaction {
       .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
       .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
       .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
+      .put(ImmutableCredentialAccept.class, TransactionType.CREDENTIAL_ACCEPT)
+      .put(ImmutableCredentialCreate.class, TransactionType.CREDENTIAL_CREATE)
+      .put(ImmutableCredentialDelete.class, TransactionType.CREDENTIAL_DELETE)
       .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
       .put(ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT)
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
@@ -69,6 +71,8 @@ public interface Transaction {
       .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+      .put(ImmutablePermissionedDomainSet.class, TransactionType.PERMISSIONED_DOMAIN_SET)
+      .put(ImmutablePermissionedDomainDelete.class, TransactionType.PERMISSIONED_DOMAIN_DELETE)
       .put(ImmutableSetFee.class, TransactionType.SET_FEE)
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)

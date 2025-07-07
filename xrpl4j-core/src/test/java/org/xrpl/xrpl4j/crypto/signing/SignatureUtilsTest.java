@@ -31,13 +31,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -51,6 +51,7 @@ import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
 import org.xrpl.xrpl4j.model.ledger.AttestationCreateAccount;
@@ -61,6 +62,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountDelete;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.AmmBid;
+import org.xrpl.xrpl4j.model.transactions.AmmClawback;
 import org.xrpl.xrpl4j.model.transactions.AmmCreate;
 import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
@@ -70,21 +72,27 @@ import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
+import org.xrpl.xrpl4j.model.transactions.Credential;
+import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
+import org.xrpl.xrpl4j.model.transactions.CredentialCreate;
+import org.xrpl.xrpl4j.model.transactions.CredentialDelete;
+import org.xrpl.xrpl4j.model.transactions.CredentialType;
+import org.xrpl.xrpl4j.model.transactions.CredentialUri;
+import org.xrpl.xrpl4j.model.transactions.CredentialWrapper;
 import org.xrpl.xrpl4j.model.transactions.DepositPreAuth;
-import org.xrpl.xrpl4j.model.transactions.DidData;
 import org.xrpl.xrpl4j.model.transactions.DidDelete;
-import org.xrpl.xrpl4j.model.transactions.DidDocument;
 import org.xrpl.xrpl4j.model.transactions.DidSet;
-import org.xrpl.xrpl4j.model.transactions.DidUri;
 import org.xrpl.xrpl4j.model.transactions.EscrowCancel;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
 import org.xrpl.xrpl4j.model.transactions.EscrowFinish;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainAddClaimAttestation;
 import org.xrpl.xrpl4j.model.transactions.ImmutableXChainBridge;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainClaim;
-import org.xrpl.xrpl4j.model.transactions.ImmutableXChainCreateClaimId;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceDestroy;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.NfTokenAcceptOffer;
 import org.xrpl.xrpl4j.model.transactions.NfTokenBurn;
 import org.xrpl.xrpl4j.model.transactions.NfTokenCancelOffer;
@@ -100,6 +108,8 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelClaim;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
+import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
@@ -124,6 +134,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Unit tests for {@link SignatureUtils}.
@@ -180,7 +192,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (Transaction)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   public void toSignableBytesWithNullTransaction() {
@@ -229,7 +242,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (UnsignedClaim)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   void unsignedClaimToSignableBytesWhenNull() {
@@ -274,7 +288,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (AttestationClaim)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   void attestationClaimToSignableBytesWhenNull() {
@@ -358,7 +373,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toSignableBytes (AttestationCreateAccount)
-  //////////////////
+
+  /// ///////////////
 
   @Test
   void attestationCreateAccountToSignableBytesWhenNull() {
@@ -448,7 +464,8 @@ public class SignatureUtilsTest {
 
   //////////////////
   // toMultiSignableBytes
-  //////////////////
+
+  /// ///////////////
 
 
   @Test
@@ -474,7 +491,8 @@ public class SignatureUtilsTest {
 
   ////////////////////////////
   // addSignatureToTransaction
-  ////////////////////////////
+
+  /// /////////////////////////
 
   @Test
   public void addSignatureToTransactionWithNullTransaction() {
@@ -844,6 +862,59 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addSignatureToAmmClawback() {
+    AmmClawback ammClawback = AmmClawback.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .holder(sourcePublicKey.deriveAddress())
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .asset(Issue.XRP)
+      .asset2(
+        Issue.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(ammClawback);
+  }
+
+  @Test
+  void addMultiSignaturesToAmmClawback() {
+    AmmClawback ammClawback = AmmClawback.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .holder(sourcePublicKey.deriveAddress())
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("TST")
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .asset(Issue.XRP)
+      .asset2(
+        Issue.builder()
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .currency("TST")
+          .build()
+      )
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .build();
+
+    addMultiSignatureToTransactionHelper(ammClawback);
+  }
+
+  @Test
   void addSignatureToAmmDeposit() {
     AmmDeposit deposit = AmmDeposit.builder()
       .account(sourcePublicKey.deriveAddress())
@@ -1134,6 +1205,136 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.valueOf(391))
       .signingPublicKey(sourcePublicKey)
       .oracleDocumentId(OracleDocumentId.of(UnsignedInteger.ONE))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenAuthorize() {
+    MpTokenAuthorize transaction = MpTokenAuthorize.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenIssuanceCreate() {
+    MpTokenIssuanceCreate transaction = MpTokenIssuanceCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenIssuanceDestroy() {
+    MpTokenIssuanceDestroy transaction = MpTokenIssuanceDestroy.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToMpTokenIssuanceSet() {
+    MpTokenIssuanceSet transaction = MpTokenIssuanceSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToCredentialCreate() {
+    CredentialCreate transaction = CredentialCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .subject(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .uri(CredentialUri.ofPlainText("http://dl-gov-verify.ca"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToCredentialAccept() {
+    CredentialAccept transaction = CredentialAccept.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToCredentialDelete() {
+    CredentialDelete transaction = CredentialDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToPermissionedDoaminSet() {
+    List<CredentialWrapper> credentials = IntStream.range(0, 10)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet transaction = PermissionedDomainSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .acceptedCredentials(credentials)
+      .build();
+
+    addSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addSignatureToPermissionedDoaminDelete() {
+    PermissionedDomainDelete transaction = PermissionedDomainDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .signingPublicKey(sourcePublicKey)
+      .domainId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
       .build();
 
     addSignatureToTransactionHelper(transaction);
@@ -1780,6 +1981,127 @@ public class SignatureUtilsTest {
   }
 
   @Test
+  void addMultiSignatureToMpTokenAuthorize() {
+    MpTokenAuthorize transaction = MpTokenAuthorize.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenIssuanceCreate() {
+    MpTokenIssuanceCreate transaction = MpTokenIssuanceCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenIssuanceDestroy() {
+    MpTokenIssuanceDestroy transaction = MpTokenIssuanceDestroy.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToMpTokenIssuanceSet() {
+    MpTokenIssuanceSet transaction = MpTokenIssuanceSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .mpTokenIssuanceId(MpTokenIssuanceId.of(Strings.repeat("0", 48)))
+      .flags(MpTokenIssuanceSetFlags.LOCK)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToCredentialCreate() {
+    CredentialCreate transaction = CredentialCreate.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .subject(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .uri(CredentialUri.ofPlainText("http://dl-gov-verify.ca"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToCredentialAccept() {
+    CredentialAccept transaction = CredentialAccept.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToCredentialDelete() {
+    CredentialDelete transaction = CredentialDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .issuer(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .credentialType(CredentialType.ofPlainText("driver licence"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToPermissionedDomainSet() {
+    List<CredentialWrapper> credentials = IntStream.range(0, 10)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet transaction = PermissionedDomainSet.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .acceptedCredentials(credentials)
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
+  void addMultiSignatureToPermissionedDomainDelete() {
+    PermissionedDomainDelete transaction = PermissionedDomainDelete.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .domainId(Hash256.of("0123456789012345678901234567890123456789012345678901234567891234"))
+      .build();
+
+    addMultiSignatureToTransactionHelper(transaction);
+  }
+
+  @Test
   public void addMultiSignaturesToTransactionUnsupported() {
     when(transactionMock.transactionSignature()).thenReturn(Optional.empty());
     when(transactionMock.signingPublicKey()).thenReturn(PublicKey.MULTI_SIGN_PUBLIC_KEY);
@@ -1789,7 +2111,6 @@ public class SignatureUtilsTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Signing fields could not be added to the transaction.");
   }
-
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
   private void addSignatureToTransactionHelper(final Transaction transaction) {

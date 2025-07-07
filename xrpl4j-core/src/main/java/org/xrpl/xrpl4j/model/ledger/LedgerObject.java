@@ -41,6 +41,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableAccountRootObject.class, name = "AccountRoot"),
   //    @JsonSubTypes.Type(value = ImmutableAmendmentsObject.class, name = "Amendments"),
   @JsonSubTypes.Type(value = ImmutableCheckObject.class, name = "Check"),
+  @JsonSubTypes.Type(value = ImmutableCredentialObject.class, name = "Credential"),
   @JsonSubTypes.Type(value = ImmutableDepositPreAuthObject.class, name = "DepositPreauth"),
   //    @JsonSubTypes.Type(value = ImmutableDirectoryNodeObject.class, name = "DirectoryNode"),
   @JsonSubTypes.Type(value = ImmutableEscrowObject.class, name = "Escrow"),
@@ -50,6 +51,7 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableNfTokenOfferObject.class, name = "NFTokenOffer"),
   @JsonSubTypes.Type(value = ImmutableOfferObject.class, name = "Offer"),
   @JsonSubTypes.Type(value = ImmutablePayChannelObject.class, name = "PayChannel"),
+  @JsonSubTypes.Type(value = ImmutablePermissionedDomainObject.class, name = "PermissionedDomain"),
   @JsonSubTypes.Type(value = ImmutableRippleStateObject.class, name = "RippleState"),
   @JsonSubTypes.Type(value = ImmutableSignerListObject.class, name = "SignerList"),
   @JsonSubTypes.Type(value = ImmutableTicketObject.class, name = "Ticket"),
@@ -62,6 +64,8 @@ import com.google.common.annotations.Beta;
   @JsonSubTypes.Type(value = ImmutableXChainOwnedClaimIdObject.class, name = "XChainOwnedClaimID"),
   @JsonSubTypes.Type(value = ImmutableDidObject.class, name = "DID"),
   @JsonSubTypes.Type(value = ImmutableOracleObject.class, name = "Oracle"),
+  @JsonSubTypes.Type(value = ImmutableMpTokenIssuanceObject.class, name = "MPTokenIssuance"),
+  @JsonSubTypes.Type(value = ImmutableMpTokenObject.class, name = "MPToken"),
 })
 // TODO: Uncomment subtypes as we implement
 public interface LedgerObject {
@@ -84,6 +88,11 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code Check} ledger objects.
      */
     CHECK("Check"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code Credential} ledger objects.
+     */
+    CREDENTIAL("Credential"),
 
     /**
      * The {@link LedgerEntryType} for {@code DepositPreauth} ledger objects.
@@ -129,6 +138,11 @@ public interface LedgerObject {
      * The {@link LedgerEntryType} for {@code PayChannel} ledger objects.
      */
     PAY_CHANNEL("PayChannel"),
+
+    /**
+     * The {@link LedgerEntryType} for {@code PermissionedDomain} ledger objects.
+     */
+    PERMISSIONED_DOMAIN("PermissionedDomain"),
 
     /**
      * The {@link LedgerEntryType} for {@code RippleState} ledger objects.
@@ -202,7 +216,13 @@ public interface LedgerObject {
      * Its API is subject to change.</p>
      */
     @Beta
-    ORACLE("Oracle");
+    ORACLE("Oracle"),
+
+    @Beta
+    MP_TOKEN_ISSUANCE("MPTokenIssuance"),
+
+    @Beta
+    MP_TOKEN("MPToken");
 
     private final String value;
 

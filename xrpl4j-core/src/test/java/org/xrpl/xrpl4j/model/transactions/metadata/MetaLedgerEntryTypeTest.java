@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
-import org.xrpl.xrpl4j.model.ledger.AccountRootObject;
-import org.xrpl.xrpl4j.model.ledger.OracleObject;
 
 class MetaLedgerEntryTypeTest extends AbstractJsonTest {
 
@@ -18,6 +16,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.ACCOUNT_ROOT.value()).isEqualTo("AccountRoot");
     assertThat(MetaLedgerEntryType.AMENDMENTS.value()).isEqualTo("Amendments");
     assertThat(MetaLedgerEntryType.CHECK.value()).isEqualTo("Check");
+    assertThat(MetaLedgerEntryType.CREDENTIAL.value()).isEqualTo("Credential");
     assertThat(MetaLedgerEntryType.DEPOSIT_PRE_AUTH.value()).isEqualTo("DepositPreauth");
     assertThat(MetaLedgerEntryType.DIRECTORY_NODE.value()).isEqualTo("DirectoryNode");
     assertThat(MetaLedgerEntryType.ESCROW.value()).isEqualTo("Escrow");
@@ -38,6 +37,9 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.XCHAIN_OWNED_CLAIM_ID.value()).isEqualTo("XChainOwnedClaimID");
     assertThat(MetaLedgerEntryType.DID.value()).isEqualTo("DID");
     assertThat(MetaLedgerEntryType.ORACLE.value()).isEqualTo("Oracle");
+    assertThat(MetaLedgerEntryType.MP_TOKEN.value()).isEqualTo("MPToken");
+    assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.value()).isEqualTo("MPTokenIssuance");
+    assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.value()).isEqualTo("PermissionedDomain");
   }
 
   @Test
@@ -45,6 +47,7 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     assertThat(MetaLedgerEntryType.ACCOUNT_ROOT.ledgerObjectType()).isEqualTo(MetaAccountRootObject.class);
     assertThat(MetaLedgerEntryType.AMENDMENTS.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
     assertThat(MetaLedgerEntryType.CHECK.ledgerObjectType()).isEqualTo(MetaCheckObject.class);
+    assertThat(MetaLedgerEntryType.CREDENTIAL.ledgerObjectType()).isEqualTo(MetaCredentialObject.class);
     assertThat(MetaLedgerEntryType.DEPOSIT_PRE_AUTH.ledgerObjectType()).isEqualTo(MetaDepositPreAuthObject.class);
     assertThat(MetaLedgerEntryType.DIRECTORY_NODE.ledgerObjectType()).isEqualTo(MetaUnknownObject.class);
     assertThat(MetaLedgerEntryType.ESCROW.ledgerObjectType()).isEqualTo(MetaEscrowObject.class);
@@ -67,6 +70,10 @@ class MetaLedgerEntryTypeTest extends AbstractJsonTest {
     );
     assertThat(MetaLedgerEntryType.DID.ledgerObjectType()).isEqualTo(MetaDidObject.class);
     assertThat(MetaLedgerEntryType.ORACLE.ledgerObjectType()).isEqualTo(MetaOracleObject.class);
+    assertThat(MetaLedgerEntryType.MP_TOKEN.ledgerObjectType()).isEqualTo(MetaMpTokenObject.class);
+    assertThat(MetaLedgerEntryType.MP_TOKEN_ISSUANCE.ledgerObjectType()).isEqualTo(MetaMpTokenIssuanceObject.class);
+    assertThat(MetaLedgerEntryType.PERMISSIONED_DOMAIN.ledgerObjectType()).isEqualTo(
+      MetaPermissionedDomainObject.class);
   }
 
   @Test

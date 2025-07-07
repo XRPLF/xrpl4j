@@ -23,12 +23,12 @@ package org.xrpl.xrpl4j.model.transactions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
-import org.xrpl.xrpl4j.model.flags.Flags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
-import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,8 +53,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a {@link
-   * PaymentFlags} object containing the {@link Long} representation of the set bits.
+   * Set of {@link PaymentFlags}s for this {@link Payment}, which have been properly combined to yield a
+   * {@link PaymentFlags} object containing the {@link Long} representation of the set bits.
    *
    * <p>The value of the flags can either be set manually, or constructed using {@link PaymentFlags.Builder}.
    *
@@ -67,8 +67,8 @@ public interface Payment extends Transaction {
   }
 
   /**
-   * The amount of currency to deliver. If the {@link PaymentFlags#tfPartialPayment()} flag is set, deliver up to
-   * this amount instead.
+   * The amount of currency to deliver. If the {@link PaymentFlags#tfPartialPayment()} flag is set, deliver up to this
+   * amount instead.
    *
    * @return A {@link CurrencyAmount} representing the amount of a specified currency to deliver.
    */
@@ -108,6 +108,7 @@ public interface Payment extends Transaction {
    * <p>This field is auto-fillable
    *
    * @return A {@link List} of {@link List}s of {@link PathStep}s.
+   *
    * @see "https://xrpl.org/transaction-common-fields.html#auto-fillable-fields"
    */
   @JsonProperty("Paths")
@@ -120,6 +121,7 @@ public interface Payment extends Transaction {
    * <p>Must be supplied for cross-currency/cross-issue payments. Must be omitted for XRP-to-XRP payments.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
+   *
    * @see "https://xrpl.org/transfer-fees.html"
    * @see "https://en.wikipedia.org/wiki/Slippage_%28finance%29"
    */
@@ -127,12 +129,54 @@ public interface Payment extends Transaction {
   Optional<CurrencyAmount> sendMax();
 
   /**
-   * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the {@link
-   * PaymentFlags#tfPartialPayment()}* flag is set.
+   * Minimum amount of destination currency this {@link Payment} should deliver. Only valid if this the
+   * {@link PaymentFlags#tfPartialPayment()}* flag is set.
    *
    * @return An {@link Optional} of type {@link CurrencyAmount}.
    */
   @JsonProperty("DeliverMin")
   Optional<CurrencyAmount> deliverMin();
 
+  /**
+   * Set of Credentials to authorize a deposit made by this transaction. Each member of the array must be the ledger
+   * entry ID of a Credential entry in the ledger.
+   *
+   * @return A list of type {@link Hash256}.
+   */
+  @JsonProperty("CredentialIDs")
+  List<Hash256> credentialIds();
+
+  /**
+   * The permissioned domain the sender intends to use. Both the sender and destination must be part of this domain.
+   *
+   * @return An optionally-present {@link Hash256} representing DomainID.
+   */
+  @JsonProperty("DomainID")
+  Optional<Hash256> domainId();
+
+  /**
+   * Validate {@link Payment#credentialIds} has less than or equal to 8 credentials.
+   */
+  @Value.Check
+  default void validateCredentialIdsLength() {
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        credentialIds().size() <= 8,
+        "CredentialIDs should have less than or equal to 8 items."
+      );
+    }
+  }
+
+  /**
+   * Validate {@link Payment#credentialIds} are unique.
+   */
+  @Value.Check
+  default void validateUniqueCredentialIds() {
+    if (!credentialIds().isEmpty()) {
+      Preconditions.checkArgument(
+        new HashSet<>(credentialIds()).size() == credentialIds().size(),
+        "CredentialIDs should have unique values."
+      );
+    }
+  }
 }

@@ -20,16 +20,19 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -43,12 +46,15 @@ public interface Transaction {
    * <p>This is useful for polymorphic Jackson deserialization.
    */
   BiMap<Class<? extends Transaction>, TransactionType> typeMap =
-    new ImmutableBiMap.Builder<Class<? extends Transaction>, TransactionType>()
+    new Builder<Class<? extends Transaction>, TransactionType>()
       .put(ImmutableAccountSet.class, TransactionType.ACCOUNT_SET)
       .put(ImmutableAccountDelete.class, TransactionType.ACCOUNT_DELETE)
       .put(ImmutableCheckCancel.class, TransactionType.CHECK_CANCEL)
       .put(ImmutableCheckCash.class, TransactionType.CHECK_CASH)
       .put(ImmutableCheckCreate.class, TransactionType.CHECK_CREATE)
+      .put(ImmutableCredentialAccept.class, TransactionType.CREDENTIAL_ACCEPT)
+      .put(ImmutableCredentialCreate.class, TransactionType.CREDENTIAL_CREATE)
+      .put(ImmutableCredentialDelete.class, TransactionType.CREDENTIAL_DELETE)
       .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
       .put(ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT)
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)
@@ -65,6 +71,8 @@ public interface Transaction {
       .put(ImmutablePaymentChannelClaim.class, TransactionType.PAYMENT_CHANNEL_CLAIM)
       .put(ImmutablePaymentChannelCreate.class, TransactionType.PAYMENT_CHANNEL_CREATE)
       .put(ImmutablePaymentChannelFund.class, TransactionType.PAYMENT_CHANNEL_FUND)
+      .put(ImmutablePermissionedDomainSet.class, TransactionType.PERMISSIONED_DOMAIN_SET)
+      .put(ImmutablePermissionedDomainDelete.class, TransactionType.PERMISSIONED_DOMAIN_DELETE)
       .put(ImmutableSetFee.class, TransactionType.SET_FEE)
       .put(ImmutableSetRegularKey.class, TransactionType.SET_REGULAR_KEY)
       .put(ImmutableSignerListSet.class, TransactionType.SIGNER_LIST_SET)
@@ -90,6 +98,12 @@ public interface Transaction {
       .put(ImmutableDidDelete.class, TransactionType.DID_DELETE)
       .put(ImmutableOracleSet.class, TransactionType.ORACLE_SET)
       .put(ImmutableOracleDelete.class, TransactionType.ORACLE_DELETE)
+      .put(ImmutableMpTokenAuthorize.class, TransactionType.MPT_AUTHORIZE)
+      .put(ImmutableMpTokenIssuanceCreate.class, TransactionType.MPT_ISSUANCE_CREATE)
+      .put(ImmutableMpTokenIssuanceDestroy.class, TransactionType.MPT_ISSUANCE_DESTROY)
+      .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
+      .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
+      .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .build();
 
   /**
@@ -106,6 +120,7 @@ public interface Transaction {
    * @return A {@link TransactionType}.
    */
   @JsonProperty("TransactionType")
+  @Value.Default // must be Default rather than Derived, otherwise Jackson treats "TransactionType" as an unknownField
   default TransactionType transactionType() {
     return typeMap.get(this.getClass());
   }
@@ -219,5 +234,9 @@ public interface Transaction {
 
   @JsonProperty("NetworkID")
   Optional<NetworkId> networkId();
+
+  @JsonAnyGetter
+  @JsonInclude(Include.NON_ABSENT)
+  Map<String, Object> unknownFields();
 
 }

@@ -20,8 +20,9 @@ jobs:
       - name: Build
         run: mvn clean install
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v3.1.0
+        uses: codecov/codecov-action@v5
         with:
+          verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 

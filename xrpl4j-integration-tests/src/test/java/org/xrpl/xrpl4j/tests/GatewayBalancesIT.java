@@ -55,7 +55,6 @@ public class GatewayBalancesIT extends AbstractIT {
     // Create random accounts for the issuer and the counterparty
     KeyPair issuerKeyPair = createRandomAccountEd25519();
     KeyPair counterpartyKeyPair = createRandomAccountEd25519();
-    KeyPair frozenAccountKeyPair = createRandomAccountEd25519();
 
     ///////////////////////////
     // Create a Trust Line between issuer and counterparty denominated in a custom currency
@@ -122,6 +121,8 @@ public class GatewayBalancesIT extends AbstractIT {
         )
       );
     assertThat(result.frozenBalances().balancesByHolder()).isEmpty();
+
+    KeyPair frozenAccountKeyPair = createRandomAccountEd25519();
 
     ///////////////////////////
     // Create a Trust Line between issuer and frozenAccount

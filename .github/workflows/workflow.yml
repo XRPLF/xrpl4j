@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: mvn clean install
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v3.1.0
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
@@ -63,7 +63,7 @@ jobs:
         java: [ 11, 16, 17, 21 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java version
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
@@ -77,7 +77,7 @@ jobs:
   build_jdk_temurin_non_us:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Temurin 21
       - name: Set up Temurin v21
         uses: actions/setup-java@v4
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 17
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -111,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4

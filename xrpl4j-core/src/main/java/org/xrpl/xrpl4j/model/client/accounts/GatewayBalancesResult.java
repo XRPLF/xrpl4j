@@ -94,7 +94,7 @@ public interface GatewayBalancesResult extends XrplResult {
 
   /**
    * Amounts issued to addresses where the trustline is frozen. Note that any counterparties to a frozen trustline
-   * included in {@code hotwallet} are not included in this field's balances.
+   * included in {@link GatewayBalancesRequestParams#hotWallets()} are not included in this field's balances.
    *
    * @return A {@link GatewayBalancesHotWallets}.
    */

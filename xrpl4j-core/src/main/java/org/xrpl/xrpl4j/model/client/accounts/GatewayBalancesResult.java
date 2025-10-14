@@ -93,6 +93,18 @@ public interface GatewayBalancesResult extends XrplResult {
   }
 
   /**
+   * Amounts issued to addresses where the trustline is frozen. Note that any counterparties to a frozen trustline
+   * included in {@link GatewayBalancesRequestParams#hotWallets()} are not included in this field's balances.
+   *
+   * @return A {@link GatewayBalancesHotWallets}.
+   */
+  @Value.Default
+  @JsonProperty("frozen_balances")
+  default GatewayBalancesHotWallets frozenBalances() {
+    return GatewayBalancesHotWallets.builder().build();
+  }
+
+  /**
    * The identifying hash the ledger version that was used when retrieving this data.
    *
    * @return An optionally-present {@link org.xrpl.xrpl4j.model.transactions.Hash256}.

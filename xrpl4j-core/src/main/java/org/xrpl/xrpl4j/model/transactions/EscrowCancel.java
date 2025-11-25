@@ -28,7 +28,16 @@ import org.immutables.value.Value;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 /**
- * Return escrowed XRP to the sender.
+ * Return escrowed XRP, IOU tokens, or MPT tokens to the sender.
+ *
+ * <p>With the TokenEscrow amendment enabled, this transaction can cancel escrows containing:
+ * <ul>
+ *   <li>XRP (as before)</li>
+ *   <li>IOU tokens (trustline-based tokens)</li>
+ *   <li>MPT tokens (Multi-Purpose Tokens)</li>
+ * </ul>
+ *
+ * <p>Note: Unlike {@link EscrowFinish}, freeze/lock conditions do NOT prevent cancellation.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowCancel.class)

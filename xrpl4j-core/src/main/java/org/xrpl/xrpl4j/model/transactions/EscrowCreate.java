@@ -33,7 +33,14 @@ import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import java.util.Optional;
 
 /**
- * Sequester XRP until the escrow process either finishes or is canceled.
+ * Sequester XRP, IOU tokens, or MPT tokens until the escrow process either finishes or is canceled.
+ *
+ * <p>With the TokenEscrow amendment enabled, escrows can hold:
+ * <ul>
+ *   <li>XRP (as before)</li>
+ *   <li>IOU tokens (trustline-based tokens) - requires issuer to enable {@code lsfAllowTrustLineLocking} flag</li>
+ *   <li>MPT tokens (Multi-Purpose Tokens) - requires {@code lsfMPTCanEscrow} and {@code lsfMPTCanTransfer} flags</li>
+ * </ul>
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowCreate.class)
@@ -65,17 +72,25 @@ public interface EscrowCreate extends Transaction {
   }
 
   /**
-   * Amount of XRP, in drops, to deduct from the sender's balance and escrow. Once escrowed, the XRP can either go to
+   * Amount of currency to deduct from the sender's balance and escrow. Once escrowed, the funds can either go to
    * the {@link EscrowCreate#destination()} address (after the {@link EscrowCreate#finishAfter()} time) or returned to
    * the sender (after the {@link EscrowCreate#cancelAfter()} time).
    *
-   * @return An {@link XrpCurrencyAmount} representing the amount of the escrow.
+   * <p>Can be one of:
+   * <ul>
+   *   <li>{@link XrpCurrencyAmount} - XRP in drops</li>
+   *   <li>{@link IssuedCurrencyAmount} - IOU tokens (requires issuer's {@code lsfAllowTrustLineLocking} flag)</li>
+   *   <li>{@link MptCurrencyAmount} - MPT tokens (requires {@code lsfMPTCanEscrow} and {@code lsfMPTCanTransfer}
+   *   flags)</li>
+   * </ul>
+   *
+   * @return A {@link CurrencyAmount} representing the amount of the escrow.
    */
   @JsonProperty("Amount")
-  XrpCurrencyAmount amount();
+  CurrencyAmount amount();
 
   /**
-   * Address to receive escrowed XRP.
+   * Address to receive escrowed funds.
    *
    * @return The {@link Address} of the destination account.
    */
@@ -102,7 +117,7 @@ public interface EscrowCreate extends Transaction {
   Optional<UnsignedLong> cancelAfter();
 
   /**
-   * The time, in seconds since the Ripple Epoch, when the escrowed XRP can be released to the recipient.
+   * The time, in seconds since the Ripple Epoch, when the escrowed funds can be released to the recipient.
    *
    * <p>This value is immutable - the funds cannot move until this time is reached.
    *

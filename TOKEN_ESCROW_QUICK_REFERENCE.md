@@ -266,44 +266,72 @@ public void createAndFinishIouEscrow() throws JsonRpcClientErrorException {
 
 ## Implementation Checklist
 
-### Phase 1: Transaction Models
-- [ ] Update EscrowCreate.amount() to CurrencyAmount
-- [ ] Update EscrowCreate JavaDoc
-- [ ] Update EscrowFinish JavaDoc
-- [ ] Update EscrowCancel JavaDoc
-- [ ] Verify backward compatibility
+### Phase 1: Transaction Models ✅ COMPLETE
+- [x] Update EscrowCreate.amount() to CurrencyAmount
+- [x] Update EscrowCreate JavaDoc
+- [x] Update EscrowFinish JavaDoc
+- [x] Update EscrowCancel JavaDoc
+- [x] Verify backward compatibility
 
-### Phase 2: Ledger Objects
-- [ ] Update EscrowObject.amount() to CurrencyAmount
-- [ ] Add EscrowObject.transferRate()
-- [ ] Add EscrowObject.issuerNode()
-- [ ] Update MetaEscrowObject similarly
-- [ ] Update JavaDoc
+### Phase 2: Ledger Objects ✅ COMPLETE
+- [x] Update EscrowObject.amount() to CurrencyAmount
+- [x] Add EscrowObject.transferRate()
+- [x] Add EscrowObject.issuerNode()
+- [x] Update MetaEscrowObject similarly
+- [x] Update JavaDoc
 
-### Phase 3: AccountSet Flags
-- [ ] Add ALLOW_TRUSTLINE_LOCKING(17) to AccountSetFlag
-- [ ] Add lsfAllowTrustLineLocking to AccountRootFlags
-- [ ] Update JavaDoc
+### Phase 3: AccountSet Flags ✅ COMPLETE
+- [x] Add ALLOW_TRUSTLINE_LOCKING(17) to AccountSetFlag
+- [x] Add lsfAllowTrustLineLocking to AccountRootFlags
+- [x] Update JavaDoc
 
-### Phase 4: MPT Models
-- [ ] Add lockedAmount to MpTokenObject
-- [ ] Add lockedAmount to MpTokenIssuanceObject
-- [ ] Update JavaDoc
+### Phase 4: MPT Models ✅ COMPLETE
+- [x] Add lockedAmount to MpTokenObject
+- [x] Add lockedAmount to MpTokenIssuanceObject
+- [x] Update JavaDoc
 
-### Phase 5: Unit Tests
-- [ ] EscrowCreate with IOU JSON test
-- [ ] EscrowCreate with MPT JSON test
-- [ ] EscrowObject with tokens JSON test
-- [ ] AccountSetFlag test
-- [ ] MPT lockedAmount tests
+### Phase 5: Unit Tests ✅ COMPLETE
+- [x] EscrowCreate with IOU JSON test
+- [x] EscrowCreate with MPT JSON test
+- [x] EscrowObject with tokens JSON test
+- [x] AccountSetFlag test
+- [x] MPT lockedAmount tests
+- **Result**: 168 tests passing, 0 failures
 
-### Phase 6: Integration Tests
+### Phase 6: Integration Tests ⏳ NOT STARTED
 - [ ] IOU escrow create/finish/cancel
 - [ ] MPT escrow create/finish/cancel
 - [ ] AccountSet flag integration test
 - [ ] Transfer rate/fee locking test
 - [ ] Error condition tests
 - [ ] Auto-creation tests
+
+---
+
+## Implementation Status
+
+**Progress**: 5 of 6 phases complete (83%)
+**Code Changes**: 9 files modified
+**Tests Added**: 10 new unit tests
+**All Tests**: ✅ 168/168 passing
+
+**Files Modified**:
+1. `EscrowCreate.java` - amount() now accepts CurrencyAmount
+2. `EscrowFinish.java` - Documentation updated
+3. `EscrowCancel.java` - Documentation updated
+4. `EscrowObject.java` - amount(), transferRate(), issuerNode() added
+5. `MetaEscrowObject.java` - Same changes as EscrowObject
+6. `AccountSet.java` - ALLOW_TRUSTLINE_LOCKING flag added
+7. `AccountRootFlags.java` - lsfAllowTrustLineLocking added
+8. `MpTokenObject.java` - lockedAmount() added
+9. `MpTokenIssuanceObject.java` - lockedAmount() added
+
+**Tests Modified**:
+1. `EscrowObjectJsonTests.java` - Added IOU and MPT tests
+2. `EscrowCreateJsonTest.java` - Added IOU and MPT tests
+3. `AccountSetTests.java` - Added flag tests
+4. `MpTokenObjectTest.java` - Added lockedAmount tests
+5. `MpTokenIssuanceObjectTest.java` - Added lockedAmount tests
 
 ## Resources
 

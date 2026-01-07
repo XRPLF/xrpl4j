@@ -1603,4 +1603,320 @@ public class EscrowIT extends AbstractIT {
     assertThat(createResult.engineResult()).isEqualTo("tecFROZEN");
     logger.info("EscrowCreate correctly failed with tecFROZEN when trustline is frozen");
   }
+
+  @Test
+  void iouEscrowAutoCreatesTrustlineOnFinish() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////
+    // This test verifies that when an IOU escrow is finished, if the receiver doesn't have a trustline,
+    // it will be automatically created (assuming the receiver has enough XRP reserve).
+    // Note: Auto-creation only works if the issuer doesn't require authorization.
+
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    //////////////////////
+    // Set ALLOW_TRUSTLINE_LOCKING flag on issuer
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet enableLocking = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .setFlag(AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedEnableLocking = signatureService.sign(
+      issuerKeyPair.privateKey(), enableLocking
+    );
+    xrplClient.submit(signedEnableLocking);
+    this.scanForResult(() -> this.getValidatedTransaction(signedEnableLocking.hash(), AccountSet.class));
+
+    //////////////////////
+    // Create trustline for sender ONLY (not for receiver - it will be auto-created)
+    createTrustLine(
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Send some IOU tokens to the sender
+    sendIssuedCurrency(
+      issuerKeyPair,
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Create escrow with IOU tokens
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+
+    UnsignedLong cancelAfter = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100)));
+    UnsignedLong finishAfter = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
+
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("100")
+        .build())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .cancelAfter(cancelAfter)
+      .finishAfter(finishAfter)
+      .signingPublicKey(senderKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
+    );
+
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info("EscrowCreate transaction successful: " + createResult.transactionResult().hash());
+
+    this.scanForResult(() -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class));
+
+    //////////////////////
+    // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
+    this.scanForResult(
+      this::getValidatedLedger,
+      ledgerResult ->
+        FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+          .greaterThan(
+            createResult.transactionResult().transaction().finishAfter()
+              .map(finishAfter_ -> finishAfter_.plus(UnsignedLong.valueOf(5)))
+              .orElse(UnsignedLong.MAX_VALUE)
+          )
+    );
+
+    //////////////////////
+    // Finish the escrow - this should auto-create the trustline for the receiver
+    AccountInfoResult receiverAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress())
+    );
+
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .account(receiverKeyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .owner(senderKeyPair.publicKey().deriveAddress())
+      .offerSequence(senderAccountInfo.accountData().sequence())
+      .signingPublicKey(receiverKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+      receiverKeyPair.privateKey(), escrowFinish
+    );
+
+    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
+    assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info("EscrowFinish transaction successful - trustline was auto-created for receiver: " +
+      finishResult.transactionResult().hash());
+
+    this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
+
+    logger.info("Verified: Trustline was automatically created for receiver during EscrowFinish");
+  }
+
+  @Test
+  void mptEscrowAutoCreatesMpTokenOnFinish() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////
+    // This test verifies that when an MPT escrow is finished, if the receiver doesn't have an MPToken,
+    // it will be automatically created (assuming the receiver has enough XRP reserve).
+
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    //////////////////////
+    // Create MPT issuance
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceCreateFlags flags = MpTokenIssuanceCreateFlags.builder()
+      .tfMptCanEscrow(true)
+      .tfMptCanTransfer(true)
+      .build();
+
+    MpTokenIssuanceCreate issuanceCreate = MpTokenIssuanceCreate.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .assetScale(AssetScale.of(UnsignedInteger.valueOf(2)))
+      .transferFee(TransferFee.of(UnsignedInteger.valueOf(100)))
+      .maximumAmount(MpTokenNumericAmount.of(Long.MAX_VALUE))
+      .mpTokenMetadata(MpTokenMetadata.of("ABCD"))
+      .flags(flags)
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceCreate> signedIssuanceCreate = signatureService.sign(
+      issuerKeyPair.privateKey(),
+      issuanceCreate
+    );
+    SubmitResult<MpTokenIssuanceCreate> issuanceCreateResult = xrplClient.submit(signedIssuanceCreate);
+    assertThat(issuanceCreateResult.engineResult()).isEqualTo("tesSUCCESS");
+
+    this.scanForResult(() -> this.getValidatedTransaction(
+      issuanceCreateResult.transactionResult().hash(),
+      MpTokenIssuanceCreate.class
+    ));
+
+    MpTokenIssuanceId mpTokenIssuanceId = xrplClient.transaction(
+        TransactionRequestParams.of(signedIssuanceCreate.hash()),
+        MpTokenIssuanceCreate.class
+      ).metadata()
+      .orElseThrow(RuntimeException::new)
+      .mpTokenIssuanceId()
+      .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
+
+    //////////////////////
+    // Sender authorizes the MPT ONLY (not receiver - it will be auto-created)
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenAuthorize senderAuthorize = MpTokenAuthorize.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(senderKeyPair.publicKey())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenAuthorize> signedSenderAuthorize = signatureService.sign(
+      senderKeyPair.privateKey(),
+      senderAuthorize
+    );
+    SubmitResult<MpTokenAuthorize> senderAuthorizeResult = xrplClient.submit(signedSenderAuthorize);
+    assertThat(senderAuthorizeResult.engineResult()).isEqualTo("tesSUCCESS");
+    this.scanForResult(() -> this.getValidatedTransaction(
+      senderAuthorizeResult.transactionResult().hash(),
+      MpTokenAuthorize.class
+    ));
+
+    //////////////////////
+    // Mint MPT tokens to sender
+    issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MptCurrencyAmount mintAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mpTokenIssuanceId)
+      .value("100000")
+      .build();
+
+    Payment mint = Payment.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .destination(senderKeyPair.publicKey().deriveAddress())
+      .amount(mintAmount)
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<Payment> signedMint = signatureService.sign(issuerKeyPair.privateKey(), mint);
+    SubmitResult<Payment> mintResult = xrplClient.submit(signedMint);
+    assertThat(mintResult.engineResult()).isEqualTo("tesSUCCESS");
+    this.scanForResult(() -> this.getValidatedTransaction(mintResult.transactionResult().hash(), Payment.class));
+
+    //////////////////////
+    // Sender creates an MPT Escrow with the receiver
+    senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+
+    MptCurrencyAmount escrowAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mpTokenIssuanceId)
+      .value("10000")
+      .build();
+
+    UnsignedLong cancelAfter = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100)));
+    UnsignedLong finishAfter = instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5)));
+
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .fee(feeResult.drops().openLedgerFee())
+      .amount(escrowAmount)
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .cancelAfter(cancelAfter)
+      .finishAfter(finishAfter)
+      .signingPublicKey(senderKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
+    );
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info("EscrowCreate transaction successful: " + createResult.transactionResult().hash());
+
+    this.scanForResult(() -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class));
+
+    //////////////////////
+    // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
+    this.scanForResult(
+      this::getValidatedLedger,
+      ledgerResult ->
+        FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+          .greaterThan(
+            createResult.transactionResult().transaction().finishAfter()
+              .map(finishAfter_ -> finishAfter_.plus(UnsignedLong.valueOf(5)))
+              .orElse(UnsignedLong.MAX_VALUE)
+          )
+    );
+
+    //////////////////////
+    // Finish the escrow - this should auto-create the MPToken for the receiver
+    AccountInfoResult receiverAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress())
+    );
+
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .account(receiverKeyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .owner(senderKeyPair.publicKey().deriveAddress())
+      .offerSequence(senderAccountInfo.accountData().sequence())
+      .signingPublicKey(receiverKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+      receiverKeyPair.privateKey(), escrowFinish
+    );
+
+    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
+    assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
+    logger.info("EscrowFinish transaction successful - MPToken was auto-created for receiver: " +
+      finishResult.transactionResult().hash());
+
+    this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
+
+    logger.info("Verified: MPToken was automatically created for receiver during EscrowFinish");
+  }
+
 }

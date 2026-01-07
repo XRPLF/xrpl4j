@@ -34,6 +34,7 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountObjectsRequestParams.AccountObjectType;
+import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.ledger.EscrowLedgerEntryParams;
@@ -823,6 +824,28 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedTransaction(enableLockingResult.transactionResult().hash(), AccountSet.class));
 
     //////////////////////
+    // Set a transfer rate on the issuer account (1% = 1,010,000,000)
+    issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet setTransferRate = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .transferRate(UnsignedInteger.valueOf(1010000000L)) // 1% transfer fee
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedSetTransferRate = signatureService.sign(
+      issuerKeyPair.privateKey(), setTransferRate
+    );
+    SubmitResult<AccountSet> setTransferRateResult = xrplClient.submit(signedSetTransferRate);
+    assertThat(setTransferRateResult.engineResult()).isEqualTo("tesSUCCESS");
+    this.scanForResult(
+      () -> this.getValidatedTransaction(setTransferRateResult.transactionResult().hash(), AccountSet.class));
+
+    //////////////////////
     // Create trustlines from sender and receiver to issuer
     String currency = "USD";
     IssuedCurrencyAmount trustLimit = IssuedCurrencyAmount.builder()
@@ -896,10 +919,29 @@ public class EscrowIT extends AbstractIT {
     );
 
     //////////////////////
-    // Verify the escrow object was created with transferRate field
+    // Verify the escrow object was created with transferRate field locked at 1%
     assertEntryEqualsObjectFromAccountObjects(
       senderKeyPair.publicKey().deriveAddress(),
       escrowCreate.sequence()
+    );
+
+    // Get the escrow object and verify the transfer rate is locked
+    EscrowObject escrowObject = (EscrowObject) this.scanForResult(
+        () -> this.getValidatedAccountObjects(senderKeyPair.publicKey().deriveAddress()),
+        objectsResult -> objectsResult.accountObjects().stream()
+          .anyMatch(object -> EscrowObject.class.isAssignableFrom(object.getClass()))
+      ).accountObjects().stream()
+      .filter(object -> EscrowObject.class.isAssignableFrom(object.getClass()))
+      .map(object -> (EscrowObject) object)
+      .filter(escrow -> escrow.previousTransactionId()
+        .map(txId -> txId.equals(createResult.transactionResult().hash()))
+        .orElse(false))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("Escrow object not found"));
+
+    assertThat(escrowObject.transferRate()).isPresent();
+    assertThat(escrowObject.transferRate().orElse(UnsignedInteger.ZERO)).isEqualTo(
+      UnsignedInteger.valueOf(1010000000L)
     );
 
     //////////////////////
@@ -941,6 +983,208 @@ public class EscrowIT extends AbstractIT {
     );
 
     this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
+  }
+
+  @Test
+  public void iouEscrowLocksTransferRateAtCreation() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////
+    // Create random issuer, sender and receiver accounts
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    //////////////////////
+    // Enable ALLOW_TRUSTLINE_LOCKING and set initial transfer rate on issuer account
+    FeeResult feeResult = xrplClient.fee();
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Enable locking and set 1% transfer rate in one transaction
+    AccountSet enableLockingAndSetRate = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .setFlag(AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .transferRate(UnsignedInteger.valueOf(1010000000L)) // 1% transfer fee
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedEnableLockingAndSetRate = signatureService.sign(
+      issuerKeyPair.privateKey(), enableLockingAndSetRate
+    );
+    SubmitResult<AccountSet> enableLockingAndSetRateResult = xrplClient.submit(signedEnableLockingAndSetRate);
+    assertThat(enableLockingAndSetRateResult.engineResult()).isEqualTo("tesSUCCESS");
+    this.scanForResult(
+      () -> this.getValidatedTransaction(enableLockingAndSetRateResult.transactionResult().hash(), AccountSet.class));
+
+    //////////////////////
+    // Create trustlines from sender and receiver to issuer
+    String currency = "USD";
+    IssuedCurrencyAmount trustLimit = IssuedCurrencyAmount.builder()
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
+      .currency(currency)
+      .value("10000")
+      .build();
+
+    createTrustLine(senderKeyPair, trustLimit, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+    createTrustLine(receiverKeyPair, trustLimit, FeeUtils.computeNetworkFees(feeResult).recommendedFee());
+
+    //////////////////////
+    // Issue 1000 USD to sender
+    sendIssuedCurrency(
+      issuerKeyPair,
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency(currency)
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Sender creates an IOU Escrow with the receiver
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+
+    IssuedCurrencyAmount escrowAmount = IssuedCurrencyAmount.builder()
+      .issuer(issuerKeyPair.publicKey().deriveAddress())
+      .currency(currency)
+      .value("100")
+      .build();
+
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .fee(feeResult.drops().openLedgerFee())
+      .amount(escrowAmount)
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .cancelAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(100))))
+      .finishAfter(instantToXrpTimestamp(getMinExpirationTime().plus(Duration.ofSeconds(5))))
+      .signingPublicKey(senderKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
+    );
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
+    assertThat(createResult.engineResult()).isEqualTo("tesSUCCESS");
+    logInfo(
+      createResult.transactionResult().transaction().transactionType(),
+      createResult.transactionResult().hash()
+    );
+
+    TransactionResult<EscrowCreate> result = this.scanForResult(
+      () -> this.getValidatedTransaction(createResult.transactionResult().hash(), EscrowCreate.class)
+    );
+
+    //////////////////////
+    // Verify the escrow object has the transfer rate locked at 1%
+    EscrowObject escrowObjectBefore = (EscrowObject) this.scanForResult(
+        () -> this.getValidatedAccountObjects(senderKeyPair.publicKey().deriveAddress()),
+        objectsResult -> objectsResult.accountObjects().stream()
+          .anyMatch(object -> EscrowObject.class.isAssignableFrom(object.getClass()))
+      ).accountObjects().stream()
+      .filter(object -> EscrowObject.class.isAssignableFrom(object.getClass()))
+      .map(object -> (EscrowObject) object)
+      .filter(escrow -> escrow.previousTransactionId()
+        .map(txId -> txId.equals(createResult.transactionResult().hash()))
+        .orElse(false))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("Escrow object not found"));
+
+    assertThat(escrowObjectBefore.transferRate()).isPresent();
+    assertThat(escrowObjectBefore.transferRate().orElse(UnsignedInteger.ZERO)).isEqualTo(
+      UnsignedInteger.valueOf(1010000000L)
+    );
+
+    //////////////////////
+    // Change the issuer's transfer rate to 2% AFTER the escrow was created
+    issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet changeTransferRate = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .transferRate(UnsignedInteger.valueOf(1020000000L)) // Change to 2% transfer fee
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedChangeTransferRate = signatureService.sign(
+      issuerKeyPair.privateKey(), changeTransferRate
+    );
+    SubmitResult<AccountSet> changeTransferRateResult = xrplClient.submit(signedChangeTransferRate);
+    assertThat(changeTransferRateResult.engineResult()).isEqualTo("tesSUCCESS");
+    this.scanForResult(
+      () -> this.getValidatedTransaction(changeTransferRateResult.transactionResult().hash(), AccountSet.class));
+
+    //////////////////////
+    // Verify the escrow object STILL has the transfer rate locked at 1% (not 2%)
+    EscrowObject escrowObjectAfter = (EscrowObject) this.scanForResult(
+        () -> this.getValidatedAccountObjects(senderKeyPair.publicKey().deriveAddress()),
+        objectsResult -> objectsResult.accountObjects().stream()
+          .anyMatch(object -> EscrowObject.class.isAssignableFrom(object.getClass()))
+      ).accountObjects().stream()
+      .filter(object -> EscrowObject.class.isAssignableFrom(object.getClass()))
+      .map(object -> (EscrowObject) object)
+      .filter(escrow -> escrow.previousTransactionId()
+        .map(txId -> txId.equals(createResult.transactionResult().hash()))
+        .orElse(false))
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("Escrow object not found"));
+
+    assertThat(escrowObjectAfter.transferRate()).isPresent();
+    // The transfer rate should STILL be 1%, not 2%, proving it was locked at escrow creation
+    assertThat(escrowObjectAfter.transferRate().orElse(UnsignedInteger.ZERO)).isEqualTo(
+      UnsignedInteger.valueOf(1010000000L)
+    );
+
+    //////////////////////
+    // Wait until the close time on the current validated ledger is after the finishAfter time on the Escrow
+    this.scanForResult(
+      this::getValidatedLedger,
+      ledgerResult ->
+        FluentCompareTo.is(ledgerResult.ledger().closeTime().orElse(UnsignedLong.ZERO))
+          .greaterThan(
+            createResult.transactionResult().transaction().finishAfter()
+              .map(finishAfter -> finishAfter.plus(UnsignedLong.valueOf(5)))
+              .orElse(UnsignedLong.MAX_VALUE)
+          )
+    );
+
+    //////////////////////
+    // Receiver finishes the escrow - the locked 1% rate should be applied, not the current 2% rate
+    AccountInfoResult receiverAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress())
+    );
+
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .account(receiverKeyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(receiverAccountInfo.accountData().sequence())
+      .owner(senderKeyPair.publicKey().deriveAddress())
+      .offerSequence(result.transaction().sequence())
+      .signingPublicKey(receiverKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowFinish> signedEscrowFinish = signatureService.sign(
+      receiverKeyPair.privateKey(), escrowFinish
+    );
+    SubmitResult<EscrowFinish> finishResult = xrplClient.submit(signedEscrowFinish);
+    assertThat(finishResult.engineResult()).isEqualTo("tesSUCCESS");
+    logInfo(
+      finishResult.transactionResult().transaction().transactionType(),
+      finishResult.transactionResult().hash()
+    );
+
+    this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
+
+    // TODO: Verify the receiver received the correct amount with the locked 1% transfer rate applied
+    // This would require checking the receiver's balance and calculating the expected amount after the 1% fee
   }
 
   @Test
@@ -1143,5 +1387,220 @@ public class EscrowIT extends AbstractIT {
     );
 
     this.scanForResult(() -> this.getValidatedTransaction(finishResult.transactionResult().hash(), EscrowFinish.class));
+  }
+
+  @Test
+  void iouEscrowFailsWithoutAllowTrustlineLockingFlag() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////
+    // Create issuer, sender, and receiver accounts
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    //////////////////////
+    // NOTE: We intentionally DO NOT set the ALLOW_TRUSTLINE_LOCKING flag on the issuer
+    // This should cause the EscrowCreate to fail with tecNO_PERMISSION
+
+    //////////////////////
+    // Create trustlines for sender and receiver
+    createTrustLine(
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    createTrustLine(
+      receiverKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Send some IOU tokens to the sender
+    sendIssuedCurrency(
+      issuerKeyPair,
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Try to create an escrow with IOU tokens WITHOUT the ALLOW_TRUSTLINE_LOCKING flag
+    // This should fail with tecNO_PERMISSION
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+
+    UnsignedLong finishAfter = UnsignedLong.valueOf(System.currentTimeMillis() / 1000 + 5);
+    UnsignedLong cancelAfter = finishAfter.plus(UnsignedLong.valueOf(95));
+
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("100")
+        .build())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .cancelAfter(cancelAfter)
+      .finishAfter(finishAfter)
+      .signingPublicKey(senderKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
+    );
+
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
+
+    //////////////////////
+    // Verify the transaction failed with tecNO_PERMISSION
+    assertThat(createResult.engineResult()).isEqualTo("tecNO_PERMISSION");
+    logger.info("EscrowCreate correctly failed with tecNO_PERMISSION when ALLOW_TRUSTLINE_LOCKING flag is not set");
+  }
+
+  @Test
+  void iouEscrowFailsWithFrozenTrustline() throws JsonRpcClientErrorException, JsonProcessingException {
+    //////////////////////
+    // Create issuer, sender, and receiver accounts
+    KeyPair issuerKeyPair = createRandomAccountEd25519();
+    KeyPair senderKeyPair = createRandomAccountEd25519();
+    KeyPair receiverKeyPair = createRandomAccountEd25519();
+
+    FeeResult feeResult = xrplClient.fee();
+
+    //////////////////////
+    // Set ALLOW_TRUSTLINE_LOCKING flag on issuer
+    AccountInfoResult issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    AccountSet enableLocking = AccountSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .setFlag(AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .build();
+
+    SingleSignedTransaction<AccountSet> signedEnableLocking = signatureService.sign(
+      issuerKeyPair.privateKey(), enableLocking
+    );
+    xrplClient.submit(signedEnableLocking);
+    this.scanForResult(() -> this.getValidatedTransaction(signedEnableLocking.hash(), AccountSet.class));
+
+    //////////////////////
+    // Create trustlines for sender and receiver
+    createTrustLine(
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    createTrustLine(
+      receiverKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("10000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Send some IOU tokens to the sender
+    sendIssuedCurrency(
+      issuerKeyPair,
+      senderKeyPair,
+      IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("1000")
+        .build(),
+      FeeUtils.computeNetworkFees(feeResult).recommendedFee()
+    );
+
+    //////////////////////
+    // Freeze the sender's trustline
+    issuerAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    TrustSet freezeTrustline = TrustSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfo.accountData().sequence())
+      .limitAmount(IssuedCurrencyAmount.builder()
+        .issuer(senderKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("0")
+        .build())
+      .flags(TrustSetFlags.builder()
+        .tfSetFreeze()
+        .build())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<TrustSet> signedFreeze = signatureService.sign(
+      issuerKeyPair.privateKey(), freezeTrustline
+    );
+    xrplClient.submit(signedFreeze);
+    this.scanForResult(() -> this.getValidatedTransaction(signedFreeze.hash(), TrustSet.class));
+
+    //////////////////////
+    // Try to create an escrow with frozen IOU tokens
+    // This should fail with tecFROZEN
+    AccountInfoResult senderAccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(senderKeyPair.publicKey().deriveAddress())
+    );
+
+    UnsignedLong finishAfter = UnsignedLong.valueOf(System.currentTimeMillis() / 1000 + 5);
+    UnsignedLong cancelAfter = finishAfter.plus(UnsignedLong.valueOf(95));
+
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(senderKeyPair.publicKey().deriveAddress())
+      .fee(feeResult.drops().openLedgerFee())
+      .sequence(senderAccountInfo.accountData().sequence())
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(issuerKeyPair.publicKey().deriveAddress())
+        .currency("USD")
+        .value("100")
+        .build())
+      .destination(receiverKeyPair.publicKey().deriveAddress())
+      .cancelAfter(cancelAfter)
+      .finishAfter(finishAfter)
+      .signingPublicKey(senderKeyPair.publicKey())
+      .build();
+
+    SingleSignedTransaction<EscrowCreate> signedEscrowCreate = signatureService.sign(
+      senderKeyPair.privateKey(), escrowCreate
+    );
+
+    SubmitResult<EscrowCreate> createResult = xrplClient.submit(signedEscrowCreate);
+
+    //////////////////////
+    // Verify the transaction failed with tecFROZEN
+    assertThat(createResult.engineResult()).isEqualTo("tecFROZEN");
+    logger.info("EscrowCreate correctly failed with tecFROZEN when trustline is frozen");
   }
 }

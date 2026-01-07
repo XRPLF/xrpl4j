@@ -73,8 +73,8 @@ public interface MpTokenObject extends LedgerObject {
   }
 
   /**
-   * The amount of this MPToken that is locked in escrows. This field tracks the total amount
-   * held in escrows for this specific holder.
+   * The amount of this MPToken that is locked in escrows. This field tracks the total amount held in escrows for this
+   * specific holder.
    *
    * @return An optionally-present {@link MpTokenNumericAmount}.
    */

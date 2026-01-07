@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,8 +57,8 @@ public interface EscrowCreate extends Transaction {
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link EscrowCreate}, which only allows the
-   * {@code tfFullyCanonicalSig} flag, which is deprecated.
+   * Set of {@link TransactionFlags}s for this {@link EscrowCreate}, which only allows the {@code tfFullyCanonicalSig}
+   * flag, which is deprecated.
    *
    * <p>The value of the flags cannot be set manually, but exists for JSON serialization/deserialization only and for
    * proper signature computation in rippled.
@@ -72,9 +72,9 @@ public interface EscrowCreate extends Transaction {
   }
 
   /**
-   * Amount of currency to deduct from the sender's balance and escrow. Once escrowed, the funds can either go to
-   * the {@link EscrowCreate#destination()} address (after the {@link EscrowCreate#finishAfter()} time) or returned to
-   * the sender (after the {@link EscrowCreate#cancelAfter()} time).
+   * Amount of tokens to deduct from the sender's balance and escrow. Once escrowed, the tokens can either go to the
+   * {@link EscrowCreate#destination()} address (after the {@link EscrowCreate#finishAfter()} time) or returned to the
+   * sender (after the {@link EscrowCreate#cancelAfter()} time).
    *
    * <p>Can be one of:
    * <ul>
@@ -90,7 +90,7 @@ public interface EscrowCreate extends Transaction {
   CurrencyAmount amount();
 
   /**
-   * Address to receive escrowed funds.
+   * Address to receive escrowed tokens.
    *
    * @return The {@link Address} of the destination account.
    */
@@ -109,7 +109,7 @@ public interface EscrowCreate extends Transaction {
   /**
    * The time, in seconds since the Ripple Epoch, when this escrow expires.
    *
-   * <p>This value is immutable - the funds can only be returned to the sender after this time.
+   * <p>This value is immutable - the tokens can only be returned to the sender after this time.
    *
    * @return An {@link Optional} of type {@link UnsignedLong} representing the cancel after time.
    */
@@ -117,9 +117,9 @@ public interface EscrowCreate extends Transaction {
   Optional<UnsignedLong> cancelAfter();
 
   /**
-   * The time, in seconds since the Ripple Epoch, when the escrowed funds can be released to the recipient.
+   * The time, in seconds since the Ripple Epoch, when the escrowed tokens can be released to the recipient.
    *
-   * <p>This value is immutable - the funds cannot move until this time is reached.
+   * <p>This value is immutable - the tokens cannot move until this time is reached.
    *
    * @return An {@link Optional} of type {@link UnsignedLong} representing the finish after time.
    */
@@ -127,7 +127,7 @@ public interface EscrowCreate extends Transaction {
   Optional<UnsignedLong> finishAfter();
 
   /**
-   * Hex value representing a PREIMAGE-SHA-256 crypto-condition. The funds can only be delivered to the recipient if
+   * Hex value representing a PREIMAGE-SHA-256 crypto-condition. The tokens can only be delivered to the recipient if
    * this condition is fulfilled.
    *
    * @return An {@link Optional} of type {@link Condition} containing the escrow condition.

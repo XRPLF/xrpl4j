@@ -164,8 +164,8 @@ public interface AccountSet extends Transaction {
    * Unique identifier of a flag to enable for this account.
    *
    * <p>If this field is empty, developers should check if {@link #setFlagRawValue()} is also empty. If
-   * {@link #setFlagRawValue()} is present, it means that the {@code ClearFlag} field of the transaction was not a
-   * valid {@link AccountSetFlag} but was still present in a validated transaction on ledger.</p>
+   * {@link #setFlagRawValue()} is present, it means that the {@code ClearFlag} field of the transaction was not a valid
+   * {@link AccountSetFlag} but was still present in a validated transaction on ledger.</p>
    *
    * <p>Because the preferred way of setting account flags is with {@link AccountSetFlag}s, this field should not be
    * set in conjunction with the {@link AccountSet#flags()} field.
@@ -312,8 +312,8 @@ public interface AccountSet extends Transaction {
   Optional<Address> mintAccount();
 
   /**
-   * An arbitrary 256-bit value. If specified, the value is stored as part of the account but has no inherent meaning
-   * or requirements.
+   * An arbitrary 256-bit value. If specified, the value is stored as part of the account but has no inherent meaning or
+   * requirements.
    *
    * @return The 256-bit value as a hex encoded {@link String}.
    */
@@ -474,8 +474,8 @@ public interface AccountSet extends Transaction {
     @Beta
     ALLOW_TRUSTLINE_CLAWBACK(16),
     /**
-     * Allow trust line tokens (IOUs) issued by this account to be held in escrow.
-     * (Requires the TokenEscrow amendment.) Can only be enabled by the issuer account.
+     * Allow trust line tokens (IOUs) issued by this account to be held in escrow. (Requires the TokenEscrow amendment.)
+     * Can only be enabled by the issuer account.
      *
      * <p>This value will be marked {@link Beta} until the TokenEscrow amendment is enabled on mainnet. Its API is
      * subject to change.</p>
@@ -490,8 +490,8 @@ public interface AccountSet extends Transaction {
     }
 
     /**
-     * The maximum underlying value of AccountSetFlags. This is useful for the normalization methods of AccountSet
-     * so that adding a new AccountSetFlag does not require a change to those normalization functions.
+     * The maximum underlying value of AccountSetFlags. This is useful for the normalization methods of AccountSet so
+     * that adding a new AccountSetFlag does not require a change to those normalization functions.
      */
     static final int MAX_VALUE = Collections.max(Arrays.asList(AccountSetFlag.values())).getValue();
 

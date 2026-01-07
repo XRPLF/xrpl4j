@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.tests;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
@@ -155,8 +156,14 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         receiverAccountInfo.accountData().balance()
-          .plus(escrowCreate.amount())
-          .minus(feeResult.drops().openLedgerFee())
+          .plus(escrowCreate.amount()
+            .map(
+              xrpCurrencyAmount -> xrpCurrencyAmount,
+              issuedCurrencyAmount -> fail("Shouldn't be issued currency amount"),
+              mptCurrencyAmount -> fail("Shouldn't be MPT currency amount")
+            )
+            .minus(feeResult.drops().openLedgerFee())
+          )
       )
     );
 
@@ -375,7 +382,13 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         receiverAccountInfo.accountData().balance()
-          .plus(escrowCreate.amount())
+          .plus(escrowCreate.amount()
+            .map(
+              xrpCurrencyAmount -> xrpCurrencyAmount,
+              issuedCurrencyAmount -> fail("Shouldn't be issued currency amount"),
+              mptCurrencyAmount -> fail("Shouldn't be MPT currency amount")
+            )
+          )
           .minus(feeForFulfillment)
       )
     );
@@ -603,7 +616,12 @@ public class EscrowIT extends AbstractIT {
       () -> this.getValidatedAccountInfo(receiverKeyPair.publicKey().deriveAddress()),
       infoResult -> infoResult.accountData().balance().equals(
         receiverAccountInfo.accountData().balance()
-          .plus(escrowCreate.amount())
+          .plus(escrowCreate.amount().map(
+              xrpCurrencyAmount -> xrpCurrencyAmount,
+              issuedCurrencyAmount -> fail("Shouldn't be issued currency amount"),
+              mptCurrencyAmount -> fail("Shouldn't be MPT currency amount")
+            )
+          )
       )
     );
   }

@@ -116,8 +116,8 @@ public interface EscrowObject extends LedgerObject {
    * ten-thousandths of a basis point) from the MPT issuance's {@code TransferFee} setting at the time of escrow
    * creation.
    *
-   * <p>This value is used during {@link EscrowFinish} to apply the correct fee, even if the issuer changes their
-   * transfer rate/fee after the escrow was created.
+   * <p>This value is used during {@link org.xrpl.xrpl4j.model.transactions.EscrowFinish} to apply the correct fee,
+   * even if the issuer changes their transfer rate/fee after the escrow was created.
    *
    * @return An {@link Optional} of type {@link UnsignedInteger} representing the locked transfer rate or fee.
    */

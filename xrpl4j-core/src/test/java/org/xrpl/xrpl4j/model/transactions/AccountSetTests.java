@@ -389,4 +389,57 @@ public class AccountSetTests {
 
     assertThat(accountSet.tickSize()).isNotEmpty().get().isEqualTo(UnsignedInteger.ZERO);
   }
+
+  @ParameterizedTest
+  @MethodSource("accountSetFlags")
+  void testForValueIfValidReturnsValueForKnownFlags(AccountSetFlag accountSetFlag) {
+    assertThat(AccountSetFlag.forValueIfValid(accountSetFlag.getValue()))
+      .isPresent()
+      .hasValue(accountSetFlag);
+  }
+
+  @Test
+  void testForValueIfValidReturnsEmptyForUnknownFlags() {
+    // Value 11 is reserved for Hooks amendment (asfTshCollect) but not yet a valid enum value
+    assertThat(AccountSetFlag.forValueIfValid(11)).isEmpty();
+    // Value 17 is greater than MAX_VALUE
+    assertThat(AccountSetFlag.forValueIfValid(AccountSetFlag.MAX_VALUE + 1)).isEmpty();
+    // Negative values should also return empty
+    assertThat(AccountSetFlag.forValueIfValid(-1)).isEmpty();
+  }
+
+  @Test
+  void testForValueThrowsForUnknownFlags() {
+    // Value 11 is reserved for Hooks amendment (asfTshCollect) but not yet a valid enum value
+    assertThatThrownBy(() -> AccountSetFlag.forValue(11))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("No matching AccountSetFlag enum value for int value 11");
+  }
+
+  /**
+   * Tests that AccountSet transactions with flag value 11 (reserved for Hooks amendment) can be
+   * properly constructed. This is a regression test for the bug where deserializing a ledger
+   * containing an AccountSet with SetFlag=11 would throw an IllegalArgumentException.
+   */
+  @Test
+  void testWithReservedFlagValue11() {
+    // Value 11 is reserved for the Hooks amendment (asfTshCollect) and is not yet a valid
+    // AccountSetFlag enum value, but transactions with this flag value exist on testnet.
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlagRawValue(UnsignedInteger.valueOf(11))
+      .clearFlagRawValue(UnsignedInteger.valueOf(11))
+      .build();
+
+    // setFlag and clearFlag should be empty since 11 is not a valid AccountSetFlag
+    assertThat(accountSet.setFlag()).isEmpty();
+    assertThat(accountSet.clearFlag()).isEmpty();
+    // But the raw values should be preserved
+    assertThat(accountSet.setFlagRawValue()).isPresent();
+    assertThat(accountSet.setFlagRawValue().get()).isEqualTo(UnsignedInteger.valueOf(11));
+    assertThat(accountSet.clearFlagRawValue()).isPresent();
+    assertThat(accountSet.clearFlagRawValue().get()).isEqualTo(UnsignedInteger.valueOf(11));
+  }
 }

@@ -214,5 +214,3 @@ All existing XRP escrow functionality remains fully backward compatible:
 ## Additional Resources
 
 - **XLS-0085 Specification**: https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0085-token-escrow
-- **Development Plan**: See `TOKEN_ESCROW_DEVELOPMENT_PLAN.md` for implementation details
-- **Quick Reference**: See `TOKEN_ESCROW_QUICK_REFERENCE.md` for code examples and validation rules

@@ -318,7 +318,7 @@ public class AccountSetJsonTests extends AbstractJsonTest {
    * properly deserialized and serialized. This is a regression test for the bug where deserializing
    * a ledger containing an AccountSet with SetFlag=11 would throw an IllegalArgumentException.
    *
-   * @see <a href="https://github.com/XRPLF/xrpl4j/issues/XXX">GitHub Issue</a>
+   * @see <a href="https://github.com/XRPLF/xrpl4j/issues/640">GitHub Issue</a>
    */
   @Test
   void testJsonWithReservedFlagValue11() throws JSONException, JsonProcessingException {

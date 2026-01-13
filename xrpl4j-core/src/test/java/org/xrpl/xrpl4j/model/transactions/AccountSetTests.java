@@ -390,6 +390,36 @@ public class AccountSetTests {
     assertThat(accountSet.tickSize()).isNotEmpty().get().isEqualTo(UnsignedInteger.ZERO);
   }
 
+  @Test
+  public void testAllowTrustlineLockingFlag() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .setFlag(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .build();
+
+    assertThat(accountSet.setFlag()).isNotEmpty().get()
+      .isEqualTo(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING);
+    assertThat(accountSet.setFlagRawValue()).isNotEmpty().get()
+      .isEqualTo(UnsignedInteger.valueOf(17));
+  }
+
+  @Test
+  public void testClearAllowTrustlineLockingFlag() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.valueOf(5))
+      .clearFlag(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING)
+      .build();
+
+    assertThat(accountSet.clearFlag()).isNotEmpty().get()
+      .isEqualTo(AccountSet.AccountSetFlag.ALLOW_TRUSTLINE_LOCKING);
+    assertThat(accountSet.clearFlagRawValue()).isNotEmpty().get()
+      .isEqualTo(UnsignedInteger.valueOf(17));
+  }
+
   @ParameterizedTest
   @MethodSource("accountSetFlags")
   void testForValueIfValidReturnsValueForKnownFlags(AccountSetFlag accountSetFlag) {

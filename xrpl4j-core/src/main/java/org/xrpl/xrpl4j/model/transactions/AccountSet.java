@@ -470,7 +470,16 @@ public interface AccountSet extends Transaction {
      * to change.</p>
      */
     @Beta
-    ALLOW_TRUSTLINE_CLAWBACK(16);
+    ALLOW_TRUSTLINE_CLAWBACK(16),
+    /**
+     * Allow trust line tokens (IOUs) issued by this account to be held in escrow. (Requires the TokenEscrow amendment.)
+     * Can only be enabled by the issuer account.
+     *
+     * <p>This value will be marked {@link Beta} until the TokenEscrow amendment is enabled on mainnet. Its API is
+     * subject to change.</p>
+     */
+    @Beta
+    ALLOW_TRUSTLINE_LOCKING(17);
 
     final int value;
 

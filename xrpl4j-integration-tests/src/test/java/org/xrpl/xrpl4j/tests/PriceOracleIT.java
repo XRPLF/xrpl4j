@@ -270,7 +270,7 @@ public class PriceOracleIT extends AbstractIT {
           .build(),
         LedgerSpecifier.VALIDATED
       )
-    )).isInstanceOf(JsonRpcClientErrorException.class).hasMessage("entryNotFound (n/a)");
+    )).isInstanceOf(JsonRpcClientErrorException.class).hasMessage("entryNotFound (Entry not found.)");
   }
 
   @Test

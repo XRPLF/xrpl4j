@@ -48,7 +48,17 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Deliver XRP from a held payment to the recipient.
+ * Deliver XRP, IOU tokens, or MPT tokens from a held payment to the recipient.
+ *
+ * <p>With the TokenEscrow amendment enabled, this transaction can finish escrows containing:
+ * <ul>
+ *   <li>XRP (as before)</li>
+ *   <li>IOU tokens (trustline-based tokens)</li>
+ *   <li>MPT tokens (Multi-Purpose Tokens)</li>
+ * </ul>
+ *
+ * <p>Note: The transfer rate or transfer fee is locked at escrow creation time and applied during settlement,
+ * even if the issuer changes the rate after the escrow was created.
  */
 @Value.Immutable
 @JsonSerialize(as = ImmutableEscrowFinish.class)

@@ -33,6 +33,9 @@ import org.xrpl.xrpl4j.model.AbstractJsonTest;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.EscrowCreate;
+import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.NetworkId;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
@@ -195,6 +198,92 @@ public class EscrowCreateJsonTest extends AbstractJsonTest {
       "  \"CancelAfter\": 533257958," +
       "  \"FinishAfter\": 533171558," +
       "  \"Condition\": \"A0258020E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855810100\"," +
+      "  \"DestinationTag\": 23480," +
+      "  \"SourceTag\": 11747," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"NetworkID\": 1024," +
+      "  \"Fee\": \"12\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(escrowCreate, json);
+  }
+
+  @Test
+  public void testEscrowCreateJsonWithIssuedCurrency() throws JsonProcessingException, JSONException {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .amount(IssuedCurrencyAmount.builder()
+        .issuer(Address.of("rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk"))
+        .currency("USD")
+        .value("100.50")
+        .build())
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .destinationTag(UnsignedInteger.valueOf(23480))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .finishAfter(UnsignedLong.valueOf(533171558))
+      .sourceTag(UnsignedInteger.valueOf(11747))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .networkId(NetworkId.of(1024))
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\"," +
+      "  \"TransactionType\": \"EscrowCreate\"," +
+      "  \"Amount\": {" +
+      "    \"currency\": \"USD\"," +
+      "    \"issuer\": \"rN7n7otQDd6FczFgLdlqtyMVrn3HMfXEkk\"," +
+      "    \"value\": \"100.50\"" +
+      "  }," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"CancelAfter\": 533257958," +
+      "  \"FinishAfter\": 533171558," +
+      "  \"DestinationTag\": 23480," +
+      "  \"SourceTag\": 11747," +
+      "  \"Sequence\": 1," +
+      "  \"SigningPubKey\" : \"02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC\"," +
+      "  \"NetworkID\": 1024," +
+      "  \"Fee\": \"12\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(escrowCreate, json);
+  }
+
+  @Test
+  public void testEscrowCreateJsonWithMptCurrency() throws JsonProcessingException, JSONException {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .amount(MptCurrencyAmount.builder()
+        .mptIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
+        .value("1000")
+        .build())
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .destinationTag(UnsignedInteger.valueOf(23480))
+      .cancelAfter(UnsignedLong.valueOf(533257958))
+      .finishAfter(UnsignedLong.valueOf(533171558))
+      .sourceTag(UnsignedInteger.valueOf(11747))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .networkId(NetworkId.of(1024))
+      .build();
+
+    String json = "{" +
+      "  \"Account\": \"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn\"," +
+      "  \"TransactionType\": \"EscrowCreate\"," +
+      "  \"Amount\": {" +
+      "    \"mpt_issuance_id\": \"00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41\"," +
+      "    \"value\": \"1000\"" +
+      "  }," +
+      "  \"Destination\": \"rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW\"," +
+      "  \"CancelAfter\": 533257958," +
+      "  \"FinishAfter\": 533171558," +
       "  \"DestinationTag\": 23480," +
       "  \"SourceTag\": 11747," +
       "  \"Sequence\": 1," +

@@ -347,6 +347,6 @@ public class PermissionedDomainIT extends AbstractIT {
         LedgerSpecifier.VALIDATED
       )
     )).isInstanceOf(JsonRpcClientErrorException.class)
-      .hasMessage("entryNotFound (n/a)");
+      .hasMessage("entryNotFound (Entry not found.)");
   }
 }

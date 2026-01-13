@@ -105,6 +105,16 @@ public interface MpTokenIssuanceObject extends LedgerObject {
   MpTokenNumericAmount outstandingAmount();
 
   /**
+   * The total amount of this MPT that is locked in escrows across all holders.
+   * This field tracks the aggregate amount held in escrows for this issuance.
+   * Note that {@link #outstandingAmount()} remains unchanged during escrow operations.
+   *
+   * @return An optionally-present {@link MpTokenNumericAmount}.
+   */
+  @JsonProperty("LockedAmount")
+  Optional<MpTokenNumericAmount> lockedAmount();
+
+  /**
    * Arbitrary hex-encoded metadata about this issuance.
    *
    * @return An optionally-present {@link MpTokenMetadata}.

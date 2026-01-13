@@ -146,17 +146,16 @@ public interface AccountSet extends Transaction {
       // This can happen if:
       //   1. A developer sets clearFlagRawValue manually in the builder
       //   2. JSON has ClearFlag and jackson sets clearFlagRawValue.
-      // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
-      // so no lower bound check is required.
-      if (clearFlagRawValue().get().longValue() <= AccountSetFlag.MAX_VALUE) {
-        // Set clearFlag to clearFlagRawValue if clearFlagRawValue matches a valid AccountSetFlag variant.
-        return AccountSet.builder().from(this)
-          .clearFlag(AccountSetFlag.forValue(clearFlagRawValue().get().intValue()))
-          .build();
-      } else {
-        // Otherwise, leave clearFlag empty.
-        return this;
-      }
+      // Try to set clearFlag to clearFlagRawValue if clearFlagRawValue matches a valid AccountSetFlag variant.
+      // If the value doesn't correspond to a known AccountSetFlag (e.g., value 11 which is reserved for Hooks),
+      // leave clearFlag empty.
+      return AccountSetFlag.forValueIfValid(clearFlagRawValue().get().intValue())
+        .map(flag -> AccountSet.builder()
+          .from(this)
+          .clearFlag(flag)
+          .build()
+        )
+        .orElse((ImmutableAccountSet) this);
     }
   }
 
@@ -238,18 +237,17 @@ public interface AccountSet extends Transaction {
     } else { // setFlag is empty and setFlagRawValue is present
       // This can happen if:
       //   1. A developer sets setFlagRawValue manually in the builder
-      //   2. JSON has ClearFlag and jackson sets setFlagRawValue.
-      // This value will never be negative due to XRPL representing this kind of flag as an unsigned number,
-      // so no lower bound check is required.
-      if (setFlagRawValue().get().longValue() <= AccountSetFlag.MAX_VALUE) {
-        // Set setFlag to setFlagRawValue if setFlagRawValue matches a valid AccountSetFlag variant.
-        return AccountSet.builder().from(this)
-          .setFlag(AccountSetFlag.forValue(setFlagRawValue().get().intValue()))
-          .build();
-      } else {
-        // Otherwise, leave setFlag empty.
-        return this;
-      }
+      //   2. JSON has SetFlag and jackson sets setFlagRawValue.
+      // Try to set setFlag to setFlagRawValue if setFlagRawValue matches a valid AccountSetFlag variant.
+      // If the value doesn't correspond to a known AccountSetFlag (e.g., value 11 which is reserved for Hooks),
+      // leave setFlag empty.
+      return AccountSetFlag.forValueIfValid(setFlagRawValue().get().intValue())
+        .map(flag -> AccountSet.builder()
+          .from(this)
+          .setFlag(flag)
+          .build()
+        )
+        .orElse((ImmutableAccountSet) this);
     }
   }
 
@@ -257,8 +255,8 @@ public interface AccountSet extends Transaction {
    * The hex string of the lowercase ASCII of the domain for the account. For example, the domain example.com would be
    * represented as "6578616D706C652E636F6D".
    *
-   * <p>To remove the Domain field from an account, send an {@link AccountSet} with the {@link AccountSet#domain()}
-   * set to an empty string.
+   * <p>To remove the Domain field from an account, send an {@link AccountSet} with this domain field set to an empty
+   * string.
    *
    * @return An {@link Optional} of type {@link String} containing the domain.
    */
@@ -503,6 +501,7 @@ public interface AccountSet extends Transaction {
      *
      * @return The {@link AccountSetFlag} for the given integer value.
      *
+     * @throws IllegalArgumentException if no matching {@link AccountSetFlag} exists for the given value.
      * @see "https://github.com/FasterXML/jackson-databind/issues/1850"
      */
     @JsonCreator
@@ -514,6 +513,27 @@ public interface AccountSet extends Transaction {
       }
 
       throw new IllegalArgumentException("No matching AccountSetFlag enum value for int value " + value);
+    }
+
+    /**
+     * Get the {@link AccountSetFlag} for the given integer value, if one exists.
+     *
+     * <p>This method is useful when you need to check if a value corresponds to a known {@link AccountSetFlag}
+     * without throwing an exception for unknown values (e.g., values reserved for future amendments like value 11 which
+     * is reserved for the Hooks amendment).</p>
+     *
+     * @param value The int value of the flag.
+     *
+     * @return An {@link Optional} containing the {@link AccountSetFlag} if one exists for the given value, or
+     *   {@link Optional#empty()} if no matching flag exists.
+     */
+    public static Optional<AccountSetFlag> forValueIfValid(int value) {
+      for (AccountSetFlag flag : AccountSetFlag.values()) {
+        if (flag.value == value) {
+          return Optional.of(flag);
+        }
+      }
+      return Optional.empty();
     }
 
     /**

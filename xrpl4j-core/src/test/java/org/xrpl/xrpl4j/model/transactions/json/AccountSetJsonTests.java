@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.primitives.UnsignedInteger;
@@ -302,6 +304,54 @@ public class AccountSetJsonTests extends AbstractJsonTest {
       "    \"Sequence\": 40232131,\n" +
       "    \"SetFlag\": 4294967295,\n" +
       "    \"ClearFlag\": 4294967295,\n" +
+      "    \"SigningPubKey\": \"ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A\",\n" +
+      "    \"TransactionType\": \"AccountSet\",\n" +
+      "    \"TxnSignature\": \"8D0915449FB617234DD54E1BA79136B50C4439696BB4287FCA25717F3FD4875D5A1FEE6269B" +
+      "91D71D9306B48DECAAE1F1C91CAD1AAD0E0D683DC11E68212740E\"" +
+      "}";
+
+    assertCanSerializeAndDeserialize(accountSet, json);
+  }
+
+  /**
+   * Tests that AccountSet transactions with flag value 11 (reserved for Hooks amendment) can be
+   * properly deserialized and serialized. This is a regression test for the bug where deserializing
+   * a ledger containing an AccountSet with SetFlag=11 would throw an IllegalArgumentException.
+   *
+   * @see <a href="https://github.com/XRPLF/xrpl4j/issues/640">GitHub Issue</a>
+   */
+  @Test
+  void testJsonWithReservedFlagValue11() throws JSONException, JsonProcessingException {
+    // Value 11 is reserved for the Hooks amendment (asfTshCollect) and is not yet a valid
+    // AccountSetFlag enum value, but transactions with this flag value exist on testnet.
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("rhyg7sn3ZQj9aja9CBuLETFKdkG9Fte7ck"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(40232131))
+      .setFlagRawValue(UnsignedInteger.valueOf(11))
+      .clearFlagRawValue(UnsignedInteger.valueOf(11))
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A"
+      ))
+      .transactionSignature(Signature.fromBase16("8D0915449FB617234DD54E1BA79136B50C4439696BB4287F" +
+        "CA25717F3FD4875D5A1FEE6269B91D71D9306B48DECAAE1F1C91CAD1AAD0E0D683DC11E68212740E"))
+      .build();
+
+    // Verify that setFlag and clearFlag are empty (since 11 is not a valid AccountSetFlag)
+    assertThat(accountSet.setFlag()).isEmpty();
+    assertThat(accountSet.clearFlag()).isEmpty();
+    // But the raw values should be preserved
+    assertThat(accountSet.setFlagRawValue()).isPresent();
+    assertThat(accountSet.setFlagRawValue().get()).isEqualTo(UnsignedInteger.valueOf(11));
+    assertThat(accountSet.clearFlagRawValue()).isPresent();
+    assertThat(accountSet.clearFlagRawValue().get()).isEqualTo(UnsignedInteger.valueOf(11));
+
+    String json = "{\n" +
+      "    \"Account\": \"rhyg7sn3ZQj9aja9CBuLETFKdkG9Fte7ck\",\n" +
+      "    \"Fee\": \"15\",\n" +
+      "    \"Sequence\": 40232131,\n" +
+      "    \"SetFlag\": 11,\n" +
+      "    \"ClearFlag\": 11,\n" +
       "    \"SigningPubKey\": \"ED03FCED79BB3699089BC3F0F57BBD9F9ABA4772C20EC14BFAE908B4299344194A\",\n" +
       "    \"TransactionType\": \"AccountSet\",\n" +
       "    \"TxnSignature\": \"8D0915449FB617234DD54E1BA79136B50C4439696BB4287FCA25717F3FD4875D5A1FEE6269B" +

@@ -117,7 +117,8 @@ class NegativeTransactionMetadataTest {
    */
   @ParameterizedTest
   @ValueSource(strings = {
-    "ledger-result-94084608.json" // <-- See https://github.com/XRPLF/xrpl4j/issues/590
+    "ledger-result-94084608.json", // <-- See https://github.com/XRPLF/xrpl4j/issues/590
+    "ledger-result-13037843.json" // <-- See https://github.com/XRPLF/xrpl4j/issues/640
   })
   void deserializeLedgerResultWithSpecialObjects(String ledgerResultFileName) throws IOException {
     Objects.requireNonNull(ledgerResultFileName);

@@ -1,0 +1,140 @@
+{
+  "ledger_hash": "F672B5F8658D58639479A013225702CDC9BEDC55C482091ECB2F92210478B4DB",
+  "ledger_index": 13037843,
+  "validated": true,
+  "ledger": {
+    "account_hash": "BDC31E62B2453C710C88F3BF71080133A16E52843793DE05AA45F5099B046353",
+    "close_flags": 0,
+    "close_time": 483126290,
+    "close_time_human": "2015-Apr-23 17:44:50.000000000 UTC",
+    "close_time_resolution": 10,
+    "close_time_iso": "2015-04-23T17:44:50Z",
+    "ledger_hash": "F672B5F8658D58639479A013225702CDC9BEDC55C482091ECB2F92210478B4DB",
+    "parent_close_time": 483126290,
+    "parent_hash": "6AC76B4ED9DD853FF56FC8AECB6EA015A09025DA4BAC5E1BBA5F784705EE345B",
+    "total_coins": "99999130104974366",
+    "transaction_hash": "F856188565B8D2C2A3ECB30FEC0890C21D3C4CABEE0057BD3034500DA953F967",
+    "ledger_index": "13037843",
+    "closed": true,
+    "transactions": [
+      {
+        "_description": "Set the asfTshCollect flag on an account to test #640",
+        "TransactionType": "AccountSet",
+        "Account": "rfCFLzNJYvvnoGHWQYACmJpTgkLUaugLEw",
+        "Fee": "12",
+        "Sequence": 5015086,
+        "SetFlag": 11,
+        "Flags": 2147483648,
+        "OfferSequence": 17364889,
+        "SigningPubKey": "025718736160FA6632F48EA4354A35AB0340F8D7DC7083799B9C57C3E937D71851",
+        "TxnSignature": "304502210090986D64C16F4D0A3B8A40DD5E0DD3C30FA9688EFDD5F8AAB2D5AD3C9F2332BC02203256A4B280AE84660EAC05957AF9CF98A6B8B847F4B964FAF7A17052786557A6",
+        "hash": "09BD561F981E9F29B8DA0BDE37AEF0559EDCB4E0F51520967E10A3072FA597A9",
+        "metaData": {
+          "AffectedNodes": [
+            {
+              "DeletedNode": {
+                "FinalFields": {
+                  "ExchangeRate": "4f1e90a392ca26e2",
+                  "Flags": 0,
+                  "RootIndex": "1631FB5AAD5341DE2F2F71C99514111971A116EDDA351B7F4F1E90A392CA26E2",
+                  "TakerGetsCurrency": "0000000000000000000000000000000000000000",
+                  "TakerGetsIssuer": "0000000000000000000000000000000000000000",
+                  "TakerPaysCurrency": "0000000000000000000000004B52570000000000",
+                  "TakerPaysIssuer": "80DC3C16EAE6E6FEF45271D30CBDD1D1D0C73AA5"
+                },
+                "LedgerEntryType": "DirectoryNode",
+                "LedgerIndex": "1631FB5AAD5341DE2F2F71C99514111971A116EDDA351B7F4F1E90A392CA26E2"
+              }
+            },
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Flags": 0,
+                  "IndexPrevious": "8b",
+                  "Owner": "rHsZHqa5oMQNL5hFm4kfLd47aEMYjPstpg",
+                  "RootIndex": "B65B458CE90B410C20AC46F87480569F661F3AB426FF773B2EEB4E75947A5FD6"
+                },
+                "LedgerEntryType": "DirectoryNode",
+                "LedgerIndex": "4AA00809E029BFF3CE935377C975FE70E6DB404CBA808EA29D768B1D5ECA7B03"
+              }
+            },
+            {
+              "DeletedNode": {
+                "FinalFields": {
+                  "Account": "rHsZHqa5oMQNL5hFm4kfLd47aEMYjPstpg",
+                  "BookDirectory": "1631FB5AAD5341DE2F2F71C99514111971A116EDDA351B7F4F1E90A392CA26E2",
+                  "BookNode": "0",
+                  "Flags": 0,
+                  "OwnerNode": "9c",
+                  "PreviousTxnID": "3D59942EF875ADAC648E5DAEF6BF9BDC7822AB817EE946AB6E52F05AABE99017",
+                  "PreviousTxnLgrSeq": 13037839,
+                  "Sequence": 17364889,
+                  "TakerGets": "4021962556",
+                  "TakerPays": {
+                    "currency": "KRW",
+                    "issuer": "rUkMKjQitpgAM5WTGk79xpjT38DEJY283d",
+                    "value": "34602.076124567"
+                  }
+                },
+                "LedgerEntryType": "Offer",
+                "LedgerIndex": "6F57BA32AC3D00ADA8271B0B47A8CC872D46AE15D0BE5116F90AE8FD20BAB143"
+              }
+            },
+            {
+              "CreatedNode": {
+                "LedgerEntryType": "DirectoryNode",
+                "LedgerIndex": "7254404DF6B7FBFFEF34DC38867A7E7DE610B513997B78804D11B0687EEA4988",
+                "NewFields": {
+                  "ExchangeRate": "4d11b0687eea4988",
+                  "RootIndex": "7254404DF6B7FBFFEF34DC38867A7E7DE610B513997B78804D11B0687EEA4988",
+                  "TakerPaysCurrency": "000000000000000000000000434E590000000000",
+                  "TakerPaysIssuer": "41C8BE2C0A6AA17471B9F6D0AF92AAB1C94D5A25"
+                }
+              }
+            },
+            {
+              "CreatedNode": {
+                "LedgerEntryType": "Offer",
+                "LedgerIndex": "92345342A11CEAF9C8EACA8D4E03458A6261A4012E2E91AF2D0C34ECF580E8EC",
+                "NewFields": {
+                  "Account": "rHsZHqa5oMQNL5hFm4kfLd47aEMYjPstpg",
+                  "BookDirectory": "7254404DF6B7FBFFEF34DC38867A7E7DE610B513997B78804D11B0687EEA4988",
+                  "OwnerNode": "9c",
+                  "Sequence": 17364891,
+                  "TakerGets": "39999999999",
+                  "TakerPays": {
+                    "currency": "CNY",
+                    "issuer": "razqQKzJRdB4UxFPWf5NEpEG3WMkmwgcXA",
+                    "value": "1991.614982531"
+                  }
+                }
+              }
+            },
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "rHsZHqa5oMQNL5hFm4kfLd47aEMYjPstpg",
+                  "Balance": "448562224804",
+                  "Flags": 0,
+                  "OwnerCount": 52,
+                  "Sequence": 17364892
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "B79D156918390AC41C4DDE5F181417D55B01D0D183ACBB1B892FF163C5BC8344",
+                "PreviousFields": {
+                  "Balance": "448562235804",
+                  "Sequence": 17364891
+                },
+                "PreviousTxnID": "5A1061C98BF9BF1C12AB86261BD8AA1E58BFC8F79AA69FABE5408E9EB22B73A7",
+                "PreviousTxnLgrSeq": 13037840
+              }
+            }
+          ],
+          "TransactionIndex": 0,
+          "TransactionResult": "tesSUCCESS"
+        }
+      }
+    ]
+  },
+  "status": "success"
+}

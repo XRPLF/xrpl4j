@@ -12,6 +12,12 @@ public class MpTokenAuthorizeFlags extends TransactionFlags {
    */
   public static final MpTokenAuthorizeFlags UNAUTHORIZE = new MpTokenAuthorizeFlags(0x00000001);
 
+  /**
+   * Constant {@link MpTokenAuthorizeFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final MpTokenAuthorizeFlags INNER_BATCH_TXN = new MpTokenAuthorizeFlags(
+    TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private MpTokenAuthorizeFlags(long value) {
     super(value);
   }
@@ -40,6 +46,15 @@ public class MpTokenAuthorizeFlags extends TransactionFlags {
    */
   public boolean tfMptUnauthorize() {
     return this.isSet(UNAUTHORIZE);
+  }
+
+  /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
   }
 
 }

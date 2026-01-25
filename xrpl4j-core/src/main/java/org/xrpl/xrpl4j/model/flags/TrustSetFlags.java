@@ -24,8 +24,7 @@ import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
 
 /**
- * A set of static {@link TransactionFlags} which can be set on {@link TrustSet}
- * transactions.
+ * A set of static {@link TransactionFlags} which can be set on {@link TrustSet} transactions.
  */
 public class TrustSetFlags extends TransactionFlags {
 
@@ -69,6 +68,14 @@ public class TrustSetFlags extends TransactionFlags {
    */
   protected static final TrustSetFlags CLEAR_DEEP_FREEZE = new TrustSetFlags(0x00800000);
 
+  /**
+   * Constant {@link TrustSetFlags} for the {@code tfInnerBatchTxn} flag. This flag is used to indicate that a
+   * transaction is an inner transaction of a Batch.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public static final TrustSetFlags INNER_BATCH_TXN = new TrustSetFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private TrustSetFlags(long value) {
     super(value);
   }
@@ -93,7 +100,8 @@ public class TrustSetFlags extends TransactionFlags {
     boolean tfSetFreeze,
     boolean tfClearFreeze,
     boolean tfSetDeepFreeze,
-    boolean tfClearDeepFreeze
+    boolean tfClearDeepFreeze,
+    boolean tfInnerBatchTxn
   ) {
     return new TrustSetFlags(
       Flags.of(
@@ -104,7 +112,8 @@ public class TrustSetFlags extends TransactionFlags {
         tfSetFreeze ? SET_FREEZE : UNSET,
         tfClearFreeze ? CLEAR_FREEZE : UNSET,
         tfSetDeepFreeze ? SET_DEEP_FREEZE : UNSET,
-        tfClearDeepFreeze ? CLEAR_DEEP_FREEZE : UNSET).getValue()
+        tfClearDeepFreeze ? CLEAR_DEEP_FREEZE : UNSET,
+        tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN : UNSET).getValue()
     );
   }
 
@@ -120,8 +129,8 @@ public class TrustSetFlags extends TransactionFlags {
   }
 
   /**
-   * Construct an empty instance of {@link TrustSetFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link TrustSetFlags}. Transactions with empty flags will not be serialized with a
+   * {@code Flags} field.
    *
    * @return An empty {@link TrustSetFlags}.
    */
@@ -149,8 +158,8 @@ public class TrustSetFlags extends TransactionFlags {
   }
 
   /**
-   * Enable the No Ripple flag, which blocks rippling between two trust lines of the same currency if this
-   * flag is enabled on both.
+   * Enable the No Ripple flag, which blocks rippling between two trust lines of the same currency if this flag is
+   * enabled on both.
    *
    * @return {@code true} if {@code tfSetNoRipple} is set, otherwise {@code false}.
    */
@@ -195,7 +204,8 @@ public class TrustSetFlags extends TransactionFlags {
   }
 
   /**
-   * <a href="https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0077-deep-freeze">Clear deep freeze</a> on the trust line.
+   * <a href="https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0077-deep-freeze">Clear deep freeze</a> on the
+   * trust line.
    *
    * @return {@code true} if {@code tfClearDeepFreeze} is set, otherwise {@code false}.
    */
@@ -204,9 +214,21 @@ public class TrustSetFlags extends TransactionFlags {
   }
 
   /**
+   * Indicates that this transaction is an inner transaction of a Batch transaction.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(TrustSetFlags.INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link TrustSetFlags}.
    */
   public static class Builder {
+
     private boolean tfSetfAuth = false;
     private boolean tfSetNoRipple = false;
     private boolean tfClearNoRipple = false;
@@ -214,6 +236,7 @@ public class TrustSetFlags extends TransactionFlags {
     private boolean tfClearFreeze = false;
     private boolean tfSetDeepFreeze = false;
     private boolean tfClearDeepFreeze = false;
+    private boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfSetfAuth} to the given value.
@@ -288,6 +311,18 @@ public class TrustSetFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link TrustSetFlags} from the current boolean values.
      *
      * @return A new {@link TrustSetFlags}.
@@ -301,7 +336,8 @@ public class TrustSetFlags extends TransactionFlags {
         tfSetFreeze,
         tfClearFreeze,
         tfSetDeepFreeze,
-        tfClearDeepFreeze
+        tfClearDeepFreeze,
+        tfInnerBatchTxn
       );
     }
   }

@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class TrustSetFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(7);
+    return getBooleanCombinations(8);
   }
 
   @ParameterizedTest
@@ -46,10 +46,12 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetFreeze,
     boolean tfClearFreeze,
     boolean tfSetDeepFreeze,
-    boolean tfClearDeepFreeze
+    boolean tfClearDeepFreeze,
+    boolean tfInnerBatchTxn
   ) {
     TrustSetFlags.Builder builder = TrustSetFlags.builder()
-      .tfSetfAuth(tfSetfAuth);
+      .tfSetfAuth(tfSetfAuth)
+      .tfInnerBatchTxn(tfInnerBatchTxn);
 
     if (tfSetNoRipple) {
       builder.tfSetNoRipple();
@@ -84,7 +86,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       tfSetFreeze,
       tfClearFreeze,
       tfSetDeepFreeze,
-      tfClearDeepFreeze
+      tfClearDeepFreeze,
+      tfInnerBatchTxn
     );
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
   }
@@ -98,7 +101,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetFreeze,
     boolean tfClearFreeze,
     boolean tfSetDeepFreeze,
-    boolean tfClearDeepFreeze
+    boolean tfClearDeepFreeze,
+    boolean tfInnerBatchTxn
   ) {
     long expectedFlags = getExpectedFlags(
       tfSetfAuth,
@@ -107,7 +111,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       tfSetFreeze,
       tfClearFreeze,
       tfSetDeepFreeze,
-      tfClearDeepFreeze
+      tfClearDeepFreeze,
+      tfInnerBatchTxn
     );
     TrustSetFlags flags = TrustSetFlags.of(expectedFlags);
 
@@ -120,6 +125,7 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfClearFreeze()).isEqualTo(tfClearFreeze);
     assertThat(flags.tfSetDeepFreeze()).isEqualTo(tfSetDeepFreeze);
     assertThat(flags.tfClearDeepFreeze()).isEqualTo(tfClearDeepFreeze);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -134,6 +140,7 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfClearFreeze()).isFalse();
     assertThat(flags.tfSetDeepFreeze()).isFalse();
     assertThat(flags.tfClearDeepFreeze()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
@@ -147,7 +154,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetFreeze,
     boolean tfClearFreeze,
     boolean tfSetDeepFreeze,
-    boolean tfClearDeepFreeze
+    boolean tfClearDeepFreeze,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     long expectedFlags = getExpectedFlags(
       tfSetfAuth,
@@ -156,7 +164,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       tfSetFreeze,
       tfClearFreeze,
       tfSetDeepFreeze,
-      tfClearDeepFreeze
+      tfClearDeepFreeze,
+      tfInnerBatchTxn
     );
     TrustSetFlags flags = TrustSetFlags.of(expectedFlags);
 
@@ -186,7 +195,8 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     boolean tfSetFreeze,
     boolean tfClearFreeze,
     boolean tfSetDeepFreeze,
-    boolean tfClearDeepFreeze
+    boolean tfClearDeepFreeze,
+    boolean tfInnerBatchTxn
   ) {
     return (TrustSetFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfSetfAuth ? TrustSetFlags.SET_F_AUTH.getValue() : 0L) |
@@ -195,6 +205,7 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
       (tfSetFreeze ? TrustSetFlags.SET_FREEZE.getValue() : 0L) |
       (tfClearFreeze ? TrustSetFlags.CLEAR_FREEZE.getValue() : 0L) |
       (tfSetDeepFreeze ? TrustSetFlags.SET_DEEP_FREEZE.getValue() : 0L) |
-      (tfClearDeepFreeze ? TrustSetFlags.CLEAR_DEEP_FREEZE.getValue() : 0L);
+      (tfClearDeepFreeze ? TrustSetFlags.CLEAR_DEEP_FREEZE.getValue() : 0L) |
+      (tfInnerBatchTxn ? TrustSetFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

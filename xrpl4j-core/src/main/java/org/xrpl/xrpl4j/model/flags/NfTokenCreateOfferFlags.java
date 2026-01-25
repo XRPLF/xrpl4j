@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,12 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
    */
   public static final NfTokenCreateOfferFlags SELL_NFTOKEN = new NfTokenCreateOfferFlags(0x00000001);
 
+  /**
+   * Constant {@link NfTokenCreateOfferFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final NfTokenCreateOfferFlags INNER_BATCH_TXN =
+    new NfTokenCreateOfferFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private NfTokenCreateOfferFlags(long value) {
     super(value);
   }
@@ -48,11 +54,16 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
     return new Builder();
   }
 
-  private static NfTokenCreateOfferFlags of(boolean tfFullyCanonicalSig, boolean tfSellToken) {
+  private static NfTokenCreateOfferFlags of(
+    boolean tfFullyCanonicalSig,
+    boolean tfSellToken,
+    boolean tfInnerBatchTxn
+  ) {
     return new NfTokenCreateOfferFlags(
       TransactionFlags.of(
         tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
-        tfSellToken ? SELL_NFTOKEN : UNSET
+        tfSellToken ? SELL_NFTOKEN : UNSET,
+        tfInnerBatchTxn ? INNER_BATCH_TXN : UNSET
       ).getValue()
     );
   }
@@ -69,8 +80,8 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
   }
 
   /**
-   * Construct an empty instance of {@link NfTokenCreateOfferFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link NfTokenCreateOfferFlags}. Transactions with empty flags will not be
+   * serialized with a {@code Flags} field.
    *
    * @return An empty {@link NfTokenCreateOfferFlags}.
    */
@@ -79,9 +90,8 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
   }
 
   /**
-   * If set, indicates that the minted token may be burned by the issuer even
-   * if the issuer does not currently hold the token. The current holder of
-   * the token may always burn it.
+   * If set, indicates that the minted token may be burned by the issuer even if the issuer does not currently hold the
+   * token. The current holder of the token may always burn it.
    *
    * @return {@code true} if {@code tfBurnable} is set, otherwise {@code false}.
    */
@@ -90,10 +100,21 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
   }
 
   /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link NfTokenCreateOfferFlags}.
    */
   public static class Builder {
+
     boolean tfSellNfToken = false;
+    boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfSellToken} to the given value.
@@ -108,12 +129,24 @@ public class NfTokenCreateOfferFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link NfTokenCreateOfferFlags} from the current boolean values.
      *
      * @return A new {@link NfTokenCreateOfferFlags}.
      */
     public NfTokenCreateOfferFlags build() {
-      return NfTokenCreateOfferFlags.of(true, tfSellNfToken);
+      return NfTokenCreateOfferFlags.of(true, tfSellNfToken, tfInnerBatchTxn);
     }
   }
 }

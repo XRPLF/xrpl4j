@@ -34,33 +34,37 @@ import java.util.stream.Stream;
 public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(4);
+    return getBooleanCombinations(2);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
-    boolean tfSellToken
+    boolean tfSellToken,
+    boolean tfInnerBatchTxn
   ) {
     NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.builder()
       .tfSellToken(tfSellToken)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfSellToken));
+      .isEqualTo(getExpectedFlags(tfSellToken, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
-    boolean tfSellToken
+    boolean tfSellToken,
+    boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfSellToken);
+    long expectedFlags = getExpectedFlags(tfSellToken, tfInnerBatchTxn);
     NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfSellNfToken()).isEqualTo(tfSellToken);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -70,16 +74,19 @@ public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
 
     assertThat(flags.tfSellNfToken()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   void testJson(
-    boolean tfSellToken
+    boolean tfSellToken,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     NfTokenCreateOfferFlags flags = NfTokenCreateOfferFlags.builder()
       .tfSellToken(tfSellToken)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -102,9 +109,11 @@ public class NfTokenCreateOfferFlagsTests  extends AbstractFlagsTest {
   }
 
   private long getExpectedFlags(
-    boolean tfSellToken
+    boolean tfSellToken,
+    boolean tfInnerBatchTxn
   ) {
     return (TransactionFlags.FULLY_CANONICAL_SIG.getValue()) |
-      (tfSellToken ? NfTokenCreateOfferFlags.SELL_NFTOKEN.getValue() : 0L);
+      (tfSellToken ? NfTokenCreateOfferFlags.SELL_NFTOKEN.getValue() : 0L) |
+      (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

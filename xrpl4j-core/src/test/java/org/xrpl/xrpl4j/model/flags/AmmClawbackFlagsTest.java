@@ -15,6 +15,7 @@ class AmmClawbackFlagsTest extends AbstractFlagsTest {
 
     assertThat(flags.tfClawTwoAssets()).isTrue();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isEqualTo(1L);
   }
 
@@ -25,7 +26,17 @@ class AmmClawbackFlagsTest extends AbstractFlagsTest {
 
     assertThat(flags.tfClawTwoAssets()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isZero();
+  }
+
+  @Test
+  void testInnerBatchTxn() {
+    AmmClawbackFlags flags = AmmClawbackFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfClawTwoAssets()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
   }
 
   @Test

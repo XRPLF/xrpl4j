@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,14 @@ public class PaymentFlags extends TransactionFlags {
    */
   protected static final PaymentFlags LIMIT_QUALITY = new PaymentFlags(0x00040000L);
 
+  /**
+   * Constant {@link PaymentFlags} for the {@code tfInnerBatchTxn} flag. This flag is used to indicate that a
+   * transaction is an inner transaction of a Batch.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public static final PaymentFlags INNER_BATCH_TXN = new PaymentFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private PaymentFlags(long value) {
     super(value);
   }
@@ -74,19 +82,25 @@ public class PaymentFlags extends TransactionFlags {
     return new PaymentFlags(value);
   }
 
-  private static PaymentFlags of(boolean tfFullyCanonicalSig, boolean tfNoDirectRipple, boolean tfPartialPayment,
-                                 boolean tfLimitQuality) {
+  private static PaymentFlags of(
+    boolean tfFullyCanonicalSig,
+    boolean tfNoDirectRipple,
+    boolean tfPartialPayment,
+    boolean tfLimitQuality,
+    boolean tfInnerBatchTxn
+  ) {
     return new PaymentFlags(of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
       tfNoDirectRipple ? NO_DIRECT_RIPPLE : UNSET,
       tfPartialPayment ? PARTIAL_PAYMENT : UNSET,
-      tfLimitQuality ? LIMIT_QUALITY : UNSET
+      tfLimitQuality ? LIMIT_QUALITY : UNSET,
+      tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN : UNSET
     ).getValue());
   }
 
   /**
-   * Construct an empty instance of {@link PaymentFlags}. Transactions with empty flags will
-   * not be serialized with a {@code Flags} field.
+   * Construct an empty instance of {@link PaymentFlags}. Transactions with empty flags will not be serialized with a
+   * {@code Flags} field.
    *
    * @return An empty {@link PaymentFlags}.
    */
@@ -95,8 +109,8 @@ public class PaymentFlags extends TransactionFlags {
   }
 
   /**
-   * Do not use the default path; only use paths included in the {@link Payment#paths()} field. This is intended
-   * to force the transaction to take arbitrage opportunities. Most clients do not need this.
+   * Do not use the default path; only use paths included in the {@link Payment#paths()} field. This is intended to
+   * force the transaction to take arbitrage opportunities. Most clients do not need this.
    *
    * @return {@code true} if {@code tfNoDirectRipple} is set, otherwise {@code false}.
    */
@@ -105,11 +119,11 @@ public class PaymentFlags extends TransactionFlags {
   }
 
   /**
-   * If the specified {@link Payment#amount()} cannot be sent without spending
-   * more than {@link Payment#sendMax()}, reduce the received amount instead of
-   * failing outright.
+   * If the specified {@link Payment#amount()} cannot be sent without spending more than {@link Payment#sendMax()},
+   * reduce the received amount instead of failing outright.
    *
    * @return {@code true} if {@code tfPartialPayment} is set, otherwise {@code false}.
+   *
    * @see "https://xrpl.org/partial-payments.html"
    */
   public boolean tfPartialPayment() {
@@ -127,6 +141,17 @@ public class PaymentFlags extends TransactionFlags {
   }
 
   /**
+   * Indicates that this transaction is an inner transaction of a Batch transaction.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(PaymentFlags.INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link PaymentFlags} flags.
    */
   public static class Builder {
@@ -134,6 +159,7 @@ public class PaymentFlags extends TransactionFlags {
     private boolean tfNoDirectRipple = false;
     private boolean tfPartialPayment = false;
     private boolean tfLimitQuality = false;
+    private boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfNoDirectRipple} to the given value.
@@ -172,12 +198,24 @@ public class PaymentFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link PaymentFlags} from the current boolean values.
      *
      * @return A new {@link PaymentFlags}.
      */
     public PaymentFlags build() {
-      return PaymentFlags.of(true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
+      return PaymentFlags.of(true, tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfInnerBatchTxn);
     }
   }
 }

@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(6);
+    return getBooleanCombinations(7);
   }
 
   @ParameterizedTest
@@ -46,9 +46,11 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfRequireAuth,
     boolean tfOptionalAuth,
     boolean tfDisallowXrp,
-    boolean tfAllowXrp
+    boolean tfAllowXrp,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
-    AccountSetTransactionFlags.Builder builder = AccountSetTransactionFlags.builder();
+    AccountSetTransactionFlags.Builder builder = AccountSetTransactionFlags.builder()
+      .tfInnerBatchTxn(tfInnerBatchTxn);
 
     if (tfRequireDestTag) {
       builder.tfRequireDestTag();
@@ -105,7 +107,8 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       tfRequireAuth,
       tfOptionalAuth,
       tfDisallowXrp,
-      tfAllowXrp
+      tfAllowXrp,
+      tfInnerBatchTxn
     );
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
 
@@ -126,7 +129,8 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfRequireAuth,
     boolean tfOptionalAuth,
     boolean tfDisallowXrp,
-    boolean tfAllowXrp
+    boolean tfAllowXrp,
+    boolean tfInnerBatchTxn
   ) {
     long expectedFlags = getExpectedFlags(
       tfRequireDestTag,
@@ -134,7 +138,8 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       tfRequireAuth,
       tfOptionalAuth,
       tfDisallowXrp,
-      tfAllowXrp
+      tfAllowXrp,
+      tfInnerBatchTxn
     );
 
     if (tfRequireDestTag && tfOptionalDestTag) {
@@ -170,6 +175,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfOptionalAuth()).isEqualTo(tfOptionalAuth);
     assertThat(flags.tfDisallowXrp()).isEqualTo(tfDisallowXrp);
     assertThat(flags.tfAllowXrp()).isEqualTo(tfAllowXrp);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -184,6 +190,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfRequireDestTag()).isFalse();
     assertThat(flags.tfOptionalDestTag()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -199,7 +206,8 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     boolean tfRequireAuth,
     boolean tfOptionalAuth,
     boolean tfDisallowXrp,
-    boolean tfAllowXrp
+    boolean tfAllowXrp,
+    boolean tfInnerBatchTxn
   ) {
     return (AccountSetTransactionFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfRequireDestTag ? AccountSetTransactionFlags.REQUIRE_DEST_TAG.getValue() : 0L) |
@@ -207,6 +215,7 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       (tfRequireAuth ? AccountSetTransactionFlags.REQUIRE_AUTH.getValue() : 0L) |
       (tfOptionalAuth ? AccountSetTransactionFlags.OPTIONAL_AUTH.getValue() : 0L) |
       (tfDisallowXrp ? AccountSetTransactionFlags.DISALLOW_XRP.getValue() : 0L) |
-      (tfAllowXrp ? AccountSetTransactionFlags.ALLOW_XRP.getValue() : 0L);
+      (tfAllowXrp ? AccountSetTransactionFlags.ALLOW_XRP.getValue() : 0L) |
+      (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

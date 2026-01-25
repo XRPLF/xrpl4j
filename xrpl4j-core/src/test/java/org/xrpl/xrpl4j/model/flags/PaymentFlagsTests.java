@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 public class PaymentFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(3);
+    return getBooleanCombinations(4);
   }
 
   @ParameterizedTest
@@ -42,16 +42,18 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
   public void testFlagsConstructionWithIndividualFlags(
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
-    boolean tfLimitQuality
+    boolean tfLimitQuality,
+    boolean tfInnerBatchTxn
   ) {
     PaymentFlags flags = PaymentFlags.builder()
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
       .tfLimitQuality(tfLimitQuality)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfNoDirectRipple, tfPartialPayment, tfLimitQuality));
+      .isEqualTo(getExpectedFlags(tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
@@ -59,9 +61,10 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
   public void testDeriveIndividualFlagsFromFlags(
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
-    boolean tfLimitQuality
+    boolean tfLimitQuality,
+    boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfNoDirectRipple, tfPartialPayment, tfLimitQuality);
+    long expectedFlags = getExpectedFlags(tfNoDirectRipple, tfPartialPayment, tfLimitQuality, tfInnerBatchTxn);
     PaymentFlags flags = PaymentFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -69,6 +72,7 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfNoDirectRipple()).isEqualTo(tfNoDirectRipple);
     assertThat(flags.tfPartialPayment()).isEqualTo(tfPartialPayment);
     assertThat(flags.tfLimitQuality()).isEqualTo(tfLimitQuality);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -79,6 +83,7 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfNoDirectRipple()).isFalse();
     assertThat(flags.tfPartialPayment()).isFalse();
     assertThat(flags.tfLimitQuality()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
@@ -88,12 +93,14 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
   void testJson(
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
-    boolean tfLimitQuality
+    boolean tfLimitQuality,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     PaymentFlags flags = PaymentFlags.builder()
       .tfNoDirectRipple(tfNoDirectRipple)
       .tfPartialPayment(tfPartialPayment)
       .tfLimitQuality(tfLimitQuality)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -118,11 +125,13 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
   private long getExpectedFlags(
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,
-    boolean tfLimitQuality
+    boolean tfLimitQuality,
+    boolean tfInnerBatchTxn
   ) {
     return (PaymentFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfNoDirectRipple ? PaymentFlags.NO_DIRECT_RIPPLE.getValue() : 0L) |
       (tfPartialPayment ? PaymentFlags.PARTIAL_PAYMENT.getValue() : 0L) |
-      (tfLimitQuality ? PaymentFlags.LIMIT_QUALITY.getValue() : 0L);
+      (tfLimitQuality ? PaymentFlags.LIMIT_QUALITY.getValue() : 0L) |
+      (tfInnerBatchTxn ? PaymentFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

@@ -26,13 +26,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Check;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 
 import java.util.List;
 
 /**
- * A Batch transaction allows multiple transactions to be grouped together and executed atomically
- * according to the specified batch mode.
+ * A Batch transaction allows multiple transactions to be grouped together and executed atomically according to the
+ * specified batch mode.
  *
  * <p>This class will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
  * Its API is subject to change.</p>
@@ -148,5 +149,20 @@ public interface Batch extends Transaction {
       );
     }
   }
-}
 
+  /**
+   * Validates that the `Batch.Account` is not included as a signer in `BatchSigners`.
+   */
+  @Value.Check
+  default void validateOuterSigner() {
+    final Address outerSigner = account();
+
+    for (RawTransactionWrapper wrapper : rawTransactions()) {
+      Preconditions.checkArgument(
+        !wrapper.rawTransaction().account().equals(outerSigner),
+        "The Account submitting a Batch transaction must not sign any inner transactions."
+      );
+    }
+  }
+
+}

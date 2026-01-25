@@ -50,7 +50,6 @@ import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.XrplMethods;
-import org.xrpl.xrpl4j.model.client.XrplRequestParams;
 import org.xrpl.xrpl4j.model.client.XrplResult;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountChannelsResult;
@@ -95,7 +94,6 @@ import org.xrpl.xrpl4j.model.client.path.BookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.BookOffersResult;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedRequestParams;
 import org.xrpl.xrpl4j.model.client.path.DepositAuthorizedResult;
-import org.xrpl.xrpl4j.model.client.path.ImmutableBookOffersRequestParams;
 import org.xrpl.xrpl4j.model.client.path.PathCurrency;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindRequestParams;
 import org.xrpl.xrpl4j.model.client.path.RipplePathFindResult;
@@ -128,7 +126,6 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -662,7 +659,7 @@ public class XrplClientTest {
         JsonRpcRequest request,
         JavaType resultType
       ) {
-        SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
+        SubmitMultiSignedResult<?> submitMultiSignedResult = SubmitMultiSignedResult.builder()
           .engineResult("tesSUCCESS")
           .engineResultCode(200)
           .engineResultMessage("Submitted")
@@ -1076,9 +1073,9 @@ public class XrplClientTest {
         .method(XrplMethods.LEDGER_ENTRY)
         .addParams(params)
         .build(),
-        ObjectMapperFactory.create().getTypeFactory().constructParametricType(
-          LedgerEntryResult.class, LedgerObject.class
-        )
+      ObjectMapperFactory.create().getTypeFactory().constructParametricType(
+        LedgerEntryResult.class, LedgerObject.class
+      )
     )).thenReturn(mockResult);
 
     LedgerEntryResult<LedgerObject> result = xrplClient.ledgerEntry(params);

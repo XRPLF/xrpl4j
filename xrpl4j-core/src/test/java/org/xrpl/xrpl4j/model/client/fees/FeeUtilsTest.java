@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.fees;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package org.xrpl.xrpl4j.model.client.fees;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeBatchFee;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeMultisigNetworkFees;
 import static org.xrpl.xrpl4j.model.client.fees.FeeUtils.computeNetworkFees;
 import static org.xrpl.xrpl4j.model.transactions.CurrencyAmount.MAX_XRP;
@@ -438,15 +439,10 @@ public class FeeUtilsTest {
 
   @Test
   void testMin() {
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.min(null)
-    );
-
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.min(BigInteger.ZERO, null)
-    );
+    // Null checks
+    assertThrows(NullPointerException.class, () -> FeeUtils.min(null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger[]) null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger) null));
 
     assertThat(FeeUtils.min(BigInteger.valueOf(-1), BigInteger.ZERO)).isEqualTo(BigInteger.valueOf(-1));
     assertThat(FeeUtils.min(BigInteger.ZERO, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
@@ -460,15 +456,10 @@ public class FeeUtilsTest {
 
   @Test
   void testMax() {
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.max(null)
-    );
-
-    assertThrows(
-      NullPointerException.class,
-      () -> FeeUtils.max(BigInteger.ZERO, null)
-    );
+    // Null checks
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger[]) null));
+    assertThrows(NullPointerException.class, () -> FeeUtils.max(BigInteger.ZERO, (BigInteger) null));
 
     assertThat(FeeUtils.max(BigInteger.valueOf(-1), BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
     assertThat(FeeUtils.max(BigInteger.ZERO, BigInteger.ZERO)).isEqualTo(BigInteger.ZERO);
@@ -564,6 +555,59 @@ public class FeeUtilsTest {
       UnsignedLong.MAX_VALUE.bigIntegerValue(),
       new BigDecimal(UnsignedLong.MAX_VALUE.bigIntegerValue())
     )).isEqualTo(new BigInteger("340282366920938463426481119284349108225"));
+  }
+
+  @Test
+  void testComputeBatchFeeNullBaseFee() {
+    assertThrows(NullPointerException.class,
+      () -> computeBatchFee(null, UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(0)));
+    assertThrows(NullPointerException.class,
+      () -> computeBatchFee(XrpCurrencyAmount.ofDrops(10), null, XrpCurrencyAmount.ofDrops(0)));
+    assertThrows(NullPointerException.class,
+      () -> computeBatchFee(XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, null));
+  }
+
+  @Test
+  void testComputeBatchFeeNullInnerFeeSum() {
+    assertThrows(NullPointerException.class, () ->
+      computeBatchFee(XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, null)
+    );
+  }
+
+  @Test
+  void testComputeBatchFeeSingleAccountNoInnerFees() {
+    // (0+2)*10 + 0 = 20
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(0)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(20));
+  }
+
+  @Test
+  void testComputeBatchFeeOneBatchSigner() {
+    // (1+2)*10 + 0 = 30
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ONE, XrpCurrencyAmount.ofDrops(0)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(30));
+  }
+
+  @Test
+  void testComputeBatchFeeWithInnerFees() {
+    // (0+2)*10 + 20 = 40
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.ZERO, XrpCurrencyAmount.ofDrops(20)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(40));
+  }
+
+  @Test
+  void testComputeBatchFeeCombined() {
+    // (2+2)*10 + 50 = 90
+    XrpCurrencyAmount result = computeBatchFee(
+      XrpCurrencyAmount.ofDrops(10), UnsignedInteger.valueOf(2), XrpCurrencyAmount.ofDrops(50)
+    );
+    assertThat(result).isEqualTo(XrpCurrencyAmount.ofDrops(90));
   }
 
   private ImmutableFeeResult.Builder feeResultBuilder() {

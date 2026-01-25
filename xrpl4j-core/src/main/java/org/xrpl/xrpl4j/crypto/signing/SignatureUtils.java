@@ -102,7 +102,7 @@ public class SignatureUtils {
   );
 
   /**
-   * Obtain the singleton instance of {@link SignatureUtils}.
+   * Get the singleton instance of {@link SignatureUtils}.
    *
    * @return An {@link SignatureUtils}.
    */
@@ -153,6 +153,7 @@ public class SignatureUtils {
     Objects.requireNonNull(unsignedClaim);
     try {
       final String unsignedJson = objectMapper.writeValueAsString(unsignedClaim);
+      // Note `encodeForSigningClaim` creates a special binary encoding
       final String unsignedBinaryHex = binaryCodec.encodeForSigningClaim(unsignedJson);
       return UnsignedByteArray.fromHex(unsignedBinaryHex);
     } catch (JsonProcessingException e) {
@@ -174,6 +175,8 @@ public class SignatureUtils {
   public UnsignedByteArray toSignableBytes(final Attestation attestation) {
     Objects.requireNonNull(attestation);
     try {
+      // Note: Even though this implementation appears to match `toSignableBytes(Transaction)`, an `Attestation` is not
+      // a transaction, which is why this method is required.
       final String unsignedJson = objectMapper.writeValueAsString(attestation);
       final String unsignedBinaryHex = binaryCodec.encode(unsignedJson);
       return UnsignedByteArray.fromHex(unsignedBinaryHex);
@@ -199,6 +202,46 @@ public class SignatureUtils {
       final String unsignedJson = objectMapper.writeValueAsString(transaction);
       final String unsignedBinaryHex = binaryCodec.encodeForMultiSigning(unsignedJson, signerAddress.value());
       return UnsignedByteArray.fromHex(unsignedBinaryHex);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+
+  /**
+   * Convert a {@link Batch} transaction to bytes that can be signed by a Batch inner transaction signer. Per XLS-0056,
+   * BatchSigners sign the inner transaction in a specific format: HashPrefix::batch + flags + count + inner tx IDs.
+   *
+   * @param batch A {@link Batch} transaction.
+   *
+   * @return An {@link UnsignedByteArray} containing the bytes to be signed.
+   */
+  @Beta
+  public UnsignedByteArray toSignableInnerBytes(final Batch batch) {
+    Objects.requireNonNull(batch);
+    try {
+      return binaryCodec.encodeForBatchInnerSigning(batch);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Converts a {@link Batch} to multi-signable bytes for a specific signer. This is used when a multi-sig account acts
+   * as a BatchSigner with nested Signers. Per rippled's checkBatchMultiSign, this uses batch serialization followed by
+   * appending the signer's account ID.
+   *
+   * @param batch         The {@link Batch} to convert.
+   * @param signerAddress The {@link Address} of the signer.
+   *
+   * @return An {@link UnsignedByteArray} containing the batch serialization with account ID suffix.
+   */
+  @Beta
+  public UnsignedByteArray toMultiSignableInnerBytes(final Batch batch, final Address signerAddress) {
+    Objects.requireNonNull(batch);
+    Objects.requireNonNull(signerAddress);
+    try {
+      return binaryCodec.encodeForBatchInnerMultiSigning(batch, signerAddress);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -239,6 +282,10 @@ public class SignatureUtils {
         .build();
     } else if (AccountDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = AccountDelete.builder().from((AccountDelete) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (Batch.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = Batch.builder().from((Batch) transaction)
         .transactionSignature(signature)
         .build();
     } else if (CheckCancel.class.isAssignableFrom(transaction.getClass())) {
@@ -442,10 +489,6 @@ public class SignatureUtils {
       transactionWithSignature = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
         .transactionSignature(signature)
         .build();
-    } else if (Batch.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignature = Batch.builder().from((Batch) transaction)
-        .transactionSignature(signature)
-        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -494,6 +537,10 @@ public class SignatureUtils {
         .build();
     } else if (AccountDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = AccountDelete.builder().from((AccountDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (Batch.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = Batch.builder().from((Batch) transaction)
         .signers(signers)
         .build();
     } else if (CheckCancel.class.isAssignableFrom(transaction.getClass())) {
@@ -695,10 +742,6 @@ public class SignatureUtils {
         .build();
     } else if (PermissionedDomainDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
-        .signers(signers)
-        .build();
-    } else if (Batch.class.isAssignableFrom(transaction.getClass())) {
-      transactionWithSignatures = Batch.builder().from((Batch) transaction)
         .signers(signers)
         .build();
     } else {

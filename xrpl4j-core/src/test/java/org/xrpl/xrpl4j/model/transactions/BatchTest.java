@@ -25,10 +25,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
+import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
+import org.xrpl.xrpl4j.model.flags.PaymentFlags;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -37,8 +43,20 @@ import java.util.stream.IntStream;
  */
 public class BatchTest {
 
-  private static final Address ACCOUNT = Address.of("rN7n3otQDd6FczFgLdSqtcsAUxDkw6fzRH");
-  private static final Address DESTINATION = Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy");
+  private static final Address ACCOUNT = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+  private static final Address ACCOUNT_OTHER = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+  private static final Address DESTINATION = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+
+  @Test
+  void testDefaultFlags() {
+    Batch batch = Batch.builder()
+      .account(ACCOUNT) // <-- The crux of the test
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .rawTransactions(createInnerTransactions(2))
+      .build();
+    assertThat(batch.flags()).isEqualTo(BatchFlags.ALL_OR_NOTHING);
+  }
 
   @Test
   void testBatchWithAllOrNothingMode() {
@@ -129,12 +147,86 @@ public class BatchTest {
 
   @Test
   void testBatchWithNestedBatch() {
-    // Create an inner Batch transaction (which should be rejected)
-    Batch innerBatch = createValidBatch(BatchFlags.ALL_OR_NOTHING);
-    RawTransactionWrapper nestedBatchWrapper = RawTransactionWrapper.of(innerBatch);
+    final Batch batch = createValidBatch(BatchFlags.ALL_OR_NOTHING);
+
+    // Create an inner transaction (which should be rejected). To satisfy the preconditions in `RawTransactionWrapper`,
+    // we need to create a transaction that has the `tfInnerBatchTxn` flag set.
+    final RawTransactionWrapper invalidInnerBatchTransaction = RawTransactionWrapper.of(
+      new Batch() {
+        @Override
+        public Address account() {
+          return ACCOUNT_OTHER;
+        }
+
+        @Override
+        public BatchFlags flags() {
+          return BatchFlags.of(BatchFlags.ALL_OR_NOTHING.getValue() | TransactionFlags.INNER_BATCH_TXN.getValue());
+        }
+
+        @Override
+        public XrpCurrencyAmount fee() {
+          return batch.fee();
+        }
+
+        @Override
+        public Optional<UnsignedInteger> ticketSequence() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<Hash256> accountTransactionId() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<UnsignedInteger> lastLedgerSequence() {
+          return Optional.empty();
+        }
+
+        @Override
+        public List<MemoWrapper> memos() {
+          return batch.memos();
+        }
+
+        @Override
+        public List<SignerWrapper> signers() {
+          return batch.signers();
+        }
+
+        @Override
+        public Optional<UnsignedInteger> sourceTag() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<Signature> transactionSignature() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Optional<NetworkId> networkId() {
+          return Optional.empty();
+        }
+
+        @Override
+        public Map<String, Object> unknownFields() {
+          return batch.unknownFields();
+        }
+
+        @Override
+        public List<RawTransactionWrapper> rawTransactions() {
+          return batch.rawTransactions();
+        }
+
+        @Override
+        public List<BatchSignerWrapper> batchSigners() {
+          return batch.batchSigners();
+        }
+      }
+    );
 
     List<RawTransactionWrapper> transactions = new ArrayList<>();
-    transactions.add(nestedBatchWrapper);
+    transactions.add(invalidInnerBatchTransaction);
     transactions.add(createInnerTransactions(1).get(0));
 
     assertThatThrownBy(() -> Batch.builder()
@@ -146,6 +238,20 @@ public class BatchTest {
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("Batch transactions cannot be nested");
+  }
+
+  @Test
+  void testBatchWithRawTransactionSignedBySubmitterAccount() {
+    final List<RawTransactionWrapper> innerTransactions = createInnerTransactions(2);
+    assertThatThrownBy(() -> Batch.builder()
+      .account(innerTransactions.get(0).rawTransaction().account()) // <-- The crux of the test
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(innerTransactions)
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
   }
 
   @Test
@@ -162,28 +268,36 @@ public class BatchTest {
     assertThat(batch.rawTransactions()).hasSize(8);
   }
 
-  private Batch createValidBatch(BatchFlags flags) {
+  // ///////////////
+  // Private Helpers
+  // ///////////////
+
+  private Batch createValidBatch(BatchFlags batchFlags) {
     return Batch.builder()
       .account(ACCOUNT)
       .fee(XrpCurrencyAmount.ofDrops(100))
       .sequence(UnsignedInteger.ONE)
-      .flags(flags)
+      .flags(batchFlags)
       .rawTransactions(createInnerTransactions(2))
+      .build();
+  }
+
+  private Payment innterTransaction(UnsignedInteger sequence) {
+    return Payment.builder()
+      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .destination(DESTINATION)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(sequence)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .flags(PaymentFlags.INNER_BATCH_TXN)
       .build();
   }
 
   private List<RawTransactionWrapper> createInnerTransactions(int count) {
     return IntStream.range(0, count)
       .mapToObj(i -> RawTransactionWrapper.of(
-        Payment.builder()
-          .account(ACCOUNT)
-          .destination(DESTINATION)
-          .fee(XrpCurrencyAmount.ofDrops(0))
-          .sequence(UnsignedInteger.valueOf(i + 1))
-          .amount(XrpCurrencyAmount.ofDrops(1000))
-          .build()
+        innterTransaction(UnsignedInteger.valueOf(i + 1))
       ))
       .collect(Collectors.toList());
   }
 }
-

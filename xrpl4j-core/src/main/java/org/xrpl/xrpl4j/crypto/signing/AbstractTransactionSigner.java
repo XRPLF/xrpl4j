@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.crypto.signing;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.annotations.Beta;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyReference;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
@@ -27,6 +28,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -54,6 +56,11 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
+    // The Batch transaction requires special handling when signing, so disallow it from this method.
+    if (Batch.class.isAssignableFrom(transaction.getClass())) {
+      throw new RuntimeException("Batch transactions must be signed using signInner() or signOuter()");
+    }
+
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toSignableBytes(transaction);
     final Signature signature = this.signingHelper(privateKeyable, signableTransactionBytes);
     return this.signatureUtils.addSignatureToTransaction(transaction, signature);
@@ -78,14 +85,56 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
+  public Signature signInner(final P privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction);
+    return this.signingHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
+  public SingleSignedTransaction<Batch> signOuter(final P privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableBytes(batchTransaction);
+    final Signature signature = this.signingHelper(privateKeyable, signableBytes);
+    return this.signatureUtils.addSignatureToTransaction(batchTransaction, signature);
+  }
+
+  @Override
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
+    if (Batch.class.isAssignableFrom(transaction.getClass())) {
+      throw new RuntimeException("Batch transactions must be signed using multiSignInner() or multiSignOuter()");
+    }
+
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toMultiSignableBytes(transaction, address);
-
     return this.signingHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  @Override
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(batchTransaction, address);
+
+    return this.signingHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
+  public Signature multiSignOuter(final P privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableBytes(batchTransaction, address);
+
+    return this.signingHelper(privateKeyable, signableBytes);
   }
 
   /**

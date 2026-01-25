@@ -490,14 +490,7 @@ public class SignatureUtilsTest {
     Payment payment1 = createPayment1();
     Payment payment2 = createPayment2();
 
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(payment1, payment2);
 
     when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class)))
       .thenReturn(UnsignedByteArray.fromHex("ABCD1234"));
@@ -523,14 +516,7 @@ public class SignatureUtilsTest {
     Payment payment1 = createPayment1();
     Payment payment2 = createPayment2();
 
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(payment1, payment2);
 
     when(xrplBinaryCodecMock.encodeForBatchInnerSigning(any(Batch.class)))
       .thenThrow(new JsonParseException(mock(JsonParser.class), "", mock(JsonLocation.class)));
@@ -561,14 +547,7 @@ public class SignatureUtilsTest {
 
   @Test
   void toMultiSignableInnerBytesWithNullAddress() {
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(createPayment1()), RawTransactionWrapper.of(createPayment2()))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
     assertThrows(NullPointerException.class, () -> signatureUtils.toMultiSignableInnerBytes(batch, null));
   }
 
@@ -577,14 +556,7 @@ public class SignatureUtilsTest {
     Payment payment1 = createPayment1();
     Payment payment2 = createPayment2();
 
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(payment1, payment2);
 
     when(xrplBinaryCodecMock.encodeForBatchInnerMultiSigning(any(Batch.class), any(Address.class)))
       .thenReturn(UnsignedByteArray.fromHex("DEADBEEF"));
@@ -619,14 +591,7 @@ public class SignatureUtilsTest {
 
   @Test
   void batchToSignableInnerBytesActual() {
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(createPayment1()), RawTransactionWrapper.of(createPayment2()))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
     UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
     assertThat(bytes).isNotNull();
     assertThat(bytes.hexValue()).isNotEmpty();
@@ -634,14 +599,7 @@ public class SignatureUtilsTest {
 
   @Test
   void batchToMultiSignableInnerBytesActual() {
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(createPayment1()), RawTransactionWrapper.of(createPayment2()))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(createPayment1(), createPayment2());
     UnsignedByteArray bytes = SignatureUtils.getInstance()
       .toMultiSignableInnerBytes(batch, sourcePublicKey.deriveAddress());
     assertThat(bytes).isNotNull();
@@ -1161,14 +1119,7 @@ public class SignatureUtilsTest {
     Payment payment1 = createPayment1();
     Payment payment2 = createPayment2();
 
-    Batch batch = Batch.builder()
-      .account(sourcePublicKey.deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.valueOf(6))
-      .flags(BatchFlags.ALL_OR_NOTHING)
-      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
-      .signingPublicKey(sourcePublicKey)
-      .build();
+    Batch batch = createBatchTransaction(payment1, payment2);
 
     addSignatureToTransactionHelper(batch);
   }
@@ -2429,6 +2380,17 @@ public class SignatureUtilsTest {
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
+      .build();
+  }
+
+  private Batch createBatchTransaction(Payment payment1, Payment payment2) {
+    return Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .signingPublicKey(sourcePublicKey)
       .build();
   }
 }

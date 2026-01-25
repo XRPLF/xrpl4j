@@ -49,6 +49,12 @@ public class NfTokenMintFlags extends TransactionFlags {
    */
   protected static final NfTokenMintFlags TRANSFERABLE = new NfTokenMintFlags(0x00000008);
 
+  /**
+   * Constant {@link NfTokenMintFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final NfTokenMintFlags INNER_BATCH_TXN =
+    new NfTokenMintFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private NfTokenMintFlags(long value) {
     super(value);
   }
@@ -65,15 +71,22 @@ public class NfTokenMintFlags extends TransactionFlags {
     return new Builder();
   }
 
-  private static NfTokenMintFlags of(boolean tfFullyCanonicalSig, boolean tfBurnable, boolean tfOnlyXRP,
-                                                                 boolean tfTrustLine, boolean tfTransferable) {
+  private static NfTokenMintFlags of(
+    boolean tfFullyCanonicalSig,
+    boolean tfBurnable,
+    boolean tfOnlyXRP,
+    boolean tfTrustLine,
+    boolean tfTransferable,
+    boolean tfInnerBatchTxn
+  ) {
     return new NfTokenMintFlags(
       TransactionFlags.of(
         tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
         tfBurnable ? BURNABLE : UNSET,
         tfOnlyXRP ? ONLY_XRP : UNSET,
         tfTrustLine ? TRUSTLINE : UNSET,
-        tfTransferable ? TRANSFERABLE : UNSET
+        tfTransferable ? TRANSFERABLE : UNSET,
+        tfInnerBatchTxn ? INNER_BATCH_TXN : UNSET
       ).getValue()
     );
   }
@@ -140,6 +153,15 @@ public class NfTokenMintFlags extends TransactionFlags {
   }
 
   /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link NfTokenMintFlags}.
    */
   public static class Builder {
@@ -147,6 +169,7 @@ public class NfTokenMintFlags extends TransactionFlags {
     boolean tfOnlyXRP = false;
     boolean tfTrustLine = false;
     boolean tfTransferable = false;
+    boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfBurnable} to the given value.
@@ -197,12 +220,24 @@ public class NfTokenMintFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link NfTokenMintFlags} from the current boolean values.
      *
      * @return A new {@link NfTokenMintFlags}.
      */
     public NfTokenMintFlags build() {
-      return NfTokenMintFlags.of(true, tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+      return NfTokenMintFlags.of(true, tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable, tfInnerBatchTxn);
     }
   }
 }

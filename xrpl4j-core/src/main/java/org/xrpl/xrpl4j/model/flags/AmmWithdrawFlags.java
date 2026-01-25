@@ -52,6 +52,12 @@ public class AmmWithdrawFlags extends TransactionFlags {
    */
   public static final AmmWithdrawFlags LIMIT_LP_TOKEN = new AmmWithdrawFlags(0x00400000);
 
+  /**
+   * Constant {@link AmmWithdrawFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final AmmWithdrawFlags INNER_BATCH_TXN = new AmmWithdrawFlags(
+    TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private AmmWithdrawFlags(long value) {
     super(value);
   }
@@ -117,5 +123,14 @@ public class AmmWithdrawFlags extends TransactionFlags {
    */
   public boolean tfLimitLpToken() {
     return this.isSet(LIMIT_LP_TOKEN);
+  }
+
+  /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
   }
 }

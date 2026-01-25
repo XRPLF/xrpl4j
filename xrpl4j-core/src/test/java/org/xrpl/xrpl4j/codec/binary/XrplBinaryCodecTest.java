@@ -48,6 +48,7 @@ import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -483,28 +484,12 @@ class XrplBinaryCodecTest {
   private static final Address BATCH_ACCOUNT = Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK");
   private static final PublicKey BATCH_ACCOUNT_SIGNING_PUB_KEY =
     PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020");
-  private static final Address BATCH_DESTINATION = Address.of("rEuLyBCvcw4CFmzv8RepSiAoNgF8tTGJQC");
 
   @Test
   void encodeForBatchInnerSigningWithTwoTransactions() throws JsonProcessingException {
     // Create two inner payment transactions
-    Payment innerPayment1 = Payment.builder()
-      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .fee(XrpCurrencyAmount.ofDrops(0))
-      .destination(BATCH_DESTINATION)
-      .amount(XrpCurrencyAmount.ofDrops(1000))
-      .sequence(UnsignedInteger.ONE)
-      .flags(PaymentFlags.INNER_BATCH_TXN)
-      .build();
-
-    Payment innerPayment2 = Payment.builder()
-      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .destination(BATCH_DESTINATION)
-      .amount(XrpCurrencyAmount.ofDrops(2000))
-      .fee(XrpCurrencyAmount.ofDrops(0))
-      .sequence(UnsignedInteger.valueOf(2))
-      .flags(PaymentFlags.INNER_BATCH_TXN)
-      .build();
+    Payment innerPayment1 = createInnerPayment(XrpCurrencyAmount.ofDrops(1000), UnsignedInteger.ONE);
+    Payment innerPayment2 = createInnerPayment(XrpCurrencyAmount.ofDrops(2000), UnsignedInteger.valueOf(2));
 
     // Create a Batch transaction
     Batch batch = Batch.builder()
@@ -582,14 +567,7 @@ class XrplBinaryCodecTest {
   @Test
   void encodeForBatchInnerSigningVerifyTransactionIds() throws JsonProcessingException {
     // Create a simple inner payment with known values
-    Payment innerPayment = Payment.builder()
-      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(0))
-      .sequence(UnsignedInteger.ONE)
-      .flags(PaymentFlags.INNER_BATCH_TXN)
-      .build();
+    Payment innerPayment = createInnerPayment(XrpCurrencyAmount.ofDrops(1000), UnsignedInteger.ONE);
 
     Batch batch = Batch.builder()
       .account(BATCH_ACCOUNT)
@@ -622,19 +600,27 @@ class XrplBinaryCodecTest {
   }
 
   // Helper method to create inner payment transactions
+  private Payment createInnerPayment(CurrencyAmount amount, UnsignedInteger sequence) {
+    return Payment.builder()
+      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .amount(amount)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(sequence)
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+      .build();
+  }
+
+  // Helper method to create inner payment transactions
   private List<RawTransactionWrapper> createInnerPayments(int count) {
     return IntStream.range(0, count)
-      .mapToObj(i -> RawTransactionWrapper.of(
-        Payment.builder()
-          .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-          .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-          .amount(XrpCurrencyAmount.ofDrops(1000L * (i + 1)))
-          .fee(XrpCurrencyAmount.ofDrops(0))
-          .sequence(UnsignedInteger.valueOf(i + 1))
-          .flags(PaymentFlags.INNER_BATCH_TXN)
-          .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
-          .build()
-      ))
+      .mapToObj(i ->
+        RawTransactionWrapper.of(
+          createInnerPayment(
+            XrpCurrencyAmount.ofDrops(1000L * (i + 1)),
+            UnsignedInteger.valueOf(i + 1)
+          )))
       .collect(Collectors.toList());
   }
 

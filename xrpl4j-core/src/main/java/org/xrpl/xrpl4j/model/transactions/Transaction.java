@@ -104,6 +104,7 @@ public interface Transaction {
       .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
+      .put(ImmutableBatch.class, TransactionType.BATCH)
       .build();
 
   /**

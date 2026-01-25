@@ -40,6 +40,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -441,6 +442,10 @@ public class SignatureUtils {
       transactionWithSignature = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
         .transactionSignature(signature)
         .build();
+    } else if (Batch.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = Batch.builder().from((Batch) transaction)
+        .transactionSignature(signature)
+        .build();
     } else {
       // Should never happen, but will in a unit test if we miss one.
       throw new IllegalArgumentException("Signing fields could not be added to the transaction.");
@@ -690,6 +695,10 @@ public class SignatureUtils {
         .build();
     } else if (PermissionedDomainDelete.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = PermissionedDomainDelete.builder().from((PermissionedDomainDelete) transaction)
+        .signers(signers)
+        .build();
+    } else if (Batch.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = Batch.builder().from((Batch) transaction)
         .signers(signers)
         .build();
     } else {

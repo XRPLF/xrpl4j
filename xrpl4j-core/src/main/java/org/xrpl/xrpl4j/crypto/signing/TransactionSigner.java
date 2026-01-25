@@ -25,6 +25,8 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -133,6 +135,35 @@ public interface TransactionSigner<P extends PrivateKeyable> {
       .account(signingPublicKey.deriveAddress())
       .signingPublicKey(signingPublicKey)
       .transactionSignature(multiSign(privateKeyable, transaction))
+      .build();
+  }
+
+  /**
+   * Obtain a signature for the supplied batch transaction using the supplied {@link P} and wrap it in a
+   * {@link BatchSigner} suitable for inclusion in the {@code BatchSigners} array.
+   *
+   * <p>This method is useful for multi-account batch transactions where each inner transaction account
+   * must sign the batch and provide their signature in the BatchSigners array.</p>
+   *
+   * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   *
+   * @param privateKeyable   The {@link P} used to sign {@code batchTransaction}.
+   * @param batchTransaction The {@link Batch} transaction to sign.
+   *
+   * @return A {@link BatchSigner} containing the signature for submission.
+   */
+  @Beta
+  default BatchSigner multiSignToBatchSigner(P privateKeyable, Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+
+    // Compute this only once, just in case public-key derivation is expensive (e.g., a remote HSM).
+    final PublicKey signingPublicKey = this.derivePublicKey(privateKeyable);
+    return BatchSigner.builder()
+      .account(signingPublicKey.deriveAddress())
+      .signingPublicKey(signingPublicKey)
+      .transactionSignature(multiSign(privateKeyable, batchTransaction))
       .build();
   }
 }

@@ -51,6 +51,7 @@ import org.xrpl.xrpl4j.model.AddressConstants;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.flags.AmmDepositFlags;
 import org.xrpl.xrpl4j.model.flags.AmmWithdrawFlags;
+import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceSetFlags;
 import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 import org.xrpl.xrpl4j.model.ledger.AttestationClaim;
@@ -68,6 +69,7 @@ import org.xrpl.xrpl4j.model.transactions.AmmDelete;
 import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -110,6 +112,7 @@ import org.xrpl.xrpl4j.model.transactions.PaymentChannelCreate;
 import org.xrpl.xrpl4j.model.transactions.PaymentChannelFund;
 import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
 import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
+import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
@@ -912,6 +915,65 @@ public class SignatureUtilsTest {
       .build();
 
     addMultiSignatureToTransactionHelper(ammClawback);
+  }
+
+  @Test
+  void addSignatureToBatch() {
+    Payment payment1 = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(1))
+      .build();
+
+    Payment payment2 = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(2000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .build();
+
+    Batch batch = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    addSignatureToTransactionHelper(batch);
+  }
+
+  @Test
+  void addMultiSignaturesToBatch() {
+    Payment payment1 = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(1000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(1))
+      .build();
+
+    Payment payment2 = Payment.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .destination(sourcePublicKey.deriveAddress())
+      .amount(XrpCurrencyAmount.ofDrops(2000))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .build();
+
+    Batch batch = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .build();
+
+    addMultiSignatureToTransactionHelper(batch);
   }
 
   @Test

@@ -24,12 +24,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Check;
 
 /**
- * Wrapper object for a {@link Transaction} in the {@code RawTransactions} array of a
- * {@link Batch} transaction, so that the JSON representation matches the XRPL binary
- * serialization specification.
+ * Wrapper object for a {@link Transaction} in the {@code RawTransactions} array of a {@link Batch} transaction, so that
+ * the JSON representation matches the XRPL binary serialization specification.
  *
  * <p>This class will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
  * Its API is subject to change.</p>
@@ -53,6 +54,7 @@ public interface RawTransactionWrapper {
    * Construct a {@link RawTransactionWrapper} wrapping the given {@link Transaction}.
    *
    * @param transaction A {@link Transaction} to wrap.
+   *
    * @return A {@link RawTransactionWrapper}.
    */
   static RawTransactionWrapper of(Transaction transaction) {
@@ -73,5 +75,11 @@ public interface RawTransactionWrapper {
   @JsonProperty("RawTransaction")
   Transaction rawTransaction();
 
+  //  @Check
+  //  default void check() {
+  //    Preconditions.checkArgument(
+  //      rawTransaction().flags().tfInnerBatchTxn(),
+  //      "Inner transaction must have the `tfInnerBatchTxn` flag set."
+  //    );
+  //  }
 }
-

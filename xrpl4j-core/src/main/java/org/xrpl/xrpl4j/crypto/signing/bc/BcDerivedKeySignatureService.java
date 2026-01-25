@@ -47,6 +47,7 @@ import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -143,6 +144,40 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
+  public Signature signInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    return getTransactionSigner(privateKeyable).signInner(batchTransaction);
+  }
+
+  @Override
+  public SingleSignedTransaction<Batch> signOuter(final PrivateKeyReference privateKeyable,
+    final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    return getTransactionSigner(privateKeyable).signOuter(batchTransaction);
+  }
+
+  @Override
+  public Signature multiSignInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction);
+  }
+
+  @Override
+  public Signature multiSignOuter(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    return getTransactionSigner(privateKeyable).multiSignOuter(batchTransaction);
+  }
+
+  @Override
+  public <T extends Transaction> Signer multiSignToSigner(PrivateKeyReference privateKeyable, T transaction) {
+    return getTransactionSigner(privateKeyable).multiSignToSigner(transaction);
+  }
+
+  @Override
   public <T extends Transaction> boolean verify(
     final Signer signer, final T unsignedTransaction
   ) {
@@ -186,7 +221,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
    * @return A {@link BcSingleKeyTransactionSigner}.
    */
   @VisibleForTesting
-  protected BcSingleKeyTransactionSigner constructTransactionSigner(final PrivateKeyReference privateKeyReference) {
+  final BcSingleKeyTransactionSigner constructTransactionSigner(final PrivateKeyReference privateKeyReference) {
     Objects.requireNonNull(privateKeyReference);
 
     final KeyPair keyPair;
@@ -307,6 +342,26 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
 
     public <T extends Transaction> Signature multiSign(final T transaction) {
       return bcSignatureService.multiSign(this.privateKey, transaction);
+    }
+
+    public <T extends Transaction> Signer multiSignToSigner(T transaction) {
+      return bcSignatureService.multiSignToSigner(this.privateKey, transaction);
+    }
+
+    public final Signature signInner(final Batch transaction) {
+      return bcSignatureService.signInner(this.privateKey, transaction);
+    }
+
+    public final SingleSignedTransaction<Batch> signOuter(final Batch transaction) {
+      return bcSignatureService.signOuter(this.privateKey, transaction);
+    }
+
+    public final Signature multiSignInner(final Batch transaction) {
+      return bcSignatureService.multiSignInner(this.privateKey, transaction);
+    }
+
+    public final Signature multiSignOuter(final Batch transaction) {
+      return bcSignatureService.multiSignOuter(this.privateKey, transaction);
     }
 
     public PublicKey getPublicKey() {

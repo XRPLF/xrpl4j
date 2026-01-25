@@ -102,6 +102,12 @@ class BatchFlagsTest extends AbstractFlagsTest {
     assertThat(flags.getValue()).isEqualTo(0x00010000L);
   }
 
+  // TODO: Test the builder
+
+  // ////////////////
+  // Test TransactionFlags as Batch Flags
+  // ////////////////
+
   @Test
   void testAllOrNothingJson() throws JSONException, JsonProcessingException {
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(BatchFlags.ALL_OR_NOTHING);
@@ -117,6 +123,22 @@ class BatchFlagsTest extends AbstractFlagsTest {
     String json = String.format("{\n" +
       "\"flags\": %s\n" +
       "}", BatchFlags.ONLY_ONE.getValue());
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyFlags() throws JSONException, JsonProcessingException {
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(BatchFlags.EMPTY);
+    String json = "{}";
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testUnsetFlags() throws JSONException, JsonProcessingException {
+    TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(BatchFlags.UNSET);
+    String json = String.format("{\n" +
+      "\"flags\": %s\n" +
+      "}", BatchFlags.UNSET.getValue());
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
@@ -137,5 +159,60 @@ class BatchFlagsTest extends AbstractFlagsTest {
       "}", BatchFlags.INDEPENDENT.getValue());
     assertCanSerializeAndDeserialize(wrapper, json);
   }
-}
 
+  // ////////////////
+  // Test Batch Flags as Transaction Flags
+  // ////////////////
+
+  @Test
+  void testAllOrNothingBatchJson() throws JSONException, JsonProcessingException {
+    BatchFlagsWrapper wrapper = BatchFlagsWrapper.of(BatchFlags.ALL_OR_NOTHING);
+    String json = String.format("{\n" +
+      "\"flags\": %s\n" +
+      "}", BatchFlags.ALL_OR_NOTHING.getValue());
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testOnlyOneBatchJson() throws JSONException, JsonProcessingException {
+    BatchFlagsWrapper wrapper = BatchFlagsWrapper.of(BatchFlags.ONLY_ONE);
+    String json = String.format("{\n" +
+      "\"flags\": %s\n" +
+      "}", BatchFlags.ONLY_ONE.getValue());
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testEmptyBatchFlags() throws JSONException, JsonProcessingException {
+    BatchFlagsWrapper wrapper = BatchFlagsWrapper.of(BatchFlags.EMPTY);
+    String json = "{}";
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testUnsetBatchFlags() throws JSONException, JsonProcessingException {
+    BatchFlagsWrapper wrapper = BatchFlagsWrapper.of(BatchFlags.UNSET);
+    String json = String.format("{\n" +
+      "\"flags\": %s\n" +
+      "}", BatchFlags.UNSET.getValue());
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testUntilFailureBatchJson() throws JSONException, JsonProcessingException {
+    BatchFlagsWrapper wrapper = BatchFlagsWrapper.of(BatchFlags.UNTIL_FAILURE);
+    String json = String.format("{\n" +
+      "\"flags\": %s\n" +
+      "}", BatchFlags.UNTIL_FAILURE.getValue());
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+
+  @Test
+  void testIndependentBatchJson() throws JSONException, JsonProcessingException {
+    BatchFlagsWrapper wrapper = BatchFlagsWrapper.of(BatchFlags.INDEPENDENT);
+    String json = String.format("{\n" +
+      "\"flags\": %s\n" +
+      "}", BatchFlags.INDEPENDENT.getValue());
+    assertCanSerializeAndDeserialize(wrapper, json);
+  }
+}

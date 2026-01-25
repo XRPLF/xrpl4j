@@ -33,29 +33,43 @@ import com.google.common.annotations.Beta;
 @Beta
 public class BatchFlags extends TransactionFlags {
 
+  static Builder builder() {
+    return new Builder();
+  }
+
   /**
-   * Constant {@link BatchFlags} for the {@code tfAllOrNothing} flag.
-   * All transactions must succeed for any of them to succeed.
+   * Constant {@link BatchFlags} for the {@code tfAllOrNothing} flag. All transactions must succeed for any of them to
+   * succeed.
    */
   public static final BatchFlags ALL_OR_NOTHING = new BatchFlags(0x00010000L);
 
   /**
-   * Constant {@link BatchFlags} for the {@code tfOnlyOne} flag.
-   * The first transaction to succeed will be the only one to succeed.
+   * Constant {@link BatchFlags} for the {@code tfOnlyOne} flag. The first transaction to succeed will be the only one
+   * to succeed.
    */
   public static final BatchFlags ONLY_ONE = new BatchFlags(0x00020000L);
 
   /**
-   * Constant {@link BatchFlags} for the {@code tfUntilFailure} flag.
-   * All transactions will be applied until the first failure.
+   * Constant {@link BatchFlags} for the {@code tfUntilFailure} flag. All transactions will be applied until the first
+   * failure.
    */
   public static final BatchFlags UNTIL_FAILURE = new BatchFlags(0x00040000L);
 
   /**
-   * Constant {@link BatchFlags} for the {@code tfIndependent} flag.
-   * All transactions will be applied, regardless of failure.
+   * Constant {@link BatchFlags} for the {@code tfIndependent} flag. All transactions will be applied, regardless of
+   * failure.
    */
   public static final BatchFlags INDEPENDENT = new BatchFlags(0x00080000L);
+
+  /**
+   * Constant for an unset flag.
+   */
+  public static final BatchFlags UNSET = new BatchFlags(0L);
+
+  /**
+   * Constant empty {@link TransactionFlags}.
+   */
+  public static final BatchFlags EMPTY = new BatchFlags();
 
   private BatchFlags(long value) {
     super(value);
@@ -69,10 +83,43 @@ public class BatchFlags extends TransactionFlags {
    * Construct {@link BatchFlags} with a given value.
    *
    * @param value The long-number encoded flags value of this {@link BatchFlags}.
+   *
    * @return New {@link BatchFlags}.
    */
   public static BatchFlags of(long value) {
     return new BatchFlags(value);
+  }
+
+  /**
+   * Constructs a {@link BatchFlags} object based on the specified boolean flags. Each flag corresponds to a specific
+   * mode or configuration for the batch processing.
+   *
+   * @param tfFullyCanonicalSig Indicates whether the `tfFullyCanonicalSig` flag should be set.
+   * @param tfAllOrNothing      Indicates whether the `tfAllOrNothing` flag should be set.
+   * @param tfOnlyOne           Indicates whether the `tfOnlyOne` flag should be set.
+   * @param tfUntilFailure      Indicates whether the `tfUntilFailure` flag should be set.
+   * @param tfIndependent       Indicates whether the `tfIndependent` flag should be set.
+   *
+   * @return A new {@link BatchFlags} instance with the corresponding flags set.
+   */
+  private static BatchFlags of(
+    boolean tfFullyCanonicalSig,
+    boolean tfAllOrNothing,
+    boolean tfOnlyOne,
+    boolean tfUntilFailure,
+    boolean tfIndependent
+  ) {
+    return new BatchFlags(of(
+      tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+      tfAllOrNothing ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
+      tfOnlyOne ? ONLY_ONE : UNSET,
+      tfUntilFailure ? UNTIL_FAILURE : UNSET,
+      tfIndependent ? INDEPENDENT : UNSET
+    ).getValue());
+  }
+
+  public BatchFlags with(BatchFlags flags) {
+    return new BatchFlags(this.bitwiseOr(flags).getValue());
   }
 
   /**
@@ -146,5 +193,83 @@ public class BatchFlags extends TransactionFlags {
   public boolean tfIndependent() {
     return this.isSet(INDEPENDENT);
   }
-}
 
+  /**
+   * A builder class for {@link PaymentFlags} flags.
+   */
+  public static class Builder {
+
+    boolean tfAllOrNothing = false;
+    boolean tfOnlyOne = false;
+    boolean tfUntilFailure = false;
+    boolean tfIndependent = false;
+
+    /**
+     * Private constructor to prevent direct instantiation of the {@link Builder} class. This ensures that the Builder
+     * can only be accessed through controlled methods within its enclosing class.
+     *
+     * <p>Use {@link BatchFlags#builder()} instead.
+     */
+    private Builder() {
+      // To avoid direct instantiation.
+    }
+
+    /**
+     * Set {@code tfAllOrNothing} to the given value.
+     *
+     * @param tfAllOrNothing A boolean value.
+     *
+     * @return The same {@link PaymentFlags.Builder}.
+     */
+    public BatchFlags.Builder tfAllOrNothing(boolean tfAllOrNothing) {
+      this.tfAllOrNothing = tfAllOrNothing;
+      return this;
+    }
+
+    /**
+     * Set {@code tfOnlyOne} to the given value.
+     *
+     * @param tfOnlyOne A boolean value.
+     *
+     * @return The same {@link PaymentFlags.Builder}.
+     */
+    public BatchFlags.Builder tfOnlyOne(boolean tfOnlyOne) {
+      this.tfOnlyOne = tfOnlyOne;
+      return this;
+    }
+
+    /**
+     * Set {@code tfLimitQuality} to the given value.
+     *
+     * @param tfUntilFailure A boolean value.
+     *
+     * @return The same {@link PaymentFlags.Builder}.
+     */
+    public BatchFlags.Builder tfUntilFailure(boolean tfUntilFailure) {
+      this.tfUntilFailure = tfUntilFailure;
+      return this;
+    }
+
+    /**
+     * Set {@code tfIndependent} to the given value.
+     *
+     * @param tfIndependent A boolean value.
+     *
+     * @return The same {@link PaymentFlags.Builder}.
+     */
+    public BatchFlags.Builder tfIndependent(boolean tfIndependent) {
+      this.tfIndependent = tfIndependent;
+      return this;
+    }
+
+    /**
+     * Build a new {@link PaymentFlags} from the current boolean values.
+     *
+     * @return A new {@link PaymentFlags}.
+     */
+    public BatchFlags build() {
+      return BatchFlags.of(true, tfAllOrNothing, tfOnlyOne, tfUntilFailure, tfIndependent);
+    }
+  }
+
+}

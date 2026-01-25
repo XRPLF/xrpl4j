@@ -27,8 +27,8 @@ import com.google.common.annotations.Beta;
 import org.immutables.value.Value;
 
 /**
- * Wrapper object for a {@link BatchSigner} in the {@code BatchSigners} array of a
- * {@link Batch} transaction, to conform to the XRPL transaction JSON structure.
+ * Wrapper object for a {@link BatchSigner} in the {@code BatchSigners} array of a {@link Batch} transaction, to conform
+ * to the XRPL transaction JSON structure.
  *
  * <p>This class will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
  * Its API is subject to change.</p>
@@ -54,6 +54,7 @@ public interface BatchSignerWrapper {
    * Construct a {@link BatchSignerWrapper} wrapping the given {@link BatchSigner}.
    *
    * @param batchSigner A {@link BatchSigner}.
+   *
    * @return A {@link BatchSignerWrapper}.
    */
   static BatchSignerWrapper of(BatchSigner batchSigner) {

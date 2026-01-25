@@ -69,7 +69,6 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
             .addSigners(
               SignerWrapper.of(
                 Signer.builder()
-                  .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
                   .signingPublicKey(
                     PublicKey.fromBase16EncodedPublicKey(
                       "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF"
@@ -83,7 +82,6 @@ public class SubmitMultisignedResultJsonTests extends AbstractJsonTest {
               ),
               SignerWrapper.of(
                 Signer.builder()
-                  .account(Address.of("raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n"))
                   .signingPublicKey(
                     PublicKey.fromBase16EncodedPublicKey(
                       "03398A4EDAE8EE009A5879113EAA5BA15C7BB0F612A87F4103E793AC919BD1E3C1"

@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class OracleUriTest {
 
-  private final OracleUri ORACLE_URI = OracleUri.of("ABCD");
+  private static final OracleUri ORACLE_URI = OracleUri.of("ABCD");
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

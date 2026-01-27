@@ -17,7 +17,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 public class OracleProviderTest {
 
-  private final OracleProvider ORACLE_PROVIDER = OracleProvider.of("ABCD");
+  private static final OracleProvider ORACLE_PROVIDER = OracleProvider.of("ABCD");
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

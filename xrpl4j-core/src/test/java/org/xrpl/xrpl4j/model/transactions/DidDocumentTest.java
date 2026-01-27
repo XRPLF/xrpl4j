@@ -18,7 +18,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 public class DidDocumentTest {
 
-  private final DidDocument EMPTY_DID_DOCUMENT = DidDocument.of("");
+  private static final DidDocument EMPTY_DID_DOCUMENT = DidDocument.of("");
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

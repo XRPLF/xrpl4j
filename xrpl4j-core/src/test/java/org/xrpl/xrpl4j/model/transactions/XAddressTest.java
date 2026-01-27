@@ -76,8 +76,8 @@ public class XAddressTest {
   @JsonDeserialize(as = ImmutableXAddressWrapper.class)
   public interface XAddressWrapper {
 
-    static XAddressWrapper of(XAddress xAddress) {
-      return ImmutableXAddressWrapper.builder().value(xAddress).build();
+    static XAddressWrapper of(XAddress xAddressValue) {
+      return ImmutableXAddressWrapper.builder().value(xAddressValue).build();
     }
 
     XAddress value();

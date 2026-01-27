@@ -42,7 +42,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 public class AddressTest {
 
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
-  private final Address ADDRESS = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+  private static final Address ADDRESS = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
 
   @Test
   void testNull() {

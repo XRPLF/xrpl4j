@@ -21,7 +21,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class OracleDocumentIdTest {
 
-  private final OracleDocumentId ORACLE_DOCUMENT_ID = OracleDocumentId.of(UnsignedInteger.ONE);
+  private static final OracleDocumentId ORACLE_DOCUMENT_ID = OracleDocumentId.of(UnsignedInteger.ONE);
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

@@ -45,7 +45,7 @@ import java.math.BigDecimal;
  */
 public class TransferFeeTest {
 
-  private final TransferFee TRANSFER_FEE = TransferFee.of(UnsignedInteger.ONE);
+  private static final TransferFee TRANSFER_FEE = TransferFee.of(UnsignedInteger.ONE);
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

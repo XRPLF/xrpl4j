@@ -22,7 +22,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class NetworkIdTest {
 
-  private final NetworkId NETWORK_ID_ONE = NetworkId.of(UnsignedInteger.ONE);
+  private static final NetworkId NETWORK_ID_ONE = NetworkId.of(UnsignedInteger.ONE);
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

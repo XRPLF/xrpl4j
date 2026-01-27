@@ -17,7 +17,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 public class DidUriTest {
 
-  private final DidUri EMPTY_DID_URI = DidUri.of("");
+  private static final DidUri EMPTY_DID_URI = DidUri.of("");
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

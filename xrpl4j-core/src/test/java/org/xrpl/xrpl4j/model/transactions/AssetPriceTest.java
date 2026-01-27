@@ -22,7 +22,7 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class AssetPriceTest {
 
-  private final AssetPrice ZERO_ASSET_PRICE = AssetPrice.of(UnsignedLong.ZERO);
+  private static final AssetPrice ZERO_ASSET_PRICE = AssetPrice.of(UnsignedLong.ZERO);
 
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 

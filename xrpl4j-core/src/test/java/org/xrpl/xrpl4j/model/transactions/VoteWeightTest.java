@@ -24,7 +24,7 @@ import java.math.BigDecimal;
  */
 public class VoteWeightTest {
 
-  private final VoteWeight VOTE_WEIGHT = VoteWeight.of(UnsignedInteger.ZERO);
+  private static final VoteWeight VOTE_WEIGHT = VoteWeight.of(UnsignedInteger.ZERO);
 
   private ObjectMapper objectMapper = ObjectMapperFactory.create();
 

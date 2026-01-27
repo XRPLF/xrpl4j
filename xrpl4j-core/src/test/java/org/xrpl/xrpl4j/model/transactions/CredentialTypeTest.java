@@ -5,8 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
+import org.immutables.value.Value;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.util.Locale;
 
@@ -14,6 +23,8 @@ import java.util.Locale;
  * Unit tests for {@link CredentialType}.
  */
 public class CredentialTypeTest {
+
+  private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
   public void testCredentialTypePlainText() {
@@ -78,6 +89,37 @@ public class CredentialTypeTest {
 
     assertDoesNotThrow(() ->
       CredentialType.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"));
+  }
+
+
+  @Test
+  public void testOfPlainTextWithNull() {
+    assertThatThrownBy(() -> CredentialType.ofPlainText(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void testJsonSerialization() throws JsonProcessingException, JSONException {
+    CredentialType credType = CredentialType.of("766F74696E672063617264");
+    CredentialTypeWrapper wrapper = ImmutableCredentialTypeWrapper.builder()
+      .value(credType)
+      .build();
+    assertSerializesAndDeserializes(wrapper, "{\"value\":\"766F74696E672063617264\"}");
+  }
+
+  private void assertSerializesAndDeserializes(CredentialTypeWrapper wrapper, String json)
+    throws JsonProcessingException, JSONException {
+    String serialized = objectMapper.writeValueAsString(wrapper);
+    JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
+    CredentialTypeWrapper deserialized = objectMapper.readValue(serialized, CredentialTypeWrapper.class);
+    assertThat(deserialized).isEqualTo(wrapper);
+  }
+
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableCredentialTypeWrapper.class)
+  @JsonDeserialize(as = ImmutableCredentialTypeWrapper.class)
+  interface CredentialTypeWrapper {
+    CredentialType value();
   }
 
 }

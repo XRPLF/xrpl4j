@@ -109,7 +109,8 @@ class ZonedDateTimeDeserializerTest {
   }
 
   /**
-   * Test wrapper class for round-trip tests. Uses a fixed pattern that works for both serialization and deserialization.
+   * Test wrapper class for round-trip tests. Uses a fixed pattern that works for both serialization and
+   * deserialization.
    */
   @Value.Immutable
   @JsonSerialize(as = ImmutableRoundTripDateTimeWrapper.class)

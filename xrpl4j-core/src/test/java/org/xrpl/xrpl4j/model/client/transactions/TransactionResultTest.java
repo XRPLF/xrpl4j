@@ -33,7 +33,7 @@ import org.xrpl.xrpl4j.model.transactions.Payment;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 class TransactionResultTest {
@@ -77,7 +77,7 @@ class TransactionResultTest {
       .build();
 
     assertThat(paymentResult.closeDateHuman()).hasValue(
-      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneId.of("UTC"))
+      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneOffset.UTC)
     );
   }
 }

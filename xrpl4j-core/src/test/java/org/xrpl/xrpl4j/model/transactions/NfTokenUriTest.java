@@ -83,7 +83,8 @@ public class NfTokenUriTest {
       .value(uri)
       .build();
     assertSerializesAndDeserializes(wrapper,
-      "{\"value\":\"697066733A2F2F62616679626569676479727A74357366703775646D37687537367568377932366E6634646675796C71616266336F636C67747179353566627A6469\"}");
+      "{\"value\":\"697066733A2F2F62616679626569676479727A74357366703775646D37687537367568377932366E663464" +
+        "6675796C71616266336F636C67747179353566627A6469\"}");
   }
 
   private void assertSerializesAndDeserializes(NfTokenUriWrapper wrapper, String json)
@@ -98,6 +99,7 @@ public class NfTokenUriTest {
   @JsonSerialize(as = ImmutableNfTokenUriWrapper.class)
   @JsonDeserialize(as = ImmutableNfTokenUriWrapper.class)
   interface NfTokenUriWrapper {
+
     NfTokenUri value();
   }
 }

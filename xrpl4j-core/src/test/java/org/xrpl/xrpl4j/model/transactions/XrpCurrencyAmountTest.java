@@ -458,10 +458,8 @@ public class XrpCurrencyAmountTest {
     assertSerializesAndDeserializes(wrapper, "{\"value\":\"1000000\"}");
   }
 
-  private void assertSerializesAndDeserializes(
-    XrpCurrencyAmountWrapper wrapper,
-    String json
-  ) throws JsonProcessingException, JSONException {
+  private void assertSerializesAndDeserializes(XrpCurrencyAmountWrapper wrapper, String json)
+    throws JsonProcessingException, JSONException {
     String serialized = objectMapper.writeValueAsString(wrapper);
     JSONAssert.assertEquals(json, serialized, JSONCompareMode.STRICT);
     XrpCurrencyAmountWrapper deserialized = objectMapper.readValue(
@@ -470,11 +468,12 @@ public class XrpCurrencyAmountTest {
     );
     assertThat(deserialized).isEqualTo(wrapper);
   }
-}
 
-@Value.Immutable
-@JsonSerialize(as = ImmutableXrpCurrencyAmountWrapper.class)
-@JsonDeserialize(as = ImmutableXrpCurrencyAmountWrapper.class)
-interface XrpCurrencyAmountWrapper {
-  XrpCurrencyAmount value();
+  @Value.Immutable
+  @JsonSerialize(as = ImmutableXrpCurrencyAmountWrapper.class)
+  @JsonDeserialize(as = ImmutableXrpCurrencyAmountWrapper.class)
+  interface XrpCurrencyAmountWrapper {
+
+    XrpCurrencyAmount value();
+  }
 }

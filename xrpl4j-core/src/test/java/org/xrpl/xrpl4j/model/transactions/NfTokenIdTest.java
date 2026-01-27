@@ -42,13 +42,13 @@ public class NfTokenIdTest {
 
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
-  private final NfTokenId NF_TOKEN_ID_ZERO = NfTokenId.of(
+  private static final NfTokenId NF_TOKEN_ID_ZERO = NfTokenId.of(
     "0000000000000000000000000000000000000000000000000000000000000000");
 
-  private final NfTokenId NF_TOKEN_ID_UPPER = NfTokenId.of(
+  private static final NfTokenId NF_TOKEN_ID_UPPER = NfTokenId.of(
     "000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
 
-  private final NfTokenId NF_TOKEN_ID_LOWER = NfTokenId.of(
+  private static final NfTokenId NF_TOKEN_ID_LOWER = NfTokenId.of(
     "000b013a95f14b0044f78a264e41713c64b5f89242540ee208c3098e00000d65");
 
   @Test

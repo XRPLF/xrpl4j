@@ -24,8 +24,9 @@ import java.util.Locale;
  */
 public class ZonedDateTimeSerializer extends StdSerializer<ZonedDateTime> implements ContextualSerializer {
 
+  // Some XRPL dates have  9 digits of millsecond precision (some have 6). This pattern supports arbitrary values
   private static final DateTimeFormatter DEFAULT_FORMATTER =
-    DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS 'UTC'", Locale.US);
+    DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss[.n] z", Locale.US);
 
   private final DateTimeFormatter formatter;
 

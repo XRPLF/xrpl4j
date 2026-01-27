@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * A custom Jackson deserializer for {@link ZonedDateTime} usage in xrpl4j.
@@ -22,8 +23,9 @@ import java.util.Locale;
  */
 public class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> implements ContextualDeserializer {
 
+  // Some XRPL dates have  9 digits of millsecond precision (some have 6). This pattern supports arbitrary values
   private static final DateTimeFormatter DEFAULT_FORMATTER =
-    DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss.SSSSSSSSS z", Locale.US);
+    DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss[.n] z", Locale.US);
 
   private final DateTimeFormatter formatter;
 
@@ -31,7 +33,8 @@ public class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> i
     this(DEFAULT_FORMATTER);
   }
 
-  private ZonedDateTimeDeserializer(DateTimeFormatter formatter) {
+  private ZonedDateTimeDeserializer(final DateTimeFormatter formatter) {
+    Objects.requireNonNull(formatter);
     this.formatter = formatter;
   }
 

@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,21 +17,34 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 public class DidUriTest {
 
+  private final DidUri EMPTY_DID_URI = DidUri.of("");
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
-  void testToString() {
-    DidUri count = DidUri.of("");
-    assertThat(count.toString()).isEqualTo("");
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> DidUri.of(null));
+  }
 
-    DidUri countMax = DidUri.of("ABCDEFG");
-    assertThat(countMax.toString()).isEqualTo("ABCDEFG");
+  @Test
+  void testEquality() {
+    assertThat(EMPTY_DID_URI).isEqualTo(EMPTY_DID_URI);
+    assertThat(EMPTY_DID_URI).isNotEqualTo(new Object());
+  }
+
+  @Test
+  void testToString() {
+    assertThat(EMPTY_DID_URI.toString()).isEqualTo("");
+    assertThat(EMPTY_DID_URI.equals(null)).isFalse();
+
+    DidUri didUriMax = DidUri.of("ABCDEFG");
+    assertThat(didUriMax.toString()).isEqualTo("ABCDEFG");
   }
 
   @Test
   void testJson() throws JsonProcessingException, JSONException {
-    DidUri count = DidUri.of("ABCDEF");
-    DidUriWrapper wrapper = DidUriWrapper.of(count);
+    DidUri didUri = DidUri.of("ABCDEF");
+    DidUriWrapper wrapper = DidUriWrapper.of(didUri);
 
     String json = "{\"value\": \"ABCDEF\"}";
     assertSerializesAndDeserializes(wrapper, json);
@@ -38,8 +52,8 @@ public class DidUriTest {
 
   @Test
   void testEmptyValueJson() throws JSONException, JsonProcessingException {
-    DidUri count = DidUri.of("");
-    DidUriWrapper wrapper = DidUriWrapper.of(count);
+    DidUri didUri = DidUri.of("");
+    DidUriWrapper wrapper = DidUriWrapper.of(didUri);
 
     String json = "{\"value\": \"\"}";
     assertSerializesAndDeserializes(wrapper, json);

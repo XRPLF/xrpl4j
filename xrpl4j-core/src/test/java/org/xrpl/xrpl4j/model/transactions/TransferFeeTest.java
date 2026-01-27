@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
-import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.immutables.value.Value;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -40,9 +40,26 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 import java.math.BigDecimal;
 
+/**
+ * Unit tests for {@link TransferFee}.
+ */
 public class TransferFeeTest {
 
+  private final TransferFee TRANSFER_FEE = TransferFee.of(UnsignedInteger.ONE);
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+  @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> TransferFee.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    AssertionsForClassTypes.assertThat(TRANSFER_FEE).isEqualTo(TRANSFER_FEE);
+    AssertionsForClassTypes.assertThat(TRANSFER_FEE).isNotEqualTo(new Object());
+    AssertionsForClassTypes.assertThat(TRANSFER_FEE.equals(null)).isFalse();
+  }
 
   @Test
   void ofPercent() {

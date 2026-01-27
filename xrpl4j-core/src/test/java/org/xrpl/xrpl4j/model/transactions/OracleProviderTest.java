@@ -1,12 +1,12 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.api.Assertions;
 import org.immutables.value.Value.Immutable;
 import org.json.JSONException;
@@ -17,18 +17,30 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 
 public class OracleProviderTest {
 
+  private final OracleProvider ORACLE_PROVIDER = OracleProvider.of("ABCD");
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> OracleProvider.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    assertThat(ORACLE_PROVIDER).isEqualTo(ORACLE_PROVIDER);
+    assertThat(ORACLE_PROVIDER).isNotEqualTo(new Object());
+    assertThat(ORACLE_PROVIDER.equals(null)).isFalse();
+  }
+
+  @Test
   void testToString() {
-    OracleProvider count = OracleProvider.of("ABCD");
-    assertThat(count.toString()).isEqualTo("ABCD");
+    assertThat(ORACLE_PROVIDER.toString()).isEqualTo("ABCD");
   }
 
   @Test
   void testJson() throws JsonProcessingException, JSONException {
-    OracleProvider count = OracleProvider.of("ABCD");
-    OracleProviderWrapper wrapper = OracleProviderWrapper.of(count);
+    OracleProviderWrapper wrapper = OracleProviderWrapper.of(ORACLE_PROVIDER);
 
     String json = "{\"value\": \"ABCD\"}";
     assertSerializesAndDeserializes(wrapper, json);

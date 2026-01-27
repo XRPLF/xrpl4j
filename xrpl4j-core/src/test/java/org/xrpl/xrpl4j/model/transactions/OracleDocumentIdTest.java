@@ -1,6 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +9,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.primitives.UnsignedInteger;
 import org.assertj.core.api.Assertions;
-import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -21,18 +21,30 @@ import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
  */
 public class OracleDocumentIdTest {
 
+  private final OracleDocumentId ORACLE_DOCUMENT_ID = OracleDocumentId.of(UnsignedInteger.ONE);
+
   ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testNull() {
+    assertThrows(NullPointerException.class, () -> OracleDocumentId.of(null));
+  }
+
+  @Test
+  void testEquality() {
+    assertThat(ORACLE_DOCUMENT_ID).isEqualTo(ORACLE_DOCUMENT_ID);
+    assertThat(ORACLE_DOCUMENT_ID).isNotEqualTo(new Object());
+    assertThat(ORACLE_DOCUMENT_ID.equals(null)).isFalse();
+  }
+
+  @Test
   void testToString() {
-    OracleDocumentId count = OracleDocumentId.of(UnsignedInteger.ONE);
-    assertThat(count.toString()).isEqualTo("1");
+    assertThat(ORACLE_DOCUMENT_ID.toString()).isEqualTo("1");
   }
 
   @Test
   void testJson() throws JsonProcessingException, JSONException {
-    OracleDocumentId count = OracleDocumentId.of(UnsignedInteger.ONE);
-    OracleDocumentIdWrapper wrapper = OracleDocumentIdWrapper.of(count);
+    OracleDocumentIdWrapper wrapper = OracleDocumentIdWrapper.of(ORACLE_DOCUMENT_ID);
 
     String json = "{\"value\": 1}";
     assertSerializesAndDeserializes(wrapper, json);

@@ -59,6 +59,8 @@ public class NfTokenIdTest {
   @Test
   public void nfTokenEquality() {
     assertThat(NF_TOKEN_ID_UPPER).isEqualTo(NF_TOKEN_ID_UPPER);
+    assertThat(NF_TOKEN_ID_UPPER).isNotEqualTo(NF_TOKEN_ID_ZERO);
+    assertThat(NF_TOKEN_ID_ZERO).isNotEqualTo(NF_TOKEN_ID_UPPER);
     assertThat(NF_TOKEN_ID_ZERO.equals(null)).isFalse();
     assertThat(NF_TOKEN_ID_ZERO).isNotEqualTo(new Object());
   }

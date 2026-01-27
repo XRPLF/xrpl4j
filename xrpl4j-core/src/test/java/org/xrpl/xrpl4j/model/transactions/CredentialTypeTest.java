@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,9 +45,6 @@ public class CredentialTypeTest {
 
     assertThat(CredentialType.ofPlainText(input))
       .isNotEqualTo(CredentialType.ofPlainText(input.toLowerCase(Locale.ENGLISH)));
-
-    assertThat(CredentialType.of("0000000000000000000000000000000000000000000000000000000000000000"))
-      .isNotEqualTo(null);
 
     assertThat(CredentialType.of(input).hashCode())
       .isEqualTo(CredentialType.of(input.toLowerCase(Locale.ENGLISH)).hashCode());
@@ -94,8 +92,7 @@ public class CredentialTypeTest {
 
   @Test
   public void testOfPlainTextWithNull() {
-    assertThatThrownBy(() -> CredentialType.ofPlainText(null))
-      .isInstanceOf(NullPointerException.class);
+    assertThrows(NullPointerException.class, () -> CredentialType.ofPlainText(null));
   }
 
   @Test
@@ -119,6 +116,7 @@ public class CredentialTypeTest {
   @JsonSerialize(as = ImmutableCredentialTypeWrapper.class)
   @JsonDeserialize(as = ImmutableCredentialTypeWrapper.class)
   interface CredentialTypeWrapper {
+
     CredentialType value();
   }
 

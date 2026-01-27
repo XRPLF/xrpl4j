@@ -49,37 +49,26 @@ public class Hash256Test {
   @Test
   void hashEquality() {
     assertThrows(NullPointerException.class, () -> Hash256.of(null));
-
-    assertThat(HASH_256_MAX)
-      .isEqualTo(HASH_256_MAX);
-
-    assertThat(HASH_256_MAX)
-      .isEqualTo(Hash256.of("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-
-    assertThat(HASH_256_ZERO)
-      .isNotEqualTo(HASH_256_MAX);
-
+    assertThat(HASH_256_MAX).isEqualTo(HASH_256_MAX);
+    assertThat(HASH_256_MAX).isEqualTo(Hash256.of("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+    assertThat(HASH_256_ZERO).isNotEqualTo(HASH_256_MAX);
     assertThat(HASH_256_ZERO.equals(null)).isFalse();
-    assertThat(HASH_256_ZERO)
-      .isNotEqualTo(new Object());
+    assertThat(HASH_256_ZERO).isNotEqualTo(new Object());
   }
 
   @Test
   void hashHashcode() {
-    assertThat(HASH_256_MAX.hashCode())
-      .isEqualTo(HASH_256_MAX.hashCode());
+    assertThat(HASH_256_MAX.hashCode()).isEqualTo(HASH_256_MAX.hashCode());
 
-    assertThat(HASH_256_MAX.hashCode())
-      .isEqualTo(Hash256.of("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").hashCode());
+    assertThat(HASH_256_MAX.hashCode()).isEqualTo(
+      Hash256.of("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").hashCode());
 
-    assertThat(HASH_256_ZERO.hashCode())
-      .isNotEqualTo(HASH_256_MAX.hashCode());
+    assertThat(HASH_256_ZERO.hashCode()).isNotEqualTo(HASH_256_MAX.hashCode());
   }
 
   @Test
   void testToString() {
-    assertThat(HASH_256_ZERO.toString())
-      .isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
+    assertThat(HASH_256_ZERO.toString()).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000");
   }
 
   @Test
@@ -105,6 +94,7 @@ public class Hash256Test {
   @JsonSerialize(as = ImmutableHash256Wrapper.class)
   @JsonDeserialize(as = ImmutableHash256Wrapper.class)
   interface Hash256Wrapper {
+
     Hash256 hash();
   }
 

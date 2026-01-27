@@ -163,7 +163,7 @@ public class Wrappers {
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof Hash256) {
-        String otherValue = ((Hash256) obj).value();
+        String otherValue = ((Hash256) obj).value(); // <-- Can't be null due to Immutables
         return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
@@ -370,7 +370,8 @@ public class Wrappers {
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof XrpCurrencyAmount) {
-        return this.value().equals(((XrpCurrencyAmount) obj).value());
+        UnsignedLong otherValue = ((XrpCurrencyAmount) obj).value(); // <-- Can't be null due to Immutables
+        return this.value().equals(otherValue);
       }
       return false;
     }

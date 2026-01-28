@@ -329,9 +329,7 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       return bcSignatureService.multiSign(this.privateKey, transaction);
     }
 
-    /**
-     * @deprecated See comment in `TransactionSigner#multiSignToSigner`.
-     */
+    // @deprecated See comment in `TransactionSigner#multiSignToSigner`.
     @Deprecated
     public <T extends Transaction> Signer multiSignToSigner(T transaction) {
       return bcSignatureService.multiSignToSigner(this.privateKey, transaction);

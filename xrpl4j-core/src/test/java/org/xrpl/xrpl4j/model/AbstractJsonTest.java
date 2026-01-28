@@ -23,7 +23,6 @@ package org.xrpl.xrpl4j.model;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +36,13 @@ import org.xrpl.xrpl4j.model.client.serverinfo.ServerInfo.ValidatedLedger;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.ledger.LedgerObject;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
+import java.util.Objects;
 
 public class AbstractJsonTest {
 
@@ -97,5 +103,35 @@ public class AbstractJsonTest {
   protected void assertCanDeserialize(String json, XrplResult result) throws JsonProcessingException {
     XrplResult deserialized = objectMapper.readValue(json, result.getClass());
     assertThat(deserialized).isEqualTo(result);
+  }
+
+  /**
+   * Parses a Ripple-specific datetime string into a {@link ZonedDateTime} object.
+   * <p/>
+   * Xrpld uses different precision for different fields, for example:
+   *
+   * <ol>
+   *   <li>Some use 9 decimal places: 2020-Mar-24 01:41:11.000000000 UTC</li>
+   *   <li>Some use 6 decimal places: 2020-Mar-24 01:27:42.147330 UTC</li>
+   * </ol>
+   *
+   * <p>This method supports variable precision for the fractional seconds part.
+   *
+   * @param rippleDateTimeString The datetime string to parse; must not be null.
+   *
+   * @return A {@link ZonedDateTime} object representing the parsed datetime.
+   *
+   * @throws NullPointerException   if the {@code rippleDateTimeString} is null.
+   * @throws DateTimeParseException if the given string cannot be parsed.
+   */
+  protected static ZonedDateTime parseRippledTime(final String rippleDateTimeString) {
+    Objects.requireNonNull(rippleDateTimeString);
+    // Pattern handles 1-9 decimal places flexibly (see Javadoc above)
+    ZonedDateTime parsed = ZonedDateTime.parse(
+      rippleDateTimeString,
+      DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSS] z", Locale.US)
+    );
+    // Ensure consistent UTC zone representation
+    return parsed.withZoneSameInstant(ZoneOffset.UTC);
   }
 }

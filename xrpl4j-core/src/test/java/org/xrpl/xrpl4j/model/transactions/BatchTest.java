@@ -23,8 +23,10 @@ package org.xrpl.xrpl4j.model.transactions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
@@ -249,6 +251,40 @@ public class BatchTest {
       .sequence(UnsignedInteger.ONE)
       .flags(BatchFlags.ALL_OR_NOTHING)
       .rawTransactions(innerTransactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(innerTransactions.get(0).rawTransaction().account())
+          .signingPublicKey(innerTransactions.get(0).rawTransaction().signingPublicKey())
+          .transactionSignature(Signature.fromBase16("ABCD"))
+          .build()
+        )))
+      .build()
+    ).isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
+  }
+
+  @Test
+  void testBatchWithRawTransactionMultiSignedBySubmitterAccount() {
+    final List<RawTransactionWrapper> innerTransactions = createInnerTransactions(2);
+    assertThatThrownBy(() -> Batch.builder()
+      .account(innerTransactions.get(0).rawTransaction().account()) // <-- The crux of the test
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .rawTransactions(innerTransactions)
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(
+          BatchSigner.builder()
+            .account(innerTransactions.get(1).rawTransaction().account()) // <-- The crux of the test
+            .signers(Lists.newArrayList(
+              SignerWrapper.of(Signer.builder()
+                .account(innerTransactions.get(0).rawTransaction().account()) // <-- The crux of the test
+                .signingPublicKey(innerTransactions.get(0).rawTransaction().signingPublicKey())
+                .transactionSignature(Signature.fromBase16("ABCD"))
+                .build()
+              )
+            )).build()
+        )))
       .build()
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("The Account submitting a Batch transaction must not sign any inner transactions.");
@@ -282,7 +318,7 @@ public class BatchTest {
       .build();
   }
 
-  private Payment innterTransaction(UnsignedInteger sequence) {
+  private Payment innerTransaction(UnsignedInteger sequence) {
     return Payment.builder()
       .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
       .destination(DESTINATION)
@@ -296,7 +332,7 @@ public class BatchTest {
   private List<RawTransactionWrapper> createInnerTransactions(int count) {
     return IntStream.range(0, count)
       .mapToObj(i -> RawTransactionWrapper.of(
-        innterTransaction(UnsignedInteger.valueOf(i + 1))
+        innerTransaction(UnsignedInteger.valueOf(i + 1))
       ))
       .collect(Collectors.toList());
   }

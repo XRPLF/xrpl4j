@@ -155,14 +155,25 @@ public interface Batch extends Transaction {
    */
   @Value.Check
   default void validateOuterSigner() {
-    final Address outerSigner = account();
 
-    for (RawTransactionWrapper wrapper : rawTransactions()) {
-      Preconditions.checkArgument(
-        !wrapper.rawTransaction().account().equals(outerSigner),
-        "The Account submitting a Batch transaction must not sign any inner transactions."
-      );
-    }
+    final boolean anySignerMatchesOuterAccount = this.batchSigners().stream()
+      .map(BatchSignerWrapper::batchSigner)
+      .anyMatch(batchSigner -> {
+        // Check single-sig
+        if (batchSigner.account().equals(this.account())) {
+          return true;
+        } else {
+          // Check multi-sig
+          return batchSigner.signers().stream()
+            .anyMatch(signerWrapper -> signerWrapper.signer().account().equals(this.account()));
+        }
+      });
+
+    // Rule: If there is any BatchSigner then the outer signer must not be in that list, either single or multi-sig.
+    Preconditions.checkArgument(
+      !anySignerMatchesOuterAccount,
+      "The Account submitting a Batch transaction must not sign any inner transactions."
+    );
   }
 
 }

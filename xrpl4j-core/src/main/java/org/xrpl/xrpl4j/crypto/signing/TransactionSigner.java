@@ -38,7 +38,7 @@ public interface TransactionSigner<P extends PrivateKeyable> {
 
   /**
    * Accessor for the public-key corresponding to the supplied key meta-data. This method exists to support
-   * implementations that hold private-key material internally, yet need a way for external callers to determine the
+   * implementations that hold private-key material internally yet need a way for external callers to determine the
    * actual public key for signature verification or other purposes.
    *
    * @param privateKeyable A {@link PrivateKeyable} to derive a public key from.
@@ -48,8 +48,7 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   PublicKey derivePublicKey(P privateKeyable);
 
   /**
-   * Obtain a singly-signed signature for the supplied transaction using {@code privateKeyable} and the single-sign
-   * mechanism.
+   * Get a transaction with a single-sig using {@code privateKeyable}.
    *
    * @param privateKeyable The {@link P} used to sign {@code transaction}.
    * @param transaction    The {@link Transaction} to sign.
@@ -84,7 +83,7 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature sign(P privateKeyable, Attestation attestation);
 
   /**
-   * Obtain a signature for a batch transaction using the supplied {@link P}.
+   * Get a signature for a batch transaction using the supplied {@link P}.
    *
    * <p>Per XLS-0056, BatchSigners sign a specific format: HashPrefix::batch + flags + count + inner tx IDs.
    * This differs from both single-signing and multi-signing.</p>
@@ -101,7 +100,7 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature signInner(P privateKeyable, Batch batchTransaction);
 
   /**
-   * Obtain a signature for a batch transaction using the supplied {@link P}.
+   * Get a signature for a batch transaction using the supplied {@link P}.
    *
    * <p>Per XLS-0056, BatchSigners sign a specific format: HashPrefix::batch + flags + count + inner tx IDs.
    * This differs from both single-signing and multi-signing.</p>
@@ -177,16 +176,19 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @param <T>            The type of the transaction to be signed.
    *
    * @return A {@link Signature} for the transaction.
+   *
+   * @deprecated Use {@link #multiSign(PrivateKeyable, Transaction)} instead and assemble a {@link Signer} manually.
+   *   This will allow callers to better manage public-key derivation, especially for derived key scenarios like an HSM
+   *   where public-key derivation is expensive and may only need to be done once for multiple multi-sig operations.
    */
+  @Deprecated
   default <T extends Transaction> Signer multiSignToSigner(P privateKeyable, T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
     // Compute this only once, just in case public-key derivation is expensive (e.g., a remote HSM).
     final PublicKey signingPublicKey = this.derivePublicKey(privateKeyable);
-    return Signer.builder()
-      .signingPublicKey(signingPublicKey)
-      .transactionSignature(multiSign(privateKeyable, transaction))
-      .build();
+    return Signer.builder().signingPublicKey(signingPublicKey)
+      .transactionSignature(multiSign(privateKeyable, transaction)).build();
   }
 }

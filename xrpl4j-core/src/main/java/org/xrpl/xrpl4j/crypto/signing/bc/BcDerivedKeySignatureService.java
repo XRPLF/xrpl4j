@@ -45,6 +45,7 @@ import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.TransactionSigner;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
@@ -344,6 +345,10 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       return bcSignatureService.multiSign(this.privateKey, transaction);
     }
 
+    /**
+     * @deprecated See comment in `TransactionSigner#multiSignToSigner`.
+     */
+    @Deprecated
     public <T extends Transaction> Signer multiSignToSigner(T transaction) {
       return bcSignatureService.multiSignToSigner(this.privateKey, transaction);
     }

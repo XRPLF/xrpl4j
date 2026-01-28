@@ -28,6 +28,7 @@ import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.MultiSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -157,7 +158,12 @@ public class SignerListSetIT extends AbstractIT {
     /////////////////////////////
     // Alice and Bob sign the transaction with their private keys using the "multiSign" method.
     Set<Signer> signers = Lists.newArrayList(aliceKeyPair, bobKeyPair).stream()
-      .map(wallet -> signatureService.multiSignToSigner(wallet.privateKey(), unsignedPayment))
+      // Below is the same as the now-deprecated:
+      // return derivedKeySignatureService.multiSignToSigner(wallet.publicKey(), unsignedPayment);
+      .map(wallet -> Signer.builder()
+        .signingPublicKey(wallet.publicKey())
+        .transactionSignature(signatureService.multiSign(wallet.privateKey(), unsignedPayment))
+        .build())
       .collect(Collectors.toSet());
 
     /////////////////////////////

@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.transactions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,8 +36,6 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 import org.xrpl.xrpl4j.model.transactions.TransactionMetadata;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -82,6 +80,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
    * Get {@link #ledgerIndex()}, or throw an {@link IllegalStateException} if {@link #ledgerIndex()} is empty.
    *
    * @return The value of {@link #ledgerIndex()}.
+   *
    * @throws IllegalStateException If {@link #ledgerIndex()} is empty.
    */
   @JsonIgnore
@@ -118,8 +117,8 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   Optional<TransactionMetadata> metadata();
 
   /**
-   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction.
-   * This is an undocumented field.
+   * The approximate close time (using Ripple Epoch) of the ledger containing this transaction. This is an undocumented
+   * field.
    *
    * @return An optionally-present {@link UnsignedLong}.
    */
@@ -127,8 +126,7 @@ public interface TransactionResult<TxnType extends Transaction> extends XrplResu
   Optional<UnsignedLong> closeDate();
 
   /**
-   * The approximate close time in UTC offset.
-   * This is derived from undocumented field.
+   * The approximate close time in UTC offset. This is derived from undocumented field.
    *
    * @return An optionally-present {@link ZonedDateTime}.
    */

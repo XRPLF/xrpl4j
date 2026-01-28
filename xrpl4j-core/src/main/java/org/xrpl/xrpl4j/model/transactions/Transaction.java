@@ -104,6 +104,7 @@ public interface Transaction {
       .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
+      .put(ImmutableBatch.class, TransactionType.BATCH)
       .build();
 
   /**
@@ -113,6 +114,19 @@ public interface Transaction {
    */
   @JsonProperty("Account")
   Address account();
+
+  //  /**
+  //   * The transacation flags for this transaction. Currenntly only allows {@code tfFullyCanonicalSig} (deprecated)
+  //   and {@code tfInnerBatchTxn} flag.
+  //   *
+  //   * @return Always {@link TransactionFlags#EMPTY}.
+  //   */
+  //  @JsonProperty("Flags")
+  //  // TODO: Do we need this annotation?
+  // //  @Value.Default
+  //  default FLAGS flags() {
+  //    return (FLAGS) TransactionFlags.EMPTY;
+  //  }
 
   /**
    * The type of transaction.

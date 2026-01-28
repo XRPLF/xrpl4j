@@ -27,6 +27,7 @@ import org.xrpl.xrpl4j.crypto.keys.PrivateKeyable;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
@@ -98,18 +99,28 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
+  public Signature sign(final P privateKeyable, final Attestation attestation) {
+    return this.abstractTransactionSigner.sign(privateKeyable, attestation);
+  }
+
+  @Override
   public Signature sign(final P privateKeyable, final UnsignedClaim unsignedClaim) {
     return this.abstractTransactionSigner.sign(privateKeyable, unsignedClaim);
   }
 
   @Override
-  public Signature sign(P privateKeyable, Attestation attestation) {
-    return this.abstractTransactionSigner.sign(privateKeyable, attestation);
+  public Signature signInner(final P privateKeyable, final Batch batchTransaction) {
+    return this.abstractTransactionSigner.signInner(privateKeyable, batchTransaction);
   }
 
   @Override
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     return abstractTransactionSigner.multiSign(privateKeyable, transaction);
+  }
+
+  @Override
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
+    return abstractTransactionSigner.multiSignInner(privateKeyable, batchTransaction);
   }
 
   @Override

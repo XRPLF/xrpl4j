@@ -100,23 +100,6 @@ public interface TransactionSigner<P extends PrivateKeyable> {
   Signature signInner(P privateKeyable, Batch batchTransaction);
 
   /**
-   * Get a signature for a batch transaction using the supplied {@link P}.
-   *
-   * <p>Per XLS-0056, BatchSigners sign a specific format: HashPrefix::batch + flags + count + inner tx IDs.
-   * This differs from both single-signing and multi-signing.</p>
-   *
-   * <p>This method will be marked {@link Beta} until the featureBatch amendment is enabled on mainnet.
-   * Its API is subject to change.</p>
-   *
-   * @param privateKeyable   The {@link P} used to sign {@code batchTransaction}.
-   * @param batchTransaction The {@link Batch} transaction to sign.
-   *
-   * @return A {@link Signature} for the batch transaction.
-   */
-  @Beta
-  SingleSignedTransaction<Batch> signOuter(P privateKeyable, Batch batchTransaction);
-
-  /**
    * Get a signature for the supplied unsigned transaction using the supplied {@link P}. The primary reason this
    * method's signature diverges from {@link #sign(PrivateKeyable, Transaction)} is that for multi-sign scenarios, the
    * interstitially signed transaction is always discarded. Instead, a quorum of signatures is needed, and then that
@@ -149,8 +132,6 @@ public interface TransactionSigner<P extends PrivateKeyable> {
    * @return A {@link Signature} for the batch transaction with multi-sig format.
    */
   Signature multiSignInner(P privateKeyable, Batch batchTransaction);
-
-  Signature multiSignOuter(P privateKeyable, Batch batchTransaction);
 
   /**
    * Obtain a signature for the supplied unsigned transaction using the supplied {@link P}.

@@ -45,7 +45,6 @@ import org.xrpl.xrpl4j.crypto.signing.Signature;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SignatureUtils;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
-import org.xrpl.xrpl4j.crypto.signing.TransactionSigner;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Batch;
@@ -152,25 +151,10 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
   }
 
   @Override
-  public SingleSignedTransaction<Batch> signOuter(final PrivateKeyReference privateKeyable,
-    final Batch batchTransaction) {
-    Objects.requireNonNull(privateKeyable);
-    Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).signOuter(batchTransaction);
-  }
-
-  @Override
   public Signature multiSignInner(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(batchTransaction);
     return getTransactionSigner(privateKeyable).multiSignInner(batchTransaction);
-  }
-
-  @Override
-  public Signature multiSignOuter(final PrivateKeyReference privateKeyable, final Batch batchTransaction) {
-    Objects.requireNonNull(privateKeyable);
-    Objects.requireNonNull(batchTransaction);
-    return getTransactionSigner(privateKeyable).multiSignOuter(batchTransaction);
   }
 
   @Override
@@ -357,16 +341,8 @@ public class BcDerivedKeySignatureService implements SignatureService<PrivateKey
       return bcSignatureService.signInner(this.privateKey, transaction);
     }
 
-    public final SingleSignedTransaction<Batch> signOuter(final Batch transaction) {
-      return bcSignatureService.signOuter(this.privateKey, transaction);
-    }
-
     public final Signature multiSignInner(final Batch transaction) {
       return bcSignatureService.multiSignInner(this.privateKey, transaction);
-    }
-
-    public final Signature multiSignOuter(final Batch transaction) {
-      return bcSignatureService.multiSignOuter(this.privateKey, transaction);
     }
 
     public PublicKey getPublicKey() {

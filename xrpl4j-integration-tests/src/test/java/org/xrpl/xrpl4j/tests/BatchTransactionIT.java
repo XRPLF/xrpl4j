@@ -142,7 +142,7 @@ public class BatchTransactionIT extends AbstractIT {
     // ///////////////
 
     // Only outer needs to be signed because the same accounts authorize inner and outer transactions.
-    SingleSignedTransaction<Batch> signedBatch = signatureService.signOuter(sourceKeyPair.privateKey(), batch);
+    SingleSignedTransaction<Batch> signedBatch = signatureService.sign(sourceKeyPair.privateKey(), batch);
     SubmitResult<Batch> submitResult = xrplClient.submit(signedBatch);
     assertTesSuccess(submitResult);
 
@@ -261,7 +261,7 @@ public class BatchTransactionIT extends AbstractIT {
     // ///////////////
     // Outer Sign (account1 is the batch submitter)
     // ///////////////
-    final SingleSignedTransaction<Batch> signedBatch = signatureService.signOuter(
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
       account1KeyPair.privateKey(),
       Batch.builder().from(unsignedBatch)
         .batchSigners(signerWrappers)
@@ -378,7 +378,7 @@ public class BatchTransactionIT extends AbstractIT {
 
     Set<Signer> signers = Lists.newArrayList(account1Signer1KeyPair, account1Signer2KeyPair).stream()
       .map(keyPair -> {
-        Signature signature = signatureService.multiSignOuter(keyPair.privateKey(), unsignedBatch);
+        Signature signature = signatureService.multiSign(keyPair.privateKey(), unsignedBatch);
         return Signer.builder()
           .signingPublicKey(keyPair.publicKey())
           .transactionSignature(signature)
@@ -553,12 +553,12 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     // Sign the outer batch transaction (account1 is the batch submitter)
-    final Signature signedOuterBatchBySigner1 = signatureService.multiSignOuter(
+    final Signature signedOuterBatchBySigner1 = signatureService.multiSign(
       account1Signer1KeyPair.privateKey(),
       unsignedBatchWithInnerBatchSigner
     );
 
-    final Signature signedOuterBatchBySigner21 = signatureService.multiSignOuter(
+    final Signature signedOuterBatchBySigner21 = signatureService.multiSign(
       account1Signer2KeyPair.privateKey(),
       unsignedBatchWithInnerBatchSigner
     );
@@ -728,12 +728,12 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     // Sign the outer batch transaction (account1 is the batch submitter)
-    final Signature signedOuterBatchBySigner1 = signatureService.multiSignOuter(
+    final Signature signedOuterBatchBySigner1 = signatureService.multiSign(
       account1Signer1KeyPair.privateKey(),
       unsignedBatchWithInnerBatchSigner
     );
 
-    final Signature signedOuterBatchBySigner21 = signatureService.multiSignOuter(
+    final Signature signedOuterBatchBySigner21 = signatureService.multiSign(
       account1Signer2KeyPair.privateKey(),
       unsignedBatchWithInnerBatchSigner
     );
@@ -908,12 +908,12 @@ public class BatchTransactionIT extends AbstractIT {
       .build();
 
     // Sign the outer batch transaction (account1 is the batch submitter)
-    final Signature signedOuterBatchBySigner1 = signatureService.multiSignOuter(
+    final Signature signedOuterBatchBySigner1 = signatureService.multiSign(
       account1Signer1KeyPair.privateKey(),
       unsignedBatchWithInnerBatchSigner
     );
 
-    final Signature signedOuterBatchBySigner21 = signatureService.multiSignOuter(
+    final Signature signedOuterBatchBySigner21 = signatureService.multiSign(
       account1Signer2KeyPair.privateKey(),
       unsignedBatchWithInnerBatchSigner
     );
@@ -1073,7 +1073,7 @@ public class BatchTransactionIT extends AbstractIT {
     // ///////////////
 
     // Sign the outer batch transaction with the third account
-    final SingleSignedTransaction<Batch> signedBatch = signatureService.signOuter(
+    final SingleSignedTransaction<Batch> signedBatch = signatureService.sign(
       outerSignerKeyPair.privateKey(),
       Batch.builder()
         .from(unsignedBatch)

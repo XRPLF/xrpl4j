@@ -114,11 +114,6 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   }
 
   @Override
-  public SingleSignedTransaction<Batch> signOuter(final P privateKeyable, final Batch batchTransaction) {
-    return this.abstractTransactionSigner.signOuter(privateKeyable, batchTransaction);
-  }
-
-  @Override
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     return abstractTransactionSigner.multiSign(privateKeyable, transaction);
   }
@@ -126,11 +121,6 @@ public abstract class AbstractSignatureService<P extends PrivateKeyable> impleme
   @Override
   public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
     return abstractTransactionSigner.multiSignInner(privateKeyable, batchTransaction);
-  }
-
-  @Override
-  public Signature multiSignOuter(final P privateKeyable, final Batch batchTransaction) {
-    return abstractTransactionSigner.multiSignOuter(privateKeyable, batchTransaction);
   }
 
   @Override

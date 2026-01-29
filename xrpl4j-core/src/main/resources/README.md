@@ -21,15 +21,8 @@ If you have a local build of the `xrpld` C++ server, you can export the definiti
 ### Option 2: Using the `xrpl.js` Library
 
 If you don't have a local build of the `xrpld` C++ server, you can use the `xrpl.js` library (specifically the
-ripple-binary-codec package) to fetch the definitions.
-
-```bash
-# Navigate to the codec package
-cd packages/ripple-binary-codec
-
-# Run the update script
-npm run update-definitions
-```
+ripple-binary-codec package) to fetch the definitions. Read more about this option in the
+[xrpl.js documentation](https://github.com/ripple/xrpl.js/blob/main/packages/ripple-binary-codec/README.md#updating-definitions).
 
 ### Option 3: Using a Live `rippled` Node
 

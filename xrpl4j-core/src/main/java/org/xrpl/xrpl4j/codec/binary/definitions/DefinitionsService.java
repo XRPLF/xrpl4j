@@ -54,6 +54,8 @@ public class DefinitionsService {
 
   private final Map<Integer, String> ledgerEntryTypeReverseLookupMap;
 
+  private final Map<Integer, String> permissionValueReverseLookupMap;
+
   /**
    * Required-args Constructor.
    *
@@ -84,6 +86,7 @@ public class DefinitionsService {
     this.transactionTypeReverseLookupMap = inverse(definitions.transactionTypes());
     this.transactionResultReverseLookupNap = inverse(definitions.transactionResults());
     this.ledgerEntryTypeReverseLookupMap = inverse(definitions.ledgerEntryTypes());
+    this.permissionValueReverseLookupMap = inverse(definitions.permissionValues());
   }
 
   /**
@@ -208,6 +211,8 @@ public class DefinitionsService {
         return Optional.ofNullable(transactionResultReverseLookupNap.get(Integer.valueOf(value)));
       case "TransactionType":
         return Optional.ofNullable(transactionTypeReverseLookupMap.get(Integer.valueOf(value)));
+      case "PermissionValue":
+        return Optional.ofNullable(permissionValueReverseLookupMap.get(Integer.valueOf(value)));
       default:
         return Optional.empty();
     }

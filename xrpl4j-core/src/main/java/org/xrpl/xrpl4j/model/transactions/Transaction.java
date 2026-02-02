@@ -55,6 +55,7 @@ public interface Transaction {
       .put(ImmutableCredentialAccept.class, TransactionType.CREDENTIAL_ACCEPT)
       .put(ImmutableCredentialCreate.class, TransactionType.CREDENTIAL_CREATE)
       .put(ImmutableCredentialDelete.class, TransactionType.CREDENTIAL_DELETE)
+      .put(ImmutableDelegateSet.class, TransactionType.DELEGATE_SET)
       .put(ImmutableDepositPreAuth.class, TransactionType.DEPOSIT_PRE_AUTH)
       .put(ImmutableEnableAmendment.class, TransactionType.ENABLE_AMENDMENT)
       .put(ImmutableEscrowCancel.class, TransactionType.ESCROW_CANCEL)

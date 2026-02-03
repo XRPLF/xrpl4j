@@ -40,10 +40,16 @@ import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetPriceSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.AssetScaleSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.BlindingFactorSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialTypeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.CredentialUriSerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ElGamalPublicKeyDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.ElGamalPublicKeySerializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountDeserializer;
+import org.xrpl.xrpl4j.model.jackson.modules.EncryptedAmountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDataSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.DidDocumentDeserializer;
@@ -984,6 +990,75 @@ public class Wrappers {
     @Override
     public int hashCode() {
       return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an ElGamal public key used for confidential MPT transactions.
+   *
+   * <p>ElGamal public keys are used for encrypting confidential balances and are distinct from
+   * XRPL signing keys. They are hex-encoded strings.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the ConfidentialTransfer
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = ElGamalPublicKey.class, using = ElGamalPublicKeySerializer.class)
+  @JsonDeserialize(as = ElGamalPublicKey.class, using = ElGamalPublicKeyDeserializer.class)
+  @Beta
+  abstract static class _ElGamalPublicKey extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing an encrypted amount used for confidential MPT transactions.
+   *
+   * <p>Encrypted amounts are ElGamal ciphertexts representing confidential balances. They are
+   * hex-encoded strings.</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the ConfidentialTransfer
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = EncryptedAmount.class, using = EncryptedAmountSerializer.class)
+  @JsonDeserialize(as = EncryptedAmount.class, using = EncryptedAmountDeserializer.class)
+  @Beta
+  abstract static class _EncryptedAmount extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
+    }
+
+  }
+
+  /**
+   * A wrapped {@link String} containing a blinding factor used for confidential MPT transactions.
+   *
+   * <p>The blinding factor is a 32-byte scalar value used to encrypt amounts. It is used by validators
+   * to verify that ciphertexts match the plaintext amounts. It is a hex-encoded string (64 hex characters).</p>
+   *
+   * <p>This class will be marked {@link com.google.common.annotations.Beta} until the ConfidentialTransfer
+   * amendment is enabled on mainnet. Its API is subject to change.</p>
+   */
+  @Value.Immutable
+  @Wrapped
+  @JsonSerialize(as = BlindingFactor.class, using = BlindingFactorSerializer.class)
+  @JsonDeserialize(as = BlindingFactor.class, using = BlindingFactorDeserializer.class)
+  @Beta
+  abstract static class _BlindingFactor extends Wrapper<String> implements Serializable {
+
+    @Override
+    public String toString() {
+      return this.value();
     }
 
   }

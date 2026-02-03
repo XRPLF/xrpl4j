@@ -373,6 +373,15 @@ public enum TransactionType {
   MPT_AUTHORIZE("MPTokenAuthorize"),
 
   /**
+   * The {@link TransactionType} for the {@link ConfidentialConvert} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * Its API is subject to change.</p>
+   */
+  @Beta
+  CONFIDENTIAL_CONVERT("ConfidentialConvert"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");

@@ -31,6 +31,10 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
    * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfMPTCanClawback} flag.
    */
   protected static final MpTokenIssuanceCreateFlags CAN_CLAWBACK = new MpTokenIssuanceCreateFlags(0x00000040);
+  /**
+   * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfMPTCanPrivacy} flag.
+   */
+  protected static final MpTokenIssuanceCreateFlags CAN_PRIVACY = new MpTokenIssuanceCreateFlags(0x00000080);
 
 
   private MpTokenIssuanceCreateFlags(long value) {
@@ -56,7 +60,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     boolean tfMPTCanEscrow,
     boolean tfMPTCanTrade,
     boolean tfMPTCanTransfer,
-    boolean tfMPTCanClawback
+    boolean tfMPTCanClawback,
+    boolean tfMPTCanPrivacy
   ) {
     return new MpTokenIssuanceCreateFlags(
       TransactionFlags.of(
@@ -66,7 +71,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
         tfMPTCanEscrow ? CAN_ESCROW : UNSET,
         tfMPTCanTransfer ? CAN_TRANSFER : UNSET,
         tfMPTCanTrade ? CAN_TRADE : UNSET,
-        tfMPTCanClawback ? CAN_CLAWBACK : UNSET
+        tfMPTCanClawback ? CAN_CLAWBACK : UNSET,
+        tfMPTCanPrivacy ? CAN_PRIVACY : UNSET
       ).getValue()
     );
   }
@@ -140,6 +146,15 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
   }
 
   /**
+   * If set, indicates that the MPT supports confidential transfers using privacy-preserving cryptography.
+   *
+   * @return {@code true} if {@code tfMPTCanPrivacy} is set, otherwise {@code false}.
+   */
+  public boolean tfMptCanPrivacy() {
+    return this.isSet(CAN_PRIVACY);
+  }
+
+  /**
    * A builder class for {@link MpTokenIssuanceCreateFlags}.
    */
   public static class Builder {
@@ -150,11 +165,13 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     private boolean tfMptCanTrade = false;
     private boolean tfMptCanTransfer = false;
     private boolean tfMptCanClawback = false;
+    private boolean tfMptCanPrivacy = false;
 
     /**
      * Set {@code tfMptCanLock} to the given value.
      *
      * @param tfMptCanLock A boolean value.
+     *
      * @return The same {@link Builder}.
      */
     public Builder tfMptCanLock(boolean tfMptCanLock) {
@@ -166,6 +183,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
      * Set {@code tfMptRequireAuth} to the given value.
      *
      * @param tfMptRequireAuth A boolean value.
+     *
      * @return The same {@link Builder}.
      */
     public Builder tfMptRequireAuth(boolean tfMptRequireAuth) {
@@ -177,6 +195,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
      * Set {@code tfMptCanEscrow} to the given value.
      *
      * @param tfMptCanEscrow A boolean value.
+     *
      * @return The same {@link Builder}.
      */
     public Builder tfMptCanEscrow(boolean tfMptCanEscrow) {
@@ -188,6 +207,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
      * Set {@code tfMptCanTrade} to the given value.
      *
      * @param tfMptCanTrade A boolean value.
+     *
      * @return The same {@link Builder}.
      */
     public Builder tfMptCanTrade(boolean tfMptCanTrade) {
@@ -199,6 +219,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
      * Set {@code tfMptCanTransfer} to the given value.
      *
      * @param tfMptCanTransfer A boolean value.
+     *
      * @return The same {@link Builder}.
      */
     public Builder tfMptCanTransfer(boolean tfMptCanTransfer) {
@@ -210,10 +231,23 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
      * Set {@code tfMptCanClawback} to the given value.
      *
      * @param tfMptCanClawback A boolean value.
+     *
      * @return The same {@link Builder}.
      */
     public Builder tfMptCanClawback(boolean tfMptCanClawback) {
       this.tfMptCanClawback = tfMptCanClawback;
+      return this;
+    }
+
+    /**
+     * Set {@code tfMptCanPrivacy} to the given value.
+     *
+     * @param tfMptCanPrivacy A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfMptCanPrivacy(boolean tfMptCanPrivacy) {
+      this.tfMptCanPrivacy = tfMptCanPrivacy;
       return this;
     }
 
@@ -230,7 +264,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
         tfMptCanEscrow,
         tfMptCanTrade,
         tfMptCanTransfer,
-        tfMptCanClawback
+        tfMptCanClawback,
+        tfMptCanPrivacy
       );
     }
   }

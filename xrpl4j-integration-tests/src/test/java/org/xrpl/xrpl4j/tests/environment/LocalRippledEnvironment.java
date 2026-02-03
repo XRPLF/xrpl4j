@@ -24,16 +24,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Preconditions;
+import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
+import org.xrpl.xrpl4j.client.XrplAdminClient;
 import org.xrpl.xrpl4j.client.XrplClient;
+import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.admin.AcceptLedgerResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
@@ -45,29 +51,63 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Environment that runs a local rippled inside docker in standalone mode.
+ * Environment that connects to a locally running rippled node in standalone mode.
  */
 public class LocalRippledEnvironment implements XrplEnvironment {
 
   private static final Logger LOGGER = getLogger(LocalRippledEnvironment.class);
 
-  private static final RippledContainer rippledContainer = new RippledContainer().start();
+  /**
+   * The URL of the locally running rippled node.
+   */
+  private static final HttpUrl LOCAL_RIPPLED_URL = HttpUrl.parse("http://127.0.0.1:51234/");
 
+  /**
+   * Seed for the Master/Root wallet in the rippled standalone mode.
+   */
+  private static final String MASTER_WALLET_SEED = "snoPBrXtMeMyMHUVTgbuqAfg1SUTb";
+
+  private static ScheduledExecutorService ledgerAcceptor;
+
+  private final XrplClient xrplClient;
+  private final XrplAdminClient xrplAdminClient;
   private final SignatureService<PrivateKey> signatureService = new BcSignatureService();
+
+  /**
+   * No-args constructor that initializes the connection to the local rippled node.
+   */
+  public LocalRippledEnvironment() {
+    this.xrplClient = new XrplClient(LOCAL_RIPPLED_URL);
+    this.xrplAdminClient = new XrplAdminClient(LOCAL_RIPPLED_URL);
+    // Start the ledger acceptor with a default interval
+    this.startLedgerAcceptor(Duration.ofMillis(1000));
+  }
+
+  /**
+   * Get the {@link KeyPair} of the master account.
+   *
+   * @return The {@link KeyPair} of the master account.
+   */
+  public static KeyPair getMasterKeyPair() {
+    return Seed.fromBase58EncodedSecret(Base58EncodedSecret.of(MASTER_WALLET_SEED)).deriveKeyPair();
+  }
 
   @Override
   public XrplClient getXrplClient() {
-    return rippledContainer.getXrplClient();
+    return xrplClient;
   }
 
   @Override
   public void fundAccount(Address classicAddress) {
-    // accounts are funded from the genesis account that holds all XRP when the ledger container starts.
+    // accounts are funded from the genesis account that holds all XRP when the ledger starts.
     try {
       sendPayment(
-        RippledContainer.getMasterKeyPair(),
+        getMasterKeyPair(),
         classicAddress,
         XrpCurrencyAmount.ofXrp(BigDecimal.valueOf(1000))
       );
@@ -101,26 +141,53 @@ public class LocalRippledEnvironment implements XrplEnvironment {
     SingleSignedTransaction<Payment> signedPayment = signatureService.sign(sourceKeyPair.privateKey(), payment);
     SubmitResult<Payment> result = getXrplClient().submit(signedPayment);
     assertThat(result.engineResult()).isEqualTo(TransactionResultCodes.TES_SUCCESS);
-    LOGGER.info("Payment successful: " + rippledContainer.getBaseUri().toString() +
+    LOGGER.info("Payment successful: " + LOCAL_RIPPLED_URL +
       result.transactionResult().transaction());
   }
 
   /**
-   * Method to accept next ledger ad hoc, only available in RippledContainer.java implementation.
+   * Method to accept next ledger ad hoc.
    */
   @Override
   public void acceptLedger() {
-    rippledContainer.acceptLedger();
+    try {
+      AcceptLedgerResult status = xrplAdminClient.acceptLedger();
+      LOGGER.info("Accepted ledger status: {}", status);
+    } catch (RuntimeException | JsonRpcClientErrorException e) {
+      LOGGER.warn("Ledger accept failed", e);
+    }
   }
 
   @Override
   public void startLedgerAcceptor(Duration acceptIntervalMillis) {
-    Objects.requireNonNull(acceptIntervalMillis);
-    rippledContainer.startLedgerAcceptor(acceptIntervalMillis);
+    Objects.requireNonNull(acceptIntervalMillis, "acceptIntervalMillis must not be null");
+    Preconditions.checkArgument(acceptIntervalMillis.toMillis() > 0, "acceptIntervalMillis must be greater than 0");
+
+    // Stop any existing ledger acceptor
+    if (ledgerAcceptor != null && !ledgerAcceptor.isShutdown()) {
+      stopLedgerAcceptor();
+    }
+
+    // rippled is run in standalone mode which means that ledgers won't automatically close. You have to manually
+    // advance the ledger using the "ledger_accept" method on the admin API. To mimic the behavior of a networked
+    // rippled, run a scheduled task to trigger the "ledger_accept" method.
+    ledgerAcceptor = Executors.newScheduledThreadPool(1);
+    ledgerAcceptor.scheduleAtFixedRate(this::acceptLedger,
+      acceptIntervalMillis.toMillis(),
+      acceptIntervalMillis.toMillis(),
+      TimeUnit.MILLISECONDS
+    );
   }
 
   @Override
   public void stopLedgerAcceptor() {
-    rippledContainer.stopLedgerAcceptor();
+    if (ledgerAcceptor != null) {
+      try {
+        ledgerAcceptor.shutdown();
+        ledgerAcceptor.awaitTermination(5, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException("Unable to stop ledger acceptor", e);
+      }
+    }
   }
 }

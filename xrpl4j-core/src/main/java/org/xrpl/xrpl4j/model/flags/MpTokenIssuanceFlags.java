@@ -38,6 +38,10 @@ public class MpTokenIssuanceFlags extends Flags {
    * Constant {@link MpTokenIssuanceFlags} for the {@code lsfMPTCanClawback} account flag.
    */
   public static final MpTokenIssuanceFlags CAN_CLAWBACK = new MpTokenIssuanceFlags(0x00000040);
+  /**
+   * Constant {@link MpTokenIssuanceFlags} for the {@code lsfMPTCanPrivacy} account flag.
+   */
+  public static final MpTokenIssuanceFlags CAN_PRIVACY = new MpTokenIssuanceFlags(0x00000080);
 
   /**
    * Required-args Constructor.
@@ -125,5 +129,13 @@ public class MpTokenIssuanceFlags extends Flags {
     return this.isSet(MpTokenIssuanceFlags.CAN_CLAWBACK);
   }
 
+  /**
+   * If set, indicates that the MPT supports confidential transfers using privacy-preserving cryptography.
+   *
+   * @return {@code true} if {@code lsfMPTCanPrivacy} is set, otherwise {@code false}.
+   */
+  public boolean lsfMptCanPrivacy() {
+    return this.isSet(MpTokenIssuanceFlags.CAN_PRIVACY);
+  }
 
 }

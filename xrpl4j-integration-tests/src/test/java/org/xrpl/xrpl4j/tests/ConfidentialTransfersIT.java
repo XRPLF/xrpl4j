@@ -41,9 +41,11 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
+import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceSet;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -130,6 +132,55 @@ public class ConfidentialTransfersIT extends AbstractIT {
     assertThat(issuanceFromLedgerEntry.flags().lsfMptCanTransfer()).isTrue();
     assertThat(issuanceFromLedgerEntry.flags().lsfMptCanClawback()).isTrue();
     assertThat(issuanceFromLedgerEntry.flags().lsfMptCanPrivacy()).isTrue();
+
+    //////////////////////
+    // Generate Issuer ElGamal key pair and submit MpTokenIssuanceSet to register it
+    KeyPair issuerElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    ElGamalPublicKey issuerElGamalPublicKey = ElGamalPublicKey.of(
+      issuerElGamalKeyPair.publicKey().uncompressedValue().hexValue()
+    );
+
+    System.out.println("=== Issuer ElGamal Key Pair ===");
+    System.out.println("Private Key (32 bytes natural): " + issuerElGamalKeyPair.privateKey().naturalBytes().hexValue());
+    System.out.println("Public Key (64 bytes, uncompressed): " + issuerElGamalPublicKey.value());
+
+    // Get updated issuer account info for the next transaction
+    AccountInfoResult issuerAccountInfoForSet = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenIssuanceSet issuanceSet = MpTokenIssuanceSet.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfoForSet.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        issuerAccountInfoForSet.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .issuerElGamalPublicKey(issuerElGamalPublicKey)
+      .build();
+
+    SingleSignedTransaction<MpTokenIssuanceSet> signedIssuanceSet = signatureService.sign(
+      issuerKeyPair.privateKey(), issuanceSet
+    );
+    SubmitResult<MpTokenIssuanceSet> issuanceSetResult = xrplClient.submit(signedIssuanceSet);
+    assertThat(issuanceSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    System.out.println("MpTokenIssuanceSet submitted: " + signedIssuanceSet.hash());
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedIssuanceSet.hash(),
+        issuanceSetResult.validatedLedgerIndex(),
+        issuanceSet.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        issuanceSet.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    System.out.println("MpTokenIssuanceSet validated successfully!");
 
     //////////////////////
     // Create two holder accounts

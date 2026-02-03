@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.AbstractJsonTest;
 
-class ConfidentialConvertTest extends AbstractJsonTest {
+class ConfidentialMPTConvertTest extends AbstractJsonTest {
 
   @Test
   void testJsonWithAllFields() throws JSONException, JsonProcessingException {
-    ConfidentialConvert convert = ConfidentialConvert.builder()
+    ConfidentialMPTConvert convert = ConfidentialMPTConvert.builder()
       .account(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"))
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(432))
@@ -31,7 +31,7 @@ class ConfidentialConvertTest extends AbstractJsonTest {
     String json =
       "{\n" +
       "  \"Account\" : \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\",\n" +
-      "  \"TransactionType\" : \"ConfidentialConvert\",\n" +
+      "  \"TransactionType\" : \"ConfidentialMPTConvert\",\n" +
       "  \"Fee\" : \"15\",\n" +
       "  \"Sequence\" : 432,\n" +
       "  \"SigningPubKey\" : \"ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7\",\n" +
@@ -50,7 +50,7 @@ class ConfidentialConvertTest extends AbstractJsonTest {
 
   @Test
   void testJsonWithRequiredFieldsOnly() throws JSONException, JsonProcessingException {
-    ConfidentialConvert convert = ConfidentialConvert.builder()
+    ConfidentialMPTConvert convert = ConfidentialMPTConvert.builder()
       .account(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"))
       .fee(XrpCurrencyAmount.ofDrops(15))
       .sequence(UnsignedInteger.valueOf(432))
@@ -67,7 +67,7 @@ class ConfidentialConvertTest extends AbstractJsonTest {
     String json =
       "{\n" +
       "  \"Account\" : \"rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV\",\n" +
-      "  \"TransactionType\" : \"ConfidentialConvert\",\n" +
+      "  \"TransactionType\" : \"ConfidentialMPTConvert\",\n" +
       "  \"Fee\" : \"15\",\n" +
       "  \"Sequence\" : 432,\n" +
       "  \"SigningPubKey\" : \"ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7\",\n" +

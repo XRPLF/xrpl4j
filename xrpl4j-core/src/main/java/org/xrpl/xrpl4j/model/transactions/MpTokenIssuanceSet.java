@@ -54,4 +54,26 @@ public interface MpTokenIssuanceSet extends Transaction {
   @JsonProperty("Holder")
   Optional<Address> holder();
 
+  /**
+   * The 33-byte EC-ElGamal public key used for the issuer's mirror balances.
+   *
+   * <p>This key is used to encrypt confidential amounts that the issuer can decrypt to monitor
+   * the total supply of confidential tokens.</p>
+   *
+   * @return An optionally-present {@link ElGamalPublicKey}.
+   */
+  @JsonProperty("IssuerElGamalPublicKey")
+  Optional<ElGamalPublicKey> issuerElGamalPublicKey();
+
+  /**
+   * The 33-byte EC-ElGamal public key used for regulatory oversight (if applicable).
+   *
+   * <p>This key is used to encrypt confidential amounts that an auditor can decrypt for
+   * compliance and regulatory purposes.</p>
+   *
+   * @return An optionally-present {@link ElGamalPublicKey}.
+   */
+  @JsonProperty("AuditorElGamalPublicKey")
+  Optional<ElGamalPublicKey> auditorElGamalPublicKey();
+
 }

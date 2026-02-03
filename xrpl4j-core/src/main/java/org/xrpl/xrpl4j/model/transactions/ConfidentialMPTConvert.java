@@ -21,21 +21,21 @@ import java.util.Optional;
  * public issuance mechanisms.</p>
  */
 @Value.Immutable
-@JsonSerialize(as = ImmutableConfidentialConvert.class)
-@JsonDeserialize(as = ImmutableConfidentialConvert.class)
-public interface ConfidentialConvert extends Transaction {
+@JsonSerialize(as = ImmutableConfidentialMPTConvert.class)
+@JsonDeserialize(as = ImmutableConfidentialMPTConvert.class)
+public interface ConfidentialMPTConvert extends Transaction {
 
   /**
-   * Construct a {@code ConfidentialConvert} builder.
+   * Construct a {@code ConfidentialMPTConvert} builder.
    *
-   * @return An {@link ImmutableConfidentialConvert.Builder}.
+   * @return An {@link ImmutableConfidentialMPTConvert.Builder}.
    */
-  static ImmutableConfidentialConvert.Builder builder() {
-    return ImmutableConfidentialConvert.builder();
+  static ImmutableConfidentialMPTConvert.Builder builder() {
+    return ImmutableConfidentialMPTConvert.builder();
   }
 
   /**
-   * Set of {@link TransactionFlags}s for this {@link ConfidentialConvert}, which only allows the
+   * Set of {@link TransactionFlags}s for this {@link ConfidentialMPTConvert}, which only allows the
    * {@code tfFullyCanonicalSig} flag, which is deprecated.
    *
    * @return Always {@link TransactionFlags#EMPTY}.
@@ -117,3 +117,4 @@ public interface ConfidentialConvert extends Transaction {
   @JsonProperty("ZKProof")
   Optional<String> zkProof();
 }
+

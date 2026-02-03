@@ -27,6 +27,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -34,15 +35,18 @@ import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerEntryRequestParams;
+import org.xrpl.xrpl4j.model.client.ledger.MpTokenLedgerEntryParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
-import org.xrpl.xrpl4j.model.transactions.AssetScale;
+import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
+import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
-import org.xrpl.xrpl4j.model.transactions.NetworkId;
+import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
+import org.xrpl.xrpl4j.model.transactions.Payment;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class ConfidentialTransfersIT extends AbstractIT {
@@ -127,6 +131,189 @@ public class ConfidentialTransfersIT extends AbstractIT {
     assertThat(issuanceFromLedgerEntry.flags().lsfMptCanClawback()).isTrue();
     assertThat(issuanceFromLedgerEntry.flags().lsfMptCanPrivacy()).isTrue();
 
+    //////////////////////
+    // Create two holder accounts
+    KeyPair holder1KeyPair = createRandomAccountEd25519();
+    KeyPair holder2KeyPair = createRandomAccountEd25519();
 
+    System.out.println("Holder 1 Address: " + holder1KeyPair.publicKey().deriveAddress());
+    System.out.println("Holder 2 Address: " + holder2KeyPair.publicKey().deriveAddress());
+
+    //////////////////////
+    // Holder 1 authorizes the MPToken
+    AccountInfoResult holder1AccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holder1KeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenAuthorize holder1Authorize = MpTokenAuthorize.builder()
+      .account(holder1KeyPair.publicKey().deriveAddress())
+      .sequence(holder1AccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(holder1KeyPair.publicKey())
+      .lastLedgerSequence(holder1AccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenAuthorize> signedHolder1Authorize = signatureService.sign(
+      holder1KeyPair.privateKey(), holder1Authorize
+    );
+    SubmitResult<MpTokenAuthorize> holder1AuthorizeResult = xrplClient.submit(signedHolder1Authorize);
+    assertThat(holder1AuthorizeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedHolder1Authorize.hash(),
+        holder1AuthorizeResult.validatedLedgerIndex(),
+        holder1Authorize.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        holder1Authorize.sequence(),
+        holder1KeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    //////////////////////
+    // Holder 2 authorizes the MPToken
+    AccountInfoResult holder2AccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holder2KeyPair.publicKey().deriveAddress())
+    );
+
+    MpTokenAuthorize holder2Authorize = MpTokenAuthorize.builder()
+      .account(holder2KeyPair.publicKey().deriveAddress())
+      .sequence(holder2AccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(holder2KeyPair.publicKey())
+      .lastLedgerSequence(holder2AccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<MpTokenAuthorize> signedHolder2Authorize = signatureService.sign(
+      holder2KeyPair.privateKey(), holder2Authorize
+    );
+    SubmitResult<MpTokenAuthorize> holder2AuthorizeResult = xrplClient.submit(signedHolder2Authorize);
+    assertThat(holder2AuthorizeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedHolder2Authorize.hash(),
+        holder2AuthorizeResult.validatedLedgerIndex(),
+        holder2Authorize.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        holder2Authorize.sequence(),
+        holder2KeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    //////////////////////
+    // Transfer 1000 MPTs to Holder 1
+    AccountInfoResult issuerAccountInfoForPayment = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    MptCurrencyAmount transferAmount = MptCurrencyAmount.builder()
+      .mptIssuanceId(mpTokenIssuanceId)
+      .value("1000")
+      .build();
+
+    Payment paymentToHolder1 = Payment.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfoForPayment.accountData().sequence())
+      .destination(holder1KeyPair.publicKey().deriveAddress())
+      .amount(transferAmount)
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        issuerAccountInfoForPayment.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<Payment> signedPaymentToHolder1 = signatureService.sign(
+      issuerKeyPair.privateKey(), paymentToHolder1
+    );
+    SubmitResult<Payment> paymentToHolder1Result = xrplClient.submit(signedPaymentToHolder1);
+    assertThat(paymentToHolder1Result.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedPaymentToHolder1.hash(),
+        paymentToHolder1Result.validatedLedgerIndex(),
+        paymentToHolder1.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        paymentToHolder1.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    //////////////////////
+    // Transfer 1000 MPTs to Holder 2
+    Payment paymentToHolder2 = Payment.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfoForPayment.accountData().sequence().plus(UnsignedInteger.ONE))
+      .destination(holder2KeyPair.publicKey().deriveAddress())
+      .amount(transferAmount)
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        issuerAccountInfoForPayment.ledgerIndexSafe().plus(UnsignedInteger.valueOf(100)).unsignedIntegerValue()
+      )
+      .build();
+
+    SingleSignedTransaction<Payment> signedPaymentToHolder2 = signatureService.sign(
+      issuerKeyPair.privateKey(), paymentToHolder2
+    );
+    SubmitResult<Payment> paymentToHolder2Result = xrplClient.submit(signedPaymentToHolder2);
+    assertThat(paymentToHolder2Result.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedPaymentToHolder2.hash(),
+        paymentToHolder2Result.validatedLedgerIndex(),
+        paymentToHolder2.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        paymentToHolder2.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    //////////////////////
+    // Verify both holders have 1000 MPTs
+    MpTokenObject holder1MpToken = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holder1KeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    MpTokenObject holder2MpToken = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holder2KeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    assertThat(holder1MpToken.mptAmount()).isEqualTo(MpTokenNumericAmount.of(1000L));
+    assertThat(holder2MpToken.mptAmount()).isEqualTo(MpTokenNumericAmount.of(1000L));
+
+    System.out.println("Holder 1 MPT Balance: " + holder1MpToken.mptAmount().value());
+    System.out.println("Holder 2 MPT Balance: " + holder2MpToken.mptAmount().value());
+
+    //////////////////////
+    // Generate ElGamal key pairs for the holders using standard xrpl4j KeyPair
+    // Both ElGamal and XRPL secp256k1 keys use the same secp256k1 curve
+    KeyPair holder1ElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    KeyPair holder2ElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
+
+    System.out.println("=== Holder 1 ElGamal Key Pair ===");
+    System.out.println("Private Key (32 bytes natural): " + holder1ElGamalKeyPair.privateKey().naturalBytes().hexValue());
+    System.out.println("Public Key (64 bytes, uncompressed): " + holder1ElGamalKeyPair.publicKey().uncompressedValue().hexValue());
+
+    System.out.println("=== Holder 2 ElGamal Key Pair ===");
+    System.out.println("Private Key (32 bytes natural): " + holder2ElGamalKeyPair.privateKey().naturalBytes().hexValue());
+    System.out.println("Public Key (64 bytes, uncompressed): " + holder2ElGamalKeyPair.publicKey().uncompressedValue().hexValue());
   }
 }

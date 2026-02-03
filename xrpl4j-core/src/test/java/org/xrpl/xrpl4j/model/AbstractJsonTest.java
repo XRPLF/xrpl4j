@@ -106,16 +106,15 @@ public class AbstractJsonTest {
   }
 
   /**
-   * Parses a Ripple-specific datetime string into a {@link ZonedDateTime} object.
+   * In JSON tests, parsing a date-time string directlry using {@link ZonedDateTime} doesn't, by default, parse
+   * correctly. This helper function ensures that date-time parsing is done correctly for JSON testing.
    * <p/>
-   * Xrpld uses different precision for different fields, for example:
+   * This is necessary because xrpld uses different precision for different fields, for example:
    *
    * <ol>
    *   <li>Some use 9 decimal places: 2020-Mar-24 01:41:11.000000000 UTC</li>
    *   <li>Some use 6 decimal places: 2020-Mar-24 01:27:42.147330 UTC</li>
    * </ol>
-   *
-   * <p>This method supports variable precision for the fractional seconds part.
    *
    * @param rippleDateTimeString The datetime string to parse; must not be null.
    *

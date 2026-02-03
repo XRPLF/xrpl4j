@@ -24,15 +24,21 @@ import java.util.Locale;
  */
 public class ZonedDateTimeSerializer extends StdSerializer<ZonedDateTime> implements ContextualSerializer {
 
-  // Some XRPL dates have  9 digits of millsecond precision (some have 6). This pattern supports arbitrary values
-  // Use literal 'UTC' instead of 'z' pattern to ensure consistent output (z outputs Z for ZoneOffset.UTC)
-  private static final DateTimeFormatter DEFAULT_FORMATTER =
+  // Some XRPL dates have 9 digits of nanosecond precision (some have 6). However, in this Serializer, we don't use
+  // multiple nanosecond patterns like `[.SSSSSSSSS][.SSSSSS][.SSS]` because the serializer would then need to choose
+  // which pattern to use and might produce inconsistent output. Instead, this serializer should produce a
+  // consistent, canonical format, and so is configured to always produce 9 digits of nanosecond precision.
+  // This also matches the typical XRPL format expectations (only server_info uses 6 digits, and xrpl4j does not
+  // serialize that type of payload).
+  //
+  // Uses the literal 'UTC' instead of 'z' pattern to ensure consistent output (z outputs Z for ZoneOffset.UTC)
+  private static final DateTimeFormatter DEFAULT_SERIALIZATION_FORMATTER =
     DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss[.n] 'UTC'", Locale.US);
 
   private final DateTimeFormatter formatter;
 
   public ZonedDateTimeSerializer() {
-    this(DEFAULT_FORMATTER);
+    this(DEFAULT_SERIALIZATION_FORMATTER);
   }
 
   private ZonedDateTimeSerializer(DateTimeFormatter formatter) {

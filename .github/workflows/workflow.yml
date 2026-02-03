@@ -60,7 +60,7 @@ jobs:
     strategy:
       matrix:
         # test against each major Java version (Java 8 built separately above for codecov upload)
-        java: [ 11, 16, 17, 21 ]
+        java: [ 11, 16, 17, 21, 25 ]
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v5

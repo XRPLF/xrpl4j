@@ -36,6 +36,7 @@ import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.SchnorrProofOfKnowledge;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
+import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceEncryptor;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
@@ -155,7 +156,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     System.out.println("=== Issuer ElGamal Key Pair ===");
-    System.out.println("Private Key (32 bytes natural): " + issuerElGamalKeyPair.privateKey().naturalBytes().hexValue());
+    System.out.println(
+      "Private Key (32 bytes natural): " + issuerElGamalKeyPair.privateKey().naturalBytes().hexValue());
     System.out.println("Public Key (64 bytes, uncompressed): " + issuerElGamalPublicKey.value());
 
     // Get updated issuer account info for the next transaction
@@ -339,6 +341,28 @@ public class ConfidentialTransfersIT extends AbstractIT {
       issuerCiphertext, issuerElGamalEcPoint, amountToConvert, blindingFactorBytes
     );
     System.out.println("Issuer encryption verification: " + issuerEncryptionValid);
+
+    //////////////////////
+    // Decrypt ciphertexts to verify they contain the correct amount (500)
+    System.out.println("\n=== Decryption Verification ===");
+    JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor(secp256k1);
+
+    // Decrypt holder ciphertext using holder's private key
+    byte[] holderPrivateKeyForDecrypt = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+    long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderPrivateKeyForDecrypt);
+    System.out.println(
+      "Holder ciphertext decrypted amount: " + holderDecryptedAmount + " (expected: " + amountToConvert + ")");
+
+    // Decrypt issuer ciphertext using issuer's private key
+    byte[] issuerPrivateKeyForDecrypt = issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+    long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerPrivateKeyForDecrypt);
+    System.out.println(
+      "Issuer ciphertext decrypted amount: " + issuerDecryptedAmount + " (expected: " + amountToConvert + ")");
+
+    // Verify both decrypt to the same amount
+    assertThat(holderDecryptedAmount).isEqualTo(amountToConvert.longValue());
+    assertThat(issuerDecryptedAmount).isEqualTo(amountToConvert.longValue());
+    System.out.println("Both ciphertexts decrypt to the correct amount: " + amountToConvert);
 
     //////////////////////
     // Generate ZKProof (Schnorr Proof of Knowledge)

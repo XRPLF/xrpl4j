@@ -16,7 +16,6 @@ import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -45,12 +44,10 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 AmmInfoAuthAccount.of(Address.of("rNzgpEGUyEmQ1YGDMAiGGBvwtzbk78tcCG"))
               )
               .discountedFee(TradingFee.of(UnsignedInteger.ZERO))
-              .expiration(
-                ZonedDateTime.parse(
-                  "2023-07-20T15:17:31+0000",
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
-                  ).withZoneSameLocal(ZoneId.of("UTC"))
-              )
+              .expiration(ZonedDateTime.parse(
+                "2023-07-20T15:17:31+0000",
+                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
+              ))
               .price(
                 IssuedCurrencyAmount.builder()
                   .currency("03930D02208264E2E40EC1B0C09E4DB96EE197B1")
@@ -151,7 +148,7 @@ class AmmInfoResultTest extends AbstractJsonTest {
                 ZonedDateTime.parse(
                   "2023-07-20T15:17:31+0000",
                   DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US)
-                ).withZoneSameLocal(ZoneId.of("UTC"))
+                )
               )
               .price(
                 IssuedCurrencyAmount.builder()

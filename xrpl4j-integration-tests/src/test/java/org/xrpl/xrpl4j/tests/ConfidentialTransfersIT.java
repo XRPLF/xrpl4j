@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceEncryptor;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -348,13 +349,17 @@ public class ConfidentialTransfersIT extends AbstractIT {
     JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor(secp256k1);
 
     // Decrypt holder ciphertext using holder's private key
-    byte[] holderPrivateKeyForDecrypt = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+    ElGamalPrivateKey holderPrivateKeyForDecrypt = ElGamalPrivateKey.of(
+      holderElGamalKeyPair.privateKey().naturalBytes()
+    );
     long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderPrivateKeyForDecrypt);
     System.out.println(
       "Holder ciphertext decrypted amount: " + holderDecryptedAmount + " (expected: " + amountToConvert + ")");
 
     // Decrypt issuer ciphertext using issuer's private key
-    byte[] issuerPrivateKeyForDecrypt = issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+    ElGamalPrivateKey issuerPrivateKeyForDecrypt = ElGamalPrivateKey.of(
+      issuerElGamalKeyPair.privateKey().naturalBytes()
+    );
     long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerPrivateKeyForDecrypt);
     System.out.println(
       "Issuer ciphertext decrypted amount: " + issuerDecryptedAmount + " (expected: " + amountToConvert + ")");

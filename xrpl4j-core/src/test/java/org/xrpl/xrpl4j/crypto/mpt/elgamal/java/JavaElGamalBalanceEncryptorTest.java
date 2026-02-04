@@ -9,12 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
-import org.xrpl.xrpl4j.crypto.mpt.KeyPairUtils;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalKeyPair;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -24,7 +22,7 @@ import java.util.Arrays;
  */
 public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
-  private ElGamalBalanceDecryptor elGamalBalanceDecryptor;
+  private JavaElGamalBalanceDecryptor elGamalBalanceDecryptor;
   private Secp256k1Operations secp256k1;
 
   private JavaElGamalBalanceEncryptor elGamalBalanceEncryptor;
@@ -69,11 +67,10 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
     byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
     UnsignedLong originalAmount = UnsignedLong.valueOf(10001);
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(originalAmount, publicKeyAsEcPoint, blindingFactor);
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext,
-      keyPair.privateKey().naturalBytes().toByteArray()
-    );
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
 
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
@@ -83,13 +80,12 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
     byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
     UnsignedLong originalAmount = UnsignedLong.ZERO;
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(
       originalAmount, publicKeyAsEcPoint, blindingFactor
     );
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext,
-      keyPair.privateKey().naturalBytes().toByteArray()
-    );
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
 
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
@@ -97,6 +93,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
   @Test
   void testCanonicalEncryptedZero() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     // Use placeholder byte arrays for IDs (20 bytes for account, 24 for issuance)
     byte[] accountId = new byte[20];
@@ -115,8 +112,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     );
 
     // 1. Verify that it decrypts to zero
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertextA,
-      keyPair.privateKey().naturalBytes().toByteArray());
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(ciphertextA, privateKey);
     assertThat(decryptedAmount).isEqualTo(0);
 
     // 2. Verify that the output is deterministic (both ciphertexts are identical)
@@ -171,6 +167,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
     byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
     UnsignedLong amount = UnsignedLong.valueOf(42);
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     ElGamalCiphertext original = elGamalBalanceEncryptor.encrypt(amount, publicKeyAsEcPoint, blindingFactor);
 
@@ -183,14 +180,14 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     assertThat(deserialized).isEqualTo(original);
 
     // Verify the deserialized ciphertext still decrypts correctly
-    long decryptedAmount = elGamalBalanceDecryptor.decrypt(deserialized,
-      keyPair.privateKey().naturalBytes().toByteArray());
+    long decryptedAmount = elGamalBalanceDecryptor.decrypt(deserialized, privateKey);
     assertThat(decryptedAmount).isEqualTo(amount.longValue());
   }
 
   @Test
   void testCanonicalZeroDifferentInputsProduceDifferentOutputs() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     byte[] accountId1 = new byte[20];
     accountId1[0] = 1;
@@ -209,9 +206,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     assertThat(ciphertext1).isNotEqualTo(ciphertext2);
 
     // But both should still decrypt to zero
-    assertThat(
-      elGamalBalanceDecryptor.decrypt(ciphertext1, keyPair.privateKey().naturalBytes().toByteArray())).isEqualTo(0);
-    assertThat(
-      elGamalBalanceDecryptor.decrypt(ciphertext2, keyPair.privateKey().naturalBytes().toByteArray())).isEqualTo(0);
+    assertThat(elGamalBalanceDecryptor.decrypt(ciphertext1, privateKey)).isEqualTo(0);
+    assertThat(elGamalBalanceDecryptor.decrypt(ciphertext2, privateKey)).isEqualTo(0);
   }
 }

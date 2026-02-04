@@ -6,13 +6,11 @@ import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.mpt.KeyPairUtils;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalBalanceEncryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalKeyPair;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
 
 import java.security.SecureRandom;
 
@@ -22,7 +20,7 @@ import java.security.SecureRandom;
 public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   private ElGamalBalanceEncryptor elGamalBalanceEncryptor;
-  private ElGamalBalanceDecryptor javaElGamalBalanceDecryptor;
+  private JavaElGamalBalanceDecryptor javaElGamalBalanceDecryptor;
 
   private JavaElGamalBalanceOperations elGamalBalanceOperations;
 
@@ -39,6 +37,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
   @Test
   void testHomomorphicAddition() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
     UnsignedLong amountA = UnsignedLong.valueOf(5000);
     UnsignedLong amountB = UnsignedLong.valueOf(1234);
 
@@ -49,9 +48,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKeyAsEcPoint, blindingFactorB);
 
     ElGamalCiphertext sumCiphertext = elGamalBalanceOperations.add(ciphertextA, ciphertextB);
-    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sumCiphertext,
-      keyPair.privateKey().naturalBytes().toByteArray()
-    );
+    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sumCiphertext, privateKey);
 
     assertThat(decryptedSum).isEqualTo(amountA.plus(amountB).longValue());
   }
@@ -59,6 +56,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
   @Test
   void testHomomorphicSubtraction() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
     UnsignedLong amountA = UnsignedLong.valueOf(5000);
     UnsignedLong amountB = UnsignedLong.valueOf(1234);
 
@@ -69,9 +67,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKeyAsEcPoint, blindingFactorB);
 
     ElGamalCiphertext diffCiphertext = elGamalBalanceOperations.subtract(ciphertextA, ciphertextB);
-    long decryptedDiff = javaElGamalBalanceDecryptor.decrypt(
-      diffCiphertext, keyPair.privateKey().naturalBytes().toByteArray()
-    );
+    long decryptedDiff = javaElGamalBalanceDecryptor.decrypt(diffCiphertext, privateKey);
 
     assertThat(decryptedDiff).isEqualTo(amountA.minus(amountB).longValue());
   }
@@ -79,14 +75,14 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
   @Test
   void testZeroEncryption() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
     byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
     UnsignedLong originalAmount = UnsignedLong.ZERO;
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(
       originalAmount, publicKeyAsEcPoint, blindingFactor
     );
-    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertext,
-      keyPair.privateKey().naturalBytes().toByteArray());
+    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
 
     assertThat(decryptedAmount).isEqualTo(originalAmount.longValue());
   }
@@ -94,6 +90,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
   @Test
   void testCanonicalEncryptedZero() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     // Use placeholder byte arrays for IDs (20 bytes for account, 24 for issuance)
     byte[] accountId = new byte[20];
@@ -112,9 +109,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     );
 
     // 1. Verify that it decrypts to zero
-    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertextA,
-      keyPair.privateKey().naturalBytes().toByteArray()
-    );
+    long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertextA, privateKey);
     assertThat(decryptedAmount).isEqualTo(0);
 
     // 2. Verify that the output is deterministic (both ciphertexts are identical)
@@ -124,6 +119,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
   @Test
   void testMultipleHomomorphicOperations() {
     ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     // Encrypt several amounts
     UnsignedLong[] amounts = {UnsignedLong.valueOf(100), UnsignedLong.valueOf(200), UnsignedLong.valueOf(300),
@@ -141,7 +137,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
       sum = elGamalBalanceOperations.add(sum, ciphertexts[i]);
     }
 
-    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sum, keyPair.privateKey().naturalBytes().toByteArray());
+    long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sum, privateKey);
     assertThat(decryptedSum).isEqualTo(100 + 200 + 300 + 50);
   }
 }

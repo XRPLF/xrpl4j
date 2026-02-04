@@ -1,23 +1,49 @@
 package org.xrpl.xrpl4j.crypto.mpt.elgamal.java;
 
-import com.google.common.base.Preconditions;
+/*-
+ * ========================LICENSE_START=================================
+ * xrpl4j :: core
+ * %%
+ * Copyright (C) 2020 - 2023 XRPL Foundation and its contributors
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Implementation of ElGamal encryption over the secp256k1 elliptic curve for confidential MPT operations
+ * In-memory implementation of ElGamal decryption over the secp256k1 elliptic curve.
  *
- * <p>This class provides methods for:</p>
- * <ul>
- *   <li>Decrypting ciphertexts (via brute-force for small amounts)</li>
- * </ul>
+ * <p>This implementation uses BouncyCastle for cryptographic operations and works
+ * with in-memory {@link ElGamalPrivateKey} instances.</p>
+ *
+ * <p><strong>WARNING:</strong> This implementation uses in-memory private key material.
+ * For server-side applications, consider using an implementation that works with
+ * {@link org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKeyReference} instead.</p>
+ *
+ * @see ElGamalBalanceDecryptor
+ * @see ElGamalPrivateKey
  */
-public class JavaElGamalBalanceDecryptor implements ElGamalBalanceDecryptor {
+public class JavaElGamalBalanceDecryptor implements ElGamalBalanceDecryptor<ElGamalPrivateKey> {
 
   /**
    * Maximum amount that can be decrypted via brute-force search.
@@ -27,31 +53,43 @@ public class JavaElGamalBalanceDecryptor implements ElGamalBalanceDecryptor {
   private final Secp256k1Operations secp256k1;
 
   /**
-   * Constructs a new ElGamalEncryption instance.
+   * Constructs a new {@link JavaElGamalBalanceDecryptor} instance.
+   *
+   * @param secp256k1 The {@link Secp256k1Operations} to use for EC operations.
    */
   public JavaElGamalBalanceDecryptor(final Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1);
+    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
   }
 
   /**
    * Decrypts an ElGamal ciphertext to recover the original amount.
    *
-   * <p>This uses brute-force search and is only practical for small amounts
-   * (up to {@link #MAX_DECRYPTABLE_AMOUNT}).</p>
+   * <p>This uses brute-force search over the discrete logarithm and is only practical
+   * for small amounts (up to {@link #MAX_DECRYPTABLE_AMOUNT}).</p>
    *
-   * @param ciphertext The ciphertext to decrypt.
-   * @param privateKey The 32-byte private key.
+   * <p>The decryption algorithm:</p>
+   * <ol>
+   *   <li>Compute shared secret: S = privateKey * C1</li>
+   *   <li>Recover masked amount: M = C2 - S = amount * G</li>
+   *   <li>Brute-force search for amount such that amount * G = M</li>
+   * </ol>
    *
-   * @return The decrypted amount.
+   * @param ciphertext The {@link ElGamalCiphertext} to decrypt.
+   * @param privateKey The {@link ElGamalPrivateKey} to use for decryption.
+   *
+   * @return The decrypted amount as a long.
    *
    * @throws IllegalArgumentException if the amount cannot be found within the search range.
+   * @throws NullPointerException     if ciphertext or privateKey is null.
    */
-  public long decrypt(final ElGamalCiphertext ciphertext, final byte[] privateKey) {
+  @Override
+  public long decrypt(final ElGamalCiphertext ciphertext, final ElGamalPrivateKey privateKey) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
     Objects.requireNonNull(privateKey, "privateKey must not be null");
-    Preconditions.checkArgument(privateKey.length == 32, "privateKey must be 32 bytes");
 
-    BigInteger privKeyScalar = new BigInteger(1, privateKey);
+    byte[] privateKeyBytes = privateKey.naturalBytes().toByteArray();
+
+    BigInteger privKeyScalar = new BigInteger(1, privateKeyBytes);
 
     // S = privateKey * C1
     ECPoint sharedSecret = secp256k1.multiply(ciphertext.c1(), privKeyScalar);
@@ -76,6 +114,9 @@ public class JavaElGamalBalanceDecryptor implements ElGamalBalanceDecryptor {
       currentM = secp256k1.add(currentM, gPoint);
     }
 
-    throw new IllegalArgumentException("Amount not found within search range (0 to " + MAX_DECRYPTABLE_AMOUNT + ")");
+    throw new IllegalArgumentException(
+      "Amount not found within search range (0 to " + MAX_DECRYPTABLE_AMOUNT + ")"
+    );
+
   }
 }

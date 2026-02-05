@@ -3,7 +3,7 @@ package org.xrpl.xrpl4j.model.client.common;
 import com.google.common.primitives.UnsignedLong;
 
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
@@ -25,7 +25,7 @@ public class TimeUtils {
    * @return A {@link ZonedDateTime} in UTC.
    */
   public static ZonedDateTime xrplTimeToZonedDateTime(UnsignedLong xrplTime) {
-    return Instant.ofEpochSecond(RIPPLE_EPOCH.plus(xrplTime).longValue()).atZone(ZoneId.of("UTC"));
+    return Instant.ofEpochSecond(RIPPLE_EPOCH.plus(xrplTime).longValue()).atZone(ZoneOffset.UTC);
   }
 
 }

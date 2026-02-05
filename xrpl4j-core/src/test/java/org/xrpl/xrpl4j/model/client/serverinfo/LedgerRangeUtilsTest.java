@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.client.serverinfo;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,12 +46,12 @@ public class LedgerRangeUtilsTest {
     assertThat(reportingServerInfo.map(
       ($) -> null,
       ($) -> null,
-      param -> param.completeLedgers()
+      ServerInfo::completeLedgers
     ).size()).isEqualTo(0);
 
     ServerInfo rippledServerInfo = RippledServerInfoTest.rippledServerInfo("empty");
     assertThat(rippledServerInfo.map(
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null,
       ($) -> null
     ).size()).isEqualTo(0);
@@ -59,35 +59,35 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("");
     assertThat(serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     ).size()).isEqualTo(0);
 
     serverInfo = ClioServerInfoTest.clioServerInfo("foo");
     assertThat(serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     ).size()).isEqualTo(0);
 
     serverInfo = ClioServerInfoTest.clioServerInfo("foo100");
     assertThat(serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     ).size()).isEqualTo(0);
 
     serverInfo = ClioServerInfoTest.clioServerInfo("1--2");
     assertThat(serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     ).size()).isEqualTo(0);
 
     serverInfo = ClioServerInfoTest.clioServerInfo("0");
     List<Range<UnsignedLong>> ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(1);
@@ -97,7 +97,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("1");
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(1);
@@ -108,7 +108,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("1-2");
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(1);
@@ -120,7 +120,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("0-" + UnsignedLong.MAX_VALUE.toString());
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(1);
@@ -128,7 +128,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("0-foo");
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(0);
@@ -136,7 +136,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("foo-0");
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(0);
@@ -144,7 +144,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("foo-0,bar-20");
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(0);
@@ -152,7 +152,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("0-10,20-30");
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(2);
@@ -169,7 +169,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo("0-10, 20-30 "); // <-- Test the trim function
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(2);
@@ -186,7 +186,7 @@ public class LedgerRangeUtilsTest {
     serverInfo = ClioServerInfoTest.clioServerInfo(UnsignedLong.MAX_VALUE.toString());
     ranges = serverInfo.map(
       ($) -> null,
-      param -> param.completeLedgers(),
+      ServerInfo::completeLedgers,
       ($) -> null
     );
     assertThat(ranges).hasSize(1);

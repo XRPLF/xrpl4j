@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.AddressConstants;
@@ -73,6 +74,8 @@ import org.xrpl.xrpl4j.model.transactions.AmmDeposit;
 import org.xrpl.xrpl4j.model.transactions.AmmVote;
 import org.xrpl.xrpl4j.model.transactions.AmmWithdraw;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.BatchSigner;
+import org.xrpl.xrpl4j.model.transactions.BatchSignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.CheckCancel;
 import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
@@ -119,6 +122,7 @@ import org.xrpl.xrpl4j.model.transactions.PermissionedDomainDelete;
 import org.xrpl.xrpl4j.model.transactions.PermissionedDomainSet;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.SetRegularKey;
+import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerListSet;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TicketCreate;
@@ -185,6 +189,9 @@ public class SignatureUtilsTest {
 
   SignatureUtils signatureUtils;
 
+  KeyPair signer1KeyPair;
+  KeyPair signer2KeyPair;
+
   @BeforeEach
   public void setUp() throws JsonProcessingException {
     openMocks(this);
@@ -196,6 +203,9 @@ public class SignatureUtilsTest {
     when(xrplBinaryCodecMock.encodeForMultiSigning(any(), anyString())).thenReturn("ED");
     when(xrplBinaryCodecMock.encode(anyString())).thenReturn("0123456789"); // <-- Unused HEX value.
     this.signatureUtils = new SignatureUtils(objectMapperMock, xrplBinaryCodecMock);
+
+    this.signer1KeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    this.signer2KeyPair = Seed.secp256k1Seed().deriveKeyPair();
   }
 
   @Test
@@ -2363,23 +2373,25 @@ public class SignatureUtilsTest {
 
   private ImmutablePayment createPayment1() {
     return Payment.builder()
-      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .account(signer1KeyPair.publicKey().deriveAddress())
       .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(1))
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
+      .signingPublicKey(signer1KeyPair.publicKey())
       .build();
   }
 
   private ImmutablePayment createPayment2() {
     return Payment.builder()
-      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .account(signer2KeyPair.publicKey().deriveAddress())
       .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
       .amount(XrpCurrencyAmount.ofDrops(2000))
       .fee(XrpCurrencyAmount.ofDrops(10))
       .sequence(UnsignedInteger.valueOf(2))
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
+      .signingPublicKey(signer2KeyPair.publicKey())
       .build();
   }
 
@@ -2390,6 +2402,20 @@ public class SignatureUtilsTest {
       .sequence(UnsignedInteger.valueOf(6))
       .flags(BatchFlags.ALL_OR_NOTHING)
       .addRawTransactions(RawTransactionWrapper.of(payment1), RawTransactionWrapper.of(payment2))
+      .batchSigners(Lists.newArrayList(
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(payment1.account())
+          .signingPublicKey(payment1.signingPublicKey())
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        ),
+        BatchSignerWrapper.of(BatchSigner.builder()
+          .account(payment2.account())
+          .signingPublicKey(payment2.signingPublicKey())
+          .transactionSignature(Signature.fromBase16("00112233"))
+          .build()
+        )
+      ))
       .signingPublicKey(sourcePublicKey)
       .build();
   }

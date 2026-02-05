@@ -30,6 +30,8 @@ import org.immutables.value.Value.Check;
 import org.xrpl.xrpl4j.model.flags.BatchFlags;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A Batch transaction allows multiple transactions to be grouped together and executed atomically according to the
@@ -174,6 +176,53 @@ public interface Batch extends Transaction {
       !anySignerMatchesOuterAccount,
       "The Account submitting a Batch transaction must not sign any inner transactions."
     );
+  }
+
+  /**
+   * Validates that BatchSigners contains signatures from all accounts whose inner transactions are included, excluding
+   * the account signing the outer transaction.
+   *
+   * <p>If more than one account has inner transactions in the Batch, BatchSigners must be provided and must
+   * contain signatures from all such accounts (except the outer transaction signer).</p>
+   */
+  @Value.Check
+  default void validateBatchSigners() {
+    // We only enforce this check if the `batchSigners` object is non-empty. This is because it _is_ valid to construct
+    // and unsigned batch, in which case `batchSigners` will be empty. However, in the case that `batchSigners` is
+    // not empty, then these rules should be enforced.
+    if (!this.batchSigners().isEmpty()) {
+
+      // Collect all unique accounts from inner transactions
+      Set<Address> innerTransactionAccounts = rawTransactions().stream()
+        .map(wrapper -> wrapper.rawTransaction().account())
+        .collect(Collectors.toSet());
+
+      // Determine which accounts need to provide BatchSigners (all inner tx accounts except the outer signer)
+      Set<Address> accountsRequiringSignatures = innerTransactionAccounts.stream()
+        .filter(innerAccount -> !innerAccount.equals(this.account()))
+        .collect(Collectors.toSet());
+
+      // If there are accounts other than the outer signer that have inner transactions,
+      // BatchSigners must contain signatures from all of them
+      if (!accountsRequiringSignatures.isEmpty()) {
+        // Collect all accounts that have provided BatchSigners
+        Set<Address> batchSignerAccounts = batchSigners().stream()
+          .map(wrapper -> wrapper.batchSigner().account())
+          .collect(Collectors.toSet());
+
+        // Verify all required accounts have provided signatures
+        Set<Address> missingSigners = accountsRequiringSignatures.stream()
+          .filter(requiredAccount -> !batchSignerAccounts.contains(requiredAccount))
+          .collect(Collectors.toSet());
+
+        Preconditions.checkArgument(
+          missingSigners.isEmpty(),
+          "BatchSigners must contain signatures from all accounts with inner transactions " +
+            "(excluding the outer transaction signer). Missing signatures from: %s",
+          missingSigners
+        );
+      }
+    }
   }
 
 }

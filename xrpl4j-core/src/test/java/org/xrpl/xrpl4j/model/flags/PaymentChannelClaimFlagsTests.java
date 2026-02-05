@@ -114,6 +114,17 @@ public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfRenew()).isFalse();
+    assertThat(flags.tfClose()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(boolean tfRenew, boolean tfClose, boolean tfInnerBatchTxn) {
     return (PaymentChannelClaimFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfRenew ? PaymentChannelClaimFlags.RENEW.getValue() : 0L) |

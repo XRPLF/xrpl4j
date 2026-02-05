@@ -55,5 +55,31 @@ class MpTokenIssuanceCreateFlagsTest extends AbstractFlagsTest {
     assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    MpTokenIssuanceCreateFlags flags = MpTokenIssuanceCreateFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfMptCanLock()).isFalse();
+    assertThat(flags.tfMptRequireAuth()).isFalse();
+    assertThat(flags.tfMptCanEscrow()).isFalse();
+    assertThat(flags.tfMptCanTrade()).isFalse();
+    assertThat(flags.tfMptCanTransfer()).isFalse();
+    assertThat(flags.tfMptCanClawback()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
 
+  @Test
+  void testEmptyFlags() {
+    MpTokenIssuanceCreateFlags flags = MpTokenIssuanceCreateFlags.empty();
+    assertThat(flags.isEmpty()).isTrue();
+    assertThat(flags.tfMptCanLock()).isFalse();
+    assertThat(flags.tfMptRequireAuth()).isFalse();
+    assertThat(flags.tfMptCanEscrow()).isFalse();
+    assertThat(flags.tfMptCanTrade()).isFalse();
+    assertThat(flags.tfMptCanTransfer()).isFalse();
+    assertThat(flags.tfMptCanClawback()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
 }

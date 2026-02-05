@@ -91,5 +91,6 @@ public class AmmWithdrawFlagsTest {
     assertThat(flags.tfTwoAsset()).isFalse();
     assertThat(flags.tfOneAssetLpToken()).isFalse();
     assertThat(flags.tfLimitLpToken()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
   }
 }

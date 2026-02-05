@@ -127,6 +127,18 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    NfTokenMintFlags flags = NfTokenMintFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfBurnable()).isFalse();
+    assertThat(flags.tfOnlyXRP()).isFalse();
+    assertThat(flags.tfTrustLine()).isFalse();
+    assertThat(flags.tfTransferable()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(
     boolean tfBurnable,
     boolean tfOnlyXRP,

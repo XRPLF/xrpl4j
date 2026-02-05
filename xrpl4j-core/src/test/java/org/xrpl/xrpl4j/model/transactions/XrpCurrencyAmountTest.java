@@ -450,6 +450,19 @@ public class XrpCurrencyAmountTest {
   }
 
   @Test
+  public void testHashCode() {
+    XrpCurrencyAmount amount1 = XrpCurrencyAmount.ofDrops(1000000);
+    XrpCurrencyAmount amount2 = XrpCurrencyAmount.ofDrops(1000000);
+    XrpCurrencyAmount amount3 = XrpCurrencyAmount.ofDrops(2000000);
+
+    // Same value should have same hashCode
+    assertThat(amount1.hashCode()).isEqualTo(amount2.hashCode());
+
+    // Different values should have different hashCodes
+    assertThat(amount1.hashCode()).isNotEqualTo(amount3.hashCode());
+  }
+
+  @Test
   public void testJsonSerialization() throws JsonProcessingException, JSONException {
     XrpCurrencyAmount amount = XrpCurrencyAmount.ofDrops(1000000);
     XrpCurrencyAmountWrapper wrapper = ImmutableXrpCurrencyAmountWrapper.builder()

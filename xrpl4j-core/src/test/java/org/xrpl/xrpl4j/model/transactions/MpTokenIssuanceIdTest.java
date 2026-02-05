@@ -49,6 +49,22 @@ public class MpTokenIssuanceIdTest {
   }
 
   @Test
+  void testHashCode() {
+    MpTokenIssuanceId idUpper = MpTokenIssuanceId.of("000004C463C52827307480341125DA0577DEFC38405B0E3E");
+    MpTokenIssuanceId idLower = MpTokenIssuanceId.of("000004c463c52827307480341125da0577defc38405b0e3e");
+    MpTokenIssuanceId idDifferent = MpTokenIssuanceId.of("000004C463C52827307480341125DA0577DEFC38405B0E3F");
+
+    // Same value should have same hashCode
+    assertThat(idUpper.hashCode()).isEqualTo(idUpper.hashCode());
+
+    // Case-insensitive: upper and lower case should have same hashCode
+    assertThat(idUpper.hashCode()).isEqualTo(idLower.hashCode());
+
+    // Different values should have different hashCodes
+    assertThat(idUpper.hashCode()).isNotEqualTo(idDifferent.hashCode());
+  }
+
+  @Test
   void testJsonSerialization() throws JsonProcessingException, JSONException {
     MpTokenIssuanceId id = MpTokenIssuanceId.of("000004C463C52827307480341125DA0577DEFC38405B0E3E");
     MpTokenIssuanceIdWrapper wrapper = MpTokenIssuanceIdWrapper.of(id);

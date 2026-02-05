@@ -25,6 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 /**
  * Unit tests for {@link BatchFlags}.
@@ -102,7 +107,173 @@ class BatchFlagsTest extends AbstractFlagsTest {
     assertThat(flags.getValue()).isEqualTo(0x00010000L);
   }
 
-  // TODO: Test the builder
+  @Test
+  void testOfWithOnlyOneValue() {
+    BatchFlags flags = BatchFlags.of(0x00020000L);
+    assertThat(flags.tfOnlyOne()).isTrue();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0x00020000L);
+  }
+
+  @Test
+  void testOfWithUntilFailureValue() {
+    BatchFlags flags = BatchFlags.of(0x00040000L);
+    assertThat(flags.tfUntilFailure()).isTrue();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0x00040000L);
+  }
+
+  @Test
+  void testOfWithIndependentValue() {
+    BatchFlags flags = BatchFlags.of(0x00080000L);
+    assertThat(flags.tfIndependent()).isTrue();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0x00080000L);
+  }
+
+  @Test
+  void testOfWithZeroValue() {
+    BatchFlags flags = BatchFlags.of(0L);
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(0L);
+  }
+
+  // ////////////////
+  // Test with() method
+  // ////////////////
+
+  @Test
+  void testWithCombinesFlags() {
+    BatchFlags combined = BatchFlags.ALL_OR_NOTHING.with(BatchFlags.ONLY_ONE);
+    assertThat(combined.tfAllOrNothing()).isTrue();
+    assertThat(combined.tfOnlyOne()).isTrue();
+    assertThat(combined.tfUntilFailure()).isFalse();
+    assertThat(combined.tfIndependent()).isFalse();
+    assertThat(combined.getValue()).isEqualTo(0x00010000L | 0x00020000L);
+  }
+
+  @Test
+  void testWithMultipleFlags() {
+    BatchFlags combined = BatchFlags.UNTIL_FAILURE.with(BatchFlags.INDEPENDENT);
+    assertThat(combined.tfUntilFailure()).isTrue();
+    assertThat(combined.tfIndependent()).isTrue();
+    assertThat(combined.tfAllOrNothing()).isFalse();
+    assertThat(combined.tfOnlyOne()).isFalse();
+    assertThat(combined.getValue()).isEqualTo(0x00040000L | 0x00080000L);
+  }
+
+  @Test
+  void testWithUnsetFlag() {
+    BatchFlags combined = BatchFlags.ALL_OR_NOTHING.with(BatchFlags.UNSET);
+    assertThat(combined.tfAllOrNothing()).isTrue();
+    assertThat(combined.getValue()).isEqualTo(0x00010000L);
+  }
+
+  @Test
+  void testWithChaining() {
+    BatchFlags combined = BatchFlags.ALL_OR_NOTHING
+      .with(BatchFlags.ONLY_ONE)
+      .with(BatchFlags.UNTIL_FAILURE);
+    assertThat(combined.tfAllOrNothing()).isTrue();
+    assertThat(combined.tfOnlyOne()).isTrue();
+    assertThat(combined.tfUntilFailure()).isTrue();
+    assertThat(combined.tfIndependent()).isFalse();
+    assertThat(combined.getValue()).isEqualTo(0x00010000L | 0x00020000L | 0x00040000L);
+  }
+
+  // ////////////////
+  // Test Builder
+  // ////////////////
+
+  public static Stream<Arguments> builderData() {
+    return getBooleanCombinations(4);
+  }
+
+  @ParameterizedTest
+  @MethodSource("builderData")
+  void testBuilderWithAllCombinations(
+    boolean tfAllOrNothing,
+    boolean tfOnlyOne,
+    boolean tfUntilFailure,
+    boolean tfIndependent
+  ) {
+    BatchFlags flags = BatchFlags.builder()
+      .tfAllOrNothing(tfAllOrNothing)
+      .tfOnlyOne(tfOnlyOne)
+      .tfUntilFailure(tfUntilFailure)
+      .tfIndependent(tfIndependent)
+      .build();
+
+    assertThat(flags.tfOnlyOne()).isEqualTo(tfOnlyOne);
+    assertThat(flags.tfUntilFailure()).isEqualTo(tfUntilFailure);
+    assertThat(flags.tfIndependent()).isEqualTo(tfIndependent);
+  }
+
+  @Test
+  void testBuilderDefaultValues() {
+    BatchFlags flags = BatchFlags.builder().build();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+  }
+
+  @Test
+  void testBuilderWithAllOrNothingOnly() {
+    BatchFlags flags = BatchFlags.builder()
+      .tfAllOrNothing(true)
+      .build();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+  }
+
+  @Test
+  void testBuilderWithOnlyOneOnly() {
+    BatchFlags flags = BatchFlags.builder()
+      .tfOnlyOne(true)
+      .build();
+    assertThat(flags.tfOnlyOne()).isTrue();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+  }
+
+  @Test
+  void testBuilderWithUntilFailureOnly() {
+    BatchFlags flags = BatchFlags.builder()
+      .tfUntilFailure(true)
+      .build();
+    assertThat(flags.tfUntilFailure()).isTrue();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfIndependent()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+  }
+
+  @Test
+  void testBuilderWithIndependentOnly() {
+    BatchFlags flags = BatchFlags.builder()
+      .tfIndependent(true)
+      .build();
+    assertThat(flags.tfIndependent()).isTrue();
+    assertThat(flags.tfAllOrNothing()).isFalse();
+    assertThat(flags.tfOnlyOne()).isFalse();
+    assertThat(flags.tfUntilFailure()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isTrue();
+  }
 
   // ////////////////
   // Test TransactionFlags as Batch Flags

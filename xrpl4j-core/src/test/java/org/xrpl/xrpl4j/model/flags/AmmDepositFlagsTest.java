@@ -74,5 +74,6 @@ public class AmmDepositFlagsTest {
     assertThat(flags.tfOneAssetLpToken()).isFalse();
     assertThat(flags.tfLimitLpToken()).isFalse();
     assertThat(flags.tfTwoAssetIfEmpty()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
   }
 }

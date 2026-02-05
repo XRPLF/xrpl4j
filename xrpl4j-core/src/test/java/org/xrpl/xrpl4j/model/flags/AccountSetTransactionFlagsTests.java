@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.model.flags;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,11 +24,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.util.stream.Stream;
 
@@ -200,6 +204,45 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  public void testDeriveIndividualFlagsFromFlags() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .build();
+
+    assertThat(accountSet.flags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void testInnerBatchTxn() {
+    AccountSetTransactionFlags flags = AccountSetTransactionFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfRequireDestTag()).isFalse();
+    assertThat(flags.tfOptionalDestTag()).isFalse();
+    assertThat(flags.tfRequireAuth()).isFalse();
+    assertThat(flags.tfOptionalAuth()).isFalse();
+    assertThat(flags.tfDisallowXrp()).isFalse();
+    assertThat(flags.tfAllowXrp()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
+  /**
+   * Computes the combined expected flag value based on the specified flag inputs.
+   *
+   * @param tfRequireDestTag  A boolean indicating whether the "Require Destination Tag" flag should be set.
+   * @param tfOptionalDestTag A boolean indicating whether the "Optional Destination Tag" flag should be set.
+   * @param tfRequireAuth     A boolean indicating whether the "Require Authorization" flag should be set.
+   * @param tfOptionalAuth    A boolean indicating whether the "Optional Authorization" flag should be set.
+   * @param tfDisallowXrp     A boolean indicating whether the "Disallow XRP" flag should be set.
+   * @param tfAllowXrp        A boolean indicating whether the "Allow XRP" flag should be set.
+   * @param tfInnerBatchTxn   A boolean indicating whether the "Inner Batch Transaction" flag should be set.
+   *
+   * @return A long value representing the combined flags calculated from the input parameters.
+   */
   private long getExpectedFlags(
     boolean tfRequireDestTag,
     boolean tfOptionalDestTag,
@@ -218,4 +261,6 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       (tfAllowXrp ? AccountSetTransactionFlags.ALLOW_XRP.getValue() : 0L) |
       (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
+
+
 }

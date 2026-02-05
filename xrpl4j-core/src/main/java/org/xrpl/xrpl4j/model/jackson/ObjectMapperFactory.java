@@ -60,9 +60,9 @@ public class ObjectMapperFactory {
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       // Developer NOTE: Despite `serializationInclusion` being deprecated, we continue using it to for maximum
       // compatibility with software using xrpl4j that uses older versions of Jackson. While newer versions of
-      // Jackson will define a more granular way to configure this behavior that we should actually employ at some point
-      // (e.g., see https://github.com/FasterXML/jackson-databind/issues/2899), we purposefully don't change
-      // this behavior for now to ensure maximum compatibility.
+      // Jackson will define a more granular way to configure this behavior that we should actually use at some point
+      // (e.g., see https://github.com/XRPLF/xrpl4j/issues/671), we purposefully don't change this behavior for now
+      // to ensure maximum compatibility.
       .serializationInclusion(JsonInclude.Include.NON_EMPTY)
       .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
       .build();

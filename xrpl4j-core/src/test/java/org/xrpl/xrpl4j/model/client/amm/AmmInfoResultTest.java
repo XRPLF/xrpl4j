@@ -16,7 +16,6 @@ import org.xrpl.xrpl4j.model.transactions.TradingFee;
 import org.xrpl.xrpl4j.model.transactions.VoteWeight;
 import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;

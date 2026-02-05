@@ -87,6 +87,16 @@ class XChainModifyBridgeFlagsTest extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    XChainModifyBridgeFlags flags = XChainModifyBridgeFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfClearAccountCreateAmount()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(
     boolean tfClearAccountCreateAmount,
     boolean tfInnerBatchTxn

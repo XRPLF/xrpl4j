@@ -188,6 +188,22 @@ public class TrustSetFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    TrustSetFlags flags = TrustSetFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfSetfAuth()).isFalse();
+    assertThat(flags.tfSetNoRipple()).isFalse();
+    assertThat(flags.tfClearNoRipple()).isFalse();
+    assertThat(flags.tfSetFreeze()).isFalse();
+    assertThat(flags.tfClearFreeze()).isFalse();
+    assertThat(flags.tfSetDeepFreeze()).isFalse();
+    assertThat(flags.tfClearDeepFreeze()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(
     boolean tfSetfAuth,
     boolean tfSetNoRipple,

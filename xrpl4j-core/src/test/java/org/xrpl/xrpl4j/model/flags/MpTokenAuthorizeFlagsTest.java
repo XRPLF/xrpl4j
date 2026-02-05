@@ -25,5 +25,6 @@ class MpTokenAuthorizeFlagsTest {
     assertThat(flags.isEmpty()).isFalse();
     assertThat(flags.tfInnerBatchTxn()).isTrue();
     assertThat(flags.tfMptUnauthorize()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
   }
 }

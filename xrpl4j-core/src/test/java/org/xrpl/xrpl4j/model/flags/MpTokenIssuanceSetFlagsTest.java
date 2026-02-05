@@ -3,11 +3,6 @@ package org.xrpl.xrpl4j.model.flags;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
 
 class MpTokenIssuanceSetFlagsTest {
 
@@ -36,5 +31,6 @@ class MpTokenIssuanceSetFlagsTest {
     assertThat(flags.tfInnerBatchTxn()).isTrue();
     assertThat(flags.tfMptLock()).isFalse();
     assertThat(flags.tfMptUnlock()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
   }
 }

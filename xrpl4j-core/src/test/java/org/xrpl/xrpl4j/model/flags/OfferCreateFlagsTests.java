@@ -137,6 +137,19 @@ public class OfferCreateFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    OfferCreateFlags flags = OfferCreateFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfPassive()).isFalse();
+    assertThat(flags.tfImmediateOrCancel()).isFalse();
+    assertThat(flags.tfFillOrKill()).isFalse();
+    assertThat(flags.tfSell()).isFalse();
+    assertThat(flags.tfHybrid()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(
     boolean tfPassive,
     boolean tfImmediateOrCancel,

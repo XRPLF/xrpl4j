@@ -122,6 +122,18 @@ public class PaymentFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    PaymentFlags flags = PaymentFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfNoDirectRipple()).isFalse();
+    assertThat(flags.tfPartialPayment()).isFalse();
+    assertThat(flags.tfLimitQuality()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(
     boolean tfNoDirectRipple,
     boolean tfPartialPayment,

@@ -37,14 +37,15 @@ class AmmClawbackFlagsTest extends AbstractFlagsTest {
     assertThat(flags.tfInnerBatchTxn()).isTrue();
     assertThat(flags.tfClawTwoAssets()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
   }
 
   @Test
   void testJson() throws JSONException, JsonProcessingException {
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(AmmClawbackFlags.CLAW_TWO_ASSETS);
     String json = String.format("{\n" +
-        "               \"flags\": %s\n" +
-        "}", AmmClawbackFlags.CLAW_TWO_ASSETS.getValue());
+      "               \"flags\": %s\n" +
+      "}", AmmClawbackFlags.CLAW_TWO_ASSETS.getValue());
 
     assertCanSerializeAndDeserialize(wrapper, json);
   }
@@ -54,7 +55,7 @@ class AmmClawbackFlagsTest extends AbstractFlagsTest {
     AmmClawbackFlags flags = AmmClawbackFlags.empty();
     AbstractFlagsTest.TransactionFlagsWrapper wrapper = AbstractFlagsTest.TransactionFlagsWrapper.of(flags);
     String json = "{\n" +
-        "}";
+      "}";
 
     assertCanSerializeAndDeserialize(wrapper, json);
   }

@@ -22,7 +22,7 @@ If you have a local build of the `xrpld` C++ server, you can export the definiti
 
 If you don't have a local build of the `xrpld` C++ server, you can use the `xrpl.js` library (specifically the
 ripple-binary-codec package) to fetch the definitions. Read more about this option in the
-[xrpl.js documentation](https://github.com/ripple/xrpl.js/blob/main/packages/ripple-binary-codec/README.md#updating-definitions).
+[xrpl.js documentation](https://github.com/XRPLF/xrpl.js/blob/main/CONTRIBUTING.md#updating-definitionsjson).
 
 ### Option 3: Using a Live `rippled` Node
 

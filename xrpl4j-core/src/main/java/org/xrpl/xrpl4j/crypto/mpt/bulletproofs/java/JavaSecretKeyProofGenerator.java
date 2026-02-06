@@ -169,20 +169,16 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
     ByteBuffer buffer = ByteBuffer.allocate(58);
     buffer.order(ByteOrder.BIG_ENDIAN);
 
-    System.out.println("=== getConvertContextHash Debug ===");
-
     // 1. add16(txType) - 2 bytes big-endian
     buffer.putShort((short) TT_CONFIDENTIAL_MPT_CONVERT);
     byte[] txTypeBytes = new byte[2];
     buffer.position(0);
     buffer.get(txTypeBytes);
-    System.out.println("txType (2 bytes): " + BaseEncoding.base16().lowerCase().encode(txTypeBytes));
 
     // 2. addBitString(account) - 20 bytes raw
     buffer.position(2);
     UnsignedByteArray accountBytes = addressCodec.decodeAccountId(account);
     buffer.put(accountBytes.toByteArray());
-    System.out.println("account (20 bytes): " + BaseEncoding.base16().lowerCase().encode(accountBytes.toByteArray()));
 
     // 3. add32(sequence) - 4 bytes big-endian
     buffer.position(22);
@@ -190,13 +186,11 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
     byte[] seqBytes = new byte[4];
     buffer.position(22);
     buffer.get(seqBytes);
-    System.out.println("sequence (4 bytes): " + BaseEncoding.base16().lowerCase().encode(seqBytes));
 
     // 4. addBitString(issuanceID) - 24 bytes raw
     buffer.position(26);
     byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
     buffer.put(issuanceIdBytes);
-    System.out.println("issuanceID (24 bytes): " + BaseEncoding.base16().lowerCase().encode(issuanceIdBytes));
 
     // 5. add64(amount) - 8 bytes big-endian
     buffer.position(50);
@@ -204,16 +198,12 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
     byte[] amountBytes = new byte[8];
     buffer.position(50);
     buffer.get(amountBytes);
-    System.out.println("amount (8 bytes): " + BaseEncoding.base16().lowerCase().encode(amountBytes));
 
     // Print full serialized data
     byte[] fullData = buffer.array();
-    System.out.println("Full serialized (58 bytes): " + BaseEncoding.base16().lowerCase().encode(fullData));
 
     // Compute SHA512Half (first 32 bytes of SHA512)
     byte[] hash = sha512Half(fullData);
-    System.out.println("SHA512Half result: " + BaseEncoding.base16().upperCase().encode(hash));
-    System.out.println("===================================");
 
     return hash;
   }
@@ -253,22 +243,6 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
     BigInteger hashInt = new BigInteger(1, sha256Hash);
     BigInteger reduced = hashInt.mod(secp256k1.getCurveOrder());
     byte[] challenge = secp256k1.toBytes32(reduced);
-
-    // Debug output for comparison with C implementation
-    System.out.println("=== buildChallenge Debug ===");
-    System.out.println("domainSeparator (" + domainBytes.length + " bytes): " + DOMAIN_SEPARATOR);
-    System.out.println("domainSeparator (hex): " + BaseEncoding.base16().lowerCase().encode(domainBytes));
-    System.out.println("publicKey (33 bytes): " + BaseEncoding.base16().lowerCase().encode(pkBytes));
-    System.out.println("T (33 bytes): " + BaseEncoding.base16().lowerCase().encode(tBytes));
-    if (contextId != null) {
-      System.out.println("contextId (32 bytes): " + BaseEncoding.base16().lowerCase().encode(contextId));
-    } else {
-      System.out.println("contextId: null");
-    }
-    System.out.println("hashInput (" + hashInput.length + " bytes): " + BaseEncoding.base16().lowerCase().encode(hashInput));
-    System.out.println("SHA256 (before reduce): " + BaseEncoding.base16().upperCase().encode(sha256Hash));
-    System.out.println("challenge (after reduce mod n): " + BaseEncoding.base16().upperCase().encode(challenge));
-    System.out.println("============================");
 
     return challenge;
   }

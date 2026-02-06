@@ -134,8 +134,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId()
       .orElseThrow(() -> new RuntimeException("issuance create metadata did not contain issuance ID"));
 
-    System.out.println("MpTokenIssuanceId: " + mpTokenIssuanceId.value());
-
     //////////////////////
     // Verify the issuance was created with the correct flags
     MpTokenIssuanceObject issuanceFromLedgerEntry = xrplClient.ledgerEntry(
@@ -155,11 +153,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ElGamalPublicKey issuerElGamalPublicKey = ElGamalPublicKey.of(
       issuerElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()  // 64 bytes, reversed for C compatibility
     );
-
-    System.out.println("=== Issuer ElGamal Key Pair ===");
-    System.out.println(
-      "Private Key (32 bytes natural): " + issuerElGamalKeyPair.privateKey().naturalBytes().hexValue());
-    System.out.println("Public Key (64 bytes, uncompressed reversed): " + issuerElGamalPublicKey.value());
 
     // Get updated issuer account info for the next transaction
     AccountInfoResult issuerAccountInfoForSet = this.scanForResult(
@@ -184,8 +177,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     SubmitResult<MpTokenIssuanceSet> issuanceSetResult = xrplClient.submit(signedIssuanceSet);
     assertThat(issuanceSetResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    System.out.println("MpTokenIssuanceSet submitted: " + signedIssuanceSet.hash());
-
     this.scanForResult(
       () -> xrplClient.isFinal(
         signedIssuanceSet.hash(),
@@ -197,12 +188,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    System.out.println("MpTokenIssuanceSet validated successfully!");
-
     //////////////////////
     // Create holder account
     KeyPair holderKeyPair = createRandomAccountEd25519();
-    System.out.println("Holder Address: " + holderKeyPair.publicKey().deriveAddress());
 
     //////////////////////
     // Holder authorizes the MPToken
@@ -289,7 +277,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ).node();
 
     assertThat(holderMpToken.mptAmount()).isEqualTo(MpTokenNumericAmount.of(1000L));
-    System.out.println("Holder MPT Balance: " + holderMpToken.mptAmount().value());
 
     //////////////////////
     // Generate Holder ElGamal key pair
@@ -332,20 +319,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Verify encryption locally before submitting
-    System.out.println("\n=== Encryption Verification ===");
     boolean holderEncryptionValid = encryptor.verifyEncryption(
       holderCiphertext, holderElGamalEcPoint, amountToConvert, blindingFactorBytes
     );
-    System.out.println("Holder encryption verification: " + holderEncryptionValid);
+    assertThat(holderEncryptionValid).isTrue();
 
     boolean issuerEncryptionValid = encryptor.verifyEncryption(
       issuerCiphertext, issuerElGamalEcPoint, amountToConvert, blindingFactorBytes
     );
-    System.out.println("Issuer encryption verification: " + issuerEncryptionValid);
+    assertThat(issuerEncryptionValid).isTrue();
 
     //////////////////////
     // Decrypt ciphertexts to verify they contain the correct amount (500)
-    System.out.println("\n=== Decryption Verification ===");
     JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor(secp256k1);
 
     // Decrypt holder ciphertext using holder's private key
@@ -353,21 +338,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderElGamalKeyPair.privateKey().naturalBytes()
     );
     long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderPrivateKeyForDecrypt);
-    System.out.println(
-      "Holder ciphertext decrypted amount: " + holderDecryptedAmount + " (expected: " + amountToConvert + ")");
 
     // Decrypt issuer ciphertext using issuer's private key
     ElGamalPrivateKey issuerPrivateKeyForDecrypt = ElGamalPrivateKey.of(
       issuerElGamalKeyPair.privateKey().naturalBytes()
     );
     long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerPrivateKeyForDecrypt);
-    System.out.println(
-      "Issuer ciphertext decrypted amount: " + issuerDecryptedAmount + " (expected: " + amountToConvert + ")");
 
     // Verify both decrypt to the same amount
     assertThat(holderDecryptedAmount).isEqualTo(amountToConvert.longValue());
     assertThat(issuerDecryptedAmount).isEqualTo(amountToConvert.longValue());
-    System.out.println("Both ciphertexts decrypt to the correct amount: " + amountToConvert);
 
     //////////////////////
     // Get updated holder account info for ConfidentialMPTConvert
@@ -380,16 +360,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate ZKProof (Schnorr Proof of Knowledge) with context hash
     byte[] holderPrivateKeyBytes = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
 
-    // Debug: Print private key info
-    System.out.println("\n=== ZKProof Debug ===");
-    System.out.println("MPTokenIssuanceId: " + mpTokenIssuanceId.value());
-    System.out.println("Holder Private Key length: " + holderPrivateKeyBytes.length);
-    System.out.println("Holder Private Key (hex): " + BaseEncoding.base16().encode(holderPrivateKeyBytes));
-
-    byte[] holderPkCompressed = secp256k1.serializeCompressed(holderElGamalEcPoint);
-    System.out.println("Holder Public Key (compressed, hex): " + BaseEncoding.base16().encode(holderPkCompressed));
-    System.out.println("Holder ElGamal Public Key (uncompressed 64 bytes): " + holderElGamalPublicKey.value());
-
     // Create proof generator and generate context hash
     JavaSecretKeyProofGenerator proofGenerator = new JavaSecretKeyProofGenerator(secp256k1);
 
@@ -401,7 +371,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       mpTokenIssuanceId,  // issuanceId
       amountToConvert  // amount
     );
-    System.out.println("Context ID (hex): " + BaseEncoding.base16().encode(contextId));
 
     // Generate proof with context (nonce = null for random)
     byte[] zkProofBytes = proofGenerator.generateProof(holderPrivateKeyBytes, contextId, null);
@@ -409,9 +378,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Verify the proof locally before submitting
     boolean localVerify = proofGenerator.verifyProof(zkProofBytes, holderElGamalEcPoint, contextId);
-    System.out.println("Local proof verification (with contextId): " + localVerify);
-    System.out.println("ZKProof length: " + zkProofBytes.length);
-    System.out.println("ZKProof (hex): " + zkProof);
+    assertThat(localVerify).isTrue();
 
     //////////////////////
     // Build and submit ConfidentialMPTConvert transaction
@@ -436,36 +403,148 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderKeyPair.privateKey(), confidentialConvert
     );
     SubmitResult<ConfidentialMPTConvert> confidentialConvertResult = xrplClient.submit(signedConfidentialConvert);
+    assertThat(confidentialConvertResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    System.out.println("ConfidentialMPTConvert submitted: " + signedConfidentialConvert.hash());
-    System.out.println("ConfidentialMPTConvert result: " + confidentialConvertResult.engineResult());
+    System.out.println("Holder 1 ConfidentialMPTConvert tx hash: " + signedConfidentialConvert.hash());
+
+    // Wait for validation
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedConfidentialConvert.hash(),
+        confidentialConvertResult.validatedLedgerIndex(),
+        confidentialConvert.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        confidentialConvert.sequence(),
+        holderKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
 
     //////////////////////
-    // Print everything for tracking
-    System.out.println("\n========== SUMMARY ==========");
-    System.out.println("=== Issuer ===");
-    System.out.println("Issuer Address: " + issuerKeyPair.publicKey().deriveAddress());
-    System.out.println("Issuer ElGamal Private Key: " + issuerElGamalKeyPair.privateKey().naturalBytes().hexValue());
-    System.out.println("Issuer ElGamal Public Key: " + issuerElGamalPublicKey.value());
+    // Create second holder account
+    KeyPair holder2KeyPair = createRandomAccountEd25519();
+    System.out.println("Holder 2 Address: " + holder2KeyPair.publicKey().deriveAddress());
 
-    System.out.println("\n=== Holder ===");
-    System.out.println("Holder Address: " + holderKeyPair.publicKey().deriveAddress());
-    System.out.println("Holder ElGamal Private Key: " + holderElGamalKeyPair.privateKey().naturalBytes().hexValue());
-    System.out.println("Holder ElGamal Public Key: " + holderElGamalPublicKey.value());
+    //////////////////////
+    // Holder 2 authorizes the MPToken
+    AccountInfoResult holder2AccountInfo = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holder2KeyPair.publicKey().deriveAddress())
+    );
 
-    System.out.println("\n=== MPToken Issuance ===");
-    System.out.println("MPTokenIssuanceId: " + mpTokenIssuanceId.value());
+    MpTokenAuthorize holder2Authorize = MpTokenAuthorize.builder()
+      .account(holder2KeyPair.publicKey().deriveAddress())
+      .sequence(holder2AccountInfo.accountData().sequence())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .signingPublicKey(holder2KeyPair.publicKey())
+      .lastLedgerSequence(holder2AccountInfo.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
 
-    System.out.println("\n=== Confidential Conversion ===");
-    System.out.println("Amount to Convert: " + amountToConvert);
-    System.out.println("Blinding Factor: " + blindingFactor.value());
-    System.out.println("Holder Encrypted Amount: " + holderEncryptedAmount.value());
-    System.out.println("Issuer Encrypted Amount: " + issuerEncryptedAmount.value());
-    System.out.println("ZK Proof: " + zkProof);
+    SingleSignedTransaction<MpTokenAuthorize> signedHolder2Authorize = signatureService.sign(
+      holder2KeyPair.privateKey(), holder2Authorize
+    );
+    SubmitResult<MpTokenAuthorize> holder2AuthorizeResult = xrplClient.submit(signedHolder2Authorize);
+    assertThat(holder2AuthorizeResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    System.out.println("\n=== Transaction Result ===");
-    System.out.println("Transaction Hash: " + signedConfidentialConvert.hash());
-    System.out.println("Engine Result: " + confidentialConvertResult.engineResult());
-    System.out.println("Engine Result Message: " + confidentialConvertResult.engineResultMessage());
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedHolder2Authorize.hash(),
+        holder2AuthorizeResult.validatedLedgerIndex(),
+        holder2Authorize.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        holder2Authorize.sequence(),
+        holder2KeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    //////////////////////
+    // Generate Holder 2 ElGamal key pair
+    KeyPair holder2ElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
+    ElGamalPublicKey holder2ElGamalPublicKey = ElGamalPublicKey.of(
+      holder2ElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()
+    );
+
+    //////////////////////
+    // Prepare encryption for Holder 2 (0 amount conversion to register public key)
+    UnsignedLong holder2AmountToConvert = UnsignedLong.ZERO;
+
+    // Generate blinding factor for holder 2
+    byte[] holder2BlindingFactorBytes = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    BlindingFactor holder2BlindingFactor = BlindingFactor.of(BaseEncoding.base16().encode(holder2BlindingFactorBytes));
+
+    // Encrypt 0 MPT for holder 2
+    ECPoint holder2ElGamalEcPoint = BcKeyUtils.toEcPublicKeyParameters(
+      holder2ElGamalKeyPair.publicKey()
+    ).getQ();
+    ElGamalCiphertext holder2Ciphertext = encryptor.encrypt(
+      holder2AmountToConvert, holder2ElGamalEcPoint, holder2BlindingFactorBytes
+    );
+    EncryptedAmount holder2EncryptedAmount = EncryptedAmount.of(
+      BaseEncoding.base16().encode(holder2Ciphertext.toBytes())
+    );
+
+    // Encrypt 0 MPT for issuer (using holder 2's blinding factor)
+    ElGamalCiphertext issuerCiphertextForHolder2 = encryptor.encrypt(
+      holder2AmountToConvert, issuerElGamalEcPoint, holder2BlindingFactorBytes
+    );
+    EncryptedAmount issuerEncryptedAmountForHolder2 = EncryptedAmount.of(
+      BaseEncoding.base16().encode(issuerCiphertextForHolder2.toBytes())
+    );
+
+    //////////////////////
+    // Get updated holder 2 account info for ConfidentialMPTConvert
+    AccountInfoResult holder2AccountInfoForConvert = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holder2KeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////
+    // Generate ZKProof for Holder 2
+    byte[] holder2PrivateKeyBytes = holder2ElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+
+    byte[] holder2ContextId = proofGenerator.generateConvertContext(
+      holder2KeyPair.publicKey().deriveAddress(),
+      holder2AccountInfoForConvert.accountData().sequence(),
+      mpTokenIssuanceId,
+      holder2AmountToConvert
+    );
+
+    byte[] holder2ZkProofBytes = proofGenerator.generateProof(holder2PrivateKeyBytes, holder2ContextId, null);
+    String holder2ZkProof = BaseEncoding.base16().encode(holder2ZkProofBytes);
+
+    // Verify the proof locally
+    boolean holder2LocalVerify = proofGenerator.verifyProof(holder2ZkProofBytes, holder2ElGamalEcPoint, holder2ContextId);
+    assertThat(holder2LocalVerify).isTrue();
+
+    //////////////////////
+    // Build and submit ConfidentialMPTConvert for Holder 2 (0 amount to register public key)
+    ConfidentialMPTConvert holder2ConfidentialConvert = ConfidentialMPTConvert.builder()
+      .account(holder2KeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(holder2AccountInfoForConvert.accountData().sequence())
+      .signingPublicKey(holder2KeyPair.publicKey())
+      .lastLedgerSequence(
+        holder2AccountInfoForConvert.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .mptAmount(MpTokenNumericAmount.of(holder2AmountToConvert))
+      .holderElGamalPublicKey(holder2ElGamalPublicKey)
+      .holderEncryptedAmount(holder2EncryptedAmount)
+      .issuerEncryptedAmount(issuerEncryptedAmountForHolder2)
+      .blindingFactor(holder2BlindingFactor)
+      .zkProof(holder2ZkProof)
+      .build();
+
+    SingleSignedTransaction<ConfidentialMPTConvert> signedHolder2ConfidentialConvert = signatureService.sign(
+      holder2KeyPair.privateKey(), holder2ConfidentialConvert
+    );
+    SubmitResult<ConfidentialMPTConvert> holder2ConfidentialConvertResult = xrplClient.submit(
+      signedHolder2ConfidentialConvert
+    );
+
+    System.out.println("\n========== HOLDER 2 REGISTRATION ==========");
+    System.out.println("Holder 2 Address: " + holder2KeyPair.publicKey().deriveAddress());
+    System.out.println("Holder 2 ConfidentialMPTConvert tx hash: " + signedHolder2ConfidentialConvert.hash());
+    System.out.println("Holder 2 ConfidentialMPTConvert result: " + holder2ConfidentialConvertResult.engineResult());
+
+    assertThat(holder2ConfidentialConvertResult.engineResult()).isEqualTo(SUCCESS_STATUS);
   }
 }

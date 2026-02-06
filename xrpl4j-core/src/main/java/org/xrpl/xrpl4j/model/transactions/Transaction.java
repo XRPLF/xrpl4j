@@ -103,6 +103,7 @@ public interface Transaction {
       .put(ImmutableMpTokenIssuanceDestroy.class, TransactionType.MPT_ISSUANCE_DESTROY)
       .put(ImmutableMpTokenIssuanceSet.class, TransactionType.MPT_ISSUANCE_SET)
       .put(ImmutableConfidentialMPTConvert.class, TransactionType.CONFIDENTIAL_MPT_CONVERT)
+      .put(ImmutableConfidentialMPTSend.class, TransactionType.CONFIDENTIAL_MPT_SEND)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .build();

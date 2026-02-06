@@ -75,6 +75,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.OracleDocumentIdSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.OracleProviderDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.OracleUriDeserializer;
+
 import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TradingFeeSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.TransferFeeDeserializer;
@@ -87,6 +88,7 @@ import org.xrpl.xrpl4j.model.jackson.modules.XChainCountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XChainCountSerializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountDeserializer;
 import org.xrpl.xrpl4j.model.jackson.modules.XrpCurrencyAmountSerializer;
+
 
 import java.io.Serializable;
 import java.math.BigDecimal;

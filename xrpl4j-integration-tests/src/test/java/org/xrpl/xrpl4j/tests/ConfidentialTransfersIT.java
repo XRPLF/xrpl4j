@@ -33,8 +33,8 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
-import org.xrpl.xrpl4j.crypto.mpt.SchnorrProofOfKnowledge;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceEncryptor;
@@ -153,13 +153,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate Issuer ElGamal key pair and submit MpTokenIssuanceSet to register it
     KeyPair issuerElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
     ElGamalPublicKey issuerElGamalPublicKey = ElGamalPublicKey.of(
-      issuerElGamalKeyPair.publicKey().uncompressedValue().hexValue()
+      issuerElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()  // 64 bytes, reversed for C compatibility
     );
 
     System.out.println("=== Issuer ElGamal Key Pair ===");
     System.out.println(
       "Private Key (32 bytes natural): " + issuerElGamalKeyPair.privateKey().naturalBytes().hexValue());
-    System.out.println("Public Key (64 bytes, uncompressed): " + issuerElGamalPublicKey.value());
+    System.out.println("Public Key (64 bytes, uncompressed reversed): " + issuerElGamalPublicKey.value());
 
     // Get updated issuer account info for the next transaction
     AccountInfoResult issuerAccountInfoForSet = this.scanForResult(
@@ -295,7 +295,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate Holder ElGamal key pair
     KeyPair holderElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
     ElGamalPublicKey holderElGamalPublicKey = ElGamalPublicKey.of(
-      holderElGamalKeyPair.publicKey().uncompressedValue().hexValue()
+      holderElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()  // 64 bytes, reversed for C compatibility
     );
 
     //////////////////////
@@ -370,8 +370,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("Both ciphertexts decrypt to the correct amount: " + amountToConvert);
 
     //////////////////////
-    // Generate ZKProof (Schnorr Proof of Knowledge)
-    // Try WITHOUT contextId first (as the C implementation allows null context_id)
+    // Get updated holder account info for ConfidentialMPTConvert
+    // IMPORTANT: Get this BEFORE generating ZKProof because the context hash includes the sequence number
+    AccountInfoResult holderAccountInfoForConvert = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////
+    // Generate ZKProof (Schnorr Proof of Knowledge) with context hash
     byte[] holderPrivateKeyBytes = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
 
     // Debug: Print private key info
@@ -384,27 +390,28 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("Holder Public Key (compressed, hex): " + BaseEncoding.base16().encode(holderPkCompressed));
     System.out.println("Holder ElGamal Public Key (uncompressed 64 bytes): " + holderElGamalPublicKey.value());
 
-    SchnorrProofOfKnowledge schnorrPok = new SchnorrProofOfKnowledge(secp256k1, secureRandom);
+    // Create proof generator and generate context hash
+    JavaSecretKeyProofGenerator proofGenerator = new JavaSecretKeyProofGenerator(secp256k1);
 
-    // Generate proof WITHOUT contextId (null)
-    byte[] zkProofBytes = schnorrPok.generate(
-      holderPrivateKeyBytes,
-      holderElGamalEcPoint,
-      null  // No contextId
+    // Generate context hash for ConfidentialMPTConvert transaction
+    // Context = SHA512Half(txType || account || sequence || issuanceId || amount)
+    byte[] contextId = proofGenerator.generateConvertContext(
+      holderKeyPair.publicKey().deriveAddress(),  // account
+      holderAccountInfoForConvert.accountData().sequence(),  // sequence
+      mpTokenIssuanceId,  // issuanceId
+      amountToConvert  // amount
     );
+    System.out.println("Context ID (hex): " + BaseEncoding.base16().encode(contextId));
+
+    // Generate proof with context (nonce = null for random)
+    byte[] zkProofBytes = proofGenerator.generateProof(holderPrivateKeyBytes, contextId, null);
     String zkProof = BaseEncoding.base16().encode(zkProofBytes);
 
     // Verify the proof locally before submitting
-    boolean localVerify = schnorrPok.verify(zkProofBytes, holderElGamalEcPoint, null);
-    System.out.println("Local proof verification (no contextId): " + localVerify);
+    boolean localVerify = proofGenerator.verifyProof(zkProofBytes, holderElGamalEcPoint, contextId);
+    System.out.println("Local proof verification (with contextId): " + localVerify);
     System.out.println("ZKProof length: " + zkProofBytes.length);
     System.out.println("ZKProof (hex): " + zkProof);
-
-    //////////////////////
-    // Get updated holder account info for ConfidentialMPTConvert
-    AccountInfoResult holderAccountInfoForConvert = this.scanForResult(
-      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
-    );
 
     //////////////////////
     // Build and submit ConfidentialMPTConvert transaction

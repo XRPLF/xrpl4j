@@ -196,6 +196,36 @@ public interface PublicKey {
   }
 
   /**
+   * Returns the uncompressed public key value (64 bytes) with each 32-byte coordinate reversed.
+   *
+   * <p>This method is needed for compatibility with libsecp256k1 which expects coordinates
+   * in little-endian byte order when parsing uncompressed public keys.</p>
+   *
+   * <p>The format is: X_reversed (32 bytes) || Y_reversed (32 bytes)</p>
+   *
+   * @return An {@link UnsignedByteArray} containing the 64-byte uncompressed public key with reversed coordinates.
+   * @throws UnsupportedOperationException if this is an Ed25519 key or an empty key.
+   */
+  @Lazy
+  default UnsignedByteArray uncompressedValueReversed() {
+    UnsignedByteArray uncompressed = uncompressedValue();
+    byte[] bytes = uncompressed.toByteArray();
+    byte[] reversed = new byte[64];
+
+    // Reverse X coordinate (first 32 bytes)
+    for (int i = 0; i < 32; i++) {
+      reversed[i] = bytes[31 - i];
+    }
+
+    // Reverse Y coordinate (last 32 bytes)
+    for (int i = 0; i < 32; i++) {
+      reversed[32 + i] = bytes[63 - i];
+    }
+
+    return UnsignedByteArray.of(reversed);
+  }
+
+  /**
    * Derive an XRPL address from this public key.
    *
    * @return A Base58Check encoded XRPL address in Classic Address form.

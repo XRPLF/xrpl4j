@@ -53,17 +53,25 @@ public class TransactionTest {
     assertThat(Transaction.typeMap.get(ImmutableEscrowFinish.class)).isEqualTo(TransactionType.ESCROW_FINISH);
     assertThat(Transaction.typeMap.get(ImmutableNfTokenBurn.class)).isEqualTo(TransactionType.NFTOKEN_BURN);
     assertThat(Transaction.typeMap.get(ImmutableNfTokenMint.class)).isEqualTo(TransactionType.NFTOKEN_MINT);
-    assertThat(Transaction.typeMap.get(ImmutableNfTokenAcceptOffer.class)).isEqualTo(TransactionType.NFTOKEN_ACCEPT_OFFER);
-    assertThat(Transaction.typeMap.get(ImmutableNfTokenCancelOffer.class)).isEqualTo(TransactionType.NFTOKEN_CANCEL_OFFER);
-    assertThat(Transaction.typeMap.get(ImmutableNfTokenCreateOffer.class)).isEqualTo(TransactionType.NFTOKEN_CREATE_OFFER);
+    assertThat(Transaction.typeMap.get(ImmutableNfTokenAcceptOffer.class))
+      .isEqualTo(TransactionType.NFTOKEN_ACCEPT_OFFER);
+    assertThat(Transaction.typeMap.get(ImmutableNfTokenCancelOffer.class))
+      .isEqualTo(TransactionType.NFTOKEN_CANCEL_OFFER);
+    assertThat(Transaction.typeMap.get(ImmutableNfTokenCreateOffer.class))
+      .isEqualTo(TransactionType.NFTOKEN_CREATE_OFFER);
     assertThat(Transaction.typeMap.get(ImmutableOfferCancel.class)).isEqualTo(TransactionType.OFFER_CANCEL);
     assertThat(Transaction.typeMap.get(ImmutableOfferCreate.class)).isEqualTo(TransactionType.OFFER_CREATE);
     assertThat(Transaction.typeMap.get(ImmutablePayment.class)).isEqualTo(TransactionType.PAYMENT);
-    assertThat(Transaction.typeMap.get(ImmutablePaymentChannelClaim.class)).isEqualTo(TransactionType.PAYMENT_CHANNEL_CLAIM);
-    assertThat(Transaction.typeMap.get(ImmutablePaymentChannelCreate.class)).isEqualTo(TransactionType.PAYMENT_CHANNEL_CREATE);
-    assertThat(Transaction.typeMap.get(ImmutablePaymentChannelFund.class)).isEqualTo(TransactionType.PAYMENT_CHANNEL_FUND);
-    assertThat(Transaction.typeMap.get(ImmutablePermissionedDomainSet.class)).isEqualTo(TransactionType.PERMISSIONED_DOMAIN_SET);
-    assertThat(Transaction.typeMap.get(ImmutablePermissionedDomainDelete.class)).isEqualTo(TransactionType.PERMISSIONED_DOMAIN_DELETE);
+    assertThat(Transaction.typeMap.get(ImmutablePaymentChannelClaim.class))
+      .isEqualTo(TransactionType.PAYMENT_CHANNEL_CLAIM);
+    assertThat(Transaction.typeMap.get(ImmutablePaymentChannelCreate.class))
+      .isEqualTo(TransactionType.PAYMENT_CHANNEL_CREATE);
+    assertThat(Transaction.typeMap.get(ImmutablePaymentChannelFund.class))
+      .isEqualTo(TransactionType.PAYMENT_CHANNEL_FUND);
+    assertThat(Transaction.typeMap.get(ImmutablePermissionedDomainSet.class))
+      .isEqualTo(TransactionType.PERMISSIONED_DOMAIN_SET);
+    assertThat(Transaction.typeMap.get(ImmutablePermissionedDomainDelete.class))
+      .isEqualTo(TransactionType.PERMISSIONED_DOMAIN_DELETE);
     assertThat(Transaction.typeMap.get(ImmutableSetFee.class)).isEqualTo(TransactionType.SET_FEE);
     assertThat(Transaction.typeMap.get(ImmutableSetRegularKey.class)).isEqualTo(TransactionType.SET_REGULAR_KEY);
     assertThat(Transaction.typeMap.get(ImmutableSignerListSet.class)).isEqualTo(TransactionType.SIGNER_LIST_SET);
@@ -78,21 +86,29 @@ public class TransactionTest {
     assertThat(Transaction.typeMap.get(ImmutableAmmDelete.class)).isEqualTo(TransactionType.AMM_DELETE);
     assertThat(Transaction.typeMap.get(ImmutableAmmClawback.class)).isEqualTo(TransactionType.AMM_CLAWBACK);
     assertThat(Transaction.typeMap.get(ImmutableClawback.class)).isEqualTo(TransactionType.CLAWBACK);
-    assertThat(Transaction.typeMap.get(ImmutableXChainAccountCreateCommit.class)).isEqualTo(TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT);
-    assertThat(Transaction.typeMap.get(ImmutableXChainAddAccountCreateAttestation.class)).isEqualTo(TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION);
-    assertThat(Transaction.typeMap.get(ImmutableXChainAddClaimAttestation.class)).isEqualTo(TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION);
+    assertThat(Transaction.typeMap.get(ImmutableXChainAccountCreateCommit.class))
+      .isEqualTo(TransactionType.XCHAIN_ACCOUNT_CREATE_COMMIT);
+    assertThat(Transaction.typeMap.get(ImmutableXChainAddAccountCreateAttestation.class))
+      .isEqualTo(TransactionType.XCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION);
+    assertThat(Transaction.typeMap.get(ImmutableXChainAddClaimAttestation.class))
+      .isEqualTo(TransactionType.XCHAIN_ADD_CLAIM_ATTESTATION);
     assertThat(Transaction.typeMap.get(ImmutableXChainClaim.class)).isEqualTo(TransactionType.XCHAIN_CLAIM);
     assertThat(Transaction.typeMap.get(ImmutableXChainCommit.class)).isEqualTo(TransactionType.XCHAIN_COMMIT);
-    assertThat(Transaction.typeMap.get(ImmutableXChainCreateBridge.class)).isEqualTo(TransactionType.XCHAIN_CREATE_BRIDGE);
-    assertThat(Transaction.typeMap.get(ImmutableXChainCreateClaimId.class)).isEqualTo(TransactionType.XCHAIN_CREATE_CLAIM_ID);
-    assertThat(Transaction.typeMap.get(ImmutableXChainModifyBridge.class)).isEqualTo(TransactionType.XCHAIN_MODIFY_BRIDGE);
+    assertThat(Transaction.typeMap.get(ImmutableXChainCreateBridge.class))
+      .isEqualTo(TransactionType.XCHAIN_CREATE_BRIDGE);
+    assertThat(Transaction.typeMap.get(ImmutableXChainCreateClaimId.class))
+      .isEqualTo(TransactionType.XCHAIN_CREATE_CLAIM_ID);
+    assertThat(Transaction.typeMap.get(ImmutableXChainModifyBridge.class))
+      .isEqualTo(TransactionType.XCHAIN_MODIFY_BRIDGE);
     assertThat(Transaction.typeMap.get(ImmutableDidSet.class)).isEqualTo(TransactionType.DID_SET);
     assertThat(Transaction.typeMap.get(ImmutableDidDelete.class)).isEqualTo(TransactionType.DID_DELETE);
     assertThat(Transaction.typeMap.get(ImmutableOracleSet.class)).isEqualTo(TransactionType.ORACLE_SET);
     assertThat(Transaction.typeMap.get(ImmutableOracleDelete.class)).isEqualTo(TransactionType.ORACLE_DELETE);
     assertThat(Transaction.typeMap.get(ImmutableMpTokenAuthorize.class)).isEqualTo(TransactionType.MPT_AUTHORIZE);
-    assertThat(Transaction.typeMap.get(ImmutableMpTokenIssuanceCreate.class)).isEqualTo(TransactionType.MPT_ISSUANCE_CREATE);
-    assertThat(Transaction.typeMap.get(ImmutableMpTokenIssuanceDestroy.class)).isEqualTo(TransactionType.MPT_ISSUANCE_DESTROY);
+    assertThat(Transaction.typeMap.get(ImmutableMpTokenIssuanceCreate.class))
+      .isEqualTo(TransactionType.MPT_ISSUANCE_CREATE);
+    assertThat(Transaction.typeMap.get(ImmutableMpTokenIssuanceDestroy.class))
+      .isEqualTo(TransactionType.MPT_ISSUANCE_DESTROY);
     assertThat(Transaction.typeMap.get(ImmutableMpTokenIssuanceSet.class)).isEqualTo(TransactionType.MPT_ISSUANCE_SET);
     assertThat(Transaction.typeMap.get(ImmutableUnknownTransaction.class)).isEqualTo(TransactionType.UNKNOWN);
   }

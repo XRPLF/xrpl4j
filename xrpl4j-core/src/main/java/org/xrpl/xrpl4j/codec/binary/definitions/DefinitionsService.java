@@ -187,6 +187,8 @@ public class DefinitionsService {
         return Optional.ofNullable(definitions.transactionResults().get(value));
       case "TransactionType":
         return Optional.ofNullable(definitions.transactionTypes().get(value));
+      case "PermissionValue":
+        return Optional.ofNullable(definitions.permissionValues().get(value));
       default:
         return Optional.empty();
     }

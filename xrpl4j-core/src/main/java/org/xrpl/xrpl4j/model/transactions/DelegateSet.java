@@ -54,7 +54,12 @@ public interface DelegateSet extends Transaction {
     "SetRegularKey",
     "SignerListSet",
     "DelegateSet",
-    "AccountDelete"
+    "AccountDelete",
+    "Batch",
+    // Pseudo transactions below:
+    "EnableAmendment",
+    "SetFee",
+    "UNLModify"
   );
 
   /**

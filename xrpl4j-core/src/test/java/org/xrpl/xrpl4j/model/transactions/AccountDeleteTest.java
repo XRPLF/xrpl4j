@@ -96,4 +96,34 @@ public class AccountDeleteTest {
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("CredentialIDs should have unique values.");
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    AccountDelete accountDelete = AccountDelete.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destination(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+
+    assertThat(accountDelete.transactionFlags()).isEqualTo(accountDelete.flags());
+    assertThat(accountDelete.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    AccountDelete original = AccountDelete.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .destination(Address.of("rWYkbWkCeg8dP6rXALnjgZSjjLyih5NXm"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .build();
+
+    AccountDelete copied = AccountDelete.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

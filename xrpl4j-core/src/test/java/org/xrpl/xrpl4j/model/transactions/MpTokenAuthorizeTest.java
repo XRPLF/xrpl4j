@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -37,5 +39,56 @@ class MpTokenAuthorizeTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(authorize, json);
   }
 
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    MpTokenAuthorize authorize = MpTokenAuthorize.builder()
+      .account(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(432))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7")
+      )
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
+      .build();
 
+    assertThat(authorize.transactionFlags()).isEqualTo(authorize.flags());
+    assertThat(authorize.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void transactionFlagsReturnsCorrectFlagsWhenSet() {
+    MpTokenAuthorize authorize = MpTokenAuthorize.builder()
+      .account(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(432))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7")
+      )
+      .flags(MpTokenAuthorizeFlags.UNAUTHORIZE)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
+      .build();
+
+    assertThat(authorize.transactionFlags()).isEqualTo(authorize.flags());
+    assertThat(((MpTokenAuthorizeFlags) authorize.transactionFlags()).tfMptUnauthorize()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    MpTokenAuthorize original = MpTokenAuthorize.builder()
+      .account(Address.of("rJbVo4xrsGN8o3vLKGXe1s1uW8mAMYHamV"))
+      .fee(XrpCurrencyAmount.ofDrops(15))
+      .sequence(UnsignedInteger.valueOf(432))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("ED0C0B9B7D5F80868A701693D7C994385EB4DC661D9E7A2DD95E8199EDC5C211E7")
+      )
+      .flags(MpTokenAuthorizeFlags.UNAUTHORIZE)
+      .mpTokenIssuanceId(MpTokenIssuanceId.of("00000143A58DCB491FD36A15A7D3172E6A9F088A5478BA41"))
+      .build();
+
+    MpTokenAuthorize copied = MpTokenAuthorize.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((MpTokenAuthorizeFlags) copied.transactionFlags()).tfMptUnauthorize()).isTrue();
+  }
 }

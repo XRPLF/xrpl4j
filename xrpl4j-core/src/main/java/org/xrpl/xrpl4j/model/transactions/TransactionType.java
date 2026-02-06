@@ -388,7 +388,7 @@ public enum TransactionType {
    * Its API is subject to change.</p>
    */
   @Beta
-  CONFIDENTIAL_MPT_SEND("ConfidentialSend"),
+  CONFIDENTIAL_MPT_SEND("ConfidentialMPTSend"),
 
   /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.

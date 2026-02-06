@@ -8,6 +8,8 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
+import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
@@ -109,6 +111,51 @@ public interface MpTokenObject extends LedgerObject {
    */
   @JsonProperty("OwnerNode")
   Optional<String> ownerNode();
+
+  /**
+   * The holder's ElGamal public key for confidential transfers.
+   * Present after the holder has registered via ConfidentialMPTConvert.
+   *
+   * @return An optionally-present {@link ElGamalPublicKey}.
+   */
+  @JsonProperty("HolderElGamalPublicKey")
+  Optional<ElGamalPublicKey> holderElGamalPublicKey();
+
+  /**
+   * The holder's confidential spending balance (encrypted).
+   * Present after the holder has converted tokens via ConfidentialMPTConvert.
+   *
+   * @return An optionally-present {@link EncryptedAmount}.
+   */
+  @JsonProperty("ConfidentialBalanceSpending")
+  Optional<EncryptedAmount> confidentialBalanceSpending();
+
+  /**
+   * The holder's confidential inbox balance (encrypted).
+   * Tokens received via ConfidentialMPTSend are credited here.
+   *
+   * @return An optionally-present {@link EncryptedAmount}.
+   */
+  @JsonProperty("ConfidentialBalanceInbox")
+  Optional<EncryptedAmount> confidentialBalanceInbox();
+
+  /**
+   * The issuer's encrypted balance for this holder's tokens.
+   * Used for auditing purposes.
+   *
+   * @return An optionally-present {@link EncryptedAmount}.
+   */
+  @JsonProperty("IssuerEncryptedBalance")
+  Optional<EncryptedAmount> issuerEncryptedBalance();
+
+  /**
+   * The version number of the confidential balance.
+   * Incremented each time the confidential balance is modified.
+   *
+   * @return An optionally-present {@link UnsignedInteger}.
+   */
+  @JsonProperty("ConfidentialBalanceVersion")
+  Optional<UnsignedInteger> confidentialBalanceVersion();
 
   /**
    * The unique ID of this {@link MpTokenObject}.

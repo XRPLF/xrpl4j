@@ -1,14 +1,24 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java;
 
 import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +33,13 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
 
   private static final String DOMAIN_SEPARATOR = "MPT_POK_SAME_PLAINTEXT_PROOF";
 
+  /**
+   * Transaction type for ConfidentialMPTSend (from definitions.json).
+   */
+  private static final int TT_CONFIDENTIAL_MPT_SEND = 88;
+
   private final Secp256k1Operations secp256k1;
+  private final AddressCodec addressCodec;
 
   /**
    * Constructs a new generator with the given secp256k1 operations.
@@ -32,6 +48,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
    */
   public JavaSamePlaintextMultiProofGenerator(Secp256k1Operations secp256k1) {
     this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
+    this.addressCodec = AddressCodec.getInstance();
   }
 
   @Override
@@ -346,6 +363,69 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     BigInteger hashInt = new BigInteger(1, hash);
     BigInteger reduced = hashInt.mod(secp256k1.getCurveOrder());
     return secp256k1.toBytes32(reduced);
+  }
+
+  @Override
+  public byte[] generateSendContext(
+    Address account,
+    UnsignedInteger sequence,
+    MpTokenIssuanceId issuanceId,
+    Address destination,
+    UnsignedInteger version
+  ) {
+    Objects.requireNonNull(account, "account must not be null");
+    Objects.requireNonNull(sequence, "sequence must not be null");
+    Objects.requireNonNull(issuanceId, "issuanceId must not be null");
+    Objects.requireNonNull(destination, "destination must not be null");
+    Objects.requireNonNull(version, "version must not be null");
+
+    // Serialize fields matching rippled's addCommonZKPFields + addBitString(destination) + add32(version)
+    // Total: 2 (txType) + 20 (account) + 4 (sequence) + 24 (issuanceId) + 20 (destination) + 4 (version) = 74 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(74);
+    buffer.order(ByteOrder.BIG_ENDIAN);
+
+    // 1. add16(txType) - 2 bytes big-endian
+    buffer.putShort((short) TT_CONFIDENTIAL_MPT_SEND);
+
+    // 2. addBitString(account) - 20 bytes raw
+    UnsignedByteArray accountBytes = addressCodec.decodeAccountId(account);
+    buffer.put(accountBytes.toByteArray());
+
+    // 3. add32(sequence) - 4 bytes big-endian
+    buffer.putInt(sequence.intValue());
+
+    // 4. addBitString(issuanceID) - 24 bytes raw
+    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    buffer.put(issuanceIdBytes);
+
+    // 5. addBitString(destination) - 20 bytes raw
+    UnsignedByteArray destinationBytes = addressCodec.decodeAccountId(destination);
+    buffer.put(destinationBytes.toByteArray());
+
+    // 6. add32(version) - 4 bytes big-endian
+    buffer.putInt(version.intValue());
+
+    // Compute SHA512Half (first 32 bytes of SHA512)
+    return sha512Half(buffer.array());
+  }
+
+  /**
+   * Computes SHA512Half - the first 32 bytes of SHA512.
+   *
+   * @param data The data to hash.
+   *
+   * @return The first 32 bytes of the SHA512 hash.
+   */
+  private byte[] sha512Half(byte[] data) {
+    try {
+      MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
+      byte[] fullHash = sha512.digest(data);
+      byte[] halfHash = new byte[32];
+      System.arraycopy(fullHash, 0, halfHash, 0, 32);
+      return halfHash;
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("SHA-512 algorithm not available", e);
+    }
   }
 }
 

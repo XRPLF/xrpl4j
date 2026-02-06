@@ -1,8 +1,11 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
+import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
+import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
 import java.util.List;
 
@@ -95,6 +98,35 @@ public interface SamePlaintextMultiProofGenerator {
     List<ElGamalCiphertext> ciphertexts,
     List<ECPoint> publicKeys,
     byte[] contextHash
+  );
+
+  /**
+   * Generates the context hash for ConfidentialMPTSend transactions.
+   *
+   * <p>The context hash is computed as SHA512Half of:
+   * <ul>
+   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_SEND</li>
+   *   <li>account (20 bytes) - sender account</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
+   *   <li>destination (20 bytes) - destination account</li>
+   *   <li>version (4 bytes) - confidential balance version</li>
+   * </ul>
+   *
+   * @param account     The sender account address.
+   * @param sequence    The transaction sequence number.
+   * @param issuanceId  The MPTokenIssuanceID.
+   * @param destination The destination account address.
+   * @param version     The confidential balance version from the MPToken ledger object.
+   *
+   * @return The 32-byte context hash.
+   */
+  byte[] generateSendContext(
+    Address account,
+    UnsignedInteger sequence,
+    MpTokenIssuanceId issuanceId,
+    Address destination,
+    UnsignedInteger version
   );
 
   /**

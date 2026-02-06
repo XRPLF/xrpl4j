@@ -23,6 +23,8 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
@@ -34,6 +36,7 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceDecryptor;
@@ -54,6 +57,7 @@ import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTSend;
 import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
 import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
@@ -65,6 +69,7 @@ import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class ConfidentialTransfersIT extends AbstractIT {
@@ -511,7 +516,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     String holder2ZkProof = BaseEncoding.base16().encode(holder2ZkProofBytes);
 
     // Verify the proof locally
-    boolean holder2LocalVerify = proofGenerator.verifyProof(holder2ZkProofBytes, holder2ElGamalEcPoint, holder2ContextId);
+    boolean holder2LocalVerify = proofGenerator.verifyProof(holder2ZkProofBytes, holder2ElGamalEcPoint,
+      holder2ContextId);
     assertThat(holder2LocalVerify).isTrue();
 
     //////////////////////
@@ -546,5 +552,205 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("Holder 2 ConfidentialMPTConvert result: " + holder2ConfidentialConvertResult.engineResult());
 
     assertThat(holder2ConfidentialConvertResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Wait for holder 2's convert to be validated
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedHolder2ConfidentialConvert.hash(),
+        holder2ConfidentialConvertResult.validatedLedgerIndex(),
+        holder2ConfidentialConvert.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        holder2ConfidentialConvert.sequence(),
+        holder2KeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    //////////////////////
+    // Get and print MPToken objects for both holders
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+    MpTokenObject holder1MpToken = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holderKeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    System.out.println("\n========== HOLDER 1 MPTOKEN OBJECT ==========");
+    System.out.println(holder1MpToken.toString());
+
+    MpTokenObject holder2MpToken = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holder2KeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    System.out.println("\n========== HOLDER 2 MPTOKEN OBJECT ==========");
+    System.out.println(holder2MpToken.toString());
+
+    //////////////////////
+    // ConfidentialMPTSend: Holder 1 sends 100 MPT to Holder 2
+    UnsignedLong sendAmount = UnsignedLong.valueOf(100);
+
+    // Generate blinding factors for the send (one for each recipient: sender, destination, issuer)
+    byte[] sendBlindingFactorSender = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] sendBlindingFactorHolder2 = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] sendBlindingFactorIssuer = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+
+    // Encrypt for sender (holder 1) - this is the amount being debited
+    ElGamalCiphertext senderCiphertext = encryptor.encrypt(sendAmount, holderElGamalEcPoint, sendBlindingFactorSender);
+    EncryptedAmount senderEncryptedAmount = EncryptedAmount.of(
+      BaseEncoding.base16().encode(senderCiphertext.toBytes())
+    );
+
+    // Encrypt for destination (holder 2)
+    ElGamalCiphertext destinationCiphertext = encryptor.encrypt(
+      sendAmount, holder2ElGamalEcPoint, sendBlindingFactorHolder2
+    );
+    EncryptedAmount destinationEncryptedAmount = EncryptedAmount.of(
+      BaseEncoding.base16().encode(destinationCiphertext.toBytes())
+    );
+
+    // Encrypt for issuer
+    ElGamalCiphertext issuerCiphertextForSend = encryptor.encrypt(
+      sendAmount, issuerElGamalEcPoint, sendBlindingFactorIssuer
+    );
+    EncryptedAmount issuerEncryptedAmountForSend = EncryptedAmount.of(
+      BaseEncoding.base16().encode(issuerCiphertextForSend.toBytes())
+    );
+
+    //////////////////////
+    // Get holder 1 account info for the Send transaction
+    AccountInfoResult holderAccountInfoForSend = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    //////////////////////
+    // Generate SamePlaintextMultiProof
+    JavaSamePlaintextMultiProofGenerator samePlaintextProofGenerator = new JavaSamePlaintextMultiProofGenerator(
+      secp256k1);
+
+    // Get the version from holder 1's MPToken (default to 0 if not present)
+    UnsignedInteger holder1Version = holder1MpToken.confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
+
+    // Generate context hash for ConfidentialMPTSend
+    byte[] sendContextHash = samePlaintextProofGenerator.generateSendContext(
+      holderKeyPair.publicKey().deriveAddress(),  // sender account
+      holderAccountInfoForSend.accountData().sequence(),  // sequence
+      mpTokenIssuanceId,  // issuanceId
+      holder2KeyPair.publicKey().deriveAddress(),  // destination
+      holder1Version  // version from MPToken
+    );
+
+    System.out.println("\n========== SEND CONTEXT ==========");
+    System.out.println("Sender: " + holderKeyPair.publicKey().deriveAddress());
+    System.out.println("Destination: " + holder2KeyPair.publicKey().deriveAddress());
+    System.out.println("Sequence: " + holderAccountInfoForSend.accountData().sequence());
+    System.out.println("Version: " + holder1Version);
+    System.out.println("Context Hash: " + BaseEncoding.base16().encode(sendContextHash));
+
+    // Generate nonces for the proof (one for amount, one for each of 3 recipients)
+    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKrSender = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKrDest = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKrIssuer = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+
+    // Generate the SamePlaintextMultiProof for all 3 ciphertexts: sender, destination, issuer
+    byte[] samePlaintextProof = samePlaintextProofGenerator.generateProof(
+      sendAmount,
+      Arrays.asList(senderCiphertext, destinationCiphertext, issuerCiphertextForSend),
+      Arrays.asList(holderElGamalEcPoint, holder2ElGamalEcPoint, issuerElGamalEcPoint),
+      Arrays.asList(sendBlindingFactorSender, sendBlindingFactorHolder2, sendBlindingFactorIssuer),
+      sendContextHash,
+      nonceKm,
+      Arrays.asList(nonceKrSender, nonceKrDest, nonceKrIssuer)
+    );
+
+    System.out.println("SamePlaintextMultiProof size: " + samePlaintextProof.length + " bytes (expected 359 for 3 recipients)");
+    System.out.println("SamePlaintextMultiProof: " + BaseEncoding.base16().encode(samePlaintextProof));
+
+    // Verify the proof locally
+    boolean sendProofValid = samePlaintextProofGenerator.verify(
+      samePlaintextProof,
+      Arrays.asList(senderCiphertext, destinationCiphertext, issuerCiphertextForSend),
+      Arrays.asList(holderElGamalEcPoint, holder2ElGamalEcPoint, issuerElGamalEcPoint),
+      sendContextHash
+    );
+    System.out.println("SamePlaintextMultiProof valid locally: " + sendProofValid);
+    assertThat(sendProofValid).isTrue();
+
+    //////////////////////
+    // Create placeholder commitments (64 bytes = 128 hex chars each for AmountCommitment and BalanceCommitment)
+    StringBuilder placeholderAmountCommitment = new StringBuilder();
+    StringBuilder placeholderBalanceCommitment = new StringBuilder();
+    for (int i = 0; i < 128; i++) {
+      placeholderAmountCommitment.append("A");
+      placeholderBalanceCommitment.append("B");
+    }
+    String amountCommitment = placeholderAmountCommitment.toString();
+    String balanceCommitment = placeholderBalanceCommitment.toString();
+
+    System.out.println("Amount Commitment (placeholder): " + amountCommitment);
+    System.out.println("Balance Commitment (placeholder): " + balanceCommitment);
+
+    //////////////////////
+    // Create placeholder Pedersen linkage proofs (2 x 195 bytes = 390 bytes total)
+    // These prove the linkage between the ElGamal ciphertexts and Pedersen commitments
+    byte[] placeholderLinkageProof1 = new byte[195];
+    byte[] placeholderLinkageProof2 = new byte[195];
+    java.util.Arrays.fill(placeholderLinkageProof1, (byte) 0xCC);
+    java.util.Arrays.fill(placeholderLinkageProof2, (byte) 0xDD);
+
+    // Combine SamePlaintextMultiProof (359 bytes) + Pedersen linkage proofs (390 bytes) = 749 bytes
+    byte[] fullZkProof = new byte[samePlaintextProof.length + placeholderLinkageProof1.length + placeholderLinkageProof2.length];
+    System.arraycopy(samePlaintextProof, 0, fullZkProof, 0, samePlaintextProof.length);
+    System.arraycopy(placeholderLinkageProof1, 0, fullZkProof, samePlaintextProof.length, placeholderLinkageProof1.length);
+    System.arraycopy(placeholderLinkageProof2, 0, fullZkProof, samePlaintextProof.length + placeholderLinkageProof1.length, placeholderLinkageProof2.length);
+
+    System.out.println("Full ZKProof size: " + fullZkProof.length + " bytes (expected 749)");
+
+    //////////////////////
+    // Build and submit ConfidentialMPTSend transaction
+    ConfidentialMPTSend confidentialSend = ConfidentialMPTSend.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(holderAccountInfoForSend.accountData().sequence())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(
+        holderAccountInfoForSend.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .destination(holder2KeyPair.publicKey().deriveAddress())
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .senderEncryptedAmount(senderEncryptedAmount)
+      .destinationEncryptedAmount(destinationEncryptedAmount)
+      .issuerEncryptedAmount(issuerEncryptedAmountForSend)
+      .zkProof(BaseEncoding.base16().encode(fullZkProof))
+      .amountCommitment(amountCommitment)
+      .balanceCommitment(balanceCommitment)
+      .build();
+
+    SingleSignedTransaction<ConfidentialMPTSend> signedConfidentialSend = signatureService.sign(
+      holderKeyPair.privateKey(), confidentialSend
+    );
+
+    System.out.println("\n========== CONFIDENTIAL MPT SEND ==========");
+    System.out.println("Tx Hash: " + signedConfidentialSend.hash());
+
+    SubmitResult<ConfidentialMPTSend> confidentialSendResult = xrplClient.submit(signedConfidentialSend);
+
+    System.out.println("ConfidentialMPTSend result: " + confidentialSendResult.engineResult());
+    System.out.println("ConfidentialMPTSend result message: " + confidentialSendResult.engineResultMessage());
+
+    // Note: We expect this to fail because we're using placeholder commitments
+    // The goal is to see if the SamePlaintextMultiProof is accepted by rippled
+    System.out.println("\n========== TEST COMPLETE ==========");
   }
 }

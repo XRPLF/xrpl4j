@@ -91,12 +91,22 @@ public interface ConfidentialMPTSend extends Transaction {
   String zkProof();
 
   /**
-   * A cryptographic commitment to the user's confidential spending balance.
+   * A Pedersen commitment to the transfer amount.
+   * Used to prove the amount is within valid range without revealing it.
    *
-   * @return A hex-encoded string containing the commitment.
+   * @return A hex-encoded string containing the amount commitment.
    */
-  @JsonProperty("PedersenCommitment")
-  String pedersenCommitment();
+  @JsonProperty("AmountCommitment")
+  String amountCommitment();
+
+  /**
+   * A Pedersen commitment to the sender's new spending balance after the transfer.
+   * Used to prove the balance remains non-negative without revealing it.
+   *
+   * @return A hex-encoded string containing the balance commitment.
+   */
+  @JsonProperty("BalanceCommitment")
+  String balanceCommitment();
 
   /**
    * Ciphertext for the auditor. Required if {@code sfAuditorElGamalPublicKey} is present on the issuance.

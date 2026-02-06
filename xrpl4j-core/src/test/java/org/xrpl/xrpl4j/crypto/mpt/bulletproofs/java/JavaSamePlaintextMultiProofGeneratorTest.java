@@ -16,6 +16,7 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,7 +65,7 @@ class JavaSamePlaintextMultiProofGeneratorTest {
     KeyPair keypair2 = seed2.deriveKeyPair();
     ECPoint pk2 = BcKeyUtils.toEcPublicKeyParameters(keypair2.publicKey()).getQ();
 
-    List<ECPoint> publicKeys = List.of(pk1, pk2);
+    List<ECPoint> publicKeys = Arrays.asList(pk1, pk2);
 
     // 3. Deterministic blinding factors
     byte[] r1 = new byte[32];
@@ -73,7 +74,7 @@ class JavaSamePlaintextMultiProofGeneratorTest {
       r1[i] = 0x01;
       r2[i] = 0x02;
     }
-    List<byte[]> blindingFactors = List.of(r1, r2);
+    List<byte[]> blindingFactors = Arrays.asList(r1, r2);
 
     // 4. Create ciphertexts: R = r * G, S = m * G + r * Pk
     BigInteger mInt = BigInteger.valueOf(amount.longValue());
@@ -87,7 +88,7 @@ class JavaSamePlaintextMultiProofGeneratorTest {
     ECPoint R2 = secp256k1.multiplyG(r2Int);
     ECPoint S2 = secp256k1.add(mG, secp256k1.multiply(pk2, r2Int));
 
-    List<ElGamalCiphertext> ciphertexts = List.of(
+    List<ElGamalCiphertext> ciphertexts = Arrays.asList(
       new ElGamalCiphertext(R1, S1),
       new ElGamalCiphertext(R2, S2)
     );
@@ -107,7 +108,7 @@ class JavaSamePlaintextMultiProofGeneratorTest {
       nonceKr1[i] = 0x11;
       nonceKr2[i] = 0x12;
     }
-    List<byte[]> noncesKr = List.of(nonceKr1, nonceKr2);
+    List<byte[]> noncesKr = Arrays.asList(nonceKr1, nonceKr2);
 
     // 7. Generate proof
     byte[] proof = proofGenerator.generateProof(
@@ -146,9 +147,10 @@ class JavaSamePlaintextMultiProofGeneratorTest {
     System.out.println("As scalar (32 bytes): " + BaseEncoding.base16().encode(secp256k1.unsignedLongToScalar(amount)));
     System.out.println();
 
-    System.out.println("=== Public Keys (compressed, 33 bytes each) ===");
+    System.out.println("=== Public Keys (uncompressed, 65 bytes each) ===");
     for (int i = 0; i < publicKeys.size(); i++) {
-      System.out.println("Pk[" + i + "]: " + BaseEncoding.base16().encode(secp256k1.serializeCompressed(publicKeys.get(i))));
+      byte[] uncompressed = publicKeys.get(i).getEncoded(false);
+      System.out.println("Pk[" + i + "]: " + BaseEncoding.base16().encode(uncompressed));
     }
     System.out.println();
 
@@ -158,11 +160,11 @@ class JavaSamePlaintextMultiProofGeneratorTest {
     }
     System.out.println();
 
-    System.out.println("=== Ciphertexts ===");
+    System.out.println("=== Ciphertexts (uncompressed, 65 bytes each) ===");
     for (int i = 0; i < ciphertexts.size(); i++) {
       ElGamalCiphertext ct = ciphertexts.get(i);
-      System.out.println("R[" + i + "] (C1): " + BaseEncoding.base16().encode(secp256k1.serializeCompressed(ct.c1())));
-      System.out.println("S[" + i + "] (C2): " + BaseEncoding.base16().encode(secp256k1.serializeCompressed(ct.c2())));
+      System.out.println("R[" + i + "] (C1): " + BaseEncoding.base16().encode(ct.c1().getEncoded(false)));
+      System.out.println("S[" + i + "] (C2): " + BaseEncoding.base16().encode(ct.c2().getEncoded(false)));
     }
     System.out.println();
 

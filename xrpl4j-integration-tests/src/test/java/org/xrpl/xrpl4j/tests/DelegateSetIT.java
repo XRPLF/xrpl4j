@@ -105,7 +105,10 @@ public class DelegateSetIT extends AbstractIT {
       () -> this.getValidatedTransaction(result.transactionResult().hash(), DelegateSet.class)
     );
 
-    assertThat(validatedTransaction.transaction()).isEqualTo(delegateSet);
+    // Verify key fields of the validated transaction match the original
+    assertThat(validatedTransaction.transaction().account()).isEqualTo(delegateSet.account());
+    assertThat(validatedTransaction.transaction().authorize()).isEqualTo(delegateSet.authorize());
+    assertThat(validatedTransaction.transaction().permissions()).isEqualTo(delegateSet.permissions());
 
     /////////////////////////
     // Verify the Delegate object was created

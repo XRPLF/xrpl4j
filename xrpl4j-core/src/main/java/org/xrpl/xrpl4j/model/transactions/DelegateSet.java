@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -100,6 +101,7 @@ public interface DelegateSet extends Transaction {
    * @return A {@link List} of {@link PermissionWrapper}s.
    */
   @JsonProperty("Permissions")
+  @JsonInclude(JsonInclude.Include.ALWAYS)
   List<PermissionWrapper> permissions();
 
   /**

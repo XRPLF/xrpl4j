@@ -26,6 +26,8 @@ import com.google.common.base.Suppliers;
 import com.google.common.io.Resources;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class DefaultDefinitionsProvider implements DefinitionsProvider {
@@ -43,12 +45,59 @@ public class DefaultDefinitionsProvider implements DefinitionsProvider {
 
     this.supplier = Suppliers.memoize(() -> {
       try {
-        return objectMapper.readerFor(Definitions.class)
+        Definitions baseDefinitions = objectMapper.readerFor(Definitions.class)
           .readValue(Resources.getResource(DefaultDefinitionsProvider.class, "/definitions.json"));
+
+        // Generate PERMISSION_VALUES dynamically from TRANSACTION_TYPES
+        Map<String, Integer> permissionValues = generatePermissionValues(baseDefinitions);
+
+        // Return a new Definitions object with the generated PERMISSION_VALUES
+        return ImmutableDefinitions.builder()
+          .from(baseDefinitions)
+          .permissionValues(permissionValues)
+          .build();
       } catch (IOException e) {
         throw new IllegalStateException("Cannot read definition.json file", e);
       }
     });
+  }
+
+  /**
+   * Generate PERMISSION_VALUES mapping from TRANSACTION_TYPES.
+   * This follows the same logic as xrpl.js:
+   * - Granular permissions start at 65537
+   * - Transaction type permissions are transaction type code + 1
+   *
+   * @param definitions The base {@link Definitions} loaded from definitions.json
+   * @return A {@link Map} of permission names to their numeric values
+   */
+  private Map<String, Integer> generatePermissionValues(Definitions definitions) {
+    Map<String, Integer> permissionValues = new HashMap<>();
+
+    // Add granular permissions (starting at 65537)
+    permissionValues.put("TrustlineAuthorize", 65537);
+    permissionValues.put("TrustlineFreeze", 65538);
+    permissionValues.put("PaymentMint", 65539);
+    permissionValues.put("PaymentBurn", 65540);
+    permissionValues.put("PaymentClawback", 65541);
+    permissionValues.put("MPTokenIssuanceCreate", 65542);
+    permissionValues.put("MPTokenIssuanceDestroy", 65543);
+    permissionValues.put("MPTokenIssuanceAuthorize", 65544);
+    permissionValues.put("MPTokenIssuanceUnlock", 65545);
+    permissionValues.put("MPTokenIssuanceLock", 65546);
+    permissionValues.put("MPTokenIssuanceTransfer", 65547);
+    permissionValues.put("MPTokenIssuanceClawback", 65548);
+
+    // Add transaction type permissions (transaction type code + 1)
+    // Exclude pseudo-transactions and non-delegatable transactions
+    definitions.transactionTypes().forEach((txType, txCode) -> {
+      // Skip Invalid (-1) and pseudo-transactions (>= 100)
+      if (txCode >= 0 && txCode < 100) {
+        permissionValues.put(txType, txCode + 1);
+      }
+    });
+
+    return permissionValues;
   }
 
   @Override

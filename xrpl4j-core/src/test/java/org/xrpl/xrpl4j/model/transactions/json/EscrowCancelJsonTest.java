@@ -20,6 +20,8 @@ package org.xrpl.xrpl4j.model.transactions.json;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -143,5 +145,37 @@ public class EscrowCancelJsonTest extends AbstractJsonTest {
       "  \"Fee\": \"12\"" +
       "}";
     assertCanSerializeAndDeserialize(escrowCancel, json);
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    EscrowCancel escrowCancel = EscrowCancel.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .offerSequence(UnsignedInteger.valueOf(7))
+      .build();
+
+    assertThat(escrowCancel.transactionFlags()).isEqualTo(escrowCancel.flags());
+    assertThat(escrowCancel.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    EscrowCancel original = EscrowCancel.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .offerSequence(UnsignedInteger.valueOf(7))
+      .build();
+
+    EscrowCancel copied = EscrowCancel.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

@@ -93,4 +93,50 @@ public class PermissionedDomainSetTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("AcceptedCredentials should have unique credentials.");
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    List<CredentialWrapper> acceptedCredentials = IntStream.range(0, 3)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet permissionedDomainSet = PermissionedDomainSet.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .acceptedCredentials(acceptedCredentials)
+      .build();
+
+    assertThat(permissionedDomainSet.transactionFlags()).isEqualTo(permissionedDomainSet.flags());
+    assertThat(permissionedDomainSet.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    List<CredentialWrapper> acceptedCredentials = IntStream.range(0, 3)
+      .mapToObj(i -> CredentialWrapper.builder()
+        .credential(Credential.builder()
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .credentialType(CredentialType.ofPlainText("Driver licence - " + i))
+          .build())
+        .build())
+      .collect(Collectors.toList());
+
+    PermissionedDomainSet original = PermissionedDomainSet.builder()
+      .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .acceptedCredentials(acceptedCredentials)
+      .build();
+
+    PermissionedDomainSet copied = PermissionedDomainSet.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

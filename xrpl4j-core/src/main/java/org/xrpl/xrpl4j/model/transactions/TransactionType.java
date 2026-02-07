@@ -74,6 +74,11 @@ public enum TransactionType {
   DEPOSIT_PRE_AUTH("DepositPreauth"),
 
   /**
+   * The {@link TransactionType} for the {@link DelegateSet} transaction.
+   */
+  DELEGATE_SET("DelegateSet"),
+
+  /**
    * The {@link TransactionType} for the {@link EnableAmendment} transaction.
    */
   ENABLE_AMENDMENT("EnableAmendment"),

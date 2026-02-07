@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -264,5 +265,56 @@ class XChainAccountCreateCommitTest extends AbstractJsonTest {
       "}", ED_PUBLIC_KEY.base16Value());
 
     assertCanSerializeAndDeserialize(commit, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    XChainAccountCreateCommit commit = XChainAccountCreateCommit.builder()
+      .account(Address.of("rwEqJ2UaQHe7jihxGqmx6J4xdbGiiyMaGa"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of("rD323VyRjgzzhY4bFpo44rmyh2neB5d8Mo"))
+      .amount(XrpCurrencyAmount.ofDrops(20000000))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .build();
+
+    assertThat(commit.transactionFlags()).isEqualTo(commit.flags());
+    assertThat(commit.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    XChainAccountCreateCommit original = XChainAccountCreateCommit.builder()
+      .account(Address.of("rwEqJ2UaQHe7jihxGqmx6J4xdbGiiyMaGa"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .sequence(UnsignedInteger.ONE)
+      .destination(Address.of("rD323VyRjgzzhY4bFpo44rmyh2neB5d8Mo"))
+      .amount(XrpCurrencyAmount.ofDrops(20000000))
+      .signatureReward(XrpCurrencyAmount.ofDrops(100))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .xChainBridge(
+        XChainBridge.builder()
+          .lockingChainDoor(Address.of("rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4"))
+          .lockingChainIssue(Issue.XRP)
+          .issuingChainDoor(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+          .issuingChainIssue(Issue.XRP)
+          .build()
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    XChainAccountCreateCommit copied = XChainAccountCreateCommit.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

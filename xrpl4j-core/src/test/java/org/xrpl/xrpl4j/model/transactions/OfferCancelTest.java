@@ -28,4 +28,34 @@ class OfferCancelTest {
     assertThat(offerCancel.fee()).isEqualTo(XrpCurrencyAmount.ofDrops(12));
     assertThat(offerCancel.offerSequence()).isPresent().get().isEqualTo(UnsignedInteger.valueOf(13));
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    OfferCancel offerCancel = OfferCancel.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .offerSequence(UnsignedInteger.valueOf(13))
+      .build();
+
+    assertThat(offerCancel.transactionFlags()).isEqualTo(offerCancel.flags());
+    assertThat(offerCancel.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    OfferCancel original = OfferCancel.builder()
+      .account(Address.of("rfkE1aSy9G8Upk4JssnwBxhEv5p4mn2KTy"))
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(12))
+      .offerSequence(UnsignedInteger.valueOf(13))
+      .build();
+
+    OfferCancel copied = OfferCancel.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

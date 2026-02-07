@@ -107,4 +107,32 @@ public class NfTokenAcceptOfferTest {
     );
   }
 
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    NfTokenAcceptOffer nfTokenAcceptOffer = NfTokenAcceptOffer.builder()
+      .account(address)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .buyOffer(offer)
+      .build();
+
+    assertThat(nfTokenAcceptOffer.transactionFlags()).isEqualTo(nfTokenAcceptOffer.flags());
+    assertThat(nfTokenAcceptOffer.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    NfTokenAcceptOffer original = NfTokenAcceptOffer.builder()
+      .account(address)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .buyOffer(offer)
+      .build();
+
+    NfTokenAcceptOffer copied = NfTokenAcceptOffer.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
 }

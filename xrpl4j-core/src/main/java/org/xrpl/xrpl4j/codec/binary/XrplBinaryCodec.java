@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.crypto.HashingUtils;
 import org.xrpl.xrpl4j.crypto.signing.SignedTransaction;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 
 import java.util.Map;
@@ -163,27 +164,8 @@ public class XrplBinaryCodec {
 
       // Add each inner transaction ID (32 bytes each)
       for (RawTransactionWrapper wrapper : batch.rawTransactions()) {
-        String txJson = BINARY_CODEC_OBJECT_MAPPER.writeValueAsString(wrapper.rawTransaction());
-        // Parse the JSON and ensure SigningPubKey is set to empty string for inner transactions
-        JsonNode txNode = removeNonSigningFields(BINARY_CODEC_OBJECT_MAPPER.readTree(txJson));
-        if (txNode.isObject()) {
-          ObjectNode objNode = (ObjectNode) txNode;
-          // Set SigningPubKey to empty string for inner batch transactions
-          // objNode.set("SigningPubKey", new TextNode(""));
-
-          // Fix Flags field if it's serialized as an object instead of a number
-          // TODO: FIXME! (Not needed if we upgrade Jackson)
-          JsonNode flagsNode = objNode.get("Flags");
-          if (flagsNode != null && flagsNode.isObject() && flagsNode.has("value")) {
-            objNode.put("Flags", flagsNode.get("value").asLong());
-          }
-        }
-        String txHex = this.encode(txNode);
-        UnsignedByteArray txBytes = UnsignedByteArray.fromHex(
-          SignedTransaction.SIGNED_TRANSACTION_HASH_PREFIX + txHex
-        );
-        UnsignedByteArray txId = HashingUtils.sha512Half(txBytes);
-        signableBytes.append(txId);
+        final UnsignedByteArray transactionId = computeInnerBatchTransactionId(wrapper);
+        signableBytes.append(transactionId);
       }
 
       return signableBytes;
@@ -305,5 +287,33 @@ public class XrplBinaryCodec {
     return DEFINITIONS_SERVICE.getFieldInstance(fieldName).map(FieldInstance::isSigningField).orElse(false);
   }
 
+  /**
+   * Computes the transaction ID for an unsigned inner transaction.
+   *
+   * @param rawTransactionWrapper A {@link RawTransactionWrapper} with an unsigned inner transaction, used for Batch.
+   *
+   * @return A {@link Hash256} containing the transaction's transaction ID.
+   */
+  private UnsignedByteArray computeInnerBatchTransactionId(final RawTransactionWrapper rawTransactionWrapper)
+    throws JsonProcessingException {
+    Objects.requireNonNull(rawTransactionWrapper);
 
+    String txJson = BINARY_CODEC_OBJECT_MAPPER.writeValueAsString(rawTransactionWrapper.rawTransaction());
+    // Parse the JSON and ensure SigningPubKey is set to empty string for inner transactions
+    JsonNode txNode = removeNonSigningFields(BINARY_CODEC_OBJECT_MAPPER.readTree(txJson));
+    if (txNode.isObject()) {
+      final ObjectNode objNode = (ObjectNode) txNode;
+      // Fix Flags field if it's serialized as an object instead of a number
+      // NOTE: Once https://github.com/XRPLF/xrpl4j/issues/649 is implemented, this line can be removed.
+      final JsonNode flagsNode = objNode.get("Flags");
+      if (flagsNode != null && flagsNode.isObject() && flagsNode.has("value")) {
+        objNode.put("Flags", flagsNode.get("value").asLong());
+      }
+    }
+    final String txHex = this.encode(txNode);
+    final UnsignedByteArray txBytes = UnsignedByteArray.fromHex(
+      SignedTransaction.SIGNED_TRANSACTION_HASH_PREFIX + txHex
+    );
+    return HashingUtils.sha512Half(txBytes);
+  }
 }

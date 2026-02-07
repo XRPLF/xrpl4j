@@ -99,4 +99,40 @@ public class PaymentChannelCreateTest {
     assertThat(create.flags().isEmpty()).isTrue();
     assertThat(create.cancelAfter()).isPresent().get().isEqualTo(UnsignedLong.valueOf(533171558));
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    PaymentChannelCreate create = PaymentChannelCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .build();
+
+    assertThat(create.transactionFlags()).isEqualTo(create.flags());
+    assertThat(create.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    PaymentChannelCreate original = PaymentChannelCreate.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .amount(XrpCurrencyAmount.ofDrops(10000))
+      .destination(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+      .settleDelay(UnsignedInteger.ONE)
+      .publicKey("32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A")
+      .build();
+
+    PaymentChannelCreate copied = PaymentChannelCreate.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

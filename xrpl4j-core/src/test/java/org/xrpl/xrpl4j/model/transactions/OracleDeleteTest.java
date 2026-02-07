@@ -56,6 +56,26 @@ class OracleDeleteTest extends AbstractJsonTest {
     assertCanSerializeAndDeserialize(oracleDelete, json);
   }
 
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    OracleDelete oracleDelete = baseBuilder().build();
+
+    assertThat(oracleDelete.transactionFlags()).isEqualTo(oracleDelete.flags());
+    assertThat(oracleDelete.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    OracleDelete original = baseBuilder()
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    OracleDelete copied = OracleDelete.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
   private static ImmutableOracleDelete.Builder baseBuilder() {
     return OracleDelete.builder()
       .account(Address.of("rp4pqYgrTAtdPHuZd1ZQWxrzx45jxYcZex"))

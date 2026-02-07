@@ -21,6 +21,7 @@ package org.xrpl.xrpl4j.model.transactions;
  */
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,8 +29,10 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.primitives.UnsignedInteger;
 import org.immutables.value.Value;
+import org.slf4j.LoggerFactory;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.model.flags.TransactionFlags;
 
 import java.util.List;
 import java.util.Map;
@@ -252,5 +255,37 @@ public interface Transaction {
   @JsonAnyGetter
   @JsonInclude(Include.NON_ABSENT)
   Map<String, Object> unknownFields();
+
+  /**
+   * Get the transaction flags polymorphically. Each transaction type implements its own flags() method with a specific
+   * return type.
+   *
+   * @return The {@link TransactionFlags} for this transaction type.
+   */
+  @Value.Auxiliary
+  @JsonIgnore
+  default TransactionFlags transactionFlags() {
+    // Design Note: Ideally, `Transaction` would declare a flags() method returning TransactionFlags, with each concrete
+    // transaction type overriding it to return a more specific type (e.g., PaymentFlags for Payment).
+    // While this pattern compiles in Java using covariant return types, the Immutables annotation processor
+    // cannot handle it. Immutables generates a warning that the builder's .from() method will not properly
+    // copy flags between instances, creating a subtle source of bugs.
+    //
+    // Two alternatives were considered:
+    // 1. Make Transaction generic: Transaction<T extends TransactionFlags>
+    // 2. Use reflection to invoke flags() on the concrete type (current approach)
+    //
+    // We chose option 2 because:
+    // - Making Transaction generic would require changes across the entire codebase (breaking change)
+    // - Even with generics, code working with Transaction references would still see TransactionFlags
+    //   (not the specific subtype), providing no practical benefit despite the refactoring cost
+    // - Reflection is contained to this single helper method and works transparently
+    try {
+      return (TransactionFlags) this.getClass().getMethod("flags").invoke(this);
+    } catch (Exception e) {
+      LoggerFactory.getLogger(Transaction.class).error("Failed to invoke flags() method", e);
+      return TransactionFlags.EMPTY;
+    }
+  }
 
 }

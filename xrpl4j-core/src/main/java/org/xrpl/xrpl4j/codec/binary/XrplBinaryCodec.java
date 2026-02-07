@@ -167,13 +167,10 @@ public class XrplBinaryCodec {
         // Parse the JSON and ensure SigningPubKey is set to empty string for inner transactions
         JsonNode txNode = removeNonSigningFields(BINARY_CODEC_OBJECT_MAPPER.readTree(txJson));
         if (txNode.isObject()) {
-          ObjectNode objNode = (ObjectNode) txNode;
-          // Set SigningPubKey to empty string for inner batch transactions
-          // objNode.set("SigningPubKey", new TextNode(""));
-
+          final ObjectNode objNode = (ObjectNode) txNode;
           // Fix Flags field if it's serialized as an object instead of a number
-          // TODO: FIXME! (Not needed if we upgrade Jackson)
-          JsonNode flagsNode = objNode.get("Flags");
+          // NOTE: Once https://github.com/XRPLF/xrpl4j/issues/649 is implemented, this line can be removed.
+          final JsonNode flagsNode = objNode.get("Flags");
           if (flagsNode != null && flagsNode.isObject() && flagsNode.has("value")) {
             objNode.put("Flags", flagsNode.get("value").asLong());
           }

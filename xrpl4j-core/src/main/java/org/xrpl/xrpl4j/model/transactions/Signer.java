@@ -49,6 +49,10 @@ public interface Signer {
   /**
    * The {@link Address} associated with this signature, as it appears in the signer list.
    *
+   * <p>Note that in general, this address is derived from the {@link Signer#signingPublicKey()}, but in the case of an
+   * accoun that has set a different regular key, this value may diverge from the public key. Therefore, we use the
+   * `@Default` annotation here to ensure that this value is derived from the public key if not explicitly set.
+   *
    * @return The {@link Address} of the signer account.
    */
   @JsonProperty("Account")

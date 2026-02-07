@@ -659,7 +659,7 @@ public class XrplClientTest {
         JsonRpcRequest request,
         JavaType resultType
       ) {
-        SubmitMultiSignedResult submitMultiSignedResult = SubmitMultiSignedResult.builder()
+        SubmitMultiSignedResult<?> submitMultiSignedResult = SubmitMultiSignedResult.builder()
           .engineResult("tesSUCCESS")
           .engineResultCode(200)
           .engineResultMessage("Submitted")

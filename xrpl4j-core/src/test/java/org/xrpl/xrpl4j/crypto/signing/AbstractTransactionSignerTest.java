@@ -106,9 +106,9 @@ public class AbstractTransactionSignerTest {
     };
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (Transaction)
-  ///////////////////
+  // ////////////////
 
   @Test
   void signWithNullMetadata() {
@@ -142,9 +142,9 @@ public class AbstractTransactionSignerTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (UnsignedClaim)
-  ///////////////////
+  // /////////////////
 
   @Test
   void signUnsignedClaimWithNullMetadata() {
@@ -184,9 +184,9 @@ public class AbstractTransactionSignerTest {
     assertThat(actual).isEqualTo(secp256k1SignatureMock);
   }
 
-  ///////////////////
+  // /////////////////
   // Sign (Attestation)
-  ///////////////////
+  // /////////////////
 
   @Test
   void signAttestationWithNullMetadata() {
@@ -196,8 +196,7 @@ public class AbstractTransactionSignerTest {
 
   @Test
   void signAttestationWithNullTransaction() {
-    assertThrows(NullPointerException.class,
-      () -> transactionSigner.sign(privateKeyableMock, (Attestation) null));
+    assertThrows(NullPointerException.class, () -> transactionSigner.sign(privateKeyableMock, (Attestation) null));
   }
 
   @Test
@@ -226,9 +225,9 @@ public class AbstractTransactionSignerTest {
     assertThat(actual).isEqualTo(secp256k1SignatureMock);
   }
 
-  ///////////////////
+  // /////////////////
   // MultiSign to Signature
-  ///////////////////
+  // /////////////////
 
   @Test
   void multiSignWithNullMetadata() {
@@ -265,9 +264,9 @@ public class AbstractTransactionSignerTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // MultiSign to Signer
-  ///////////////////
+  // /////////////////
 
   @Test
   void multiSignToSignerWithNullMetadata() {
@@ -308,9 +307,9 @@ public class AbstractTransactionSignerTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // EdDsaSign
-  ///////////////////
+  // /////////////////
 
   @Test
   void edDsaSign() {
@@ -324,9 +323,9 @@ public class AbstractTransactionSignerTest {
     verifyNoMoreInteractions(signatureUtilsMock);
   }
 
-  ///////////////////
+  // /////////////////
   // EcDsaSign
-  ///////////////////
+  // /////////////////
 
   @Test
   void ecDsaSign() {

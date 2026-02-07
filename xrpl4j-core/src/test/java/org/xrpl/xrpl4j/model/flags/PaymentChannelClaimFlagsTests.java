@@ -34,36 +34,40 @@ import java.util.stream.Stream;
 public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(2);
+    return getBooleanCombinations(3);
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testFlagsConstructionWithIndividualFlags(
     boolean tfRenew,
-    boolean tfClose
+    boolean tfClose,
+    boolean tfInnerBatchTxn
   ) {
     PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.builder()
       .tfRenew(tfRenew)
       .tfClose(tfClose)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
-    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfRenew, tfClose));
+    assertThat(flags.getValue()).isEqualTo(getExpectedFlags(tfRenew, tfClose, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
   @MethodSource("data")
   public void testDeriveIndividualFlagsFromFlags(
     boolean tfRenew,
-    boolean tfClose
+    boolean tfClose,
+    boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfRenew, tfClose);
+    long expectedFlags = getExpectedFlags(tfRenew, tfClose, tfInnerBatchTxn);
     PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
     assertThat(flags.tfFullyCanonicalSig()).isEqualTo(true);
     assertThat(flags.tfRenew()).isEqualTo(tfRenew);
     assertThat(flags.tfClose()).isEqualTo(tfClose);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -74,6 +78,7 @@ public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfRenew()).isFalse();
     assertThat(flags.tfClose()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
 
@@ -81,11 +86,13 @@ public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
   @MethodSource("data")
   void testJson(
     boolean tfRenew,
-    boolean tfClose
+    boolean tfClose,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
     PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.builder()
       .tfRenew(tfRenew)
       .tfClose(tfClose)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -107,9 +114,21 @@ public class PaymentChannelClaimFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
-  private long getExpectedFlags(boolean tfRenew, boolean tfClose) {
+  @Test
+  void testInnerBatchTxn() {
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfRenew()).isFalse();
+    assertThat(flags.tfClose()).isFalse();
+    assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
+  private long getExpectedFlags(boolean tfRenew, boolean tfClose, boolean tfInnerBatchTxn) {
     return (PaymentChannelClaimFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfRenew ? PaymentChannelClaimFlags.RENEW.getValue() : 0L) |
-      (tfClose ? PaymentChannelClaimFlags.CLOSE.getValue() : 0L);
+      (tfClose ? PaymentChannelClaimFlags.CLOSE.getValue() : 0L) |
+      (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }

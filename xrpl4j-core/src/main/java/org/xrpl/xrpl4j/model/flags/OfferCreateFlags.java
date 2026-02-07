@@ -52,6 +52,15 @@ public class OfferCreateFlags extends TransactionFlags {
    */
   protected static final OfferCreateFlags HYBRID = new OfferCreateFlags(0x00100000L);
 
+  /**
+   * Constant {@link OfferCreateFlags} for the {@code tfInnerBatchTxn} flag. This flag is used to indicate that a
+   * transaction is an inner transaction of a Batch.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public static final OfferCreateFlags INNER_BATCH_TXN =
+    new OfferCreateFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private OfferCreateFlags(long value) {
     super(value);
   }
@@ -85,7 +94,8 @@ public class OfferCreateFlags extends TransactionFlags {
     boolean tfImmediateOrCancel,
     boolean tfFillOrKill,
     boolean tfSell,
-    boolean tfHybrid
+    boolean tfHybrid,
+    boolean tfInnerBatchTxn
   ) {
     long value = Flags.of(
       tfFullyCanonicalSig ? TransactionFlags.FULLY_CANONICAL_SIG : UNSET,
@@ -93,7 +103,8 @@ public class OfferCreateFlags extends TransactionFlags {
       tfImmediateOrCancel ? IMMEDIATE_OR_CANCEL : UNSET,
       tfFillOrKill ? FILL_OR_KILL : UNSET,
       tfSell ? SELL : UNSET,
-      tfHybrid ? HYBRID : UNSET
+      tfHybrid ? HYBRID : UNSET,
+      tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN : UNSET
     ).getValue();
     return new OfferCreateFlags(value);
   }
@@ -161,6 +172,17 @@ public class OfferCreateFlags extends TransactionFlags {
   }
 
   /**
+   * Indicates that this transaction is an inner transaction of a Batch transaction.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0056-batch"
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(OfferCreateFlags.INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link OfferCreateFlags} flags.
    */
   public static class Builder {
@@ -170,6 +192,7 @@ public class OfferCreateFlags extends TransactionFlags {
     private boolean tfFillOrKill = false;
     private boolean tfSell = false;
     private boolean tfHybrid = false;
+    private boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfPassive} to the given value.
@@ -232,6 +255,18 @@ public class OfferCreateFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link OfferCreateFlags} from the current boolean values.
      *
      * @return A new {@link OfferCreateFlags}.
@@ -243,7 +278,8 @@ public class OfferCreateFlags extends TransactionFlags {
         tfImmediateOrCancel,
         tfFillOrKill,
         tfSell,
-        tfHybrid
+        tfHybrid,
+        tfInnerBatchTxn
       );
     }
   }

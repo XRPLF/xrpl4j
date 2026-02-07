@@ -16,6 +16,13 @@ public class MpTokenIssuanceSetFlags extends TransactionFlags {
    */
   public static final MpTokenIssuanceSetFlags UNLOCK = new MpTokenIssuanceSetFlags(0x00000002);
 
+  /**
+   * Constant {@link MpTokenIssuanceSetFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final MpTokenIssuanceSetFlags INNER_BATCH_TXN = new MpTokenIssuanceSetFlags(
+    TransactionFlags.INNER_BATCH_TXN.getValue()
+  );
+
   private MpTokenIssuanceSetFlags(long value) {
     super(value);
   }
@@ -49,6 +56,15 @@ public class MpTokenIssuanceSetFlags extends TransactionFlags {
    */
   public boolean tfMptUnlock() {
     return this.isSet(UNLOCK);
+  }
+
+  /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
   }
 
 }

@@ -51,4 +51,34 @@ public class CredentialCreateTest {
       CredentialUri.of("687474703A2F2F73616D706C652D75726C2E636F6D"));
 
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    CredentialCreate credentialCreate = CredentialCreate.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .credentialType(CredentialType.of("AFDD"))
+      .build();
+
+    assertThat(credentialCreate.transactionFlags()).isEqualTo(credentialCreate.flags());
+    assertThat(credentialCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    CredentialCreate original = CredentialCreate.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .credentialType(CredentialType.of("AFDD"))
+      .build();
+
+    CredentialCreate copied = CredentialCreate.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

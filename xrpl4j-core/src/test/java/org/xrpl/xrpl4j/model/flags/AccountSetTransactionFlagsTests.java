@@ -183,6 +183,17 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
   }
 
   @Test
+  public void testDeriveIndividualFlagsFromFlagsWithEmptyFlags() {
+    AccountSet accountSet = AccountSet.builder()
+      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .build();
+
+    assertThat(accountSet.flags().isEmpty()).isTrue();
+  }
+
+  @Test
   void testEmptyFlags() throws JSONException, JsonProcessingException {
     AccountSetTransactionFlags flags = AccountSetTransactionFlags.empty();
     assertThat(flags.isEmpty()).isTrue();
@@ -202,17 +213,6 @@ public class AccountSetTransactionFlagsTests extends AbstractFlagsTest {
       "}";
 
     assertCanSerializeAndDeserialize(wrapper, json);
-  }
-
-  @Test
-  public void testDeriveIndividualFlagsFromFlags() {
-    AccountSet accountSet = AccountSet.builder()
-      .account(Address.of("r9TeThyi5xiuUUrFjtPKZiHcDxs7K9H6Rb"))
-      .fee(XrpCurrencyAmount.ofDrops(10))
-      .sequence(UnsignedInteger.ONE)
-      .build();
-
-    assertThat(accountSet.flags().isEmpty()).isTrue();
   }
 
   @Test

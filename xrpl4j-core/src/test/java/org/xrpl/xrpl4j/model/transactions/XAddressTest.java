@@ -27,7 +27,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.primitives.UnsignedLong;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.immutables.value.Value;
 import org.json.JSONException;
@@ -76,8 +75,8 @@ public class XAddressTest {
   @JsonDeserialize(as = ImmutableXAddressWrapper.class)
   public interface XAddressWrapper {
 
-    static XAddressWrapper of(XAddress xAddressValue) {
-      return ImmutableXAddressWrapper.builder().value(xAddressValue).build();
+    static XAddressWrapper of(XAddress value) {
+      return ImmutableXAddressWrapper.builder().value(value).build();
     }
 
     XAddress value();

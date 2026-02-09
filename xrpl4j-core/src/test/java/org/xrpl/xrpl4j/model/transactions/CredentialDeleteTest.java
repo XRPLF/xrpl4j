@@ -64,4 +64,36 @@ public class CredentialDeleteTest {
       .hasMessage("Either Subject or Issuer must be present.");
   }
 
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    CredentialDelete credentialDelete = CredentialDelete.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .credentialType(CredentialType.of("AFDD"))
+      .build();
+
+    assertThat(credentialDelete.transactionFlags()).isEqualTo(credentialDelete.flags());
+    assertThat(credentialDelete.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    CredentialDelete original = CredentialDelete.builder()
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .issuer(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .subject(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .credentialType(CredentialType.of("AFDD"))
+      .build();
+
+    CredentialDelete copied = CredentialDelete.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
+
 }

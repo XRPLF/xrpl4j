@@ -41,10 +41,21 @@ public class MpTokenMetadataTest {
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testToString() {
+    MpTokenMetadata metadata = MpTokenMetadata.of("");
+    assertThat(metadata.toString()).isEqualTo("");
+
+    metadata = MpTokenMetadata.of("ABCD");
+    assertThat(metadata.toString()).isEqualTo("ABCD");
+
+    metadata = MpTokenMetadata.of("48656C6C6F20576F726C64");
+    assertThat(metadata.toString()).isEqualTo("48656C6C6F20576F726C64");
+  }
+
+  @Test
   void testWithValidValue() {
     MpTokenMetadata metadata = MpTokenMetadata.of("68747470733A2F2F6578616D706C652E636F6D");
     assertThat(metadata.value()).isEqualTo("68747470733A2F2F6578616D706C652E636F6D");
-    assertThat(metadata.toString()).isEqualTo("68747470733A2F2F6578616D706C652E636F6D");
     assertThat(metadata.equals(null)).isFalse();
   }
 

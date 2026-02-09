@@ -41,6 +41,18 @@ public class MarkerTest {
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   @Test
+  void testToString() {
+    Marker marker = Marker.of("");
+    assertThat(marker.toString()).isEqualTo("");
+
+    marker = Marker.of("someMarkerValue");
+    assertThat(marker.toString()).isEqualTo("someMarkerValue");
+
+    marker = Marker.of("{\"ledger\":123,\"seq\":456}");
+    assertThat(marker.toString()).isEqualTo("{\"ledger\":123,\"seq\":456}");
+  }
+
+  @Test
   void testWithValidValue() {
     Marker marker = Marker.of("test_marker_value");
     assertThat(marker.value()).isEqualTo("test_marker_value");

@@ -176,4 +176,34 @@ public class DepositPreAuthTests {
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("UnauthorizeCredentials should have unique credentials.");
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    DepositPreAuth depositPreAuth = DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .build();
+
+    assertThat(depositPreAuth.transactionFlags()).isEqualTo(depositPreAuth.flags());
+    assertThat(depositPreAuth.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    DepositPreAuth original = DepositPreAuth.builder()
+      .account(Address.of("rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(2))
+      .authorize(Address.of("rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de"))
+      .build();
+
+    DepositPreAuth copied = DepositPreAuth.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

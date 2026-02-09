@@ -20,7 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,9 +53,14 @@ public class AssetScaleTest {
 
   @Test
   void testToString() {
-    AssetScale assetScale = AssetScale.of(UnsignedInteger.valueOf(10));
-    assertThat(assetScale.toString()).isEqualTo("10");
-    assertThat(assetScale.equals(null)).isFalse();
+    AssetScale assetScale = AssetScale.of(UnsignedInteger.ZERO);
+    assertThat(assetScale.toString()).isEqualTo("0");
+
+    assetScale = AssetScale.of(UnsignedInteger.valueOf(2));
+    assertThat(assetScale.toString()).isEqualTo("2");
+
+    assetScale = AssetScale.of(UnsignedInteger.MAX_VALUE);
+    assertThat(assetScale.toString()).isEqualTo(UnsignedInteger.MAX_VALUE.toString());
   }
 
   @Test

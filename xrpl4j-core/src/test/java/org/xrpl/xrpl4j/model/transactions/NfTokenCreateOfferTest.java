@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.model.flags.NfTokenCreateOfferFlags;
 
 public class NfTokenCreateOfferTest {
 
@@ -54,5 +55,59 @@ public class NfTokenCreateOfferTest {
         .amount(XrpCurrencyAmount.ofDrops(2000L))
         .build()
     );
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .nfTokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .build();
+
+    assertThat(nfTokenCreateOffer.transactionFlags()).isEqualTo(nfTokenCreateOffer.flags());
+    assertThat(nfTokenCreateOffer.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOffer nfTokenCreateOffer = NfTokenCreateOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .nfTokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .flags(NfTokenCreateOfferFlags.builder().tfSellToken(true).build())
+      .build();
+
+    assertThat(nfTokenCreateOffer.transactionFlags()).isEqualTo(nfTokenCreateOffer.flags());
+    assertThat(nfTokenCreateOffer.transactionFlags().tfFullyCanonicalSig()).isTrue();
+    assertThat(((NfTokenCreateOfferFlags) nfTokenCreateOffer.transactionFlags()).tfSellNfToken()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    NfTokenId id = NfTokenId.of("000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65");
+    NfTokenCreateOfferFlags originalFlags = NfTokenCreateOfferFlags.builder()
+      .tfSellToken(true)
+      .build();
+
+    NfTokenCreateOffer original = NfTokenCreateOffer.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .nfTokenId(id)
+      .amount(XrpCurrencyAmount.ofDrops(2000L))
+      .flags(originalFlags)
+      .build();
+
+    NfTokenCreateOffer copied = NfTokenCreateOffer.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((NfTokenCreateOfferFlags) copied.transactionFlags()).tfSellNfToken()).isTrue();
   }
 }

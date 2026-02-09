@@ -20,7 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,9 +53,14 @@ public class MpTokenNumericAmountTest {
 
   @Test
   void testToString() {
-    MpTokenNumericAmount amount = MpTokenNumericAmount.of(UnsignedLong.valueOf(1000));
-    assertThat(amount.toString()).isEqualTo("1000");
-    assertThat(amount.equals(null)).isFalse();
+    MpTokenNumericAmount amount = MpTokenNumericAmount.of(UnsignedLong.ZERO);
+    assertThat(amount.toString()).isEqualTo("0");
+
+    amount = MpTokenNumericAmount.of(100000L);
+    assertThat(amount.toString()).isEqualTo("100000");
+
+    amount = MpTokenNumericAmount.of(UnsignedLong.MAX_VALUE);
+    assertThat(amount.toString()).isEqualTo("18446744073709551615");
   }
 
   @Test

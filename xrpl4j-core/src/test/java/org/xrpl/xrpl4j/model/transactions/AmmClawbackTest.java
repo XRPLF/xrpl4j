@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -159,5 +161,85 @@ public class AmmClawbackTest extends AbstractJsonTest {
         "}";
 
     assertCanSerializeAndDeserialize(ammClawback, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    AmmClawback ammClawback = AmmClawback.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency(usd)
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .asset(Issue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(Issue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .build();
+
+    assertThat(ammClawback.transactionFlags()).isEqualTo(ammClawback.flags());
+    assertThat(ammClawback.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    AmmClawback ammClawback = AmmClawback.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency(usd)
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .asset(Issue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(Issue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AmmClawbackFlags.CLAW_TWO_ASSETS)
+      .build();
+
+    assertThat(ammClawback.transactionFlags()).isEqualTo(ammClawback.flags());
+    assertThat(((AmmClawbackFlags) ammClawback.transactionFlags()).tfClawTwoAssets()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    AmmClawback original = AmmClawback.builder()
+      .account(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency(usd)
+          .issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"))
+          .value("25")
+          .build()
+      )
+      .asset(Issue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .asset2(Issue.builder().currency(usd).issuer(Address.of("rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd")).build())
+      .holder(Address.of("rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .signingPublicKey(
+        PublicKey.fromBase16EncodedPublicKey("02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC")
+      )
+      .flags(AmmClawbackFlags.CLAW_TWO_ASSETS)
+      .build();
+
+    AmmClawback copied = AmmClawback.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((AmmClawbackFlags) copied.transactionFlags()).tfClawTwoAssets()).isTrue();
   }
 }

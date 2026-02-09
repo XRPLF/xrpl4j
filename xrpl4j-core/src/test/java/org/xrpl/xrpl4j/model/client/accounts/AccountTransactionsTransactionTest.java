@@ -11,9 +11,12 @@ import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+/**
+ * Unit tests for {@link AccountTransactionsTransaction}.
+ */
 class AccountTransactionsTransactionTest {
 
   @Test
@@ -26,7 +29,7 @@ class AccountTransactionsTransactionTest {
       .build();
 
     assertThat(payment.closeDateHuman()).hasValue(
-      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneId.of("UTC"))
+      ZonedDateTime.of(LocalDateTime.of(2021, 2, 9, 19, 1, 0), ZoneOffset.UTC)
     );
   }
 

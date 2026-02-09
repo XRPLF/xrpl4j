@@ -110,4 +110,63 @@ public class PaymentChannelClaimTest {
       .hasMessage("CredentialIDs should have unique values.");
   }
 
+  @Test
+  public void transactionFlagsReturnsEmptyFlagsWhenNoFlagsSet() {
+    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
+      .build();
+
+    assertThat(paymentChannelClaim.transactionFlags()).isEqualTo(paymentChannelClaim.flags());
+    assertThat(paymentChannelClaim.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void transactionFlagsReturnsCorrectFlagsWhenFlagsSet() {
+    PaymentChannelClaimFlags flags = PaymentChannelClaimFlags.builder()
+      .tfRenew(true)
+      .tfClose(true)
+      .build();
+
+    PaymentChannelClaim paymentChannelClaim = PaymentChannelClaim.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
+      .flags(flags)
+      .build();
+
+    assertThat(paymentChannelClaim.transactionFlags()).isEqualTo(paymentChannelClaim.flags());
+    assertThat(paymentChannelClaim.transactionFlags().tfFullyCanonicalSig()).isTrue();
+    assertThat(((PaymentChannelClaimFlags) paymentChannelClaim.transactionFlags()).tfRenew()).isTrue();
+    assertThat(((PaymentChannelClaimFlags) paymentChannelClaim.transactionFlags()).tfClose()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    PaymentChannelClaimFlags originalFlags = PaymentChannelClaimFlags.builder()
+      .tfRenew(true)
+      .tfClose(true)
+      .build();
+
+    PaymentChannelClaim original = PaymentChannelClaim.builder()
+      .account(Address.of("rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"))
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .channel(Hash256.of("7C221D901192C74AA7AC60786B1B01A88E922BE267E5B5B4FA64D214C5067FF0"))
+      .flags(originalFlags)
+      .build();
+
+    PaymentChannelClaim copied = PaymentChannelClaim.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+    assertThat(((PaymentChannelClaimFlags) copied.transactionFlags()).tfRenew()).isTrue();
+    assertThat(((PaymentChannelClaimFlags) copied.transactionFlags()).tfClose()).isTrue();
+  }
+
 }

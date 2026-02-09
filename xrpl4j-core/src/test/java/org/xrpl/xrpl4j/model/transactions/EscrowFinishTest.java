@@ -503,4 +503,36 @@ public class EscrowFinishTest {
     ).isInstanceOf(IllegalArgumentException.class)
       .hasMessage("CredentialIDs should have unique values.");
   }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    EscrowFinish escrowFinish = EscrowFinish.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .build();
+
+    assertThat(escrowFinish.transactionFlags()).isEqualTo(escrowFinish.flags());
+    assertThat(escrowFinish.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    EscrowFinish original = EscrowFinish.builder()
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .sequence(UnsignedInteger.ONE)
+      .owner(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .offerSequence(UnsignedInteger.ZERO)
+      .build();
+
+    EscrowFinish copied = EscrowFinish.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
+  }
 }

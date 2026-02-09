@@ -1,5 +1,7 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import org.json.JSONException;
@@ -150,5 +152,52 @@ class ClawbackTest extends AbstractJsonTest {
       "}";
 
     assertCanSerializeAndDeserialize(clawback, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    Clawback clawback = Clawback.builder()
+      .account(Address.of("rp6abvbTbjoce8ZDJkT6snvxTZSYMBCC9S"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+      ))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("FOO")
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .value("314.159")
+          .build()
+      )
+      .build();
+
+    assertThat(clawback.transactionFlags()).isEqualTo(clawback.flags());
+    assertThat(clawback.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    Clawback original = Clawback.builder()
+      .account(Address.of("rp6abvbTbjoce8ZDJkT6snvxTZSYMBCC9S"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.ONE)
+      .signingPublicKey(PublicKey.fromBase16EncodedPublicKey(
+        "02356E89059A75438887F9FEE2056A2890DB82A68353BE9C0C0C8F89C0018B37FC"
+      ))
+      .amount(
+        IssuedCurrencyAmount.builder()
+          .currency("FOO")
+          .issuer(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
+          .value("314.159")
+          .build()
+      )
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    Clawback copied = Clawback.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

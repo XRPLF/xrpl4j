@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.model.transactions;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.xrpl.xrpl4j.crypto.TestConstants.ED_PUBLIC_KEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -140,5 +141,36 @@ class DidSetTest extends AbstractJsonTest {
       "}", ED_PUBLIC_KEY.base16Value());
 
     assertCanSerializeAndDeserialize(transaction, json);
+  }
+
+  @Test
+  void transactionFlagsReturnsEmptyFlags() {
+    DidSet transaction = DidSet.builder()
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .didDocument(DidDocument.of(""))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .build();
+
+    assertThat(transaction.transactionFlags()).isEqualTo(transaction.flags());
+    assertThat(transaction.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  void builderFromCopiesFlagsCorrectly() {
+    DidSet original = DidSet.builder()
+      .account(Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"))
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(391))
+      .didDocument(DidDocument.of(""))
+      .signingPublicKey(ED_PUBLIC_KEY)
+      .flags(TransactionFlags.FULLY_CANONICAL_SIG)
+      .build();
+
+    DidSet copied = DidSet.builder().from(original).build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 }

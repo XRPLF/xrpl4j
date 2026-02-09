@@ -20,6 +20,7 @@ package org.xrpl.xrpl4j.model.transactions;
  * =========================LICENSE_END==================================
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.primitives.UnsignedInteger;
@@ -88,6 +89,38 @@ public class EscrowCreateTest {
         .build(),
       "The DepositPreAuth transaction must include either Authorize or Unauthorize, but not both."
     );
+  }
+
+  @Test
+  public void transactionFlagsReturnsEmptyFlags() {
+    EscrowCreate escrowCreate = EscrowCreate.builder()
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .build();
+
+    assertThat(escrowCreate.transactionFlags()).isEqualTo(escrowCreate.flags());
+    assertThat(escrowCreate.transactionFlags().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void builderFromCopiesFlagsCorrectly() {
+    EscrowCreate original = EscrowCreate.builder()
+      .sequence(UnsignedInteger.ONE)
+      .fee(XrpCurrencyAmount.ofDrops(1))
+      .account(Address.of("rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59Ba"))
+      .amount(XrpCurrencyAmount.ofDrops(1))
+      .destination(Address.of("rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH"))
+      .build();
+
+    EscrowCreate copied = EscrowCreate.builder()
+      .from(original)
+      .build();
+
+    assertThat(copied.flags()).isEqualTo(original.flags());
+    assertThat(copied.transactionFlags()).isEqualTo(original.transactionFlags());
   }
 
 }

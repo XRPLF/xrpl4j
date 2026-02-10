@@ -47,6 +47,12 @@ public class AmmDepositFlags extends TransactionFlags {
    */
   public static final AmmDepositFlags TWO_ASSET_IF_EMPTY = new AmmDepositFlags(0x00800000);
 
+  /**
+   * Constant {@link AmmDepositFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final AmmDepositFlags INNER_BATCH_TXN = new AmmDepositFlags(
+    TransactionFlags.INNER_BATCH_TXN.getValue());
+
   private AmmDepositFlags(long value) {
     super(value);
   }
@@ -103,6 +109,15 @@ public class AmmDepositFlags extends TransactionFlags {
    */
   public boolean tfTwoAssetIfEmpty() {
     return this.isSet(TWO_ASSET_IF_EMPTY);
+  }
+
+  /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
   }
 
 }

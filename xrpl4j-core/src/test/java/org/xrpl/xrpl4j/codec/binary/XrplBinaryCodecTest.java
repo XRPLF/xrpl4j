@@ -35,18 +35,24 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.fixtures.FixtureUtils;
 import org.xrpl.xrpl4j.codec.fixtures.codec.CodecFixture;
 import org.xrpl.xrpl4j.codec.fixtures.data.WholeObject;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
+import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.Signature;
+import org.xrpl.xrpl4j.model.flags.BatchFlags;
 import org.xrpl.xrpl4j.model.flags.PaymentFlags;
 import org.xrpl.xrpl4j.model.flags.TrustSetFlags;
 import org.xrpl.xrpl4j.model.jackson.ObjectMapperFactory;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Batch;
+import org.xrpl.xrpl4j.model.transactions.CurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.ImmutablePayment;
 import org.xrpl.xrpl4j.model.transactions.IssuedCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.RawTransactionWrapper;
 import org.xrpl.xrpl4j.model.transactions.Signer;
 import org.xrpl.xrpl4j.model.transactions.SignerWrapper;
 import org.xrpl.xrpl4j.model.transactions.TrustSet;
@@ -54,6 +60,8 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 class XrplBinaryCodecTest {
@@ -101,6 +109,14 @@ class XrplBinaryCodecTest {
   void encodeDecodeAmount() throws JsonProcessingException {
     String json = "{\"Fee\":\"100\"}";
     String hex = "684000000000000064";
+    assertThat(encoder.encode(json)).isEqualTo(hex);
+    assertThat(encoder.decode(hex)).isEqualTo(json);
+  }
+
+  @Test
+  void encodeDecodeUInt32() throws JsonProcessingException {
+    String json = "{\"Flags\":1}";
+    String hex = "2200000001";
     assertThat(encoder.encode(json)).isEqualTo(hex);
     assertThat(encoder.decode(hex)).isEqualTo(json);
   }
@@ -301,7 +317,6 @@ class XrplBinaryCodecTest {
   void decodeMultiSignedTransaction() throws JsonProcessingException {
     List<SignerWrapper> signers = Lists.newArrayList(
       SignerWrapper.of(Signer.builder()
-        .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
         .signingPublicKey(
           PublicKey.fromBase16EncodedPublicKey(
             "02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF"
@@ -314,7 +329,6 @@ class XrplBinaryCodecTest {
         .build()
       ),
       SignerWrapper.of(Signer.builder()
-        .account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"))
         .signingPublicKey(
           PublicKey.fromBase16EncodedPublicKey(
             "028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B"
@@ -362,7 +376,6 @@ class XrplBinaryCodecTest {
     String signerAccountId = "rJZdUusLDtY9NEsGea7ijqhVrXv98rYBYN";
     List<SignerWrapper> signers = Lists.newArrayList(
       SignerWrapper.of(Signer.builder()
-        .account(Address.of("rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"))
         .signingPublicKey(
           PublicKey.fromBase16EncodedPublicKey("02B3EC4E5DD96029A647CFA20DA07FE1F85296505552CCAC114087E66B46BD77DF")
         )
@@ -373,7 +386,6 @@ class XrplBinaryCodecTest {
         .build()
       ),
       SignerWrapper.of(Signer.builder()
-        .account(Address.of("rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"))
         .signingPublicKey(
           PublicKey.fromBase16EncodedPublicKey("028FFB276505F9AC3F57E8D5242B386A597EF6C40A7999F37F1948636FD484E25B")
         )
@@ -467,6 +479,161 @@ class XrplBinaryCodecTest {
     JSONAssert.assertEquals(
       encoder.decode(codecFixture.binary()), codecFixture.json().toString(), JSONCompareMode.STRICT
     );
+  }
+
+  private static final Address BATCH_ACCOUNT = Address.of("r45dBj4S3VvMMYXxr9vHX4Z4Ma6ifPMCkK");
+  private static final PublicKey BATCH_ACCOUNT_SIGNING_PUB_KEY =
+    PublicKey.fromBase16EncodedPublicKey("0330E7FC9D56BB25D6893BA3F317AE5BCF33B3291BD63DB32654A313222F7FD020");
+
+  @Test
+  void encodeForBatchInnerSigningWithTwoTransactions() throws JsonProcessingException {
+    // Create two inner payment transactions
+    Payment innerPayment1 = createInnerPayment(XrpCurrencyAmount.ofDrops(1000), UnsignedInteger.ONE);
+    Payment innerPayment2 = createInnerPayment(XrpCurrencyAmount.ofDrops(2000), UnsignedInteger.valueOf(2));
+
+    // Create a Batch transaction
+    Batch batch = Batch.builder()
+      .account(BATCH_ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .signingPublicKey(BATCH_ACCOUNT_SIGNING_PUB_KEY)
+      .addRawTransactions(
+        RawTransactionWrapper.of(innerPayment1),
+        RawTransactionWrapper.of(innerPayment2)
+      )
+      .build();
+
+    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch);
+
+    // Verify the result starts with the batch signature prefix "BCH\0" = 0x42434800
+    assertThat(result.hexValue()).startsWith("42434800");
+
+    // Verify the structure: prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes each)
+    // Total: 4 + 4 + 4 + (32 * 2) = 76 bytes = 152 hex chars
+    assertThat(result.hexValue()).hasSize(152);
+
+    // Verify flags are encoded correctly (ALL_OR_NOTHING = 0x00010000)
+    String flagsHex = result.hexValue().substring(8, 16);
+    assertThat(flagsHex).isEqualTo("00010000");
+
+    // Verify count is 2
+    String countHex = result.hexValue().substring(16, 24);
+    assertThat(countHex).isEqualTo("00000002");
+  }
+
+  @Test
+  void encodeForBatchInnerSigningWithMaxTransactions() throws JsonProcessingException {
+    // Create 8 inner transactions (maximum allowed)
+    List<RawTransactionWrapper> innerTransactions = createInnerPayments(8);
+
+    Batch batch = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
+    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch);
+
+    // Verify the structure: prefix (4 bytes) + flags (4 bytes) + count (4 bytes) + tx IDs (32 bytes * 8)
+    // Total: 4 + 4 + 4 + (32 * 8) = 268 bytes = 536 hex chars
+    assertThat(result.hexValue()).hasSize(536);
+
+    // Verify count is 8
+    String countHex = result.hexValue().substring(16, 24);
+    assertThat(countHex).isEqualTo("00000008");
+  }
+
+  @Test
+  void encodeForBatchInnerSigningWithDifferentFlags() throws JsonProcessingException {
+    List<RawTransactionWrapper> innerTransactions = createInnerPayments(2);
+
+    // Test ALL_OR_NOTHING flag (0x00010000)
+    Batch batchAllOrNothing = createBatch(BatchFlags.ALL_OR_NOTHING, innerTransactions);
+    UnsignedByteArray resultAllOrNothing = encoder.encodeForBatchInnerSigning(batchAllOrNothing);
+    assertThat(resultAllOrNothing.hexValue().substring(8, 16)).isEqualTo("00010000");
+
+    // Test ONLY_ONE flag (0x00020000)
+    Batch batchOnlyOne = createBatch(BatchFlags.ONLY_ONE, innerTransactions);
+    UnsignedByteArray resultOnlyOne = encoder.encodeForBatchInnerSigning(batchOnlyOne);
+    assertThat(resultOnlyOne.hexValue().substring(8, 16)).isEqualTo("00020000");
+
+    // Test UNTIL_FAILURE flag (0x00040000)
+    Batch batchUntilFailure = createBatch(BatchFlags.UNTIL_FAILURE, innerTransactions);
+    UnsignedByteArray resultUntilFailure = encoder.encodeForBatchInnerSigning(batchUntilFailure);
+    assertThat(resultUntilFailure.hexValue().substring(8, 16)).isEqualTo("00040000");
+
+    // Test INDEPENDENT flag (0x00080000)
+    Batch batchIndependent = createBatch(BatchFlags.INDEPENDENT, innerTransactions);
+    UnsignedByteArray resultIndependent = encoder.encodeForBatchInnerSigning(batchIndependent);
+    assertThat(resultIndependent.hexValue().substring(8, 16)).isEqualTo("00080000");
+  }
+
+  @Test
+  void encodeForBatchInnerSigningVerifyTransactionIds() throws JsonProcessingException {
+    // Create a simple inner payment with known values
+    Payment innerPayment = createInnerPayment(XrpCurrencyAmount.ofDrops(1000), UnsignedInteger.ONE);
+
+    Batch batch = Batch.builder()
+      .account(BATCH_ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .signingPublicKey(BATCH_ACCOUNT_SIGNING_PUB_KEY)
+      .addRawTransactions(RawTransactionWrapper.of(innerPayment))
+      .addRawTransactions(RawTransactionWrapper.of(innerPayment))
+      .build();
+
+    UnsignedByteArray result = encoder.encodeForBatchInnerSigning(batch);
+
+    // Extract the two transaction IDs (each is 32 bytes = 64 hex chars)
+    String txId1 = result.hexValue().substring(24, 88);
+    String txId2 = result.hexValue().substring(88, 152);
+
+    // Since both inner transactions are identical, their IDs should be the same
+    assertThat(txId1).isEqualTo(txId2);
+
+    // Verify each transaction ID is 32 bytes (64 hex chars)
+    assertThat(txId1).hasSize(64);
+    assertThat(txId2).hasSize(64);
+  }
+
+  @Test
+  void encodeForBatchSigningNullBatchInnerThrowsException() {
+    Assertions.assertThatThrownBy(() -> encoder.encodeForBatchInnerSigning(null))
+      .isInstanceOf(NullPointerException.class);
+  }
+
+  // Helper method to create inner payment transactions
+  private Payment createInnerPayment(CurrencyAmount amount, UnsignedInteger sequence) {
+    return Payment.builder()
+      .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
+      .amount(amount)
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(sequence)
+      .flags(PaymentFlags.INNER_BATCH_TXN)
+      .signingPublicKey(PublicKey.MULTI_SIGN_PUBLIC_KEY)
+      .build();
+  }
+
+  // Helper method to create inner payment transactions
+  private List<RawTransactionWrapper> createInnerPayments(int count) {
+    return IntStream.range(0, count)
+      .mapToObj(i ->
+        RawTransactionWrapper.of(
+          createInnerPayment(
+            XrpCurrencyAmount.ofDrops(1000L * (i + 1)),
+            UnsignedInteger.valueOf(i + 1)
+          )))
+      .collect(Collectors.toList());
+  }
+
+  // Helper method to create a Batch transaction
+  private Batch createBatch(BatchFlags flags, List<RawTransactionWrapper> innerTransactions) {
+    return Batch.builder()
+      .account(BATCH_ACCOUNT)
+      .fee(XrpCurrencyAmount.ofDrops(100))
+      .sequence(UnsignedInteger.ONE)
+      .flags(flags)
+      .signingPublicKey(BATCH_ACCOUNT_SIGNING_PUB_KEY)
+      .rawTransactions(innerTransactions)
+      .build();
   }
 
 }

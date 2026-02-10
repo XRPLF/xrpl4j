@@ -27,6 +27,7 @@ import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.model.client.channels.UnsignedClaim;
 import org.xrpl.xrpl4j.model.ledger.Attestation;
 import org.xrpl.xrpl4j.model.transactions.Address;
+import org.xrpl.xrpl4j.model.transactions.Batch;
 import org.xrpl.xrpl4j.model.transactions.Transaction;
 
 import java.util.Objects;
@@ -78,14 +79,32 @@ public abstract class AbstractTransactionSigner<P extends PrivateKeyable> implem
   }
 
   @Override
+  public Signature signInner(final P privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+    final UnsignedByteArray signableBytes = this.signatureUtils.toSignableInnerBytes(batchTransaction);
+    return this.signingHelper(privateKeyable, signableBytes);
+  }
+
+  @Override
   public <T extends Transaction> Signature multiSign(final P privateKeyable, final T transaction) {
     Objects.requireNonNull(privateKeyable);
     Objects.requireNonNull(transaction);
 
     final Address address = derivePublicKey(privateKeyable).deriveAddress();
     final UnsignedByteArray signableTransactionBytes = this.signatureUtils.toMultiSignableBytes(transaction, address);
-
     return this.signingHelper(privateKeyable, signableTransactionBytes);
+  }
+
+  @Override
+  public Signature multiSignInner(final P privateKeyable, final Batch batchTransaction) {
+    Objects.requireNonNull(privateKeyable);
+    Objects.requireNonNull(batchTransaction);
+
+    final Address address = derivePublicKey(privateKeyable).deriveAddress();
+    final UnsignedByteArray signableBytes = this.signatureUtils.toMultiSignableInnerBytes(batchTransaction, address);
+
+    return this.signingHelper(privateKeyable, signableBytes);
   }
 
   /**

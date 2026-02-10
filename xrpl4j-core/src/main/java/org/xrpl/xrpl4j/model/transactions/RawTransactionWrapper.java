@@ -75,11 +75,19 @@ public interface RawTransactionWrapper {
   @JsonProperty("RawTransaction")
   Transaction rawTransaction();
 
-  //  @Check
-  //  default void check() {
-  //    Preconditions.checkArgument(
-  //      rawTransaction().flags().tfInnerBatchTxn(),
-  //      "Inner transaction must have the `tfInnerBatchTxn` flag set."
-  //    );
-  //  }
+  /**
+   * Validates the state of the {@code RawTransactionWrapper}.
+   *
+   * <p>Ensures that the transaction wrapped by this instance satisfies the requirement of being an inner transaction
+   * by verifying that the {@code tfInnerBatchTxn} flag is set on the transaction.
+   *
+   * @throws IllegalArgumentException if the {@code tfInnerBatchTxn} flag is not set on the wrapped transaction.
+   */
+  @Check
+  default void check() {
+    Preconditions.checkArgument(
+      rawTransaction().transactionFlags().tfInnerBatchTxn(),
+      "Inner transaction must have the `tfInnerBatchTxn` flag set."
+    );
+  }
 }

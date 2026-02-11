@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableMap;
+import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Immutable;
 
 import java.util.List;
@@ -77,4 +79,16 @@ public interface Definitions {
   @JsonProperty("TRANSACTION_RESULTS")
   Map<String, Integer> transactionResults();
 
+  /**
+   * Permission values mappings (permission value to ordinal value).
+   * This field is not present in the generated definitions.json file and is populated
+   * programmatically by {@link DefaultDefinitionsProvider}.
+   *
+   * @return {@link Map} keyed by {@link String} with {@link Integer} values for all permission values.
+   */
+  @JsonProperty("PERMISSION_VALUES")
+  @Default
+  default Map<String, Integer> permissionValues() {
+    return ImmutableMap.of();
+  }
 }

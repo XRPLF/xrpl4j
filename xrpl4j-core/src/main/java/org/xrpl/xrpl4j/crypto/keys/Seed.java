@@ -428,8 +428,10 @@ public interface Seed extends javax.security.auth.Destroyable {
           return privateGen;
         }
 
-        UnsignedByteArray publicGen = UnsignedByteArray
+        // Create the corresponding public key: Q = privateKey * G
+        final UnsignedByteArray publicGen = UnsignedByteArray
           .of(EC_DOMAIN_PARAMETERS.getG().multiply(privateGen).getEncoded(true));
+
         return deriveScalar(publicGen, accountNumber)
           .add(privateGen)
           .mod(EC_DOMAIN_PARAMETERS.getN());

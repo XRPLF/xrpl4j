@@ -57,6 +57,7 @@ public class Base58 {
     input = copyOfRange(input, 0, input.length);
     // Count leading zeroes.
     int zeroCount = 0;
+
     while (zeroCount < input.length && input[zeroCount] == 0) {
       ++zeroCount;
     }

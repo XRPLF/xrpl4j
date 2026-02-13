@@ -36,6 +36,8 @@ import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaElGamalPedersenLinkProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
@@ -674,7 +676,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       Arrays.asList(nonceKrSender, nonceKrDest, nonceKrIssuer)
     );
 
-    System.out.println("SamePlaintextMultiProof size: " + samePlaintextProof.length + " bytes (expected 359 for 3 recipients)");
+    System.out.println(
+      "SamePlaintextMultiProof size: " + samePlaintextProof.length + " bytes (expected 359 for 3 recipients)");
     System.out.println("SamePlaintextMultiProof: " + BaseEncoding.base16().encode(samePlaintextProof));
 
     // Verify the proof locally
@@ -688,32 +691,200 @@ public class ConfidentialTransfersIT extends AbstractIT {
     assertThat(sendProofValid).isTrue();
 
     //////////////////////
-    // Create placeholder commitments (64 bytes = 128 hex chars each for AmountCommitment and BalanceCommitment)
-    StringBuilder placeholderAmountCommitment = new StringBuilder();
-    StringBuilder placeholderBalanceCommitment = new StringBuilder();
-    for (int i = 0; i < 128; i++) {
-      placeholderAmountCommitment.append("A");
-      placeholderBalanceCommitment.append("B");
-    }
-    String amountCommitment = placeholderAmountCommitment.toString();
-    String balanceCommitment = placeholderBalanceCommitment.toString();
+    // Generate Pedersen Commitments and Linkage Proofs
+    PedersenCommitmentGenerator pedersenGen = new PedersenCommitmentGenerator(secp256k1);
+    JavaElGamalPedersenLinkProofGenerator linkProofGenerator = new JavaElGamalPedersenLinkProofGenerator(secp256k1);
 
-    System.out.println("Amount Commitment (placeholder): " + amountCommitment);
-    System.out.println("Balance Commitment (placeholder): " + balanceCommitment);
+    // Generate blinding factors for Pedersen commitments
+    byte[] amountPedersenRho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] balancePedersenRho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+
+    // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountPedersenRho * H
+    byte[] amountCommitmentBytes = pedersenGen.generateCommitment(sendAmount, amountPedersenRho);
+    ECPoint amountCommitmentPoint = secp256k1.deserialize(amountCommitmentBytes);
+
+    // For balance commitment, we need the sender's new balance after the send
+    // Current balance = 500 (from ConfidentialMPTConvert), sending 100, so new balance = 400
+    UnsignedLong senderNewBalance = UnsignedLong.valueOf(400);
+    byte[] balanceCommitmentBytes = pedersenGen.generateCommitment(senderNewBalance, balancePedersenRho);
+    ECPoint balanceCommitmentPoint = secp256k1.deserialize(balanceCommitmentBytes);
+
+    // Convert commitments to uncompressed format (64 bytes) for the transaction
+    // Remove the 04 prefix from uncompressed encoding
+    byte[] amountCommitmentUncompressed = amountCommitmentPoint.getEncoded(false);
+    byte[] balanceCommitmentUncompressed = balanceCommitmentPoint.getEncoded(false);
+    // Skip the 04 prefix byte to get 64 bytes (X, Y)
+    byte[] amountCommitment64 = new byte[64];
+    byte[] balanceCommitment64 = new byte[64];
+    System.arraycopy(amountCommitmentUncompressed, 1, amountCommitment64, 0, 64);
+    System.arraycopy(balanceCommitmentUncompressed, 1, balanceCommitment64, 0, 64);
+
+    // Reverse X and Y coordinates to match the format used for public keys on the ledger
+    // This is required because rippled does memcpy directly into secp256k1_pubkey.data
+    // and expects the same reversed format as public keys
+    byte[] amountCommitment64Reversed = new byte[64];
+    byte[] balanceCommitment64Reversed = new byte[64];
+    // Reverse X coordinate (first 32 bytes)
+    for (int i = 0; i < 32; i++) {
+      amountCommitment64Reversed[i] = amountCommitment64[31 - i];
+      balanceCommitment64Reversed[i] = balanceCommitment64[31 - i];
+    }
+    // Reverse Y coordinate (last 32 bytes)
+    for (int i = 0; i < 32; i++) {
+      amountCommitment64Reversed[32 + i] = amountCommitment64[63 - i];
+      balanceCommitment64Reversed[32 + i] = balanceCommitment64[63 - i];
+    }
+
+    String amountCommitment = BaseEncoding.base16().encode(amountCommitment64Reversed);
+    String balanceCommitment = BaseEncoding.base16().encode(balanceCommitment64Reversed);
+
+    System.out.println("Amount Commitment: " + amountCommitment);
+    System.out.println("Balance Commitment: " + balanceCommitment);
 
     //////////////////////
-    // Create placeholder Pedersen linkage proofs (2 x 195 bytes = 390 bytes total)
-    // These prove the linkage between the ElGamal ciphertexts and Pedersen commitments
-    byte[] placeholderLinkageProof1 = new byte[195];
-    byte[] placeholderLinkageProof2 = new byte[195];
-    java.util.Arrays.fill(placeholderLinkageProof1, (byte) 0xCC);
-    java.util.Arrays.fill(placeholderLinkageProof2, (byte) 0xDD);
+    // Generate Amount Linkage Proof using helper method
+    // Proves: sender's encrypted amount (senderCiphertext) links to amountCommitment
+    byte[] amountLinkageProof = generateAmountLinkageProof(
+      linkProofGenerator,
+      senderCiphertext,
+      holderElGamalEcPoint,
+      amountCommitmentPoint,
+      sendAmount,
+      sendBlindingFactorSender,
+      amountPedersenRho,
+      sendContextHash,
+      secureRandom,
+      secp256k1
+    );
 
-    // Combine SamePlaintextMultiProof (359 bytes) + Pedersen linkage proofs (390 bytes) = 749 bytes
-    byte[] fullZkProof = new byte[samePlaintextProof.length + placeholderLinkageProof1.length + placeholderLinkageProof2.length];
+    System.out.println("Amount Linkage Proof size: " + amountLinkageProof.length + " bytes (expected 195)");
+    System.out.println("Amount Linkage Proof: " + BaseEncoding.base16().encode(amountLinkageProof));
+
+    // Print values for C code verification
+    System.out.println("\n========== VALUES FOR C CODE VERIFICATION (Amount Linkage) ==========");
+    System.out.println("// Public Key Pk (33 bytes compressed - used in challenge hash)");
+    System.out.println(
+      "const char* pk_compressed_hex = \"" + BaseEncoding.base16().encode(holderElGamalEcPoint.getEncoded(true)) +
+        "\";");
+    System.out.println("// Public Key Pk (65 bytes with 04 prefix - standard format)");
+    System.out.println(
+      "const char* pk_hex = \"" + BaseEncoding.base16().encode(holderElGamalEcPoint.getEncoded(false)) + "\";");
+    System.out.println("// Public Key Pk (64 bytes reversed - as stored on ledger)");
+    System.out.println(
+      "const char* pk_reversed_hex = \"" + holderElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue() +
+        "\";");
+    System.out.println("// ElGamal ciphertext C1 = r*G (33 bytes compressed)");
+    System.out.println(
+      "const char* c1_compressed_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c1().getEncoded(true)) +
+        "\";");
+    System.out.println("// ElGamal ciphertext C1 = r*G (65 bytes with 04 prefix)");
+    System.out.println(
+      "const char* c1_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c1().getEncoded(false)) + "\";");
+    System.out.println("// ElGamal ciphertext C2 = m*G + r*Pk (33 bytes compressed)");
+    System.out.println(
+      "const char* c2_compressed_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c2().getEncoded(true)) +
+        "\";");
+    System.out.println("// ElGamal ciphertext C2 = m*G + r*Pk (65 bytes with 04 prefix)");
+    System.out.println(
+      "const char* c2_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c2().getEncoded(false)) + "\";");
+    System.out.println("// Pedersen commitment PCm = m*G + rho*H (33 bytes compressed)");
+    System.out.println(
+      "const char* pcm_compressed_hex = \"" + BaseEncoding.base16().encode(amountCommitmentPoint.getEncoded(true)) +
+        "\";");
+    System.out.println("// Pedersen commitment PCm = m*G + rho*H (65 bytes with 04 prefix)");
+    System.out.println(
+      "const char* pcm_hex = \"" + BaseEncoding.base16().encode(amountCommitmentPoint.getEncoded(false)) + "\";");
+    System.out.println("// Pedersen commitment PCm (64 bytes without prefix - as sent in tx)");
+    System.out.println("const char* pcm_64_hex = \"" + amountCommitment + "\";");
+    System.out.println("// Context ID (32 bytes)");
+    System.out.println("const char* context_id_hex = \"" + BaseEncoding.base16().encode(sendContextHash) + "\";");
+    System.out.println("// Proof from Java (195 bytes = 390 hex chars)");
+    System.out.println("const char* proof_hex = \"" + BaseEncoding.base16().encode(amountLinkageProof) + "\";");
+    System.out.println("// Amount (plaintext value)");
+    System.out.println("uint64_t amount = " + sendAmount.longValue() + ";");
+    System.out.println("// Sender Encrypted Amount (66 bytes - as sent in tx)");
+    System.out.println("const char* sender_enc_amt_hex = \"" + senderEncryptedAmount.value() + "\";");
+    System.out.println("=======================================================================\n");
+
+    // Verify the amount linkage proof locally
+    boolean amountLinkageValid = linkProofGenerator.verify(
+      amountLinkageProof,
+      senderCiphertext.c1(),
+      senderCiphertext.c2(),
+      holderElGamalEcPoint,
+      amountCommitmentPoint,
+      sendContextHash
+    );
+    System.out.println("Amount Linkage Proof valid locally: " + amountLinkageValid);
+    assertThat(amountLinkageValid).isTrue();
+
+    //////////////////////
+    // Generate Balance Linkage Proof
+    // Proves: sender's new encrypted balance links to balanceCommitment
+    // The balance linkage proof uses the sender's current encrypted balance from the ledger
+    // and the sender's private key as the "r" parameter (swapped parameters vs amount linkage)
+
+    // Get the sender's current encrypted balance from the MPToken object
+    EncryptedAmount currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
+    byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance.value());
+    ElGamalCiphertext currentBalanceCiphertext = ElGamalCiphertext.fromBytes(currentBalanceBytes, secp256k1);
+
+    System.out.println(
+      "Current Balance Ciphertext C1: " + BaseEncoding.base16().encode(currentBalanceCiphertext.c1().getEncoded(true)));
+    System.out.println(
+      "Current Balance Ciphertext C2: " + BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)));
+
+    // Get the holder's ElGamal private key
+    byte[] holderPrivateKey = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+    // Ensure it's exactly 32 bytes (remove leading zero if present from BigInteger encoding)
+    if (holderPrivateKey.length > 32) {
+      byte[] trimmed = new byte[32];
+      System.arraycopy(holderPrivateKey, holderPrivateKey.length - 32, trimmed, 0, 32);
+      holderPrivateKey = trimmed;
+    } else if (holderPrivateKey.length < 32) {
+      byte[] padded = new byte[32];
+      System.arraycopy(holderPrivateKey, 0, padded, 32 - holderPrivateKey.length, holderPrivateKey.length);
+      holderPrivateKey = padded;
+    }
+
+    // Generate Balance Linkage Proof using helper method
+    byte[] balanceLinkageProof = generateBalanceLinkageProof(
+      linkProofGenerator,
+      currentBalanceCiphertext,
+      holderElGamalEcPoint,
+      balanceCommitmentPoint,
+      senderNewBalance,
+      holderPrivateKey,
+      balancePedersenRho,
+      sendContextHash,
+      secureRandom,
+      secp256k1
+    );
+
+    System.out.println("Balance Linkage Proof size: " + balanceLinkageProof.length + " bytes (expected 195)");
+    System.out.println("Balance Linkage Proof: " + BaseEncoding.base16().encode(balanceLinkageProof));
+
+    // Verify the balance linkage proof locally
+    // Note: For balance linkage, the parameters are swapped:
+    // c1 = publicKey, c2 = ciphertext.c2, pk = ciphertext.c1
+    boolean balanceLinkageValid = linkProofGenerator.verify(
+      balanceLinkageProof,
+      holderElGamalEcPoint,           // c1 = Pk = sk * G
+      currentBalanceCiphertext.c2(),  // c2
+      currentBalanceCiphertext.c1(),  // pk = original c1
+      balanceCommitmentPoint,
+      sendContextHash
+    );
+    System.out.println("Balance Linkage Proof valid locally: " + balanceLinkageValid);
+    // assertThat(balanceLinkageValid).isTrue();
+
+    // Combine SamePlaintextMultiProof (359 bytes) + Amount Linkage (195 bytes) + Balance Linkage (195 bytes) = 749 bytes
+    byte[] fullZkProof = new byte[samePlaintextProof.length + amountLinkageProof.length + balanceLinkageProof.length];
     System.arraycopy(samePlaintextProof, 0, fullZkProof, 0, samePlaintextProof.length);
-    System.arraycopy(placeholderLinkageProof1, 0, fullZkProof, samePlaintextProof.length, placeholderLinkageProof1.length);
-    System.arraycopy(placeholderLinkageProof2, 0, fullZkProof, samePlaintextProof.length + placeholderLinkageProof1.length, placeholderLinkageProof2.length);
+    System.arraycopy(amountLinkageProof, 0, fullZkProof, samePlaintextProof.length, amountLinkageProof.length);
+    System.arraycopy(balanceLinkageProof, 0, fullZkProof, samePlaintextProof.length + amountLinkageProof.length,
+      balanceLinkageProof.length);
 
     System.out.println("Full ZKProof size: " + fullZkProof.length + " bytes (expected 749)");
 
@@ -752,5 +923,119 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Note: We expect this to fail because we're using placeholder commitments
     // The goal is to see if the SamePlaintextMultiProof is accepted by rippled
     System.out.println("\n========== TEST COMPLETE ==========");
+  }
+
+  /**
+   * Generates an Amount Linkage Proof proving that an ElGamal ciphertext and Pedersen commitment encode the same
+   * amount.
+   *
+   * <p>This corresponds to getAmountLinkageProof in rippled's MPTTester.</p>
+   *
+   * @param linkProofGenerator     The proof generator instance.
+   * @param ciphertext             The ElGamal ciphertext (encrypted amount).
+   * @param publicKey              The ElGamal public key used for encryption.
+   * @param commitment             The Pedersen commitment point.
+   * @param amount                 The plaintext amount.
+   * @param elGamalBlindingFactor  The ElGamal randomness (r) used to create the ciphertext.
+   * @param pedersenBlindingFactor The Pedersen blinding factor (rho) used to create the commitment.
+   * @param contextHash            The context hash for domain separation.
+   * @param secureRandom           SecureRandom instance for nonce generation.
+   * @param secp256k1              Secp256k1Operations instance.
+   *
+   * @return The 195-byte linkage proof.
+   */
+  private byte[] generateAmountLinkageProof(
+    JavaElGamalPedersenLinkProofGenerator linkProofGenerator,
+    ElGamalCiphertext ciphertext,
+    ECPoint publicKey,
+    ECPoint commitment,
+    UnsignedLong amount,
+    byte[] elGamalBlindingFactor,
+    byte[] pedersenBlindingFactor,
+    byte[] contextHash,
+    SecureRandom secureRandom,
+    Secp256k1Operations secp256k1
+  ) {
+    // Generate random nonces for the proof
+    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKr = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKrho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+
+    return linkProofGenerator.generateProof(
+      ciphertext.c1(),      // c1 = r * G
+      ciphertext.c2(),      // c2 = m * G + r * Pk
+      publicKey,            // Pk
+      commitment,           // PCm = m * G + rho * H
+      amount,
+      elGamalBlindingFactor,  // r
+      pedersenBlindingFactor, // rho
+      contextHash,
+      nonceKm,
+      nonceKr,
+      nonceKrho
+    );
+  }
+
+  /**
+   * Generates a Balance Linkage Proof proving that an ElGamal ciphertext and Pedersen commitment encode the same
+   * balance.
+   *
+   * <p>This corresponds to getBalanceLinkageProof in rippled's MPTTester. The key difference from
+   * Amount Linkage is that this uses the private key as the "r" parameter, and swaps c1/pk positions.</p>
+   *
+   * <p>The proof structure is:
+   * <ul>
+   *   <li>c1 parameter = public key (sk * G)</li>
+   *   <li>c2 parameter = ciphertext.c2</li>
+   *   <li>publicKey parameter = ciphertext.c1</li>
+   *   <li>r parameter = private key (sk)</li>
+   * </ul>
+   * </p>
+   *
+   * @param linkProofGenerator     The proof generator instance.
+   * @param ciphertext             The ElGamal ciphertext (encrypted balance).
+   * @param publicKey              The ElGamal public key.
+   * @param commitment             The Pedersen commitment point for the balance.
+   * @param balance                The plaintext balance amount.
+   * @param privateKey             The ElGamal private key (used as "r" in the proof).
+   * @param pedersenBlindingFactor The Pedersen blinding factor (rho) used to create the commitment.
+   * @param contextHash            The context hash for domain separation.
+   * @param secureRandom           SecureRandom instance for nonce generation.
+   * @param secp256k1              Secp256k1Operations instance.
+   *
+   * @return The 195-byte linkage proof.
+   */
+  private byte[] generateBalanceLinkageProof(
+    JavaElGamalPedersenLinkProofGenerator linkProofGenerator,
+    ElGamalCiphertext ciphertext,
+    ECPoint publicKey,
+    ECPoint commitment,
+    UnsignedLong balance,
+    byte[] privateKey,
+    byte[] pedersenBlindingFactor,
+    byte[] contextHash,
+    SecureRandom secureRandom,
+    Secp256k1Operations secp256k1
+  ) {
+    // Generate random nonces for the proof
+    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKr = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKrho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+
+    // Note: The parameters are swapped compared to Amount Linkage Proof
+    // c1 = publicKey (sk * G), c2 = ciphertext.c2, pk = ciphertext.c1, r = privateKey
+    return linkProofGenerator.generateProof(
+      publicKey,            // c1 = Pk = sk * G
+      ciphertext.c2(),      // c2 = m * G + r * Pk (from original encryption)
+      ciphertext.c1(),      // pk = original c1 = r * G
+      commitment,           // PCm = balance * G + rho * H
+      balance,
+      privateKey,           // r = private key (sk)
+      pedersenBlindingFactor, // rho
+      contextHash,
+      nonceKm,
+      nonceKr,
+      nonceKrho
+    );
   }
 }

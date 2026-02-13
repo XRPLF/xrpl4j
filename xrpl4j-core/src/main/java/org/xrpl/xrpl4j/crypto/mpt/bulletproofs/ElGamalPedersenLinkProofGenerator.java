@@ -145,5 +145,34 @@ public interface ElGamalPedersenLinkProofGenerator {
     Address destination,
     UnsignedInteger version
   );
+
+  /**
+   * Generates the context hash for ConfidentialMPTConvertBack transactions.
+   *
+   * <p>The context hash is computed as SHA512Half of:
+   * <ul>
+   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CONVERT_BACK</li>
+   *   <li>account (20 bytes) - holder account</li>
+   *   <li>sequence (4 bytes) - transaction sequence</li>
+   *   <li>issuanceId (32 bytes) - MPTokenIssuanceID</li>
+   *   <li>amount (8 bytes) - amount being converted back</li>
+   *   <li>version (4 bytes) - confidential balance version</li>
+   * </ul>
+   *
+   * @param account    The holder account address.
+   * @param sequence   The transaction sequence number.
+   * @param issuanceId The MPTokenIssuanceID.
+   * @param amount     The amount being converted back to public balance.
+   * @param version    The confidential balance version from the MPToken ledger object.
+   *
+   * @return The 32-byte context hash.
+   */
+  byte[] generateConvertBackContext(
+    Address account,
+    UnsignedInteger sequence,
+    MpTokenIssuanceId issuanceId,
+    UnsignedLong amount,
+    UnsignedInteger version
+  );
 }
 

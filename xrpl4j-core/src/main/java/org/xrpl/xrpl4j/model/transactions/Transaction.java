@@ -105,6 +105,7 @@ public interface Transaction {
       .put(ImmutableConfidentialMPTConvert.class, TransactionType.CONFIDENTIAL_MPT_CONVERT)
       .put(ImmutableConfidentialMPTSend.class, TransactionType.CONFIDENTIAL_MPT_SEND)
       .put(ImmutableConfidentialMPTMergeInbox.class, TransactionType.CONFIDENTIAL_MPT_MERGE_INBOX)
+      .put(ImmutableConfidentialMPTConvertBack.class, TransactionType.CONFIDENTIAL_MPT_CONVERT_BACK)
       .put(ImmutableUnknownTransaction.class, TransactionType.UNKNOWN)
       .put(ImmutableAmmClawback.class, TransactionType.AMM_CLAWBACK)
       .build();

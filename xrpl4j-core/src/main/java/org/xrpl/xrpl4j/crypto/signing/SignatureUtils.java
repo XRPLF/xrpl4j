@@ -45,6 +45,7 @@ import org.xrpl.xrpl4j.model.transactions.CheckCash;
 import org.xrpl.xrpl4j.model.transactions.CheckCreate;
 import org.xrpl.xrpl4j.model.transactions.Clawback;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTSend;
 import org.xrpl.xrpl4j.model.transactions.CredentialAccept;
@@ -265,6 +266,10 @@ public class SignatureUtils {
         .build();
     } else if (ConfidentialMPTMergeInbox.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignature = ConfidentialMPTMergeInbox.builder().from((ConfidentialMPTMergeInbox) transaction)
+        .transactionSignature(signature)
+        .build();
+    } else if (ConfidentialMPTConvertBack.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignature = ConfidentialMPTConvertBack.builder().from((ConfidentialMPTConvertBack) transaction)
         .transactionSignature(signature)
         .build();
     } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {
@@ -528,6 +533,10 @@ public class SignatureUtils {
         .build();
     } else if (ConfidentialMPTMergeInbox.class.isAssignableFrom(transaction.getClass())) {
       transactionWithSignatures = ConfidentialMPTMergeInbox.builder().from((ConfidentialMPTMergeInbox) transaction)
+        .signers(signers)
+        .build();
+    } else if (ConfidentialMPTConvertBack.class.isAssignableFrom(transaction.getClass())) {
+      transactionWithSignatures = ConfidentialMPTConvertBack.builder().from((ConfidentialMPTConvertBack) transaction)
         .signers(signers)
         .build();
     } else if (DepositPreAuth.class.isAssignableFrom(transaction.getClass())) {

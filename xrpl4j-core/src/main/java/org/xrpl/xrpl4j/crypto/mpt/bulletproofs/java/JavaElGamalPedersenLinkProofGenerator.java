@@ -33,6 +33,7 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
   private static final String NUMS_DOMAIN_SEPARATOR = "MPT_BULLETPROOF_V1_NUMS";
   private static final String CURVE_LABEL = "secp256k1";
   private static final int TT_CONFIDENTIAL_MPT_SEND = 88;
+  private static final int TT_CONFIDENTIAL_MPT_CONVERT_BACK = 87;
 
   private final Secp256k1Operations secp256k1;
   private final AddressCodec addressCodec;
@@ -373,6 +374,42 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
 
     UnsignedByteArray destinationBytes = addressCodec.decodeAccountId(destination);
     buffer.put(destinationBytes.toByteArray());
+
+    buffer.putInt(version.intValue());
+
+    return sha512Half(buffer.array());
+  }
+
+  @Override
+  public byte[] generateConvertBackContext(
+    Address account,
+    UnsignedInteger sequence,
+    MpTokenIssuanceId issuanceId,
+    UnsignedLong amount,
+    UnsignedInteger version
+  ) {
+    Objects.requireNonNull(account, "account must not be null");
+    Objects.requireNonNull(sequence, "sequence must not be null");
+    Objects.requireNonNull(issuanceId, "issuanceId must not be null");
+    Objects.requireNonNull(amount, "amount must not be null");
+    Objects.requireNonNull(version, "version must not be null");
+
+    // Context = SHA512Half(txType || account || sequence || issuanceId || amount || version)
+    // txType (2 bytes) + account (20 bytes) + sequence (4 bytes) + issuanceId (32 bytes) + amount (8 bytes) + version (4 bytes) = 70 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(70);
+    buffer.order(ByteOrder.BIG_ENDIAN);
+
+    buffer.putShort((short) TT_CONFIDENTIAL_MPT_CONVERT_BACK);
+
+    UnsignedByteArray accountBytes = addressCodec.decodeAccountId(account);
+    buffer.put(accountBytes.toByteArray());
+
+    buffer.putInt(sequence.intValue());
+
+    byte[] issuanceIdBytes = BaseEncoding.base16().decode(issuanceId.value().toUpperCase());
+    buffer.put(issuanceIdBytes);
+
+    buffer.putLong(amount.longValue());
 
     buffer.putInt(version.intValue());
 

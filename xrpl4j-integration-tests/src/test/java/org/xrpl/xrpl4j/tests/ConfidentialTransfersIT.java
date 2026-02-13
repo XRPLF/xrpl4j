@@ -59,6 +59,7 @@ import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTSend;
 import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
@@ -993,9 +994,260 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("ConfidentialMPTSend result: " + confidentialSendResult.engineResult());
     System.out.println("ConfidentialMPTSend result message: " + confidentialSendResult.engineResultMessage());
 
-    // Note: We expect this to fail because we're using placeholder commitments
-    // The goal is to see if the SamePlaintextMultiProof is accepted by rippled
+    // Assert the transaction was successful
+    assertThat(confidentialSendResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Wait for validation
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedConfidentialSend.hash(),
+        confidentialSendResult.validatedLedgerIndex(),
+        confidentialSend.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        confidentialSend.sequence(),
+        holderKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    System.out.println("ConfidentialMPTSend validated successfully!");
+
+    //////////////////////
+    // Verify sender's balance was reduced by the send amount
+    // Query the ledger for the sender's MPToken after the send
+    MpTokenObject senderMpTokenAfterSend = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holderKeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    // Decrypt the sender's confidential balance after the send
+    EncryptedAmount senderEncryptedBalanceAfterSend = senderMpTokenAfterSend.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send"));
+    byte[] senderBalanceBytesAfterSend = BaseEncoding.base16().decode(senderEncryptedBalanceAfterSend.value());
+    ElGamalCiphertext senderBalanceCiphertextAfterSend = ElGamalCiphertext.fromBytes(
+      senderBalanceBytesAfterSend, secp256k1
+    );
+
+    JavaElGamalBalanceDecryptor balanceDecryptor = new JavaElGamalBalanceDecryptor(secp256k1);
+    ElGamalPrivateKey senderPrivateKeyForDecrypt = ElGamalPrivateKey.of(
+      holderElGamalKeyPair.privateKey().naturalBytes()
+    );
+    long senderBalanceAfterSend = balanceDecryptor.decrypt(
+      senderBalanceCiphertextAfterSend, senderPrivateKeyForDecrypt
+    );
+
+    // Expected balance: 500 (initial) - 100 (sent) = 400
+    long expectedSenderBalance = amountToConvert.longValue() - sendAmount.longValue();
+
+    System.out.println("\n========== BALANCE VERIFICATION ==========");
+    System.out.println("Sender's balance before send: " + amountToConvert.longValue());
+    System.out.println("Amount sent: " + sendAmount.longValue());
+    System.out.println("Sender's balance after send (decrypted): " + senderBalanceAfterSend);
+    System.out.println("Expected sender balance: " + expectedSenderBalance);
+
+    assertThat(senderBalanceAfterSend).isEqualTo(expectedSenderBalance);
+
+    System.out.println("\n========== CONFIDENTIAL MPT CONVERT BACK ==========");
+
+    //////////////////////
+    // ConfidentialMPTConvertBack: Holder 1 converts 50 MPT back to public balance
+    UnsignedLong convertBackAmount = UnsignedLong.valueOf(50);
+
+    // Get updated account info for holder 1
+    AccountInfoResult holderAccountInfoForConvertBack = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    // Get the current MPToken to get the version
+    MpTokenObject holder1MpTokenForConvertBack = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holderKeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    UnsignedInteger holder1VersionForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceVersion()
+      .orElse(UnsignedInteger.ZERO);
+
+    // Generate blinding factor for convert back
+    byte[] convertBackBlindingFactor = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+
+    // Encrypt the convert back amount for holder (to be subtracted from spending balance)
+    ElGamalCiphertext holderConvertBackCiphertext = encryptor.encrypt(
+      convertBackAmount, holderElGamalEcPoint, convertBackBlindingFactor
+    );
+    EncryptedAmount holderConvertBackEncryptedAmount = EncryptedAmount.of(
+      BaseEncoding.base16().encode(holderConvertBackCiphertext.toBytes())
+    );
+
+    // Encrypt the convert back amount for issuer (to be subtracted from issuer mirror balance)
+    ElGamalCiphertext issuerConvertBackCiphertext = encryptor.encrypt(
+      convertBackAmount, issuerElGamalEcPoint, convertBackBlindingFactor
+    );
+    EncryptedAmount issuerConvertBackEncryptedAmount = EncryptedAmount.of(
+      BaseEncoding.base16().encode(issuerConvertBackCiphertext.toBytes())
+    );
+
+    // Generate context hash for ConfidentialMPTConvertBack
+    byte[] convertBackContextHash = linkProofGenerator.generateConvertBackContext(
+      holderKeyPair.publicKey().deriveAddress(),
+      holderAccountInfoForConvertBack.accountData().sequence(),
+      mpTokenIssuanceId,
+      convertBackAmount,
+      holder1VersionForConvertBack
+    );
+
+    System.out.println("Convert Back Context Hash: " + BaseEncoding.base16().encode(convertBackContextHash));
+
+    // Generate Pedersen commitment for the current spending balance (400)
+    // The commitment is for the CURRENT balance, not the balance after conversion
+    UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(senderBalanceAfterSend);
+    byte[] convertBackPedersenRho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] convertBackCommitmentBytes = pedersenGen.generateCommitment(currentSpendingBalance, convertBackPedersenRho);
+    ECPoint convertBackCommitmentPoint = secp256k1.deserialize(convertBackCommitmentBytes);
+
+    // Convert commitment to uncompressed format (64 bytes) for the transaction
+    // Remove the 04 prefix from uncompressed encoding
+    byte[] convertBackCommitmentUncompressed = convertBackCommitmentPoint.getEncoded(false);
+    // Skip the 04 prefix byte to get 64 bytes (X, Y)
+    byte[] convertBackCommitment64 = new byte[64];
+    System.arraycopy(convertBackCommitmentUncompressed, 1, convertBackCommitment64, 0, 64);
+
+    // Reverse X and Y coordinates to match the format used for public keys on the ledger
+    byte[] convertBackCommitment64Reversed = new byte[64];
+    // Reverse X coordinate (first 32 bytes)
+    for (int i = 0; i < 32; i++) {
+      convertBackCommitment64Reversed[i] = convertBackCommitment64[31 - i];
+    }
+    // Reverse Y coordinate (last 32 bytes)
+    for (int i = 0; i < 32; i++) {
+      convertBackCommitment64Reversed[32 + i] = convertBackCommitment64[63 - i];
+    }
+
+    String convertBackPedersenCommitment = BaseEncoding.base16().encode(convertBackCommitment64Reversed);
+
+    System.out.println("Current spending balance for commitment: " + currentSpendingBalance.longValue());
+    System.out.println("Pedersen Commitment (64-byte reversed): " + convertBackPedersenCommitment);
+
+    // Get the current encrypted balance from the ledger for the balance linkage proof
+    EncryptedAmount currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
+    byte[] currentBalanceBytesForConvertBack = BaseEncoding.base16().decode(
+      currentEncryptedBalanceForConvertBack.value()
+    );
+    ElGamalCiphertext currentBalanceCiphertextForConvertBack = ElGamalCiphertext.fromBytes(
+      currentBalanceBytesForConvertBack, secp256k1
+    );
+
+    // Generate Balance Linkage Proof
+    // This proves the Pedersen commitment matches the on-ledger encrypted balance
+    byte[] convertBackBalanceLinkageProof = generateBalanceLinkageProof(
+      linkProofGenerator,
+      currentBalanceCiphertextForConvertBack,
+      holderElGamalEcPoint,
+      convertBackCommitmentPoint,
+      currentSpendingBalance,
+      holderPrivateKey,
+      convertBackPedersenRho,
+      convertBackContextHash,
+      secureRandom,
+      secp256k1
+    );
+
+    System.out.println("Balance Linkage Proof size: " + convertBackBalanceLinkageProof.length + " bytes");
+    System.out.println("Balance Linkage Proof: " + BaseEncoding.base16().encode(convertBackBalanceLinkageProof));
+
+    // Build the ConfidentialMPTConvertBack transaction
+    ConfidentialMPTConvertBack convertBack = ConfidentialMPTConvertBack.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(holderAccountInfoForConvertBack.accountData().sequence())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(
+        holderAccountInfoForConvertBack.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
+      .holderEncryptedAmount(holderConvertBackEncryptedAmount)
+      .issuerEncryptedAmount(issuerConvertBackEncryptedAmount)
+      .blindingFactor(BlindingFactor.of(BaseEncoding.base16().encode(convertBackBlindingFactor)))
+      .balanceCommitment(convertBackPedersenCommitment)
+      .zkProof(BaseEncoding.base16().encode(convertBackBalanceLinkageProof))
+      .build();
+
+    SingleSignedTransaction<ConfidentialMPTConvertBack> signedConvertBack = signatureService.sign(
+      holderKeyPair.privateKey(), convertBack
+    );
+
+    System.out.println("ConfidentialMPTConvertBack tx hash: " + signedConvertBack.hash());
+
+    SubmitResult<ConfidentialMPTConvertBack> convertBackResult = xrplClient.submit(signedConvertBack);
+
+    System.out.println("ConfidentialMPTConvertBack result: " + convertBackResult.engineResult());
+    System.out.println("ConfidentialMPTConvertBack result message: " + convertBackResult.engineResultMessage());
+
+    // Assert the transaction was successful
+    assertThat(convertBackResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Wait for validation
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedConvertBack.hash(),
+        convertBackResult.validatedLedgerIndex(),
+        convertBack.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        convertBack.sequence(),
+        holderKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    System.out.println("ConfidentialMPTConvertBack validated successfully!");
+
+    //////////////////////
+    // Verify the remaining confidential balance is 350 (400 - 50)
+    MpTokenObject holder1MpTokenAfterConvertBack = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holderKeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    // Decrypt the remaining confidential balance
+    EncryptedAmount remainingEncryptedBalance = holder1MpTokenAfterConvertBack.confidentialBalanceSpending()
+      .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance after convert back"));
+    byte[] remainingBalanceBytes = BaseEncoding.base16().decode(remainingEncryptedBalance.value());
+    ElGamalCiphertext remainingBalanceCiphertext = ElGamalCiphertext.fromBytes(remainingBalanceBytes, secp256k1);
+
+    long remainingConfidentialBalance = balanceDecryptor.decrypt(
+      remainingBalanceCiphertext, senderPrivateKeyForDecrypt
+    );
+
+    // Expected remaining balance: 400 - 50 = 350
+    long expectedRemainingBalance = senderBalanceAfterSend - convertBackAmount.longValue();
+
+    System.out.println("\n========== CONVERT BACK VERIFICATION ==========");
+    System.out.println("Balance before convert back: " + senderBalanceAfterSend);
+    System.out.println("Amount converted back: " + convertBackAmount.longValue());
+    System.out.println("Remaining confidential balance (decrypted): " + remainingConfidentialBalance);
+    System.out.println("Expected remaining balance: " + expectedRemainingBalance);
+
+    assertThat(remainingConfidentialBalance).isEqualTo(expectedRemainingBalance);
+
     System.out.println("\n========== TEST COMPLETE ==========");
+    System.out.println("✓ Confidential transfer successful!");
+    System.out.println("✓ Sender's balance correctly reduced from " + amountToConvert.longValue() +
+      " to " + senderBalanceAfterSend + " after send");
+    System.out.println("✓ Convert back successful! Remaining confidential balance: " + remainingConfidentialBalance);
   }
 
   /**

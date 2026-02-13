@@ -400,6 +400,15 @@ public enum TransactionType {
   CONFIDENTIAL_MPT_MERGE_INBOX("ConfidentialMPTMergeInbox"),
 
   /**
+   * The {@link TransactionType} for the {@link ConfidentialMPTConvertBack} transaction.
+   *
+   * <p>This constant will be marked {@link Beta} until the ConfidentialTransfer amendment is enabled on mainnet.
+   * </p>
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CONVERT_BACK("ConfidentialMPTConvertBack"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");

@@ -59,6 +59,7 @@ import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTSend;
 import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
 import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
@@ -427,6 +428,46 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     //////////////////////
+    // Merge inbox to spending balance for Holder 1
+    // After ConfidentialMPTConvert, tokens go to inbox. We need to merge them to spending balance before sending.
+    AccountInfoResult holderAccountInfoForMerge = this.scanForResult(
+      () -> this.getValidatedAccountInfo(holderKeyPair.publicKey().deriveAddress())
+    );
+
+    ConfidentialMPTMergeInbox mergeInbox = ConfidentialMPTMergeInbox.builder()
+      .account(holderKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(holderAccountInfoForMerge.accountData().sequence())
+      .signingPublicKey(holderKeyPair.publicKey())
+      .lastLedgerSequence(
+        holderAccountInfoForMerge.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .build();
+
+    SingleSignedTransaction<ConfidentialMPTMergeInbox> signedMergeInbox = signatureService.sign(
+      holderKeyPair.privateKey(), mergeInbox
+    );
+    SubmitResult<ConfidentialMPTMergeInbox> mergeInboxResult = xrplClient.submit(signedMergeInbox);
+    assertThat(mergeInboxResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    System.out.println("Holder 1 ConfidentialMPTMergeInbox tx hash: " + signedMergeInbox.hash());
+
+    // Wait for validation
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedMergeInbox.hash(),
+        mergeInboxResult.validatedLedgerIndex(),
+        mergeInbox.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        mergeInbox.sequence(),
+        holderKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    System.out.println("Holder 1 inbox merged to spending balance successfully!");
+
+    //////////////////////
     // Create second holder account
     KeyPair holder2KeyPair = createRandomAccountEd25519();
     System.out.println("Holder 2 Address: " + holder2KeyPair.publicKey().deriveAddress());
@@ -705,7 +746,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // For balance commitment, we need the sender's new balance after the send
     // Current balance = 500 (from ConfidentialMPTConvert), sending 100, so new balance = 400
-    UnsignedLong senderNewBalance = UnsignedLong.valueOf(400);
+    UnsignedLong senderNewBalance = UnsignedLong.valueOf(500);
     byte[] balanceCommitmentBytes = pedersenGen.generateCommitment(senderNewBalance, balancePedersenRho);
     ECPoint balanceCommitmentPoint = secp256k1.deserialize(balanceCommitmentBytes);
 
@@ -835,6 +876,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println(
       "Current Balance Ciphertext C2: " + BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)));
 
+    // Decrypt the current balance to verify its value
+    long decryptedCurrentBalance = decryptor.decrypt(currentBalanceCiphertext, holderPrivateKeyForDecrypt);
+    System.out.println("Decrypted current balance (confidentialBalanceSpending): " + decryptedCurrentBalance);
+    System.out.println("Expected balance for proof: " + senderNewBalance.longValue());
+
     // Get the holder's ElGamal private key
     byte[] holderPrivateKey = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
     // Ensure it's exactly 32 bytes (remove leading zero if present from BigInteger encoding)
@@ -864,6 +910,33 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     System.out.println("Balance Linkage Proof size: " + balanceLinkageProof.length + " bytes (expected 195)");
     System.out.println("Balance Linkage Proof: " + BaseEncoding.base16().encode(balanceLinkageProof));
+
+    // Print values for C code verification (Balance Linkage)
+    System.out.println("\n========== VALUES FOR C CODE VERIFICATION (Balance Linkage) ==========");
+    System.out.println("// Public Key Pk (33 bytes compressed - used as c1 in balance linkage)");
+    System.out.println(
+      "const char* bal_pk_compressed_hex = \"" + BaseEncoding.base16().encode(holderElGamalEcPoint.getEncoded(true)) +
+        "\";");
+    System.out.println("// Current Balance Ciphertext C1 (33 bytes compressed - used as pk in balance linkage)");
+    System.out.println("const char* bal_c1_compressed_hex = \"" +
+      BaseEncoding.base16().encode(currentBalanceCiphertext.c1().getEncoded(true)) + "\";");
+    System.out.println("// Current Balance Ciphertext C2 (33 bytes compressed - used as c2 in balance linkage)");
+    System.out.println("const char* bal_c2_compressed_hex = \"" +
+      BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)) + "\";");
+    System.out.println("// Balance Pedersen commitment (33 bytes compressed)");
+    System.out.println("const char* bal_pcm_compressed_hex = \"" +
+      BaseEncoding.base16().encode(balanceCommitmentPoint.getEncoded(true)) + "\";");
+    System.out.println("// Balance Pedersen commitment (64 bytes reversed - as sent in tx)");
+    System.out.println("const char* bal_pcm_64_hex = \"" + balanceCommitment + "\";");
+    System.out.println("// Current encrypted balance (66 bytes - from ledger)");
+    System.out.println("const char* current_enc_bal_hex = \"" + currentEncryptedBalance.value() + "\";");
+    System.out.println("// Balance amount (plaintext value)");
+    System.out.println("uint64_t balance_amount = " + senderNewBalance.longValue() + ";");
+    System.out.println("// Context ID (32 bytes)");
+    System.out.println("const char* bal_context_id_hex = \"" + BaseEncoding.base16().encode(sendContextHash) + "\";");
+    System.out.println("// Balance Linkage Proof from Java (195 bytes)");
+    System.out.println("const char* bal_proof_hex = \"" + BaseEncoding.base16().encode(balanceLinkageProof) + "\";");
+    System.out.println("=======================================================================\n");
 
     // Verify the balance linkage proof locally
     // Note: For balance linkage, the parameters are swapped:

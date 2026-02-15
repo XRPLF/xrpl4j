@@ -409,6 +409,14 @@ public enum TransactionType {
   CONFIDENTIAL_MPT_CONVERT_BACK("ConfidentialMPTConvertBack"),
 
   /**
+   * The {@link TransactionType} for the {@link ConfidentialMPTClawback} transaction.
+   *
+   * @see "https://github.com/XRPLF/XRPL-Standards/discussions/241"
+   */
+  @Beta
+  CONFIDENTIAL_MPT_CLAWBACK("ConfidentialMPTClawback"),
+
+  /**
    * The {@link TransactionType} for any transaction that is unrecognized/unsupported by xrpl4j.
    */
   UNKNOWN("Unknown");

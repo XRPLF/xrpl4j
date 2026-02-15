@@ -38,6 +38,7 @@ import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaElGamalPedersenLinkProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaEqualityPlaintextProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
@@ -58,6 +59,7 @@ import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
 import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
+import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTClawback;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTMergeInbox;
@@ -1243,11 +1245,143 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     assertThat(remainingConfidentialBalance).isEqualTo(expectedRemainingBalance);
 
+    System.out.println("\n========== CLAWBACK ==========");
+    System.out.println("Clawing back 350 MPT from holder...");
+
+    //////////////////////
+    // Step 7: Issuer claws back 350 MPT from holder
+    // The clawback amount is the holder's total confidential balance (350)
+    UnsignedLong clawbackAmount = UnsignedLong.valueOf(350);
+
+    // Get the holder's MPToken to retrieve the IssuerEncryptedBalance
+    MpTokenObject holderMpTokenForClawback = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holderKeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    // Get the issuer's encrypted balance for this holder
+    EncryptedAmount issuerEncryptedBalanceForClawback = holderMpTokenForClawback.issuerEncryptedBalance()
+      .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
+    byte[] issuerEncryptedBalanceBytes = BaseEncoding.base16().decode(issuerEncryptedBalanceForClawback.value());
+    ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromBytes(issuerEncryptedBalanceBytes, secp256k1);
+
+    System.out.println("Issuer Encrypted Balance C1: " + BaseEncoding.base16().encode(
+      issuerBalanceCiphertext.c1().getEncoded(true)));
+    System.out.println("Issuer Encrypted Balance C2: " + BaseEncoding.base16().encode(
+      issuerBalanceCiphertext.c2().getEncoded(true)));
+
+    // Verify the issuer can decrypt this balance to 350
+    ElGamalPrivateKey issuerPrivateKeyForClawback = ElGamalPrivateKey.of(
+      issuerElGamalKeyPair.privateKey().naturalBytes()
+    );
+    long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerPrivateKeyForClawback);
+    System.out.println("Issuer decrypted balance: " + issuerDecryptedBalance);
+    assertThat(issuerDecryptedBalance).isEqualTo(clawbackAmount.longValue());
+
+    // Get updated issuer account info for the clawback transaction
+    AccountInfoResult issuerAccountInfoForClawback = this.scanForResult(
+      () -> this.getValidatedAccountInfo(issuerKeyPair.publicKey().deriveAddress())
+    );
+
+    // Generate the Equality Plaintext Proof
+    // For clawback, the parameters are swapped: c1=pk, c2=ciphertext.c2, pk=ciphertext.c1
+    // This is because the issuer uses their private key as the "randomness" parameter
+    JavaEqualityPlaintextProofGenerator equalityProofGenerator = new JavaEqualityPlaintextProofGenerator(secp256k1);
+
+    // Generate context hash for clawback
+    byte[] clawbackContextHash = equalityProofGenerator.generateClawbackContext(
+      issuerKeyPair.publicKey().deriveAddress(),  // issuer account
+      issuerAccountInfoForClawback.accountData().sequence(),  // sequence
+      mpTokenIssuanceId,  // issuance ID
+      clawbackAmount,  // amount
+      holderKeyPair.publicKey().deriveAddress()  // holder
+    );
+
+    System.out.println("Clawback context hash: " + BaseEncoding.base16().encode(clawbackContextHash));
+
+    // Generate the proof
+    // Note: For clawback, the parameters are: pk (as c1), c2, c1 (as pk), amount, privateKey (as randomness)
+    byte[] issuerPrivateKeyBytes = issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray();
+    byte[] clawbackProof = equalityProofGenerator.generateProof(
+      issuerElGamalEcPoint,  // c1 = issuer's public key (pk)
+      issuerBalanceCiphertext.c2(),  // c2 = ciphertext.c2
+      issuerBalanceCiphertext.c1(),  // pk = ciphertext.c1
+      clawbackAmount,
+      issuerPrivateKeyBytes,  // randomness = issuer's private key
+      clawbackContextHash
+    );
+
+    System.out.println("Clawback proof length: " + clawbackProof.length);
+    System.out.println("Clawback proof: " + BaseEncoding.base16().encode(clawbackProof));
+
+    // Build and submit the ConfidentialMPTClawback transaction
+    ConfidentialMPTClawback clawback = ConfidentialMPTClawback.builder()
+      .account(issuerKeyPair.publicKey().deriveAddress())
+      .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
+      .sequence(issuerAccountInfoForClawback.accountData().sequence())
+      .signingPublicKey(issuerKeyPair.publicKey())
+      .lastLedgerSequence(
+        issuerAccountInfoForClawback.ledgerIndexSafe().plus(UnsignedInteger.valueOf(50)).unsignedIntegerValue()
+      )
+      .mpTokenIssuanceId(mpTokenIssuanceId)
+      .holder(holderKeyPair.publicKey().deriveAddress())
+      .mptAmount(MpTokenNumericAmount.of(clawbackAmount))
+      .zkProof(BaseEncoding.base16().encode(clawbackProof))
+      .build();
+
+    SingleSignedTransaction<ConfidentialMPTClawback> signedClawback = signatureService.sign(
+      issuerKeyPair.privateKey(), clawback
+    );
+    SubmitResult<ConfidentialMPTClawback> clawbackResult = xrplClient.submit(signedClawback);
+    System.out.println("Clawback result: " + clawbackResult.engineResult());
+    assertThat(clawbackResult.engineResult()).isEqualTo(SUCCESS_STATUS);
+
+    // Wait for validation
+    this.scanForResult(
+      () -> xrplClient.isFinal(
+        signedClawback.hash(),
+        clawbackResult.validatedLedgerIndex(),
+        clawback.lastLedgerSequence().orElseThrow(RuntimeException::new),
+        clawback.sequence(),
+        issuerKeyPair.publicKey().deriveAddress()
+      ),
+      result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
+    );
+
+    System.out.println("ConfidentialMPTClawback validated successfully!");
+
+    //////////////////////
+    // Verify the holder's confidential balances are zeroed out
+    MpTokenObject holderMpTokenAfterClawback = xrplClient.ledgerEntry(
+      LedgerEntryRequestParams.mpToken(
+        MpTokenLedgerEntryParams.builder()
+          .account(holderKeyPair.publicKey().deriveAddress())
+          .mpTokenIssuanceId(mpTokenIssuanceId)
+          .build(),
+        LedgerSpecifier.VALIDATED
+      )
+    ).node();
+
+    // After clawback, the confidential balances should be empty or zero
+    System.out.println("\n========== CLAWBACK VERIFICATION ==========");
+    System.out.println("Holder's confidential balance spending after clawback: " +
+      holderMpTokenAfterClawback.confidentialBalanceSpending());
+    System.out.println("Holder's confidential balance inbox after clawback: " +
+      holderMpTokenAfterClawback.confidentialBalanceInbox());
+    System.out.println("Holder's issuer encrypted balance after clawback: " +
+      holderMpTokenAfterClawback.issuerEncryptedBalance());
+
     System.out.println("\n========== TEST COMPLETE ==========");
     System.out.println("✓ Confidential transfer successful!");
     System.out.println("✓ Sender's balance correctly reduced from " + amountToConvert.longValue() +
       " to " + senderBalanceAfterSend + " after send");
     System.out.println("✓ Convert back successful! Remaining confidential balance: " + remainingConfidentialBalance);
+    System.out.println("✓ Clawback successful! Clawed back " + clawbackAmount.longValue() + " MPT from holder");
   }
 
   /**

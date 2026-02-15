@@ -395,8 +395,8 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     Objects.requireNonNull(version, "version must not be null");
 
     // Context = SHA512Half(txType || account || sequence || issuanceId || amount || version)
-    // txType (2 bytes) + account (20 bytes) + sequence (4 bytes) + issuanceId (32 bytes) + amount (8 bytes) + version (4 bytes) = 70 bytes
-    ByteBuffer buffer = ByteBuffer.allocate(70);
+    // txType (2 bytes) + account (20 bytes) + sequence (4 bytes) + issuanceId (24 bytes) + amount (8 bytes) + version (4 bytes) = 62 bytes
+    ByteBuffer buffer = ByteBuffer.allocate(62);
     buffer.order(ByteOrder.BIG_ENDIAN);
 
     buffer.putShort((short) TT_CONFIDENTIAL_MPT_CONVERT_BACK);

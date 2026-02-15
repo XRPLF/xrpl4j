@@ -154,7 +154,7 @@ public interface ElGamalPedersenLinkProofGenerator {
    *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CONVERT_BACK</li>
    *   <li>account (20 bytes) - holder account</li>
    *   <li>sequence (4 bytes) - transaction sequence</li>
-   *   <li>issuanceId (32 bytes) - MPTokenIssuanceID</li>
+   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
    *   <li>amount (8 bytes) - amount being converted back</li>
    *   <li>version (4 bytes) - confidential balance version</li>
    * </ul>

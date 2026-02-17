@@ -32,8 +32,7 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.Seed;
-import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
@@ -44,7 +43,7 @@ import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceDecryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.java.JavaElGamalBalanceEncryptor;
-import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalKeyPair;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.FinalityStatus;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
@@ -58,14 +57,11 @@ import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.flags.MpTokenIssuanceCreateFlags;
 import org.xrpl.xrpl4j.model.ledger.MpTokenIssuanceObject;
 import org.xrpl.xrpl4j.model.ledger.MpTokenObject;
-import org.xrpl.xrpl4j.model.transactions.BlindingFactor;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTClawback;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvert;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTConvertBack;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTMergeInbox;
 import org.xrpl.xrpl4j.model.transactions.ConfidentialMPTSend;
-import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
-import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
 import org.xrpl.xrpl4j.model.transactions.MpTokenAuthorize;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceCreate;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
@@ -74,7 +70,6 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -160,10 +155,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Generate Issuer ElGamal key pair and submit MpTokenIssuanceSet to register it
-    KeyPair issuerElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
-    ElGamalPublicKey issuerElGamalPublicKey = ElGamalPublicKey.of(
-      issuerElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()  // 64 bytes, reversed for C compatibility
-    );
+    ElGamalKeyPair issuerElGamalKeyPair = ElGamalKeyPair.generate();
+    String issuerElGamalPublicKey = issuerElGamalKeyPair.publicKey().toReversedHex64();  // 64 bytes, reversed for C compatibility
 
     // Get updated issuer account info for the next transaction
     AccountInfoResult issuerAccountInfoForSet = this.scanForResult(
@@ -291,52 +284,44 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Generate Holder ElGamal key pair
-    KeyPair holderElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
-    ElGamalPublicKey holderElGamalPublicKey = ElGamalPublicKey.of(
-      holderElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()  // 64 bytes, reversed for C compatibility
-    );
+    ElGamalKeyPair holderElGamalKeyPair = ElGamalKeyPair.generate();
+    String holderElGamalPublicKey = holderElGamalKeyPair.publicKey().toReversedHex64();  // 64 bytes, reversed for C compatibility
 
     //////////////////////
     // Prepare encryption utilities
     Secp256k1Operations secp256k1 = new Secp256k1Operations();
-    SecureRandom secureRandom = new SecureRandom();
     JavaElGamalBalanceEncryptor encryptor = new JavaElGamalBalanceEncryptor(secp256k1);
 
     //////////////////////
     // Generate blinding factor (same for both holder and issuer encryption)
-    byte[] blindingFactorBytes = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    BlindingFactor blindingFactor = BlindingFactor.of(BaseEncoding.base16().encode(blindingFactorBytes));
+    BlindingFactor blindingFactor = BlindingFactor.generate();
 
     //////////////////////
     // Encrypt 500 MPT for holder
     UnsignedLong amountToConvert = UnsignedLong.valueOf(500);
-    ECPoint holderElGamalEcPoint = BcKeyUtils.toEcPublicKeyParameters(
-      holderElGamalKeyPair.publicKey()
-    ).getQ();
-    ElGamalCiphertext holderCiphertext = encryptor.encrypt(amountToConvert, holderElGamalEcPoint, blindingFactorBytes);
-    EncryptedAmount holderEncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(holderCiphertext.toBytes())
+    ECPoint holderElGamalEcPoint = holderElGamalKeyPair.publicKey().asEcPoint();
+    ElGamalCiphertext holderCiphertext = encryptor.encrypt(
+      amountToConvert, holderElGamalKeyPair.publicKey(), blindingFactor
     );
+    String holderEncryptedAmount = holderCiphertext.hexValue();
 
     //////////////////////
     // Encrypt 500 MPT for issuer (using same blinding factor)
-    ECPoint issuerElGamalEcPoint = BcKeyUtils.toEcPublicKeyParameters(
-      issuerElGamalKeyPair.publicKey()
-    ).getQ();
-    ElGamalCiphertext issuerCiphertext = encryptor.encrypt(amountToConvert, issuerElGamalEcPoint, blindingFactorBytes);
-    EncryptedAmount issuerEncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(issuerCiphertext.toBytes())
+    ECPoint issuerElGamalEcPoint = issuerElGamalKeyPair.publicKey().asEcPoint();
+    ElGamalCiphertext issuerCiphertext = encryptor.encrypt(
+      amountToConvert, issuerElGamalKeyPair.publicKey(), blindingFactor
     );
+    String issuerEncryptedAmount = issuerCiphertext.hexValue();
 
     //////////////////////
     // Verify encryption locally before submitting
     boolean holderEncryptionValid = encryptor.verifyEncryption(
-      holderCiphertext, holderElGamalEcPoint, amountToConvert, blindingFactorBytes
+      holderCiphertext, holderElGamalKeyPair.publicKey(), amountToConvert, blindingFactor
     );
     assertThat(holderEncryptionValid).isTrue();
 
     boolean issuerEncryptionValid = encryptor.verifyEncryption(
-      issuerCiphertext, issuerElGamalEcPoint, amountToConvert, blindingFactorBytes
+      issuerCiphertext, issuerElGamalKeyPair.publicKey(), amountToConvert, blindingFactor
     );
     assertThat(issuerEncryptionValid).isTrue();
 
@@ -345,16 +330,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
     JavaElGamalBalanceDecryptor decryptor = new JavaElGamalBalanceDecryptor(secp256k1);
 
     // Decrypt holder ciphertext using holder's private key
-    ElGamalPrivateKey holderPrivateKeyForDecrypt = ElGamalPrivateKey.of(
-      holderElGamalKeyPair.privateKey().naturalBytes()
-    );
-    long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderPrivateKeyForDecrypt);
+    long holderDecryptedAmount = decryptor.decrypt(holderCiphertext, holderElGamalKeyPair.privateKey());
 
     // Decrypt issuer ciphertext using issuer's private key
-    ElGamalPrivateKey issuerPrivateKeyForDecrypt = ElGamalPrivateKey.of(
-      issuerElGamalKeyPair.privateKey().naturalBytes()
-    );
-    long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerPrivateKeyForDecrypt);
+    long issuerDecryptedAmount = decryptor.decrypt(issuerCiphertext, issuerElGamalKeyPair.privateKey());
 
     // Verify both decrypt to the same amount
     assertThat(holderDecryptedAmount).isEqualTo(amountToConvert.longValue());
@@ -406,7 +385,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderElGamalPublicKey(holderElGamalPublicKey)
       .holderEncryptedAmount(holderEncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmount)
-      .blindingFactor(blindingFactor)
+      .blindingFactor(blindingFactor.hexValue())
       .zkProof(zkProof)
       .build();
 
@@ -509,37 +488,28 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Generate Holder 2 ElGamal key pair
-    KeyPair holder2ElGamalKeyPair = Seed.secp256k1Seed().deriveKeyPair();
-    ElGamalPublicKey holder2ElGamalPublicKey = ElGamalPublicKey.of(
-      holder2ElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue()
-    );
+    ElGamalKeyPair holder2ElGamalKeyPair = ElGamalKeyPair.generate();
+    String holder2ElGamalPublicKey = holder2ElGamalKeyPair.publicKey().toReversedHex64();
 
     //////////////////////
     // Prepare encryption for Holder 2 (0 amount conversion to register public key)
     UnsignedLong holder2AmountToConvert = UnsignedLong.ZERO;
 
     // Generate blinding factor for holder 2
-    byte[] holder2BlindingFactorBytes = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    BlindingFactor holder2BlindingFactor = BlindingFactor.of(BaseEncoding.base16().encode(holder2BlindingFactorBytes));
+    BlindingFactor holder2BlindingFactor = BlindingFactor.generate();
 
     // Encrypt 0 MPT for holder 2
-    ECPoint holder2ElGamalEcPoint = BcKeyUtils.toEcPublicKeyParameters(
-      holder2ElGamalKeyPair.publicKey()
-    ).getQ();
+    ECPoint holder2ElGamalEcPoint = holder2ElGamalKeyPair.publicKey().asEcPoint();
     ElGamalCiphertext holder2Ciphertext = encryptor.encrypt(
-      holder2AmountToConvert, holder2ElGamalEcPoint, holder2BlindingFactorBytes
+      holder2AmountToConvert, holder2ElGamalKeyPair.publicKey(), holder2BlindingFactor
     );
-    EncryptedAmount holder2EncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(holder2Ciphertext.toBytes())
-    );
+    String holder2EncryptedAmount = holder2Ciphertext.hexValue();
 
     // Encrypt 0 MPT for issuer (using holder 2's blinding factor)
     ElGamalCiphertext issuerCiphertextForHolder2 = encryptor.encrypt(
-      holder2AmountToConvert, issuerElGamalEcPoint, holder2BlindingFactorBytes
+      holder2AmountToConvert, issuerElGamalKeyPair.publicKey(), holder2BlindingFactor
     );
-    EncryptedAmount issuerEncryptedAmountForHolder2 = EncryptedAmount.of(
-      BaseEncoding.base16().encode(issuerCiphertextForHolder2.toBytes())
-    );
+    String issuerEncryptedAmountForHolder2 = issuerCiphertextForHolder2.hexValue();
 
     //////////////////////
     // Get updated holder 2 account info for ConfidentialMPTConvert
@@ -581,7 +551,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderElGamalPublicKey(holder2ElGamalPublicKey)
       .holderEncryptedAmount(holder2EncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmountForHolder2)
-      .blindingFactor(holder2BlindingFactor)
+      .blindingFactor(holder2BlindingFactor.hexValue())
       .zkProof(holder2ZkProof)
       .build();
 
@@ -647,31 +617,27 @@ public class ConfidentialTransfersIT extends AbstractIT {
     UnsignedLong sendAmount = UnsignedLong.valueOf(100);
 
     // Generate blinding factors for the send (one for each recipient: sender, destination, issuer)
-    byte[] sendBlindingFactorSender = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] sendBlindingFactorHolder2 = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] sendBlindingFactorIssuer = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    BlindingFactor sendBlindingFactorSender = BlindingFactor.generate();
+    BlindingFactor sendBlindingFactorHolder2 = BlindingFactor.generate();
+    BlindingFactor sendBlindingFactorIssuer = BlindingFactor.generate();
 
     // Encrypt for sender (holder 1) - this is the amount being debited
-    ElGamalCiphertext senderCiphertext = encryptor.encrypt(sendAmount, holderElGamalEcPoint, sendBlindingFactorSender);
-    EncryptedAmount senderEncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(senderCiphertext.toBytes())
+    ElGamalCiphertext senderCiphertext = encryptor.encrypt(
+      sendAmount, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender
     );
+    String senderEncryptedAmount = senderCiphertext.hexValue();
 
     // Encrypt for destination (holder 2)
     ElGamalCiphertext destinationCiphertext = encryptor.encrypt(
-      sendAmount, holder2ElGamalEcPoint, sendBlindingFactorHolder2
+      sendAmount, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2
     );
-    EncryptedAmount destinationEncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(destinationCiphertext.toBytes())
-    );
+    String destinationEncryptedAmount = destinationCiphertext.hexValue();
 
     // Encrypt for issuer
     ElGamalCiphertext issuerCiphertextForSend = encryptor.encrypt(
-      sendAmount, issuerElGamalEcPoint, sendBlindingFactorIssuer
+      sendAmount, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer
     );
-    EncryptedAmount issuerEncryptedAmountForSend = EncryptedAmount.of(
-      BaseEncoding.base16().encode(issuerCiphertextForSend.toBytes())
-    );
+    String issuerEncryptedAmountForSend = issuerCiphertextForSend.hexValue();
 
     //////////////////////
     // Get holder 1 account info for the Send transaction
@@ -704,17 +670,17 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("Context Hash: " + BaseEncoding.base16().encode(sendContextHash));
 
     // Generate nonces for the proof (one for amount, one for each of 3 recipients)
-    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKrSender = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKrDest = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKrIssuer = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKrSender = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKrDest = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKrIssuer = RandomnessUtils.generateRandomScalar(secp256k1);
 
     // Generate the SamePlaintextMultiProof for all 3 ciphertexts: sender, destination, issuer
     byte[] samePlaintextProof = samePlaintextProofGenerator.generateProof(
       sendAmount,
       Arrays.asList(senderCiphertext, destinationCiphertext, issuerCiphertextForSend),
       Arrays.asList(holderElGamalEcPoint, holder2ElGamalEcPoint, issuerElGamalEcPoint),
-      Arrays.asList(sendBlindingFactorSender, sendBlindingFactorHolder2, sendBlindingFactorIssuer),
+      Arrays.asList(sendBlindingFactorSender.toBytes(), sendBlindingFactorHolder2.toBytes(), sendBlindingFactorIssuer.toBytes()),
       sendContextHash,
       nonceKm,
       Arrays.asList(nonceKrSender, nonceKrDest, nonceKrIssuer)
@@ -740,8 +706,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     JavaElGamalPedersenLinkProofGenerator linkProofGenerator = new JavaElGamalPedersenLinkProofGenerator(secp256k1);
 
     // Generate blinding factors for Pedersen commitments
-    byte[] amountPedersenRho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] balancePedersenRho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] amountPedersenRho = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] balancePedersenRho = RandomnessUtils.generateRandomScalar(secp256k1);
 
     // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountPedersenRho * H
     byte[] amountCommitmentBytes = pedersenGen.generateCommitment(sendAmount, amountPedersenRho);
@@ -794,10 +760,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderElGamalEcPoint,
       amountCommitmentPoint,
       sendAmount,
-      sendBlindingFactorSender,
+      sendBlindingFactorSender.toBytes(),
       amountPedersenRho,
       sendContextHash,
-      secureRandom,
       secp256k1
     );
 
@@ -847,7 +812,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("// Amount (plaintext value)");
     System.out.println("uint64_t amount = " + sendAmount.longValue() + ";");
     System.out.println("// Sender Encrypted Amount (66 bytes - as sent in tx)");
-    System.out.println("const char* sender_enc_amt_hex = \"" + senderEncryptedAmount.value() + "\";");
+    System.out.println("const char* sender_enc_amt_hex = \"" + senderEncryptedAmount + "\";");
     System.out.println("=======================================================================\n");
 
     // Verify the amount linkage proof locally
@@ -869,9 +834,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // and the sender's private key as the "r" parameter (swapped parameters vs amount linkage)
 
     // Get the sender's current encrypted balance from the MPToken object
-    EncryptedAmount currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
+    String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
-    byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance.value());
+    byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance);
     ElGamalCiphertext currentBalanceCiphertext = ElGamalCiphertext.fromBytes(currentBalanceBytes, secp256k1);
 
     System.out.println(
@@ -880,7 +845,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       "Current Balance Ciphertext C2: " + BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)));
 
     // Decrypt the current balance to verify its value
-    long decryptedCurrentBalance = decryptor.decrypt(currentBalanceCiphertext, holderPrivateKeyForDecrypt);
+    long decryptedCurrentBalance = decryptor.decrypt(currentBalanceCiphertext, holderElGamalKeyPair.privateKey());
     System.out.println("Decrypted current balance (confidentialBalanceSpending): " + decryptedCurrentBalance);
     System.out.println("Expected balance for proof: " + senderNewBalance.longValue());
 
@@ -907,7 +872,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderPrivateKey,
       balancePedersenRho,
       sendContextHash,
-      secureRandom,
       secp256k1
     );
 
@@ -932,7 +896,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("// Balance Pedersen commitment (64 bytes reversed - as sent in tx)");
     System.out.println("const char* bal_pcm_64_hex = \"" + balanceCommitment + "\";");
     System.out.println("// Current encrypted balance (66 bytes - from ledger)");
-    System.out.println("const char* current_enc_bal_hex = \"" + currentEncryptedBalance.value() + "\";");
+    System.out.println("const char* current_enc_bal_hex = \"" + currentEncryptedBalance + "\";");
     System.out.println("// Balance amount (plaintext value)");
     System.out.println("uint64_t balance_amount = " + senderNewBalance.longValue() + ";");
     System.out.println("// Context ID (32 bytes)");
@@ -1027,19 +991,16 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ).node();
 
     // Decrypt the sender's confidential balance after the send
-    EncryptedAmount senderEncryptedBalanceAfterSend = senderMpTokenAfterSend.confidentialBalanceSpending()
+    String senderEncryptedBalanceAfterSend = senderMpTokenAfterSend.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Sender has no confidential balance after send"));
-    byte[] senderBalanceBytesAfterSend = BaseEncoding.base16().decode(senderEncryptedBalanceAfterSend.value());
+    byte[] senderBalanceBytesAfterSend = BaseEncoding.base16().decode(senderEncryptedBalanceAfterSend);
     ElGamalCiphertext senderBalanceCiphertextAfterSend = ElGamalCiphertext.fromBytes(
       senderBalanceBytesAfterSend, secp256k1
     );
 
     JavaElGamalBalanceDecryptor balanceDecryptor = new JavaElGamalBalanceDecryptor(secp256k1);
-    ElGamalPrivateKey senderPrivateKeyForDecrypt = ElGamalPrivateKey.of(
-      holderElGamalKeyPair.privateKey().naturalBytes()
-    );
     long senderBalanceAfterSend = balanceDecryptor.decrypt(
-      senderBalanceCiphertextAfterSend, senderPrivateKeyForDecrypt
+      senderBalanceCiphertextAfterSend, holderElGamalKeyPair.privateKey()
     );
 
     // Expected balance: 500 (initial) - 100 (sent) = 400
@@ -1079,23 +1040,19 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .orElse(UnsignedInteger.ZERO);
 
     // Generate blinding factor for convert back
-    byte[] convertBackBlindingFactor = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    BlindingFactor convertBackBlindingFactor = BlindingFactor.generate();
 
     // Encrypt the convert back amount for holder (to be subtracted from spending balance)
     ElGamalCiphertext holderConvertBackCiphertext = encryptor.encrypt(
-      convertBackAmount, holderElGamalEcPoint, convertBackBlindingFactor
+      convertBackAmount, holderElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
-    EncryptedAmount holderConvertBackEncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(holderConvertBackCiphertext.toBytes())
-    );
+    String holderConvertBackEncryptedAmount = holderConvertBackCiphertext.hexValue();
 
     // Encrypt the convert back amount for issuer (to be subtracted from issuer mirror balance)
     ElGamalCiphertext issuerConvertBackCiphertext = encryptor.encrypt(
-      convertBackAmount, issuerElGamalEcPoint, convertBackBlindingFactor
+      convertBackAmount, issuerElGamalKeyPair.publicKey(), convertBackBlindingFactor
     );
-    EncryptedAmount issuerConvertBackEncryptedAmount = EncryptedAmount.of(
-      BaseEncoding.base16().encode(issuerConvertBackCiphertext.toBytes())
-    );
+    String issuerConvertBackEncryptedAmount = issuerConvertBackCiphertext.hexValue();
 
     // Generate context hash for ConfidentialMPTConvertBack
     byte[] convertBackContextHash = linkProofGenerator.generateConvertBackContext(
@@ -1111,7 +1068,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate Pedersen commitment for the current spending balance (400)
     // The commitment is for the CURRENT balance, not the balance after conversion
     UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(senderBalanceAfterSend);
-    byte[] convertBackPedersenRho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] convertBackPedersenRho = RandomnessUtils.generateRandomScalar(secp256k1);
     byte[] convertBackCommitmentBytes = pedersenGen.generateCommitment(currentSpendingBalance, convertBackPedersenRho);
     ECPoint convertBackCommitmentPoint = secp256k1.deserialize(convertBackCommitmentBytes);
 
@@ -1139,10 +1096,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("Pedersen Commitment (64-byte reversed): " + convertBackPedersenCommitment);
 
     // Get the current encrypted balance from the ledger for the balance linkage proof
-    EncryptedAmount currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
+    String currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance"));
     byte[] currentBalanceBytesForConvertBack = BaseEncoding.base16().decode(
-      currentEncryptedBalanceForConvertBack.value()
+      currentEncryptedBalanceForConvertBack
     );
     ElGamalCiphertext currentBalanceCiphertextForConvertBack = ElGamalCiphertext.fromBytes(
       currentBalanceBytesForConvertBack, secp256k1
@@ -1159,7 +1116,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderPrivateKey,
       convertBackPedersenRho,
       convertBackContextHash,
-      secureRandom,
       secp256k1
     );
 
@@ -1179,7 +1135,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mptAmount(MpTokenNumericAmount.of(convertBackAmount))
       .holderEncryptedAmount(holderConvertBackEncryptedAmount)
       .issuerEncryptedAmount(issuerConvertBackEncryptedAmount)
-      .blindingFactor(BlindingFactor.of(BaseEncoding.base16().encode(convertBackBlindingFactor)))
+      .blindingFactor(convertBackBlindingFactor.hexValue())
       .balanceCommitment(convertBackPedersenCommitment)
       .zkProof(BaseEncoding.base16().encode(convertBackBalanceLinkageProof))
       .build();
@@ -1225,13 +1181,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ).node();
 
     // Decrypt the remaining confidential balance
-    EncryptedAmount remainingEncryptedBalance = holder1MpTokenAfterConvertBack.confidentialBalanceSpending()
+    String remainingEncryptedBalance = holder1MpTokenAfterConvertBack.confidentialBalanceSpending()
       .orElseThrow(() -> new RuntimeException("Holder 1 has no confidential balance after convert back"));
-    byte[] remainingBalanceBytes = BaseEncoding.base16().decode(remainingEncryptedBalance.value());
+    byte[] remainingBalanceBytes = BaseEncoding.base16().decode(remainingEncryptedBalance);
     ElGamalCiphertext remainingBalanceCiphertext = ElGamalCiphertext.fromBytes(remainingBalanceBytes, secp256k1);
 
     long remainingConfidentialBalance = balanceDecryptor.decrypt(
-      remainingBalanceCiphertext, senderPrivateKeyForDecrypt
+      remainingBalanceCiphertext, holderElGamalKeyPair.privateKey()
     );
 
     // Expected remaining balance: 400 - 50 = 350
@@ -1265,9 +1221,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     ).node();
 
     // Get the issuer's encrypted balance for this holder
-    EncryptedAmount issuerEncryptedBalanceForClawback = holderMpTokenForClawback.issuerEncryptedBalance()
+    String issuerEncryptedBalanceForClawback = holderMpTokenForClawback.issuerEncryptedBalance()
       .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
-    byte[] issuerEncryptedBalanceBytes = BaseEncoding.base16().decode(issuerEncryptedBalanceForClawback.value());
+    byte[] issuerEncryptedBalanceBytes = BaseEncoding.base16().decode(issuerEncryptedBalanceForClawback);
     ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromBytes(issuerEncryptedBalanceBytes, secp256k1);
 
     System.out.println("Issuer Encrypted Balance C1: " + BaseEncoding.base16().encode(
@@ -1276,10 +1232,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       issuerBalanceCiphertext.c2().getEncoded(true)));
 
     // Verify the issuer can decrypt this balance to 350
-    ElGamalPrivateKey issuerPrivateKeyForClawback = ElGamalPrivateKey.of(
-      issuerElGamalKeyPair.privateKey().naturalBytes()
-    );
-    long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerPrivateKeyForClawback);
+    long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey());
     System.out.println("Issuer decrypted balance: " + issuerDecryptedBalance);
     assertThat(issuerDecryptedBalance).isEqualTo(clawbackAmount.longValue());
 
@@ -1398,7 +1351,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
    * @param elGamalBlindingFactor  The ElGamal randomness (r) used to create the ciphertext.
    * @param pedersenBlindingFactor The Pedersen blinding factor (rho) used to create the commitment.
    * @param contextHash            The context hash for domain separation.
-   * @param secureRandom           SecureRandom instance for nonce generation.
    * @param secp256k1              Secp256k1Operations instance.
    *
    * @return The 195-byte linkage proof.
@@ -1412,13 +1364,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     byte[] elGamalBlindingFactor,
     byte[] pedersenBlindingFactor,
     byte[] contextHash,
-    SecureRandom secureRandom,
     Secp256k1Operations secp256k1
   ) {
     // Generate random nonces for the proof
-    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKr = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKrho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKr = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKrho = RandomnessUtils.generateRandomScalar(secp256k1);
 
     return linkProofGenerator.generateProof(
       ciphertext.c1(),      // c1 = r * G
@@ -1459,7 +1410,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
    * @param privateKey             The ElGamal private key (used as "r" in the proof).
    * @param pedersenBlindingFactor The Pedersen blinding factor (rho) used to create the commitment.
    * @param contextHash            The context hash for domain separation.
-   * @param secureRandom           SecureRandom instance for nonce generation.
    * @param secp256k1              Secp256k1Operations instance.
    *
    * @return The 195-byte linkage proof.
@@ -1473,13 +1423,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     byte[] privateKey,
     byte[] pedersenBlindingFactor,
     byte[] contextHash,
-    SecureRandom secureRandom,
     Secp256k1Operations secp256k1
   ) {
     // Generate random nonces for the proof
-    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKr = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
-    byte[] nonceKrho = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] nonceKm = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKr = RandomnessUtils.generateRandomScalar(secp256k1);
+    byte[] nonceKrho = RandomnessUtils.generateRandomScalar(secp256k1);
 
     // Note: The parameters are swapped compared to Amount Linkage Proof
     // c1 = publicKey (sk * G), c2 = ciphertext.c2, pk = ciphertext.c1, r = privateKey

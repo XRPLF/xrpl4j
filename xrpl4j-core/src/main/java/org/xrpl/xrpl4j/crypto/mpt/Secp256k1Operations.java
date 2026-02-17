@@ -313,4 +313,23 @@ public class Secp256k1Operations {
     result[31] = 0x01;
     return result;
   }
+
+  /**
+   * Serializes a point to uncompressed format without the 0x04 prefix (64 bytes).
+   *
+   * <p>Returns the raw X and Y coordinates concatenated (32 bytes each).</p>
+   *
+   * @param point The point to serialize.
+   *
+   * @return The uncompressed encoding without prefix (64 bytes).
+   *
+   * @throws NullPointerException if point is null.
+   */
+  public byte[] serializeUncompressedWithoutPrefix(ECPoint point) {
+    Objects.requireNonNull(point, "point must not be null");
+    byte[] uncompressedWithPrefix = point.getEncoded(false);
+    byte[] result = new byte[64];
+    System.arraycopy(uncompressedWithPrefix, 1, result, 0, 64);
+    return result;
+  }
 }

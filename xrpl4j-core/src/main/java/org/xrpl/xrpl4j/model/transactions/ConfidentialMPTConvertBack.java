@@ -62,27 +62,27 @@ public interface ConfidentialMPTConvertBack extends Transaction {
   /**
    * Ciphertext to be subtracted from the holder's confidential spending balance (sfConfidentialBalanceSpending).
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("HolderEncryptedAmount")
-  EncryptedAmount holderEncryptedAmount();
+  String holderEncryptedAmount();
 
   /**
    * Ciphertext to be subtracted from the issuer's mirror balance.
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("IssuerEncryptedAmount")
-  EncryptedAmount issuerEncryptedAmount();
+  String issuerEncryptedAmount();
 
   /**
    * The 32-byte scalar value used to encrypt the amount. Used by validators to verify the ciphertexts match the
    * plaintext MPTAmount.
    *
-   * @return A {@link BlindingFactor} containing the hex-encoded blinding factor.
+   * @return A hex-encoded {@link String} containing the blinding factor.
    */
   @JsonProperty("BlindingFactor")
-  BlindingFactor blindingFactor();
+  String blindingFactor();
 
   /**
    * A cryptographic commitment to the user's confidential spending balance after the conversion. Used to prove the
@@ -105,9 +105,9 @@ public interface ConfidentialMPTConvertBack extends Transaction {
   /**
    * Ciphertext for the auditor. Required if {@code sfAuditorElGamalPublicKey} is present on the issuance.
    *
-   * @return An optionally-present {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("AuditorEncryptedAmount")
-  Optional<EncryptedAmount> auditorEncryptedAmount();
+  Optional<String> auditorEncryptedAmount();
 }
 

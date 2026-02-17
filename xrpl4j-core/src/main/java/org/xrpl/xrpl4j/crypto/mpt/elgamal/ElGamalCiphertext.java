@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.crypto.mpt.elgamal;
 
+import com.google.common.io.BaseEncoding;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 
@@ -61,6 +62,17 @@ public final class ElGamalCiphertext {
     System.arraycopy(c1Bytes, 0, result, 0, c1Bytes.length);
     System.arraycopy(c2Bytes, 0, result, c1Bytes.length, c2Bytes.length);
     return result;
+  }
+
+  /**
+   * Returns the ciphertext as an uppercase hex string.
+   *
+   * <p>This value can be used directly in transaction objects that require an encrypted amount.</p>
+   *
+   * @return A 132-character uppercase hex string (66 bytes * 2).
+   */
+  public String hexValue() {
+    return BaseEncoding.base16().encode(toBytes());
   }
 
   /**

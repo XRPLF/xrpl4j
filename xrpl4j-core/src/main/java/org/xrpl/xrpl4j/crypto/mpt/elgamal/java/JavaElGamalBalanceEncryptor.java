@@ -4,9 +4,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalBalanceEncryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 
 import java.math.BigInteger;
 import java.util.Objects;
@@ -47,29 +49,30 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
    *   <li>C2 = amount * G + blindingFactor * Q (where Q is the public key)</li>
    * </ul>
    *
-   * @param publicKey      The recipient's public key.
    * @param amount         The unsigned amount to encrypt.
-   * @param blindingFactor A 32-byte blinding factor (random scalar).
+   * @param publicKey      The recipient's ElGamal public key.
+   * @param blindingFactor The blinding factor (validated 32-byte scalar).
    *
    * @return The {@link ElGamalCiphertext} containing C1 and C2.
-   *
-   * @throws IllegalArgumentException if the blinding factor is invalid.
    */
   @Override
-  public ElGamalCiphertext encrypt(final UnsignedLong amount, final ECPoint publicKey, final byte[] blindingFactor) {
-    Objects.requireNonNull(publicKey, "publicKey must not be null");
+  public ElGamalCiphertext encrypt(
+    final UnsignedLong amount,
+    final ElGamalPublicKey publicKey,
+    final BlindingFactor blindingFactor
+  ) {
     Objects.requireNonNull(amount, "amount must not be null");
+    Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
-    Preconditions.checkArgument(blindingFactor.length == 32, "blindingFactor must be 32 bytes");
 
-    BigInteger k = new BigInteger(1, blindingFactor);
-    Preconditions.checkArgument(secp256k1.isValidPrivateKey(k), "blindingFactor is not a valid scalar");
+    BigInteger k = new BigInteger(1, blindingFactor.toBytes());
+    ECPoint publicKeyPoint = publicKey.asEcPoint();
 
     // C1 = k * G
     ECPoint c1 = secp256k1.multiplyG(k);
 
     // S = k * Q (shared secret)
-    ECPoint sharedSecret = secp256k1.multiply(publicKey, k);
+    ECPoint sharedSecret = secp256k1.multiply(publicKeyPoint, k);
 
     ECPoint c2;
     if (amount.equals(UnsignedLong.ZERO)) {
@@ -91,15 +94,18 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
    * <p>This produces a deterministic encryption of zero that can be used as a starting point
    * for balance tracking.</p>
    *
-   * @param publicKey     The public key to encrypt to.
+   * @param publicKey     The ElGamal public key to encrypt to.
    * @param accountId     The 20-byte account ID.
    * @param mptIssuanceId The 24-byte MPT issuance ID.
    *
    * @return An {@link ElGamalCiphertext} encrypting zero.
    */
   @Override
-  public ElGamalCiphertext generateCanonicalEncryptedZero(final ECPoint publicKey, final byte[] accountId,
-    final byte[] mptIssuanceId) {
+  public ElGamalCiphertext generateCanonicalEncryptedZero(
+    final ElGamalPublicKey publicKey,
+    final byte[] accountId,
+    final byte[] mptIssuanceId
+  ) {
     Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(accountId, "accountId must not be null");
     Objects.requireNonNull(mptIssuanceId, "mptIssuanceId must not be null");
@@ -124,7 +130,8 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
     } while (!secp256k1.isValidPrivateKey(scalar));
 
     // Encrypt amount 0 using the deterministic scalar
-    return encrypt(UnsignedLong.ZERO, publicKey, deterministicScalar);
+    BlindingFactor blindingFactor = BlindingFactor.fromBytes(deterministicScalar);
+    return encrypt(UnsignedLong.ZERO, publicKey, blindingFactor);
   }
 
   /**
@@ -133,28 +140,26 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
    * <p>This requires knowledge of the blinding factor used during encryption.</p>
    *
    * @param ciphertext     The ciphertext to verify.
-   * @param publicKey      The public key used for encryption.
+   * @param publicKey      The ElGamal public key used for encryption.
    * @param amount         The claimed unsigned amount.
    * @param blindingFactor The blinding factor used during encryption.
    *
    * @return {@code true} if the ciphertext is valid, {@code false} otherwise.
    */
   @Override
-  public boolean verifyEncryption(ElGamalCiphertext ciphertext, ECPoint publicKey, UnsignedLong amount,
-    byte[] blindingFactor) {
+  public boolean verifyEncryption(
+    ElGamalCiphertext ciphertext,
+    ElGamalPublicKey publicKey,
+    UnsignedLong amount,
+    BlindingFactor blindingFactor
+  ) {
     Objects.requireNonNull(ciphertext, "ciphertext must not be null");
     Objects.requireNonNull(publicKey, "publicKey must not be null");
     Objects.requireNonNull(amount, "amount must not be null");
     Objects.requireNonNull(blindingFactor, "blindingFactor must not be null");
 
-    if (blindingFactor.length != 32) {
-      return false;
-    }
-
-    BigInteger k = new BigInteger(1, blindingFactor);
-    if (!secp256k1.isValidPrivateKey(k)) {
-      return false;
-    }
+    BigInteger k = new BigInteger(1, blindingFactor.toBytes());
+    ECPoint publicKeyPoint = publicKey.asEcPoint();
 
     // Verify C1: k * G == C1
     ECPoint expectedC1 = secp256k1.multiplyG(k);
@@ -164,7 +169,7 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
 
     // Verify C2: amount * G + k * Q == C2
     ECPoint mG = secp256k1.multiplyG(amount.bigIntegerValue());
-    ECPoint sharedSecret = secp256k1.multiply(publicKey, k);
+    ECPoint sharedSecret = secp256k1.multiply(publicKeyPoint, k);
     ECPoint expectedC2 = secp256k1.add(mG, sharedSecret);
 
     return secp256k1.pointsEqual(ciphertext.c2(), expectedC2);

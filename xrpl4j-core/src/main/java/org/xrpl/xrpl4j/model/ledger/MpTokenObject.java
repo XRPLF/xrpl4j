@@ -8,8 +8,6 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.xrpl.xrpl4j.model.flags.MpTokenFlags;
 import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.ElGamalPublicKey;
-import org.xrpl.xrpl4j.model.transactions.EncryptedAmount;
 import org.xrpl.xrpl4j.model.transactions.Hash256;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
@@ -116,37 +114,37 @@ public interface MpTokenObject extends LedgerObject {
    * The holder's ElGamal public key for confidential transfers.
    * Present after the holder has registered via ConfidentialMPTConvert.
    *
-   * @return An optionally-present {@link ElGamalPublicKey}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("HolderElGamalPublicKey")
-  Optional<ElGamalPublicKey> holderElGamalPublicKey();
+  Optional<String> holderElGamalPublicKey();
 
   /**
    * The holder's confidential spending balance (encrypted).
    * Present after the holder has converted tokens via ConfidentialMPTConvert.
    *
-   * @return An optionally-present {@link EncryptedAmount}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("ConfidentialBalanceSpending")
-  Optional<EncryptedAmount> confidentialBalanceSpending();
+  Optional<String> confidentialBalanceSpending();
 
   /**
    * The holder's confidential inbox balance (encrypted).
    * Tokens received via ConfidentialMPTSend are credited here.
    *
-   * @return An optionally-present {@link EncryptedAmount}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("ConfidentialBalanceInbox")
-  Optional<EncryptedAmount> confidentialBalanceInbox();
+  Optional<String> confidentialBalanceInbox();
 
   /**
    * The issuer's encrypted balance for this holder's tokens.
    * Used for auditing purposes.
    *
-   * @return An optionally-present {@link EncryptedAmount}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("IssuerEncryptedBalance")
-  Optional<EncryptedAmount> issuerEncryptedBalance();
+  Optional<String> issuerEncryptedBalance();
 
   /**
    * The version number of the confidential balance.

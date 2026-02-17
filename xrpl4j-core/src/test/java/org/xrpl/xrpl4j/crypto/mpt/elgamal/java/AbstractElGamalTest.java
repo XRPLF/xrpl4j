@@ -6,6 +6,7 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 
 /**
  * Base class for ElGamal tests.
@@ -27,5 +28,9 @@ public abstract class AbstractElGamalTest {
     return BcKeyUtils.toEcPublicKeyParameters(publicKey).getQ();
   }
 
+  protected final ElGamalPublicKey toElGamalPublicKey(PublicKey publicKey) {
+    ECPoint ecPoint = BcKeyUtils.toEcPublicKeyParameters(publicKey).getQ();
+    return ElGamalPublicKey.fromEcPoint(ecPoint);
+  }
 
 }

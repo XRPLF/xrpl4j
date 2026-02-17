@@ -3,16 +3,14 @@ package org.xrpl.xrpl4j.crypto.mpt.elgamal.java;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.primitives.UnsignedLong;
-import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalBalanceEncryptor;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
 import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
-
-import java.security.SecureRandom;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 
 /**
  * Unit tests for {@link JavaElGamalBalanceOperations}.
@@ -36,16 +34,16 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   @Test
   void testHomomorphicAddition() {
-    ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
     UnsignedLong amountA = UnsignedLong.valueOf(5000);
     UnsignedLong amountB = UnsignedLong.valueOf(1234);
 
-    byte[] blindingFactorA = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    byte[] blindingFactorB = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
+    BlindingFactor blindingFactorA = BlindingFactor.generate();
+    BlindingFactor blindingFactorB = BlindingFactor.generate();
 
-    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.encrypt(amountA, publicKeyAsEcPoint, blindingFactorA);
-    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKeyAsEcPoint, blindingFactorB);
+    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.encrypt(amountA, publicKey, blindingFactorA);
+    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKey, blindingFactorB);
 
     ElGamalCiphertext sumCiphertext = elGamalBalanceOperations.add(ciphertextA, ciphertextB);
     long decryptedSum = javaElGamalBalanceDecryptor.decrypt(sumCiphertext, privateKey);
@@ -55,16 +53,16 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   @Test
   void testHomomorphicSubtraction() {
-    ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
     UnsignedLong amountA = UnsignedLong.valueOf(5000);
     UnsignedLong amountB = UnsignedLong.valueOf(1234);
 
-    byte[] blindingFactorA = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    byte[] blindingFactorB = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
+    BlindingFactor blindingFactorA = BlindingFactor.generate();
+    BlindingFactor blindingFactorB = BlindingFactor.generate();
 
-    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.encrypt(amountA, publicKeyAsEcPoint, blindingFactorA);
-    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKeyAsEcPoint, blindingFactorB);
+    ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.encrypt(amountA, publicKey, blindingFactorA);
+    ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.encrypt(amountB, publicKey, blindingFactorB);
 
     ElGamalCiphertext diffCiphertext = elGamalBalanceOperations.subtract(ciphertextA, ciphertextB);
     long decryptedDiff = javaElGamalBalanceDecryptor.decrypt(diffCiphertext, privateKey);
@@ -74,13 +72,13 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   @Test
   void testZeroEncryption() {
-    ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
+    BlindingFactor blindingFactor = BlindingFactor.generate();
     UnsignedLong originalAmount = UnsignedLong.ZERO;
 
     ElGamalCiphertext ciphertext = elGamalBalanceEncryptor.encrypt(
-      originalAmount, publicKeyAsEcPoint, blindingFactor
+      originalAmount, publicKey, blindingFactor
     );
     long decryptedAmount = javaElGamalBalanceDecryptor.decrypt(ciphertext, privateKey);
 
@@ -89,7 +87,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   @Test
   void testCanonicalEncryptedZero() {
-    ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     // Use placeholder byte arrays for IDs (20 bytes for account, 24 for issuance)
@@ -100,12 +98,12 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
     // Generate it once
     ElGamalCiphertext ciphertextA = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKeyAsEcPoint, accountId, issuanceId
+      publicKey, accountId, issuanceId
     );
 
     // Generate it a second time with the same inputs
     ElGamalCiphertext ciphertextB = elGamalBalanceEncryptor.generateCanonicalEncryptedZero(
-      publicKeyAsEcPoint, accountId, issuanceId
+      publicKey, accountId, issuanceId
     );
 
     // 1. Verify that it decrypts to zero
@@ -118,7 +116,7 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   @Test
   void testMultipleHomomorphicOperations() {
-    ECPoint publicKeyAsEcPoint = toPublicKey(keyPair.publicKey());
+    ElGamalPublicKey publicKey = toElGamalPublicKey(keyPair.publicKey());
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keyPair.privateKey().naturalBytes());
 
     // Encrypt several amounts
@@ -127,8 +125,8 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
     ElGamalCiphertext[] ciphertexts = new ElGamalCiphertext[amounts.length];
 
     for (int i = 0; i < amounts.length; i++) {
-      byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-      ciphertexts[i] = elGamalBalanceEncryptor.encrypt(amounts[i], publicKeyAsEcPoint, blindingFactor);
+      BlindingFactor blindingFactor = BlindingFactor.generate();
+      ciphertexts[i] = elGamalBalanceEncryptor.encrypt(amounts[i], publicKey, blindingFactor);
     }
 
     // Sum all ciphertexts: 100 + 200 + 300 + 50 = 650

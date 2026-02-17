@@ -1,7 +1,8 @@
 package org.xrpl.xrpl4j.crypto.mpt.elgamal;
 
 import com.google.common.primitives.UnsignedLong;
-import org.bouncycastle.math.ec.ECPoint;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 
 /**
  * Interface for encrypting and decrypting confidential balances using ElGamal encryption.
@@ -35,15 +36,14 @@ public interface ElGamalBalanceEncryptor {
    * </ul>
    *
    * @param amount         The unsigned amount to encrypt.
-   * @param publicKey      The recipient's public key.
-   * @param blindingFactor A 32-byte random blinding factor.
+   * @param publicKey      The recipient's ElGamal public key.
+   * @param blindingFactor The blinding factor (validated 32-byte scalar).
    *
    * @return The {@link ElGamalCiphertext} containing C1 and C2.
    *
-   * @throws IllegalArgumentException if the blinding factor is invalid.
+   * @throws NullPointerException if any parameter is null.
    */
-  // TODO: Consider a PublicKey instead of an ECPoint? Depends on the JNI impl.
-  ElGamalCiphertext encrypt(UnsignedLong amount, ECPoint publicKey, byte[] blindingFactor);
+  ElGamalCiphertext encrypt(UnsignedLong amount, ElGamalPublicKey publicKey, BlindingFactor blindingFactor);
 
   /**
    * Generates a canonical encrypted zero for a given account and MPT issuance.
@@ -51,13 +51,16 @@ public interface ElGamalBalanceEncryptor {
    * <p>This produces a deterministic encryption of zero that can be used for inbox reset
    * after a merge operation. The deterministic nature ensures all validators compute the same ciphertext.</p>
    *
-   * @param publicKey     The public key to encrypt to.
+   * @param publicKey     The ElGamal public key to encrypt to.
    * @param accountId     The 20-byte account ID.
    * @param mptIssuanceId The 24-byte MPT issuance ID.
    *
    * @return An {@link ElGamalCiphertext} encrypting zero.
+   *
+   * @throws NullPointerException     if any parameter is null.
+   * @throws IllegalArgumentException if accountId or mptIssuanceId have incorrect lengths.
    */
-  ElGamalCiphertext generateCanonicalEncryptedZero(ECPoint publicKey, byte[] accountId, byte[] mptIssuanceId);
+  ElGamalCiphertext generateCanonicalEncryptedZero(ElGamalPublicKey publicKey, byte[] accountId, byte[] mptIssuanceId);
 
   /**
    * Verifies that a ciphertext is a valid encryption of the given amount.
@@ -65,11 +68,18 @@ public interface ElGamalBalanceEncryptor {
    * <p>This requires knowledge of the blinding factor used during encryption.</p>
    *
    * @param ciphertext     The ciphertext to verify.
-   * @param publicKey      The public key used for encryption.
+   * @param publicKey      The ElGamal public key used for encryption.
    * @param amount         The claimed unsigned amount.
    * @param blindingFactor The blinding factor used during encryption.
    *
    * @return {@code true} if the ciphertext is valid, {@code false} otherwise.
+   *
+   * @throws NullPointerException if any parameter is null.
    */
-  boolean verifyEncryption(ElGamalCiphertext ciphertext, ECPoint publicKey, UnsignedLong amount, byte[] blindingFactor);
+  boolean verifyEncryption(
+    ElGamalCiphertext ciphertext,
+    ElGamalPublicKey publicKey,
+    UnsignedLong amount,
+    BlindingFactor blindingFactor
+  );
 }

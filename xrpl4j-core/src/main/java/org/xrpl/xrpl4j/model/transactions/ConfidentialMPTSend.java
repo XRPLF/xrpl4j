@@ -61,26 +61,26 @@ public interface ConfidentialMPTSend extends Transaction {
   /**
    * Ciphertext used to homomorphically debit the sender's spending balance.
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("SenderEncryptedAmount")
-  EncryptedAmount senderEncryptedAmount();
+  String senderEncryptedAmount();
 
   /**
    * Ciphertext credited to the receiver's inbox balance.
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("DestinationEncryptedAmount")
-  EncryptedAmount destinationEncryptedAmount();
+  String destinationEncryptedAmount();
 
   /**
    * Ciphertext used to update the issuer mirror balance.
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("IssuerEncryptedAmount")
-  EncryptedAmount issuerEncryptedAmount();
+  String issuerEncryptedAmount();
 
   /**
    * ZKP bundle establishing equality, linkage, and range sufficiency.
@@ -111,9 +111,9 @@ public interface ConfidentialMPTSend extends Transaction {
   /**
    * Ciphertext for the auditor. Required if {@code sfAuditorElGamalPublicKey} is present on the issuance.
    *
-   * @return An optionally-present {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("AuditorEncryptedAmount")
-  Optional<EncryptedAmount> auditorEncryptedAmount();
+  Optional<String> auditorEncryptedAmount();
 }
 

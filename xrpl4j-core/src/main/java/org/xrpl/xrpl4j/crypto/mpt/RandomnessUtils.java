@@ -1,5 +1,6 @@
 package org.xrpl.xrpl4j.crypto.mpt;
 
+import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 
 import java.security.SecureRandom;
@@ -13,10 +14,27 @@ import java.security.SecureRandom;
 public class RandomnessUtils {
 
   /**
-   * Generates a cryptographically secure random 32-byte scalar.
+   * Generates a cryptographically secure random 32-byte scalar using {@link SecureRandomUtils}.
+   *
+   * @param secp256k1 The secp256k1 operations instance for scalar validation.
    *
    * @return A valid random scalar.
    */
+  public static byte[] generateRandomScalar(final Secp256k1Operations secp256k1) {
+    return generateRandomScalar(SecureRandomUtils.secureRandom(), secp256k1);
+  }
+
+  /**
+   * Generates a cryptographically secure random 32-byte scalar.
+   *
+   * @param secureRandom The SecureRandom instance to use.
+   * @param secp256k1    The secp256k1 operations instance for scalar validation.
+   *
+   * @return A valid random scalar.
+   *
+   * @deprecated Use {@link #generateRandomScalar(Secp256k1Operations)} instead.
+   */
+  @Deprecated
   public static byte[] generateRandomScalar(
     final SecureRandom secureRandom,
     final Secp256k1Operations secp256k1

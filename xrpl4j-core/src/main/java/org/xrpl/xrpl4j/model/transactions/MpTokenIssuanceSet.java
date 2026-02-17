@@ -60,10 +60,10 @@ public interface MpTokenIssuanceSet extends Transaction {
    * <p>This key is used to encrypt confidential amounts that the issuer can decrypt to monitor
    * the total supply of confidential tokens.</p>
    *
-   * @return An optionally-present {@link ElGamalPublicKey}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("IssuerElGamalPublicKey")
-  Optional<ElGamalPublicKey> issuerElGamalPublicKey();
+  Optional<String> issuerElGamalPublicKey();
 
   /**
    * The 33-byte EC-ElGamal public key used for regulatory oversight (if applicable).
@@ -71,9 +71,9 @@ public interface MpTokenIssuanceSet extends Transaction {
    * <p>This key is used to encrypt confidential amounts that an auditor can decrypt for
    * compliance and regulatory purposes.</p>
    *
-   * @return An optionally-present {@link ElGamalPublicKey}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("AuditorElGamalPublicKey")
-  Optional<ElGamalPublicKey> auditorElGamalPublicKey();
+  Optional<String> auditorElGamalPublicKey();
 
 }

@@ -68,43 +68,43 @@ public interface ConfidentialMPTConvert extends Transaction {
    *
    * <p>This is a 64-byte hex-encoded string representing the ElGamal public key.</p>
    *
-   * @return An optionally-present {@link ElGamalPublicKey}.
+   * @return An optionally-present hex-encoded {@link String}.
    */
   @JsonProperty("HolderElGamalPublicKey")
-  Optional<ElGamalPublicKey> holderElGamalPublicKey();
+  Optional<String> holderElGamalPublicKey();
 
   /**
    * ElGamal ciphertext credited to the holder's confidential inbox balance (CB_IN).
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("HolderEncryptedAmount")
-  EncryptedAmount holderEncryptedAmount();
+  String holderEncryptedAmount();
 
   /**
    * ElGamal ciphertext credited to the issuer's mirror balance.
    *
-   * @return An {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return A hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("IssuerEncryptedAmount")
-  EncryptedAmount issuerEncryptedAmount();
+  String issuerEncryptedAmount();
 
   /**
    * ElGamal ciphertext for the auditor. Required if {@code sfAuditorElGamalPublicKey} is present on the issuance.
    *
-   * @return An optionally-present {@link EncryptedAmount} containing the hex-encoded ciphertext.
+   * @return An optionally-present hex-encoded {@link String} containing the ciphertext.
    */
   @JsonProperty("AuditorEncryptedAmount")
-  Optional<EncryptedAmount> auditorEncryptedAmount();
+  Optional<String> auditorEncryptedAmount();
 
   /**
    * The 32-byte scalar value used to encrypt the amount. Used by validators to verify the ciphertexts match the
    * plaintext MPTAmount.
    *
-   * @return A {@link BlindingFactor} containing the hex-encoded blinding factor.
+   * @return A hex-encoded {@link String} containing the blinding factor.
    */
   @JsonProperty("BlindingFactor")
-  BlindingFactor blindingFactor();
+  String blindingFactor();
 
   /**
    * A Schnorr Proof of Knowledge (PoK): proves the knowledge of the private key for the provided ElGamal Public Key.

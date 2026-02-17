@@ -11,9 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
-import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKey;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -22,7 +27,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  */
 class JavaSecretKeyProofGeneratorTest {
 
-  private SecretKeyProofGenerator proofGenerator;
+  private SecretKeyProofGenerator<ElGamalPrivateKey> proofGenerator;
 
   @BeforeEach
   void setUp() {
@@ -50,9 +55,10 @@ class JavaSecretKeyProofGeneratorTest {
     Seed seed = Seed.secp256k1SeedFromPassphrase(Passphrase.of("test_elgamal_key"));
     KeyPair keypair = seed.deriveKeyPair();
 
-    byte[] privateKey = keypair.privateKey().naturalBytes().toByteArray();
+    ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(keypair.privateKey().naturalBytes());
     // Public key is derived from private key inside generateProof, but we still need it for verification
-    ECPoint publicKey = BcKeyUtils.toEcPublicKeyParameters(keypair.publicKey()).getQ();
+    ECPoint publicKeyPoint = BcKeyUtils.toEcPublicKeyParameters(keypair.publicKey()).getQ();
+    ElGamalPublicKey publicKey = ElGamalPublicKey.fromEcPoint(publicKeyPoint);
 
     // 2. Fixed test values
     Address account = Address.of("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
@@ -61,16 +67,19 @@ class JavaSecretKeyProofGeneratorTest {
     UnsignedLong amount = UnsignedLong.valueOf(500);
 
     // 3. Hardcoded nonce (k): 0x01, 0x02, 0x03, ... 0x20 (32 bytes)
-    byte[] nonce = new byte[32];
+    byte[] nonceBytes = new byte[32];
     for (int i = 0; i < 32; i++) {
-      nonce[i] = (byte) (i + 1);
+      nonceBytes[i] = (byte) (i + 1);
     }
+    BlindingFactor nonce = BlindingFactor.fromBytes(nonceBytes);
 
-    // 4. Generate context hash
-    byte[] contextId = proofGenerator.generateConvertContext(account, sequence, issuanceId, amount);
+    // 4. Generate context hash using ConfidentialMPTConvertContext
+    ConfidentialMPTConvertContext context = ConfidentialMPTConvertContext.generate(
+      account, sequence, issuanceId, amount
+    );
 
     // 5. Generate proof with deterministic nonce (public key derived internally)
-    byte[] proof = proofGenerator.generateProof(privateKey, contextId, nonce);
+    SecretKeyProof proof = proofGenerator.generateProof(privateKey, context, nonce);
 
     // 6. Print all values for C comparison
     System.out.println("\n========== SECRET KEY PROOF DETERMINISTIC TEST VALUES ==========");
@@ -78,11 +87,11 @@ class JavaSecretKeyProofGeneratorTest {
     System.out.println();
 
     System.out.println("=== Private Key (32 bytes) ===");
-    System.out.println("Hex: " + BaseEncoding.base16().encode(privateKey));
+    System.out.println("Hex: " + BaseEncoding.base16().encode(privateKey.naturalBytes().toByteArray()));
     System.out.println();
 
     System.out.println("=== Public Key ===");
-    byte[] pkCompressed = Secp256k1Operations.serializeCompressed(publicKey);
+    byte[] pkCompressed = Secp256k1Operations.serializeCompressed(publicKeyPoint);
     System.out.println("Compressed (33 bytes): " + BaseEncoding.base16().encode(pkCompressed));
 
     // Uncompressed format (64 bytes, X || Y without 04 prefix)
@@ -95,7 +104,7 @@ class JavaSecretKeyProofGeneratorTest {
     System.out.println();
 
     System.out.println("=== Nonce k (32 bytes) ===");
-    System.out.println("Hex: " + BaseEncoding.base16().encode(nonce));
+    System.out.println("Hex: " + nonce.hexValue());
     System.out.println();
 
     System.out.println("=== Context Generation Inputs ===");
@@ -107,23 +116,24 @@ class JavaSecretKeyProofGeneratorTest {
     System.out.println();
 
     System.out.println("=== Context Hash (SHA512Half) ===");
-    System.out.println("Context ID (32 bytes): " + BaseEncoding.base16().encode(contextId));
+    System.out.println("Context ID (32 bytes): " + context.hexValue());
     System.out.println();
 
     System.out.println("=== Proof (65 bytes) ===");
+    byte[] proofBytes = proof.toBytes();
     byte[] T = new byte[33];
     byte[] s = new byte[32];
-    System.arraycopy(proof, 0, T, 0, 33);
-    System.arraycopy(proof, 33, s, 0, 32);
+    System.arraycopy(proofBytes, 0, T, 0, 33);
+    System.arraycopy(proofBytes, 33, s, 0, 32);
     System.out.println("T (33 bytes): " + BaseEncoding.base16().encode(T));
     System.out.println("s (32 bytes): " + BaseEncoding.base16().encode(s));
-    System.out.println("Full proof:   " + BaseEncoding.base16().encode(proof));
+    System.out.println("Full proof:   " + proof.hexValue());
     System.out.println("================================================================\n");
 
     // 7. Assertions
-    assertThat(contextId).hasSize(32);
-    assertThat(proof).hasSize(65);
-    assertThat(proofGenerator.verifyProof(proof, publicKey, contextId)).isTrue();
+    assertThat(context.toBytes()).hasSize(32);
+    assertThat(proof.toBytes()).hasSize(65);
+    assertThat(proofGenerator.verifyProof(proof, publicKey, context)).isTrue();
   }
 }
 

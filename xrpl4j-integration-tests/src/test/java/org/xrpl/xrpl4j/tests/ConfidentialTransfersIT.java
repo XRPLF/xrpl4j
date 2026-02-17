@@ -35,7 +35,9 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaElGamalPedersenLinkProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaEqualityPlaintextProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
@@ -156,7 +158,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Generate Issuer ElGamal key pair and submit MpTokenIssuanceSet to register it
     ElGamalKeyPair issuerElGamalKeyPair = ElGamalKeyPair.generate();
-    String issuerElGamalPublicKey = issuerElGamalKeyPair.publicKey().toReversedHex64();  // 64 bytes, reversed for C compatibility
+    String issuerElGamalPublicKey = issuerElGamalKeyPair.publicKey()
+      .toReversedHex64();  // 64 bytes, reversed for C compatibility
 
     // Get updated issuer account info for the next transaction
     AccountInfoResult issuerAccountInfoForSet = this.scanForResult(
@@ -285,7 +288,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Generate Holder ElGamal key pair
     ElGamalKeyPair holderElGamalKeyPair = ElGamalKeyPair.generate();
-    String holderElGamalPublicKey = holderElGamalKeyPair.publicKey().toReversedHex64();  // 64 bytes, reversed for C compatibility
+    String holderElGamalPublicKey = holderElGamalKeyPair.publicKey()
+      .toReversedHex64();  // 64 bytes, reversed for C compatibility
 
     //////////////////////
     // Prepare encryption utilities
@@ -347,14 +351,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Generate ZKProof (Schnorr Proof of Knowledge) with context hash
-    byte[] holderPrivateKeyBytes = holderElGamalKeyPair.privateKey().naturalBytes().toByteArray();
 
-    // Create proof generator and generate context hash
+    // Create proof generator
     JavaSecretKeyProofGenerator proofGenerator = new JavaSecretKeyProofGenerator();
 
     // Generate context hash for ConfidentialMPTConvert transaction
     // Context = SHA512Half(txType || account || sequence || issuanceId || amount)
-    byte[] contextId = proofGenerator.generateConvertContext(
+    ConfidentialMPTConvertContext context = ConfidentialMPTConvertContext.generate(
       holderKeyPair.publicKey().deriveAddress(),  // account
       holderAccountInfoForConvert.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuanceId
@@ -362,11 +365,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Generate proof with context (nonce = null for random)
-    byte[] zkProofBytes = proofGenerator.generateProof(holderPrivateKeyBytes, contextId, null);
-    String zkProof = BaseEncoding.base16().encode(zkProofBytes);
+    SecretKeyProof zkProof = proofGenerator.generateProof(holderElGamalKeyPair.privateKey(), context, null);
+    String zkProofHex = zkProof.hexValue();
 
     // Verify the proof locally before submitting
-    boolean localVerify = proofGenerator.verifyProof(zkProofBytes, holderElGamalEcPoint, contextId);
+    boolean localVerify = proofGenerator.verifyProof(zkProof, holderElGamalKeyPair.publicKey(), context);
     assertThat(localVerify).isTrue();
 
     //////////////////////
@@ -385,7 +388,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderEncryptedAmount(holderEncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmount)
       .blindingFactor(blindingFactor.hexValue())
-      .zkProof(zkProof)
+      .zkProof(zkProofHex)
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvert> signedConfidentialConvert = signatureService.sign(
@@ -518,21 +521,21 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Generate ZKProof for Holder 2
-    byte[] holder2PrivateKeyBytes = holder2ElGamalKeyPair.privateKey().naturalBytes().toByteArray();
 
-    byte[] holder2ContextId = proofGenerator.generateConvertContext(
+    ConfidentialMPTConvertContext holder2Context = ConfidentialMPTConvertContext.generate(
       holder2KeyPair.publicKey().deriveAddress(),
       holder2AccountInfoForConvert.accountData().sequence(),
       mpTokenIssuanceId,
       holder2AmountToConvert
     );
 
-    byte[] holder2ZkProofBytes = proofGenerator.generateProof(holder2PrivateKeyBytes, holder2ContextId, null);
-    String holder2ZkProof = BaseEncoding.base16().encode(holder2ZkProofBytes);
+    SecretKeyProof holder2ZkProof = proofGenerator.generateProof(holder2ElGamalKeyPair.privateKey(), holder2Context,
+      null);
+    String holder2ZkProofHex = holder2ZkProof.hexValue();
 
     // Verify the proof locally
-    boolean holder2LocalVerify = proofGenerator.verifyProof(holder2ZkProofBytes, holder2ElGamalEcPoint,
-      holder2ContextId);
+    boolean holder2LocalVerify = proofGenerator.verifyProof(holder2ZkProof, holder2ElGamalKeyPair.publicKey(),
+      holder2Context);
     assertThat(holder2LocalVerify).isTrue();
 
     //////////////////////
@@ -551,7 +554,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderEncryptedAmount(holder2EncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmountForHolder2)
       .blindingFactor(holder2BlindingFactor.hexValue())
-      .zkProof(holder2ZkProof)
+      .zkProof(holder2ZkProofHex)
       .build();
 
     SingleSignedTransaction<ConfidentialMPTConvert> signedHolder2ConfidentialConvert = signatureService.sign(
@@ -678,7 +681,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       sendAmount,
       Arrays.asList(senderCiphertext, destinationCiphertext, issuerCiphertextForSend),
       Arrays.asList(holderElGamalEcPoint, holder2ElGamalEcPoint, issuerElGamalEcPoint),
-      Arrays.asList(sendBlindingFactorSender.toBytes(), sendBlindingFactorHolder2.toBytes(), sendBlindingFactorIssuer.toBytes()),
+      Arrays.asList(sendBlindingFactorSender.toBytes(), sendBlindingFactorHolder2.toBytes(),
+        sendBlindingFactorIssuer.toBytes()),
       sendContextHash,
       nonceKm,
       Arrays.asList(nonceKrSender, nonceKrDest, nonceKrIssuer)

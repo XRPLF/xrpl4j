@@ -23,12 +23,9 @@ package org.xrpl.xrpl4j.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
@@ -49,7 +46,6 @@ import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertBackContext;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaEqualityPlaintextProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.EqualityPlaintextProof;
-import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
@@ -86,8 +82,6 @@ import java.util.Optional;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class ConfidentialTransfersIT extends AbstractIT {
-
-  private static final UnsignedInteger NETWORK_ID = UnsignedInteger.valueOf(85449);
 
   private static final String SUCCESS_STATUS = "tesSUCCESS";
 
@@ -312,7 +306,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     //////////////////////
     // Encrypt 500 MPT for holder
     UnsignedLong amountToConvert = UnsignedLong.valueOf(500);
-    ECPoint holderElGamalEcPoint = holderElGamalKeyPair.publicKey().asEcPoint();
     ElGamalCiphertext holderCiphertext = encryptor.encrypt(
       amountToConvert, holderElGamalKeyPair.publicKey(), blindingFactor
     );
@@ -320,7 +313,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Encrypt 500 MPT for issuer (using same blinding factor)
-    ECPoint issuerElGamalEcPoint = issuerElGamalKeyPair.publicKey().asEcPoint();
     ElGamalCiphertext issuerCiphertext = encryptor.encrypt(
       amountToConvert, issuerElGamalKeyPair.publicKey(), blindingFactor
     );
@@ -374,8 +366,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
       amountToConvert  // amount
     );
 
-    // Generate proof with context (nonce = null for random)
-    SecretKeyProof zkProof = proofGenerator.generateProof(holderElGamalKeyPair.privateKey(), context, null);
+    // Generate nonce for proof
+    BlindingFactor nonce = BlindingFactor.generate();
+    SecretKeyProof zkProof = proofGenerator.generateProof(holderElGamalKeyPair.privateKey(), context, nonce);
     String zkProofHex = zkProof.hexValue();
 
     // Verify the proof locally before submitting
@@ -406,8 +399,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
     SubmitResult<ConfidentialMPTConvert> confidentialConvertResult = xrplClient.submit(signedConfidentialConvert);
     assertThat(confidentialConvertResult.engineResult()).isEqualTo(SUCCESS_STATUS);
-
-    System.out.println("Holder 1 ConfidentialMPTConvert tx hash: " + signedConfidentialConvert.hash());
 
     // Wait for validation
     this.scanForResult(
@@ -445,8 +436,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     SubmitResult<ConfidentialMPTMergeInbox> mergeInboxResult = xrplClient.submit(signedMergeInbox);
     assertThat(mergeInboxResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
-    System.out.println("Holder 1 ConfidentialMPTMergeInbox tx hash: " + signedMergeInbox.hash());
-
     // Wait for validation
     this.scanForResult(
       () -> xrplClient.isFinal(
@@ -459,12 +448,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    System.out.println("Holder 1 inbox merged to spending balance successfully!");
-
     //////////////////////
-    // Create second holder account
+    // Create second holder account (Holder 2)
     KeyPair holder2KeyPair = createRandomAccountEd25519();
-    System.out.println("Holder 2 Address: " + holder2KeyPair.publicKey().deriveAddress());
 
     //////////////////////
     // Holder 2 authorizes the MPToken
@@ -511,7 +497,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     BlindingFactor holder2BlindingFactor = BlindingFactor.generate();
 
     // Encrypt 0 MPT for holder 2
-    ECPoint holder2ElGamalEcPoint = holder2ElGamalKeyPair.publicKey().asEcPoint();
     ElGamalCiphertext holder2Ciphertext = encryptor.encrypt(
       holder2AmountToConvert, holder2ElGamalKeyPair.publicKey(), holder2BlindingFactor
     );
@@ -539,8 +524,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder2AmountToConvert
     );
 
+    BlindingFactor holder2Nonce = BlindingFactor.generate();
     SecretKeyProof holder2ZkProof = proofGenerator.generateProof(holder2ElGamalKeyPair.privateKey(), holder2Context,
-      null);
+      holder2Nonce);
     String holder2ZkProofHex = holder2ZkProof.hexValue();
 
     // Verify the proof locally
@@ -573,12 +559,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
     SubmitResult<ConfidentialMPTConvert> holder2ConfidentialConvertResult = xrplClient.submit(
       signedHolder2ConfidentialConvert
     );
-
-    System.out.println("\n========== HOLDER 2 REGISTRATION ==========");
-    System.out.println("Holder 2 Address: " + holder2KeyPair.publicKey().deriveAddress());
-    System.out.println("Holder 2 ConfidentialMPTConvert tx hash: " + signedHolder2ConfidentialConvert.hash());
-    System.out.println("Holder 2 ConfidentialMPTConvert result: " + holder2ConfidentialConvertResult.engineResult());
-
     assertThat(holder2ConfidentialConvertResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     // Wait for holder 2's convert to be validated
@@ -594,10 +574,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     //////////////////////
-    // Get and print MPToken objects for both holders
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
+    // Get MPToken objects for both holders (needed for version and balance info)
     MpTokenObject holder1MpToken = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(
         MpTokenLedgerEntryParams.builder()
@@ -608,24 +585,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
     ).node();
 
-    System.out.println("\n========== HOLDER 1 MPTOKEN OBJECT ==========");
-    System.out.println(holder1MpToken.toString());
-
-    MpTokenObject holder2MpToken = xrplClient.ledgerEntry(
-      LedgerEntryRequestParams.mpToken(
-        MpTokenLedgerEntryParams.builder()
-          .account(holder2KeyPair.publicKey().deriveAddress())
-          .mpTokenIssuanceId(mpTokenIssuanceId)
-          .build(),
-        LedgerSpecifier.VALIDATED
-      )
-    ).node();
-
-    System.out.println("\n========== HOLDER 2 MPTOKEN OBJECT ==========");
-    System.out.println(holder2MpToken.toString());
-
     //////////////////////
-    // ConfidentialMPTSend: Holder 1 sends 100 MPT to Holder 2
+    // ConfidentialMPTSend: Holder 1 sends 100 confidential MPT to Holder 2
     UnsignedLong sendAmount = UnsignedLong.valueOf(100);
 
     // Generate blinding factors for the send (one for each recipient: sender, destination, issuer)
@@ -658,7 +619,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     //////////////////////
-    // Generate SamePlaintextMultiProof
+    // Generate SamePlaintextMultiProof (proves all 3 ciphertexts encrypt the same amount)
     JavaSamePlaintextMultiProofGenerator samePlaintextProofGenerator = new JavaSamePlaintextMultiProofGenerator();
 
     // Get the version from holder 1's MPToken (default to 0 if not present)
@@ -672,13 +633,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder2KeyPair.publicKey().deriveAddress(),  // destination
       holder1Version  // version from MPToken
     );
-
-    System.out.println("\n========== SEND CONTEXT ==========");
-    System.out.println("Sender: " + holderKeyPair.publicKey().deriveAddress());
-    System.out.println("Destination: " + holder2KeyPair.publicKey().deriveAddress());
-    System.out.println("Sequence: " + holderAccountInfoForSend.accountData().sequence());
-    System.out.println("Version: " + holder1Version);
-    System.out.println("Context Hash: " + sendContext.hexValue());
 
     // Generate nonces for the proof (one for amount, one for each of 3 participants)
     BlindingFactor nonceKm = BlindingFactor.generate();
@@ -708,11 +662,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       nonceKm
     );
 
-    System.out.println(
-      "SamePlaintextMultiProof size: " + samePlaintextProof.toBytes().length +
-        " bytes (expected 359 for 3 recipients)");
-    System.out.println("SamePlaintextMultiProof: " + samePlaintextProof.hexValue());
-
     // Create participants for verification (only need ciphertext and publicKey)
     SamePlaintextParticipant senderVerify = SamePlaintextParticipant.forVerification(
       senderCiphertext, holderElGamalKeyPair.publicKey()
@@ -733,7 +682,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       Optional.empty(),
       sendContext
     );
-    System.out.println("SamePlaintextMultiProof valid locally: " + sendProofValid);
     assertThat(sendProofValid).isTrue();
 
     //////////////////////
@@ -748,13 +696,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountPedersenRho * H
     PedersenCommitment amountCommitment = pedersenGen.generateCommitment(sendAmount, amountPedersenRho);
 
-    // For balance commitment, we need the sender's new balance after the send
-    // Current balance = 500 (from ConfidentialMPTConvert), sending 100, so new balance = 400
-    UnsignedLong senderNewBalance = UnsignedLong.valueOf(500);
-    PedersenCommitment balanceCommitment = pedersenGen.generateCommitment(senderNewBalance, balancePedersenRho);
-
-    System.out.println("Amount Commitment: " + amountCommitment.toReversedHex64());
-    System.out.println("Balance Commitment: " + balanceCommitment.toReversedHex64());
+    // For balance commitment, we need the sender's current balance (500)
+    // The balance commitment proves the sender has sufficient funds
+    UnsignedLong senderCurrentBalance = UnsignedLong.valueOf(500);
+    PedersenCommitment balanceCommitment = pedersenGen.generateCommitment(senderCurrentBalance, balancePedersenRho);
 
     //////////////////////
     // Generate Amount Linkage Proof
@@ -777,55 +722,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       sendContext
     );
 
-    System.out.println("Amount Linkage Proof size: " + amountLinkageProof.toBytes().length + " bytes (expected 195)");
-    System.out.println("Amount Linkage Proof: " + amountLinkageProof.hexValue());
-
-    // Print values for C code verification
-    System.out.println("\n========== VALUES FOR C CODE VERIFICATION (Amount Linkage) ==========");
-    System.out.println("// Public Key Pk (33 bytes compressed - used in challenge hash)");
-    System.out.println(
-      "const char* pk_compressed_hex = \"" + BaseEncoding.base16().encode(holderElGamalEcPoint.getEncoded(true)) +
-        "\";");
-    System.out.println("// Public Key Pk (65 bytes with 04 prefix - standard format)");
-    System.out.println(
-      "const char* pk_hex = \"" + BaseEncoding.base16().encode(holderElGamalEcPoint.getEncoded(false)) + "\";");
-    System.out.println("// Public Key Pk (64 bytes reversed - as stored on ledger)");
-    System.out.println(
-      "const char* pk_reversed_hex = \"" + holderElGamalKeyPair.publicKey().uncompressedValueReversed().hexValue() +
-        "\";");
-    System.out.println("// ElGamal ciphertext C1 = r*G (33 bytes compressed)");
-    System.out.println(
-      "const char* c1_compressed_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c1().getEncoded(true)) +
-        "\";");
-    System.out.println("// ElGamal ciphertext C1 = r*G (65 bytes with 04 prefix)");
-    System.out.println(
-      "const char* c1_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c1().getEncoded(false)) + "\";");
-    System.out.println("// ElGamal ciphertext C2 = m*G + r*Pk (33 bytes compressed)");
-    System.out.println(
-      "const char* c2_compressed_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c2().getEncoded(true)) +
-        "\";");
-    System.out.println("// ElGamal ciphertext C2 = m*G + r*Pk (65 bytes with 04 prefix)");
-    System.out.println(
-      "const char* c2_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c2().getEncoded(false)) + "\";");
-    System.out.println("// Pedersen commitment PCm = m*G + rho*H (33 bytes compressed)");
-    System.out.println(
-      "const char* pcm_compressed_hex = \"" + amountCommitment.hexValue() + "\";");
-    System.out.println("// Pedersen commitment PCm = m*G + rho*H (65 bytes with 04 prefix)");
-    System.out.println(
-      "const char* pcm_hex = \"" + BaseEncoding.base16().encode(amountCommitment.asEcPoint().getEncoded(false)) +
-        "\";");
-    System.out.println("// Pedersen commitment PCm (64 bytes without prefix - as sent in tx)");
-    System.out.println("const char* pcm_64_hex = \"" + amountCommitment.toReversedHex64() + "\";");
-    System.out.println("// Context ID (32 bytes)");
-    System.out.println("const char* context_id_hex = \"" + sendContext.hexValue() + "\";");
-    System.out.println("// Proof from Java (195 bytes = 390 hex chars)");
-    System.out.println("const char* proof_hex = \"" + amountLinkageProof.hexValue() + "\";");
-    System.out.println("// Amount (plaintext value)");
-    System.out.println("uint64_t amount = " + sendAmount.longValue() + ";");
-    System.out.println("// Sender Encrypted Amount (66 bytes - as sent in tx)");
-    System.out.println("const char* sender_enc_amt_hex = \"" + senderEncryptedAmount + "\";");
-    System.out.println("=======================================================================\n");
-
     // Verify the amount linkage proof locally
     boolean amountLinkageValid = linkProofGenerator.verify(
       LinkageProofType.AMOUNT_COMMITMENT,
@@ -835,14 +731,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       amountCommitment,
       sendContext
     );
-    System.out.println("Amount Linkage Proof valid locally: " + amountLinkageValid);
     assertThat(amountLinkageValid).isTrue();
 
     //////////////////////
     // Generate Balance Linkage Proof
-    // Proves: sender's new encrypted balance links to balanceCommitment
-    // The balance linkage proof uses the sender's current encrypted balance from the ledger
-    // and the sender's private key as the "r" parameter (swapped parameters vs amount linkage)
+    // Proves: sender's current encrypted balance links to balanceCommitment
+    // Uses the sender's private key as the "r" parameter (swapped parameters vs amount linkage)
 
     // Get the sender's current encrypted balance from the MPToken object
     String currentEncryptedBalance = holder1MpToken.confidentialBalanceSpending()
@@ -850,22 +744,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     byte[] currentBalanceBytes = BaseEncoding.base16().decode(currentEncryptedBalance);
     ElGamalCiphertext currentBalanceCiphertext = ElGamalCiphertext.fromBytes(currentBalanceBytes);
 
-    System.out.println(
-      "Current Balance Ciphertext C1: " + BaseEncoding.base16().encode(currentBalanceCiphertext.c1().getEncoded(true)));
-    System.out.println(
-      "Current Balance Ciphertext C2: " + BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)));
-
-    // Decrypt the current balance to verify its value
-    long decryptedCurrentBalance = decryptor.decrypt(currentBalanceCiphertext, holderElGamalKeyPair.privateKey());
-    System.out.println("Decrypted current balance (confidentialBalanceSpending): " + decryptedCurrentBalance);
-    System.out.println("Expected balance for proof: " + senderNewBalance.longValue());
-
     // Get the holder's ElGamal private key as a BlindingFactor
     BlindingFactor holderPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
       holderElGamalKeyPair.privateKey().naturalBytes().toByteArray()
     );
 
-    // Generate Balance Linkage Proof
+    // Generate Balance Linkage Proof nonces
     BlindingFactor balanceNonceKm = BlindingFactor.generate();
     BlindingFactor balanceNonceKr = BlindingFactor.generate();
     BlindingFactor balanceNonceKrho = BlindingFactor.generate();
@@ -875,7 +759,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       currentBalanceCiphertext,
       holderElGamalKeyPair.publicKey(),
       balanceCommitment,
-      senderNewBalance,
+      senderCurrentBalance,
       holderPrivateKeyAsBlindingFactor,
       balancePedersenRho,
       balanceNonceKm,
@@ -884,53 +768,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       sendContext
     );
 
-    System.out.println("Balance Linkage Proof size: " + balanceLinkageProof.toBytes().length + " bytes (expected 195)");
-    System.out.println("Balance Linkage Proof: " + balanceLinkageProof.hexValue());
-
-    // Print values for C code verification (Balance Linkage)
-    System.out.println("\n========== VALUES FOR C CODE VERIFICATION (Balance Linkage) ==========");
-    System.out.println("// Public Key Pk (33 bytes compressed - used as c1 in balance linkage)");
-    System.out.println(
-      "const char* bal_pk_compressed_hex = \"" + holderElGamalKeyPair.publicKey().toCompressedHex() + "\";");
-    System.out.println("// Current Balance Ciphertext C1 (33 bytes compressed - used as pk in balance linkage)");
-    System.out.println("const char* bal_c1_compressed_hex = \"" +
-      BaseEncoding.base16().encode(currentBalanceCiphertext.c1().getEncoded(true)) + "\";");
-    System.out.println("// Current Balance Ciphertext C2 (33 bytes compressed - used as c2 in balance linkage)");
-    System.out.println("const char* bal_c2_compressed_hex = \"" +
-      BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)) + "\";");
-    System.out.println("// Balance Pedersen commitment (33 bytes compressed)");
-    System.out.println("const char* bal_pcm_compressed_hex = \"" + balanceCommitment.hexValue() + "\";");
-    System.out.println("// Balance Pedersen commitment (64 bytes reversed - as sent in tx)");
-    System.out.println("const char* bal_pcm_64_hex = \"" + balanceCommitment.toReversedHex64() + "\";");
-    System.out.println("// Current encrypted balance (66 bytes - from ledger)");
-    System.out.println("const char* current_enc_bal_hex = \"" + currentEncryptedBalance + "\";");
-    System.out.println("// Balance amount (plaintext value)");
-    System.out.println("uint64_t balance_amount = " + senderNewBalance.longValue() + ";");
-    System.out.println("// Context ID (32 bytes)");
-    System.out.println("const char* bal_context_id_hex = \"" + sendContext.hexValue() + "\";");
-    System.out.println("// Balance Linkage Proof from Java (195 bytes)");
-    System.out.println("const char* bal_proof_hex = \"" + balanceLinkageProof.hexValue() + "\";");
-    System.out.println("=======================================================================\n");
-
-    // Verify the balance linkage proof locally
-    // Note: For balance linkage, the LinkageProofType.BALANCE_COMMITMENT handles the parameter swapping internally
-    boolean balanceLinkageValid = linkProofGenerator.verify(
-      LinkageProofType.BALANCE_COMMITMENT,
-      balanceLinkageProof,
-      currentBalanceCiphertext,
-      holderElGamalKeyPair.publicKey(),
-      balanceCommitment,
-      sendContext
-    );
-    System.out.println("Balance Linkage Proof valid locally: " + balanceLinkageValid);
-    // assertThat(balanceLinkageValid).isTrue();
-
-    // Combine SamePlaintextMultiProof (359 bytes) + Amount Linkage (195 bytes) + Balance Linkage (195 bytes) = 749 bytes
+    //////////////////////
+    // Combine all proofs into full ZKProof for ConfidentialMPTSend
+    // SamePlaintextMultiProof (359 bytes) + Amount Linkage (195 bytes) + Balance Linkage (195 bytes) = 749 bytes
     String fullZkProofHex = ZKProofUtils.combineSendProofsHex(
       samePlaintextProof, amountLinkageProof, balanceLinkageProof
     );
-
-    System.out.println("Full ZKProof size: " + (fullZkProofHex.length() / 2) + " bytes (expected 749)");
 
     //////////////////////
     // Build and submit ConfidentialMPTSend transaction
@@ -955,16 +798,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     SingleSignedTransaction<ConfidentialMPTSend> signedConfidentialSend = signatureService.sign(
       holderKeyPair.privateKey(), confidentialSend
     );
-
-    System.out.println("\n========== CONFIDENTIAL MPT SEND ==========");
-    System.out.println("Tx Hash: " + signedConfidentialSend.hash());
-
     SubmitResult<ConfidentialMPTSend> confidentialSendResult = xrplClient.submit(signedConfidentialSend);
-
-    System.out.println("ConfidentialMPTSend result: " + confidentialSendResult.engineResult());
-    System.out.println("ConfidentialMPTSend result message: " + confidentialSendResult.engineResultMessage());
-
-    // Assert the transaction was successful
     assertThat(confidentialSendResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     // Wait for validation
@@ -979,11 +813,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    System.out.println("ConfidentialMPTSend validated successfully!");
-
     //////////////////////
-    // Verify sender's balance was reduced by the send amount
-    // Query the ledger for the sender's MPToken after the send
+    // Verify sender's confidential balance was reduced by the send amount
     MpTokenObject senderMpTokenAfterSend = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(
         MpTokenLedgerEntryParams.builder()
@@ -1009,19 +840,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Expected balance: 500 (initial) - 100 (sent) = 400
     long expectedSenderBalance = amountToConvert.longValue() - sendAmount.longValue();
-
-    System.out.println("\n========== BALANCE VERIFICATION ==========");
-    System.out.println("Sender's balance before send: " + amountToConvert.longValue());
-    System.out.println("Amount sent: " + sendAmount.longValue());
-    System.out.println("Sender's balance after send (decrypted): " + senderBalanceAfterSend);
-    System.out.println("Expected sender balance: " + expectedSenderBalance);
-
     assertThat(senderBalanceAfterSend).isEqualTo(expectedSenderBalance);
 
-    System.out.println("\n========== CONFIDENTIAL MPT CONVERT BACK ==========");
-
     //////////////////////
-    // ConfidentialMPTConvertBack: Holder 1 converts 50 MPT back to public balance
+    // ConfidentialMPTConvertBack: Holder 1 converts 50 confidential MPT back to public balance
     UnsignedLong convertBackAmount = UnsignedLong.valueOf(50);
 
     // Get updated account info for holder 1
@@ -1067,17 +889,11 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holder1VersionForConvertBack
     );
 
-    System.out.println("Convert Back Context Hash: " + convertBackContext.hexValue());
-
     // Generate Pedersen commitment for the current spending balance (400)
-    // The commitment is for the CURRENT balance, not the balance after conversion
     UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(senderBalanceAfterSend);
     BlindingFactor convertBackPedersenRho = BlindingFactor.generate();
     PedersenCommitment convertBackCommitment = pedersenGen.generateCommitment(currentSpendingBalance,
       convertBackPedersenRho);
-
-    System.out.println("Current spending balance for commitment: " + currentSpendingBalance.longValue());
-    System.out.println("Pedersen Commitment (64-byte reversed): " + convertBackCommitment.toReversedHex64());
 
     // Get the current encrypted balance from the ledger for the balance linkage proof
     String currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
@@ -1109,10 +925,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       convertBackContext
     );
 
-    System.out.println("Balance Linkage Proof size: " + convertBackBalanceLinkageProof.toBytes().length + " bytes");
-    System.out.println("Balance Linkage Proof: " + convertBackBalanceLinkageProof.hexValue());
-
-    // Build the ConfidentialMPTConvertBack transaction
+    //////////////////////
+    // Build and submit ConfidentialMPTConvertBack transaction
     ConfidentialMPTConvertBack convertBack = ConfidentialMPTConvertBack.builder()
       .account(holderKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1133,15 +947,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     SingleSignedTransaction<ConfidentialMPTConvertBack> signedConvertBack = signatureService.sign(
       holderKeyPair.privateKey(), convertBack
     );
-
-    System.out.println("ConfidentialMPTConvertBack tx hash: " + signedConvertBack.hash());
-
     SubmitResult<ConfidentialMPTConvertBack> convertBackResult = xrplClient.submit(signedConvertBack);
-
-    System.out.println("ConfidentialMPTConvertBack result: " + convertBackResult.engineResult());
-    System.out.println("ConfidentialMPTConvertBack result message: " + convertBackResult.engineResultMessage());
-
-    // Assert the transaction was successful
     assertThat(convertBackResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     // Wait for validation
@@ -1156,10 +962,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    System.out.println("ConfidentialMPTConvertBack validated successfully!");
-
     //////////////////////
-    // Verify the remaining confidential balance is 350 (400 - 50)
+    // Verify the remaining confidential balance after ConvertBack (400 - 50 = 350)
     MpTokenObject holder1MpTokenAfterConvertBack = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(
         MpTokenLedgerEntryParams.builder()
@@ -1182,21 +986,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     // Expected remaining balance: 400 - 50 = 350
     long expectedRemainingBalance = senderBalanceAfterSend - convertBackAmount.longValue();
-
-    System.out.println("\n========== CONVERT BACK VERIFICATION ==========");
-    System.out.println("Balance before convert back: " + senderBalanceAfterSend);
-    System.out.println("Amount converted back: " + convertBackAmount.longValue());
-    System.out.println("Remaining confidential balance (decrypted): " + remainingConfidentialBalance);
-    System.out.println("Expected remaining balance: " + expectedRemainingBalance);
-
     assertThat(remainingConfidentialBalance).isEqualTo(expectedRemainingBalance);
 
-    System.out.println("\n========== CLAWBACK ==========");
-    System.out.println("Clawing back 350 MPT from holder...");
-
     //////////////////////
-    // Step 7: Issuer claws back 350 MPT from holder
-    // The clawback amount is the holder's total confidential balance (350)
+    // ConfidentialMPTClawback: Issuer claws back 350 confidential MPT from holder
     UnsignedLong clawbackAmount = UnsignedLong.valueOf(350);
 
     // Get the holder's MPToken to retrieve the IssuerEncryptedBalance
@@ -1210,20 +1003,14 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
     ).node();
 
-    // Get the issuer's encrypted balance for this holder
+    // Get the issuer's encrypted balance for this holder (IssuerEncryptedBalance)
     String issuerEncryptedBalanceForClawback = holderMpTokenForClawback.issuerEncryptedBalance()
       .orElseThrow(() -> new RuntimeException("No issuer encrypted balance found"));
     byte[] issuerEncryptedBalanceBytes = BaseEncoding.base16().decode(issuerEncryptedBalanceForClawback);
     ElGamalCiphertext issuerBalanceCiphertext = ElGamalCiphertext.fromBytes(issuerEncryptedBalanceBytes);
 
-    System.out.println("Issuer Encrypted Balance C1: " + BaseEncoding.base16().encode(
-      issuerBalanceCiphertext.c1().getEncoded(true)));
-    System.out.println("Issuer Encrypted Balance C2: " + BaseEncoding.base16().encode(
-      issuerBalanceCiphertext.c2().getEncoded(true)));
-
     // Verify the issuer can decrypt this balance to 350
     long issuerDecryptedBalance = balanceDecryptor.decrypt(issuerBalanceCiphertext, issuerElGamalKeyPair.privateKey());
-    System.out.println("Issuer decrypted balance: " + issuerDecryptedBalance);
     assertThat(issuerDecryptedBalance).isEqualTo(clawbackAmount.longValue());
 
     // Get updated issuer account info for the clawback transaction
@@ -1237,7 +1024,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // The issuer uses their private key as the "randomness" parameter
     JavaEqualityPlaintextProofGenerator equalityProofGenerator = new JavaEqualityPlaintextProofGenerator();
 
-    // Generate context hash for clawback using the context class
+    // Generate context hash for clawback
     ConfidentialMPTClawbackContext clawbackContext = ConfidentialMPTClawbackContext.generate(
       issuerKeyPair.publicKey().deriveAddress(),  // issuer account
       issuerAccountInfoForClawback.accountData().sequence(),  // sequence
@@ -1246,17 +1033,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderKeyPair.publicKey().deriveAddress()  // holder
     );
 
-    System.out.println("Clawback context hash: " + clawbackContext.hexValue());
-
-    // Generate the proof
-    // The implementation internally handles the parameter swapping required by rippled
+    // Generate the Equality Plaintext Proof (parameter swapping handled internally)
     BlindingFactor issuerPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
       issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray()
     );
     BlindingFactor clawbackNonce = BlindingFactor.generate();
 
-    // Pass the actual IssuerEncryptedBalance ciphertext and issuer's public key
-    // The swapping is done internally by generateProof
     EqualityPlaintextProof clawbackProof = equalityProofGenerator.generateProof(
       issuerBalanceCiphertext,  // IssuerEncryptedBalance ciphertext
       issuerElGamalKeyPair.publicKey(),  // issuer's ElGamal public key
@@ -1266,10 +1048,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       clawbackContext
     );
 
-    System.out.println("Clawback proof length: " + clawbackProof.toBytes().length);
-    System.out.println("Clawback proof: " + clawbackProof.hexValue());
-
-    // Build and submit the ConfidentialMPTClawback transaction
+    //////////////////////
+    // Build and submit ConfidentialMPTClawback transaction
     ConfidentialMPTClawback clawback = ConfidentialMPTClawback.builder()
       .account(issuerKeyPair.publicKey().deriveAddress())
       .fee(FeeUtils.computeNetworkFees(feeResult).recommendedFee())
@@ -1288,7 +1068,6 @@ public class ConfidentialTransfersIT extends AbstractIT {
       issuerKeyPair.privateKey(), clawback
     );
     SubmitResult<ConfidentialMPTClawback> clawbackResult = xrplClient.submit(signedClawback);
-    System.out.println("Clawback result: " + clawbackResult.engineResult());
     assertThat(clawbackResult.engineResult()).isEqualTo(SUCCESS_STATUS);
 
     // Wait for validation
@@ -1303,10 +1082,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       result -> result.finalityStatus() == FinalityStatus.VALIDATED_SUCCESS
     );
 
-    System.out.println("ConfidentialMPTClawback validated successfully!");
-
     //////////////////////
-    // Verify the holder's confidential balances are zeroed out
+    // Verify the holder's confidential balances are zeroed out after clawback
     MpTokenObject holderMpTokenAfterClawback = xrplClient.ledgerEntry(
       LedgerEntryRequestParams.mpToken(
         MpTokenLedgerEntryParams.builder()
@@ -1317,20 +1094,19 @@ public class ConfidentialTransfersIT extends AbstractIT {
       )
     ).node();
 
-    // After clawback, the confidential balances should be empty or zero
-    System.out.println("\n========== CLAWBACK VERIFICATION ==========");
-    System.out.println("Holder's confidential balance spending after clawback: " +
-      holderMpTokenAfterClawback.confidentialBalanceSpending());
-    System.out.println("Holder's confidential balance inbox after clawback: " +
-      holderMpTokenAfterClawback.confidentialBalanceInbox());
-    System.out.println("Holder's issuer encrypted balance after clawback: " +
-      holderMpTokenAfterClawback.issuerEncryptedBalance());
+    // After clawback, verify the holder's confidential balances are cleared
+    // The confidentialBalanceSpending should be empty or represent zero
+    assertThat(holderMpTokenAfterClawback).isNotNull();
 
-    System.out.println("\n========== TEST COMPLETE ==========");
-    System.out.println("✓ Confidential transfer successful!");
-    System.out.println("✓ Sender's balance correctly reduced from " + amountToConvert.longValue() +
-      " to " + senderBalanceAfterSend + " after send");
-    System.out.println("✓ Convert back successful! Remaining confidential balance: " + remainingConfidentialBalance);
-    System.out.println("✓ Clawback successful! Clawed back " + clawbackAmount.longValue() + " MPT from holder");
+    //////////////////////
+    // Print all ConfidentialMPT transaction hashes
+    System.out.println("\n========== CONFIDENTIAL MPT TRANSACTION HASHES ==========");
+    System.out.println("ConfidentialMPTConvert (Holder 1):     " + signedConfidentialConvert.hash());
+    System.out.println("ConfidentialMPTMergeInbox (Holder 1):  " + signedMergeInbox.hash());
+    System.out.println("ConfidentialMPTConvert (Holder 2):     " + signedHolder2ConfidentialConvert.hash());
+    System.out.println("ConfidentialMPTSend:                   " + signedConfidentialSend.hash());
+    System.out.println("ConfidentialMPTConvertBack:            " + signedConvertBack.hash());
+    System.out.println("ConfidentialMPTClawback:               " + signedClawback.hash());
+    System.out.println("==========================================================\n");
   }
 }

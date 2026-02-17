@@ -68,7 +68,9 @@ public final class BlindingFactor {
    * <p>The bytes must represent a valid secp256k1 scalar (0 &lt; value &lt; curve order).</p>
    *
    * @param bytes The 32-byte scalar value.
+   *
    * @return A {@link BlindingFactor}.
+   *
    * @throws NullPointerException     if bytes is null.
    * @throws IllegalArgumentException if bytes is not exactly 32 bytes or is not a valid scalar.
    */
@@ -92,7 +94,9 @@ public final class BlindingFactor {
    * <p>The hex string must represent a valid 32-byte secp256k1 scalar.</p>
    *
    * @param hex The 64-character hex string.
+   *
    * @return A {@link BlindingFactor}.
+   *
    * @throws NullPointerException     if hex is null.
    * @throws IllegalArgumentException if hex is not valid or does not represent a valid scalar.
    */
@@ -124,8 +128,12 @@ public final class BlindingFactor {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     BlindingFactor that = (BlindingFactor) o;
     return Arrays.equals(value.toByteArray(), that.value.toByteArray());
   }

@@ -43,9 +43,11 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator<ElGa
     final BlindingFactor nonce
   ) {
     Objects.requireNonNull(privateKey, "privateKey must not be null");
+    Objects.requireNonNull(context, "context must not be null");
+    Objects.requireNonNull(nonce, "nonce must not be null");
 
     // Get context bytes (null-safe)
-    byte[] contextId = (context != null) ? context.toBytes() : null;
+    byte[] contextId = context.toBytes();
 
     // Get private key bytes
     byte[] privateKeyBytes = privateKey.naturalBytes().toByteArray();
@@ -61,7 +63,7 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator<ElGa
 
     // 1. Use provided nonce or generate random k, then compute T = k * G
     // BlindingFactor is already validated as a valid scalar
-    byte[] k = (nonce != null) ? nonce.toBytes() : BlindingFactor.generate().toBytes();
+    byte[] k = nonce.toBytes();
     BigInteger kInt = new BigInteger(1, k);
 
     ECPoint T = Secp256k1Operations.multiplyG(kInt);

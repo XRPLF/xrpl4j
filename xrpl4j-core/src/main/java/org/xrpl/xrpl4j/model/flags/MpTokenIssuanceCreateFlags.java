@@ -36,6 +36,11 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
    */
   protected static final MpTokenIssuanceCreateFlags CAN_PRIVACY = new MpTokenIssuanceCreateFlags(0x00000080);
 
+  /**
+   * Constant {@link MpTokenIssuanceCreateFlags} for the {@code tfInnerBatchTxn} flag.
+   */
+  public static final MpTokenIssuanceCreateFlags INNER_BATCH_TXN =
+    new MpTokenIssuanceCreateFlags(TransactionFlags.INNER_BATCH_TXN.getValue());
 
   private MpTokenIssuanceCreateFlags(long value) {
     super(value);
@@ -61,7 +66,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     boolean tfMPTCanTrade,
     boolean tfMPTCanTransfer,
     boolean tfMPTCanClawback,
-    boolean tfMPTCanPrivacy
+    boolean tfMPTCanPrivacy,
+    boolean tfInnerBatchTxn
   ) {
     return new MpTokenIssuanceCreateFlags(
       TransactionFlags.of(
@@ -72,7 +78,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
         tfMPTCanTransfer ? CAN_TRANSFER : UNSET,
         tfMPTCanTrade ? CAN_TRADE : UNSET,
         tfMPTCanClawback ? CAN_CLAWBACK : UNSET,
-        tfMPTCanPrivacy ? CAN_PRIVACY : UNSET
+        tfMPTCanPrivacy ? CAN_PRIVACY : UNSET,
+        tfInnerBatchTxn ? INNER_BATCH_TXN : UNSET
       ).getValue()
     );
   }
@@ -155,6 +162,15 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
   }
 
   /**
+   * Whether the {@code tfInnerBatchTxn} flag is set.
+   *
+   * @return {@code true} if {@code tfInnerBatchTxn} is set, otherwise {@code false}.
+   */
+  public boolean tfInnerBatchTxn() {
+    return this.isSet(INNER_BATCH_TXN);
+  }
+
+  /**
    * A builder class for {@link MpTokenIssuanceCreateFlags}.
    */
   public static class Builder {
@@ -166,6 +182,7 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     private boolean tfMptCanTransfer = false;
     private boolean tfMptCanClawback = false;
     private boolean tfMptCanPrivacy = false;
+    private boolean tfInnerBatchTxn = false;
 
     /**
      * Set {@code tfMptCanLock} to the given value.
@@ -252,6 +269,18 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
     }
 
     /**
+     * Set {@code tfInnerBatchTxn} to the given value.
+     *
+     * @param tfInnerBatchTxn A boolean value.
+     *
+     * @return The same {@link Builder}.
+     */
+    public Builder tfInnerBatchTxn(boolean tfInnerBatchTxn) {
+      this.tfInnerBatchTxn = tfInnerBatchTxn;
+      return this;
+    }
+
+    /**
      * Build a new {@link MpTokenIssuanceCreateFlags} from the current boolean values.
      *
      * @return A new {@link MpTokenIssuanceCreateFlags}.
@@ -265,7 +294,8 @@ public class MpTokenIssuanceCreateFlags extends TransactionFlags {
         tfMptCanTrade,
         tfMptCanTransfer,
         tfMptCanClawback,
-        tfMptCanPrivacy
+        tfMptCanPrivacy,
+        tfInnerBatchTxn
       );
     }
   }

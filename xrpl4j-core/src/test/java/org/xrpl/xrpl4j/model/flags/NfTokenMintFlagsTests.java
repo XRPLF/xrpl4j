@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 public class NfTokenMintFlagsTests extends AbstractFlagsTest {
 
   public static Stream<Arguments> data() {
-    return getBooleanCombinations(4);
+    return getBooleanCombinations(5);
   }
 
   @ParameterizedTest
@@ -46,17 +46,19 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
-    boolean tfTransferable
+    boolean tfTransferable,
+    boolean tfInnerBatchTxn
   ) {
     NfTokenMintFlags flags = NfTokenMintFlags.builder()
       .tfBurnable(tfBurnable)
       .tfOnlyXRP(tfOnlyXRP)
       .tfTrustLine(tfTrustLine)
       .tfTransferable(tfTransferable)
+      .tfInnerBatchTxn(tfInnerBatchTxn)
       .build();
 
     assertThat(flags.getValue())
-      .isEqualTo(getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable));
+      .isEqualTo(getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable, tfInnerBatchTxn));
   }
 
   @ParameterizedTest
@@ -65,9 +67,10 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
-    boolean tfTransferable
+    boolean tfTransferable,
+    boolean tfInnerBatchTxn
   ) {
-    long expectedFlags = getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+    long expectedFlags = getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable, tfInnerBatchTxn);
     NfTokenMintFlags flags = NfTokenMintFlags.of(expectedFlags);
 
     assertThat(flags.getValue()).isEqualTo(expectedFlags);
@@ -76,6 +79,7 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfOnlyXRP()).isEqualTo(tfOnlyXRP);
     assertThat(flags.tfTrustLine()).isEqualTo(tfTrustLine);
     assertThat(flags.tfTransferable()).isEqualTo(tfTransferable);
+    assertThat(flags.tfInnerBatchTxn()).isEqualTo(tfInnerBatchTxn);
   }
 
   @Test
@@ -88,6 +92,7 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     assertThat(flags.tfTrustLine()).isFalse();
     assertThat(flags.tfTransferable()).isFalse();
     assertThat(flags.tfFullyCanonicalSig()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isFalse();
     assertThat(flags.getValue()).isEqualTo(0L);
   }
 
@@ -97,9 +102,10 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
-    boolean tfTransferable
+    boolean tfTransferable,
+    boolean tfInnerBatchTxn
   ) throws JSONException, JsonProcessingException {
-    long expectedFlags = getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable);
+    long expectedFlags = getExpectedFlags(tfBurnable, tfOnlyXRP, tfTrustLine, tfTransferable, tfInnerBatchTxn);
     NfTokenMintFlags flags = NfTokenMintFlags.of(expectedFlags);
 
     TransactionFlagsWrapper wrapper = TransactionFlagsWrapper.of(flags);
@@ -121,17 +127,30 @@ public class NfTokenMintFlagsTests extends AbstractFlagsTest {
     assertCanSerializeAndDeserialize(wrapper, json);
   }
 
+  @Test
+  void testInnerBatchTxn() {
+    NfTokenMintFlags flags = NfTokenMintFlags.INNER_BATCH_TXN;
+    assertThat(flags.isEmpty()).isFalse();
+    assertThat(flags.tfInnerBatchTxn()).isTrue();
+    assertThat(flags.tfBurnable()).isFalse();
+    assertThat(flags.tfOnlyXRP()).isFalse();
+    assertThat(flags.tfTrustLine()).isFalse();
+    assertThat(flags.tfTransferable()).isFalse();
+    assertThat(flags.getValue()).isEqualTo(TransactionFlags.INNER_BATCH_TXN.getValue());
+  }
+
   private long getExpectedFlags(
     boolean tfBurnable,
     boolean tfOnlyXRP,
     boolean tfTrustLine,
-    boolean tfTransferable
+    boolean tfTransferable,
+    boolean tfInnerBatchTxn
   ) {
     return (NfTokenMintFlags.FULLY_CANONICAL_SIG.getValue()) |
       (tfBurnable ? NfTokenMintFlags.BURNABLE.getValue() : 0L) |
       (tfOnlyXRP ? NfTokenMintFlags.ONLY_XRP.getValue() : 0L) |
       (tfTrustLine ? NfTokenMintFlags.TRUSTLINE.getValue() : 0L) |
-      (tfTransferable ? NfTokenMintFlags.TRANSFERABLE.getValue() : 0L);
+      (tfTransferable ? NfTokenMintFlags.TRANSFERABLE.getValue() : 0L) |
+      (tfInnerBatchTxn ? TransactionFlags.INNER_BATCH_TXN.getValue() : 0L);
   }
 }
-

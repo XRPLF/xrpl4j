@@ -164,11 +164,9 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof Hash256) {
-        String otherValue = ((Hash256) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof Hash256) {
+        String otherValue = ((Hash256) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
     }
@@ -280,7 +278,7 @@ public class Wrappers {
      *
      * <p>Note that the use of the `@Default` annotation and the default implementation are suitable for a few
      * reasons. First, deserialization will parse the payload properly, setting this value correctly (despite this
-     * default settings). Second, using a default value here will not break legacy code that is using a builder to
+     * default annotation). Second, using a default value here will not break legacy code that uses a builder to
      * construct an {@link XrpCurrencyAmount} correctly (i.e., we assume that no developer is constructing a negative
      * XRP amount because the {@link UnsignedLong} precondition in any legacy code would not allow them to do such a
      * thing without throwing an exception). Finally, due to the way this class merely adds new static builders to
@@ -321,6 +319,9 @@ public class Wrappers {
      * @return The sum of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount plus(XrpCurrencyAmount other) {
+      Objects.requireNonNull(other);
+      assert other.value() != null; // <-- Should never happen due to Immutables
+
       // Convert each value to a long (positive or negative works)
       long result =
         (this.value().longValue() * (this.isNegative() ? -1 : 1)) +
@@ -336,6 +337,9 @@ public class Wrappers {
      * @return The difference of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
     public XrpCurrencyAmount minus(XrpCurrencyAmount other) {
+      Objects.requireNonNull(other);
+      assert other.value() != null; // <-- Should never happen due to Immutables
+
       // Convert each value to a long (positive or negative works)
       long result =
         (this.value().longValue() * (this.isNegative() ? -1 : 1)) -
@@ -350,7 +354,10 @@ public class Wrappers {
      *
      * @return The product of this amount and the {@code other} amount, as an {@link XrpCurrencyAmount}.
      */
-    public XrpCurrencyAmount times(XrpCurrencyAmount other) {
+    public XrpCurrencyAmount times(final XrpCurrencyAmount other) {
+      Objects.requireNonNull(other);
+      assert other.value() != null; // <-- Should never happen due to Immutables
+
       return XrpCurrencyAmount.ofDrops(
         this.value().times(other.value()),
         this.isNegative() || other.isNegative()
@@ -360,6 +367,20 @@ public class Wrappers {
     @Override
     public String toString() {
       return String.format("%s%s", isNegative() ? "-" : "", this.value().toString());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof XrpCurrencyAmount) {
+        UnsignedLong otherValue = ((XrpCurrencyAmount) obj).value(); // <-- Can't be null due to Immutables
+        return this.value().equals(otherValue);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return this.value().hashCode();
     }
 
     /**
@@ -415,13 +436,16 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof NfTokenId) {
-        String otherValue = ((NfTokenId) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof NfTokenId) {
+        String otherValue = ((NfTokenId) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
     }
   }
 
@@ -447,11 +471,9 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof NfTokenUri) {
-        String otherValue = ((NfTokenUri) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof NfTokenUri) {
+        String otherValue = ((NfTokenUri) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
     }
@@ -767,7 +789,6 @@ public class Wrappers {
     public String toString() {
       return this.value();
     }
-
   }
 
   /**
@@ -830,12 +851,26 @@ public class Wrappers {
   abstract static class _MpTokenIssuanceId extends Wrapper<String> implements Serializable {
 
     // TODO: Do clients ever need to construct an issuance id given a sequence and issuer AccountID?
+    // See https://github.com/XRPLF/xrpl4j/issues/657
 
     @Override
     public String toString() {
       return this.value();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof MpTokenIssuanceId) {
+        String otherValue = ((MpTokenIssuanceId) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return value().toUpperCase(Locale.ENGLISH).hashCode();
+    }
   }
 
   /**
@@ -907,11 +942,9 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof CredentialType) {
-        String otherValue = ((CredentialType) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof CredentialType) {
+        String otherValue = ((CredentialType) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
     }
@@ -974,11 +1007,9 @@ public class Wrappers {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj != null && obj instanceof CredentialUri) {
-        String otherValue = ((CredentialUri) obj).value();
-        if (otherValue != null) {
-          return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
-        }
+      if (obj instanceof CredentialUri) {
+        String otherValue = ((CredentialUri) obj).value(); // <-- Can't be null due to Immutables
+        return otherValue.toUpperCase(Locale.ENGLISH).equals(value().toUpperCase(Locale.ENGLISH));
       }
       return false;
     }

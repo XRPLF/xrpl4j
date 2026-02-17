@@ -26,15 +26,13 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
 
   private static final BaseEncoding HEX = BaseEncoding.base16().upperCase();
 
-  private Secp256k1Operations secp256k1;
   private JavaElGamalPedersenLinkProofGenerator generator;
   private PedersenCommitmentGenerator pedersenGen;
 
   @BeforeEach
   void setUp() {
-    secp256k1 = new Secp256k1Operations();
-    generator = new JavaElGamalPedersenLinkProofGenerator(secp256k1);
-    pedersenGen = new PedersenCommitmentGenerator(secp256k1);
+    generator = new JavaElGamalPedersenLinkProofGenerator();
+    pedersenGen = new PedersenCommitmentGenerator();
   }
 
   /**
@@ -93,16 +91,16 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
 
     // 7. Create ElGamal ciphertext: C1 = r * G, C2 = m * G + r * Pk
     BigInteger rInt = new BigInteger(1, r);
-    ECPoint c1 = secp256k1.multiplyG(rInt);
+    ECPoint c1 = Secp256k1Operations.multiplyG(rInt);
 
     BigInteger mInt = BigInteger.valueOf(amount.longValue());
-    ECPoint mG = secp256k1.multiplyG(mInt);
-    ECPoint rPk = secp256k1.multiply(publicKey, rInt);
-    ECPoint c2 = secp256k1.add(mG, rPk);
+    ECPoint mG = Secp256k1Operations.multiplyG(mInt);
+    ECPoint rPk = Secp256k1Operations.multiply(publicKey, rInt);
+    ECPoint c2 = Secp256k1Operations.add(mG, rPk);
 
     // 8. Create Pedersen commitment: PCm = m * G + rho * H
     byte[] commitmentBytes = pedersenGen.generateCommitment(amount, rho);
-    ECPoint commitment = secp256k1.deserialize(commitmentBytes);
+    ECPoint commitment = Secp256k1Operations.deserialize(commitmentBytes);
 
     // Print inputs in C code format (uncompressed points with 04 prefix)
     System.out.println("\n=== ElGamal-Pedersen Link Proof Test ===\n");
@@ -191,7 +189,7 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
       wrongRho[i] = 0x03;
     }
     byte[] wrongCommitmentBytes = pedersenGen.generateCommitment(amount, wrongRho);
-    ECPoint wrongCommitment = secp256k1.deserialize(wrongCommitmentBytes);
+    ECPoint wrongCommitment = Secp256k1Operations.deserialize(wrongCommitmentBytes);
 
     boolean isInvalid = generator.verify(proof, c1, c2, publicKey, wrongCommitment, contextHash);
     System.out.println("Verification with wrong commitment: " + isInvalid);

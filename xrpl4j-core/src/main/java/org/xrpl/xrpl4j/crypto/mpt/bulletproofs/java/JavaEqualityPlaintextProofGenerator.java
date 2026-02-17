@@ -7,6 +7,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.bouncycastle.math.ec.ECPoint;
 import org.xrpl.xrpl4j.codec.addresses.AddressCodec;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
+import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.EqualityPlaintextProofGenerator;
@@ -19,7 +20,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Objects;
 
 /**
@@ -33,29 +33,13 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
   private static final String DOMAIN_SEPARATOR = "MPT_POK_PLAINTEXT_PROOF";
   private static final int TT_CONFIDENTIAL_MPT_CLAWBACK = 89;
 
-  private final Secp256k1Operations secp256k1;
-  private final SecureRandom secureRandom;
   private final AddressCodec addressCodec;
 
   /**
-   * Constructs a new generator with the given secp256k1 operations.
-   *
-   * @param secp256k1    The secp256k1 operations instance.
-   * @param secureRandom A secure random number generator.
+   * Constructs a new generator.
    */
-  public JavaEqualityPlaintextProofGenerator(Secp256k1Operations secp256k1, SecureRandom secureRandom) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
-    this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom must not be null");
+  public JavaEqualityPlaintextProofGenerator() {
     this.addressCodec = AddressCodec.getInstance();
-  }
-
-  /**
-   * Constructs a new generator with a default SecureRandom.
-   *
-   * @param secp256k1 The secp256k1 operations instance.
-   */
-  public JavaEqualityPlaintextProofGenerator(Secp256k1Operations secp256k1) {
-    this(secp256k1, new SecureRandom());
   }
 
   @Override
@@ -76,24 +60,24 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     if (randomness.length != 32) {
       throw new IllegalArgumentException("randomness must be 32 bytes");
     }
-    if (!secp256k1.isValidScalar(randomness)) {
+    if (!Secp256k1Operations.isValidScalar(randomness)) {
       throw new IllegalArgumentException("randomness must be a valid scalar");
     }
 
     // 1. Generate random t
-    byte[] t = RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] t = RandomnessUtils.generateRandomScalar();
     BigInteger tInt = new BigInteger(1, t);
 
     // 2. Compute commitments T1 = t * G, T2 = t * Pk
-    ECPoint T1 = secp256k1.multiplyG(tInt);
-    ECPoint T2 = secp256k1.multiply(publicKey, tInt);
+    ECPoint T1 = Secp256k1Operations.multiplyG(tInt);
+    ECPoint T2 = Secp256k1Operations.multiply(publicKey, tInt);
 
     // 3. Compute mG if amount > 0
     ECPoint mG = null;
     if (amount.longValue() > 0) {
-      byte[] mScalar = secp256k1.unsignedLongToScalar(amount);
+      byte[] mScalar = Secp256k1Operations.unsignedLongToScalar(amount);
       BigInteger mInt = new BigInteger(1, mScalar);
-      mG = secp256k1.multiplyG(mInt);
+      mG = Secp256k1Operations.multiplyG(mInt);
     }
 
     // 4. Compute challenge e
@@ -102,13 +86,13 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
 
     // 5. Compute s = t + e * r (mod n)
     BigInteger rInt = new BigInteger(1, randomness);
-    BigInteger sInt = tInt.add(eInt.multiply(rInt)).mod(secp256k1.getCurveOrder());
-    byte[] s = secp256k1.toBytes32(sInt);
+    BigInteger sInt = tInt.add(eInt.multiply(rInt)).mod(Secp256k1Operations.getCurveOrder());
+    byte[] s = Secp256k1Operations.toBytes32(sInt);
 
     // 6. Serialize proof: T1 (33) || T2 (33) || s (32) = 98 bytes
     byte[] proof = new byte[PROOF_LENGTH];
-    byte[] t1Bytes = secp256k1.serializeCompressed(T1);
-    byte[] t2Bytes = secp256k1.serializeCompressed(T2);
+    byte[] t1Bytes = Secp256k1Operations.serializeCompressed(T1);
+    byte[] t2Bytes = Secp256k1Operations.serializeCompressed(T2);
     System.arraycopy(t1Bytes, 0, proof, 0, 33);
     System.arraycopy(t2Bytes, 0, proof, 33, 33);
     System.arraycopy(s, 0, proof, 66, 32);
@@ -146,13 +130,13 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     ECPoint T1;
     ECPoint T2;
     try {
-      T1 = secp256k1.deserialize(t1Bytes);
-      T2 = secp256k1.deserialize(t2Bytes);
+      T1 = Secp256k1Operations.deserialize(t1Bytes);
+      T2 = Secp256k1Operations.deserialize(t2Bytes);
     } catch (Exception e) {
       return false;
     }
 
-    if (!secp256k1.isValidScalar(s)) {
+    if (!Secp256k1Operations.isValidScalar(s)) {
       return false;
     }
     BigInteger sInt = new BigInteger(1, s);
@@ -160,9 +144,9 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     // 2. Compute mG if amount > 0
     ECPoint mG = null;
     if (amount.longValue() > 0) {
-      byte[] mScalar = secp256k1.unsignedLongToScalar(amount);
+      byte[] mScalar = Secp256k1Operations.unsignedLongToScalar(amount);
       BigInteger mInt = new BigInteger(1, mScalar);
-      mG = secp256k1.multiplyG(mInt);
+      mG = Secp256k1Operations.multiplyG(mInt);
     }
 
     // 3. Recompute challenge e
@@ -170,24 +154,24 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     BigInteger eInt = new BigInteger(1, e);
 
     // 4. Verify Eq 1: s * G == T1 + e * C1
-    ECPoint lhs1 = secp256k1.multiplyG(sInt);
-    ECPoint eC1 = secp256k1.multiply(c1, eInt);
-    ECPoint rhs1 = secp256k1.add(T1, eC1);
-    if (!secp256k1.pointsEqual(lhs1, rhs1)) {
+    ECPoint lhs1 = Secp256k1Operations.multiplyG(sInt);
+    ECPoint eC1 = Secp256k1Operations.multiply(c1, eInt);
+    ECPoint rhs1 = Secp256k1Operations.add(T1, eC1);
+    if (!Secp256k1Operations.pointsEqual(lhs1, rhs1)) {
       return false;
     }
 
     // 5. Verify Eq 2: s * Pk == T2 + e * (C2 - mG)
-    ECPoint lhs2 = secp256k1.multiply(publicKey, sInt);
+    ECPoint lhs2 = Secp256k1Operations.multiply(publicKey, sInt);
     ECPoint Y = c2;
     if (mG != null) {
       ECPoint negMG = mG.negate();
-      Y = secp256k1.add(c2, negMG);
+      Y = Secp256k1Operations.add(c2, negMG);
     }
-    ECPoint eY = secp256k1.multiply(Y, eInt);
-    ECPoint rhs2 = secp256k1.add(T2, eY);
+    ECPoint eY = Secp256k1Operations.multiply(Y, eInt);
+    ECPoint rhs2 = Secp256k1Operations.add(T2, eY);
 
-    return secp256k1.pointsEqual(lhs2, rhs2);
+    return Secp256k1Operations.pointsEqual(lhs2, rhs2);
   }
 
   @Override
@@ -263,31 +247,31 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     offset += domainBytes.length;
 
     // C1, C2, Pk
-    byte[] c1Bytes = secp256k1.serializeCompressed(c1);
+    byte[] c1Bytes = Secp256k1Operations.serializeCompressed(c1);
     System.arraycopy(c1Bytes, 0, hashInput, offset, 33);
     offset += 33;
 
-    byte[] c2Bytes = secp256k1.serializeCompressed(c2);
+    byte[] c2Bytes = Secp256k1Operations.serializeCompressed(c2);
     System.arraycopy(c2Bytes, 0, hashInput, offset, 33);
     offset += 33;
 
-    byte[] pkBytes = secp256k1.serializeCompressed(publicKey);
+    byte[] pkBytes = Secp256k1Operations.serializeCompressed(publicKey);
     System.arraycopy(pkBytes, 0, hashInput, offset, 33);
     offset += 33;
 
     // mG (only if nonzero)
     if (mG != null) {
-      byte[] mGBytes = secp256k1.serializeCompressed(mG);
+      byte[] mGBytes = Secp256k1Operations.serializeCompressed(mG);
       System.arraycopy(mGBytes, 0, hashInput, offset, 33);
       offset += 33;
     }
 
     // T1, T2
-    byte[] t1Bytes = secp256k1.serializeCompressed(T1);
+    byte[] t1Bytes = Secp256k1Operations.serializeCompressed(T1);
     System.arraycopy(t1Bytes, 0, hashInput, offset, 33);
     offset += 33;
 
-    byte[] t2Bytes = secp256k1.serializeCompressed(T2);
+    byte[] t2Bytes = Secp256k1Operations.serializeCompressed(T2);
     System.arraycopy(t2Bytes, 0, hashInput, offset, 33);
     offset += 33;
 
@@ -299,8 +283,8 @@ public class JavaEqualityPlaintextProofGenerator implements EqualityPlaintextPro
     // SHA256 and reduce mod curve order
     byte[] sha256Hash = Hashing.sha256().hashBytes(hashInput).asBytes();
     BigInteger hashInt = new BigInteger(1, sha256Hash);
-    BigInteger reduced = hashInt.mod(secp256k1.getCurveOrder());
-    return secp256k1.toBytes32(reduced);
+    BigInteger reduced = hashInt.mod(Secp256k1Operations.getCurveOrder());
+    return Secp256k1Operations.toBytes32(reduced);
   }
 
   /**

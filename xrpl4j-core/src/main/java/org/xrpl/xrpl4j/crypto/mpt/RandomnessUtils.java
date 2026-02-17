@@ -3,8 +3,6 @@ package org.xrpl.xrpl4j.crypto.mpt;
 import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 
-import java.security.SecureRandom;
-
 /**
  * Utility class for working with randomness.
  *
@@ -16,30 +14,9 @@ public class RandomnessUtils {
   /**
    * Generates a cryptographically secure random 32-byte scalar using {@link SecureRandomUtils}.
    *
-   * @param secp256k1 The secp256k1 operations instance for scalar validation.
-   *
    * @return A valid random scalar.
    */
-  public static byte[] generateRandomScalar(final Secp256k1Operations secp256k1) {
-    return generateRandomScalar(SecureRandomUtils.secureRandom(), secp256k1);
-  }
-
-  /**
-   * Generates a cryptographically secure random 32-byte scalar.
-   *
-   * @param secureRandom The SecureRandom instance to use.
-   * @param secp256k1    The secp256k1 operations instance for scalar validation.
-   *
-   * @return A valid random scalar.
-   *
-   * @deprecated Use {@link #generateRandomScalar(Secp256k1Operations)} instead.
-   */
-  @Deprecated
-  public static byte[] generateRandomScalar(
-    final SecureRandom secureRandom,
-    final Secp256k1Operations secp256k1
-  ) {
-
+  public static byte[] generateRandomScalar() {
     // TODO: Ideally use Entropy, but that is only 16 bytes.
     // Option1: Use a 16-byte seed, but that's likely too small for MPT operations?
     // Option2: Expand Seed to use 32 bytes, but this likely doesn't conform to XRPL address generation stadards?
@@ -49,8 +26,8 @@ public class RandomnessUtils {
 
     byte[] scalar = new byte[32];
     do {
-      secureRandom.nextBytes(scalar);
-    } while (!secp256k1.isValidScalar(scalar));
+      SecureRandomUtils.secureRandom().nextBytes(scalar);
+    } while (!Secp256k1Operations.isValidScalar(scalar));
     return scalar;
   }
 }

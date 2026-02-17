@@ -21,19 +21,14 @@ import java.util.Objects;
 public class BulletproofProver {
 
   private final BulletproofOperations bulletproofOperations;
-  private final Secp256k1Operations secp256k1;
 
   /**
    * Constructs a new BulletproofProver with custom operations.
    *
    * @param bulletproofOperations The bulletproof operations instance.
    */
-  public BulletproofProver(
-    final BulletproofOperations bulletproofOperations,
-    final Secp256k1Operations secp256k1
-  ) {
+  public BulletproofProver(final BulletproofOperations bulletproofOperations) {
     this.bulletproofOperations = Objects.requireNonNull(bulletproofOperations);
-    this.secp256k1 = Objects.requireNonNull(secp256k1);
   }
 
   /**
@@ -107,7 +102,7 @@ public class BulletproofProver {
 
       // Generate next round challenge from L, R
       xScalar = bulletproofOperations.ipaDeriveChallenge(commitInp, lr[0], lr[1]);
-      byte[] xInv = secp256k1.scalarInverse(xScalar);
+      byte[] xInv = Secp256k1Operations.scalarInverse(xScalar);
 
       // Compress vectors in-place
       bulletproofOperations.ipaCompressStep(aVec, bVec, gVec, hVec, halfN, xScalar, xInv);
@@ -152,8 +147,8 @@ public class BulletproofProver {
     BulletproofVectors vectors = bulletproofOperations.computeVectors(value);
 
     // 3. Generate random blinding scalars
-    byte[] rho = generateRandomScalar(bulletproofOperations.getSecureRandom(), secp256k1);
-    byte[] rhoS = generateRandomScalar(bulletproofOperations.getSecureRandom(), secp256k1);
+    byte[] rho = generateRandomScalar();
+    byte[] rhoS = generateRandomScalar();
 
     // 4. Compute A and S commitments
     ECPoint[] as = bulletproofOperations.commitAS(vectors, rho, rhoS, pkBase);
@@ -161,7 +156,7 @@ public class BulletproofProver {
     ECPoint S = as[1];
 
     // 5. Create transcript input from commitment
-    byte[] commitInp = secp256k1.serializeCompressed(vCommitment);
+    byte[] commitInp = Secp256k1Operations.serializeCompressed(vCommitment);
     // Pad or truncate to 32 bytes
     byte[] transcript = new byte[32];
     System.arraycopy(commitInp, 0, transcript, 0, Math.min(commitInp.length, 32));

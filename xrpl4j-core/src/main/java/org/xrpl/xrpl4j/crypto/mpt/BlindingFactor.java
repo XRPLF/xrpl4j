@@ -39,7 +39,6 @@ import java.util.Objects;
 public final class BlindingFactor {
 
   public static final int SCALAR_LENGTH = 32;
-  private static final Secp256k1Operations SECP256K1 = new Secp256k1Operations();
 
   private final UnsignedByteArray value;
 
@@ -59,7 +58,7 @@ public final class BlindingFactor {
     byte[] scalar = new byte[SCALAR_LENGTH];
     do {
       SecureRandomUtils.secureRandom().nextBytes(scalar);
-    } while (!SECP256K1.isValidScalar(scalar));
+    } while (!Secp256k1Operations.isValidScalar(scalar));
     return new BlindingFactor(UnsignedByteArray.of(scalar));
   }
 
@@ -81,7 +80,7 @@ public final class BlindingFactor {
       SCALAR_LENGTH, bytes.length
     );
     Preconditions.checkArgument(
-      SECP256K1.isValidScalar(bytes),
+      Secp256k1Operations.isValidScalar(bytes),
       "Blinding factor must be a valid scalar (0 < value < curve order)"
     );
     return new BlindingFactor(UnsignedByteArray.of(bytes));

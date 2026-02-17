@@ -78,21 +78,19 @@ public final class ElGamalCiphertext {
   /**
    * Deserializes a ciphertext from bytes.
    *
-   * @param bytes     The serialized ciphertext (66 bytes).
-   * @param secp256k1 The secp256k1 operations instance for point decoding.
+   * @param bytes The serialized ciphertext (66 bytes).
    *
    * @return The deserialized ciphertext.
    */
-  public static ElGamalCiphertext fromBytes(byte[] bytes, Secp256k1Operations secp256k1) {
+  public static ElGamalCiphertext fromBytes(byte[] bytes) {
     Objects.requireNonNull(bytes, "bytes must not be null");
-    Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
     if (bytes.length != 66) {
       throw new IllegalArgumentException("bytes must be 66 bytes (33 + 33)");
     }
     byte[] c1Bytes = Arrays.copyOfRange(bytes, 0, 33);
     byte[] c2Bytes = Arrays.copyOfRange(bytes, 33, 66);
-    ECPoint c1 = secp256k1.deserialize(c1Bytes);
-    ECPoint c2 = secp256k1.deserialize(c2Bytes);
+    ECPoint c1 = Secp256k1Operations.deserialize(c1Bytes);
+    ECPoint c2 = Secp256k1Operations.deserialize(c2Bytes);
     return new ElGamalCiphertext(c1, c2);
   }
 

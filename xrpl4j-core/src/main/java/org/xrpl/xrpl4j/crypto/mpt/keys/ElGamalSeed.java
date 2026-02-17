@@ -27,9 +27,6 @@ import org.xrpl.xrpl4j.crypto.SecureRandomUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 /**
@@ -45,7 +42,6 @@ import java.util.Objects;
 public final class ElGamalSeed {
 
   public static final int ENTROPY_LENGTH = 32;
-  private static final Secp256k1Operations SECP256K1 = new Secp256k1Operations();
 
   private final UnsignedByteArray entropy;
 
@@ -65,7 +61,7 @@ public final class ElGamalSeed {
     byte[] entropy = new byte[ENTROPY_LENGTH];
     do {
       SecureRandomUtils.secureRandom().nextBytes(entropy);
-    } while (!SECP256K1.isValidScalar(entropy));
+    } while (!Secp256k1Operations.isValidScalar(entropy));
     return new ElGamalSeed(UnsignedByteArray.of(entropy));
   }
 
@@ -89,7 +85,7 @@ public final class ElGamalSeed {
       ENTROPY_LENGTH, entropy.length
     );
     Preconditions.checkArgument(
-      SECP256K1.isValidScalar(entropy),
+      Secp256k1Operations.isValidScalar(entropy),
       "ElGamal seed entropy must be a valid scalar (0 < entropy < curve order)"
     );
     return new ElGamalSeed(UnsignedByteArray.of(entropy));
@@ -113,46 +109,6 @@ public final class ElGamalSeed {
   }
 
   /**
-   * Creates an ElGamal seed from a passphrase using SHA-256 hashing.
-   *
-   * <p>If the initial hash is not a valid secp256k1 scalar, the method will
-   * append a counter and rehash until a valid scalar is produced.</p>
-   *
-   * <p><strong>WARNING:</strong> This method is provided for convenience and testing.
-   * For production use, prefer {@link #generate()} or {@link #fromEntropy(byte[])} with cryptographically secure random
-   * entropy.</p>
-   *
-   * @param passphrase The passphrase to hash.
-   *
-   * @return An {@link ElGamalSeed}.
-   *
-   * @throws NullPointerException  if passphrase is null.
-   * @throws IllegalStateException if a valid scalar cannot be derived after 256 attempts.
-   */
-  public static ElGamalSeed fromPassphrase(final String passphrase) {
-    Objects.requireNonNull(passphrase, "passphrase must not be null");
-    try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      byte[] hash = digest.digest(passphrase.getBytes(StandardCharsets.UTF_8));
-
-      // If hash is not a valid scalar, append counter and rehash
-      int counter = 0;
-      while (!SECP256K1.isValidScalar(hash)) {
-        digest.reset();
-        digest.update(passphrase.getBytes(StandardCharsets.UTF_8));
-        digest.update((byte) counter++);
-        hash = digest.digest();
-        if (counter > 255) {
-          throw new IllegalStateException("Failed to derive valid scalar from passphrase after 256 attempts");
-        }
-      }
-      return new ElGamalSeed(UnsignedByteArray.of(hash));
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException("SHA-256 algorithm not available", e);
-    }
-  }
-
-  /**
    * Derives an ElGamal key pair from this seed.
    *
    * <p>Since the seed entropy is guaranteed to be a valid scalar, this method
@@ -167,7 +123,7 @@ public final class ElGamalSeed {
     BigInteger privateKeyScalar = new BigInteger(1, privateKeyBytes);
 
     // Derive public key: publicKey = privateKey * G
-    ECPoint publicKeyPoint = SECP256K1.multiplyG(privateKeyScalar);
+    ECPoint publicKeyPoint = Secp256k1Operations.multiplyG(privateKeyScalar);
 
     ElGamalPrivateKey privateKey = ElGamalPrivateKey.of(privateKeyBytes);
     ElGamalPublicKey publicKey = ElGamalPublicKey.fromEcPoint(publicKeyPoint);

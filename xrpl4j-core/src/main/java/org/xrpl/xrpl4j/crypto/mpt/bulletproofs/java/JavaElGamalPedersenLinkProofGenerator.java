@@ -35,17 +35,13 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
   private static final int TT_CONFIDENTIAL_MPT_SEND = 88;
   private static final int TT_CONFIDENTIAL_MPT_CONVERT_BACK = 87;
 
-  private final Secp256k1Operations secp256k1;
   private final AddressCodec addressCodec;
   private ECPoint cachedH;
 
   /**
-   * Constructs a new generator with the given secp256k1 operations.
-   *
-   * @param secp256k1 The secp256k1 operations instance.
+   * Constructs a new generator.
    */
-  public JavaElGamalPedersenLinkProofGenerator(Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
+  public JavaElGamalPedersenLinkProofGenerator() {
     this.addressCodec = AddressCodec.getInstance();
   }
 
@@ -86,39 +82,39 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
 
     // 1. Compute Commitments
     // T1 = kr * G
-    ECPoint T1 = secp256k1.multiplyG(krInt);
+    ECPoint T1 = Secp256k1Operations.multiplyG(krInt);
 
     // T2 = km * G + kr * Pk
-    ECPoint kmG = secp256k1.multiplyG(kmInt);
-    ECPoint krPk = secp256k1.multiply(publicKey, krInt);
-    ECPoint T2 = secp256k1.add(kmG, krPk);
+    ECPoint kmG = Secp256k1Operations.multiplyG(kmInt);
+    ECPoint krPk = Secp256k1Operations.multiply(publicKey, krInt);
+    ECPoint T2 = Secp256k1Operations.add(kmG, krPk);
 
     // T3 = km * G + krho * H
     ECPoint H = getHGenerator();
-    ECPoint krhoH = secp256k1.multiply(H, krhoInt);
-    ECPoint T3 = secp256k1.add(kmG, krhoH);
+    ECPoint krhoH = Secp256k1Operations.multiply(H, krhoInt);
+    ECPoint T3 = Secp256k1Operations.add(kmG, krhoH);
 
     // 2. Compute Challenge
     byte[] e = computeChallenge(c1, c2, publicKey, commitment, T1, T2, T3, contextHash);
     BigInteger eInt = new BigInteger(1, e);
 
     // 3. Compute Responses
-    byte[] mScalar = secp256k1.unsignedLongToScalar(amount);
+    byte[] mScalar = Secp256k1Operations.unsignedLongToScalar(amount);
     BigInteger mInt = new BigInteger(1, mScalar);
     BigInteger rInt = new BigInteger(1, r);
     BigInteger rhoInt = new BigInteger(1, rho);
 
     // sm = km + e * m (mod n)
-    BigInteger smInt = kmInt.add(eInt.multiply(mInt)).mod(secp256k1.getCurveOrder());
-    byte[] sm = secp256k1.toBytes32(smInt);
+    BigInteger smInt = kmInt.add(eInt.multiply(mInt)).mod(Secp256k1Operations.getCurveOrder());
+    byte[] sm = Secp256k1Operations.toBytes32(smInt);
 
     // sr = kr + e * r (mod n)
-    BigInteger srInt = krInt.add(eInt.multiply(rInt)).mod(secp256k1.getCurveOrder());
-    byte[] sr = secp256k1.toBytes32(srInt);
+    BigInteger srInt = krInt.add(eInt.multiply(rInt)).mod(Secp256k1Operations.getCurveOrder());
+    byte[] sr = Secp256k1Operations.toBytes32(srInt);
 
     // srho = krho + e * rho (mod n)
-    BigInteger srhoInt = krhoInt.add(eInt.multiply(rhoInt)).mod(secp256k1.getCurveOrder());
-    byte[] srho = secp256k1.toBytes32(srhoInt);
+    BigInteger srhoInt = krhoInt.add(eInt.multiply(rhoInt)).mod(Secp256k1Operations.getCurveOrder());
+    byte[] srho = Secp256k1Operations.toBytes32(srhoInt);
 
     // 4. Serialize Proof (195 bytes)
     return serializeProof(T1, T2, T3, sm, sr, srho);
@@ -128,7 +124,7 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     if (scalar.length != 32) {
       throw new IllegalArgumentException(name + " must be 32 bytes");
     }
-    if (!secp256k1.isValidScalar(scalar)) {
+    if (!Secp256k1Operations.isValidScalar(scalar)) {
       throw new IllegalArgumentException(name + " must be a valid scalar");
     }
   }
@@ -137,15 +133,15 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     byte[] result = new byte[PROOF_SIZE];
     int offset = 0;
 
-    byte[] t1Bytes = secp256k1.serializeCompressed(T1);
+    byte[] t1Bytes = Secp256k1Operations.serializeCompressed(T1);
     System.arraycopy(t1Bytes, 0, result, offset, 33);
     offset += 33;
 
-    byte[] t2Bytes = secp256k1.serializeCompressed(T2);
+    byte[] t2Bytes = Secp256k1Operations.serializeCompressed(T2);
     System.arraycopy(t2Bytes, 0, result, offset, 33);
     offset += 33;
 
-    byte[] t3Bytes = secp256k1.serializeCompressed(T3);
+    byte[] t3Bytes = Secp256k1Operations.serializeCompressed(T3);
     System.arraycopy(t3Bytes, 0, result, offset, 33);
     offset += 33;
 
@@ -182,32 +178,32 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
 
     byte[] t1Bytes = new byte[33];
     System.arraycopy(proof, offset, t1Bytes, 0, 33);
-    ECPoint T1 = secp256k1.deserialize(t1Bytes);
+    ECPoint T1 = Secp256k1Operations.deserialize(t1Bytes);
     offset += 33;
 
     byte[] t2Bytes = new byte[33];
     System.arraycopy(proof, offset, t2Bytes, 0, 33);
-    ECPoint T2 = secp256k1.deserialize(t2Bytes);
+    ECPoint T2 = Secp256k1Operations.deserialize(t2Bytes);
     offset += 33;
 
     byte[] t3Bytes = new byte[33];
     System.arraycopy(proof, offset, t3Bytes, 0, 33);
-    ECPoint T3 = secp256k1.deserialize(t3Bytes);
+    ECPoint T3 = Secp256k1Operations.deserialize(t3Bytes);
     offset += 33;
 
     byte[] sm = new byte[32];
     System.arraycopy(proof, offset, sm, 0, 32);
-    if (!secp256k1.isValidScalar(sm)) return false;
+    if (!Secp256k1Operations.isValidScalar(sm)) return false;
     offset += 32;
 
     byte[] sr = new byte[32];
     System.arraycopy(proof, offset, sr, 0, 32);
-    if (!secp256k1.isValidScalar(sr)) return false;
+    if (!Secp256k1Operations.isValidScalar(sr)) return false;
     offset += 32;
 
     byte[] srho = new byte[32];
     System.arraycopy(proof, offset, srho, 0, 32);
-    if (!secp256k1.isValidScalar(srho)) return false;
+    if (!Secp256k1Operations.isValidScalar(srho)) return false;
 
     BigInteger smInt = new BigInteger(1, sm);
     BigInteger srInt = new BigInteger(1, sr);
@@ -220,26 +216,26 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
     // 3. Verification equations
 
     // Eq 1: sr * G == T1 + e * C1
-    ECPoint lhs1 = secp256k1.multiplyG(srInt);
-    ECPoint eC1 = secp256k1.multiply(c1, eInt);
-    ECPoint rhs1 = secp256k1.add(T1, eC1);
-    if (!secp256k1.pointsEqual(lhs1, rhs1)) return false;
+    ECPoint lhs1 = Secp256k1Operations.multiplyG(srInt);
+    ECPoint eC1 = Secp256k1Operations.multiply(c1, eInt);
+    ECPoint rhs1 = Secp256k1Operations.add(T1, eC1);
+    if (!Secp256k1Operations.pointsEqual(lhs1, rhs1)) return false;
 
     // Eq 2: sm * G + sr * Pk == T2 + e * C2
-    ECPoint smG = secp256k1.multiplyG(smInt);
-    ECPoint srPk = secp256k1.multiply(publicKey, srInt);
-    ECPoint lhs2 = secp256k1.add(smG, srPk);
-    ECPoint eC2 = secp256k1.multiply(c2, eInt);
-    ECPoint rhs2 = secp256k1.add(T2, eC2);
-    if (!secp256k1.pointsEqual(lhs2, rhs2)) return false;
+    ECPoint smG = Secp256k1Operations.multiplyG(smInt);
+    ECPoint srPk = Secp256k1Operations.multiply(publicKey, srInt);
+    ECPoint lhs2 = Secp256k1Operations.add(smG, srPk);
+    ECPoint eC2 = Secp256k1Operations.multiply(c2, eInt);
+    ECPoint rhs2 = Secp256k1Operations.add(T2, eC2);
+    if (!Secp256k1Operations.pointsEqual(lhs2, rhs2)) return false;
 
     // Eq 3: sm * G + srho * H == T3 + e * PCm
     ECPoint H = getHGenerator();
-    ECPoint srhoH = secp256k1.multiply(H, srhoInt);
-    ECPoint lhs3 = secp256k1.add(smG, srhoH);
-    ECPoint ePcm = secp256k1.multiply(commitment, eInt);
-    ECPoint rhs3 = secp256k1.add(T3, ePcm);
-    if (!secp256k1.pointsEqual(lhs3, rhs3)) return false;
+    ECPoint srhoH = Secp256k1Operations.multiply(H, srhoInt);
+    ECPoint lhs3 = Secp256k1Operations.add(smG, srhoH);
+    ECPoint ePcm = Secp256k1Operations.multiply(commitment, eInt);
+    ECPoint rhs3 = Secp256k1Operations.add(T3, ePcm);
+    if (!Secp256k1Operations.pointsEqual(lhs3, rhs3)) return false;
 
     return true;
   }
@@ -276,15 +272,15 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
   }
 
   private int appendPoint(byte[] buffer, int offset, ECPoint point) {
-    byte[] pointBytes = secp256k1.serializeCompressed(point);
+    byte[] pointBytes = Secp256k1Operations.serializeCompressed(point);
     System.arraycopy(pointBytes, 0, buffer, offset, 33);
     return offset + 33;
   }
 
   private byte[] reduceToScalar(byte[] hash) {
     BigInteger hashInt = new BigInteger(1, hash);
-    BigInteger reduced = hashInt.mod(secp256k1.getCurveOrder());
-    return secp256k1.toBytes32(reduced);
+    BigInteger reduced = hashInt.mod(Secp256k1Operations.getCurveOrder());
+    return Secp256k1Operations.toBytes32(reduced);
   }
 
   private ECPoint getHGenerator() {
@@ -325,7 +321,7 @@ public class JavaElGamalPedersenLinkProofGenerator implements ElGamalPedersenLin
       System.arraycopy(hash, 0, compressed, 1, 32);
 
       try {
-        ECPoint point = secp256k1.deserialize(compressed);
+        ECPoint point = Secp256k1Operations.deserialize(compressed);
         if (point != null && !point.isInfinity()) {
           return point;
         }

@@ -26,13 +26,11 @@ import java.util.List;
  */
 class JavaSamePlaintextMultiProofGeneratorTest {
 
-  private Secp256k1Operations secp256k1;
   private SamePlaintextMultiProofGenerator proofGenerator;
 
   @BeforeEach
   void setUp() {
-    secp256k1 = new Secp256k1Operations();
-    proofGenerator = new JavaSamePlaintextMultiProofGenerator(secp256k1);
+    proofGenerator = new JavaSamePlaintextMultiProofGenerator();
   }
 
   /**
@@ -78,15 +76,15 @@ class JavaSamePlaintextMultiProofGeneratorTest {
 
     // 4. Create ciphertexts: R = r * G, S = m * G + r * Pk
     BigInteger mInt = BigInteger.valueOf(amount.longValue());
-    ECPoint mG = secp256k1.multiplyG(mInt);
+    ECPoint mG = Secp256k1Operations.multiplyG(mInt);
 
     BigInteger r1Int = new BigInteger(1, r1);
-    ECPoint R1 = secp256k1.multiplyG(r1Int);
-    ECPoint S1 = secp256k1.add(mG, secp256k1.multiply(pk1, r1Int));
+    ECPoint R1 = Secp256k1Operations.multiplyG(r1Int);
+    ECPoint S1 = Secp256k1Operations.add(mG, Secp256k1Operations.multiply(pk1, r1Int));
 
     BigInteger r2Int = new BigInteger(1, r2);
-    ECPoint R2 = secp256k1.multiplyG(r2Int);
-    ECPoint S2 = secp256k1.add(mG, secp256k1.multiply(pk2, r2Int));
+    ECPoint R2 = Secp256k1Operations.multiplyG(r2Int);
+    ECPoint S2 = Secp256k1Operations.add(mG, Secp256k1Operations.multiply(pk2, r2Int));
 
     List<ElGamalCiphertext> ciphertexts = Arrays.asList(
       new ElGamalCiphertext(R1, S1),
@@ -144,7 +142,7 @@ class JavaSamePlaintextMultiProofGeneratorTest {
 
     System.out.println("=== Amount ===");
     System.out.println("Value: " + amount);
-    System.out.println("As scalar (32 bytes): " + BaseEncoding.base16().encode(secp256k1.unsignedLongToScalar(amount)));
+    System.out.println("As scalar (32 bytes): " + BaseEncoding.base16().encode(Secp256k1Operations.unsignedLongToScalar(amount)));
     System.out.println();
 
     System.out.println("=== Public Keys (uncompressed, 65 bytes each) ===");

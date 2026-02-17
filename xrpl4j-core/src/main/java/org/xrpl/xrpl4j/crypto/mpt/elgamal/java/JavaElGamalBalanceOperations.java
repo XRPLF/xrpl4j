@@ -12,13 +12,10 @@ import java.util.Objects;
  */
 public class JavaElGamalBalanceOperations implements ElGamalBalanceOperations {
 
-  private final Secp256k1Operations secp256k1;
-
   /**
    * Constructs a new ElGamalEncryption instance.
    */
-  public JavaElGamalBalanceOperations(final Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1);
+  public JavaElGamalBalanceOperations() {
   }
 
   /**
@@ -35,8 +32,8 @@ public class JavaElGamalBalanceOperations implements ElGamalBalanceOperations {
     Objects.requireNonNull(aCipherText, "ciphertext a must not be null");
     Objects.requireNonNull(bCipherText, "ciphertext b must not be null");
 
-    ECPoint sumC1 = secp256k1.add(aCipherText.c1(), bCipherText.c1());
-    ECPoint sumC2 = secp256k1.add(aCipherText.c2(), bCipherText.c2());
+    ECPoint sumC1 = Secp256k1Operations.add(aCipherText.c1(), bCipherText.c1());
+    ECPoint sumC2 = Secp256k1Operations.add(aCipherText.c2(), bCipherText.c2());
 
     return new ElGamalCiphertext(sumC1, sumC2);
   }
@@ -56,12 +53,12 @@ public class JavaElGamalBalanceOperations implements ElGamalBalanceOperations {
     Objects.requireNonNull(bCipherText, "ciphertext b must not be null");
 
     // Negate B's points
-    ECPoint negBC1 = secp256k1.negate(bCipherText.c1());
-    ECPoint negBC2 = secp256k1.negate(bCipherText.c2());
+    ECPoint negBC1 = Secp256k1Operations.negate(bCipherText.c1());
+    ECPoint negBC2 = Secp256k1Operations.negate(bCipherText.c2());
 
     // Add A and negated B
-    ECPoint diffC1 = secp256k1.add(aCipherText.c1(), negBC1);
-    ECPoint diffC2 = secp256k1.add(aCipherText.c2(), negBC2);
+    ECPoint diffC1 = Secp256k1Operations.add(aCipherText.c1(), negBC1);
+    ECPoint diffC2 = Secp256k1Operations.add(aCipherText.c2(), negBC2);
 
     return new ElGamalCiphertext(diffC1, diffC2);
   }

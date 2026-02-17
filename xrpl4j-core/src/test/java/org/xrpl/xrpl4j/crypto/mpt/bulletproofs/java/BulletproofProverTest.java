@@ -21,15 +21,13 @@ import java.security.SecureRandom;
  */
 class BulletproofProverTest {
 
-  private Secp256k1Operations secp256k1;
   private BulletproofOperations bulletproofOperations;
   private BulletproofProver prover;
 
   @BeforeEach
   void setUp() {
-    this.secp256k1 = new Secp256k1Operations();
-    this.bulletproofOperations = new BulletproofOperations(secp256k1);
-    this.prover = new BulletproofProver(bulletproofOperations, secp256k1);
+    this.bulletproofOperations = new BulletproofOperations();
+    this.prover = new BulletproofProver(bulletproofOperations);
   }
 
   // ============================================================================
@@ -38,8 +36,7 @@ class BulletproofProverTest {
 
   @Test
   void testConstructorWithNulls() {
-    assertThrows(NullPointerException.class, () -> new BulletproofProver(null, secp256k1));
-    assertThrows(NullPointerException.class, () -> new BulletproofProver(bulletproofOperations, null));
+    assertThrows(NullPointerException.class, () -> new BulletproofProver(null));
   }
 
   // ============================================================================
@@ -49,22 +46,22 @@ class BulletproofProverTest {
   @Test
   void testRunIpaProverWithPowerOfTwoVectors() {
     int n = 4; // Power of two
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     // Create generator vectors
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 10));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 100));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 10));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 100));
     }
 
     // Create scalar vectors
     byte[][] aVec = new byte[n][32];
     byte[][] bVec = new byte[n][32];
     for (int i = 0; i < n; i++) {
-      aVec[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
-      bVec[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 5));
+      aVec[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
+      bVec[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 5));
     }
 
     // Create transcript input
@@ -93,7 +90,7 @@ class BulletproofProverTest {
   @Test
   void testRunIpaProverWithLargerVectors() {
     int n = 8; // Power of two
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(11));
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(11));
 
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
@@ -101,10 +98,10 @@ class BulletproofProverTest {
     byte[][] bVec = new byte[n][32];
 
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 20));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 200));
-      aVec[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
-      bVec[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(n - i));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 20));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 200));
+      aVec[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
+      bVec[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(n - i));
     }
 
     byte[] commitInp = new byte[32];
@@ -120,7 +117,7 @@ class BulletproofProverTest {
   @Test
   void testRunIpaProverNonPowerOfTwoThrows() {
     int n = 5; // Not a power of two
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
@@ -128,10 +125,10 @@ class BulletproofProverTest {
     byte[][] bVec = new byte[n][32];
 
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 10));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 100));
-      aVec[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
-      bVec[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 5));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 10));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 100));
+      aVec[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
+      bVec[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 5));
     }
 
     byte[] commitInp = new byte[32];
@@ -143,7 +140,7 @@ class BulletproofProverTest {
 
   @Test
   void testRunIpaProverEmptyVectorsThrows() {
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
     ECPoint[] gVec = new ECPoint[0];
     ECPoint[] hVec = new ECPoint[0];
     byte[][] aVec = new byte[0][32];
@@ -157,31 +154,31 @@ class BulletproofProverTest {
   @Test
   void testRunIpaProverDotProductCorrect() {
     int n = 2;
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 10));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 100));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 10));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 100));
     }
 
     // a = [2, 3], b = [4, 5]
     // dot = 2*4 + 3*5 = 8 + 15 = 23
     byte[][] aVec = new byte[][] {
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(2)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(3))
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(2)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(3))
     };
     byte[][] bVec = new byte[][] {
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(4)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(5))
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(4)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(5))
     };
 
     byte[] commitInp = new byte[32];
 
     IpaProof proof = prover.runIpaProver(pkBase, gVec, hVec, aVec, bVec, commitInp);
 
-    byte[] expectedDot = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(23));
+    byte[] expectedDot = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(23));
     assertThat(proof.dotProduct()).isEqualTo(expectedDot);
   }
 
@@ -192,16 +189,16 @@ class BulletproofProverTest {
   @Test
   void testProveGeneratesValidBulletproof() {
     UnsignedLong value = UnsignedLong.valueOf(12345);
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     // Create generator vectors (must be N_BITS = 64 elements)
     int n = BulletproofOperations.N_BITS;
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 1000));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 2000));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 1000));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 2000));
     }
 
     Bulletproof proof = prover.prove(value, blindingFactor, pkBase, gVec, hVec);
@@ -223,15 +220,15 @@ class BulletproofProverTest {
 
   @Test
   void testProveZeroValueThrows() {
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     int n = BulletproofOperations.N_BITS;
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 1000));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 2000));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 1000));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 2000));
     }
 
     assertThatThrownBy(() -> prover.prove(UnsignedLong.ZERO, blindingFactor, pkBase, gVec, hVec))
@@ -242,15 +239,15 @@ class BulletproofProverTest {
   @Test
   void testProveCommitmentMatchesExpected() {
     UnsignedLong value = UnsignedLong.valueOf(1000);
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     int n = BulletproofOperations.N_BITS;
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 1000));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 2000));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 1000));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 2000));
     }
 
     Bulletproof proof = prover.prove(value, blindingFactor, pkBase, gVec, hVec);
@@ -258,13 +255,13 @@ class BulletproofProverTest {
     // Manually compute expected commitment: V = value*G + blindingFactor*pkBase
     ECPoint expectedV = bulletproofOperations.createCommitment(value, blindingFactor, pkBase);
 
-    assertThat(secp256k1.pointsEqual(proof.vCommitment(), expectedV)).isTrue();
+    assertThat(Secp256k1Operations.pointsEqual(proof.vCommitment(), expectedV)).isTrue();
   }
 
   @Test
   void testProveDifferentValuesProduceDifferentProofs() {
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     int n = BulletproofOperations.N_BITS;
     ECPoint[] gVec1 = new ECPoint[n];
@@ -272,31 +269,31 @@ class BulletproofProverTest {
     ECPoint[] gVec2 = new ECPoint[n];
     ECPoint[] hVec2 = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec1[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 1000));
-      hVec1[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 2000));
-      gVec2[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 1000));
-      hVec2[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 2000));
+      gVec1[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 1000));
+      hVec1[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 2000));
+      gVec2[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 1000));
+      hVec2[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 2000));
     }
 
     Bulletproof proof1 = prover.prove(UnsignedLong.valueOf(100), blindingFactor, pkBase, gVec1, hVec1);
     Bulletproof proof2 = prover.prove(UnsignedLong.valueOf(200), blindingFactor, pkBase, gVec2, hVec2);
 
     // Different values should produce different commitments
-    assertThat(secp256k1.pointsEqual(proof1.vCommitment(), proof2.vCommitment())).isFalse();
+    assertThat(Secp256k1Operations.pointsEqual(proof1.vCommitment(), proof2.vCommitment())).isFalse();
   }
 
   @Test
   void testProveMaxValue() {
     UnsignedLong value = UnsignedLong.MAX_VALUE;
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     int n = BulletproofOperations.N_BITS;
     ECPoint[] gVec = new ECPoint[n];
     ECPoint[] hVec = new ECPoint[n];
     for (int i = 0; i < n; i++) {
-      gVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 1000));
-      hVec[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 2000));
+      gVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 1000));
+      hVec[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 2000));
     }
 
     Bulletproof proof = prover.prove(value, blindingFactor, pkBase, gVec, hVec);

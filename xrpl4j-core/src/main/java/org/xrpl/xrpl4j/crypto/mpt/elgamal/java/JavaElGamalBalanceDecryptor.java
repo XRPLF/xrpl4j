@@ -50,15 +50,10 @@ public class JavaElGamalBalanceDecryptor implements ElGamalBalanceDecryptor<ElGa
    */
   public static final long MAX_DECRYPTABLE_AMOUNT = 1_000_000L;
 
-  private final Secp256k1Operations secp256k1;
-
   /**
    * Constructs a new {@link JavaElGamalBalanceDecryptor} instance.
-   *
-   * @param secp256k1 The {@link Secp256k1Operations} to use for EC operations.
    */
-  public JavaElGamalBalanceDecryptor(final Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
+  public JavaElGamalBalanceDecryptor() {
   }
 
   /**
@@ -92,26 +87,26 @@ public class JavaElGamalBalanceDecryptor implements ElGamalBalanceDecryptor<ElGa
     BigInteger privKeyScalar = new BigInteger(1, privateKeyBytes);
 
     // S = privateKey * C1
-    ECPoint sharedSecret = secp256k1.multiply(ciphertext.c1(), privKeyScalar);
+    ECPoint sharedSecret = Secp256k1Operations.multiply(ciphertext.c1(), privKeyScalar);
 
     // Check for amount = 0: C2 == S
-    if (secp256k1.pointsEqual(ciphertext.c2(), sharedSecret)) {
+    if (Secp256k1Operations.pointsEqual(ciphertext.c2(), sharedSecret)) {
       return 0;
     }
 
     // M = C2 - S
-    ECPoint negS = secp256k1.negate(sharedSecret);
-    ECPoint m = secp256k1.add(ciphertext.c2(), negS);
+    ECPoint negS = Secp256k1Operations.negate(sharedSecret);
+    ECPoint m = Secp256k1Operations.add(ciphertext.c2(), negS);
 
     // Brute-force search: find i such that i * G == M
-    ECPoint gPoint = secp256k1.getG();
+    ECPoint gPoint = Secp256k1Operations.getG();
     ECPoint currentM = gPoint;
 
     for (long i = 1; i <= MAX_DECRYPTABLE_AMOUNT; i++) {
-      if (secp256k1.pointsEqual(m, currentM)) {
+      if (Secp256k1Operations.pointsEqual(m, currentM)) {
         return i;
       }
-      currentM = secp256k1.add(currentM, gPoint);
+      currentM = Secp256k1Operations.add(currentM, gPoint);
     }
 
     throw new IllegalArgumentException(

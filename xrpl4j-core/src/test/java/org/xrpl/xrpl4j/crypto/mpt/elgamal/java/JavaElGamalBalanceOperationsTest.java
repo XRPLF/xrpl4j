@@ -22,14 +22,11 @@ public class JavaElGamalBalanceOperationsTest extends AbstractElGamalTest {
 
   private JavaElGamalBalanceOperations elGamalBalanceOperations;
 
-  private Secp256k1Operations secp256k1;
-
   @BeforeEach
   void setUp() {
-    this.secp256k1 = new Secp256k1Operations();
-    this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor(secp256k1);
-    this.javaElGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor(secp256k1);
-    this.elGamalBalanceOperations = new JavaElGamalBalanceOperations(secp256k1);
+    this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor();
+    this.javaElGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor();
+    this.elGamalBalanceOperations = new JavaElGamalBalanceOperations();
   }
 
   @Test

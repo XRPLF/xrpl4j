@@ -23,12 +23,10 @@ class BulletproofOperationsTest {
   private static final SecureRandom RANDOM = new SecureRandom();
 
   private BulletproofOperations ops;
-  private Secp256k1Operations secp256k1;
 
   @BeforeEach
   void setUp() {
     ops = new BulletproofOperations();
-    secp256k1 = new Secp256k1Operations();
   }
 
   // ============================================================================
@@ -39,15 +37,15 @@ class BulletproofOperationsTest {
   void testSumScalarVector() {
     // Create a vector of known scalars
     byte[][] vector = new byte[4][32];
-    vector[0] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(100));
-    vector[1] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(200));
-    vector[2] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(300));
-    vector[3] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(400));
+    vector[0] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(100));
+    vector[1] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(200));
+    vector[2] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(300));
+    vector[3] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(400));
 
     byte[] sum = ops.sumScalarVector(vector);
 
     // Expected: 100 + 200 + 300 + 400 = 1000
-    byte[] expected = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(1000));
+    byte[] expected = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(1000));
     assertThat(sum).isEqualTo(expected);
   }
 
@@ -55,25 +53,25 @@ class BulletproofOperationsTest {
   void testSumScalarVectorEmpty() {
     byte[][] vector = new byte[0][32];
     byte[] sum = ops.sumScalarVector(vector);
-    assertThat(sum).isEqualTo(secp256k1.scalarZero());
+    assertThat(sum).isEqualTo(Secp256k1Operations.scalarZero());
   }
 
   @Test
   void testIpaDotSimple() {
     // <[1, 2, 3], [4, 5, 6]> = 1*4 + 2*5 + 3*6 = 4 + 10 + 18 = 32
     byte[][] a = new byte[3][32];
-    a[0] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(1));
-    a[1] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(2));
-    a[2] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(3));
+    a[0] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(1));
+    a[1] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(2));
+    a[2] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(3));
 
     byte[][] b = new byte[3][32];
-    b[0] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(4));
-    b[1] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(5));
-    b[2] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(6));
+    b[0] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(4));
+    b[1] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(5));
+    b[2] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(6));
 
     byte[] dot = ops.ipaDot(a, b);
 
-    byte[] expected = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(32));
+    byte[] expected = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(32));
     assertThat(dot).isEqualTo(expected);
   }
 
@@ -94,47 +92,47 @@ class BulletproofOperationsTest {
   @Test
   void testIpaMsmSinglePoint() {
     // scalar * G should equal multiplyG(scalar)
-    byte[] scalar = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(42));
-    ECPoint[] points = new ECPoint[] {secp256k1.getG()};
+    byte[] scalar = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(42));
+    ECPoint[] points = new ECPoint[] {Secp256k1Operations.getG()};
     byte[][] scalars = new byte[][] {scalar};
 
     ECPoint result = ops.ipaMsm(points, scalars);
-    ECPoint expected = secp256k1.multiplyG(BigInteger.valueOf(42));
+    ECPoint expected = Secp256k1Operations.multiplyG(BigInteger.valueOf(42));
 
-    assertThat(secp256k1.pointsEqual(result, expected)).isTrue();
+    assertThat(Secp256k1Operations.pointsEqual(result, expected)).isTrue();
   }
 
   @Test
   void testIpaMsmMultiplePoints() {
     // 2*G + 3*G = 5*G
-    ECPoint G = secp256k1.getG();
+    ECPoint G = Secp256k1Operations.getG();
     ECPoint[] points = new ECPoint[] {G, G};
     byte[][] scalars = new byte[][] {
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(2)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(3))
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(2)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(3))
     };
 
     ECPoint result = ops.ipaMsm(points, scalars);
-    ECPoint expected = secp256k1.multiplyG(BigInteger.valueOf(5));
+    ECPoint expected = Secp256k1Operations.multiplyG(BigInteger.valueOf(5));
 
-    assertThat(secp256k1.pointsEqual(result, expected)).isTrue();
+    assertThat(Secp256k1Operations.pointsEqual(result, expected)).isTrue();
   }
 
   @Test
   void testIpaMsmWithDifferentPoints() {
     // 2*G + 3*(2*G) = 2*G + 6*G = 8*G
-    ECPoint G = secp256k1.getG();
-    ECPoint twoG = secp256k1.multiplyG(BigInteger.valueOf(2));
+    ECPoint G = Secp256k1Operations.getG();
+    ECPoint twoG = Secp256k1Operations.multiplyG(BigInteger.valueOf(2));
     ECPoint[] points = new ECPoint[] {G, twoG};
     byte[][] scalars = new byte[][] {
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(2)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(3))
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(2)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(3))
     };
 
     ECPoint result = ops.ipaMsm(points, scalars);
-    ECPoint expected = secp256k1.multiplyG(BigInteger.valueOf(8));
+    ECPoint expected = Secp256k1Operations.multiplyG(BigInteger.valueOf(8));
 
-    assertThat(secp256k1.pointsEqual(result, expected)).isTrue();
+    assertThat(Secp256k1Operations.pointsEqual(result, expected)).isTrue();
   }
 
   // ============================================================================
@@ -143,13 +141,13 @@ class BulletproofOperationsTest {
 
   @Test
   void testPointScalarMul() {
-    ECPoint G = secp256k1.getG();
-    byte[] scalar = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(7));
+    ECPoint G = Secp256k1Operations.getG();
+    byte[] scalar = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(7));
 
     ECPoint result = ops.pointScalarMul(G, scalar);
-    ECPoint expected = secp256k1.multiplyG(BigInteger.valueOf(7));
+    ECPoint expected = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
-    assertThat(secp256k1.pointsEqual(result, expected)).isTrue();
+    assertThat(Secp256k1Operations.pointsEqual(result, expected)).isTrue();
   }
 
   // ============================================================================
@@ -160,7 +158,7 @@ class BulletproofOperationsTest {
   void testIpaDeriveChallengeFromDotDeterministic() {
     byte[] commitInp = new byte[32];
     RANDOM.nextBytes(commitInp);
-    byte[] dot = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(12345));
+    byte[] dot = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(12345));
 
     byte[] challenge1 = ops.ipaDeriveChallengeFromDot(commitInp, dot);
     byte[] challenge2 = ops.ipaDeriveChallengeFromDot(commitInp, dot);
@@ -170,15 +168,15 @@ class BulletproofOperationsTest {
     // Challenge should be 32 bytes
     assertThat(challenge1).hasSize(32);
     // Challenge should be a valid scalar
-    assertThat(secp256k1.isValidScalar(challenge1)).isTrue();
+    assertThat(Secp256k1Operations.isValidScalar(challenge1)).isTrue();
   }
 
   @Test
   void testIpaDeriveChallengeFromDotDifferentInputs() {
     byte[] commitInp = new byte[32];
     RANDOM.nextBytes(commitInp);
-    byte[] dot1 = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(12345));
-    byte[] dot2 = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(54321));
+    byte[] dot1 = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(12345));
+    byte[] dot2 = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(54321));
 
     byte[] challenge1 = ops.ipaDeriveChallengeFromDot(commitInp, dot1);
     byte[] challenge2 = ops.ipaDeriveChallengeFromDot(commitInp, dot2);
@@ -191,13 +189,13 @@ class BulletproofOperationsTest {
   void testIpaDeriveChallenge() {
     byte[] transcript = new byte[32];
     RANDOM.nextBytes(transcript);
-    ECPoint L = secp256k1.multiplyG(BigInteger.valueOf(123));
-    ECPoint R = secp256k1.multiplyG(BigInteger.valueOf(456));
+    ECPoint L = Secp256k1Operations.multiplyG(BigInteger.valueOf(123));
+    ECPoint R = Secp256k1Operations.multiplyG(BigInteger.valueOf(456));
 
     byte[] challenge = ops.ipaDeriveChallenge(transcript, L, R);
 
     assertThat(challenge).hasSize(32);
-    assertThat(secp256k1.isValidScalar(challenge)).isTrue();
+    assertThat(Secp256k1Operations.isValidScalar(challenge)).isTrue();
   }
 
   // ============================================================================
@@ -221,9 +219,9 @@ class BulletproofOperationsTest {
     UnsignedLong value = UnsignedLong.valueOf(5);
     BulletproofVectors vectors = ops.computeVectors(value);
 
-    byte[] one = secp256k1.scalarOne();
-    byte[] zero = secp256k1.scalarZero();
-    byte[] minusOne = secp256k1.scalarMinusOne();
+    byte[] one = Secp256k1Operations.scalarOne();
+    byte[] zero = Secp256k1Operations.scalarZero();
+    byte[] minusOne = Secp256k1Operations.scalarMinusOne();
 
     // Bit 0 (LSB) = 1: al[0] = 1, ar[0] = 0
     assertThat(vectors.al().get(0)).isEqualTo(one);
@@ -279,23 +277,23 @@ class BulletproofOperationsTest {
   @Test
   void testCreateCommitment() {
     UnsignedLong value = UnsignedLong.valueOf(1000);
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7)); // Some point
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7)); // Some point
 
     ECPoint commitment = ops.createCommitment(value, blindingFactor, pkBase);
 
     // Verify: C = value*G + blindingFactor*pkBase
-    ECPoint vG = secp256k1.multiplyG(value.bigIntegerValue());
-    ECPoint rPk = secp256k1.multiply(pkBase, new BigInteger(1, blindingFactor));
-    ECPoint expected = secp256k1.add(vG, rPk);
+    ECPoint vG = Secp256k1Operations.multiplyG(value.bigIntegerValue());
+    ECPoint rPk = Secp256k1Operations.multiply(pkBase, new BigInteger(1, blindingFactor));
+    ECPoint expected = Secp256k1Operations.add(vG, rPk);
 
-    assertThat(secp256k1.pointsEqual(commitment, expected)).isTrue();
+    assertThat(Secp256k1Operations.pointsEqual(commitment, expected)).isTrue();
   }
 
   @Test
   void testCreateCommitmentZeroValueThrows() {
-    byte[] blindingFactor = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(7));
+    byte[] blindingFactor = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(7));
 
     assertThatThrownBy(() -> ops.createCommitment(UnsignedLong.ZERO, blindingFactor, pkBase))
       .isInstanceOf(IllegalArgumentException.class)
@@ -306,9 +304,9 @@ class BulletproofOperationsTest {
   void testCommitAS() {
     UnsignedLong value = UnsignedLong.valueOf(500);
     BulletproofVectors vectors = ops.computeVectors(value);
-    byte[] rho = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    byte[] rhoS = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    ECPoint pkBase = secp256k1.multiplyG(BigInteger.valueOf(11));
+    byte[] rho = RandomnessUtils.generateRandomScalar();
+    byte[] rhoS = RandomnessUtils.generateRandomScalar();
+    ECPoint pkBase = Secp256k1Operations.multiplyG(BigInteger.valueOf(11));
 
     ECPoint[] as = ops.commitAS(vectors, rho, rhoS, pkBase);
 
@@ -335,14 +333,14 @@ class BulletproofOperationsTest {
     ECPoint[] H = new ECPoint[n];
 
     for (int i = 0; i < n; i++) {
-      a[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
-      b[i] = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(i + 5));
-      G[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 10));
-      H[i] = secp256k1.multiplyG(BigInteger.valueOf(i + 20));
+      a[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 1));
+      b[i] = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(i + 5));
+      G[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 10));
+      H[i] = Secp256k1Operations.multiplyG(BigInteger.valueOf(i + 20));
     }
 
-    byte[] x = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(3));
-    byte[] xInv = secp256k1.scalarInverse(x);
+    byte[] x = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(3));
+    byte[] xInv = Secp256k1Operations.scalarInverse(x);
 
     // Compress
     ops.ipaCompressStep(a, b, G, H, halfN, x, xInv);
@@ -364,34 +362,34 @@ class BulletproofOperationsTest {
   void testIpaComputeLR() {
     int halfN = 2;
 
-    byte[][] aL = new byte[][] {secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(1)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(2))};
-    byte[][] aR = new byte[][] {secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(3)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(4))};
-    byte[][] bL = new byte[][] {secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(5)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(6))};
-    byte[][] bR = new byte[][] {secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(7)),
-      secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(8))};
+    byte[][] aL = new byte[][] {Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(1)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(2))};
+    byte[][] aR = new byte[][] {Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(3)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(4))};
+    byte[][] bL = new byte[][] {Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(5)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(6))};
+    byte[][] bR = new byte[][] {Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(7)),
+      Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(8))};
 
     ECPoint[] gL = new ECPoint[] {
-      secp256k1.multiplyG(BigInteger.valueOf(10)),
-      secp256k1.multiplyG(BigInteger.valueOf(11))
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(10)),
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(11))
     };
     ECPoint[] gR = new ECPoint[] {
-      secp256k1.multiplyG(BigInteger.valueOf(12)),
-      secp256k1.multiplyG(BigInteger.valueOf(13))
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(12)),
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(13))
     };
     ECPoint[] hL = new ECPoint[] {
-      secp256k1.multiplyG(BigInteger.valueOf(14)),
-      secp256k1.multiplyG(BigInteger.valueOf(15))
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(14)),
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(15))
     };
     ECPoint[] hR = new ECPoint[] {
-      secp256k1.multiplyG(BigInteger.valueOf(16)),
-      secp256k1.multiplyG(BigInteger.valueOf(17))
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(16)),
+      Secp256k1Operations.multiplyG(BigInteger.valueOf(17))
     };
 
-    ECPoint g = secp256k1.multiplyG(BigInteger.valueOf(100));
-    byte[] ux = secp256k1.unsignedLongToScalar(UnsignedLong.valueOf(42));
+    ECPoint g = Secp256k1Operations.multiplyG(BigInteger.valueOf(100));
+    byte[] ux = Secp256k1Operations.unsignedLongToScalar(UnsignedLong.valueOf(42));
 
     ECPoint[] lr = ops.ipaComputeLR(aL, aR, bL, bR, gL, gR, hL, hR, g, ux);
 
@@ -408,13 +406,13 @@ class BulletproofOperationsTest {
 
   @Test
   void testGenerateRandomScalar() {
-    byte[] scalar1 = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
-    byte[] scalar2 = RandomnessUtils.generateRandomScalar(new SecureRandom(), secp256k1);
+    byte[] scalar1 = RandomnessUtils.generateRandomScalar();
+    byte[] scalar2 = RandomnessUtils.generateRandomScalar();
 
     assertThat(scalar1).hasSize(32);
     assertThat(scalar2).hasSize(32);
-    assertThat(secp256k1.isValidScalar(scalar1)).isTrue();
-    assertThat(secp256k1.isValidScalar(scalar2)).isTrue();
+    assertThat(Secp256k1Operations.isValidScalar(scalar1)).isTrue();
+    assertThat(Secp256k1Operations.isValidScalar(scalar2)).isTrue();
     assertThat(scalar1).isNotEqualTo(scalar2);
   }
 }

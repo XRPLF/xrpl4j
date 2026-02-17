@@ -31,28 +31,16 @@ public class BulletproofOperations {
    */
   public static final int N_BITS = 64;
 
-  private final Secp256k1Operations secp256k1;
   private final SecureRandom random;
 
   /**
    * Constructs a new BulletproofOperations instance.
    */
   public BulletproofOperations() {
-    this.secp256k1 = new Secp256k1Operations();
     this.random = new SecureRandom();
   }
 
   // TODO: Add a constructor that accepts SecureRandom.
-
-  /**
-   * Constructs a new BulletproofOperations instance with a custom Secp256k1Operations.
-   *
-   * @param secp256k1 The secp256k1 operations instance.
-   */
-  public BulletproofOperations(final Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1);
-    this.random = new SecureRandom();
-  }
 
   // ============================================================================
   // Scalar Vector Operations
@@ -67,9 +55,9 @@ public class BulletproofOperations {
    */
   public byte[] sumScalarVector(final byte[][] vector) {
     Objects.requireNonNull(vector, "vector must not be null");
-    byte[] sum = secp256k1.scalarZero();
+    byte[] sum = Secp256k1Operations.scalarZero();
     for (byte[] scalar : vector) {
-      sum = secp256k1.scalarAdd(sum, scalar);
+      sum = Secp256k1Operations.scalarAdd(sum, scalar);
     }
     return sum;
   }
@@ -83,9 +71,9 @@ public class BulletproofOperations {
    */
   public byte[] sumScalarVector(final List<byte[]> vector) {
     Objects.requireNonNull(vector, "vector must not be null");
-    byte[] sum = secp256k1.scalarZero();
+    byte[] sum = Secp256k1Operations.scalarZero();
     for (byte[] scalar : vector) {
-      sum = secp256k1.scalarAdd(sum, scalar);
+      sum = Secp256k1Operations.scalarAdd(sum, scalar);
     }
     return sum;
   }
@@ -107,10 +95,10 @@ public class BulletproofOperations {
       throw new IllegalArgumentException("Vectors must have same length");
     }
 
-    byte[] acc = secp256k1.scalarZero();
+    byte[] acc = Secp256k1Operations.scalarZero();
     for (int i = 0; i < a.length; i++) {
-      byte[] term = secp256k1.scalarMultiply(a[i], b[i]);
-      acc = secp256k1.scalarAdd(acc, term);
+      byte[] term = Secp256k1Operations.scalarMultiply(a[i], b[i]);
+      acc = Secp256k1Operations.scalarAdd(acc, term);
     }
     return acc;
   }
@@ -131,16 +119,16 @@ public class BulletproofOperations {
       throw new IllegalArgumentException("Points and scalars must have same length");
     }
     if (points.length == 0) {
-      return secp256k1.getInfinity();
+      return Secp256k1Operations.getInfinity();
     }
 
     // Initialize with first term
-    ECPoint acc = secp256k1.multiply(points[0], new BigInteger(1, scalars[0]));
+    ECPoint acc = Secp256k1Operations.multiply(points[0], new BigInteger(1, scalars[0]));
 
     // Accumulate remaining terms
     for (int i = 1; i < points.length; i++) {
-      ECPoint term = secp256k1.multiply(points[i], new BigInteger(1, scalars[i]));
-      acc = secp256k1.add(acc, term);
+      ECPoint term = Secp256k1Operations.multiply(points[i], new BigInteger(1, scalars[i]));
+      acc = Secp256k1Operations.add(acc, term);
     }
     return acc;
   }
@@ -156,7 +144,7 @@ public class BulletproofOperations {
   public ECPoint pointScalarMul(final ECPoint point, final byte[] scalar) {
     Objects.requireNonNull(point, "point must not be null");
     Objects.requireNonNull(scalar, "scalar must not be null");
-    return secp256k1.multiply(point, new BigInteger(1, scalar));
+    return Secp256k1Operations.multiply(point, new BigInteger(1, scalar));
   }
 
   /**
@@ -195,22 +183,22 @@ public class BulletproofOperations {
     // Compute L: L = MSM(G_R, a_L) + MSM(H_L, b_R) + (c_L * ux) * g
     ECPoint L = ipaMsm(gR, aL);
     ECPoint t1 = ipaMsm(hL, bR);
-    L = secp256k1.add(L, t1);
+    L = Secp256k1Operations.add(L, t1);
 
     // Blinding term for L: c_L * ux * g
-    byte[] cLux = secp256k1.scalarMultiply(cL, ux);
+    byte[] cLux = Secp256k1Operations.scalarMultiply(cL, ux);
     ECPoint t2 = pointScalarMul(g, cLux);
-    L = secp256k1.add(L, t2);
+    L = Secp256k1Operations.add(L, t2);
 
     // Compute R: R = MSM(G_L, a_R) + MSM(H_R, b_L) + (c_R * ux) * g
     ECPoint R = ipaMsm(gL, aR);
     t1 = ipaMsm(hR, bL);
-    R = secp256k1.add(R, t1);
+    R = Secp256k1Operations.add(R, t1);
 
     // Blinding term for R: c_R * ux * g
-    byte[] cRux = secp256k1.scalarMultiply(cR, ux);
+    byte[] cRux = Secp256k1Operations.scalarMultiply(cR, ux);
     t2 = pointScalarMul(g, cRux);
-    R = secp256k1.add(R, t2);
+    R = Secp256k1Operations.add(R, t2);
 
     return new ECPoint[] {L, R};
   }
@@ -234,24 +222,24 @@ public class BulletproofOperations {
 
     for (int i = 0; i < halfN; i++) {
       // a'[i] = a[i] * x + a[i + halfN] * x_inv
-      byte[] t1 = secp256k1.scalarMultiply(a[i], x);
-      byte[] t2 = secp256k1.scalarMultiply(a[i + halfN], xInv);
-      a[i] = secp256k1.scalarAdd(t1, t2);
+      byte[] t1 = Secp256k1Operations.scalarMultiply(a[i], x);
+      byte[] t2 = Secp256k1Operations.scalarMultiply(a[i + halfN], xInv);
+      a[i] = Secp256k1Operations.scalarAdd(t1, t2);
 
       // b'[i] = b[i] * x_inv + b[i + halfN] * x
-      t1 = secp256k1.scalarMultiply(b[i], xInv);
-      t2 = secp256k1.scalarMultiply(b[i + halfN], x);
-      b[i] = secp256k1.scalarAdd(t1, t2);
+      t1 = Secp256k1Operations.scalarMultiply(b[i], xInv);
+      t2 = Secp256k1Operations.scalarMultiply(b[i + halfN], x);
+      b[i] = Secp256k1Operations.scalarAdd(t1, t2);
 
       // G'[i] = G[i] * x_inv + G[i + halfN] * x
       ECPoint gTerm = pointScalarMul(G[i], xInv);
       ECPoint hTerm = pointScalarMul(G[i + halfN], x);
-      G[i] = secp256k1.add(gTerm, hTerm);
+      G[i] = Secp256k1Operations.add(gTerm, hTerm);
 
       // H'[i] = H[i] * x + H[i + halfN] * x_inv
       gTerm = pointScalarMul(H[i], x);
       hTerm = pointScalarMul(H[i + halfN], xInv);
-      H[i] = secp256k1.add(gTerm, hTerm);
+      H[i] = Secp256k1Operations.add(gTerm, hTerm);
     }
   }
 
@@ -277,12 +265,12 @@ public class BulletproofOperations {
 
     // Ensure the scalar is valid (non-zero and < curve order)
     BigInteger scalar = new BigInteger(1, hash);
-    scalar = scalar.mod(secp256k1.getCurveOrder());
+    scalar = scalar.mod(Secp256k1Operations.getCurveOrder());
     if (scalar.equals(BigInteger.ZERO)) {
       // Extremely unlikely, but handle it
       scalar = BigInteger.ONE;
     }
-    return secp256k1.toBytes32(scalar);
+    return Secp256k1Operations.toBytes32(scalar);
   }
 
   /**
@@ -295,8 +283,8 @@ public class BulletproofOperations {
    * @return The derived challenge scalar (32 bytes).
    */
   public byte[] ipaDeriveChallenge(final byte[] transcript, final ECPoint L, final ECPoint R) {
-    byte[] lBytes = secp256k1.serializeCompressed(L);
-    byte[] rBytes = secp256k1.serializeCompressed(R);
+    byte[] lBytes = Secp256k1Operations.serializeCompressed(L);
+    byte[] rBytes = Secp256k1Operations.serializeCompressed(R);
 
     // Hash: transcript || L || R
     byte[] hashInput = new byte[32 + 33 + 33];
@@ -307,11 +295,11 @@ public class BulletproofOperations {
     byte[] hash = HashingUtils.sha256(hashInput).toByteArray();
 
     BigInteger scalar = new BigInteger(1, hash);
-    scalar = scalar.mod(secp256k1.getCurveOrder());
+    scalar = scalar.mod(Secp256k1Operations.getCurveOrder());
     if (scalar.equals(BigInteger.ZERO)) {
       scalar = BigInteger.ONE;
     }
-    return secp256k1.toBytes32(scalar);
+    return Secp256k1Operations.toBytes32(scalar);
   }
 
   // ============================================================================
@@ -332,9 +320,9 @@ public class BulletproofOperations {
     List<byte[]> sl = new ArrayList<>(N_BITS);
     List<byte[]> sr = new ArrayList<>(N_BITS);
 
-    byte[] oneScalar = secp256k1.scalarOne();
-    byte[] zeroScalar = secp256k1.scalarZero();
-    byte[] minusOneScalar = secp256k1.scalarMinusOne();
+    byte[] oneScalar = Secp256k1Operations.scalarOne();
+    byte[] zeroScalar = Secp256k1Operations.scalarZero();
+    byte[] minusOneScalar = Secp256k1Operations.scalarMinusOne();
 
     long longValue = value.longValue();
     // Encode value into a_l and a_r
@@ -351,8 +339,8 @@ public class BulletproofOperations {
 
     // Generate random auxiliary scalars s_l and s_r
     for (int i = 0; i < N_BITS; i++) {
-      sl.add(generateRandomScalar(this.getSecureRandom(), secp256k1));
-      sr.add(generateRandomScalar(this.getSecureRandom(), secp256k1));
+      sl.add(generateRandomScalar());
+      sr.add(generateRandomScalar());
     }
 
     return BulletproofVectors.of(al, ar, sl, sr);
@@ -382,16 +370,16 @@ public class BulletproofOperations {
     byte[] srSum = sumScalarVector(vectors.sr());
 
     // Compute A = (al_sum + rho) * G + ar_sum * Pk_base
-    byte[] gScalarA = secp256k1.scalarAdd(alSum, rho);
-    ECPoint gTermA = secp256k1.multiplyG(new BigInteger(1, gScalarA));
+    byte[] gScalarA = Secp256k1Operations.scalarAdd(alSum, rho);
+    ECPoint gTermA = Secp256k1Operations.multiplyG(new BigInteger(1, gScalarA));
     ECPoint hTermA = pointScalarMul(pkBase, arSum);
-    ECPoint A = secp256k1.add(gTermA, hTermA);
+    ECPoint A = Secp256k1Operations.add(gTermA, hTermA);
 
     // Compute S = (sl_sum + rho_s) * G + sr_sum * Pk_base
-    byte[] gScalarS = secp256k1.scalarAdd(slSum, rhoS);
-    ECPoint gTermS = secp256k1.multiplyG(new BigInteger(1, gScalarS));
+    byte[] gScalarS = Secp256k1Operations.scalarAdd(slSum, rhoS);
+    ECPoint gTermS = Secp256k1Operations.multiplyG(new BigInteger(1, gScalarS));
     ECPoint hTermS = pointScalarMul(pkBase, srSum);
-    ECPoint S = secp256k1.add(gTermS, hTermS);
+    ECPoint S = Secp256k1Operations.add(gTermS, hTermS);
 
     return new ECPoint[] {A, S};
   }
@@ -413,13 +401,13 @@ public class BulletproofOperations {
     }
 
     // v * G
-    ECPoint vG = secp256k1.multiplyG(value.bigIntegerValue());
+    ECPoint vG = Secp256k1Operations.multiplyG(value.bigIntegerValue());
 
     // r * Pk_base
     ECPoint rPk = pointScalarMul(pkBase, blindingFactor);
 
     // C = v*G + r*Pk_base
-    return secp256k1.add(vG, rPk);
+    return Secp256k1Operations.add(vG, rPk);
   }
 
   /**

@@ -25,15 +25,13 @@ import java.util.Arrays;
 public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
 
   private JavaElGamalBalanceDecryptor elGamalBalanceDecryptor;
-  private Secp256k1Operations secp256k1;
 
   private JavaElGamalBalanceEncryptor elGamalBalanceEncryptor;
 
   @BeforeEach
   void setUp() {
-    this.secp256k1 = new Secp256k1Operations();
-    this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor(secp256k1);
-    this.elGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor(secp256k1);
+    this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor();
+    this.elGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor();
   }
 
   @Test
@@ -98,7 +96,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     System.out.println();
 
     System.out.println("=== Public Key ===");
-    byte[] pkCompressed = secp256k1.serializeCompressed(publicKeyPoint);
+    byte[] pkCompressed = Secp256k1Operations.serializeCompressed(publicKeyPoint);
     byte[] pkUncompressed = publicKeyPoint.getEncoded(false); // false = uncompressed (65 bytes with 04 prefix)
     // Get 64 bytes without prefix by slicing off the first byte
     byte[] pkUncompressedNoPrefix = new byte[64];
@@ -113,8 +111,8 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     System.out.println();
 
     System.out.println("=== Ciphertext ===");
-    byte[] c1Bytes = secp256k1.serializeCompressed(ciphertext.c1());
-    byte[] c2Bytes = secp256k1.serializeCompressed(ciphertext.c2());
+    byte[] c1Bytes = Secp256k1Operations.serializeCompressed(ciphertext.c1());
+    byte[] c2Bytes = Secp256k1Operations.serializeCompressed(ciphertext.c2());
     byte[] fullCiphertext = ciphertext.toBytes();
     System.out.println("C1 (33 bytes compressed): " + BaseEncoding.base16().encode(c1Bytes));
     System.out.println("C2 (33 bytes compressed): " + BaseEncoding.base16().encode(c2Bytes));
@@ -267,7 +265,7 @@ public class JavaElGamalBalanceEncryptorTest extends AbstractElGamalTest {
     byte[] serialized = original.toBytes();
     assertThat(serialized).hasSize(66); // 33 + 33 bytes
 
-    ElGamalCiphertext deserialized = ElGamalCiphertext.fromBytes(serialized, secp256k1);
+    ElGamalCiphertext deserialized = ElGamalCiphertext.fromBytes(serialized);
 
     assertThat(deserialized).isEqualTo(original);
 

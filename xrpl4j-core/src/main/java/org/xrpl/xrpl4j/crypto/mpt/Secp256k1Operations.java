@@ -11,18 +11,27 @@ import java.util.Objects;
 
 /**
  * Utility class for secp256k1 elliptic curve operations using BouncyCastle.
+ *
+ * <p>This is a static utility class - all methods are static and no instances should be created.</p>
  */
-public class Secp256k1Operations {
+public final class Secp256k1Operations {
 
   private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
   private static final BigInteger CURVE_ORDER = CURVE_PARAMS.getN();
+
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private Secp256k1Operations() {
+    // Static utility class
+  }
 
   /**
    * Gets the generator point G of the secp256k1 curve.
    *
    * @return The generator point G.
    */
-  public ECPoint getG() {
+  public static ECPoint getG() {
     return CURVE_PARAMS.getG();
   }
 
@@ -31,7 +40,7 @@ public class Secp256k1Operations {
    *
    * @return The curve order.
    */
-  public BigInteger getCurveOrder() {
+  public static BigInteger getCurveOrder() {
     return CURVE_ORDER;
   }
 
@@ -42,7 +51,7 @@ public class Secp256k1Operations {
    *
    * @return {@code true} if valid, {@code false} otherwise.
    */
-  public boolean isValidPrivateKey(BigInteger scalar) {
+  public static boolean isValidPrivateKey(BigInteger scalar) {
     Objects.requireNonNull(scalar, "scalar must not be null");
     return scalar.compareTo(BigInteger.ONE) >= 0 && scalar.compareTo(CURVE_ORDER) < 0;
   }
@@ -54,7 +63,7 @@ public class Secp256k1Operations {
    *
    * @return The resulting point (scalar * G).
    */
-  public ECPoint multiplyG(BigInteger scalar) {
+  public static ECPoint multiplyG(BigInteger scalar) {
     Objects.requireNonNull(scalar, "scalar must not be null");
     return CURVE_PARAMS.getG().multiply(scalar).normalize();
   }
@@ -67,7 +76,7 @@ public class Secp256k1Operations {
    *
    * @return The resulting point (scalar * point).
    */
-  public ECPoint multiply(ECPoint point, BigInteger scalar) {
+  public static ECPoint multiply(ECPoint point, BigInteger scalar) {
     Objects.requireNonNull(point, "point must not be null");
     Objects.requireNonNull(scalar, "scalar must not be null");
     return point.multiply(scalar).normalize();
@@ -81,7 +90,7 @@ public class Secp256k1Operations {
    *
    * @return The sum (p1 + p2).
    */
-  public ECPoint add(ECPoint p1, ECPoint p2) {
+  public static ECPoint add(ECPoint p1, ECPoint p2) {
     Objects.requireNonNull(p1, "p1 must not be null");
     Objects.requireNonNull(p2, "p2 must not be null");
     return p1.add(p2).normalize();
@@ -95,7 +104,7 @@ public class Secp256k1Operations {
    * @return The negated point (-point).
    */
   // TODO: Unit test
-  public ECPoint negate(ECPoint point) {
+  public static ECPoint negate(ECPoint point) {
     Objects.requireNonNull(point, "point must not be null");
     return point.negate().normalize();
   }
@@ -108,7 +117,7 @@ public class Secp256k1Operations {
    *
    * @return {@code true} if the points are equal, {@code false} otherwise.
    */
-  public boolean pointsEqual(ECPoint p1, ECPoint p2) {
+  public static boolean pointsEqual(ECPoint p1, ECPoint p2) {
     Objects.requireNonNull(p1, "p1 must not be null");
     Objects.requireNonNull(p2, "p2 must not be null");
     byte[] encoded1 = p1.getEncoded(true);
@@ -123,7 +132,7 @@ public class Secp256k1Operations {
    *
    * @return The compressed encoding.
    */
-  public byte[] serializeCompressed(ECPoint point) {
+  public static byte[] serializeCompressed(ECPoint point) {
     Objects.requireNonNull(point, "point must not be null");
     return point.getEncoded(true);
   }
@@ -135,7 +144,7 @@ public class Secp256k1Operations {
    *
    * @return The decoded point.
    */
-  public ECPoint deserialize(byte[] encoded) {
+  public static ECPoint deserialize(byte[] encoded) {
     Objects.requireNonNull(encoded, "encoded must not be null");
     return CURVE_PARAMS.getCurve().decodePoint(encoded).normalize();
   }
@@ -152,7 +161,7 @@ public class Secp256k1Operations {
    *
    * @return The sum (a + b) mod n as a 32-byte array.
    */
-  public byte[] scalarAdd(byte[] a, byte[] b) {
+  public static byte[] scalarAdd(byte[] a, byte[] b) {
     Objects.requireNonNull(a, "a must not be null");
     Objects.requireNonNull(b, "b must not be null");
     BigInteger aInt = new BigInteger(1, a);
@@ -169,7 +178,7 @@ public class Secp256k1Operations {
    *
    * @return The product (a * b) mod n as a 32-byte array.
    */
-  public byte[] scalarMultiply(byte[] a, byte[] b) {
+  public static byte[] scalarMultiply(byte[] a, byte[] b) {
     Objects.requireNonNull(a, "a must not be null");
     Objects.requireNonNull(b, "b must not be null");
     BigInteger aInt = new BigInteger(1, a);
@@ -187,7 +196,7 @@ public class Secp256k1Operations {
    *
    * @throws IllegalArgumentException if a is zero.
    */
-  public byte[] scalarInverse(byte[] a) {
+  public static byte[] scalarInverse(byte[] a) {
     Objects.requireNonNull(a, "a must not be null");
     BigInteger aInt = new BigInteger(1, a);
     if (aInt.equals(BigInteger.ZERO)) {
@@ -204,7 +213,7 @@ public class Secp256k1Operations {
    *
    * @return The negation (-a) mod n as a 32-byte array.
    */
-  public byte[] scalarNegate(byte[] a) {
+  public static byte[] scalarNegate(byte[] a) {
     Objects.requireNonNull(a, "a must not be null");
     BigInteger aInt = new BigInteger(1, a);
     BigInteger result = CURVE_ORDER.subtract(aInt).mod(CURVE_ORDER);
@@ -218,7 +227,7 @@ public class Secp256k1Operations {
    *
    * @return {@code true} if valid, {@code false} otherwise.
    */
-  public boolean isValidScalar(byte[] scalar) {
+  public static boolean isValidScalar(byte[] scalar) {
     Objects.requireNonNull(scalar, "scalar must not be null");
     if (scalar.length != 32) {
       return false;
@@ -232,7 +241,7 @@ public class Secp256k1Operations {
    *
    * @return A 32-byte array representing -1 mod n.
    */
-  public byte[] scalarMinusOne() {
+  public static byte[] scalarMinusOne() {
     return toBytes32(CURVE_ORDER.subtract(BigInteger.ONE));
   }
 
@@ -241,8 +250,7 @@ public class Secp256k1Operations {
    *
    * @return The infinity point.
    */
-
-  public ECPoint getInfinity() {
+  public static ECPoint getInfinity() {
     return CURVE_PARAMS.getCurve().getInfinity();
   }
 
@@ -260,7 +268,7 @@ public class Secp256k1Operations {
    *
    * @return A 32-byte array.
    */
-  public byte[] toBytes32(BigInteger value) {
+  public static byte[] toBytes32(BigInteger value) {
     byte[] bytes = value.toByteArray();
     if (bytes.length == 32) {
       return bytes;
@@ -284,7 +292,7 @@ public class Secp256k1Operations {
    *
    * @return A 32-byte big-endian representation.
    */
-  public byte[] unsignedLongToScalar(UnsignedLong value) {
+  public static byte[] unsignedLongToScalar(UnsignedLong value) {
     Objects.requireNonNull(value, "value must not be null");
     byte[] result = new byte[32];
     long longValue = value.longValue();
@@ -299,7 +307,7 @@ public class Secp256k1Operations {
    *
    * @return A 32-byte array of zeros.
    */
-  public byte[] scalarZero() {
+  public static byte[] scalarZero() {
     return new byte[32];
   }
 
@@ -308,7 +316,7 @@ public class Secp256k1Operations {
    *
    * @return A 32-byte array representing 1.
    */
-  public byte[] scalarOne() {
+  public static byte[] scalarOne() {
     byte[] result = new byte[32];
     result[31] = 0x01;
     return result;
@@ -325,7 +333,7 @@ public class Secp256k1Operations {
    *
    * @throws NullPointerException if point is null.
    */
-  public byte[] serializeUncompressedWithoutPrefix(ECPoint point) {
+  public static byte[] serializeUncompressedWithoutPrefix(ECPoint point) {
     Objects.requireNonNull(point, "point must not be null");
     byte[] uncompressedWithPrefix = point.getEncoded(false);
     byte[] result = new byte[64];

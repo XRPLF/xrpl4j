@@ -38,16 +38,12 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
    */
   private static final int TT_CONFIDENTIAL_MPT_SEND = 88;
 
-  private final Secp256k1Operations secp256k1;
   private final AddressCodec addressCodec;
 
   /**
-   * Constructs a new generator with the given secp256k1 operations.
-   *
-   * @param secp256k1 The secp256k1 operations instance.
+   * Constructs a new generator.
    */
-  public JavaSamePlaintextMultiProofGenerator(Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
+  public JavaSamePlaintextMultiProofGenerator() {
     this.addressCodec = AddressCodec.getInstance();
   }
 
@@ -87,7 +83,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     // 1. Generate Commitments
     // Tm = km * G
     BigInteger kmInt = new BigInteger(1, nonceKm);
-    ECPoint Tm = secp256k1.multiplyG(kmInt);
+    ECPoint Tm = Secp256k1Operations.multiplyG(kmInt);
 
     List<ECPoint> TrG = new ArrayList<>(n);
     List<ECPoint> TrP = new ArrayList<>(n);
@@ -100,10 +96,10 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
       BigInteger kriInt = new BigInteger(1, kri);
 
       // TrG[i] = kri * G
-      TrG.add(secp256k1.multiplyG(kriInt));
+      TrG.add(Secp256k1Operations.multiplyG(kriInt));
 
       // TrP[i] = kri * Pk[i]
-      TrP.add(secp256k1.multiply(publicKeys.get(i), kriInt));
+      TrP.add(Secp256k1Operations.multiply(publicKeys.get(i), kriInt));
     }
 
     // 2. Compute Challenge
@@ -112,18 +108,18 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
 
     // 3. Compute Responses
     // s_m = k_m + e * m (mod n)
-    byte[] mScalar = secp256k1.unsignedLongToScalar(amount);
+    byte[] mScalar = Secp256k1Operations.unsignedLongToScalar(amount);
     BigInteger mInt = new BigInteger(1, mScalar);
-    BigInteger smInt = kmInt.add(eInt.multiply(mInt)).mod(secp256k1.getCurveOrder());
-    byte[] sm = secp256k1.toBytes32(smInt);
+    BigInteger smInt = kmInt.add(eInt.multiply(mInt)).mod(Secp256k1Operations.getCurveOrder());
+    byte[] sm = Secp256k1Operations.toBytes32(smInt);
 
     // s_ri = k_ri + e * r_i (mod n)
     List<byte[]> sr = new ArrayList<>(n);
     for (int i = 0; i < n; i++) {
       BigInteger kriInt = new BigInteger(1, noncesKr.get(i));
       BigInteger riInt = new BigInteger(1, blindingFactors.get(i));
-      BigInteger sriInt = kriInt.add(eInt.multiply(riInt)).mod(secp256k1.getCurveOrder());
-      sr.add(secp256k1.toBytes32(sriInt));
+      BigInteger sriInt = kriInt.add(eInt.multiply(riInt)).mod(Secp256k1Operations.getCurveOrder());
+      sr.add(Secp256k1Operations.toBytes32(sriInt));
     }
 
     // 4. Serialize proof: Tm || TrG[0..N-1] || TrP[0..N-1] || sm || sr[0..N-1]
@@ -139,20 +135,20 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     int offset = 0;
 
     // Tm (33 bytes)
-    byte[] tmBytes = secp256k1.serializeCompressed(Tm);
+    byte[] tmBytes = Secp256k1Operations.serializeCompressed(Tm);
     System.arraycopy(tmBytes, 0, result, offset, 33);
     offset += 33;
 
     // TrG[0..N-1] (N * 33 bytes)
     for (ECPoint trg : TrG) {
-      byte[] trgBytes = secp256k1.serializeCompressed(trg);
+      byte[] trgBytes = Secp256k1Operations.serializeCompressed(trg);
       System.arraycopy(trgBytes, 0, result, offset, 33);
       offset += 33;
     }
 
     // TrP[0..N-1] (N * 33 bytes)
     for (ECPoint trp : TrP) {
-      byte[] trpBytes = secp256k1.serializeCompressed(trp);
+      byte[] trpBytes = Secp256k1Operations.serializeCompressed(trp);
       System.arraycopy(trpBytes, 0, result, offset, 33);
       offset += 33;
     }
@@ -198,7 +194,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     // Tm (33 bytes)
     byte[] tmBytes = new byte[33];
     System.arraycopy(proof, offset, tmBytes, 0, 33);
-    ECPoint Tm = secp256k1.deserialize(tmBytes);
+    ECPoint Tm = Secp256k1Operations.deserialize(tmBytes);
     offset += 33;
 
     // TrG[0..N-1] (N * 33 bytes)
@@ -206,7 +202,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     for (int i = 0; i < n; i++) {
       byte[] trgBytes = new byte[33];
       System.arraycopy(proof, offset, trgBytes, 0, 33);
-      ECPoint trg = secp256k1.deserialize(trgBytes);
+      ECPoint trg = Secp256k1Operations.deserialize(trgBytes);
       TrG.add(trg);
       offset += 33;
     }
@@ -216,7 +212,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     for (int i = 0; i < n; i++) {
       byte[] trpBytes = new byte[33];
       System.arraycopy(proof, offset, trpBytes, 0, 33);
-      ECPoint trp = secp256k1.deserialize(trpBytes);
+      ECPoint trp = Secp256k1Operations.deserialize(trpBytes);
       TrP.add(trp);
       offset += 33;
     }
@@ -224,7 +220,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     // sm (32 bytes)
     byte[] sm = new byte[32];
     System.arraycopy(proof, offset, sm, 0, 32);
-    if (!secp256k1.isValidScalar(sm)) {
+    if (!Secp256k1Operations.isValidScalar(sm)) {
       return false;
     }
     offset += 32;
@@ -234,7 +230,7 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
     for (int i = 0; i < n; i++) {
       byte[] sri = new byte[32];
       System.arraycopy(proof, offset, sri, 0, 32);
-      if (!secp256k1.isValidScalar(sri)) {
+      if (!Secp256k1Operations.isValidScalar(sri)) {
         return false;
       }
       sr.add(sri);
@@ -255,30 +251,30 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
 
     // Precompute s_m * G
     BigInteger smInt = new BigInteger(1, sm);
-    ECPoint SmG = secp256k1.multiplyG(smInt);
+    ECPoint SmG = Secp256k1Operations.multiplyG(smInt);
 
     // Verify equations for each i
     for (int i = 0; i < n; i++) {
       BigInteger sriInt = new BigInteger(1, sr.get(i));
 
       // Eq 1: s_ri * G == TrG[i] + e * R[i]
-      ECPoint lhs1 = secp256k1.multiplyG(sriInt);
-      ECPoint eRi = secp256k1.multiply(R.get(i), eInt);
-      ECPoint rhs1 = secp256k1.add(TrG.get(i), eRi);
+      ECPoint lhs1 = Secp256k1Operations.multiplyG(sriInt);
+      ECPoint eRi = Secp256k1Operations.multiply(R.get(i), eInt);
+      ECPoint rhs1 = Secp256k1Operations.add(TrG.get(i), eRi);
 
-      if (!secp256k1.pointsEqual(lhs1, rhs1)) {
+      if (!Secp256k1Operations.pointsEqual(lhs1, rhs1)) {
         return false;
       }
 
       // Eq 2: s_m * G + s_ri * Pk[i] == Tm + TrP[i] + e * S[i]
-      ECPoint sriPki = secp256k1.multiply(publicKeys.get(i), sriInt);
-      ECPoint lhs2 = secp256k1.add(SmG, sriPki);
+      ECPoint sriPki = Secp256k1Operations.multiply(publicKeys.get(i), sriInt);
+      ECPoint lhs2 = Secp256k1Operations.add(SmG, sriPki);
 
-      ECPoint eSi = secp256k1.multiply(S.get(i), eInt);
-      ECPoint tmTrp = secp256k1.add(Tm, TrP.get(i));
-      ECPoint rhs2 = secp256k1.add(tmTrp, eSi);
+      ECPoint eSi = Secp256k1Operations.multiply(S.get(i), eInt);
+      ECPoint tmTrp = Secp256k1Operations.add(Tm, TrP.get(i));
+      ECPoint rhs2 = Secp256k1Operations.add(tmTrp, eSi);
 
-      if (!secp256k1.pointsEqual(lhs2, rhs2)) {
+      if (!Secp256k1Operations.pointsEqual(lhs2, rhs2)) {
         return false;
       }
     }
@@ -317,31 +313,31 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
 
     // Public inputs: {R_i, S_i, Pk_i}
     for (int i = 0; i < n; i++) {
-      byte[] rBytes = secp256k1.serializeCompressed(R.get(i));
+      byte[] rBytes = Secp256k1Operations.serializeCompressed(R.get(i));
       System.arraycopy(rBytes, 0, buffer, offset, 33);
       offset += 33;
 
-      byte[] sBytes = secp256k1.serializeCompressed(S.get(i));
+      byte[] sBytes = Secp256k1Operations.serializeCompressed(S.get(i));
       System.arraycopy(sBytes, 0, buffer, offset, 33);
       offset += 33;
 
-      byte[] pkBytes = secp256k1.serializeCompressed(Pk.get(i));
+      byte[] pkBytes = Secp256k1Operations.serializeCompressed(Pk.get(i));
       System.arraycopy(pkBytes, 0, buffer, offset, 33);
       offset += 33;
     }
 
     // Commitments: Tm
-    byte[] tmBytes = secp256k1.serializeCompressed(Tm);
+    byte[] tmBytes = Secp256k1Operations.serializeCompressed(Tm);
     System.arraycopy(tmBytes, 0, buffer, offset, 33);
     offset += 33;
 
     // Commitments: {TrG_i, TrP_i}
     for (int i = 0; i < n; i++) {
-      byte[] trgBytes = secp256k1.serializeCompressed(TrG.get(i));
+      byte[] trgBytes = Secp256k1Operations.serializeCompressed(TrG.get(i));
       System.arraycopy(trgBytes, 0, buffer, offset, 33);
       offset += 33;
 
-      byte[] trpBytes = secp256k1.serializeCompressed(TrP.get(i));
+      byte[] trpBytes = Secp256k1Operations.serializeCompressed(TrP.get(i));
       System.arraycopy(trpBytes, 0, buffer, offset, 33);
       offset += 33;
     }
@@ -361,8 +357,8 @@ public class JavaSamePlaintextMultiProofGenerator implements SamePlaintextMultiP
    */
   private byte[] reduceToScalar(byte[] hash) {
     BigInteger hashInt = new BigInteger(1, hash);
-    BigInteger reduced = hashInt.mod(secp256k1.getCurveOrder());
-    return secp256k1.toBytes32(reduced);
+    BigInteger reduced = hashInt.mod(Secp256k1Operations.getCurveOrder());
+    return Secp256k1Operations.toBytes32(reduced);
   }
 
   @Override

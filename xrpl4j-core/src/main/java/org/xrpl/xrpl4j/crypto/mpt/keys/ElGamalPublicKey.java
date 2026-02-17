@@ -40,7 +40,6 @@ import java.util.Objects;
 public final class ElGamalPublicKey {
 
   public static final int COMPRESSED_KEY_LENGTH = 33;
-  private static final Secp256k1Operations SECP256K1 = new Secp256k1Operations();
 
   private final UnsignedByteArray value;
 
@@ -65,7 +64,7 @@ public final class ElGamalPublicKey {
 
   public static ElGamalPublicKey fromEcPoint(final ECPoint point) {
     Objects.requireNonNull(point, "point must not be null");
-    return fromCompressedBytes(SECP256K1.serializeCompressed(point));
+    return fromCompressedBytes(Secp256k1Operations.serializeCompressed(point));
   }
 
   public UnsignedByteArray value() {
@@ -73,12 +72,12 @@ public final class ElGamalPublicKey {
   }
 
   public ECPoint asEcPoint() {
-    return SECP256K1.deserialize(value.toByteArray());
+    return Secp256k1Operations.deserialize(value.toByteArray());
   }
 
   public UnsignedByteArray uncompressedValue() {
     ECPoint point = asEcPoint();
-    return UnsignedByteArray.of(SECP256K1.serializeUncompressedWithoutPrefix(point));
+    return UnsignedByteArray.of(Secp256k1Operations.serializeUncompressedWithoutPrefix(point));
   }
 
   public UnsignedByteArray uncompressedValueReversed() {

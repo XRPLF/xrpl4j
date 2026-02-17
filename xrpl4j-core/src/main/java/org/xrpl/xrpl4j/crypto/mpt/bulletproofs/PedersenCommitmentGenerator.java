@@ -43,27 +43,15 @@ public class PedersenCommitmentGenerator {
    */
   private static final int SCALAR_SIZE = 32;
 
-  private final Secp256k1Operations secp256k1;
-
   /**
    * Cached H generator point (lazily initialized).
    */
   private ECPoint cachedH;
 
   /**
-   * Constructs a new PedersenCommitmentGenerator with default Secp256k1Operations.
+   * Constructs a new PedersenCommitmentGenerator.
    */
   public PedersenCommitmentGenerator() {
-    this(new Secp256k1Operations());
-  }
-
-  /**
-   * Constructs a new PedersenCommitmentGenerator with the specified Secp256k1Operations.
-   *
-   * @param secp256k1 The secp256k1 operations instance.
-   */
-  public PedersenCommitmentGenerator(Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
   }
 
   /**
@@ -86,7 +74,7 @@ public class PedersenCommitmentGenerator {
       throw new IllegalArgumentException("rho must be 32 bytes");
     }
 
-    if (!secp256k1.isValidScalar(rho)) {
+    if (!Secp256k1Operations.isValidScalar(rho)) {
       throw new IllegalArgumentException("rho must be a valid scalar (0 < rho < curve order)");
     }
 
@@ -95,7 +83,7 @@ public class PedersenCommitmentGenerator {
 
     // Compute rho * H (blinding term)
     BigInteger rhoInt = new BigInteger(1, rho);
-    ECPoint rH = secp256k1.multiply(H, rhoInt);
+    ECPoint rH = Secp256k1Operations.multiply(H, rhoInt);
 
     ECPoint commitment;
 
@@ -104,12 +92,12 @@ public class PedersenCommitmentGenerator {
       commitment = rH;
     } else {
       // Compute amount * G (value term)
-      ECPoint mG = secp256k1.multiplyG(amount.bigIntegerValue());
+      ECPoint mG = Secp256k1Operations.multiplyG(amount.bigIntegerValue());
       // Combine: C = mG + rH
-      commitment = secp256k1.add(mG, rH);
+      commitment = Secp256k1Operations.add(mG, rH);
     }
 
-    return secp256k1.serializeCompressed(commitment);
+    return Secp256k1Operations.serializeCompressed(commitment);
   }
 
   /**
@@ -183,7 +171,7 @@ public class PedersenCommitmentGenerator {
 
       // Try to parse as a valid curve point
       try {
-        ECPoint point = secp256k1.deserialize(compressed);
+        ECPoint point = Secp256k1Operations.deserialize(compressed);
         if (point != null && !point.isInfinity()) {
           return point;
         }

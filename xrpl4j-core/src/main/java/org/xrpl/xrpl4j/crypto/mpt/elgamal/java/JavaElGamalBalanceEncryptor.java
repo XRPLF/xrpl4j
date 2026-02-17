@@ -31,13 +31,10 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
    */
   private static final byte[] DOMAIN_SEPARATOR = "EncZero".getBytes();
 
-  private final Secp256k1Operations secp256k1;
-
   /**
    * Constructs a new ElGamalEncryption instance.
    */
-  public JavaElGamalBalanceEncryptor(final Secp256k1Operations secp256k1) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1);
+  public JavaElGamalBalanceEncryptor() {
   }
 
   /**
@@ -69,10 +66,10 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
     ECPoint publicKeyPoint = publicKey.asEcPoint();
 
     // C1 = k * G
-    ECPoint c1 = secp256k1.multiplyG(k);
+    ECPoint c1 = Secp256k1Operations.multiplyG(k);
 
     // S = k * Q (shared secret)
-    ECPoint sharedSecret = secp256k1.multiply(publicKeyPoint, k);
+    ECPoint sharedSecret = Secp256k1Operations.multiply(publicKeyPoint, k);
 
     ECPoint c2;
     if (amount.equals(UnsignedLong.ZERO)) {
@@ -80,9 +77,9 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
       c2 = sharedSecret;
     } else {
       // M = amount * G
-      ECPoint m = secp256k1.multiplyG(amount.bigIntegerValue());
+      ECPoint m = Secp256k1Operations.multiplyG(amount.bigIntegerValue());
       // C2 = M + S
-      c2 = secp256k1.add(m, sharedSecret);
+      c2 = Secp256k1Operations.add(m, sharedSecret);
     }
 
     return new ElGamalCiphertext(c1, c2);
@@ -127,7 +124,7 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
       digest.update(hashInput, 0, hashInput.length);
       digest.doFinal(deterministicScalar, 0);
       scalar = new BigInteger(1, deterministicScalar);
-    } while (!secp256k1.isValidPrivateKey(scalar));
+    } while (!Secp256k1Operations.isValidPrivateKey(scalar));
 
     // Encrypt amount 0 using the deterministic scalar
     BlindingFactor blindingFactor = BlindingFactor.fromBytes(deterministicScalar);
@@ -162,16 +159,16 @@ public class JavaElGamalBalanceEncryptor implements ElGamalBalanceEncryptor {
     ECPoint publicKeyPoint = publicKey.asEcPoint();
 
     // Verify C1: k * G == C1
-    ECPoint expectedC1 = secp256k1.multiplyG(k);
-    if (!secp256k1.pointsEqual(ciphertext.c1(), expectedC1)) {
+    ECPoint expectedC1 = Secp256k1Operations.multiplyG(k);
+    if (!Secp256k1Operations.pointsEqual(ciphertext.c1(), expectedC1)) {
       return false;
     }
 
     // Verify C2: amount * G + k * Q == C2
-    ECPoint mG = secp256k1.multiplyG(amount.bigIntegerValue());
-    ECPoint sharedSecret = secp256k1.multiply(publicKeyPoint, k);
-    ECPoint expectedC2 = secp256k1.add(mG, sharedSecret);
+    ECPoint mG = Secp256k1Operations.multiplyG(amount.bigIntegerValue());
+    ECPoint sharedSecret = Secp256k1Operations.multiply(publicKeyPoint, k);
+    ECPoint expectedC2 = Secp256k1Operations.add(mG, sharedSecret);
 
-    return secp256k1.pointsEqual(ciphertext.c2(), expectedC2);
+    return Secp256k1Operations.pointsEqual(ciphertext.c2(), expectedC2);
   }
 }

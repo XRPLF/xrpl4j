@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
-import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.SecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.model.transactions.Address;
 import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
 
@@ -22,13 +22,11 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  */
 class JavaSecretKeyProofGeneratorTest {
 
-  private Secp256k1Operations secp256k1;
   private SecretKeyProofGenerator proofGenerator;
 
   @BeforeEach
   void setUp() {
-    secp256k1 = new Secp256k1Operations();
-    proofGenerator = new JavaSecretKeyProofGenerator(secp256k1);
+    proofGenerator = new JavaSecretKeyProofGenerator();
   }
 
   /**
@@ -84,7 +82,7 @@ class JavaSecretKeyProofGeneratorTest {
     System.out.println();
 
     System.out.println("=== Public Key ===");
-    byte[] pkCompressed = secp256k1.serializeCompressed(publicKey);
+    byte[] pkCompressed = Secp256k1Operations.serializeCompressed(publicKey);
     System.out.println("Compressed (33 bytes): " + BaseEncoding.base16().encode(pkCompressed));
 
     // Uncompressed format (64 bytes, X || Y without 04 prefix)

@@ -19,7 +19,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Objects;
 
 /**
@@ -36,29 +35,13 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
    */
   private static final int TT_CONFIDENTIAL_MPT_CONVERT = 85;
 
-  private final Secp256k1Operations secp256k1;
-  private final SecureRandom secureRandom;
   private final AddressCodec addressCodec;
 
   /**
    * Constructs a new JavaSecretKeyProofGenerator.
-   *
-   * @param secp256k1    The secp256k1 operations utility.
-   * @param secureRandom A secure random number generator.
    */
-  public JavaSecretKeyProofGenerator(Secp256k1Operations secp256k1, SecureRandom secureRandom) {
-    this.secp256k1 = Objects.requireNonNull(secp256k1, "secp256k1 must not be null");
-    this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom must not be null");
+  public JavaSecretKeyProofGenerator() {
     this.addressCodec = new AddressCodec();
-  }
-
-  /**
-   * Constructs a new JavaSecretKeyProofGenerator with a default SecureRandom.
-   *
-   * @param secp256k1 The secp256k1 operations utility.
-   */
-  public JavaSecretKeyProofGenerator(Secp256k1Operations secp256k1) {
-    this(secp256k1, new SecureRandom());
   }
 
   @Override
@@ -77,23 +60,23 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
 
     // Verify private key is valid
     BigInteger skInt = new BigInteger(1, privateKey);
-    if (!secp256k1.isValidPrivateKey(skInt)) {
+    if (!Secp256k1Operations.isValidPrivateKey(skInt)) {
       throw new IllegalArgumentException("privateKey is not a valid scalar");
     }
 
     // Derive public key from private key: P = sk * G
-    ECPoint publicKey = secp256k1.multiplyG(skInt);
+    ECPoint publicKey = Secp256k1Operations.multiplyG(skInt);
 
     // 1. Use provided nonce or generate random k, then compute T = k * G
-    byte[] k = (nonce != null) ? nonce : RandomnessUtils.generateRandomScalar(secureRandom, secp256k1);
+    byte[] k = (nonce != null) ? nonce : RandomnessUtils.generateRandomScalar();
     BigInteger kInt = new BigInteger(1, k);
 
     // Verify nonce is valid scalar
-    if (!secp256k1.isValidPrivateKey(kInt)) {
+    if (!Secp256k1Operations.isValidPrivateKey(kInt)) {
       throw new IllegalArgumentException("nonce is not a valid scalar");
     }
 
-    ECPoint T = secp256k1.multiplyG(kInt);
+    ECPoint T = Secp256k1Operations.multiplyG(kInt);
 
     // 2. Compute challenge e = reduce(SHA256(domainSeparator || PublicKey || T || contextId)) mod n
     // buildChallenge already returns the reduced value (mod curve order)
@@ -101,13 +84,13 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
     BigInteger eInt = new BigInteger(1, eBytes);
 
     // 3. Compute response s = k + e * sk (mod n)
-    BigInteger term = eInt.multiply(skInt).mod(secp256k1.getCurveOrder());
-    BigInteger sInt = kInt.add(term).mod(secp256k1.getCurveOrder());
-    byte[] s = secp256k1.toBytes32(sInt);
+    BigInteger term = eInt.multiply(skInt).mod(Secp256k1Operations.getCurveOrder());
+    BigInteger sInt = kInt.add(term).mod(Secp256k1Operations.getCurveOrder());
+    byte[] s = Secp256k1Operations.toBytes32(sInt);
 
     // 4. Serialize proof: T (33 bytes) || s (32 bytes)
     byte[] proof = new byte[PROOF_LENGTH];
-    byte[] tCompressed = secp256k1.serializeCompressed(T);
+    byte[] tCompressed = Secp256k1Operations.serializeCompressed(T);
     System.arraycopy(tCompressed, 0, proof, 0, 33);
     System.arraycopy(s, 0, proof, 33, 32);
 
@@ -134,13 +117,13 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
 
     ECPoint T;
     try {
-      T = secp256k1.deserialize(tBytes);
+      T = Secp256k1Operations.deserialize(tBytes);
     } catch (Exception e) {
       return false;
     }
 
     BigInteger sInt = new BigInteger(1, sBytes);
-    if (!secp256k1.isValidPrivateKey(sInt)) {
+    if (!Secp256k1Operations.isValidPrivateKey(sInt)) {
       return false;
     }
 
@@ -149,11 +132,11 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
     BigInteger eInt = new BigInteger(1, eBytes);
 
     // 3. Verify equation: s * G == T + e * P
-    ECPoint lhs = secp256k1.multiplyG(sInt);
-    ECPoint ePk = secp256k1.multiply(publicKey, eInt);
-    ECPoint rhs = secp256k1.add(T, ePk);
+    ECPoint lhs = Secp256k1Operations.multiplyG(sInt);
+    ECPoint ePk = Secp256k1Operations.multiply(publicKey, eInt);
+    ECPoint rhs = Secp256k1Operations.add(T, ePk);
 
-    return secp256k1.pointsEqual(lhs, rhs);
+    return Secp256k1Operations.pointsEqual(lhs, rhs);
   }
 
   @Override
@@ -221,8 +204,8 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
    */
   private byte[] buildChallenge(ECPoint publicKey, ECPoint T, byte[] contextId) {
     byte[] domainBytes = DOMAIN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
-    byte[] pkBytes = secp256k1.serializeCompressed(publicKey);
-    byte[] tBytes = secp256k1.serializeCompressed(T);
+    byte[] pkBytes = Secp256k1Operations.serializeCompressed(publicKey);
+    byte[] tBytes = Secp256k1Operations.serializeCompressed(T);
 
     int contextIdLength = (contextId != null) ? 32 : 0;
     byte[] hashInput = new byte[domainBytes.length + 33 + 33 + contextIdLength];
@@ -241,8 +224,8 @@ public class JavaSecretKeyProofGenerator implements SecretKeyProofGenerator {
 
     // Reduce modulo curve order (equivalent to secp256k1_mpt_scalar_reduce32 in C)
     BigInteger hashInt = new BigInteger(1, sha256Hash);
-    BigInteger reduced = hashInt.mod(secp256k1.getCurveOrder());
-    byte[] challenge = secp256k1.toBytes32(reduced);
+    BigInteger reduced = hashInt.mod(Secp256k1Operations.getCurveOrder());
+    byte[] challenge = Secp256k1Operations.toBytes32(reduced);
 
     return challenge;
   }

@@ -26,8 +26,8 @@ import java.util.Objects;
  * An ElGamal key pair for secp256k1 used in Confidential MPT operations.
  *
  * <p>This class holds both the private and public keys for ElGamal encryption.
- * Unlike XRPL signing key pairs, ElGamal key pairs are used exclusively for
- * encryption/decryption and zero-knowledge proofs in confidential transactions.</p>
+ * Unlike XRPL signing key pairs, ElGamal key pairs are used exclusively for encryption/decryption and zero-knowledge
+ * proofs in confidential transactions.</p>
  *
  * @see ElGamalPrivateKey
  * @see ElGamalPublicKey
@@ -48,7 +48,9 @@ public final class ElGamalKeyPair {
    *
    * @param privateKey The ElGamal private key.
    * @param publicKey  The ElGamal public key.
+   *
    * @return An {@link ElGamalKeyPair}.
+   *
    * @throws NullPointerException if privateKey or publicKey is null.
    */
   public static ElGamalKeyPair of(final ElGamalPrivateKey privateKey, final ElGamalPublicKey publicKey) {
@@ -72,30 +74,16 @@ public final class ElGamalKeyPair {
    * <p>This is a convenience method equivalent to {@code ElGamalSeed.fromEntropy(entropy).deriveKeyPair()}.</p>
    *
    * @param entropy The 32-byte entropy value.
+   *
    * @return An {@link ElGamalKeyPair}.
+   *
    * @throws NullPointerException     if entropy is null.
    * @throws IllegalArgumentException if entropy is not exactly 32 bytes.
    */
   public static ElGamalKeyPair fromEntropy(final byte[] entropy) {
     return ElGamalSeed.fromEntropy(entropy).deriveKeyPair();
   }
-
-  /**
-   * Creates an ElGamal key pair from a passphrase.
-   *
-   * <p>This is a convenience method equivalent to {@code ElGamalSeed.fromPassphrase(passphrase).deriveKeyPair()}.</p>
-   *
-   * <p><strong>WARNING:</strong> This method is provided for convenience and testing.
-   * For production use, prefer {@link #generate()} or {@link #fromEntropy(byte[])}.</p>
-   *
-   * @param passphrase The passphrase to use for key derivation.
-   * @return An {@link ElGamalKeyPair}.
-   * @throws NullPointerException if passphrase is null.
-   */
-  public static ElGamalKeyPair fromPassphrase(final String passphrase) {
-    return ElGamalSeed.fromPassphrase(passphrase).deriveKeyPair();
-  }
-
+  
   /**
    * Returns the private key.
    *

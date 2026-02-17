@@ -18,15 +18,13 @@ import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 public class JavaElGamalBalanceDecryptorTest extends AbstractElGamalTest {
 
   private ElGamalBalanceEncryptor elGamalBalanceEncryptor;
-  private Secp256k1Operations secp256k1;
 
   private JavaElGamalBalanceDecryptor javaElGamalBalanceDecryptor;
 
   @BeforeEach
   void setUp() {
-    this.secp256k1 = new Secp256k1Operations();
-    this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor(secp256k1);
-    this.javaElGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor(secp256k1);
+    this.elGamalBalanceEncryptor = new JavaElGamalBalanceEncryptor();
+    this.javaElGamalBalanceDecryptor = new JavaElGamalBalanceDecryptor();
   }
 
   @Test

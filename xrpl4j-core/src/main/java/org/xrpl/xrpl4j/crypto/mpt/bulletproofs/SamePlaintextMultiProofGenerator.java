@@ -1,13 +1,12 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
-import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.bouncycastle.math.ec.ECPoint;
-import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextMultiProof;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextParticipant;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
  * Interface for generating and verifying Zero-Knowledge Proofs of Plaintext Equality (1-to-N).
@@ -61,80 +60,57 @@ import java.util.List;
 public interface SamePlaintextMultiProofGenerator {
 
   /**
-   * Generates a proof that N ciphertexts all encrypt the same plaintext amount.
+   * Generates a proof that ciphertexts for sender, destination, issuer (and optionally auditor) all encrypt the same
+   * plaintext amount.
    *
-   * @param amount          The plaintext amount (witness).
-   * @param ciphertexts     The list of N ciphertexts (R_i, S_i).
-   * @param publicKeys      The list of N public keys P_i used for encryption.
-   * @param blindingFactors The list of N blinding factors r_i (each 32 bytes).
-   * @param contextHash     The 32-byte context hash (tx_id) for domain separation.
-   * @param nonceKm         The 32-byte nonce for the amount commitment (k_m).
-   * @param noncesKr        The list of N 32-byte nonces for randomness commitments (k_{r,i}).
+   * @param amount      The plaintext amount (witness).
+   * @param sender      The sender participant (ciphertext, publicKey, blindingFactor, nonceKr).
+   * @param destination The destination participant.
+   * @param issuer      The issuer participant.
+   * @param auditor     Optional auditor participant.
+   * @param context     The context hash for domain separation.
+   * @param nonceKm     The nonce for the amount commitment (k_m).
    *
-   * @return The serialized proof as a byte array.
+   * @return A {@link SamePlaintextMultiProof}.
    */
-  byte[] generateProof(
+  SamePlaintextMultiProof generateProof(
     UnsignedLong amount,
-    List<ElGamalCiphertext> ciphertexts,
-    List<ECPoint> publicKeys,
-    List<byte[]> blindingFactors,
-    byte[] contextHash,
-    byte[] nonceKm,
-    List<byte[]> noncesKr
+    SamePlaintextParticipant sender,
+    SamePlaintextParticipant destination,
+    SamePlaintextParticipant issuer,
+    Optional<SamePlaintextParticipant> auditor,
+    ConfidentialMPTSendContext context,
+    BlindingFactor nonceKm
   );
 
   /**
-   * Verifies that N ciphertexts all encrypt the same plaintext amount.
+   * Verifies that ciphertexts for sender, destination, issuer (and optionally auditor) all encrypt the same plaintext
+   * amount.
    *
-   * @param proof       The serialized proof bytes.
-   * @param ciphertexts The list of N ciphertexts (R_i, S_i).
-   * @param publicKeys  The list of N public keys P_i.
-   * @param contextHash The 32-byte context hash (tx_id) for domain separation.
+   * @param proof       The proof to verify.
+   * @param sender      The sender participant (ciphertext and publicKey required).
+   * @param destination The destination participant.
+   * @param issuer      The issuer participant.
+   * @param auditor     Optional auditor participant.
+   * @param context     The context hash for domain separation.
    *
    * @return {@code true} if the proof is valid, {@code false} otherwise.
    */
   boolean verify(
-    byte[] proof,
-    List<ElGamalCiphertext> ciphertexts,
-    List<ECPoint> publicKeys,
-    byte[] contextHash
+    SamePlaintextMultiProof proof,
+    SamePlaintextParticipant sender,
+    SamePlaintextParticipant destination,
+    SamePlaintextParticipant issuer,
+    Optional<SamePlaintextParticipant> auditor,
+    ConfidentialMPTSendContext context
   );
 
   /**
-   * Generates the context hash for ConfidentialMPTSend transactions.
-   *
-   * <p>The context hash is computed as SHA512Half of:
-   * <ul>
-   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_SEND</li>
-   *   <li>account (20 bytes) - sender account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
-   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>destination (20 bytes) - destination account</li>
-   *   <li>version (4 bytes) - confidential balance version</li>
-   * </ul>
-   *
-   * @param account     The sender account address.
-   * @param sequence    The transaction sequence number.
-   * @param issuanceId  The MPTokenIssuanceID.
-   * @param destination The destination account address.
-   * @param version     The confidential balance version from the MPToken ledger object.
-   *
-   * @return The 32-byte context hash.
-   */
-  byte[] generateSendContext(
-    Address account,
-    UnsignedInteger sequence,
-    MpTokenIssuanceId issuanceId,
-    Address destination,
-    UnsignedInteger version
-  );
-
-  /**
-   * Computes the proof size for N ciphertexts.
+   * Computes the proof size for N participants.
    *
    * <p>Format: (1 Tm + 2N Tr) * 33 + (1 sm + N sr) * 32</p>
    *
-   * @param n The number of ciphertexts.
+   * @param n The number of participants.
    *
    * @return The proof size in bytes.
    */

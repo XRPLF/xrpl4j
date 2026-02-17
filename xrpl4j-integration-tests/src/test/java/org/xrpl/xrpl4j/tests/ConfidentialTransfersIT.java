@@ -35,7 +35,10 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextMultiProof;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextParticipant;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaElGamalPedersenLinkProofGenerator;
@@ -72,7 +75,7 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenNumericAmount;
 import org.xrpl.xrpl4j.model.transactions.MptCurrencyAmount;
 import org.xrpl.xrpl4j.model.transactions.Payment;
 
-import java.util.Arrays;
+import java.util.Optional;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class ConfidentialTransfersIT extends AbstractIT {
@@ -654,8 +657,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Get the version from holder 1's MPToken (default to 0 if not present)
     UnsignedInteger holder1Version = holder1MpToken.confidentialBalanceVersion().orElse(UnsignedInteger.ZERO);
 
-    // Generate context hash for ConfidentialMPTSend
-    byte[] sendContextHash = samePlaintextProofGenerator.generateSendContext(
+    // Generate context for ConfidentialMPTSend
+    ConfidentialMPTSendContext sendContext = ConfidentialMPTSendContext.generate(
       holderKeyPair.publicKey().deriveAddress(),  // sender account
       holderAccountInfoForSend.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuanceId
@@ -668,36 +671,60 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("Destination: " + holder2KeyPair.publicKey().deriveAddress());
     System.out.println("Sequence: " + holderAccountInfoForSend.accountData().sequence());
     System.out.println("Version: " + holder1Version);
-    System.out.println("Context Hash: " + BaseEncoding.base16().encode(sendContextHash));
+    System.out.println("Context Hash: " + sendContext.hexValue());
 
-    // Generate nonces for the proof (one for amount, one for each of 3 recipients)
-    byte[] nonceKm = RandomnessUtils.generateRandomScalar();
-    byte[] nonceKrSender = RandomnessUtils.generateRandomScalar();
-    byte[] nonceKrDest = RandomnessUtils.generateRandomScalar();
-    byte[] nonceKrIssuer = RandomnessUtils.generateRandomScalar();
+    // Generate nonces for the proof (one for amount, one for each of 3 participants)
+    BlindingFactor nonceKm = BlindingFactor.generate();
+    BlindingFactor nonceKrSender = BlindingFactor.generate();
+    BlindingFactor nonceKrDest = BlindingFactor.generate();
+    BlindingFactor nonceKrIssuer = BlindingFactor.generate();
 
-    // Generate the SamePlaintextMultiProof for all 3 ciphertexts: sender, destination, issuer
-    byte[] samePlaintextProof = samePlaintextProofGenerator.generateProof(
+    // Create participants for proof generation
+    SamePlaintextParticipant senderParticipant = SamePlaintextParticipant.forProofGeneration(
+      senderCiphertext, holderElGamalKeyPair.publicKey(), sendBlindingFactorSender, nonceKrSender
+    );
+    SamePlaintextParticipant destParticipant = SamePlaintextParticipant.forProofGeneration(
+      destinationCiphertext, holder2ElGamalKeyPair.publicKey(), sendBlindingFactorHolder2, nonceKrDest
+    );
+    SamePlaintextParticipant issuerParticipant = SamePlaintextParticipant.forProofGeneration(
+      issuerCiphertextForSend, issuerElGamalKeyPair.publicKey(), sendBlindingFactorIssuer, nonceKrIssuer
+    );
+
+    // Generate the SamePlaintextMultiProof for all 3 participants: sender, destination, issuer
+    SamePlaintextMultiProof samePlaintextProof = samePlaintextProofGenerator.generateProof(
       sendAmount,
-      Arrays.asList(senderCiphertext, destinationCiphertext, issuerCiphertextForSend),
-      Arrays.asList(holderElGamalEcPoint, holder2ElGamalEcPoint, issuerElGamalEcPoint),
-      Arrays.asList(sendBlindingFactorSender.toBytes(), sendBlindingFactorHolder2.toBytes(),
-        sendBlindingFactorIssuer.toBytes()),
-      sendContextHash,
-      nonceKm,
-      Arrays.asList(nonceKrSender, nonceKrDest, nonceKrIssuer)
+      senderParticipant,
+      destParticipant,
+      issuerParticipant,
+      Optional.empty(),
+      sendContext,
+      nonceKm
     );
 
     System.out.println(
-      "SamePlaintextMultiProof size: " + samePlaintextProof.length + " bytes (expected 359 for 3 recipients)");
-    System.out.println("SamePlaintextMultiProof: " + BaseEncoding.base16().encode(samePlaintextProof));
+      "SamePlaintextMultiProof size: " + samePlaintextProof.toBytes().length +
+        " bytes (expected 359 for 3 recipients)");
+    System.out.println("SamePlaintextMultiProof: " + samePlaintextProof.hexValue());
+
+    // Create participants for verification (only need ciphertext and publicKey)
+    SamePlaintextParticipant senderVerify = SamePlaintextParticipant.forVerification(
+      senderCiphertext, holderElGamalKeyPair.publicKey()
+    );
+    SamePlaintextParticipant destVerify = SamePlaintextParticipant.forVerification(
+      destinationCiphertext, holder2ElGamalKeyPair.publicKey()
+    );
+    SamePlaintextParticipant issuerVerify = SamePlaintextParticipant.forVerification(
+      issuerCiphertextForSend, issuerElGamalKeyPair.publicKey()
+    );
 
     // Verify the proof locally
     boolean sendProofValid = samePlaintextProofGenerator.verify(
       samePlaintextProof,
-      Arrays.asList(senderCiphertext, destinationCiphertext, issuerCiphertextForSend),
-      Arrays.asList(holderElGamalEcPoint, holder2ElGamalEcPoint, issuerElGamalEcPoint),
-      sendContextHash
+      senderVerify,
+      destVerify,
+      issuerVerify,
+      Optional.empty(),
+      sendContext
     );
     System.out.println("SamePlaintextMultiProof valid locally: " + sendProofValid);
     assertThat(sendProofValid).isTrue();
@@ -764,7 +791,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       sendAmount,
       sendBlindingFactorSender.toBytes(),
       amountPedersenRho,
-      sendContextHash
+      sendContext.toBytes()
     );
 
     System.out.println("Amount Linkage Proof size: " + amountLinkageProof.length + " bytes (expected 195)");
@@ -807,7 +834,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("// Pedersen commitment PCm (64 bytes without prefix - as sent in tx)");
     System.out.println("const char* pcm_64_hex = \"" + amountCommitment + "\";");
     System.out.println("// Context ID (32 bytes)");
-    System.out.println("const char* context_id_hex = \"" + BaseEncoding.base16().encode(sendContextHash) + "\";");
+    System.out.println("const char* context_id_hex = \"" + sendContext.hexValue() + "\";");
     System.out.println("// Proof from Java (195 bytes = 390 hex chars)");
     System.out.println("const char* proof_hex = \"" + BaseEncoding.base16().encode(amountLinkageProof) + "\";");
     System.out.println("// Amount (plaintext value)");
@@ -823,7 +850,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderCiphertext.c2(),
       holderElGamalEcPoint,
       amountCommitmentPoint,
-      sendContextHash
+      sendContext.toBytes()
     );
     System.out.println("Amount Linkage Proof valid locally: " + amountLinkageValid);
     assertThat(amountLinkageValid).isTrue();
@@ -872,7 +899,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderNewBalance,
       holderPrivateKey,
       balancePedersenRho,
-      sendContextHash
+      sendContext.toBytes()
     );
 
     System.out.println("Balance Linkage Proof size: " + balanceLinkageProof.length + " bytes (expected 195)");
@@ -900,7 +927,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("// Balance amount (plaintext value)");
     System.out.println("uint64_t balance_amount = " + senderNewBalance.longValue() + ";");
     System.out.println("// Context ID (32 bytes)");
-    System.out.println("const char* bal_context_id_hex = \"" + BaseEncoding.base16().encode(sendContextHash) + "\";");
+    System.out.println("const char* bal_context_id_hex = \"" + sendContext.hexValue() + "\";");
     System.out.println("// Balance Linkage Proof from Java (195 bytes)");
     System.out.println("const char* bal_proof_hex = \"" + BaseEncoding.base16().encode(balanceLinkageProof) + "\";");
     System.out.println("=======================================================================\n");
@@ -914,16 +941,18 @@ public class ConfidentialTransfersIT extends AbstractIT {
       currentBalanceCiphertext.c2(),  // c2
       currentBalanceCiphertext.c1(),  // pk = original c1
       balanceCommitmentPoint,
-      sendContextHash
+      sendContext.toBytes()
     );
     System.out.println("Balance Linkage Proof valid locally: " + balanceLinkageValid);
     // assertThat(balanceLinkageValid).isTrue();
 
     // Combine SamePlaintextMultiProof (359 bytes) + Amount Linkage (195 bytes) + Balance Linkage (195 bytes) = 749 bytes
-    byte[] fullZkProof = new byte[samePlaintextProof.length + amountLinkageProof.length + balanceLinkageProof.length];
-    System.arraycopy(samePlaintextProof, 0, fullZkProof, 0, samePlaintextProof.length);
-    System.arraycopy(amountLinkageProof, 0, fullZkProof, samePlaintextProof.length, amountLinkageProof.length);
-    System.arraycopy(balanceLinkageProof, 0, fullZkProof, samePlaintextProof.length + amountLinkageProof.length,
+    byte[] samePlaintextProofBytes = samePlaintextProof.toBytes();
+    byte[] fullZkProof = new byte[samePlaintextProofBytes.length + amountLinkageProof.length +
+      balanceLinkageProof.length];
+    System.arraycopy(samePlaintextProofBytes, 0, fullZkProof, 0, samePlaintextProofBytes.length);
+    System.arraycopy(amountLinkageProof, 0, fullZkProof, samePlaintextProofBytes.length, amountLinkageProof.length);
+    System.arraycopy(balanceLinkageProof, 0, fullZkProof, samePlaintextProofBytes.length + amountLinkageProof.length,
       balanceLinkageProof.length);
 
     System.out.println("Full ZKProof size: " + fullZkProof.length + " bytes (expected 749)");

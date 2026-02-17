@@ -9,9 +9,9 @@ package org.xrpl.xrpl4j.codec.addresses;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import java.util.Arrays;
  * checksum, which is necessary for XRPL Address encoding.
  */
 public class Base58 {
+
   public static final char[] ALPHABET = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz".toCharArray();
 
   private static final int[] INDEXES = new int[255];
@@ -57,7 +58,6 @@ public class Base58 {
     input = copyOfRange(input, 0, input.length);
     // Count leading zeroes.
     int zeroCount = 0;
-
     while (zeroCount < input.length && input[zeroCount] == 0) {
       ++zeroCount;
     }
@@ -162,6 +162,7 @@ public class Base58 {
    * @param input A Base58Check encoded {@link String}.
    *
    * @return A byte array containing the decoded value.
+   *
    * @throws EncodingFormatException If the input is not Base58 encoded or the checksum does not validate.
    */
   public static byte[] decodeChecked(String input) throws EncodingFormatException {

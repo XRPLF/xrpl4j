@@ -46,29 +46,28 @@ public interface XrplEnvironment {
    * @return XRPL environment of the correct type.
    */
   static XrplEnvironment getNewConfiguredEnvironment() {
-    return new LocalRippledEnvironment();
     // Use local rippled container by default.
     // Set -DuseTestnet to run against reporting mode testnet node
     // Set -DuseClioTestnet to run against Clio testnet node
     // Set -DuseDevnet to run against devnet
-//    boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
-//    boolean isDevnetEnabled = System.getProperty("useDevnet") != null;
-//    boolean isClioTestnetEnabled = System.getProperty("useClioTestnet") != null;
-//    if (isTestnetEnabled) {
-//      logger.info(
-//        "System property 'useTestnet' detected; Using Reporting mode only Testnet node for integration testing.");
-//      return new ReportingTestnetEnvironment();
-//    } else if (isClioTestnetEnabled) {
-//      logger.info("System property 'useClioTestnet' detected; Using Clio Testnet node for integration testing.");
-//      return new ClioTestnetEnvironment();
-//    } else if (isDevnetEnabled) {
-//      logger.info("System property 'useDevnet' detected; Using Devnet for integration testing.");
-//      return new DevnetEnvironment();
-//    } else {
-//      logger.info("Neither 'useTestNet', 'useClioTestNet', nor 'useDevnet' System properties detected." +
-//        " Using local rippled for integration testing.");
-//      return new LocalRippledEnvironment();
-//    }
+    boolean isTestnetEnabled = System.getProperty("useTestnet") != null;
+    boolean isDevnetEnabled = System.getProperty("useDevnet") != null;
+    boolean isClioTestnetEnabled = System.getProperty("useClioTestnet") != null;
+    if (isTestnetEnabled) {
+      logger.info(
+        "System property 'useTestnet' detected; Using Reporting mode only Testnet node for integration testing.");
+      return new ReportingTestnetEnvironment();
+    } else if (isClioTestnetEnabled) {
+      logger.info("System property 'useClioTestnet' detected; Using Clio Testnet node for integration testing.");
+      return new ClioTestnetEnvironment();
+    } else if (isDevnetEnabled) {
+      logger.info("System property 'useDevnet' detected; Using Devnet for integration testing.");
+      return new DevnetEnvironment();
+    } else {
+      logger.info("Neither 'useTestNet', 'useClioTestNet', nor 'useDevnet' System properties detected." +
+        " Using local rippled for integration testing.");
+      return new LocalRippledEnvironment();
+    }
   }
 
   /**

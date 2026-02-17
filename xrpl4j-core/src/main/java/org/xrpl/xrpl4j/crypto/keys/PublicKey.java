@@ -26,10 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedInteger;
-import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
-import org.bouncycastle.crypto.ec.CustomNamedCurves;
-import org.bouncycastle.math.ec.ECPoint;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Lazy;
@@ -156,73 +153,6 @@ public interface PublicKey {
   @Derived
   default KeyType keyType() {
     return this.base16Value().startsWith("ED") ? KeyType.ED25519 : KeyType.SECP256K1;
-  }
-
-  /**
-   * Returns the uncompressed public key value (64 bytes without the 0x04 prefix).
-   *
-   * <p>This method is only supported for secp256k1 keys. For secp256k1, the compressed format (33 bytes)
-   * is decompressed to get the full x,y coordinates (64 bytes). The 0x04 prefix byte that indicates
-   * an uncompressed point is stripped from the result.</p>
-   *
-   * <p>This is useful for ElGamal encryption operations which require the uncompressed public key format.</p>
-   *
-   * @return An {@link UnsignedByteArray} containing the 64-byte uncompressed public key (without 0x04 prefix).
-   * @throws UnsupportedOperationException if this is an Ed25519 key or an empty key (e.g., MULTI_SIGN_PUBLIC_KEY).
-   */
-  @Lazy
-  default UnsignedByteArray uncompressedValue() {
-    if (value().length() == 0) {
-      throw new UnsupportedOperationException(
-        "Cannot compute uncompressed value for an empty public key."
-      );
-    }
-
-    if (keyType() == KeyType.ED25519) {
-      throw new UnsupportedOperationException(
-        "Ed25519 keys do not support uncompressed format. Only secp256k1 keys can be decompressed."
-      );
-    }
-
-    X9ECParameters curveParams = CustomNamedCurves.getByName("secp256k1");
-    ECPoint publicKeyPoint = curveParams.getCurve().decodePoint(value().toByteArray());
-    byte[] uncompressedWithPrefix = publicKeyPoint.getEncoded(false); // 65 bytes with 0x04 prefix
-
-    // Strip the 0x04 prefix to get 64 bytes
-    byte[] uncompressedWithoutPrefix = new byte[64];
-    System.arraycopy(uncompressedWithPrefix, 1, uncompressedWithoutPrefix, 0, 64);
-
-    return UnsignedByteArray.of(uncompressedWithoutPrefix);
-  }
-
-  /**
-   * Returns the uncompressed public key value (64 bytes) with each 32-byte coordinate reversed.
-   *
-   * <p>This method is needed for compatibility with libsecp256k1 which expects coordinates
-   * in little-endian byte order when parsing uncompressed public keys.</p>
-   *
-   * <p>The format is: X_reversed (32 bytes) || Y_reversed (32 bytes)</p>
-   *
-   * @return An {@link UnsignedByteArray} containing the 64-byte uncompressed public key with reversed coordinates.
-   * @throws UnsupportedOperationException if this is an Ed25519 key or an empty key.
-   */
-  @Lazy
-  default UnsignedByteArray uncompressedValueReversed() {
-    UnsignedByteArray uncompressed = uncompressedValue();
-    byte[] bytes = uncompressed.toByteArray();
-    byte[] reversed = new byte[64];
-
-    // Reverse X coordinate (first 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      reversed[i] = bytes[31 - i];
-    }
-
-    // Reverse Y coordinate (last 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      reversed[32 + i] = bytes[63 - i];
-    }
-
-    return UnsignedByteArray.of(reversed);
   }
 
   /**

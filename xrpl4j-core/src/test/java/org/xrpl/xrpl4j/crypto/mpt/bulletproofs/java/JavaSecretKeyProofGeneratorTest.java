@@ -93,14 +93,6 @@ class JavaSecretKeyProofGeneratorTest {
     System.out.println("=== Public Key ===");
     byte[] pkCompressed = Secp256k1Operations.serializeCompressed(publicKeyPoint);
     System.out.println("Compressed (33 bytes): " + BaseEncoding.base16().encode(pkCompressed));
-
-    // Uncompressed format (64 bytes, X || Y without 04 prefix)
-    byte[] pkUncompressed = keypair.publicKey().uncompressedValue().toByteArray();
-    System.out.println("Uncompressed (64 bytes): " + BaseEncoding.base16().encode(pkUncompressed));
-
-    // Uncompressed reversed format (64 bytes, X_reversed || Y_reversed) for C compatibility
-    byte[] pkUncompressedReversed = keypair.publicKey().uncompressedValueReversed().toByteArray();
-    System.out.println("Uncompressed Reversed (64 bytes): " + BaseEncoding.base16().encode(pkUncompressedReversed));
     System.out.println();
 
     System.out.println("=== Nonce k (32 bytes) ===");

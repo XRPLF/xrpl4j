@@ -112,7 +112,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
       "  \"ledger_hash\" : \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
       "  \"account_hash\" : \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +
       "  \"close_time\" : 638329271,\n" +
-      "  \"close_time_human\" : \"2020-Mar-24 01:41:11.000000000 UTC\",\n" +
+      "  \"close_time_human\" : \"2020-Mar-24 01:41:11.000000000.000000.000 UTC\",\n" +
       "  \"closed\" : true,\n" +
       "  \"parent_hash\" : \"AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D\",\n" +
       "  \"parent_close_time\" : 638329270,\n" +
@@ -231,7 +231,7 @@ public class LedgerHeaderJsonTests extends AbstractJsonTest {
       "  \"ledger_hash\" : \"3652D7FD0576BC452C0D2E9B747BDD733075971D1A9A1D98125055DEF428721A\",\n" +
       "  \"account_hash\" : \"B258A8BB4743FB74CBBD6E9F67E4A56C4432EA09E5805E4CC2DA26F2DBE8F3D1\",\n" +
       "  \"close_time\" : 638329271,\n" +
-      "  \"close_time_human\" : \"2021-Jun-11 09:06:10.000000000 UTC\",\n" +
+      "  \"close_time_human\" : \"2021-Jun-11 09:06:10.000000000.000000.000 UTC\",\n" +
       "  \"closed\" : true,\n" +
       "  \"parent_hash\" : \"AE996778246BC81F85D5AF051241DAA577C23BCA04C034A7074F93700194520D\",\n" +
       "  \"parent_close_time\" : 638329270,\n" +

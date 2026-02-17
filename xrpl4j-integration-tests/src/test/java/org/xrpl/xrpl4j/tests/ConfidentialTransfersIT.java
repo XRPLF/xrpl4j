@@ -46,7 +46,10 @@ import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalPedersenLinkProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaElGamalPedersenLinkProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertBackContext;
+import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTClawbackContext;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaEqualityPlaintextProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.EqualityPlaintextProof;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSamePlaintextMultiProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaSecretKeyProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
@@ -1229,12 +1232,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
     );
 
     // Generate the Equality Plaintext Proof
-    // For clawback, the parameters are swapped: c1=pk, c2=ciphertext.c2, pk=ciphertext.c1
-    // This is because the issuer uses their private key as the "randomness" parameter
+    // For clawback, the ciphertext is constructed as: c1=issuer's pk, c2=balance.c2
+    // And the publicKey is the balance.c1
+    // The issuer uses their private key as the "randomness" parameter
     JavaEqualityPlaintextProofGenerator equalityProofGenerator = new JavaEqualityPlaintextProofGenerator();
 
-    // Generate context hash for clawback
-    byte[] clawbackContextHash = equalityProofGenerator.generateClawbackContext(
+    // Generate context hash for clawback using the context class
+    ConfidentialMPTClawbackContext clawbackContext = ConfidentialMPTClawbackContext.generate(
       issuerKeyPair.publicKey().deriveAddress(),  // issuer account
       issuerAccountInfoForClawback.accountData().sequence(),  // sequence
       mpTokenIssuanceId,  // issuance ID
@@ -1242,22 +1246,28 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderKeyPair.publicKey().deriveAddress()  // holder
     );
 
-    System.out.println("Clawback context hash: " + BaseEncoding.base16().encode(clawbackContextHash));
+    System.out.println("Clawback context hash: " + clawbackContext.hexValue());
 
     // Generate the proof
-    // Note: For clawback, the parameters are: pk (as c1), c2, c1 (as pk), amount, privateKey (as randomness)
-    byte[] issuerPrivateKeyBytes = issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray();
-    byte[] clawbackProof = equalityProofGenerator.generateProof(
-      issuerElGamalEcPoint,  // c1 = issuer's public key (pk)
-      issuerBalanceCiphertext.c2(),  // c2 = ciphertext.c2
-      issuerBalanceCiphertext.c1(),  // pk = ciphertext.c1
+    // The implementation internally handles the parameter swapping required by rippled
+    BlindingFactor issuerPrivateKeyAsBlindingFactor = BlindingFactor.fromBytes(
+      issuerElGamalKeyPair.privateKey().naturalBytes().toByteArray()
+    );
+    BlindingFactor clawbackNonce = BlindingFactor.generate();
+
+    // Pass the actual IssuerEncryptedBalance ciphertext and issuer's public key
+    // The swapping is done internally by generateProof
+    EqualityPlaintextProof clawbackProof = equalityProofGenerator.generateProof(
+      issuerBalanceCiphertext,  // IssuerEncryptedBalance ciphertext
+      issuerElGamalKeyPair.publicKey(),  // issuer's ElGamal public key
       clawbackAmount,
-      issuerPrivateKeyBytes,  // randomness = issuer's private key
-      clawbackContextHash
+      issuerPrivateKeyAsBlindingFactor,  // issuer's private key as "randomness"
+      clawbackNonce,  // random nonce for commitment
+      clawbackContext
     );
 
-    System.out.println("Clawback proof length: " + clawbackProof.length);
-    System.out.println("Clawback proof: " + BaseEncoding.base16().encode(clawbackProof));
+    System.out.println("Clawback proof length: " + clawbackProof.toBytes().length);
+    System.out.println("Clawback proof: " + clawbackProof.hexValue());
 
     // Build and submit the ConfidentialMPTClawback transaction
     ConfidentialMPTClawback clawback = ConfidentialMPTClawback.builder()
@@ -1271,7 +1281,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .mpTokenIssuanceId(mpTokenIssuanceId)
       .holder(holderKeyPair.publicKey().deriveAddress())
       .mptAmount(MpTokenNumericAmount.of(clawbackAmount))
-      .zkProof(BaseEncoding.base16().encode(clawbackProof))
+      .zkProof(clawbackProof.hexValue())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTClawback> signedClawback = signatureService.sign(

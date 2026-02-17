@@ -1,10 +1,13 @@
 package org.xrpl.xrpl4j.crypto.mpt.bulletproofs;
 
-import com.google.common.primitives.UnsignedInteger;
 import com.google.common.primitives.UnsignedLong;
-import org.bouncycastle.math.ec.ECPoint;
-import org.xrpl.xrpl4j.model.transactions.Address;
-import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.context.LinkProofContext;
+import org.xrpl.xrpl4j.crypto.mpt.elgamal.ElGamalCiphertext;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPrivateKeyable;
+import org.xrpl.xrpl4j.crypto.mpt.keys.ElGamalPublicKey;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.ElGamalPedersenLinkProof;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 
 /**
  * Interface for generating and verifying Zero-Knowledge Proofs linking ElGamal ciphertexts
@@ -56,123 +59,80 @@ import org.xrpl.xrpl4j.model.transactions.MpTokenIssuanceId;
  *   <li>srho (32 bytes) - Response for Pedersen blinding factor</li>
  * </ul>
  *
+ * @param <P> The type of private key this generator accepts, must extend {@link ElGamalPrivateKeyable}.
+ *
+ * @see LinkageProofType
+ * @see ElGamalPedersenLinkProof
  * @see <a href="ConfidentialMPT_20260201.pdf">Spec Section 3.3.5</a>
  */
-public interface ElGamalPedersenLinkProofGenerator {
-
-  /**
-   * The size of the proof in bytes: 3 * 33 (points) + 3 * 32 (scalars) = 195 bytes.
-   */
-  int PROOF_SIZE = 195;
+public interface ElGamalPedersenLinkProofGenerator<P extends ElGamalPrivateKeyable> {
 
   /**
    * Generates a proof linking an ElGamal ciphertext and a Pedersen commitment.
    *
-   * @param c1          The ElGamal ephemeral key (r * G).
-   * @param c2          The ElGamal masked value (m * G + r * P).
-   * @param publicKey   The ElGamal public key P.
-   * @param commitment  The Pedersen commitment (m * G + rho * H).
-   * @param amount      The plaintext amount m.
-   * @param r           The ElGamal randomness (32 bytes).
-   * @param rho         The Pedersen blinding factor (32 bytes).
-   * @param contextHash The 32-byte context hash for domain separation (can be null).
-   * @param nonceKm     The 32-byte nonce for amount commitment.
-   * @param nonceKr     The 32-byte nonce for ElGamal randomness commitment.
-   * @param nonceKrho   The 32-byte nonce for Pedersen blinding factor commitment.
+   * <p>The {@link LinkageProofType} determines how the ciphertext and public key parameters
+   * are used in the proof:
+   * <ul>
+   *   <li>{@link LinkageProofType#AMOUNT_COMMITMENT}: For proving a newly encrypted amount.
+   *       Uses c1=ciphertext.c1, c2=ciphertext.c2, pk=publicKey, r=elGamalBlindingFactor.</li>
+   *   <li>{@link LinkageProofType#BALANCE_COMMITMENT}: For proving an existing encrypted balance.
+   *       Uses c1=publicKey, c2=ciphertext.c2, pk=ciphertext.c1, r=privateKey (from elGamalBlindingFactor).</li>
+   * </ul>
    *
-   * @return The serialized proof as a 195-byte array.
+   * @param proofType              The type of linkage proof to generate.
+   * @param ciphertext             The ElGamal ciphertext.
+   * @param publicKey              The ElGamal public key.
+   * @param commitment             The Pedersen commitment.
+   * @param amount                 The plaintext amount m.
+   * @param elGamalBlindingFactor  The ElGamal blinding factor (r for amount, private key for balance).
+   * @param pedersenBlindingFactor The Pedersen blinding factor (rho).
+   * @param nonceKm                Random nonce for amount commitment.
+   * @param nonceKr                Random nonce for ElGamal randomness commitment.
+   * @param nonceKrho              Random nonce for Pedersen blinding factor commitment.
+   * @param context                The context for domain separation.
+   *
+   * @return An {@link ElGamalPedersenLinkProof} containing the 195-byte proof.
+   *
+   * @throws NullPointerException if any required parameter is null.
    */
-  byte[] generateProof(
-    ECPoint c1,
-    ECPoint c2,
-    ECPoint publicKey,
-    ECPoint commitment,
+  ElGamalPedersenLinkProof generateProof(
+    LinkageProofType proofType,
+    ElGamalCiphertext ciphertext,
+    ElGamalPublicKey publicKey,
+    PedersenCommitment commitment,
     UnsignedLong amount,
-    byte[] r,
-    byte[] rho,
-    byte[] contextHash,
-    byte[] nonceKm,
-    byte[] nonceKr,
-    byte[] nonceKrho
+    BlindingFactor elGamalBlindingFactor,
+    BlindingFactor pedersenBlindingFactor,
+    BlindingFactor nonceKm,
+    BlindingFactor nonceKr,
+    BlindingFactor nonceKrho,
+    LinkProofContext context
   );
 
   /**
    * Verifies a proof linking an ElGamal ciphertext and a Pedersen commitment.
    *
-   * @param proof       The serialized proof bytes (195 bytes).
-   * @param c1          The ElGamal ephemeral key (r * G).
-   * @param c2          The ElGamal masked value (m * G + r * P).
-   * @param publicKey   The ElGamal public key P.
-   * @param commitment  The Pedersen commitment (m * G + rho * H).
-   * @param contextHash The 32-byte context hash for domain separation (can be null).
+   * <p>The {@link LinkageProofType} determines how the ciphertext and public key parameters
+   * are interpreted for verification, matching the ordering used during proof generation.</p>
+   *
+   * @param proofType  The type of linkage proof being verified.
+   * @param proof      The proof to verify.
+   * @param ciphertext The ElGamal ciphertext.
+   * @param publicKey  The ElGamal public key.
+   * @param commitment The Pedersen commitment.
+   * @param context    The context for domain separation. Can be null for no context.
    *
    * @return {@code true} if the proof is valid, {@code false} otherwise.
+   *
+   * @throws NullPointerException if proof, ciphertext, publicKey, or commitment is null.
    */
   boolean verify(
-    byte[] proof,
-    ECPoint c1,
-    ECPoint c2,
-    ECPoint publicKey,
-    ECPoint commitment,
-    byte[] contextHash
-  );
-
-  /**
-   * Generates the context hash for ConfidentialMPTSend transactions.
-   *
-   * <p>The context hash is computed as SHA512Half of:
-   * <ul>
-   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_SEND</li>
-   *   <li>account (20 bytes) - sender account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
-   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>destination (20 bytes) - destination account</li>
-   *   <li>version (4 bytes) - confidential balance version</li>
-   * </ul>
-   *
-   * @param account     The sender account address.
-   * @param sequence    The transaction sequence number.
-   * @param issuanceId  The MPTokenIssuanceID.
-   * @param destination The destination account address.
-   * @param version     The confidential balance version from the MPToken ledger object.
-   *
-   * @return The 32-byte context hash.
-   */
-  byte[] generateSendContext(
-    Address account,
-    UnsignedInteger sequence,
-    MpTokenIssuanceId issuanceId,
-    Address destination,
-    UnsignedInteger version
-  );
-
-  /**
-   * Generates the context hash for ConfidentialMPTConvertBack transactions.
-   *
-   * <p>The context hash is computed as SHA512Half of:
-   * <ul>
-   *   <li>txType (2 bytes) - ttCONFIDENTIAL_MPT_CONVERT_BACK</li>
-   *   <li>account (20 bytes) - holder account</li>
-   *   <li>sequence (4 bytes) - transaction sequence</li>
-   *   <li>issuanceId (24 bytes) - MPTokenIssuanceID</li>
-   *   <li>amount (8 bytes) - amount being converted back</li>
-   *   <li>version (4 bytes) - confidential balance version</li>
-   * </ul>
-   *
-   * @param account    The holder account address.
-   * @param sequence   The transaction sequence number.
-   * @param issuanceId The MPTokenIssuanceID.
-   * @param amount     The amount being converted back to public balance.
-   * @param version    The confidential balance version from the MPToken ledger object.
-   *
-   * @return The 32-byte context hash.
-   */
-  byte[] generateConvertBackContext(
-    Address account,
-    UnsignedInteger sequence,
-    MpTokenIssuanceId issuanceId,
-    UnsignedLong amount,
-    UnsignedInteger version
+    LinkageProofType proofType,
+    ElGamalPedersenLinkProof proof,
+    ElGamalCiphertext ciphertext,
+    ElGamalPublicKey publicKey,
+    PedersenCommitment commitment,
+    LinkProofContext context
   );
 }
 

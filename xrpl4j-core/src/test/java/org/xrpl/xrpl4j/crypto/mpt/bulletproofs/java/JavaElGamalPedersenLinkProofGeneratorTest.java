@@ -11,8 +11,10 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.keys.bc.BcKeyUtils;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.ElGamalPedersenLinkProofGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
 
 import java.math.BigInteger;
@@ -32,7 +34,7 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
   @BeforeEach
   void setUp() {
     generator = new JavaElGamalPedersenLinkProofGenerator();
-    pedersenGen = new PedersenCommitmentGenerator();
+    pedersenGen = new JavaPedersenCommitmentGenerator();
   }
 
   /**
@@ -68,10 +70,11 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
     }
 
     // 4. Deterministic Pedersen blinding factor rho
-    byte[] rho = new byte[32];
+    byte[] rhoBytes = new byte[32];
     for (int i = 0; i < 32; i++) {
-      rho[i] = 0x02;
+      rhoBytes[i] = 0x02;
     }
+    BlindingFactor rho = BlindingFactor.fromBytes(rhoBytes);
 
     // 5. Deterministic context hash
     byte[] contextHash = new byte[32];
@@ -99,8 +102,7 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
     ECPoint c2 = Secp256k1Operations.add(mG, rPk);
 
     // 8. Create Pedersen commitment: PCm = m * G + rho * H
-    byte[] commitmentBytes = pedersenGen.generateCommitment(amount, rho);
-    ECPoint commitment = Secp256k1Operations.deserialize(commitmentBytes);
+    PedersenCommitment commitment = pedersenGen.generateCommitment(amount, rho);
 
     // Print inputs in C code format (uncompressed points with 04 prefix)
     System.out.println("\n=== ElGamal-Pedersen Link Proof Test ===\n");
@@ -117,13 +119,13 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
     System.out.println("const char* c2_hex = \"" + HEX.encode(c2.getEncoded(false)) + "\";");
     System.out.println();
     System.out.println("// Pedersen commitment PCm = m*G + rho*H (65 bytes with 04 prefix)");
-    System.out.println("const char* pcm_hex = \"" + HEX.encode(commitment.getEncoded(false)) + "\";");
+    System.out.println("const char* pcm_hex = \"" + HEX.encode(commitment.asEcPoint().getEncoded(false)) + "\";");
     System.out.println();
     System.out.println("// ElGamal randomness r (32 bytes)");
     System.out.println("const char* r_hex = \"" + HEX.encode(r) + "\";");
     System.out.println();
     System.out.println("// Pedersen blinding factor rho (32 bytes)");
-    System.out.println("const char* rho_hex = \"" + HEX.encode(rho) + "\";");
+    System.out.println("const char* rho_hex = \"" + rho.hexValue() + "\";");
     System.out.println();
     System.out.println("// Context ID (32 bytes)");
     System.out.println("const char* context_id_hex = \"" + HEX.encode(contextHash) + "\";");
@@ -136,8 +138,8 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
 
     // 9. Generate proof
     byte[] proof = generator.generateProof(
-      c1, c2, publicKey, commitment,
-      amount, r, rho, contextHash,
+      c1, c2, publicKey, commitment.asEcPoint(),
+      amount, r, rho.toBytes(), contextHash,
       nonceKm, nonceKr, nonceKrho
     );
 
@@ -180,18 +182,18 @@ class JavaElGamalPedersenLinkProofGeneratorTest {
     System.out.println();
 
     // 10. Verify proof
-    boolean isValid = generator.verify(proof, c1, c2, publicKey, commitment, contextHash);
+    boolean isValid = generator.verify(proof, c1, c2, publicKey, commitment.asEcPoint(), contextHash);
     System.out.println("Verification Result: " + isValid);
 
     // 11. Test that verification fails with wrong commitment
-    byte[] wrongRho = new byte[32];
+    byte[] wrongRhoBytes = new byte[32];
     for (int i = 0; i < 32; i++) {
-      wrongRho[i] = 0x03;
+      wrongRhoBytes[i] = 0x03;
     }
-    byte[] wrongCommitmentBytes = pedersenGen.generateCommitment(amount, wrongRho);
-    ECPoint wrongCommitment = Secp256k1Operations.deserialize(wrongCommitmentBytes);
+    BlindingFactor wrongRho = BlindingFactor.fromBytes(wrongRhoBytes);
+    PedersenCommitment wrongCommitment = pedersenGen.generateCommitment(amount, wrongRho);
 
-    boolean isInvalid = generator.verify(proof, c1, c2, publicKey, wrongCommitment, contextHash);
+    boolean isInvalid = generator.verify(proof, c1, c2, publicKey, wrongCommitment.asEcPoint(), contextHash);
     System.out.println("Verification with wrong commitment: " + isInvalid);
     System.out.println("================================================================\n");
 

@@ -6,6 +6,9 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.UnsignedLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaPedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 
 /**
  * Unit tests for {@link PedersenCommitmentGenerator}.
@@ -20,7 +23,7 @@ class PedersenCommitmentGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    generator = new PedersenCommitmentGenerator();
+    generator = new JavaPedersenCommitmentGenerator();
   }
 
   /**
@@ -41,14 +44,14 @@ class PedersenCommitmentGeneratorTest {
     UnsignedLong amount = UnsignedLong.valueOf(1000);
 
     // Fixed blinding factor: hardcoded random value
-    byte[] rho = HEX.decode("A4F5C7E9B2D4168F0E7A9C3B5D2F8E1A4C6B8D0F2E4A6C8B0D2F4E6A8C0B2D4F");
+    BlindingFactor rho = BlindingFactor.fromHex("A4F5C7E9B2D4168F0E7A9C3B5D2F8E1A4C6B8D0F2E4A6C8B0D2F4E6A8C0B2D4F");
 
     // Print inputs
     System.out.println("Amount: " + amount);
-    System.out.println("Rho (blinding factor): " + HEX.encode(rho));
+    System.out.println("Rho (blinding factor): " + rho.hexValue());
 
-    byte[] commitment = generator.generateCommitment(amount, rho);
-    String commitmentHex = HEX.encode(commitment);
+    PedersenCommitment commitment = generator.generateCommitment(amount, rho);
+    String commitmentHex = commitment.hexValue();
 
     // Print output
     System.out.println("Commitment: " + commitmentHex);
@@ -56,6 +59,11 @@ class PedersenCommitmentGeneratorTest {
     // Verify output matches expected value
     String expectedCommitmentHex = "02FD5403A3B2339D2D364B621D2A148D309656A80503F9DEE9DB8AB0132C53DEEC";
     assertThat(commitmentHex).isEqualTo(expectedCommitmentHex);
+
+    // Test the reversed hex format for transactions
+    String reversedHex = commitment.toReversedHex64();
+    System.out.println("Commitment (64-byte reversed): " + reversedHex);
+    assertThat(reversedHex).hasSize(128); // 64 bytes = 128 hex chars
   }
 }
 

@@ -34,12 +34,13 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.mpt.BlindingFactor;
 import org.xrpl.xrpl4j.crypto.mpt.RandomnessUtils;
-import org.xrpl.xrpl4j.crypto.mpt.Secp256k1Operations;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextMultiProof;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SamePlaintextParticipant;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTConvertContext;
 import org.xrpl.xrpl4j.crypto.mpt.context.ConfidentialMPTSendContext;
+import org.xrpl.xrpl4j.crypto.mpt.wrapper.PedersenCommitment;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.PedersenCommitmentGenerator;
+import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaPedersenCommitmentGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.wrapper.SecretKeyProof;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaElGamalPedersenLinkProofGenerator;
 import org.xrpl.xrpl4j.crypto.mpt.bulletproofs.java.JavaEqualityPlaintextProofGenerator;
@@ -731,54 +732,23 @@ public class ConfidentialTransfersIT extends AbstractIT {
 
     //////////////////////
     // Generate Pedersen Commitments and Linkage Proofs
-    PedersenCommitmentGenerator pedersenGen = new PedersenCommitmentGenerator();
+    PedersenCommitmentGenerator pedersenGen = new JavaPedersenCommitmentGenerator();
     JavaElGamalPedersenLinkProofGenerator linkProofGenerator = new JavaElGamalPedersenLinkProofGenerator();
 
     // Generate blinding factors for Pedersen commitments
-    byte[] amountPedersenRho = RandomnessUtils.generateRandomScalar();
-    byte[] balancePedersenRho = RandomnessUtils.generateRandomScalar();
+    BlindingFactor amountPedersenRho = BlindingFactor.generate();
+    BlindingFactor balancePedersenRho = BlindingFactor.generate();
 
     // Generate Amount Pedersen Commitment: PCm = sendAmount * G + amountPedersenRho * H
-    byte[] amountCommitmentBytes = pedersenGen.generateCommitment(sendAmount, amountPedersenRho);
-    ECPoint amountCommitmentPoint = Secp256k1Operations.deserialize(amountCommitmentBytes);
+    PedersenCommitment amountCommitment = pedersenGen.generateCommitment(sendAmount, amountPedersenRho);
 
     // For balance commitment, we need the sender's new balance after the send
     // Current balance = 500 (from ConfidentialMPTConvert), sending 100, so new balance = 400
     UnsignedLong senderNewBalance = UnsignedLong.valueOf(500);
-    byte[] balanceCommitmentBytes = pedersenGen.generateCommitment(senderNewBalance, balancePedersenRho);
-    ECPoint balanceCommitmentPoint = Secp256k1Operations.deserialize(balanceCommitmentBytes);
+    PedersenCommitment balanceCommitment = pedersenGen.generateCommitment(senderNewBalance, balancePedersenRho);
 
-    // Convert commitments to uncompressed format (64 bytes) for the transaction
-    // Remove the 04 prefix from uncompressed encoding
-    byte[] amountCommitmentUncompressed = amountCommitmentPoint.getEncoded(false);
-    byte[] balanceCommitmentUncompressed = balanceCommitmentPoint.getEncoded(false);
-    // Skip the 04 prefix byte to get 64 bytes (X, Y)
-    byte[] amountCommitment64 = new byte[64];
-    byte[] balanceCommitment64 = new byte[64];
-    System.arraycopy(amountCommitmentUncompressed, 1, amountCommitment64, 0, 64);
-    System.arraycopy(balanceCommitmentUncompressed, 1, balanceCommitment64, 0, 64);
-
-    // Reverse X and Y coordinates to match the format used for public keys on the ledger
-    // This is required because rippled does memcpy directly into secp256k1_pubkey.data
-    // and expects the same reversed format as public keys
-    byte[] amountCommitment64Reversed = new byte[64];
-    byte[] balanceCommitment64Reversed = new byte[64];
-    // Reverse X coordinate (first 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      amountCommitment64Reversed[i] = amountCommitment64[31 - i];
-      balanceCommitment64Reversed[i] = balanceCommitment64[31 - i];
-    }
-    // Reverse Y coordinate (last 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      amountCommitment64Reversed[32 + i] = amountCommitment64[63 - i];
-      balanceCommitment64Reversed[32 + i] = balanceCommitment64[63 - i];
-    }
-
-    String amountCommitment = BaseEncoding.base16().encode(amountCommitment64Reversed);
-    String balanceCommitment = BaseEncoding.base16().encode(balanceCommitment64Reversed);
-
-    System.out.println("Amount Commitment: " + amountCommitment);
-    System.out.println("Balance Commitment: " + balanceCommitment);
+    System.out.println("Amount Commitment: " + amountCommitment.toReversedHex64());
+    System.out.println("Balance Commitment: " + balanceCommitment.toReversedHex64());
 
     //////////////////////
     // Generate Amount Linkage Proof using helper method
@@ -787,10 +757,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
       linkProofGenerator,
       senderCiphertext,
       holderElGamalEcPoint,
-      amountCommitmentPoint,
+      amountCommitment.asEcPoint(),
       sendAmount,
       sendBlindingFactorSender.toBytes(),
-      amountPedersenRho,
+      amountPedersenRho.toBytes(),
       sendContext.toBytes()
     );
 
@@ -826,13 +796,13 @@ public class ConfidentialTransfersIT extends AbstractIT {
       "const char* c2_hex = \"" + BaseEncoding.base16().encode(senderCiphertext.c2().getEncoded(false)) + "\";");
     System.out.println("// Pedersen commitment PCm = m*G + rho*H (33 bytes compressed)");
     System.out.println(
-      "const char* pcm_compressed_hex = \"" + BaseEncoding.base16().encode(amountCommitmentPoint.getEncoded(true)) +
-        "\";");
+      "const char* pcm_compressed_hex = \"" + amountCommitment.hexValue() + "\";");
     System.out.println("// Pedersen commitment PCm = m*G + rho*H (65 bytes with 04 prefix)");
     System.out.println(
-      "const char* pcm_hex = \"" + BaseEncoding.base16().encode(amountCommitmentPoint.getEncoded(false)) + "\";");
+      "const char* pcm_hex = \"" + BaseEncoding.base16().encode(amountCommitment.asEcPoint().getEncoded(false)) +
+        "\";");
     System.out.println("// Pedersen commitment PCm (64 bytes without prefix - as sent in tx)");
-    System.out.println("const char* pcm_64_hex = \"" + amountCommitment + "\";");
+    System.out.println("const char* pcm_64_hex = \"" + amountCommitment.toReversedHex64() + "\";");
     System.out.println("// Context ID (32 bytes)");
     System.out.println("const char* context_id_hex = \"" + sendContext.hexValue() + "\";");
     System.out.println("// Proof from Java (195 bytes = 390 hex chars)");
@@ -849,7 +819,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       senderCiphertext.c1(),
       senderCiphertext.c2(),
       holderElGamalEcPoint,
-      amountCommitmentPoint,
+      amountCommitment.asEcPoint(),
       sendContext.toBytes()
     );
     System.out.println("Amount Linkage Proof valid locally: " + amountLinkageValid);
@@ -895,10 +865,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
       linkProofGenerator,
       currentBalanceCiphertext,
       holderElGamalEcPoint,
-      balanceCommitmentPoint,
+      balanceCommitment.asEcPoint(),
       senderNewBalance,
       holderPrivateKey,
-      balancePedersenRho,
+      balancePedersenRho.toBytes(),
       sendContext.toBytes()
     );
 
@@ -918,10 +888,9 @@ public class ConfidentialTransfersIT extends AbstractIT {
     System.out.println("const char* bal_c2_compressed_hex = \"" +
       BaseEncoding.base16().encode(currentBalanceCiphertext.c2().getEncoded(true)) + "\";");
     System.out.println("// Balance Pedersen commitment (33 bytes compressed)");
-    System.out.println("const char* bal_pcm_compressed_hex = \"" +
-      BaseEncoding.base16().encode(balanceCommitmentPoint.getEncoded(true)) + "\";");
+    System.out.println("const char* bal_pcm_compressed_hex = \"" + balanceCommitment.hexValue() + "\";");
     System.out.println("// Balance Pedersen commitment (64 bytes reversed - as sent in tx)");
-    System.out.println("const char* bal_pcm_64_hex = \"" + balanceCommitment + "\";");
+    System.out.println("const char* bal_pcm_64_hex = \"" + balanceCommitment.toReversedHex64() + "\";");
     System.out.println("// Current encrypted balance (66 bytes - from ledger)");
     System.out.println("const char* current_enc_bal_hex = \"" + currentEncryptedBalance + "\";");
     System.out.println("// Balance amount (plaintext value)");
@@ -940,7 +909,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       holderElGamalEcPoint,           // c1 = Pk = sk * G
       currentBalanceCiphertext.c2(),  // c2
       currentBalanceCiphertext.c1(),  // pk = original c1
-      balanceCommitmentPoint,
+      balanceCommitment.asEcPoint(),
       sendContext.toBytes()
     );
     System.out.println("Balance Linkage Proof valid locally: " + balanceLinkageValid);
@@ -973,8 +942,8 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .destinationEncryptedAmount(destinationEncryptedAmount)
       .issuerEncryptedAmount(issuerEncryptedAmountForSend)
       .zkProof(BaseEncoding.base16().encode(fullZkProof))
-      .amountCommitment(amountCommitment)
-      .balanceCommitment(balanceCommitment)
+      .amountCommitment(amountCommitment.toReversedHex64())
+      .balanceCommitment(balanceCommitment.toReversedHex64())
       .build();
 
     SingleSignedTransaction<ConfidentialMPTSend> signedConfidentialSend = signatureService.sign(
@@ -1097,32 +1066,12 @@ public class ConfidentialTransfersIT extends AbstractIT {
     // Generate Pedersen commitment for the current spending balance (400)
     // The commitment is for the CURRENT balance, not the balance after conversion
     UnsignedLong currentSpendingBalance = UnsignedLong.valueOf(senderBalanceAfterSend);
-    byte[] convertBackPedersenRho = RandomnessUtils.generateRandomScalar();
-    byte[] convertBackCommitmentBytes = pedersenGen.generateCommitment(currentSpendingBalance, convertBackPedersenRho);
-    ECPoint convertBackCommitmentPoint = Secp256k1Operations.deserialize(convertBackCommitmentBytes);
-
-    // Convert commitment to uncompressed format (64 bytes) for the transaction
-    // Remove the 04 prefix from uncompressed encoding
-    byte[] convertBackCommitmentUncompressed = convertBackCommitmentPoint.getEncoded(false);
-    // Skip the 04 prefix byte to get 64 bytes (X, Y)
-    byte[] convertBackCommitment64 = new byte[64];
-    System.arraycopy(convertBackCommitmentUncompressed, 1, convertBackCommitment64, 0, 64);
-
-    // Reverse X and Y coordinates to match the format used for public keys on the ledger
-    byte[] convertBackCommitment64Reversed = new byte[64];
-    // Reverse X coordinate (first 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      convertBackCommitment64Reversed[i] = convertBackCommitment64[31 - i];
-    }
-    // Reverse Y coordinate (last 32 bytes)
-    for (int i = 0; i < 32; i++) {
-      convertBackCommitment64Reversed[32 + i] = convertBackCommitment64[63 - i];
-    }
-
-    String convertBackPedersenCommitment = BaseEncoding.base16().encode(convertBackCommitment64Reversed);
+    BlindingFactor convertBackPedersenRho = BlindingFactor.generate();
+    PedersenCommitment convertBackCommitment = pedersenGen.generateCommitment(currentSpendingBalance,
+      convertBackPedersenRho);
 
     System.out.println("Current spending balance for commitment: " + currentSpendingBalance.longValue());
-    System.out.println("Pedersen Commitment (64-byte reversed): " + convertBackPedersenCommitment);
+    System.out.println("Pedersen Commitment (64-byte reversed): " + convertBackCommitment.toReversedHex64());
 
     // Get the current encrypted balance from the ledger for the balance linkage proof
     String currentEncryptedBalanceForConvertBack = holder1MpTokenForConvertBack.confidentialBalanceSpending()
@@ -1140,10 +1089,10 @@ public class ConfidentialTransfersIT extends AbstractIT {
       linkProofGenerator,
       currentBalanceCiphertextForConvertBack,
       holderElGamalEcPoint,
-      convertBackCommitmentPoint,
+      convertBackCommitment.asEcPoint(),
       currentSpendingBalance,
       holderPrivateKey,
-      convertBackPedersenRho,
+      convertBackPedersenRho.toBytes(),
       convertBackContextHash
     );
 
@@ -1164,7 +1113,7 @@ public class ConfidentialTransfersIT extends AbstractIT {
       .holderEncryptedAmount(holderConvertBackEncryptedAmount)
       .issuerEncryptedAmount(issuerConvertBackEncryptedAmount)
       .blindingFactor(convertBackBlindingFactor.hexValue())
-      .balanceCommitment(convertBackPedersenCommitment)
+      .balanceCommitment(convertBackCommitment.toReversedHex64())
       .zkProof(BaseEncoding.base16().encode(convertBackBalanceLinkageProof))
       .build();
 

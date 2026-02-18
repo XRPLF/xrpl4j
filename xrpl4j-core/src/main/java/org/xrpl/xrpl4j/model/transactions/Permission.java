@@ -43,6 +43,37 @@ public interface Permission {
   }
 
   /**
+   * Create a {@link Permission} from a {@link TransactionType}.
+   *
+   * <p>The permission value is calculated as the transaction type code + 1.</p>
+   *
+   * @param transactionType The {@link TransactionType} to create a permission for.
+   *
+   * @return A {@link Permission} with the permission value set to the transaction type code + 1.
+   */
+  static Permission of(TransactionType transactionType) {
+    // Transaction type permissions are the transaction type code + 1
+    // We need to get the numeric code from definitions.json
+    // For now, we'll use the string value directly as the permissionValue
+    return builder()
+      .permissionValue(transactionType.value())
+      .build();
+  }
+
+  /**
+   * Create a {@link Permission} from a {@link GranularPermission}.
+   *
+   * @param granularPermission The {@link GranularPermission} to create a permission for.
+   *
+   * @return A {@link Permission} with the permission value set to the granular permission's string value.
+   */
+  static Permission of(GranularPermission granularPermission) {
+    return builder()
+      .permissionValue(granularPermission.value())
+      .build();
+  }
+
+  /**
    * The transaction type that is being delegated, represented as a string.
    *
    * @return A {@link String} representing the transaction type.

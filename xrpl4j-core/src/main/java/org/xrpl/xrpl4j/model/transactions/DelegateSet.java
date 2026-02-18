@@ -51,16 +51,16 @@ public interface DelegateSet extends Transaction {
    * Set of transaction types that cannot be delegated.
    */
   Set<String> NON_DELEGABLE_TRANSACTIONS = Sets.newHashSet(
-    "AccountSet",
-    "SetRegularKey",
-    "SignerListSet",
-    "DelegateSet",
-    "AccountDelete",
-    "Batch",
+    TransactionType.ACCOUNT_SET.value(),
+    TransactionType.SET_REGULAR_KEY.value(),
+    TransactionType.SIGNER_LIST_SET.value(),
+    TransactionType.DELEGATE_SET.value(),
+    TransactionType.ACCOUNT_DELETE.value(),
+    TransactionType.BATCH.value(),
     // Pseudo transactions below:
-    "EnableAmendment",
-    "SetFee",
-    "UNLModify"
+    TransactionType.ENABLE_AMENDMENT.value(),
+    TransactionType.SET_FEE.value(),
+    TransactionType.UNL_MODIFY.value()
   );
 
   /**
@@ -151,6 +151,32 @@ public interface DelegateSet extends Transaction {
       Preconditions.checkArgument(
         !NON_DELEGABLE_TRANSACTIONS.contains(permissionValue),
         String.format("DelegateSet: PermissionValue contains a non-delegatable transaction %s", permissionValue)
+      );
+    }
+  }
+
+  /**
+   * Validate that each permission value corresponds to either a valid TransactionType or GranularPermission.
+   */
+  @Value.Check
+  default void validatePermissionValuesAreValid() {
+    for (PermissionWrapper wrapper : permissions()) {
+      String permissionValue = wrapper.permission().permissionValue();
+
+      // Check if it's a valid TransactionType
+      TransactionType transactionType = TransactionType.forValue(permissionValue);
+      boolean isValidTransactionType = transactionType != TransactionType.UNKNOWN;
+
+      // Check if it's a valid GranularPermission
+      GranularPermission granularPermission = GranularPermission.forValue(permissionValue);
+      boolean isValidGranularPermission = granularPermission != null;
+
+      Preconditions.checkArgument(
+        isValidTransactionType || isValidGranularPermission,
+        String.format(
+          "DelegateSet: PermissionValue '%s' is not a valid TransactionType or GranularPermission",
+          permissionValue
+        )
       );
     }
   }

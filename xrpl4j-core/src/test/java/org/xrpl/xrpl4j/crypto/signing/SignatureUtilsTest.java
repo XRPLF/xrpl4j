@@ -46,7 +46,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xrpl.xrpl4j.codec.addresses.UnsignedByteArray;
 import org.xrpl.xrpl4j.codec.binary.XrplBinaryCodec;
+import org.xrpl.xrpl4j.crypto.keys.Base58EncodedSecret;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
+import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.PublicKey;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.model.AddressConstants;
@@ -635,7 +637,46 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  void batchToSignableBytesWithManyInnerTransactions() {
+  void batchToSignableBytesWithManyWellKnownInnerTransactions() {
+    Builder batchBuilder = Batch.builder()
+      .account(sourcePublicKey.deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING);
+
+    // We use deterministic seeds so that the destination addresses are deterministic, so we can generate the same
+    // signature each test-run.
+    final List<Seed> deterministicSeeds = IntStream.rangeClosed(1, 8)
+      .mapToObj(i -> Seed.ed25519SeedFromPassphrase(Passphrase.of("shh" + i)))
+      .collect(Collectors.toList());
+
+    for (int i = 0; i < 8; i++) {
+      final Seed seed = deterministicSeeds.get(i);
+      batchBuilder.addRawTransactions(RawTransactionWrapper.of(createInnerPaymentHelper(
+        seed.deriveKeyPair().publicKey().deriveAddress(),
+        seed.deriveKeyPair().publicKey().deriveAddress()
+      )));
+    }
+
+    Batch batch = batchBuilder.signingPublicKey(sourcePublicKey).build();
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+
+    // Regression Guard: This value reflects current stable behavior captured from a known-good run. It ensures that
+    // future refactors do not inadvertently change the output of this established implementation.
+    assertThat(bytes.hexValue()).isEqualTo(
+      "4243480000010000000000086AE6957F40DE369AD007F1C7DCABE1B80E415857E317990E0116A9381649E91BC05EF8A5D" +
+        "B6C5767176E74B2436782FE806CF27BA5889BE8885964EC53DC5EA4CA771E2F9EC90459E4FD192069270CF1CA111CECB2E576BC51" +
+        "EA9BE8DEEF21F68877A84706E711E8929EE53008E7A684BB94FAF4038179375DF7DA2800465671E00067040F059E0ED0260A27350" +
+        "5948A101188DD35DEABC476A7ED403B5DE587649A49BAAC5A101938AB3AF6546C0BBF65AA9EC33EF30E4EF9B5D116568077407E10" +
+        "EFAC96EABBC2ED1A14759617E6881942EC8C137B4974B1D83E07B47C2EB82358840E4B6B237493029D7297933216EA16BC3EDEF3F" +
+        "10478577A1BE98055BE"
+    );
+  }
+
+  @Test
+  void batchToSignableBytesWithManyRandomInnerTransactions() {
     Builder batchBuilder = Batch.builder()
       .account(sourcePublicKey.deriveAddress())
       .fee(XrpCurrencyAmount.ofDrops(10))
@@ -643,7 +684,12 @@ public class SignatureUtilsTest {
       .flags(BatchFlags.ALL_OR_NOTHING);
 
     for (int i = 0; i < 8; i++) {
-      batchBuilder.addRawTransactions(RawTransactionWrapper.of(createPayment1()));
+      final Address sourceAddress = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+      final Address destinationAddress = Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress();
+      batchBuilder.addRawTransactions(RawTransactionWrapper.of(createInnerPaymentHelper(
+        sourceAddress,
+        destinationAddress
+      )));
     }
 
     Batch batch = batchBuilder.signingPublicKey(sourcePublicKey).build();
@@ -653,7 +699,43 @@ public class SignatureUtilsTest {
   }
 
   @Test
-  void batchToSignableBytesWithMixedTransactionTypes() {
+  void batchToSignableBytesWithWellKnownMixedTransactionTypes() {
+    final Seed deterministicSenderSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("sender"));
+    final Seed deterministicDestinationSeed = Seed.ed25519SeedFromPassphrase(Passphrase.of("destination"));
+
+    final Payment payment = this.createInnerPaymentHelper(
+      deterministicSenderSeed.deriveKeyPair().publicKey().deriveAddress(),
+      deterministicDestinationSeed.deriveKeyPair().publicKey().deriveAddress()
+    );
+
+    final AccountSet accountSet = AccountSet.builder()
+      .account(deterministicSenderSeed.deriveKeyPair().publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(0))
+      .sequence(UnsignedInteger.valueOf(3))
+      .flags(AccountSetTransactionFlags.INNER_BATCH_TXN)
+      .build();
+
+    final Batch batch = Batch.builder()
+      .account(deterministicSenderSeed.deriveKeyPair().publicKey().deriveAddress())
+      .fee(XrpCurrencyAmount.ofDrops(10))
+      .sequence(UnsignedInteger.valueOf(6))
+      .flags(BatchFlags.ALL_OR_NOTHING)
+      .addRawTransactions(RawTransactionWrapper.of(payment), RawTransactionWrapper.of(accountSet))
+      .signingPublicKey(sourcePublicKey)
+      .build();
+
+    UnsignedByteArray bytes = SignatureUtils.getInstance().toSignableInnerBytes(batch);
+
+    assertThat(bytes).isNotNull();
+    assertThat(bytes.hexValue()).isNotEmpty();
+    assertThat(bytes.hexValue()).isEqualTo(
+      "4243480000010000000000022ECA1C69512AB1846736340F2622CF324660B09F3D6C1724B74326E917C7207F2E0010DA9D" +
+        "B4F815BC8743C63D3B9BFC0A1E548B08A624B617A22B1B39112ABB")
+    ;
+  }
+
+  @Test
+  void batchToSignableBytesWithRandomMixedTransactionTypes() {
     Payment payment = createPayment1();
     AccountSet accountSet = AccountSet.builder()
       .account(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
@@ -2372,24 +2454,32 @@ public class SignatureUtilsTest {
   }
 
   private ImmutablePayment createPayment1() {
-    return Payment.builder()
-      .account(signer1KeyPair.publicKey().deriveAddress())
-      .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .amount(XrpCurrencyAmount.ofDrops(1000))
-      .fee(XrpCurrencyAmount.ofDrops(0)) // <-- Must be set to 0
-      .sequence(UnsignedInteger.valueOf(1))
-      .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
-      // .signingPublicKey(...) // <-- Must be unset for an inner batch
-      .build();
+    return createInnerPaymentHelper(
+      signer1KeyPair.publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress() // <-- Use a random seed for a random destination
+    );
   }
 
   private ImmutablePayment createPayment2() {
+    return createInnerPaymentHelper(
+      signer2KeyPair.publicKey().deriveAddress(),
+      Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress() // <-- Use a random seed for a random destination
+    );
+  }
+
+  private ImmutablePayment createInnerPaymentHelper(
+    final Address sourceAddress,
+    final Address destinationAddress
+  ) {
+    Objects.requireNonNull(sourceAddress);
+    Objects.requireNonNull(destinationAddress);
+
     return Payment.builder()
-      .account(signer2KeyPair.publicKey().deriveAddress())
-      .destination(Seed.ed25519Seed().deriveKeyPair().publicKey().deriveAddress())
-      .amount(XrpCurrencyAmount.ofDrops(2000))
+      .account(sourceAddress)
+      .destination(destinationAddress)
+      .amount(XrpCurrencyAmount.ofDrops(1000))
       .fee(XrpCurrencyAmount.ofDrops(0)) // <-- Must be set to 0
-      .sequence(UnsignedInteger.valueOf(2))
+      .sequence(UnsignedInteger.valueOf(1))
       .flags(PaymentFlags.builder().tfInnerBatchTxn(true).build())
       // .signingPublicKey(...) // <-- Must be unset for an inner batch
       .build();

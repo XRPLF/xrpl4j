@@ -81,15 +81,17 @@ public interface Batch extends Transaction {
   /**
    * The list of inner transactions to be executed as part of this batch.
    *
-   * <p>Must contain between 2 and 8 transactions (inclusive). Inner transactions must:
+   * <p>Must contain between 2 and 8 transactions (inclusive). Inner transactions must also have, among other rules:
    * <ul>
    *   <li>Have the {@code tfInnerBatchTxn} flag set</li>
-   *   <li>Have fee of "0" (fees are paid by the outer Batch transaction)</li>
+   *   <li>Have a fee of "0" (fees are paid by the outer Batch transaction)</li>
    *   <li>Have an empty SigningPubKey and no TxnSignature</li>
    *   <li>Not be Batch transactions themselves (no nesting)</li>
    * </ul>
    *
    * @return A {@link List} of {@link RawTransactionWrapper} containing the inner transactions.
+   *
+   * @see "https://xls.xrpl.org/xls/XLS-0056-batch.html#23-failure-conditions"
    */
   @JsonProperty("RawTransactions")
   List<RawTransactionWrapper> rawTransactions();
